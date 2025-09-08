@@ -239,6 +239,23 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
     response_body.concat(static_cast<const uint8_t *>(event->data_chunk), static_cast<unsigned int>(event->data_chunk_len));
 }
 
+static String construct_relay_url(const Config& config, const char* endpoint, const char* query_params) {
+    char url[256];
+    if (query_params) {
+        snprintf(url, sizeof(url), "https://%s:%lu%s?%s",
+                config.get("relay_host")->asEphemeralCStr(),
+                config.get("relay_port")->asUint(),
+                endpoint,
+                query_params);
+    } else {
+        snprintf(url, sizeof(url), "https://%s:%lu%s",
+                config.get("relay_host")->asEphemeralCStr(),
+                config.get("relay_port")->asUint(),
+                endpoint);
+    }
+    return String(url);
+}
+
 void RemoteAccess::register_urls()
 {
     api.addState("remote_access/config", &config, {"password"}, {"email"});
@@ -599,23 +616,15 @@ void RemoteAccess::register_urls()
 
         serializer.addMemberString("note", bs64_note.get());
 
-        char url[128];
+        String url;
         const String &uuid = doc["user_uuid"];
         const String &token = doc["auth_token"];
         if (uuid != "null" && token != "null") {
             serializer.addMemberString("user_id", uuid.c_str());
             serializer.addMemberString("token", token.c_str());
-            snprintf(url,
-                    sizeof(url),
-                    "https://%s:%lu/api/add_with_token",
-                    registration_config.get("relay_host")->asEphemeralCStr(),
-                    registration_config.get("relay_port")->asUint());
+            url = construct_relay_url(registration_config, "/api/add_with_token", nullptr);
         } else {
-            snprintf(url,
-                    sizeof(url),
-                    "https://%s:%lu/api/charger/add",
-                    registration_config.get("relay_host")->asEphemeralCStr(),
-                    registration_config.get("relay_port")->asUint());
+            url = construct_relay_url(registration_config, "/api/charger/add", nullptr);
         }
 
         serializer.endObject();
@@ -864,12 +873,7 @@ void RemoteAccess::register_urls()
         serializer.endObject();
         uint32_t size = serializer.end();
 
-        char url[128];
-        snprintf(url,
-                 sizeof(url),
-                 "https://%s:%lu/api/allow_user",
-                 config.get("relay_host")->asEphemeralCStr(),
-                 config.get("relay_port")->asUint());
+    String url = construct_relay_url(config, "/api/allow_user", nullptr);
 
         std::queue<WgKey> key_cache;
         int a = 0;
@@ -962,12 +966,7 @@ void RemoteAccess::register_urls()
             }
             https_client->set_header("Content-Type", "application/json");
 
-            char url[256];
-            snprintf(url,
-                     sizeof(url),
-                     "https://%s:%lu/api/selfdestruct",
-                     config.get("relay_host")->asEphemeralCStr(),
-                     config.get("relay_port")->asUint());
+            String url = construct_relay_url(config, "/api/selfdestruct", nullptr);
             run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](const Config &/*cfg*/) {
                 this->request_cleanup();
             });
@@ -1094,7 +1093,8 @@ bool RemoteAccess::user_already_registered(const String &email)
     return false;
 }
 
-void RemoteAccess::run_request_with_next_stage(const char *url,
+
+void RemoteAccess::run_request_with_next_stage(const String url,
                                                esp_http_client_method_t method,
                                                const char *body,
                                                size_t body_size,
@@ -1102,14 +1102,12 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                                                std::function<void(const Config &config)> &&next_stage)
 {
     response_body.clear();
-
-    const String url_capture = String(url);
-    std::function<void(AsyncHTTPSClientEvent * event)> callback = [this, next_stage, next_config, url_capture](AsyncHTTPSClientEvent *event) {
+    std::function<void(AsyncHTTPSClientEvent * event)> callback = [this, next_stage, next_config, url](AsyncHTTPSClientEvent *event) {
         switch (event->type) {
             case AsyncHTTPSClientEventType::Error:
                 switch (event->error) {
                     case AsyncHTTPSClientError::HTTPStatusError: {
-                        if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                        if (strstr(url.c_str(), "/management") != nullptr) {
                             if (!this->management_request_failed) {
                                 logger.printfln("Management request failed with HTTP-Error-Code %i", event->error_http_status);
                                 this->management_request_failed = true;
@@ -1146,7 +1144,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                     case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
                     case AsyncHTTPSClientError::HTTPClientError:
                     default:
-                        if (strstr(url_capture.c_str(), "/management") != nullptr) {
+                        if (strstr(url.c_str(), "/management") != nullptr) {
                             if (!this->management_request_failed) {
                                 logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), static_cast<uint8_t>(event->error));
                                 this->management_request_failed = true;
@@ -1196,20 +1194,15 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
         https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     }
 
-    https_client->fetch(url, next_config.get("cert_id")->asInt(), method, body, body_size, std::move(callback));
+    https_client->fetch(url.c_str(), next_config.get("cert_id")->asInt(), method, body, body_size, std::move(callback));
 }
 
 void RemoteAccess::get_login_salt(const Config &user_config)
 {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->clearString();
-    char url[196];
-    snprintf(url,
-            sizeof(url),
-            "https://%s:%lu/api/auth/get_login_salt?email=%s",
-            user_config.get("relay_host")->asEphemeralCStr(),
-            user_config.get("relay_port")->asUint(),
-            user_config.get("email")->asEphemeralCStr());
+    String query = String("email=") + user_config.get("email")->asEphemeralCStr();
+    String url = construct_relay_url(user_config, "/api/auth/get_login_salt", query.c_str());
 
     https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, user_config, [this](const Config &/*cfg*/) {
@@ -1251,8 +1244,7 @@ void RemoteAccess::login(const Config &user_config, const String &login_key)
 {
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
     registration_state.get("message")->clearString();
-    char url[128];
-    snprintf(url, sizeof(url), "https://%s:%lu/api/auth/login", user_config.get("relay_host")->asEphemeralCStr(), user_config.get("relay_port")->asUint());
+    String url = construct_relay_url(user_config, "/api/auth/login", nullptr);
 
     String body;
     DynamicJsonDocument doc(512);
@@ -1283,12 +1275,7 @@ void RemoteAccess::get_secret(const Config &user_config)
 {
     registration_state.get("message")->clearString();
     registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
-    char url[128];
-    snprintf(url,
-             sizeof(url),
-             "https://%s:%lu/api/user/get_secret",
-             user_config.get("relay_host")->asEphemeralCStr(),
-             user_config.get("relay_port")->asUint());
+    String url = construct_relay_url(user_config, "/api/user/get_secret", nullptr);
 
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, user_config, [this](const Config &/*cfg*/) {
         this->parse_secret();
@@ -1319,6 +1306,7 @@ void RemoteAccess::parse_secret()
         this->request_cleanup();
         return;
     }
+
     for (size_t i = 0; i < crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES; i++) {
         encrypted_secret[i] = doc["secret"][i];
     }
@@ -1421,12 +1409,7 @@ void RemoteAccess::resolve_management()
         return;
     }
 
-    char url[128];
-    snprintf(url,
-            sizeof(url),
-            "https://%s:%lu/api/management",
-            config.get("relay_host")->asEphemeralCStr(),
-            config.get("relay_port")->asUint());
+    String url = construct_relay_url(config, "/api/management", nullptr);
 
     const String &uuid = config.get("uuid")->asString();
     const String &name = api.getState("info/display_name")->get("display_name")->asString();

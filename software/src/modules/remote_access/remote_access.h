@@ -70,7 +70,7 @@ private:
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
-    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
+    void run_request_with_next_stage(const String url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
     void get_login_salt(const Config &user_config);
     void parse_login_salt();
     void get_secret(const Config &user_config);
