@@ -719,19 +719,33 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
         if (header.cmdClassifier == CmdClassifierType::read) {
             DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
             outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                outgoing_heartbeatData.heartbeatTimeout = "PT1M";
+            outgoing_heartbeatData.heartbeatTimeout = "PT1M";
             outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
             // TODO:
-            // - Return heartbeatdata
             // - Initialize a read of their heartbeat
-            // - If the other side is subscribed to us, we have to subscribe to them as well
-                response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
+            // - If the other side is subscribed to us, we have to subscribe to them as well. Do we have to handle subscription confirmations then?
+
+            response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
+
+            DeviceDiagnosisHeartbeatDataType read_heartbeat{};
+            DynamicJsonDocument doc{256};
+            JsonObject obj = doc.to<JsonObject>();
+            obj["deviceDiagnosisHeartbeatData"] = read_heartbeat;
+            // TODO: This should be delayed until after the response is sent
+            FeatureAddressType read_destination = header.addressSource.get();
+            task_scheduler.scheduleOnce([this, read_destination, obj]() {
+                                            FeatureAddressType read_source{};
+                                            read_source.feature = deviceDiagnosis_feature_address;
+                                            read_source.entity = entity_address;
+                                            eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
+                                        },
+                                        100_ms);
+
             return CmdClassifierType::reply;
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
             // TODO: just reset timeout in this case
         }
-
 
     }
     //TODO: Implement
