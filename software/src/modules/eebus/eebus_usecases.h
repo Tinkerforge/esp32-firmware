@@ -146,7 +146,14 @@ public:
         return UseCaseType::NodeManagement;
     }
 
-    void inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature,SpineDataTypeHandler *data);
+    /**
+     * Inform all subscribers of the given entity. Sends out a Notify SPINE message with the given content
+     * @param entity The entity emitting the notification
+     * @param feature The feature emitting the notification
+     * @param data The Data to be sent. The last_cmd value needs to be set to the appropriate function and the corresponding data field needs to be set.
+     * @return The number of subscribers that have been informed. 0 if no subscribers have been found.
+     */
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -216,7 +223,7 @@ private:
 class ControllableSystemEntity : public EebusEntity
 {
 public:
-    ControllableSystemEntity() = default;
+    ControllableSystemEntity();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
@@ -266,7 +273,8 @@ private:
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
     uint64_t heartbeatCounter = 0;
-
+    uint64_t heartbeat_timeout_task = 0;
+    void handle_heartbeat_timeout();
 
 };
 
@@ -292,8 +300,9 @@ public:
      * @param entity the entity address of the feature
      * @param feature the feature address
      * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
+     * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
-    void inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
 
     /**
      * Send a message to a spine destination.
@@ -303,7 +312,7 @@ public:
      * @param cmd_classifier The command classifier of the message.
      * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
      */
-    bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+    static bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
