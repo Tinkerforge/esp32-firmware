@@ -384,17 +384,19 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
     return features;
 }
 
-void NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
+size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
 {
+    size_t sent_count = 0;
     BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
     JsonVariant dst = response.createNestedObject(data->function_to_string(data->last_cmd));
     data->last_cmd_to_json(dst);
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
             eebus.usecases->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
-
+            sent_count++;
         }
     }
+    return sent_count;
 };
 
 void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interface)
@@ -559,6 +561,23 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
     return CmdClassifierType::EnumUndefined;
 }
 
+ControllableSystemEntity::ControllableSystemEntity()
+{
+    task_scheduler.scheduleWithFixedDelay([this]() {
+                                              DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+                                              outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+                                              outgoing_heartbeatData.heartbeatTimeout = "PT1M";
+                                              outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
+                                              eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
+                                              eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, eebus.data_handler.get()) > 0) {
+                                                  heartbeatCounter++;
+                                              }
+                                          },
+                                          60_s,
+                                          60_s);
+}
+
 UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
 {
     UseCaseInformationDataType lpc_usecase;
@@ -717,21 +736,18 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
         if (header.cmdClassifier == CmdClassifierType::read) {
+            // Prepare our own hearbeat information
             DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
             outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
             outgoing_heartbeatData.heartbeatTimeout = "PT1M";
             outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
-            // TODO:
-            // - Initialize a read of their heartbeat
-            // - If the other side is subscribed to us, we have to subscribe to them as well. Do we have to handle subscription confirmations then?
-
             response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
 
+            // Initialize  read on their heartbeat
             DeviceDiagnosisHeartbeatDataType read_heartbeat{};
             DynamicJsonDocument doc{256};
             JsonObject obj = doc.to<JsonObject>();
             obj["deviceDiagnosisHeartbeatData"] = read_heartbeat;
-            // TODO: This should be delayed until after the response is sent
             FeatureAddressType read_destination = header.addressSource.get();
             task_scheduler.scheduleOnce([this, read_destination, obj]() {
                                             FeatureAddressType read_source{};
@@ -740,16 +756,57 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
                                             eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
                                         },
                                         100_ms);
+            if (heartbeat_timeout_task) {
+                heartbeat_timeout_task = task_scheduler.scheduleOnce(
+                    [this]() {
+                        this->handle_heartbeat_timeout();
+                    },
+                    60_s);
+
+            }
+            // If we get a read from someone we just try to subscribe to them. They can then deny or accept it. Should be able to handle double requests.
+            task_scheduler.scheduleOnce([this, header, obj]() {
+                                            NodeManagementSubscriptionRequestCallType subscription_request_call{};
+                                            subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+                                            subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
+                                            subscription_request_call.subscriptionRequest->clientAddress->feature = deviceDiagnosis_feature_address;
+
+                                            subscription_request_call.subscriptionRequest->serverAddress = header.addressSource.get();
+                                            subscription_request_call.subscriptionRequest->serverFeatureType = FeatureTypeEnumType::DeviceDiagnosis;
+
+                                            FeatureAddressType subscription_request_destination = header.addressDestination.get();
+                                            subscription_request_destination.entity = {0};
+                                            subscription_request_destination.feature = 0;
+                                            FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
+
+                                            BasicJsonDocument<ArduinoJsonPsramAllocator> subscription_request_doc(2048);
+                                            JsonObject sub_obj = subscription_request_doc.to<JsonObject>();
+                                            obj["subscriptionRequestCall"] = subscription_request_call;
+                                            eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, sub_obj, CmdClassifierType::call);
+                                        },
+                                        200_ms);
 
             return CmdClassifierType::reply;
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
-            // TODO: just reset timeout in this case
+            // Just reset timeout here. Resetting on replies is not quite conform but its still possible
+            task_scheduler.cancel(heartbeat_timeout_task);
+            heartbeat_timeout_task = task_scheduler.scheduleOnce(
+                [this]() {
+                    this->handle_heartbeat_timeout();
+                },
+                60_s);
         }
 
     }
-    //TODO: Implement
+
     return CmdClassifierType::EnumUndefined;
+}
+
+void ControllableSystemEntity::handle_heartbeat_timeout()
+{
+    eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
+    // TODO: It is up to us what do to when heartbeat times out.
 }
 
 EEBusUseCases::EEBusUseCases()
@@ -808,9 +865,9 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     }
 }
 
-void EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
+size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
 {
-    node_management.inform_subscribers(entity, feature, data);
+    return node_management.inform_subscribers(entity, feature, data);
 }
 
 bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
