@@ -33,6 +33,7 @@
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
 #include <sodium.h>
+#include <ctype.h>
 
 #include "build.h"
 #include "options.h"
@@ -253,14 +254,42 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
     response_body.concat(static_cast<const uint8_t *>(event->data_chunk), static_cast<unsigned int>(event->data_chunk_len));
 }
 
+// Percent-encode a query string while preserving '=' between keys and values and '&' between pairs.
+// Encodes any byte not in [A-Za-z0-9-_.~=&] using %HH uppercase hex.
+static String url_encode_query(const char *query)
+{
+    if (query == nullptr) {
+        return String();
+    }
+    const char *hex = "0123456789ABCDEF";
+    String out;
+    // Reserve a bit more than input length (worst-case 3x); cap to avoid huge reserves
+    size_t in_len = strlen(query);
+    size_t reserve_len = in_len * 3;
+    if (reserve_len > 1024) reserve_len = 1024; // soft cap to avoid large allocations
+    out.reserve(static_cast<unsigned int>(reserve_len));
+    for (size_t i = 0; i < in_len; ++i) {
+        unsigned char c = static_cast<unsigned char>(query[i]);
+        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '=' || c == '&') {
+            out += static_cast<char>(c);
+        } else {
+            out += '%';
+            out += hex[(c >> 4) & 0xF];
+            out += hex[c & 0xF];
+        }
+    }
+    return out;
+}
+
 static String construct_relay_url(const Config& config, const char* endpoint, const char* query_params) {
     char url[256];
     if (query_params) {
+        String encoded = url_encode_query(query_params);
         snprintf(url, sizeof(url), "https://%s:%lu%s?%s",
                 config.get("relay_host")->asEphemeralCStr(),
                 config.get("relay_port")->asUint(),
                 endpoint,
-                query_params);
+                encoded.c_str());
     } else {
         snprintf(url, sizeof(url), "https://%s:%lu%s",
                 config.get("relay_host")->asEphemeralCStr(),
