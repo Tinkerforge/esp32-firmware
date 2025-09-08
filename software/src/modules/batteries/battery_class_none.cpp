@@ -44,6 +44,14 @@ const Config *BatteryGeneratorNone::get_errors_prototype()
     return Config::Null();
 }
 
+// for IBattery
+void BatteryGeneratorNone::get_repeat_intervals(uint16_t intervals_s[6]) const
+{
+    for (size_t i = 0; i < 6; i++) {
+        intervals_s[i] = 0;
+    }
+}
+
 // for both
 [[gnu::const]] BatteryClassID BatteryGeneratorNone::get_class() const
 {
