@@ -5,7 +5,15 @@ default_device_addresses = [
 
 specs = [
     {
+        'name': 'VARTA Element Inverter',
+        'virtual_meter': ('VARTA Element', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
         'name': 'VARTA Element Grid',  # for models element, one, pulse and link
+        'virtual_meter': ('VARTA Element', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -20,6 +28,7 @@ specs = [
     },
     {
         'name': 'VARTA Element Battery',  # for models element, one, pulse and link
+        'virtual_meter': ('VARTA Element', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -51,7 +60,15 @@ specs = [
         ],
     },
     {
+        'name': 'VARTA Flex Inverter',
+        'virtual_meter': ('VARTA Flex', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
         'name': 'VARTA Flex Grid',  # for models pulse neo and flex storage
+        'virtual_meter': ('VARTA Flex', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -84,6 +101,7 @@ specs = [
     },
     {
         'name': 'VARTA Flex Battery',  # for models pulse neo and flex storage
+        'virtual_meter': ('VARTA Flex', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [

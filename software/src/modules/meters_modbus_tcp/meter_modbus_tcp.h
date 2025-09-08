@@ -48,7 +48,8 @@
 #include "carlo_gavazzi_em270_virtual_meter.enum.h"
 #include "carlo_gavazzi_em280_virtual_meter.enum.h"
 #include "solaredge_virtual_meter.enum.h"
-#include "sax_power_virtual_meter.enum.h"
+#include "sax_power_home_basic_mode_virtual_meter.enum.h"
+#include "sax_power_home_extended_mode_virtual_meter.enum.h"
 #include "e3dc_virtual_meter.enum.h"
 #include "huawei_sun2000_virtual_meter.enum.h"
 #include "huawei_sun2000_smart_dongle_virtual_meter.enum.h"
@@ -57,7 +58,8 @@
 #include "fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum.h"
 #include "fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum.h"
 #include "sma_hybrid_inverter_virtual_meter.enum.h"
-#include "varta_virtual_meter.enum.h"
+#include "varta_element_virtual_meter.enum.h"
+#include "varta_flex_virtual_meter.enum.h"
 #include "chisage_ess_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
@@ -168,12 +170,12 @@ private:
     size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
     size_t register_start_address;
 
-    int sungrow_inverter_output_type;
 
     union {
         // Sungrow hybrid inverter
         struct {
             SungrowHybridInverterVirtualMeter virtual_meter;
+            int output_type;
             uint16_t running_state;
             float mppt1_voltage;
             float mppt1_current;
@@ -184,6 +186,7 @@ private:
         // Sungrow string inverter
         struct {
             SungrowStringInverterVirtualMeter virtual_meter;
+            int output_type;
             float mppt1_voltage;
             float mppt1_current;
             float mppt2_voltage;
@@ -400,10 +403,15 @@ private:
             float battery_1_state_of_charge;
         } solaredge;
 
-        // SAX Power
+        // SAX Power Home basic mode
         struct {
-            SAXPowerVirtualMeter virtual_meter;
-        } sax_power;
+            SAXPowerHomeBasicModeVirtualMeter virtual_meter;
+        } sax_power_home_basic_mode;
+
+        // SAX Power Home extended mode
+        struct {
+            SAXPowerHomeExtendedModeVirtualMeter virtual_meter;
+        } sax_power_home_extended_mode;
 
         // E3/DC
         struct {
@@ -491,12 +499,12 @@ private:
 
         // VARTA element
         struct {
-            VARTAVirtualMeter virtual_meter;
+            VARTAElementVirtualMeter virtual_meter;
         } varta_element;
 
         // VARTA flex
         struct {
-            VARTAVirtualMeter virtual_meter;
+            VARTAFlexVirtualMeter virtual_meter;
             float grid_power;
             int16_t grid_power_sf;
             float battery_active_power;

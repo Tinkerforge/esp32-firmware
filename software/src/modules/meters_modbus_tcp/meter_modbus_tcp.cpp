@@ -39,9 +39,6 @@ namespace SungrowHybridInverterAddress = SungrowHybridInverter1P2LAddress;
 // 1P2L, 3P4L and 3P3L use the same addresses, but different amounts of phase voltage registers
 namespace SungrowStringInverterAddress = SungrowStringInverter1P2LAddress;
 
-// BatteryDeviceType and PVDeviceType use the same addresses, but different default locations
-namespace DeyeHybridInverterDeviceTypeAddress = DeyeHybridInverterBatteryDeviceTypeAddress;
-
 // LowVoltage and HighVoltage use the same addresses, but different scale factors
 namespace DeyeHybridInverterPVAddress = DeyeHybridInverterLowVoltagePVAddress;
 
@@ -134,205 +131,41 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
         sungrow_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
-        sungrow_inverter_output_type = -1;
+        sungrow_hybrid_inverter.output_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sungrow_hybrid_inverter.virtual_meter) {
-        case SungrowHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Sungrow Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case SungrowHybridInverterVirtualMeter::Inverter:
-            table = &sungrow_inverter_output_type_table;
-            break;
-
-        case SungrowHybridInverterVirtualMeter::Grid:
-            table = &sungrow_hybrid_inverter_grid_table;
-            break;
-
-        case SungrowHybridInverterVirtualMeter::Battery:
-            table = &sungrow_hybrid_inverter_battery_table;
-            break;
-
-        case SungrowHybridInverterVirtualMeter::Load:
-            table = &sungrow_hybrid_inverter_load_table;
-            break;
-
-        case SungrowHybridInverterVirtualMeter::PV:
-            table = &sungrow_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Sungrow Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_sungrow_hybrid_inverter_table(slot, sungrow_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
         sungrow_string_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
-        sungrow_inverter_output_type = -1;
+        sungrow_string_inverter.output_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sungrow_string_inverter.virtual_meter) {
-        case SungrowStringInverterVirtualMeter::None:
-            logger.printfln_meter("No Sungrow String Inverter Virtual Meter selected");
-            break;
-
-        case SungrowStringInverterVirtualMeter::Inverter:
-            table = &sungrow_inverter_output_type_table;
-            break;
-
-        case SungrowStringInverterVirtualMeter::Grid:
-            table = &sungrow_string_inverter_grid_table;
-            break;
-
-        case SungrowStringInverterVirtualMeter::Load:
-            table = &sungrow_string_inverter_load_table;
-            break;
-
-        case SungrowStringInverterVirtualMeter::PV:
-            table = &sungrow_string_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Sungrow String Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_string_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_sungrow_string_inverter_table(slot, sungrow_string_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
         solarmax_max_storage.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (solarmax_max_storage.virtual_meter) {
-        case SolarmaxMaxStorageVirtualMeter::None:
-            logger.printfln_meter("No Solarmax Max Storage Virtual Meter selected");
-            break;
-
-        case SolarmaxMaxStorageVirtualMeter::Inverter:
-            table = &solarmax_max_storage_inverter_table;
-            break;
-
-        case SolarmaxMaxStorageVirtualMeter::Grid:
-            table = &solarmax_max_storage_grid_table;
-            break;
-
-        case SolarmaxMaxStorageVirtualMeter::Battery:
-            table = &solarmax_max_storage_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Solarmax Max Storage Virtual Meter: %u", static_cast<uint8_t>(solarmax_max_storage.virtual_meter));
-            break;
-        }
-
+        table = get_solarmax_max_storage_table(slot, solarmax_max_storage.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VictronEnergyGX:
         victron_energy_gx.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (victron_energy_gx.virtual_meter) {
-        case VictronEnergyGXVirtualMeter::None:
-            logger.printfln_meter("No Victron Energy GX Virtual Meter selected");
-            break;
-
-        case VictronEnergyGXVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid Victron Energy GX Virtual Meter: %u", static_cast<uint8_t>(victron_energy_gx.virtual_meter));
-            break;
-
-        case VictronEnergyGXVirtualMeter::Grid:
-            table = &victron_energy_gx_grid_table;
-            break;
-
-        case VictronEnergyGXVirtualMeter::Battery:
-            table = &victron_energy_gx_battery_table;
-            break;
-
-        case VictronEnergyGXVirtualMeter::Load:
-            table = &victron_energy_gx_load_table;
-            break;
-
-        case VictronEnergyGXVirtualMeter::PV:
-            table = &victron_energy_gx_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Victron Energy GX Virtual Meter: %u", static_cast<uint8_t>(victron_energy_gx.virtual_meter));
-            break;
-        }
-
+        table = get_victron_energy_gx_table(slot, victron_energy_gx.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
         deye_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
         deye_hybrid_inverter.device_type = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (deye_hybrid_inverter.virtual_meter) {
-        case DeyeHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Deye Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case DeyeHybridInverterVirtualMeter::Inverter:
-            table = &deye_hybrid_inverter_table;
-            break;
-
-        case DeyeHybridInverterVirtualMeter::Grid:
-            table = &deye_hybrid_inverter_grid_table;
-            break;
-
-        case DeyeHybridInverterVirtualMeter::Battery:
-            table = &deye_hybrid_inverter_battery_device_type_table;
-            break;
-
-        case DeyeHybridInverterVirtualMeter::Load:
-            table = &deye_hybrid_inverter_load_table;
-            break;
-
-        case DeyeHybridInverterVirtualMeter::PV:
-            table = &deye_hybrid_inverter_pv_device_type_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Deye Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(deye_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_deye_hybrid_inverter_table(slot, deye_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::AlphaESSHybridInverter:
         alpha_ess_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (alpha_ess_hybrid_inverter.virtual_meter) {
-        case AlphaESSHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Alpha ESS Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case AlphaESSHybridInverterVirtualMeter::Inverter:
-            table = &alpha_ess_hybrid_inverter_table;
-            break;
-
-        case AlphaESSHybridInverterVirtualMeter::Grid:
-            table = &alpha_ess_hybrid_inverter_grid_table;
-            break;
-
-        case AlphaESSHybridInverterVirtualMeter::Battery:
-            table = &alpha_ess_hybrid_inverter_battery_table;
-            break;
-
-        case AlphaESSHybridInverterVirtualMeter::PV:
-            table = &alpha_ess_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Alpha ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(alpha_ess_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_alpha_ess_hybrid_inverter_table(slot, alpha_ess_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::ShellyProEM:
@@ -517,174 +350,32 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         goodwe_hybrid_inverter.battery_1_mode = -1;
         goodwe_hybrid_inverter.battery_2_mode = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (goodwe_hybrid_inverter.virtual_meter) {
-        case GoodweHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Goodwe Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Inverter:
-            table = &goodwe_hybrid_inverter_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Grid:
-            table = &goodwe_hybrid_inverter_grid_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Battery:
-            table = &goodwe_hybrid_inverter_battery_modes_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Load:
-            table = &goodwe_hybrid_inverter_load_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::BackupLoad:
-            table = &goodwe_hybrid_inverter_backup_load_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::Meter:
-            table = &goodwe_hybrid_inverter_meter_table;
-            break;
-
-        case GoodweHybridInverterVirtualMeter::PV:
-            table = &goodwe_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Goodwe Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(goodwe_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_goodwe_hybrid_inverter_table(slot, goodwe_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SolaxHybridInverter:
         solax_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (solax_hybrid_inverter.virtual_meter) {
-        case SolaxHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Solax Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case SolaxHybridInverterVirtualMeter::Inverter:
-            table = &solax_hybrid_inverter_table;
-            break;
-
-        case SolaxHybridInverterVirtualMeter::Grid:
-            table = &solax_hybrid_inverter_grid_table;
-            break;
-
-        case SolaxHybridInverterVirtualMeter::Battery:
-            table = &solax_hybrid_inverter_battery_table;
-            break;
-
-        case SolaxHybridInverterVirtualMeter::PV:
-            table = &solax_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Solax Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(solax_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_solax_hybrid_inverter_table(slot, solax_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FroniusGEN24Plus:
         fronius_gen24_plus.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusVirtualMeter>();
         fronius_gen24_plus.input_id_or_model_id = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (fronius_gen24_plus.virtual_meter) {
-        case FroniusGEN24PlusVirtualMeter::None:
-            logger.printfln_meter("No Fronius GEN24 Plus Virtual Meter selected");
-            break;
-
-        case FroniusGEN24PlusVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
-            break;
-
-        case FroniusGEN24PlusVirtualMeter::GridUnused:
-            logger.printfln_meter("Invalid Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
-            break;
-
-        case FroniusGEN24PlusVirtualMeter::Battery:
-            table = &fronius_gen24_plus_battery_type_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
-            break;
-        }
-
+        table = get_fronius_gen24_plus_table(slot, fronius_gen24_plus.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HaileiHybridInverter:
         hailei_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (hailei_hybrid_inverter.virtual_meter) {
-        case HaileiHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Hailei Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case HaileiHybridInverterVirtualMeter::Inverter:
-            table = &hailei_hybrid_inverter_table;
-            break;
-
-        case HaileiHybridInverterVirtualMeter::Grid:
-            table = &hailei_hybrid_inverter_grid_table;
-            break;
-
-        case HaileiHybridInverterVirtualMeter::Battery:
-            table = &hailei_hybrid_inverter_battery_table;
-            break;
-
-        case HaileiHybridInverterVirtualMeter::PV:
-            table = &hailei_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Hailei Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(hailei_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_hailei_hybrid_inverter_table(slot, hailei_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FoxESSH3HybridInverter:
         fox_ess_h3_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3HybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (fox_ess_h3_hybrid_inverter.virtual_meter) {
-        case FoxESSH3HybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Fox ESS H3 Hybrid Inverter Virtual Meter selected");
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::Inverter:
-            table = &fox_ess_h3_hybrid_inverter_table;
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::Grid:
-            table = &fox_ess_h3_hybrid_inverter_grid_table;
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::Battery:
-            table = &fox_ess_h3_hybrid_inverter_battery_table;
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::Load:
-            table = &fox_ess_h3_hybrid_inverter_load_table;
-            break;
-
-        case FoxESSH3HybridInverterVirtualMeter::PV:
-            table = &fox_ess_h3_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Fox ESS H3 Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_hybrid_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_fox_ess_h3_hybrid_inverter_table(slot, fox_ess_h3_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SiemensPAC2200:
@@ -904,29 +595,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::Solaredge:
         solaredge.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaredgeVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (solaredge.virtual_meter) {
-        case SolaredgeVirtualMeter::None:
-            logger.printfln_meter("No Solaredge Virtual Meter selected");
-            break;
-
-        case SolaredgeVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid Solaredge Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
-            break;
-
-        case SolaredgeVirtualMeter::GridUnused:
-            logger.printfln_meter("Invalid Solaredge Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
-            break;
-
-        case SolaredgeVirtualMeter::Battery:
-            table = &solaredge_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Solaredge Hybrid Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
-            break;
-        }
-
+        table = get_solaredge_table(slot, solaredge.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::EastronSDM630TCP:
@@ -941,99 +610,21 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SAXPowerHomeBasicMode:
-        sax_power.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerVirtualMeter>();
+        sax_power_home_basic_mode.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerHomeBasicModeVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sax_power.virtual_meter) {
-        case SAXPowerVirtualMeter::None:
-            logger.printfln_meter("No SAX Power Home Basic Mode Virtual Meter selected");
-            break;
-
-        case SAXPowerVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            break;
-
-        case SAXPowerVirtualMeter::Grid:
-            table = &sax_power_home_basic_mode_grid_table;
-            break;
-
-        case SAXPowerVirtualMeter::Battery:
-            table = &sax_power_home_basic_mode_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            break;
-        }
-
+        table = get_sax_power_home_basic_mode_table(slot, sax_power_home_basic_mode.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SAXPowerHomeExtendedMode:
-        sax_power.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerVirtualMeter>();
+        sax_power_home_extended_mode.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerHomeExtendedModeVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sax_power.virtual_meter) {
-        case SAXPowerVirtualMeter::None:
-            logger.printfln_meter("No SAX Power Home Extended Mode Virtual Meter selected");
-            break;
-
-        case SAXPowerVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            break;
-
-        case SAXPowerVirtualMeter::Grid:
-            table = &sax_power_home_extended_mode_grid_table;
-            break;
-
-        case SAXPowerVirtualMeter::Battery:
-            table = &sax_power_home_extended_mode_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            break;
-        }
-
+        table = get_sax_power_home_extended_mode_table(slot, sax_power_home_extended_mode.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::E3DC:
         e3dc.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<E3DCVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (e3dc.virtual_meter) {
-        case E3DCVirtualMeter::None:
-            logger.printfln_meter("No E3/DC Virtual Meter selected");
-            break;
-
-        case E3DCVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
-            break;
-
-        case E3DCVirtualMeter::Grid:
-            table = &e3dc_grid_table;
-            break;
-
-        case E3DCVirtualMeter::Battery:
-            table = &e3dc_battery_table;
-            break;
-
-        case E3DCVirtualMeter::Load:
-            table = &e3dc_load_table;
-            break;
-
-        case E3DCVirtualMeter::PV:
-            table = &e3dc_pv_table;
-            break;
-
-        case E3DCVirtualMeter::AdditionalGeneration:
-            table = &e3dc_additional_generation_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
-            break;
-        }
-
+        table = get_e3dc_table(slot, e3dc.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiSUN2000:
@@ -1041,106 +632,20 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         huawei_sun2000.energy_storage_product_model = -1;
         huawei_sun2000.number_of_pv_strings = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (huawei_sun2000.virtual_meter) {
-        case HuaweiSUN2000VirtualMeter::None:
-            logger.printfln_meter("No Huawei SUN2000 Virtual Meter selected");
-            break;
-
-        case HuaweiSUN2000VirtualMeter::Inverter:
-            table = &huawei_sun2000_inverter_table;
-            break;
-
-        case HuaweiSUN2000VirtualMeter::Grid:
-            table = &huawei_sun2000_grid_table;
-            break;
-
-        case HuaweiSUN2000VirtualMeter::Battery:
-            table = &huawei_sun2000_battery_product_model_table;
-            break;
-
-        case HuaweiSUN2000VirtualMeter::PV:
-            table = &huawei_sun2000_pv_string_count_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Huawei SUN2000 Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000.virtual_meter));
-            break;
-        }
-
+        table = get_huawei_sun2000_table(slot, huawei_sun2000.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiSUN2000SmartDongle:
         huawei_sun2000_smart_dongle.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HuaweiSUN2000SmartDongleVirtualMeter>();
         huawei_sun2000_smart_dongle.energy_storage_product_model = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (huawei_sun2000_smart_dongle.virtual_meter) {
-        case HuaweiSUN2000SmartDongleVirtualMeter::None:
-            logger.printfln_meter("No Huawei SUN2000 Smart Dongle Virtual Meter selected");
-            break;
-
-        case HuaweiSUN2000SmartDongleVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
-            break;
-
-        case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
-            table = &huawei_sun2000_smart_dongle_grid_table;
-            break;
-
-        case HuaweiSUN2000SmartDongleVirtualMeter::Battery:
-            table = &huawei_sun2000_battery_product_model_table;
-            break;
-
-        case HuaweiSUN2000SmartDongleVirtualMeter::PV:
-            table = &huawei_sun2000_smart_dongle_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
-            break;
-        }
-
+        table = get_huawei_sun2000_smart_dongle_table(slot, huawei_sun2000_smart_dongle.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiEMMA:
         huawei_emma.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HuaweiEMMAVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (huawei_emma.virtual_meter) {
-        case HuaweiEMMAVirtualMeter::None:
-            logger.printfln_meter("No Huawei EMMA Virtual Meter selected");
-            break;
-
-        case HuaweiEMMAVirtualMeter::Inverter:
-            table = &huawei_emma_inverter_table;
-            break;
-
-        case HuaweiEMMAVirtualMeter::GridInternalSensor:
-            table = &huawei_emma_grid_internal_sensor_table;
-            break;
-
-        case HuaweiEMMAVirtualMeter::Battery:
-            table = &huawei_emma_battery_table;
-            break;
-
-        case HuaweiEMMAVirtualMeter::Load:
-            table = &huawei_emma_load_table;
-            break;
-
-        case HuaweiEMMAVirtualMeter::PV:
-            table = &huawei_emma_pv_table;
-            break;
-
-        case HuaweiEMMAVirtualMeter::GridExternalSensor:
-            table = &huawei_emma_grid_external_sensor_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Huawei EMMA Virtual Meter: %u", static_cast<uint8_t>(huawei_emma.virtual_meter));
-            break;
-        }
-
+        table = get_huawei_emma_table(slot, huawei_emma.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM580:
@@ -1151,229 +656,43 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::SolaxStringInverter:
         solax_string_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaxStringInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (solax_string_inverter.virtual_meter) {
-        case SolaxStringInverterVirtualMeter::None:
-            logger.printfln_meter("No Solax String Inverter Virtual Meter selected");
-            break;
-
-        case SolaxStringInverterVirtualMeter::Inverter:
-            table = &solax_string_inverter_table;
-            break;
-
-        case SolaxStringInverterVirtualMeter::Grid:
-            table = &solax_string_inverter_grid_table;
-            break;
-
-        case SolaxStringInverterVirtualMeter::PV:
-            table = &solax_string_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Solax String Inverter Virtual Meter: %u", static_cast<uint8_t>(solax_string_inverter.virtual_meter));
-            break;
-        }
-
+        table = get_solax_string_inverter_table(slot, solax_string_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FoxESSH3SmartHybridInverter:
         fox_ess_h3_smart_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3SmartHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (fox_ess_h3_smart_hybrid_inverter.virtual_meter) {
-        case FoxESSH3SmartHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Fox ESS H3 Smart Hybrid Inverter Virtual Meter selected");
-            return;
-
-        case FoxESSH3SmartHybridInverterVirtualMeter::Inverter:
-            table = &fox_ess_h3_smart_hybrid_inverter_table;
-            break;
-
-        case FoxESSH3SmartHybridInverterVirtualMeter::Grid:
-            table = &fox_ess_h3_smart_hybrid_inverter_grid_table;
-            break;
-
-        case FoxESSH3SmartHybridInverterVirtualMeter::Battery:
-            table = &fox_ess_h3_smart_hybrid_inverter_battery_table;
-            break;
-
-        case FoxESSH3SmartHybridInverterVirtualMeter::Load:
-            table = &fox_ess_h3_smart_hybrid_inverter_load_table;
-            break;
-
-        case FoxESSH3SmartHybridInverterVirtualMeter::PV:
-            table = &fox_ess_h3_smart_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Fox ESS H3 Smart Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_smart_hybrid_inverter.virtual_meter));
-            return;
-        }
-
+        table = get_fox_ess_h3_smart_hybrid_inverter_table(slot, fox_ess_h3_smart_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FoxESSH3ProHybridInverter:
         fox_ess_h3_pro_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3ProHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (fox_ess_h3_pro_hybrid_inverter.virtual_meter) {
-        case FoxESSH3ProHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Fox ESS H3 Pro Hybrid Inverter Virtual Meter selected");
-            return;
-
-        case FoxESSH3ProHybridInverterVirtualMeter::Inverter:
-            table = &fox_ess_h3_pro_hybrid_inverter_table;
-            break;
-
-        case FoxESSH3ProHybridInverterVirtualMeter::Grid:
-            table = &fox_ess_h3_pro_hybrid_inverter_grid_table;
-            break;
-
-        case FoxESSH3ProHybridInverterVirtualMeter::Battery:
-            table = &fox_ess_h3_pro_hybrid_inverter_battery_table;
-            break;
-
-        case FoxESSH3ProHybridInverterVirtualMeter::Load:
-            table = &fox_ess_h3_pro_hybrid_inverter_load_table;
-            break;
-
-        case FoxESSH3ProHybridInverterVirtualMeter::PV:
-            table = &fox_ess_h3_pro_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Fox ESS H3 Pro Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_pro_hybrid_inverter.virtual_meter));
-            return;
-        }
-
+        table = get_fox_ess_h3_pro_hybrid_inverter_table(slot, fox_ess_h3_pro_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SMAHybridInverter:
         sma_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SMAHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sma_hybrid_inverter.virtual_meter) {
-        case SMAHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No SMA Hybrid Inverter Virtual Meter selected");
-            return;
-
-        case SMAHybridInverterVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
-            break;
-
-        case SMAHybridInverterVirtualMeter::GridUnused:
-            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
-            break;
-
-        case SMAHybridInverterVirtualMeter::Battery:
-            table = &sma_hybrid_inverter_battery_table;
-            break;
-
-        case SMAHybridInverterVirtualMeter::LoadUnused:
-            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
-            break;
-
-        case SMAHybridInverterVirtualMeter::PVUnused:
-            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
-            break;
-
-        default:
-            logger.printfln_meter("Unknown SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
-            return;
-        }
-
+        table = get_sma_hybrid_inverter_table(slot, sma_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VARTAElement:
-        varta_element.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAVirtualMeter>();
+        varta_element.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAElementVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (varta_element.virtual_meter) {
-        case VARTAVirtualMeter::None:
-            logger.printfln_meter("No VARTA Element Virtual Meter selected");
-            break;
-
-        case VARTAVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid VARTA Element Virtual Meter: %u", static_cast<uint8_t>(varta_element.virtual_meter));
-            break;
-
-        case VARTAVirtualMeter::Grid:
-            table = &varta_element_grid_table;
-            break;
-
-        case VARTAVirtualMeter::Battery:
-            table = &varta_element_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown VARTA Element Virtual Meter: %u", static_cast<uint8_t>(varta_element.virtual_meter));
-            break;
-        }
-
+        table = get_varta_element_table(slot, varta_element.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VARTAFlex:
-        varta_flex.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAVirtualMeter>();
+        varta_flex.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAFlexVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (varta_flex.virtual_meter) {
-        case VARTAVirtualMeter::None:
-            logger.printfln_meter("No VARTA Flex Virtual Meter selected");
-            break;
-
-        case VARTAVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid VARTA Flex Virtual Meter: %u", static_cast<uint8_t>(varta_flex.virtual_meter));
-            break;
-
-        case VARTAVirtualMeter::Grid:
-            table = &varta_flex_grid_table;
-            break;
-
-        case VARTAVirtualMeter::Battery:
-            table = &varta_flex_battery_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown VARTA Flex Virtual Meter: %u", static_cast<uint8_t>(varta_flex.virtual_meter));
-            break;
-        }
-
+        table = get_varta_flex_table(slot, varta_flex.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::ChisageESSHybridInverter:
         chisage_ess_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<ChisageESSHybridInverterVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (chisage_ess_hybrid_inverter.virtual_meter) {
-        case ChisageESSHybridInverterVirtualMeter::None:
-            logger.printfln_meter("No Chisage ESS Hybrid Inverter Virtual Meter selected");
-            return;
-
-        case ChisageESSHybridInverterVirtualMeter::Inverter:
-            table = &chisage_ess_hybrid_inverter_table;
-            break;
-
-        case ChisageESSHybridInverterVirtualMeter::Grid:
-            table = &chisage_ess_hybrid_inverter_grid_table;
-            break;
-
-        case ChisageESSHybridInverterVirtualMeter::Battery:
-            table = &chisage_ess_hybrid_inverter_battery_table;
-            break;
-
-        case ChisageESSHybridInverterVirtualMeter::Load:
-            table = &chisage_ess_hybrid_inverter_load_table;
-            break;
-
-        case ChisageESSHybridInverterVirtualMeter::PV:
-            table = &chisage_ess_hybrid_inverter_pv_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Chisage ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(chisage_ess_hybrid_inverter.virtual_meter));
-            return;
-        }
-
+        table = get_chisage_ess_hybrid_inverter_table(slot, chisage_ess_hybrid_inverter.virtual_meter);
         break;
 
     default:
@@ -1706,13 +1025,13 @@ bool MeterModbusTCP::is_sma_hybrid_inverter_battery_meter() const
 bool MeterModbusTCP::is_varta_flex_grid_meter() const
 {
     return table_id == MeterModbusTCPTableID::VARTAFlex
-        && varta_flex.virtual_meter == VARTAVirtualMeter::Grid;
+        && varta_flex.virtual_meter == VARTAFlexVirtualMeter::Grid;
 }
 
 bool MeterModbusTCP::is_varta_flex_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::VARTAFlex
-        && varta_flex.virtual_meter == VARTAVirtualMeter::Battery;
+        && varta_flex.virtual_meter == VARTAFlexVirtualMeter::Battery;
 }
 
 bool MeterModbusTCP::is_chisage_ess_hybrid_inverter_pv_meter() const
@@ -1970,53 +1289,35 @@ void MeterModbusTCP::parse_next()
         value *= table->specs[read_index].scale_factor;
     }
 
-    if ((is_sungrow_hybrid_inverter_meter() || is_sungrow_string_inverter_meter())
-     && generic_read_request.start_address == SungrowInverterOutputTypeAddress::OutputType) {
-        if (sungrow_inverter_output_type < 0) {
+    if (is_sungrow_hybrid_inverter_meter()
+     && generic_read_request.start_address == SungrowHybridInverterOutputTypeAddress::OutputType) {
+        if (sungrow_hybrid_inverter.output_type < 0) {
             bool success = true;
 
             switch (c16.u) {
             case 0:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_1p2l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_1p2l_table;
-                }
-
-                logger.printfln_meter("Sungrow 1P2L inverter detected");
+                table = &sungrow_hybrid_inverter_1p2l_table;
+                logger.printfln_meter("Sungrow 1P2L Hybrid Inverter detected");
                 break;
 
             case 1:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_3p4l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_3p4l_table;
-                }
-
-                logger.printfln_meter("Sungrow 3P4L inverter detected");
+                table = &sungrow_hybrid_inverter_3p4l_table;
+                logger.printfln_meter("Sungrow 3P4L Hybrid Inverter detected");
                 break;
 
             case 2:
-                if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = &sungrow_hybrid_inverter_3p3l_table;
-                }
-                else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = &sungrow_string_inverter_3p3l_table;
-                }
-
-                logger.printfln_meter("Sungrow 3P3L inverter detected");
+                table = &sungrow_hybrid_inverter_3p3l_table;
+                logger.printfln_meter("Sungrow 3P3L Hybrid Inverter detected");
                 break;
 
             default:
                 success = false;
-                logger.printfln_meter("Sungrow inverter has unknown output type: %u", c16.u);
+                logger.printfln_meter("Sungrow Hybrid Inverter has unknown output type: %u", c16.u);
                 break;
             }
 
             if (success) {
-                sungrow_inverter_output_type = c16.u;
+               sungrow_hybrid_inverter.output_type = c16.u;
 
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
@@ -2030,8 +1331,50 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if ((is_deye_hybrid_inverter_battery_meter() || is_deye_hybrid_inverter_pv_meter())
-     && generic_read_request.start_address == DeyeHybridInverterDeviceTypeAddress::DeviceType) {
+    if (is_sungrow_string_inverter_meter()
+     && generic_read_request.start_address == SungrowStringInverterOutputTypeAddress::OutputType) {
+        if (sungrow_string_inverter.output_type < 0) {
+            bool success = true;
+
+            switch (c16.u) {
+            case 0:
+                table = &sungrow_string_inverter_1p2l_table;
+                logger.printfln_meter("Sungrow 1P2L String Inverter detected");
+                break;
+
+            case 1:
+                table = &sungrow_string_inverter_3p4l_table;
+                logger.printfln_meter("Sungrow 3P4L String Inverter detected");
+                break;
+
+            case 2:
+                table = &sungrow_string_inverter_3p3l_table;
+                logger.printfln_meter("Sungrow 3P3L String Inverter detected");
+                break;
+
+            default:
+                success = false;
+                logger.printfln_meter("Sungrow String Inverter has unknown output type: %u", c16.u);
+                break;
+            }
+
+            if (success) {
+                sungrow_string_inverter.output_type = c16.u;
+
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_deye_hybrid_inverter_battery_meter()
+     && generic_read_request.start_address == DeyeHybridInverterBatteryDeviceTypeAddress::DeviceType) {
         if (deye_hybrid_inverter.device_type < 0) {
             bool success = true;
 
@@ -2043,25 +1386,13 @@ void MeterModbusTCP::parse_next()
                 return;
 
             case 0x0005:
-                if (is_deye_hybrid_inverter_battery_meter()) {
-                    table = &deye_hybrid_inverter_low_voltage_battery_table;
-                }
-                else {
-                    table = &deye_hybrid_inverter_low_voltage_pv_table;
-                }
-
+                table = &deye_hybrid_inverter_low_voltage_battery_table;
                 logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
                 break;
 
             case 0x0006:
             case 0x0106:
-                if (is_deye_hybrid_inverter_battery_meter()) {
-                    table = &deye_hybrid_inverter_high_voltage_battery_table;
-                }
-                else {
-                    table = &deye_hybrid_inverter_high_voltage_pv_table;
-                }
-
+                table = &deye_hybrid_inverter_high_voltage_battery_table;
                 logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
                 break;
 
@@ -2073,7 +1404,49 @@ void MeterModbusTCP::parse_next()
 
             if (success) {
                 deye_hybrid_inverter.device_type = c16.u;
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
+        }
 
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_deye_hybrid_inverter_pv_meter()
+     && generic_read_request.start_address == DeyeHybridInverterPVDeviceTypeAddress::DeviceType) {
+        if (deye_hybrid_inverter.device_type < 0) {
+            bool success = true;
+
+            switch (c16.u) {
+            case 0x0002:
+            case 0x0003:
+            case 0x0004:
+                logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
+                return;
+
+            case 0x0005:
+                table = &deye_hybrid_inverter_low_voltage_pv_table;
+                logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
+                break;
+
+            case 0x0006:
+            case 0x0106:
+                table = &deye_hybrid_inverter_high_voltage_pv_table;
+                logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
+                break;
+
+            default:
+                success = false;
+                logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
+                break;
+            }
+
+            if (success) {
+                deye_hybrid_inverter.device_type = c16.u;
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }
@@ -2159,7 +1532,6 @@ void MeterModbusTCP::parse_next()
 
             if (success) {
                 fronius_gen24_plus.input_id_or_model_id = c16.u;
-
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }
@@ -2201,7 +1573,6 @@ void MeterModbusTCP::parse_next()
 
             if (success) {
                 huawei_sun2000.energy_storage_product_model = c16.u;
-
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }
@@ -2261,9 +1632,7 @@ void MeterModbusTCP::parse_next()
             }
 
             huawei_sun2000.number_of_pv_strings = c16.u;
-
             logger.printfln_meter("Huawei SUN2000 inverter has %u PV string%s", c16.u, c16.u != 1 ? "s" : "");
-
             meters.declare_value_ids(slot, table->ids, table->ids_length);
         }
 
@@ -2276,7 +1645,7 @@ void MeterModbusTCP::parse_next()
     }
 
     if (is_huawei_sun2000_smart_dongle_battery_meter()
-     && generic_read_request.start_address == HuaweiSUN2000BatteryProductModelAddress::EnergyStorageProductModel) {
+     && generic_read_request.start_address == HuaweiSUN2000SmartDongleBatteryProductModelAddress::EnergyStorageProductModel) {
         if (huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
             bool success = true;
 
@@ -2304,7 +1673,6 @@ void MeterModbusTCP::parse_next()
 
             if (success) {
                 huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
-
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }

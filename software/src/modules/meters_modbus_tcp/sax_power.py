@@ -5,7 +5,15 @@ default_device_addresses = [
 
 specs = [
     {
-        'name': 'SAX Power Home Basic Mode Grid',  # Port: 3600 (and 502?), Unit ID: 64
+        'name': 'SAX Power Home Basic Mode Inverter',
+        'virtual_meter': ('SAX Power Home Basic Mode', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
+        'name': 'SAX Power Home Basic Mode Grid',
+        'virtual_meter': ('SAX Power Home Basic Mode', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -19,7 +27,8 @@ specs = [
         ],
     },
     {
-        'name': 'SAX Power Home Basic Mode Battery',  # Port: 3600 (and 502?), Unit ID: 64
+        'name': 'SAX Power Home Basic Mode Battery',
+        'virtual_meter': ('SAX Power Home Basic Mode', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -40,7 +49,15 @@ specs = [
         ],
     },
     {
-        'name': 'SAX Power Home Extended Mode Grid',  # Port: 502, Unit ID: 40
+        'name': 'SAX Power Home Extended Mode Inverter',
+        'virtual_meter': ('SAX Power Home Extended Mode', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
+        'name': 'SAX Power Home Extended Mode Grid',
+        'virtual_meter': ('SAX Power Home Extended Mode', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -131,7 +148,8 @@ specs = [
         ],
     },
     {
-        'name': 'SAX Power Home Extended Mode Battery',  # Port: 502, Unit ID: 40
+        'name': 'SAX Power Home Extended Mode Battery',
+        'virtual_meter': ('SAX Power Home Extended Mode', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [

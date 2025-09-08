@@ -4,7 +4,22 @@ default_device_addresses = [
 
 specs = [
     {
+        'name': 'Solaredge Inverter',
+        'virtual_meter': ('Solaredge', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
+        'name': 'Solaredge Grid',
+        'virtual_meter': ('Solaredge', 'Grid Unused'),
+        'default_location': 'Grid',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
         'name': 'Solaredge Battery',
+        'virtual_meter': ('Solaredge', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'f32_negative_max_as_nan': True,

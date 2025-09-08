@@ -62,13 +62,26 @@ for module in modules:
 specs_h = []
 specs_cpp = []
 
-specs_h.append('namespace DefaultDeviceAddress {')
-specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
-specs_h.append('}')
+specs_h.append('namespace DefaultDeviceAddress {\n\n'
+              f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};\n\n'
+               '}')
+
+virtual_meters = {}
 
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
+        spec_virtual_meter_group = None
+        spec_virtual_meter_name = None
+
+        if 'virtual_meter' in spec:
+            spec_virtual_meter_group = util.FlavoredName(spec['virtual_meter'][0].format(variant=variant_spec)).get()
+            spec_virtual_meter_member = util.FlavoredName(spec['virtual_meter'][1]).get()
+
+            virtual_meters.setdefault(spec_virtual_meter_group, []).append((spec_virtual_meter_member, spec_name))
+
+        if spec['values'] == None:
+            continue
 
         value_names = []
         value_addresses = []
@@ -100,17 +113,15 @@ for spec in specs:
 
                 value_addresses.append(f'    {address_name} = {start_address},')
 
-            value_specs.append(
-                '    {\n'
-                f'        "{value["name"]}",\n'
-                f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
-                f'        {start_address},\n'
-                f'        ModbusValueType::{value.get("value_type", "None")},\n'
-                f'        {"true" if value.get("drop_sign", False) else "false"},\n'
-                f'        {value.get("offset", 0.0)}f,\n'
-                f'        {value.get("scale_factor", 1.0)}f,\n'
-                '    },'
-            )
+            value_specs.append('    {\n'
+                              f'        "{value["name"]}",\n'
+                              f'        ModbusRegisterType::{value.get("register_type", spec["register_type"])},\n'
+                              f'        {start_address},\n'
+                              f'        ModbusValueType::{value.get("value_type", "None")},\n'
+                              f'        {"true" if value.get("drop_sign", False) else "false"},\n'
+                              f'        {value.get("offset", 0.0)}f,\n'
+                              f'        {value.get("scale_factor", 1.0)}f,\n'
+                               '    },')
 
             if value['value_id'] == 'VALUE_ID_META':
                 value_index.append('    VALUE_INDEX_META,')
@@ -126,9 +137,9 @@ for spec in specs:
                 value_index.append(f'    {current_index},')
                 current_index += 1
 
-        specs_h.append(f'namespace {spec_name.camel}Address {{')
-        specs_h.append(f'enum {{\n{"\n".join(value_addresses)}\n}};')
-        specs_h.append('}')
+        specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
+                       f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'
+                        '}')
 
         specs_h.append(f'extern const MeterModbusTCP::TableSpec {spec_name.under}_table;')
 
@@ -153,9 +164,36 @@ for spec in specs:
 
         specs_cpp.append(f'    {spec_name.under}_index,\n'
                          f'    {f32_negative_max_as_nan},\n'
-                         '};')
+                          '};')
 
-ts = '// WARNING: This file is generated.\n\n'
+for group, value in virtual_meters.items():
+    specs_h.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter);')
+
+    specs_cpp.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter)\n'
+                      '{\n'
+                      '    switch (virtual_meter) {\n'
+                     f'    case {group.camel}VirtualMeter::None:\n'
+                     f'        logger.printfln_meter("No {group.space} Virtual Meter selected");\n'
+                      '        return nullptr;')
+
+    for member_spec_name in value:
+        member, spec_name = member_spec_name
+
+        if member.space.endswith(' Unused'):
+            specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
+                             f'        logger.printfln_meter("Invalid {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
+                              '        return nullptr;')
+        else:
+            specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
+                             f'        return &{spec_name.under}_table;')
+
+    specs_cpp.append(f'    default:\n'
+                     f'        logger.printfln_meter("Unknown {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
+                      '        return nullptr;\n'
+                      '    }\n'
+                      '}')
+
+ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
@@ -170,7 +208,7 @@ ts += '}\n'
 
 tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
 
-h = '// WARNING: This file is generated.\n\n'
+h  = '// WARNING: This file is generated.\n\n'
 h += '#include "meter_modbus_tcp.h"\n\n'
 h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
 h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
@@ -179,8 +217,12 @@ h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.h', h)
 
-cpp = '// WARNING: This file is generated.\n\n'
+cpp  = '// WARNING: This file is generated.\n\n'
+cpp += '#define EVENT_LOG_PREFIX "meters_mbtcp"\n'
+cpp += '#define TRACE_LOG_PREFIX nullptr\n\n'
 cpp += '#include "meter_modbus_tcp_specs.h"\n\n'
+cpp += '#include "event_log_prefix.h"\n'
+cpp += '#include "module_dependencies.h"\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)

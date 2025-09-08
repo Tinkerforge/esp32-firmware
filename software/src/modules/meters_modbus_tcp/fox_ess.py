@@ -7,6 +7,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Fox ESS H3 Hybrid Inverter',
+        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -95,6 +96,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Grid',
+        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -137,6 +139,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Battery',
+        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -192,6 +195,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Load',
+        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -227,6 +231,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter PV',
+        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
@@ -301,6 +306,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter',
+        'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Inverter'),
         'variants': ['Smart', 'Pro'],
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
@@ -399,6 +405,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Grid',
+        'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Grid'),
         'variants': ['Smart', 'Pro'],
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
@@ -460,6 +467,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery',  # FIXME: add support for battery 2
+        'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Battery'),
         'variants': ['Smart', 'Pro'],
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
@@ -534,6 +542,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Load',
+        'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'Load'),
         'variants': ['Smart', 'Pro'],
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
@@ -586,6 +595,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter PV',
+        'virtual_meter': ('Fox ESS H3 {variant} Hybrid Inverter', 'PV'),
         'variants': ['Smart', 'Pro'],
         'default_location': 'PV',
         'register_type': 'HoldingRegister',

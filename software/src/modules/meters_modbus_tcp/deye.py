@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Deye Hybrid Inverter',
+        'virtual_meter': ('Deye Hybrid Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -139,6 +140,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Grid',
+        'virtual_meter': ('Deye Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -356,6 +358,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Battery Device Type',
+        'virtual_meter': ('Deye Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -444,6 +447,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter Load',
+        'virtual_meter': ('Deye Hybrid Inverter', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -521,6 +525,7 @@ specs = [
     },
     {
         'name': 'Deye Hybrid Inverter PV Device Type',
+        'virtual_meter': ('Deye Hybrid Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

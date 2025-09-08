@@ -4,7 +4,15 @@ default_device_addresses = [
 
 specs = [
     {
+        'name': 'E3DC Inverter',
+        'virtual_meter': ('E3DC', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
         'name': 'E3DC Grid',
+        'virtual_meter': ('E3DC', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
@@ -19,6 +27,7 @@ specs = [
     },
     {
         'name': 'E3DC Battery',
+        'virtual_meter': ('E3DC', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
@@ -39,6 +48,7 @@ specs = [
     },
     {
         'name': 'E3DC Load',
+        'virtual_meter': ('E3DC', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
@@ -53,6 +63,7 @@ specs = [
     },
     {
         'name': 'E3DC PV',
+        'virtual_meter': ('E3DC', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
@@ -129,6 +140,7 @@ specs = [
     },
     {
         'name': 'E3DC Additional Generation',
+        'virtual_meter': ('E3DC', 'Additional Generation'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,

@@ -7,6 +7,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Huawei SUN2000 Inverter',
+        'virtual_meter': ('Huawei SUN2000', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -111,6 +112,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Grid',
+        'virtual_meter': ('Huawei SUN2000', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -250,6 +252,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Battery Product Model',
+        'virtual_meter': ('Huawei SUN2000', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -388,6 +391,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 PV String Count',
+        'virtual_meter': ('Huawei SUN2000', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
@@ -570,7 +574,15 @@ specs = [
         ],
     },
     {
+        'name': 'Huawei SUN2000 Smart Dongle Inverter',
+        'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'Inverter Unused'),
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
+        'values': None,
+    },
+    {
         'name': 'Huawei SUN2000 Smart Dongle Grid',
+        'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -601,6 +613,31 @@ specs = [
                 'start_address': 37113,
                 'value_type': 'S32BE',
                 'scale_factor': -1.0,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei SUN2000 Smart Dongle Battery Product Model',
+        'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'Battery'),
+        'default_location': 'Battery',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                # FIXME: which are valid combinations for unit 1/2?
+                #
+                #        LUNA2000
+                #        LUNA2000/LUNA2000
+                #        LG-RESU
+                #        LG-RESU/LG-RESU (invalid, documentation says only one LG-RESU can be connected)
+                #        LUNA2000/LG-RESU (assumed to be invalid)
+                #        LG-RESU/LUNA2000 (assumed to be invalid)
+                #
+                #        with this assumptions it should be okay to just read the combined product
+                #        model 47106, instead of reading the unit 1/2 product model 47000/47089
+                'name': 'Energy storage - product model',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 47106,
+                'value_type': 'U16',
             },
         ],
     },
@@ -646,6 +683,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Smart Dongle PV',
+        'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
@@ -664,6 +702,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Inverter',
+        'virtual_meter': ('Huawei EMMA', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -692,6 +731,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Grid Internal Sensor',
+        'virtual_meter': ('Huawei EMMA', 'Grid Internal Sensor'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -821,6 +861,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Grid External Sensor',
+        'virtual_meter': ('Huawei EMMA', 'Grid External Sensor'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -950,6 +991,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Battery',
+        'virtual_meter': ('Huawei EMMA', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -984,6 +1026,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Load',
+        'virtual_meter': ('Huawei EMMA', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -1002,6 +1045,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA PV',
+        'virtual_meter': ('Huawei EMMA', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

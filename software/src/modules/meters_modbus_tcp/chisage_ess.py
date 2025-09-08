@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Chisage ESS Hybrid Inverter',
+        'virtual_meter': ('Chisage ESS Hybrid Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -100,6 +101,7 @@ specs = [
     },
     {
         'name': 'Chisage ESS Hybrid Inverter Grid',
+        'virtual_meter': ('Chisage ESS Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -206,6 +208,7 @@ specs = [
     },
     {
         'name': 'Chisage ESS Hybrid Inverter Battery',
+        'virtual_meter': ('Chisage ESS Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -261,6 +264,7 @@ specs = [
     },
     {
         'name': 'Chisage ESS Hybrid Inverter Load',
+        'virtual_meter': ('Chisage ESS Hybrid Inverter', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -335,6 +339,7 @@ specs = [
     },
     {
         'name': 'Chisage ESS Hybrid Inverter PV',
+        'virtual_meter': ('Chisage ESS Hybrid Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

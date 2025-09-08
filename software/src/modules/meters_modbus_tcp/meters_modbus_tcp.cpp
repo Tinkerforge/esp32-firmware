@@ -212,12 +212,12 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::TinkerforgeWARPCharger, *Config::Null()});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SAXPowerHomeBasicMode, Config::Object({
-        {"virtual_meter", Config::Enum(SAXPowerVirtualMeter::None)},
+        {"virtual_meter", Config::Enum(SAXPowerHomeBasicModeVirtualMeter::None)},
         {"device_address", Config::Uint8(DefaultDeviceAddress::SAXPowerHomeBasicMode)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SAXPowerHomeExtendedMode, Config::Object({
-        {"virtual_meter", Config::Enum(SAXPowerVirtualMeter::None)},
+        {"virtual_meter", Config::Enum(SAXPowerHomeExtendedModeVirtualMeter::None)},
         {"device_address", Config::Uint8(DefaultDeviceAddress::SAXPowerHomeExtendedMode)},
     })});
 
@@ -266,12 +266,12 @@ void MetersModbusTCP::pre_setup()
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::VARTAElement, Config::Object({
-        {"virtual_meter", Config::Enum(VARTAVirtualMeter::None)},
+        {"virtual_meter", Config::Enum(VARTAElementVirtualMeter::None)},
         {"device_address", Config::Uint8(DefaultDeviceAddress::VARTAElement)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::VARTAFlex, Config::Object({
-        {"virtual_meter", Config::Enum(VARTAVirtualMeter::None)},
+        {"virtual_meter", Config::Enum(VARTAFlexVirtualMeter::None)},
         {"device_address", Config::Uint8(DefaultDeviceAddress::VARTAFlex)},
     })});
 

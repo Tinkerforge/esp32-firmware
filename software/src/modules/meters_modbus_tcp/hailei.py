@@ -7,6 +7,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Hailei Hybrid Inverter',
+        'virtual_meter': ('Hailei Hybrid Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -98,6 +99,7 @@ specs = [
     },
     {
         'name': 'Hailei Hybrid Inverter Grid',
+        'virtual_meter': ('Hailei Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -277,6 +279,7 @@ specs = [
     },
     {
         'name': 'Hailei Hybrid Inverter Battery',
+        'virtual_meter': ('Hailei Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -333,6 +336,7 @@ specs = [
     },
     {
         'name': 'Hailei Hybrid Inverter PV',
+        'virtual_meter': ('Hailei Hybrid Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
