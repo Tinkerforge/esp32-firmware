@@ -40,7 +40,7 @@ public:
     virtual const Config *get_errors_prototype() override;
 
     // for IBattery
-    // (none)
+    void get_repeat_intervals(uint16_t intervals_s[6]) const override;
 
     // for both
     [[gnu::const]] BatteryClassID get_class() const override;

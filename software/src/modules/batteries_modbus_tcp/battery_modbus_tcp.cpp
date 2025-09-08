@@ -323,8 +323,15 @@ void BatteryModbusTCP::pre_reboot()
     stop_connection();
 }
 
+void BatteryModbusTCP::get_repeat_intervals(uint16_t intervals_s[6]) const
+{
+    for (size_t i = 0; i < 6; i++) {
+        intervals_s[i] = 60; // TODO Use values from config. In seconds, 0 = no repeat.
+    }
+}
+
 [[gnu::const]]
-bool BatteryModbusTCP::supports_action(Action /*action*/)
+bool BatteryModbusTCP::supports_action(Action /*action*/) const
 {
     return true;
 }

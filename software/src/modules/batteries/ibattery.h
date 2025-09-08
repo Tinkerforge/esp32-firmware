@@ -50,6 +50,7 @@ public:
     virtual void register_events()                     {}
     virtual void pre_reboot()                          {}
 
-    virtual bool supports_action(Action action)                                              {return false;}
+    virtual void get_repeat_intervals(uint16_t intervals_s[6]) const; // No default implementation, to force a deliberate decision.
+    virtual bool supports_action(Action action) const                                        {return false;}
     virtual void start_action(Action action, std::function<void(bool)> &&callback = nullptr) {}
 };
