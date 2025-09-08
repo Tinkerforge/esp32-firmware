@@ -80,6 +80,7 @@ interface StateUser {
     state: number,
     user: number,
     connection: number,
+    // Timestamp in milliseconds since epoch
     last_state_change: number,
 }
 

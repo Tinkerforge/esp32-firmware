@@ -78,6 +78,8 @@ private:
     void parse_registration(const Config &user_config, std::queue<WgKey> keys, const String &public_key);
     void parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
     void login(const Config &user_config, const String &login_key);
+    void update_registration_state(RegistrationState state, const String &message = "");
+    void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, uint8_t state_value);
     void request_cleanup();
     void cleanup_after();
     bool user_already_registered(const String &email);
