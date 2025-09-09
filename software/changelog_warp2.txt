@@ -912,3 +912,6 @@
 - Fix CP disconnect resulting in vehicle being reported as disconnected (through EVSE 2.0 Bricklet firmware 2.2.15)
 - Remove unnecessary long wait time after CP reconnect (through EVSE 2.0 Bricklet firmware 2.2.15)
 - Support Eltako DSZ16DZE (through EVSE 2.0 Bricklet firmware 2.2.15)
+
+2025-09-09: 2.8.10 (<unknown>)
+- Fix another issue where a CP disconnect results in the vehicle being reported as disconnected (through EVSE 2.0 Bricklet firmware 2.2.16)
