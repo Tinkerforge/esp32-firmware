@@ -57,6 +57,22 @@ private:
         ScheduleRuleCondition schedule_cond;
     };
 
+    struct battery_repeat_data {
+        micros_t repeat_interval[6];
+        micros_t next_action_update[6];
+    };
+
+    struct action_influence_data {
+        TristateBool activated_by_rules = TristateBool::Undefined;
+        TristateBool activated          = TristateBool::Undefined;
+    };
+
+    enum class ActionPair {
+        PermitGridCharge = 0,
+        ForbidDischarge  = 1,
+        ForbidCharge     = 2,
+    };
+
     void preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count);
 
     void update_avg_soc();
@@ -66,23 +82,15 @@ private:
     TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
     void evaluate_all_rules();
     void evaluate_summary();
+    void evaluate_action_pair(ActionPair action_pair);
     void periodic_update();
 
-    void update_batteries_and_state(bool influence_active, bool changed, const battery_control_action_info *action, micros_t *next_update);
-    void update_charge_permitted(bool changed);
-    void update_discharge_forbidden(bool changed);
-    void update_charge_forbidden(bool changed);
-
-    micros_t rewrite_period = 0_us;
-    micros_t next_permit_grid_charge_update  = 0_us;
-    micros_t next_discharge_forbidden_update = 0_us;
-    micros_t next_charge_forbidden_update    = 0_us;
+    void update_batteries_and_state(ActionPair action_pair, bool changed, uint32_t battery_slot = std::numeric_limits<uint32_t>::max());
 
     ConfigRoot config;
     ConfigRoot rules_permit_grid_charge;
     ConfigRoot rules_forbid_discharge;
     ConfigRoot rules_forbid_charge;
-    ConfigRoot low_level_config;
     ConfigRoot state;
 
     Config rule_prototype;
@@ -100,7 +108,6 @@ private:
     bool forbid_discharge_during_fast_charge = false;
     bool evaluation_must_update_soc = false;
     bool evaluation_must_check_rules = false;
-    bool have_battery = false;
     bool network_connect_seen = false;
 
     int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
@@ -113,12 +120,9 @@ private:
     uint8_t tariff_schedule[24 * 4] = {0};
     uint8_t tariff_schedule_cache = 0;
 
-    TristateBool charge_permitted_by_rules = TristateBool::Undefined;
-    TristateBool charge_permitted          = TristateBool::Undefined;
+    battery_repeat_data *battery_repeats = nullptr;
+    uint8_t max_used_batteries           = 0;
+    bool must_repeat                     = false;
 
-    TristateBool discharge_forbidden_by_rules = TristateBool::Undefined;
-    TristateBool discharge_forbidden          = TristateBool::Undefined;
-
-    TristateBool charge_forbidden_by_rules = TristateBool::Undefined;
-    TristateBool charge_forbidden          = TristateBool::Undefined;
+    action_influence_data action_influence_active[3];
 };
