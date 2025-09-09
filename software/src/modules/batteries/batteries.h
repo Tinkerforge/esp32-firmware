@@ -41,7 +41,9 @@ public:
         RevokeDischargeOverride  = 7,
         ForbidCharge             = 8,
         RevokeChargeOverride     = 9,
-        _max                     = 9,
+
+        _min                     = Base,
+        _max                     = RevokeChargeOverride,
     };
 
     Batteries()
@@ -58,7 +60,7 @@ public:
     IBattery *get_battery(uint32_t slot);
     uint32_t get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity);
     BatteryClassID get_battery_class(uint32_t slot);
-    void start_action_all(IBattery::Action action);
+    void start_action_all(BatteryAction action);
 
     String get_path(uint32_t slot, PathType path_type);
 
