@@ -529,7 +529,7 @@ class Types:
     S32 = Type('int32_t', 4, "Config::Int32(0)", lambda x: f"updateInt({x})", "number")
     S64 = Type('int64_t', 8, "Config::Int52(0)", lambda x: f"updateInt52({x})", "number")
 
-    Timestamp = Type('micros_t', 8, 'Config::Timestamp()', lambda x: f"updateTimestamp({x})", "number")
+    Uptime = Type('micros_t', 8, 'Config::Uptime()', lambda x: f"updateUptime({x})", "number")
 
 @dataclass
 class Member:
