@@ -223,6 +223,7 @@ cpp += '#define TRACE_LOG_PREFIX nullptr\n\n'
 cpp += '#include "meter_modbus_tcp_specs.h"\n\n'
 cpp += '#include "event_log_prefix.h"\n'
 cpp += '#include "module_dependencies.h"\n\n'
+cpp += '#include "gcc_warnings.h"\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)
