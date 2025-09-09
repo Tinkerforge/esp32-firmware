@@ -201,14 +201,14 @@ void RemoteAccess::pre_setup()
     ping_state = Config::Object({
         {"packets_sent", Config::Uint32(0)},
         {"packets_received", Config::Uint32(0)},
-        {"time_elapsed_ms", Config::Timestamp()},
+        {"time_elapsed_ms", Config::Uptime()},
     });
 
     connection_state = Config::Tuple(MAX_USER_CONNECTIONS + 1, Config::Object({
         {"state", Config::Uint8(1)},
         {"user", Config::Uint8(255)},
         {"connection", Config::Uint8(255)},
-        {"last_state_change", Config::Timestamp()},
+        {"last_state_change", Config::Uptime()},
     }));
 
     registration_state = Config::Object({{"state", Config::Enum(RegistrationState::None)}, {"message", Config::Str("", 0, 64)}});
@@ -1066,7 +1066,7 @@ void RemoteAccess::register_urls()
                 if (conn_state->get("state")->updateUint(state)) {
                     uint32_t conn = conn_state->get("connection")->asUint();
                     uint32_t user = conn_state->get("user")->asUint();
-                    conn_state->get("last_state_change")->updateTimestamp(millis_t{static_cast<int64_t>(now.tv_sec) * 1000});
+                    conn_state->get("last_state_change")->updateUptime(millis_t{static_cast<int64_t>(now.tv_sec) * 1000});
                     if (state == 2) {
                         logger.printfln("Connection %lu for user %lu connected", conn, user);
                     } else if (state == 1 && conn != 255 && user != 255) {
@@ -1105,7 +1105,7 @@ void RemoteAccess::register_urls()
 
             auto mgmt_state = this->connection_state.get(0);
             if (mgmt_state->get("state")->updateUint(state)) {
-                mgmt_state->get("last_state_change")->updateTimestamp(millis_t{static_cast<int64_t>(now.tv_sec) * 1000});
+                mgmt_state->get("last_state_change")->updateUptime(millis_t{static_cast<int64_t>(now.tv_sec) * 1000});
                 if (state == 2) {
                     logger.printfln("Management connection connected");
                 } else {
@@ -1186,7 +1186,7 @@ void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8
 
     timeval tv;
     if (rtc.clock_synced(&tv)) {
-        conn_state->get("last_state_change")->updateTimestamp(millis_t{static_cast<int64_t>(tv.tv_sec) * 1000});
+        conn_state->get("last_state_change")->updateUptime(millis_t{static_cast<int64_t>(tv.tv_sec) * 1000});
     }
 }
 
@@ -2053,7 +2053,7 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
+            ping_state.get("time_elapsed_ms")->updateUptime(now_us() - remote_access.get_ping_start());
         },
     0_ms);
 }
@@ -2074,7 +2074,7 @@ static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
+            ping_state.get("time_elapsed_ms")->updateUptime(now_us() - remote_access.get_ping_start());
         },
     0_ms);
 }
@@ -2096,7 +2096,7 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(transmitted);
             ping_state.get("packets_received")->updateUint(received);
-            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
+            ping_state.get("time_elapsed_ms")->updateUptime(now_us() - remote_access.get_ping_start());
 
             delete ping_args;
         },

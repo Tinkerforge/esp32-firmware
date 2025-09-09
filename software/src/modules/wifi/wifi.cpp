@@ -82,8 +82,8 @@ void Wifi::pre_setup()
     }};
     state = Config::Object({
         {"connection_state", Config::Enum(WifiState::NotConfigured)},
-        {"connection_start", Config::Timestamp()},
-        {"connection_end", Config::Timestamp()},
+        {"connection_start", Config::Uptime()},
+        {"connection_end", Config::Uptime()},
         {"ap_state", Config::Uint8(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"ap_sta_count", Config::Uint8(0)},
@@ -649,7 +649,7 @@ void Wifi::setup()
                     logger.printfln("Disconnected from '%s': %s (%u). Was connected for %llu seconds.", runtime_sta->ssid_passphrase, reason, reason_code, connected_for_s);
 
                     task_scheduler.scheduleOnce([this, now](){
-                        state.get("connection_end")->updateTimestamp(now);
+                        state.get("connection_end")->updateUptime(now);
                     });
                 }
 
@@ -723,7 +723,7 @@ void Wifi::setup()
                 this->runtime_sta->last_connected = now;
 
                 task_scheduler.scheduleOnce([this, now]() {
-                    state.get("connection_start")->updateTimestamp(now);
+                    state.get("connection_start")->updateUptime(now);
                 });
             },
             ARDUINO_EVENT_WIFI_STA_CONNECTED);

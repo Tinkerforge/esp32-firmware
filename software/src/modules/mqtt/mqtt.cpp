@@ -93,8 +93,8 @@ void Mqtt::pre_setup()
 
     state = Config::Object({
         {"connection_state", Config::Enum(MqttConnectionState::NotConfigured)},
-        {"connection_start", Config::Timestamp()},
-        {"connection_end", Config::Timestamp()},
+        {"connection_start", Config::Uptime()},
+        {"connection_end", Config::Uptime()},
         {"last_error", Config::Int32(0)}
     });
 
@@ -288,7 +288,7 @@ void Mqtt::resubscribe()
 void Mqtt::onMqttConnect()
 {
     last_connected = now_us();
-    state.get("connection_start")->updateTimestamp(last_connected);
+    state.get("connection_start")->updateUptime(last_connected);
     state.get("last_error")->updateInt(0);
     was_connected = true;
     report_disconnect = true;
@@ -351,7 +351,7 @@ void Mqtt::onMqttDisconnect()
     if (was_connected) {
         was_connected = false;
         auto now = now_us();
-        state.get("connection_end")->updateTimestamp(now);
+        state.get("connection_end")->updateUptime(now);
 
         auto connected_for = now - last_connected;
         logger.printfln("Was connected for %llu seconds.", connected_for.to<seconds_t>().as<uint64_t>());

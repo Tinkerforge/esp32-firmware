@@ -702,7 +702,7 @@ struct Config {
     static Config Tuple(std::initializer_list<Config> tup);
     static Config Tuple(size_t length, Config &&cfg);
 
-    static Config Timestamp(millis_t ts = 0_ms) { return Config::Int52(ts.as<int64_t>()); }
+    static Config Uptime(millis_t ts = 0_ms) { return Config::Int52(ts.as<int64_t>()); }
 
     template<typename T>
     static Config Enum(T i, T min, T max) {
@@ -897,7 +897,7 @@ public:
     uint16_t asUint16() const;
     int16_t asInt16() const;
 
-    millis_t asTimestamp() const { return millis_t{this->asInt52()}; }
+    millis_t updateTimestamp() const { return millis_t{this->asInt52()}; }
 
     template<typename T>
     T asEnum() const {
@@ -982,8 +982,8 @@ public:
     bool updateInt52(int64_t value);
     bool updateUint53(uint64_t value);
 
-    bool updateTimestamp(millis_t value) { return this->updateInt52(value.as<int64_t>()); }
-    bool updateTimestamp(micros_t value) { return this->updateInt52(value.to<millis_t>().as<int64_t>()); }
+    bool updateUptime(millis_t value) { return this->updateInt52(value.as<int64_t>()); }
+    bool updateUptime(micros_t value) { return this->updateInt52(value.to<millis_t>().as<int64_t>()); }
 
     template<typename T>
     bool updateEnum(T value) {

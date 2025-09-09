@@ -293,7 +293,7 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
             auto delay = seconds_t{conf->get("delay")->asUint()};
             *last_run_timestamp = now_us() + delay;
             Config *last_run_cfg = static_cast<Config *>(state.get("last_run")->get(i));
-            last_run_cfg->updateTimestamp(*last_run_timestamp);
+            last_run_cfg->updateUptime(*last_run_timestamp);
 
             triggered = true;
             const Config *action = static_cast<const Config *>(conf->get("action"));

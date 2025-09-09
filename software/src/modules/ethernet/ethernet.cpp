@@ -84,8 +84,8 @@ void Ethernet::pre_setup()
 
     state = Config::Object({
         {"connection_state", Config::Enum(EthernetState::NotConfigured)},
-        {"connection_start", Config::Timestamp()},
-        {"connection_end", Config::Timestamp()},
+        {"connection_start", Config::Uptime()},
+        {"connection_end", Config::Uptime()},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
@@ -235,7 +235,7 @@ void Ethernet::setup()
                 state.get("ip"    )->updateString(ip_string);
                 state.get("subnet")->updateString(subnet_str);
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("connection_start")->updateTimestamp(now);
+                state.get("connection_start")->updateUptime(now);
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -262,7 +262,7 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateTimestamp(now);
+                state.get("connection_end")->updateUptime(now);
             });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -279,7 +279,7 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateTimestamp(now);
+                state.get("connection_end")->updateUptime(now);
             });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
