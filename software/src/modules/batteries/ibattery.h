@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "battery_class_id.enum.h"
+#include "battery_action.enum.h"
 #include "config.h"
 
 #define printfln_battery(fmt, ...) printfln("Battery %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)
@@ -32,16 +33,6 @@ char *format_battery_slot(uint32_t slot);
 class IBattery
 {
 public:
-    enum class Action {
-        PermitGridCharge         = 0,
-        RevokeGridChargeOverride = 1,
-        ForbidDischarge          = 2,
-        RevokeDischargeOverride  = 3,
-        ForbidCharge             = 4,
-        RevokeChargeOverride     = 5,
-        _max                     = 5,
-    };
-
     virtual ~IBattery() = default;
 
     virtual BatteryClassID get_class() const = 0;
@@ -51,6 +42,6 @@ public:
     virtual void pre_reboot()                          {}
 
     virtual void get_repeat_intervals(uint16_t intervals_s[6]) const; // No default implementation, to force a deliberate decision.
-    virtual bool supports_action(Action action) const                                        {return false;}
-    virtual void start_action(Action action, std::function<void(bool)> &&callback = nullptr) {}
+    virtual bool supports_action(BatteryAction action) const                                        {return false;}
+    virtual void start_action(BatteryAction action, std::function<void(bool)> &&callback = nullptr) {}
 };
