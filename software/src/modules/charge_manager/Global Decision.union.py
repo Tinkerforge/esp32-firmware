@@ -8,7 +8,7 @@ spec = Union("Global Decision", 16, variants=[
     Variant('None'),
     Variant('PV Excess Overloaded Hysteresis Blocks Until', [
         Member('Timestamp', Types.Timestamp),
-        Member('Overload mA', Types.U32),
+        Member('Overload mA', Types.S32),
     ]),
     Variant('Hysteresis Elapses At', [
         Member('Timestamp', Types.Timestamp)

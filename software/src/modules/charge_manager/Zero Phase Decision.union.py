@@ -15,7 +15,7 @@ spec = Union("Zero Phase Decision", 20, variants=[
     Variant('Yes Rotated For Higher Prio'),
     Variant('Yes Phase Overload', [
         Member('Timestamp', Types.Timestamp),
-        Member('Overload mA', Types.U32),
+        Member('Overload mA', Types.S32),
         Member('Phase', Types.U8)
     ]),
     Variant('Yes Unknown'),
