@@ -11,14 +11,14 @@ spec = Union("One Phase Decision", 20, variants=[
     ]),
     Variant('No Phase Minimum', [
         Member('Timestamp', Types.Timestamp),
-        Member('Required mA', Types.U32),
-        Member('Min mA', Types.U32),
+        Member('Required mA', Types.S32),
+        Member('Min mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
     Variant('No Phase Improvement', [
         Member('Timestamp', Types.Timestamp),
-        Member('Allocable mA', Types.U32),
-        Member('Available mA', Types.U32),
+        Member('Allocable mA', Types.S32),
+        Member('Available mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
     Variant('Yes Improves Spread'),
