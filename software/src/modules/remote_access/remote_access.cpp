@@ -1158,13 +1158,12 @@ bool RemoteAccess::user_already_registered(const String &email)
     return false;
 }
 
-template<size_t N>
-static bool parse_array_from_json(const JsonArrayConst& json_array, uint8_t (&output)[N]) {
-    if (json_array.size() != N) {
+static bool parse_array_from_json(const JsonArrayConst& json_array, uint8_t* output, size_t n) {
+    if (json_array.size() != n) {
         return false;
     }
 
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < n; i++) {
         output[i] = json_array[i];
     }
     return true;
@@ -1310,7 +1309,7 @@ void RemoteAccess::parse_login_salt()
             this->request_cleanup();
             return;
         }
-        if (!parse_array_from_json(doc.as<JsonArrayConst>(), login_salt)) {
+    if (!parse_array_from_json(doc.as<JsonArrayConst>(), login_salt, ARRAY_SIZE(login_salt))) {
             update_registration_state(RegistrationState::Error, String("Invalid login-salt array"));
             this->request_cleanup();
             return;
@@ -1320,7 +1319,7 @@ void RemoteAccess::parse_login_salt()
 
     char base64[65] = {};
     size_t bytes_written;
-    if (mbedtls_base64_encode(reinterpret_cast<uint8_t *>(base64), sizeof(base64), &bytes_written, login_salt, 48)) {
+    if (mbedtls_base64_encode(reinterpret_cast<uint8_t *>(base64), sizeof(base64), &bytes_written, login_salt, ARRAY_SIZE(login_salt)) != 0) {
         update_registration_state(RegistrationState::Error, String("Error while encoding login-salt"));
         this->request_cleanup();
         return;
@@ -1390,7 +1389,7 @@ void RemoteAccess::parse_secret()
     }
     {
         uint8_t secret_buf[crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES];
-        if (!parse_array_from_json(doc["secret"].as<JsonArrayConst>(), secret_buf)) {
+    if (!parse_array_from_json(doc["secret"].as<JsonArrayConst>(), secret_buf, crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES)) {
             update_registration_state(RegistrationState::Error, String("Invalid secret array"));
             this->request_cleanup();
             return;
@@ -1406,7 +1405,7 @@ void RemoteAccess::parse_secret()
     }
     {
         uint8_t nonce_buf[crypto_secretbox_NONCEBYTES];
-        if (!parse_array_from_json(doc["secret_nonce"].as<JsonArrayConst>(), nonce_buf)) {
+    if (!parse_array_from_json(doc["secret_nonce"].as<JsonArrayConst>(), nonce_buf, crypto_secretbox_NONCEBYTES)) {
             update_registration_state(RegistrationState::Error, String("Invalid secret_nonce array"));
             this->request_cleanup();
             return;
@@ -1415,14 +1414,14 @@ void RemoteAccess::parse_secret()
     }
 
     uint8_t secret_salt[48];
-    if (!parse_array_from_json(doc["secret_salt"].as<JsonArrayConst>(), secret_salt)) {
+    if (!parse_array_from_json(doc["secret_salt"].as<JsonArrayConst>(), secret_salt, 48)) {
         update_registration_state(RegistrationState::Error, String("Invalid secret_salt array"));
         this->request_cleanup();
         return;
     }
     uint8_t encoded_secret_salt[65] = {};
     size_t olen = 0;
-    if (mbedtls_base64_encode(encoded_secret_salt, sizeof(encoded_secret_salt), &olen, secret_salt, 48) != 0) {
+    if (mbedtls_base64_encode(encoded_secret_salt, ARRAY_SIZE(encoded_secret_salt), &olen, secret_salt, ARRAY_SIZE(secret_salt)) != 0) {
         update_registration_state(RegistrationState::Error, String("Error while encoding secret-salt"));
         this->request_cleanup();
         return;
