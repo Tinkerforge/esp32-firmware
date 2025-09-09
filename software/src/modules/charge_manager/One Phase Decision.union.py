@@ -7,28 +7,28 @@ from software.util import *
 spec = Union("One Phase Decision", 20, variants=[
     Variant('None'),
     Variant('Yes Welcome Charge Until', [
-        Member('Timestamp', Types.Timestamp)
+        Member('Timestamp', Types.Uptime)
     ]),
     Variant('No Phase Minimum', [
-        Member('Timestamp', Types.Timestamp),
+        Member('Timestamp', Types.Uptime),
         Member('Required mA', Types.S32),
         Member('Min mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
     Variant('No Phase Improvement', [
-        Member('Timestamp', Types.Timestamp),
+        Member('Timestamp', Types.Uptime),
         Member('Allocable mA', Types.S32),
         Member('Available mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
     Variant('Yes Improves Spread'),
     Variant('No Forced 3p Until', [
-        Member('Timestamp', Types.Timestamp)
+        Member('Timestamp', Types.Uptime)
     ]),
     Variant('No Fixed 3p'),
     Variant('Yes Waking Up'),
     Variant('Yes Normal'),
     Variant('No Hysteresis Blocked Until', [
-        Member('Timestamp', Types.Timestamp)
+        Member('Timestamp', Types.Uptime)
     ]),
 ])
