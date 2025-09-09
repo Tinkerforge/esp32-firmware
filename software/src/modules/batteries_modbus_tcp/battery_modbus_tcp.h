@@ -57,8 +57,8 @@ public:
     void pre_reboot() override;
 
     void get_repeat_intervals(uint16_t intervals_s[6]) const override;
-    bool supports_action(Action action) const override;
-    void start_action(Action action, std::function<void(bool)> &&callback = nullptr) override;
+    bool supports_action(BatteryAction action) const override;
+    void start_action(BatteryAction action, std::function<void(bool)> &&callback = nullptr) override;
 
     typedef std::function<void(const char *error)> ExecuteCallback;
 

@@ -582,8 +582,8 @@ void BatteryControl::periodic_update()
 }
 
 struct battery_control_action_info {
-    IBattery::Action influence_start_action;
-    IBattery::Action influence_end_action;
+    BatteryAction influence_start_action;
+    BatteryAction influence_end_action;
     const char *influence_start_msg;
     const char *influence_end_msg;
     const char *state_name;
@@ -595,22 +595,22 @@ static constexpr uint32_t action_info_num_forbid_charge      = 2;
 
 const battery_control_action_info action_infos[] = {
     {
-        IBattery::Action::PermitGridCharge,
-        IBattery::Action::RevokeGridChargeOverride,
+        BatteryAction::PermitGridCharge,
+        BatteryAction::RevokeGridChargeOverride,
         "Permit grid charge",
         "Revoke grid charge override",
         "grid_charge_permitted",
     },
     {
-        IBattery::Action::ForbidDischarge,
-        IBattery::Action::RevokeDischargeOverride,
+        BatteryAction::ForbidDischarge,
+        BatteryAction::RevokeDischargeOverride,
         "Forbid discharge",
         "Revoke discharge override",
         "discharge_forbidden",
     },
     {
-        IBattery::Action::ForbidCharge,
-        IBattery::Action::RevokeChargeOverride,
+        BatteryAction::ForbidCharge,
+        BatteryAction::RevokeChargeOverride,
         "Forbid charge",
         "Revoke charge override",
         "charge_forbidden",

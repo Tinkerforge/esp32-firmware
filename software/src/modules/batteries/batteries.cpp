@@ -49,9 +49,9 @@ void Batteries::pre_setup()
     register_battery_generator(BatteryClassID::None, &battery_generator_none);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
-        AutomationActionID automation_id = static_cast<AutomationActionID>(static_cast<uint32_t>(AutomationActionID::PermitGridCharge) + i);
-        Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
+    for (size_t i = 0; i <= static_cast<size_t>(BatteryAction::_max); ++i) {
+        AutomationActionID automation_id = static_cast<AutomationActionID>(static_cast<size_t>(AutomationActionID::PermitGridCharge) + i);
+        Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<size_t>(Batteries::PathType::PermitGridCharge) + i);
 
         automation.register_action(
             automation_id,
@@ -64,7 +64,7 @@ void Batteries::pre_setup()
                 const String errmsg = api.callCommand(path.c_str());
 
                 if (!errmsg.isEmpty()) {
-                    String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
+                    String action_name = batteries_path_postfixes[static_cast<size_t>(path_type)];
                     action_name.replace("_", " ");
 
                     logger.printfln_battery("Automation couldn't %s: %s", action_name.c_str(), errmsg.c_str());
@@ -144,15 +144,15 @@ void Batteries::register_urls()
         api.addState(get_path(slot, Batteries::PathType::State), &battery_slot.state);
         api.addState(get_path(slot, Batteries::PathType::Errors), &battery_slot.errors);
 
-        for (uint32_t i = 0; i <= static_cast<uint32_t>(IBattery::Action::_max); ++i) {
-            IBattery::Action action = static_cast<IBattery::Action>(i);
-            Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
+        for (size_t i = 0; i <= static_cast<size_t>(BatteryAction::_max); ++i) {
+            BatteryAction action = static_cast<BatteryAction>(i);
+            Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<size_t>(Batteries::PathType::PermitGridCharge) + i);
 
             if (battery->supports_action(action)) {
                 api.addCommand(get_path(slot, path_type), Config::Null(), {}, [slot, battery, action](String &/*errmsg*/) {
                     battery->start_action(action, [slot, action](bool success) {
                         if (!success) {
-                         logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
+                         logger.printfln_battery("Failed to start action %u", static_cast<uint8_t>(action));
                         }
                     });
                 }, true);
@@ -270,14 +270,14 @@ String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
     return path;
 }
 
-void Batteries::start_action_all(IBattery::Action action)
+void Batteries::start_action_all(BatteryAction action)
 {
     for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         IBattery *battery = battery_slots[slot].battery;
 
         battery->start_action(action, [slot, action](bool success) {
             if (!success) {
-                logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
+                logger.printfln_battery("Failed to start action %u", static_cast<uint8_t>(action));
             }
         });
     }

@@ -288,12 +288,12 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
             const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
 
             // FIXME: leaking this, because as of right now battery instances don't get destroyed
-            tables[static_cast<uint32_t>(IBattery::Action::PermitGridCharge)]         = init_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
-            tables[static_cast<uint32_t>(IBattery::Action::RevokeGridChargeOverride)] = init_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
-            tables[static_cast<uint32_t>(IBattery::Action::ForbidDischarge)]          = init_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
-            tables[static_cast<uint32_t>(IBattery::Action::RevokeDischargeOverride)]  = init_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
-            tables[static_cast<uint32_t>(IBattery::Action::ForbidCharge)]             = init_table(static_cast<const Config *>(table_config->get("forbid_charge")));
-            tables[static_cast<uint32_t>(IBattery::Action::RevokeChargeOverride)]     = init_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
+            tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = init_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
+            tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = init_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
+            tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = init_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
+            tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = init_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
+            tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = init_table(static_cast<const Config *>(table_config->get("forbid_charge")));
+            tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = init_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
         }
 
         break;
@@ -331,14 +331,14 @@ void BatteryModbusTCP::get_repeat_intervals(uint16_t intervals_s[6]) const
 }
 
 [[gnu::const]]
-bool BatteryModbusTCP::supports_action(Action /*action*/) const
+bool BatteryModbusTCP::supports_action(BatteryAction /*action*/) const
 {
     return true;
 }
 
-void BatteryModbusTCP::start_action(Action action, std::function<void(bool)> &&callback)
+void BatteryModbusTCP::start_action(BatteryAction action, std::function<void(bool)> &&callback)
 {
-    const TableSpec *table = tables[static_cast<uint32_t>(action)];
+    const TableSpec *table = tables[static_cast<size_t>(action)];
 
     if (table == nullptr) {
         if (callback) {
