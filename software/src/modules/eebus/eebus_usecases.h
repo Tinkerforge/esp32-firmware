@@ -270,11 +270,17 @@ private:
     int deviceDiagnosis_feature_address = 30;
     int electricalConnection_feature_address = 40;
 
+    // Device Configuration Data as required for Scenario 2 - Device Configuration
+    DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
+    DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
+
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
+    bool heartbeatEnabled = false;
     uint64_t heartbeatCounter = 0;
     uint64_t heartbeat_timeout_task = 0;
-    void handle_heartbeat_timeout();
+    void handle_heartbeat_timeout() const;
+
 
 };
 

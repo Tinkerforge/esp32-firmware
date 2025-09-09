@@ -23,6 +23,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include <chrono>
 
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -563,6 +564,37 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
 
 ControllableSystemEntity::ControllableSystemEntity()
 {
+    // Initialize DeviceConfiguration feature
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData.emplace();
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->clear();
+    device_configuration_key_value_list.deviceConfigurationKeyValueData.emplace();
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->clear();
+
+    DeviceConfigurationKeyValueDescriptionDataType failsafeConsumptionActivePowerLimitDescription{};
+    DeviceConfigurationKeyValueDataType failsafeConsumptionActivePowerLimit{};
+    failsafeConsumptionActivePowerLimitDescription.keyId = failsafeConsumptionActivePowerLimit.keyId = 1;
+    failsafeConsumptionActivePowerLimitDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit;
+    failsafeConsumptionActivePowerLimitDescription.unit = UnitOfMeasurementEnumType::W;
+    failsafeConsumptionActivePowerLimitDescription.valueType = DeviceConfigurationKeyValueTypeType::scaledNumber;
+    failsafeConsumptionActivePowerLimit.isValueChangeable = true;
+    failsafeConsumptionActivePowerLimit.value->scaledNumber.emplace();
+    failsafeConsumptionActivePowerLimit.value->scaledNumber->number = 0;
+    failsafeConsumptionActivePowerLimit.value->scaledNumber->scale = 0;
+
+    DeviceConfigurationKeyValueDescriptionDataType failsafeDurationMinimumDescription{};
+    DeviceConfigurationKeyValueDataType failsafeDurationMinimum{};
+    failsafeDurationMinimumDescription.keyId = failsafeDurationMinimum.keyId = 2;
+    failsafeDurationMinimumDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
+    failsafeDurationMinimumDescription.valueType = DeviceConfigurationKeyValueTypeType::duration;
+    failsafeDurationMinimum.isValueChangeable = true;
+    failsafeDurationMinimum.value->duration = "PT2H"; // ISO 8601 duration format. PT0S means a duration of 0 seconds
+
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeConsumptionActivePowerLimitDescription);
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeConsumptionActivePowerLimit);
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeDurationMinimum);
+
+    // Initialize DeviceDiagnosis feature
     task_scheduler.scheduleWithFixedDelay([this]() {
                                               DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
                                               outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
@@ -587,7 +619,6 @@ UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
     lpc_usecase_support.useCaseName = "limitationOfPowerConsumption";
     lpc_usecase_support.useCaseVersion = "1.0.0";
     lpc_usecase_support.useCaseAvailable = true;
-    lpc_usecase_support.scenarioSupport.emplace();
     lpc_usecase_support.scenarioSupport->push_back(1);
     lpc_usecase_support.scenarioSupport->push_back(2);
     lpc_usecase_support.scenarioSupport->push_back(3);
@@ -721,7 +752,26 @@ CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &hea
 
 CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    //TODO: Implement
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
+            response["deviceConfigurationKeyValueDescriptionListData"] = device_configuration_key_value_description_list;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
+            response["deviceConfigurationKeyValueListData"] = device_configuration_key_value_list;
+            return CmdClassifierType::reply;
+        }
+    }
+    if (header.cmdClassifier == CmdClassifierType::write && data->deviceconfigurationkeyvaluelistdatatype.has_value() && data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
+        // We only accept writes from nodes we are bound to and we only do full writes
+        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
+            device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
+            EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
+                                                     "Configuration updated successfully");
+            return CmdClassifierType::result;
+        }
+    }
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -807,6 +857,7 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
 {
     eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
     // TODO: It is up to us what do to when heartbeat times out.
+        eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
 }
 
 EEBusUseCases::EEBusUseCases()
