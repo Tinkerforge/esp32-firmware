@@ -777,15 +777,10 @@ CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderTy
 
 CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    //TODO: Implement
-    return CmdClassifierType::EnumUndefined;
-}
-
-CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
-{
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
         if (header.cmdClassifier == CmdClassifierType::read) {
+
             // Prepare our own hearbeat information
             DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
             outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
@@ -835,7 +830,7 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
                                             eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, sub_obj, CmdClassifierType::call);
                                         },
                                         200_ms);
-
+            heartbeatEnabled = true;
             return CmdClassifierType::reply;
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
@@ -853,11 +848,18 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
     return CmdClassifierType::EnumUndefined;
 }
 
-void ControllableSystemEntity::handle_heartbeat_timeout()
+CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
-    // TODO: It is up to us what do to when heartbeat times out.
+    // TODO
+    return CmdClassifierType::EnumUndefined;
+}
+
+void ControllableSystemEntity::handle_heartbeat_timeout() const
+{
+    if (heartbeatEnabled) {
         eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
+        // TODO: It is up to us what do to when heartbeat times out.
+    }
 }
 
 EEBusUseCases::EEBusUseCases()
