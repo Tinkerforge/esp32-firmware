@@ -897,7 +897,7 @@ public:
     uint16_t asUint16() const;
     int16_t asInt16() const;
 
-    millis_t updateTimestamp() const { return millis_t{this->asInt52()}; }
+    millis_t updateUptime() const { return millis_t{this->asInt52()}; }
 
     template<typename T>
     T asEnum() const {
