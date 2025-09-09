@@ -72,7 +72,7 @@ export class RemoteAccessStatus extends Component<{}, RemoteAccessStatusState> {
         }
 
         const label_muted = state.state[0].last_state_change !== 0 ?
-            __("remote_access.status.label_muted")(util.timestamp_min_to_date(state.state[0].last_state_change / 60000, "")) :
+            __("remote_access.status.label_muted")(util.timestamp_min_to_date(state.state[0].last_state_change / 60, "")) :
             __("remote_access.status.since_start");
 
         const active_clients = state.state.slice(1).filter((c) => c.state !== 1).length;

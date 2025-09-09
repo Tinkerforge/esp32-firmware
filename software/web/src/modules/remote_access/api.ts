@@ -80,8 +80,7 @@ interface StateUser {
     state: number,
     user: number,
     connection: number,
-    // Timestamp in milliseconds since epoch
-    last_state_change: number,
+    last_state_change: number, // Unix timestamp in seconds
 }
 
 export type state = StateUser[];
