@@ -24,6 +24,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 #include <chrono>
+#include <regex>
 
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -587,7 +588,7 @@ ControllableSystemEntity::ControllableSystemEntity()
     failsafeDurationMinimumDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
     failsafeDurationMinimumDescription.valueType = DeviceConfigurationKeyValueTypeType::duration;
     failsafeDurationMinimum.isValueChangeable = true;
-    failsafeDurationMinimum.value->duration = "PT2H"; // ISO 8601 duration format. PT0S means a duration of 0 seconds
+    failsafeDurationMinimum.value->duration = EEBUS_USECASE_HELPERS::iso_duration_to_string(2_h);
 
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeConsumptionActivePowerLimitDescription);
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
@@ -598,7 +599,7 @@ ControllableSystemEntity::ControllableSystemEntity()
     task_scheduler.scheduleWithFixedDelay([this]() {
                                               DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
                                               outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                                              outgoing_heartbeatData.heartbeatTimeout = "PT1M";
+                                              outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
                                               outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
                                               eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
                                               eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
@@ -784,7 +785,7 @@ CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType 
             // Prepare our own hearbeat information
             DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
             outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-            outgoing_heartbeatData.heartbeatTimeout = "PT1M";
+            outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
             outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
             response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
 
@@ -956,5 +957,62 @@ void build_result_data(JsonObject &response, ResultErrorNumber error_number, con
     result.description = description;
     result.errorNumber = static_cast<uint8_t>(error_number);
     response["result"] = result;
+}
+
+std::string iso_duration_to_string(seconds_t duration)
+{
+    uint64_t duration_uint = duration.as<uint64_t>();
+    std::string unit = "S";
+    if (duration_uint % 60 == 0) {
+        duration_uint = duration_uint / 60;
+        unit = "M";
+    }
+    if (duration_uint % 60 == 0) {
+        duration_uint = duration_uint / 60;
+        unit = "H";
+    }
+    return "PT" + std::to_string(duration_uint) + unit;
+}
+
+seconds_t iso_duration_to_seconds(std::string iso_duration)
+{
+    int64_t duration_seconds = 0;
+    size_t p_pos = iso_duration.find('P');
+    size_t t_pos = iso_duration.find('T');
+    std::string between_p_t = (p_pos != std::string::npos && t_pos != std::string::npos && t_pos > p_pos + 1) ? iso_duration.substr(p_pos + 1, t_pos - p_pos - 1) : "";
+    std::string after_t = (t_pos != std::string::npos) ? iso_duration.substr(t_pos + 1) : "";
+
+    std::regex first_part_regex("([0-9]+[YMD])");
+    std::sregex_iterator first_it(between_p_t.begin(), between_p_t.end(), first_part_regex);
+    std::sregex_iterator first_end;
+    for (; first_it != first_end; ++first_it) {
+        std::string match = first_it->str();
+        int value = std::stoi(match.substr(0, match.size() - 1));
+        char unit = match.back();
+        if (unit == 'Y') {
+            duration_seconds += value * 31536000; // Approximate, not accounting for leap years
+        } else if (unit == 'M') {
+            duration_seconds += value * 2592000; // Approximate, assuming 30 days in a month
+        } else if (unit == 'D') {
+            duration_seconds += value * 86400;
+        }
+    }
+    std::regex second_part_regex("([0-9]+[HMS])");
+
+    std::sregex_iterator second_it(after_t.begin(), after_t.end(), second_part_regex);
+    std::sregex_iterator second_end;
+    for (; second_it != second_end; ++second_it) {
+        std::string match = second_it->str();
+        int value = std::stoi(match.substr(0, match.size() - 1));
+        char unit = match.back();
+        if (unit == 'H') {
+            duration_seconds += value * 3600; // Approximate, not accounting for leap years
+        } else if (unit == 'M') {
+            duration_seconds += value * 60; // Approximate, assuming 30 days in a month
+        } else if (unit == 'D') {
+            duration_seconds += value;
+        }
+    }
+    return seconds_t(duration_seconds);
 }
 } // namespace EEBUS_USECASE_HELPERS
