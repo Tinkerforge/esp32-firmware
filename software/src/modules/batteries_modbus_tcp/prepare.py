@@ -1,6 +1,7 @@
 import sys
 import tinkerforge_util as tfutil
 import victron_energy
+import deye
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -8,6 +9,7 @@ from software import util
 
 modules = [
     victron_energy,
+    deye,
 ]
 
 specs = []
