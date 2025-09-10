@@ -483,6 +483,60 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
     return features;
 }
 
+void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
+{
+
+    BillDataType billData{};
+    billData.billId = id;
+    billData.billType = BillTypeEnumType::chargingSummary;
+    billData.total->timePeriod->startTime = std::to_string(start_time.as<int>());
+    billData.total->timePeriod->endTime = std::to_string(end_time.as<int>());
+    BillValueType total_value;
+    total_value.value->number = energy_wh;
+    total_value.unit = UnitOfMeasurementEnumType::Wh;
+    total_value.value->scale = 0; // The total value is calculated like numer * 10^(scale).
+    BillCostType total_cost;
+    total_cost.costType = BillCostTypeEnumType::absolutePrice;
+    total_cost.cost->number = cost_eur_cent;
+    total_cost.currency = CurrencyEnumType::EUR;
+    total_cost.cost->scale = -2; // We send the cost in cents, so
+    billData.total->value->push_back(total_value);
+    billData.total->cost->push_back(total_cost);
+
+    BillPositionType grid_position;
+    grid_position.positionId = 1;
+    grid_position.positionType = BillPositionTypeEnumType::gridElectricEnergy;
+    BillValueType grid_value;
+    grid_value.valuePercentage->number = grid_energy_percent;
+    grid_value.valuePercentage->scale = 0;
+    BillCostType grid_cost;
+    grid_cost.costPercentage->number = grid_cost_percent;
+    grid_position.cost->push_back(grid_cost);
+    grid_position.value->push_back(grid_value);
+
+    BillPositionType self_produced_position;
+    self_produced_position.positionId = 2;
+    self_produced_position.positionType = BillPositionTypeEnumType::selfProducedElectricEnergy;
+    BillValueType self_produced_value;
+    self_produced_value.valuePercentage->number = self_produced_energy_percent;
+    self_produced_value.valuePercentage->scale = 0;
+    BillCostType self_produced_cost;
+    self_produced_cost.costPercentage->number = self_produced_energy_percent;
+    grid_position.cost->push_back(grid_cost);
+    grid_position.value->push_back(grid_value);
+
+    billData.position->push_back(grid_position);
+    billData.position->push_back(self_produced_position);
+
+    for (int i = 0; i < bill_list_data.billData->size(); i++) {
+        if (bill_list_data.billData->at(i).billId == id) {
+            bill_list_data.billData->at(i) = billData;
+            return;
+        }
+    }
+    bill_list_data.billData->push_back(billData);
+}
+
 
 CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
@@ -490,14 +544,10 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
         BillDescriptionListDataType billDescriptionListData{};
         billDescriptionListData.billDescriptionData.emplace();
-        size_t count_charges = eebus.state.get("charge_state")->count();
-
-        for (size_t i = 0; i < count_charges; i++) {
+        for (BillDataType bill_entry : bill_list_data.billData.get()) {
             BillDescriptionDataType billDescriptionData{};
-            billDescriptionData.billWriteable = false;
-            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
-            billDescriptionData.billId = id;
-            billDescriptionData.supportedBillType.emplace();
+            billDescriptionData.billWriteable = false; // No bill is writeable for now
+            billDescriptionData.billId = bill_entry.billId;
             billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
             billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
 
@@ -509,13 +559,11 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
         BillConstraintsListDataType billConstraintsListData{};
         billConstraintsListData.billConstraintsData.emplace();
-        size_t count_charges = eebus.state.get("charge_state")->count();
-        for (size_t i = 0; i < count_charges; i++) {
+        for (BillDataType bill_entry : bill_list_data.billData.get()) {
             BillConstraintsDataType billConstraintsData{};
-            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
-            billConstraintsData.billId = id;
+            billConstraintsData.billId = bill_entry.billId;
             billConstraintsData.positionCountMin = "0";
-            billConstraintsData.positionCountMax = "0";
+            billConstraintsData.positionCountMax = std::to_string(bill_entry.position->size());
             billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
         }
         response["billConstraintsListData"] = billConstraintsListData;
@@ -524,40 +572,7 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::billListData) {
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
-        BillListDataType billListData{};
-        billListData.billData.emplace();
-        size_t count_charges = eebus.state.get("charge_state")->count();
-
-        for (size_t i = 0; i < count_charges; i++) {
-            // TODO: Add more entries billlistdata. Maybe get them from charge tracker.
-            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
-            float charged_kwh = eebus.state.get("charge_state")->get(i)->get("charged_kwh")->asFloat();
-            uint64_t start_time = eebus.state.get("charge_state")->get(i)->get("start_time")->asUint();
-            uint32_t duration = eebus.state.get("charge_state")->get(i)->get("duration")->asUint();
-            float cost = eebus.state.get("charge_state")->get(i)->get("cost")->asFloat();
-
-            BillDataType billData{};
-            billData.billId = id;
-            billData.billType = BillTypeEnumType::chargingSummary;
-            billData.total->timePeriod->startTime = std::to_string(start_time); // TODO: maybe use iso time instead of timestamp
-            billData.total->timePeriod->endTime = std::to_string(start_time + duration);
-
-            BillCostType billCost{};
-            billCost.cost->number = static_cast<int>(cost / 100.0);
-            billCost.cost->scale = 2; // We send the cost in cents, so scale 2 means the number is divided by 10^2 to get EUR
-            billCost.currency = CurrencyEnumType::EUR;
-            BillValueType billValue{};
-            billValue.unit = UnitOfMeasurementEnumType::Wh;
-            billValue.value->number = static_cast<int>(charged_kwh * 1000.0);
-
-            billData.total->cost.emplace();
-            billData.total->value.emplace();
-            billData.total->value->push_back(billValue);
-            billData.total->cost.get().push_back(billCost);
-
-            billListData.billData->push_back(billData);
-        }
-        response["billListData"] = billListData;
+        response["billListData"] = bill_list_data;
         return CmdClassifierType::reply;
     }
     return CmdClassifierType::EnumUndefined;
