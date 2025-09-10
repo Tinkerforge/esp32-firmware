@@ -22,6 +22,7 @@ let x = {
             "table": "Register table",
             "table_custom": "Custom",
             "table_victron_energy_gx": "Victron Energy GX",
+            "table_deye_hybrid_inverter": "Deye hybrid inverter",
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "permit_grid_charge": "Permit grid charge",
