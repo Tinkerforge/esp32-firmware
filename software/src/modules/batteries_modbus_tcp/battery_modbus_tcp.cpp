@@ -311,6 +311,22 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = table_config->get("revoke_charge_override"     )->get("device_address")->asUint8();
         break;
 
+    case BatteryModbusTCPTableID::DeyeHybridInverter:
+        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = &deye_hybrid_inverter_permit_grid_charge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = &deye_hybrid_inverter_revoke_grid_charge_override_table;
+        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = &deye_hybrid_inverter_forbid_discharge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = &deye_hybrid_inverter_revoke_discharge_override_table;
+        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = &deye_hybrid_inverter_forbid_charge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = &deye_hybrid_inverter_revoke_charge_override_table;
+
+        device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = table_config->get("permit_grid_charge"         )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = table_config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = table_config->get("forbid_discharge"           )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = table_config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = table_config->get("forbid_charge"              )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = table_config->get("revoke_charge_override"     )->get("device_address")->asUint8();
+        break;
+
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

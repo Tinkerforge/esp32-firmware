@@ -79,9 +79,22 @@ type TableConfigVictronEnergyGX = [
     },
 ];
 
+type TableConfigDeyeHybridInverter = [
+    BatteryModbusTCPTableID.DeyeHybridInverter,
+    {
+        permit_grid_charge: {device_address: number},
+        revoke_grid_charge_override: {device_address: number},
+        forbid_discharge: {device_address: number},
+        revoke_discharge_override: {device_address: number},
+        forbid_charge: {device_address: number},
+        revoke_charge_override: {device_address: number},
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
-                   TableConfigVictronEnergyGX;
+                   TableConfigVictronEnergyGX |
+                   TableConfigDeyeHybridInverter;
 
 export type ModbusTCPBatteriesConfig = [
     BatteryClassID.ModbusTCP,
@@ -114,6 +127,16 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
                 revoke_discharge_override:   {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeDischargeOverride},
                 forbid_charge:               {device_address: DefaultDeviceAddress.VictronEnergyGX_ForbidCharge},
                 revoke_charge_override:      {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeChargeOverride},
+            }];
+
+        case BatteryModbusTCPTableID.DeyeHybridInverter:
+            return [BatteryModbusTCPTableID.DeyeHybridInverter, {
+                permit_grid_charge:          {device_address: DefaultDeviceAddress.DeyeHybridInverter_PermitGridCharge},
+                revoke_grid_charge_override: {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeGridChargeOverride},
+                forbid_discharge:            {device_address: DefaultDeviceAddress.DeyeHybridInverter_ForbidDischarge},
+                revoke_discharge_override:   {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeDischargeOverride},
+                forbid_charge:               {device_address: DefaultDeviceAddress.DeyeHybridInverter_ForbidCharge},
+                revoke_charge_override:      {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeChargeOverride},
             }];
 
         default:
@@ -649,7 +672,7 @@ function import_register_table(table: RegisterTable)
     return {device_address: table.device_address, register_blocks: register_blocks};
 }
 
-function import_victron_energy_gx_action(action: {device_address: number})
+function import_battery_action(action: {device_address: number})
 {
     if (!util.isNonNullObject(action)) {
         console.log("Batteries Modbus/TCP: Imported config action is not an object");
@@ -657,11 +680,11 @@ function import_victron_energy_gx_action(action: {device_address: number})
     }
 
     if (typeof action.device_address != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register table device address is not a number");
+        console.log("Batteries Modbus/TCP: Imported config action device address is not a number");
         return null;
     }
 
-    return {device_address:  action.device_address};
+    return {device_address: action.device_address};
 }
 
 export function init() {
@@ -713,7 +736,7 @@ export function init() {
                             revoke_discharge_override:   import_register_table(new_config[1].table[1].revoke_discharge_override),
                             forbid_charge:               import_register_table(new_config[1].table[1].forbid_charge),
                             revoke_charge_override:      import_register_table(new_config[1].table[1].revoke_charge_override),
-                        }]
+                        }];
 
                         if (!util.hasValue(table[1].permit_grid_charge)
                          || !util.hasValue(table[1].revoke_grid_charge_override)
@@ -728,13 +751,34 @@ export function init() {
 
                     case BatteryModbusTCPTableID.VictronEnergyGX:
                         table = [BatteryModbusTCPTableID.VictronEnergyGX, {
-                            permit_grid_charge:          import_victron_energy_gx_action(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_victron_energy_gx_action(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_victron_energy_gx_action(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_victron_energy_gx_action(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_victron_energy_gx_action(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_victron_energy_gx_action(new_config[1].table[1].revoke_charge_override),
-                        }]
+                            permit_grid_charge:          import_battery_action(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_battery_action(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_battery_action(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_battery_action(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_battery_action(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_battery_action(new_config[1].table[1].revoke_charge_override),
+                        }];
+
+                        if (!util.hasValue(table[1].permit_grid_charge)
+                         || !util.hasValue(table[1].revoke_grid_charge_override)
+                         || !util.hasValue(table[1].forbid_discharge)
+                         || !util.hasValue(table[1].revoke_discharge_override)
+                         || !util.hasValue(table[1].forbid_charge)
+                         || !util.hasValue(table[1].revoke_charge_override)) {
+                            return null;
+                        }
+
+                        break;
+
+                    case BatteryModbusTCPTableID.DeyeHybridInverter:
+                        table = [BatteryModbusTCPTableID.DeyeHybridInverter, {
+                            permit_grid_charge:          import_battery_action(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_battery_action(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_battery_action(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_battery_action(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_battery_action(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_battery_action(new_config[1].table[1].revoke_charge_override),
+                        }];
 
                         if (!util.hasValue(table[1].permit_grid_charge)
                          || !util.hasValue(table[1].revoke_grid_charge_override)
@@ -813,6 +857,7 @@ export function init() {
                             required
                             items={[
                                 // Keep alphabetically sorted
+                                [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
                                 [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
                             ]}
@@ -825,7 +870,8 @@ export function init() {
                 ];
 
                 if (util.hasValue(config[1].table)
-                 && config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX) {
+                 && (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX
+                  || config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter)) {
                     edit_children.push(
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
                             <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.PermitGridCharge))}>
