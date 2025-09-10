@@ -358,4 +358,17 @@ enum class ResultErrorNumber
 * @param description The description of the error set in the result data. Default is an empty string.
 */
 void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
+
+/**
+ * Converts a duration in seconds to an ISO 8601 duration string. Will be automatically converted to full minutes or hours if possible.
+ * @param duration Duration in seconds.
+ * @return The ISO 8601 duration string.
+ */
+std::string iso_duration_to_string(seconds_t duration);
+/**
+ * Convert a ISO 8601 duration string to a duration in seconds.
+ * @param iso_duration The ISO 8601 duration string
+ * @return The duration in seconds. Returns -8601 seconds if the string is invalid. TODO: Improve error handling.
+ */
+seconds_t iso_duration_to_seconds(std::string iso_duration);
 } // namespace EEBUS_USECASE_HELPERS
