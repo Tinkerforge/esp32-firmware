@@ -1865,7 +1865,7 @@ int allocate_current(
             trace("__only %s__", ChargeMode::Strings[(size_t)mode]);
         }
 
-        sc.charger_count = filter_n_chargers(not_off_count, (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+        sc.charger_count = filter_n_chargers(not_off_count, (get_highest_charge_mode_bit(ctx.state) & ctx.charge_mode_filter) != 0);
 
         stage_4(sc);
         stage_5(sc);
