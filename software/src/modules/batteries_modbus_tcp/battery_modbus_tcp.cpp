@@ -25,36 +25,35 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "battery_modbus_tcp_specs.h"
 
 #include "gcc_warnings.h"
 
 struct Execution {
+    uint8_t device_address = 0;
     TFModbusTCPSharedClient *client = nullptr;
     const BatteryModbusTCP::TableSpec *table = nullptr;
     size_t index = 0;
     BatteryModbusTCP::ExecuteCallback callback = nullptr;
 };
 
-BatteryModbusTCP::TableSpec *BatteryModbusTCP::init_table(const Config *config)
+BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config, uint8_t *device_address_ptr)
 {
+    *device_address_ptr = config->get("device_address")->asUint8();
+
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
     size_t register_blocks_count         = register_blocks_config->count();
+    TableSpec *table                     = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
 
-    if (register_blocks_count == 0) {
-        return nullptr;
-    }
-
-    TableSpec *table = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
-
-    table->device_address        = static_cast<uint8_t>(config->get("device_address")->asUint());
     table->register_blocks       = static_cast<RegisterBlockSpec *>(malloc(sizeof(RegisterBlockSpec) * register_blocks_count));
     table->register_blocks_count = register_blocks_count;
 
     for (size_t i = 0; i < register_blocks_count; ++i) {
         auto register_block_config = register_blocks_config->get(i);
+        RegisterBlockSpec *register_block = const_cast<RegisterBlockSpec *>(&table->register_blocks[i]);
 
-        table->register_blocks[i].function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
-        table->register_blocks[i].start_address = static_cast<uint16_t>(register_block_config->get("addr")->asUint());
+        register_block->function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
+        register_block->start_address = static_cast<uint16_t>(register_block_config->get("addr")->asUint());
 
         auto values_config    = register_block_config->get("vals");
         uint16_t values_count = static_cast<uint16_t>(values_config->count());
@@ -68,12 +67,12 @@ BatteryModbusTCP::TableSpec *BatteryModbusTCP::init_table(const Config *config)
             values_byte_count = values_count * 2u;
         }
 
-        table->register_blocks[i].values_buffer = malloc(values_byte_count);
-        table->register_blocks[i].values_count  = values_count;
+        register_block->values_buffer = malloc(values_byte_count);
+        register_block->values_count  = values_count;
 
         if (table->register_blocks[i].function_code == ModbusFunctionCode::WriteSingleCoil
          || table->register_blocks[i].function_code == ModbusFunctionCode::WriteMultipleCoils) {
-            uint8_t *values_buffer = static_cast<uint8_t *>(table->register_blocks[i].values_buffer);
+            uint8_t *values_buffer = const_cast<uint8_t *>(static_cast<const uint8_t *>(register_block->values_buffer));
 
             values_buffer[values_byte_count - 1] = 0;
 
@@ -89,10 +88,10 @@ BatteryModbusTCP::TableSpec *BatteryModbusTCP::init_table(const Config *config)
             }
         }
         else {
-            uint16_t *values_buffer = static_cast<uint16_t *>(table->register_blocks[i].values_buffer);
+            uint16_t *values_buffer = const_cast<uint16_t *>(static_cast<const uint16_t *>(register_block->values_buffer));
 
             for (uint16_t k = 0; k < values_count; ++k) {
-                values_buffer[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
+                values_buffer[k] = values_config->get(k)->asUint16();
             }
         }
     }
@@ -107,10 +106,10 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
     }
 
     for (size_t i = 0; i < table->register_blocks_count; ++i) {
-        free(table->register_blocks[i].values_buffer);
+        free(const_cast<void *>(table->register_blocks[i].values_buffer));
     }
 
-    free(table->register_blocks);
+    free(const_cast<RegisterBlockSpec *>(table->register_blocks));
     free(table);
 }
 
@@ -127,10 +126,10 @@ static void execute_next(Execution *execution)
         return;
     }
 
-    BatteryModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
+    const BatteryModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
     TFModbusTCPFunctionCode function_code;
     uint16_t data_count;
-    void *buffer;
+    const void *buffer;
     void *buffer_to_free = nullptr;
     char error[128];
 
@@ -169,8 +168,8 @@ static void execute_next(Execution *execution)
     case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
         function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
         data_count = register_block->values_count / 2;
-        buffer = malloc(sizeof(uint16_t) * data_count);
-        buffer_to_free = buffer;
+        buffer_to_free = malloc(sizeof(uint16_t) * data_count);
+        buffer = buffer_to_free;
 
         if (buffer == nullptr) {
             execute_finish(execution, "Could not allocate read buffer");
@@ -189,11 +188,11 @@ static void execute_next(Execution *execution)
         return;
     }
 
-    static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->table->device_address,
+    static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->device_address,
                                                                         function_code,
                                                                         register_block->start_address,
                                                                         data_count,
-                                                                        buffer,
+                                                                        const_cast<void *>(buffer),
                                                                         2_s,
     [execution, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
@@ -214,8 +213,8 @@ static void execute_next(Execution *execution)
 
         if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
          || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters) {
-            uint16_t *masks = static_cast<uint16_t *>(register_block->values_buffer);
-            uint16_t *values = static_cast<uint16_t *>(buffer);
+            const uint16_t *masks = static_cast<const uint16_t *>(register_block->values_buffer);
+            uint16_t *values = static_cast<uint16_t *>(buffer_to_free);
 
             for (uint16_t i = 0; i < data_count; ++i) {
                 values[i] = (values[i] & masks[i * 2]) | (masks[i * 2 + 1] & ~masks[i * 2]);
@@ -230,11 +229,11 @@ static void execute_next(Execution *execution)
                 step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
             }
 
-            static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->table->device_address,
+            static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->device_address,
                                                                                 step2_function_code,
                                                                                 register_block->start_address,
                                                                                 data_count,
-                                                                                buffer,
+                                                                                const_cast<void *>(buffer),
                                                                                 2_s,
             [execution, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
@@ -279,23 +278,37 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     port      = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
     table_id  = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
 
+    const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
+
     switch (table_id) {
     case BatteryModbusTCPTableID::None:
         logger.printfln_battery("No table selected");
         return;
 
-    case BatteryModbusTCPTableID::Custom: {
-            const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
+    case BatteryModbusTCPTableID::Custom:
+        // FIXME: leaking this, because as of right now battery instances don't get destroyed
+        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = load_table(static_cast<const Config *>(table_config->get("permit_grid_charge")),          &device_addresses[static_cast<uint32_t>(BatteryAction::PermitGridCharge)]);
+        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = load_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")), &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeGridChargeOverride)]);
+        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = load_table(static_cast<const Config *>(table_config->get("forbid_discharge")),            &device_addresses[static_cast<uint32_t>(BatteryAction::ForbidDischarge)]);
+        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = load_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")),   &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeDischargeOverride)]);
+        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = load_table(static_cast<const Config *>(table_config->get("forbid_charge")),               &device_addresses[static_cast<uint32_t>(BatteryAction::ForbidCharge)]);
+        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = load_table(static_cast<const Config *>(table_config->get("revoke_charge_override")),      &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeChargeOverride)]);
+        break;
 
-            // FIXME: leaking this, because as of right now battery instances don't get destroyed
-            tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = init_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
-            tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = init_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
-            tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = init_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
-            tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = init_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
-            tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = init_table(static_cast<const Config *>(table_config->get("forbid_charge")));
-            tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = init_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
-        }
+    case BatteryModbusTCPTableID::VictronEnergyGX:
+        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = &victron_energy_gx_permit_grid_charge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = &victron_energy_gx_revoke_grid_charge_override_table;
+        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = &victron_energy_gx_forbid_discharge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = &victron_energy_gx_revoke_discharge_override_table;
+        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = &victron_energy_gx_forbid_charge_table;
+        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = &victron_energy_gx_revoke_charge_override_table;
 
+        device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = table_config->get("permit_grid_charge"         )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = table_config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = table_config->get("forbid_discharge"           )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = table_config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = table_config->get("forbid_charge"              )->get("device_address")->asUint8();
+        device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = table_config->get("revoke_charge_override"     )->get("device_address")->asUint8();
         break;
 
     default:
@@ -358,7 +371,7 @@ void BatteryModbusTCP::start_action(BatteryAction action, std::function<void(boo
         return;
     }
 
-    execute(static_cast<TFModbusTCPSharedClient *>(connected_client), table, [this, callback](const char *error) {
+    execute(static_cast<TFModbusTCPSharedClient *>(connected_client), device_addresses[static_cast<size_t>(action)], table, [this, callback](const char *error) {
         if (error != nullptr) {
             logger.printfln_battery("%s", error);
         }
@@ -377,10 +390,11 @@ void BatteryModbusTCP::disconnect_callback()
 {
 }
 
-void BatteryModbusTCP::execute(TFModbusTCPSharedClient *client, const TableSpec *table, ExecuteCallback &&callback)
+void BatteryModbusTCP::execute(TFModbusTCPSharedClient *client, uint8_t device_address, const TableSpec *table, ExecuteCallback &&callback)
 {
     Execution *execution = new Execution;
 
+    execution->device_address = device_address;
     execution->client = client;
     execution->table = table;
     execution->index = 0;
