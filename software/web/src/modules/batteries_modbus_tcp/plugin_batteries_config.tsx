@@ -24,8 +24,10 @@ import { h, Fragment, Component, ComponentChildren } from "preact";
 import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/battery_class_id.enum";
+import { BatteryAction } from "../batteries/battery_action.enum";
 import { BatteryConfig } from "../batteries/types";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
+import { DefaultDeviceAddress, get_default_device_address } from "./battery_modbus_tcp_specs";
 import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -65,8 +67,21 @@ type TableConfigCustom = [
     },
 ];
 
+type TableConfigVictronEnergyGX = [
+    BatteryModbusTCPTableID.VictronEnergyGX,
+    {
+        permit_grid_charge: {device_address: number},
+        revoke_grid_charge_override: {device_address: number},
+        forbid_discharge: {device_address: number},
+        revoke_discharge_override: {device_address: number},
+        forbid_charge: {device_address: number},
+        revoke_charge_override: {device_address: number},
+    },
+];
+
 type TableConfig = TableConfigNone |
-                   TableConfigCustom;
+                   TableConfigCustom |
+                   TableConfigVictronEnergyGX;
 
 export type ModbusTCPBatteriesConfig = [
     BatteryClassID.ModbusTCP,
@@ -89,6 +104,16 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
                 revoke_discharge_override:   {device_address: 1, register_blocks: []},
                 forbid_charge:               {device_address: 1, register_blocks: []},
                 revoke_charge_override:      {device_address: 1, register_blocks: []},
+            }];
+
+        case BatteryModbusTCPTableID.VictronEnergyGX:
+            return [BatteryModbusTCPTableID.VictronEnergyGX, {
+                permit_grid_charge:          {device_address: DefaultDeviceAddress.VictronEnergyGX_PermitGridCharge},
+                revoke_grid_charge_override: {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeGridChargeOverride},
+                forbid_discharge:            {device_address: DefaultDeviceAddress.VictronEnergyGX_ForbidDischarge},
+                revoke_discharge_override:   {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeDischargeOverride},
+                forbid_charge:               {device_address: DefaultDeviceAddress.VictronEnergyGX_ForbidCharge},
+                revoke_charge_override:      {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeChargeOverride},
             }];
 
         default:
@@ -455,7 +480,10 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
 interface ExecutorProps {
     host: string;
     port: number;
-    table: RegisterTable;
+    table_id: number;
+    device_address: number;
+    register_blocks?: RegisterBlock[];
+    action?: number;
 }
 
 interface ExecutorState {
@@ -496,15 +524,21 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
 
         this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
             let result = "<unknown>";
+            let table = [this.props.table_id, {device_address: this.props.device_address}];
+
+            if (util.hasValue(this.props.register_blocks)) {
+                (table[1] as any)["register_blocks"] = this.props.register_blocks;
+            }
+
+            if (util.hasValue(this.props.action)) {
+                (table[1] as any)["action"] = this.props.action;
+            }
 
             try {
                 result = await (await util.put("/batteries_modbus_tcp/execute", {
                     host: this.props.host,
                     port: this.props.port,
-                    table: [BatteryModbusTCPTableID.Custom, {
-                        device_address: this.props.table.device_address,
-                        register_blocks: this.props.table.register_blocks,
-                    }],
+                    table: table,
                     cookie: cookie,
                 })).text();
             }
@@ -524,7 +558,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 <Button
                     variant="primary"
                     className="form-control"
-                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || this.props.table.register_blocks.length == 0 || this.state.waiting}
+                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || (!util.hasValue(this.props.action) && (!util.hasValue(this.props.register_blocks) || this.props.register_blocks.length == 0)) || this.state.waiting}
                     onClick={async () => await this.execute()}>{__("batteries_modbus_tcp.content.execute")}
                 </Button>
             </FormRow>
@@ -615,6 +649,21 @@ function import_register_table(table: RegisterTable)
     return {device_address: table.device_address, register_blocks: register_blocks};
 }
 
+function import_victron_energy_gx_action(action: {device_address: number})
+{
+    if (!util.isNonNullObject(action)) {
+        console.log("Batteries Modbus/TCP: Imported config action is not an object");
+        return null;
+    }
+
+    if (typeof action.device_address != "number") {
+        console.log("Batteries Modbus/TCP: Imported config register table device address is not a number");
+        return null;
+    }
+
+    return {device_address:  action.device_address};
+}
+
 export function init() {
     return {
         [BatteryClassID.ModbusTCP]: {
@@ -647,7 +696,7 @@ export function init() {
                     return null;
                 }
 
-                let table: TableConfigCustom;
+                let table: TableConfig;
 
                 switch (new_config[1].table[0]) {
                     case BatteryModbusTCPTableID.Custom:
@@ -664,6 +713,27 @@ export function init() {
                             revoke_discharge_override:   import_register_table(new_config[1].table[1].revoke_discharge_override),
                             forbid_charge:               import_register_table(new_config[1].table[1].forbid_charge),
                             revoke_charge_override:      import_register_table(new_config[1].table[1].revoke_charge_override),
+                        }]
+
+                        if (!util.hasValue(table[1].permit_grid_charge)
+                         || !util.hasValue(table[1].revoke_grid_charge_override)
+                         || !util.hasValue(table[1].forbid_discharge)
+                         || !util.hasValue(table[1].revoke_discharge_override)
+                         || !util.hasValue(table[1].forbid_charge)
+                         || !util.hasValue(table[1].revoke_charge_override)) {
+                            return null;
+                        }
+
+                        break;
+
+                    case BatteryModbusTCPTableID.VictronEnergyGX:
+                        table = [BatteryModbusTCPTableID.VictronEnergyGX, {
+                            permit_grid_charge:          import_victron_energy_gx_action(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_victron_energy_gx_action(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_victron_energy_gx_action(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_victron_energy_gx_action(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_victron_energy_gx_action(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_victron_energy_gx_action(new_config[1].table[1].revoke_charge_override),
                         }]
 
                         if (!util.hasValue(table[1].permit_grid_charge)
@@ -743,6 +813,7 @@ export function init() {
                             required
                             items={[
                                 // Keep alphabetically sorted
+                                [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
                                 [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
                             ]}
                             placeholder={__("select")}
@@ -753,7 +824,96 @@ export function init() {
                     </FormRow>,
                 ];
 
-                if (util.hasValue(config[1].table) && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
+                if (util.hasValue(config[1].table)
+                 && config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX) {
+                    edit_children.push(
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.PermitGridCharge))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].permit_grid_charge.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].permit_grid_charge.device_address} action={BatteryAction.PermitGridCharge} />
+                        </CollapsedSection>,
+
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.RevokeGridChargeOverride))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].revoke_grid_charge_override.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_grid_charge_override.device_address} action={BatteryAction.RevokeGridChargeOverride} />
+                        </CollapsedSection>,
+
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.ForbidDischarge))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].forbid_discharge.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].forbid_discharge.device_address} action={BatteryAction.ForbidDischarge} />
+                        </CollapsedSection>,
+
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.RevokeDischargeOverride))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].revoke_discharge_override.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_discharge_override.device_address} action={BatteryAction.RevokeDischargeOverride} />
+                        </CollapsedSection>,
+
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.ForbidCharge))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].forbid_charge.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: {...(config[1].table as TableConfigCustom)[1].forbid_charge, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].forbid_charge.device_address} action={BatteryAction.ForbidCharge} />
+                        </CollapsedSection>,
+
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.RevokeChargeOverride))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].revoke_charge_override.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_charge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_charge_override.device_address} action={BatteryAction.RevokeChargeOverride} />
+                        </CollapsedSection>,
+                    );
+                }
+                else if (util.hasValue(config[1].table)
+                      && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
                     let total_values_count_permit_grid_charge = get_total_values_count(config[1].table[1].permit_grid_charge);
                     let total_values_count_revoke_grid_charge_override = get_total_values_count(config[1].table[1].revoke_grid_charge_override);
                     let total_values_count_forbid_discharge = get_total_values_count(config[1].table[1].forbid_discharge);
@@ -801,7 +961,7 @@ export function init() {
                                     table={config[1].table[1].permit_grid_charge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].permit_grid_charge} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].permit_grid_charge.device_address} register_blocks={config[1].table[1].permit_grid_charge.register_blocks} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
@@ -822,7 +982,7 @@ export function init() {
                                     table={config[1].table[1].revoke_grid_charge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].revoke_grid_charge_override} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_grid_charge_override.device_address} register_blocks={config[1].table[1].revoke_grid_charge_override.register_blocks} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
@@ -843,7 +1003,7 @@ export function init() {
                                     table={config[1].table[1].forbid_discharge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].forbid_discharge} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].forbid_discharge.device_address} register_blocks={config[1].table[1].forbid_discharge.register_blocks} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
@@ -864,7 +1024,7 @@ export function init() {
                                     table={config[1].table[1].revoke_discharge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].revoke_discharge_override} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_discharge_override.device_address} register_blocks={config[1].table[1].revoke_discharge_override.register_blocks} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
@@ -885,7 +1045,7 @@ export function init() {
                                     table={config[1].table[1].forbid_charge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].forbid_charge} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].forbid_charge.device_address} register_blocks={config[1].table[1].forbid_charge.register_blocks} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
@@ -906,7 +1066,7 @@ export function init() {
                                     table={config[1].table[1].revoke_charge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: table})}))} />
                             </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].revoke_charge_override} />
+                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].revoke_charge_override.device_address} register_blocks={config[1].table[1].revoke_charge_override.register_blocks} />
                         </CollapsedSection>,
                     );
                 }

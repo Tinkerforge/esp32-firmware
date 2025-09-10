@@ -26,6 +26,7 @@
 #include "battery_modbus_tcp.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "battery_modbus_tcp_specs.h"
 #include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 #include "tools.h"
 
@@ -137,6 +138,27 @@ void BatteriesModbusTCP::pre_setup()
         })},
     })});
 
+    table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
+        {"permit_grid_charge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_PermitGridCharge)},
+        })},
+        {"revoke_grid_charge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeGridChargeOverride)},
+        })},
+        {"forbid_discharge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_ForbidDischarge)},
+        })},
+        {"revoke_discharge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeDischargeOverride)},
+        })},
+        {"forbid_charge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_ForbidCharge)},
+        })},
+        {"revoke_charge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeChargeOverride)},
+        })},
+    })});
+
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"host", Config::Str("", 0, 64)},
@@ -162,6 +184,11 @@ void BatteriesModbusTCP::pre_setup()
         )},
     })});
 
+    execute_table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
+        {"device_address", Config::Uint8(1)},
+        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+    })});
+
     execute_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
@@ -181,6 +208,11 @@ void BatteriesModbusTCP::register_urls()
     api.addCommand("batteries_modbus_tcp/execute", &execute_config, {}, [this](String &/*errmsg*/) {
         uint32_t cookie = execute_config.get("cookie")->asUint();
         BatteryModbusTCPTableID table_id = execute_config.get("table")->getTag<BatteryModbusTCPTableID>();
+        Config *table_config = static_cast<Config *>(execute_config.get("table")->get());
+        uint8_t device_address;
+        BatteryAction action;
+        const BatteryModbusTCP::TableSpec *table;
+        BatteryModbusTCP::TableSpec *table_to_free = nullptr;
 
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
@@ -188,6 +220,20 @@ void BatteriesModbusTCP::register_urls()
             return;
 
         case BatteryModbusTCPTableID::Custom:
+            table_to_free = BatteryModbusTCP::load_table(table_config, &device_address);
+            table = table_to_free;
+            break;
+
+        case BatteryModbusTCPTableID::VictronEnergyGX:
+            device_address = table_config->get("device_address")->asUint8();
+            action = table_config->get("action")->asEnum<BatteryAction>();
+            table = get_victron_energy_gx_table(action);
+
+            if (table == nullptr) {
+                report_errorf(cookie, "Unknown Victron Energy GX action: %u", static_cast<uint8_t>(action));
+                return;
+            }
+
             break;
 
         default:
@@ -197,37 +243,32 @@ void BatteriesModbusTCP::register_urls()
 
         const String &host = execute_config.get("host")->asString();
         uint16_t port = static_cast<uint16_t>(execute_config.get("port")->asUint());
-        const Config *table_config = static_cast<const Config *>(execute_config.get("table")->get());
 
         defer {
             // When done parsing the execute command, drop Strings and Array items from config
             // to free memory. This invalidates the "host" references above, which will be copied
             // by the execute call before being cleared.
             execute_config.get("host")->clearString();
-            execute_config.get("table")->get()->get("register_blocks")->removeAll();
+
+            if (table_id == BatteryModbusTCPTableID::Custom) {
+                table_config->get("register_blocks")->removeAll();
+            }
         };
 
-        BatteryModbusTCP::TableSpec *table = BatteryModbusTCP::init_table(table_config);
-
-        if (table == nullptr) {
-            report_errorf(cookie, "Table has no registers");
-            return;
-        }
-
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [cookie, table, host, port](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [cookie, host, port, device_address, table, table_to_free](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char error[256] = "";
 
                 GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, host.c_str(), port, error, sizeof(error));
                 report_errorf(cookie, "%s", error);
-                BatteryModbusTCP::free_table(table);
+                BatteryModbusTCP::free_table(table_to_free);
                 return;
             }
 
             TFModbusTCPSharedClient *client = static_cast<TFModbusTCPSharedClient *>(shared_client);
 
-            BatteryModbusTCP::execute(client, table, [cookie, client, table](const char *error) {
+            BatteryModbusTCP::execute(client, device_address, table, [cookie, client, table_to_free](const char *error) {
                 if (error == nullptr) {
                     report_success(cookie);
                 }
@@ -239,7 +280,7 @@ void BatteriesModbusTCP::register_urls()
                     modbus_tcp_client.get_pool()->release(client);
                 });
 
-                BatteryModbusTCP::free_table(table);
+                BatteryModbusTCP::free_table(table_to_free);
             });
         },
         [](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {

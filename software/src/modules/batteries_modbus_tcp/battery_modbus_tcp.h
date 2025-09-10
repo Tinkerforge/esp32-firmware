@@ -35,17 +35,16 @@ public:
     struct RegisterBlockSpec {
         ModbusFunctionCode function_code;
         uint16_t start_address;
-        void *values_buffer;
+        const void *values_buffer;
         uint16_t values_count; // not bytes, but registers or coils
     };
 
     struct TableSpec {
-        uint8_t device_address;
-        RegisterBlockSpec *register_blocks;
+        const RegisterBlockSpec *register_blocks;
         size_t register_blocks_count;
     };
 
-    static TableSpec *init_table(const Config *config);
+    static TableSpec *load_table(const Config *config, uint8_t *device_address_ptr);
     static void free_table(TableSpec *table);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
@@ -62,7 +61,7 @@ public:
 
     typedef std::function<void(const char *error)> ExecuteCallback;
 
-    static void execute(TFModbusTCPSharedClient *client, const TableSpec *table, ExecuteCallback &&callback);
+    static void execute(TFModbusTCPSharedClient *client, uint8_t device_address, const TableSpec *table, ExecuteCallback &&callback);
 
 private:
     void connect_callback() override;
@@ -74,4 +73,5 @@ private:
 
     BatteryModbusTCPTableID table_id;
     const TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    uint8_t device_addresses[6] = {0, 0, 0, 0, 0, 0};
 };
