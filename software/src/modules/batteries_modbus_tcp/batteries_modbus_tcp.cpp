@@ -159,6 +159,27 @@ void BatteriesModbusTCP::pre_setup()
         })},
     })});
 
+    table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
+        {"permit_grid_charge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_PermitGridCharge)},
+        })},
+        {"revoke_grid_charge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeGridChargeOverride)},
+        })},
+        {"forbid_discharge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_ForbidDischarge)},
+        })},
+        {"revoke_discharge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeDischargeOverride)},
+        })},
+        {"forbid_charge", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_ForbidCharge)},
+        })},
+        {"revoke_charge_override", Config::Object({
+            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeChargeOverride)},
+        })},
+    })});
+
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"host", Config::Str("", 0, 64)},
@@ -185,6 +206,11 @@ void BatteriesModbusTCP::pre_setup()
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
+        {"device_address", Config::Uint8(1)},
+        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+    })});
+
+    execute_table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
         {"device_address", Config::Uint8(1)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
@@ -231,6 +257,18 @@ void BatteriesModbusTCP::register_urls()
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Victron Energy GX action: %u", static_cast<uint8_t>(action));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::DeyeHybridInverter:
+            device_address = table_config->get("device_address")->asUint8();
+            action = table_config->get("action")->asEnum<BatteryAction>();
+            table = get_deye_hybrid_inverter_table(action);
+
+            if (table == nullptr) {
+                report_errorf(cookie, "Unknown Deye Hybrid Inverter action: %u", static_cast<uint8_t>(action));
                 return;
             }
 
