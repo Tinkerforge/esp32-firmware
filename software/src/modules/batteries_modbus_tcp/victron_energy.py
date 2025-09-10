@@ -41,7 +41,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,
                 'values': [
-                    32767
+                    32767,
                 ],
             },
             {
@@ -49,7 +49,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2702,
                 'values': [
-                    0
+                    0,
                 ],
             },
         ],
@@ -64,7 +64,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,
                 'values': [
-                    65535
+                    65535,
                 ],
             },
             {
@@ -72,7 +72,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2702,
                 'values': [
-                    100
+                    100,
                 ],
             },
         ],
@@ -87,7 +87,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2701,
                 'values': [
-                    0
+                    0,
                 ],
             },
             {
@@ -95,7 +95,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2705,
                 'values': [
-                    0
+                    0,
                 ],
             },
         ],
@@ -110,7 +110,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2701,
                 'values': [
-                    100
+                    100,
                 ],
             },
             {
@@ -118,7 +118,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2705,
                 'values': [
-                    155
+                    155,
                 ],
             },
         ],
