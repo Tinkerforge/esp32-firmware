@@ -204,8 +204,23 @@ public:
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
+    /**
+     * Update the billing data. This will update the bill entry with the given data and inform all subscribers of the new bill entry.
+     * @param id The ID of the bill entry to update. If it matches an existing entry, the entry will be updated. If it does not match an existing entry, a new entry will be created.
+     * @param start_time Start time of billing period
+     * @param end_time End time of billing period
+     * @param energy_wh The amount of energy charged in Wh
+     * @param cost_eur_cent The cost of the charged energy in Euro cents
+     * @param grid_energy_percent The percentage of energy that was drawn from the grid
+     * @param grid_cost_percent The percentage of cost that was due to grid energy
+     * @param self_produced_energy_percent The amount of self produced energy used for charging in Wh
+     * @param self_produced_cost_percent The cost of the self produced energy used for charging in Euro cents
+     */
+    void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent=100, int grid_cost_percent=100, int self_produced_energy_percent=0, int self_produced_cost_percent=0);
+
 private:
     int bill_feature_address = 1;
+    BillListDataType bill_list_data{};
     /**
      * Handle the Bill Feature.
      * @param header
@@ -264,7 +279,7 @@ private:
     CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
     CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 
-
+    // These can be freely assigned but need to be unique within the entity.
     int loadControl_feature_address = 10;
     int deviceConfiguration_feature_address = 20;
     int deviceDiagnosis_feature_address = 30;
@@ -281,6 +296,8 @@ private:
     uint64_t heartbeat_timeout_task = 0;
     void handle_heartbeat_timeout() const;
 
+    // Electrical Connection Data as required for Scenario 4 - Constraints
+    ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
 
 };
 
@@ -368,7 +385,7 @@ std::string iso_duration_to_string(seconds_t duration);
 /**
  * Convert a ISO 8601 duration string to a duration in seconds.
  * @param iso_duration The ISO 8601 duration string
- * @return The duration in seconds. Returns -8601 seconds if the string is invalid. TODO: Improve error handling.
+ * @return The duration in seconds.
  */
 seconds_t iso_duration_to_seconds(std::string iso_duration);
 } // namespace EEBUS_USECASE_HELPERS
