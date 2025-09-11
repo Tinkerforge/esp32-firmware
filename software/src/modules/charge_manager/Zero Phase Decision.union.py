@@ -19,4 +19,12 @@ spec = Union("Zero Phase Decision", 20, variants=[
         Member('Phase', Types.U8)
     ]),
     Variant('Yes Unknown'),
+    Variant('No Cloud Filter Blocks Until', [
+        Member('Timestamp', Types.Uptime),
+        Member('Overload mA', Types.S32),
+    ]),
+    Variant('No Hysteresis Blocks Until', [
+        Member('Timestamp', Types.Uptime),
+        Member('Overload mA', Types.S32),
+    ]),
 ])

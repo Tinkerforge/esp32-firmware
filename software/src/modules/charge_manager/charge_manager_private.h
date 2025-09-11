@@ -19,7 +19,6 @@
 #include "one_phase_decision.union.h"
 #include "three_phase_decision.union.h"
 #include "current_decision.union.h"
-#include "global_decision.union.h"
 
 struct ChargerDecision {
     ZeroPhaseDecision zero;

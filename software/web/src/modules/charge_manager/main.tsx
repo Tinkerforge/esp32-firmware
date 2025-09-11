@@ -35,10 +35,7 @@ import { EcoChart } from "modules/eco/main";
 import { ButtonGroup, Button, Collapse } from "react-bootstrap";
 
 import { ConfigChargeMode } from "./config_charge_mode.enum";
-import { GlobalAllocatorDecision } from "./global_allocator_decision.enum";
-import { InputText } from "ts/components/input_text";
 import { InputSelect } from "ts/components/input_select";
-import { ChargerDecisionTag } from "./charger_decision_tag.enum";
 import { ZeroPhaseDecisionTag } from "./zero_phase_decision_tag.enum";
 import { ZeroPhaseDecision } from "./zero_phase_decision.union";
 import { OnePhaseDecision } from "./one_phase_decision.union";
@@ -47,7 +44,6 @@ import { ThreePhaseDecision } from "./three_phase_decision.union";
 import { ThreePhaseDecisionTag } from "./three_phase_decision_tag.enum";
 import { CurrentDecision } from "./current_decision.union";
 import { CurrentDecisionTag } from "./current_decision_tag.enum";
-import { GlobalDecisionTag } from "./global_decision_tag.enum";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -181,6 +177,10 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
             return with_timespan((timespan) => "Phase overload: " + d0[1][1] + " mA on phase " + phase_to_string(d0[1][2]) + ": " + timespan, d0[1][0]);
         case ZeroPhaseDecisionTag.YesUnknown:
             return "Unknown";
+        case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
+            return with_timespan((timespan) => "PV excess overload: " + d0[1][1] + " mA, but cloud filter prevents shutdown for " + timespan, d0[1][0]);
+        case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
+            return with_timespan((timespan) => "PV excess overload: " + d0[1][1] + " mA, but hysteresis prevents shutdown for " + timespan, d0[1][0]);
     }
 }
 
@@ -289,14 +289,6 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
     </>
 }
 
-function global_alloc_decision_to_text(x: API.getType['charge_manager/state']): string {
-    switch (x.d[0]) {
-        case GlobalDecisionTag.None: return "";
-        case GlobalDecisionTag.NextRotationAt: return with_timespan(__("charge_manager.script.next_rotation_at"), x.d[1]);
-        case GlobalDecisionTag.PVExcessOverloadedHysteresisBlocksUntil: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_blocks_until")((x as any).d[1][1], ts), x.d[1][0]);
-        case GlobalDecisionTag.HysteresisElapsesAt: return with_timespan(__("charge_manager.script.hysteresis_elapses_at"), x.d[1]);
-    }
-}
 
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
     constructor() {
@@ -407,8 +399,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         let row_count = Math.ceil(cards.length / 2);
 
         return <StatusSection name="charge_manager">
-            <FormRow label="charge_manager_info"><InputText value={global_alloc_decision_to_text(state.state)}/></FormRow>
-
             {controls_only_self && API.get_unchecked("power_manager/config")?.enabled ? null :
                 <FormRow label={__("charge_manager.status.charge_manager")}>
                     <IndicatorGroup

@@ -35,7 +35,6 @@
 #include "one_phase_decision.union.h"
 #include "three_phase_decision.union.h"
 #include "current_decision.union.h"
-#include "global_decision.union.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
@@ -178,7 +177,6 @@ void ChargeManager::pre_setup()
         {"l_spread", Config::Tuple(4, Config::Int32(0))},
         {"l_max_pv", Config::Int32(0)},
         {"alloc", Config::Tuple(4, Config::Int32(0))},
-        {"d", GlobalDecision::getUnion()},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -512,7 +510,6 @@ void ChargeManager::setup()
     this->charger_state = (ChargerState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerState));
     this->charger_allocation_state = (ChargerAllocationState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerAllocationState));
     this->charger_decisions = (ChargerDecision *)calloc(this->charger_count, sizeof(ChargerDecision));
-    this->global_decision = (GlobalDecision *)calloc(1, sizeof(GlobalDecision));
 
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
@@ -579,8 +576,7 @@ void ChargeManager::setup()
                 this->ca_state,
                 this->charger_allocation_state,
                 &allocated_current,
-                this->charger_decisions,
-                this->global_decision
+                this->charger_decisions
             );
 
             for (size_t i = 0; i < 4; i++) {
@@ -602,7 +598,6 @@ void ChargeManager::setup()
                 this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
                 this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
             }
-            this->global_decision->writeToConfig((Config *)this->state.get("d"));
 
             this->state.get("state")->updateUint(result);
         }, 1_s);

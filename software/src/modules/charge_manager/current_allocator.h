@@ -39,8 +39,7 @@ int allocate_current(
         CurrentAllocatorState *ca_state,
         ChargerAllocationState *charger_allocation_state,
         uint32_t *allocated_current,
-        ChargerDecision *charger_decisions,
-        GlobalDecision *global_decision);
+        ChargerDecision *charger_decisions);
 
 bool update_from_client_packet(
     uint8_t client_id,

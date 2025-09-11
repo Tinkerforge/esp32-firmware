@@ -3,7 +3,6 @@ import { ZeroPhaseDecision } from "./zero_phase_decision.union";
 import { OnePhaseDecision } from "./one_phase_decision.union";
 import { ThreePhaseDecision } from "./three_phase_decision.union";
 import { CurrentDecision } from "./current_decision.union";
-import { GlobalDecision } from "./global_decision.union";
 
 type ChargerState = {
     s: number,
@@ -39,8 +38,7 @@ export type state = {
     l_min: number[],
     l_spread: number[],
     l_max_pv: number,
-    alloc: number[],
-    d: GlobalDecision
+    alloc: number[]
 }
 
 interface ChargerConfig {
