@@ -173,7 +173,7 @@ class EvseEntity final : public EebusEntity
 {
 public:
     // TODO: Instead of pulling data from API, API pushes data to this usecases maybe? So we can trigger updates to subscribers?
-    EvseEntity() = default;
+    EvseEntity();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
@@ -272,6 +272,19 @@ public:
      * @return a list of the supported features.
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    /**
+     * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
+     * @param power_limit_w Power limit in watts.
+     * @param duration Duration in seconds.
+     */
+    void update_failsafe(int power_limit_w, seconds_t duration);
+    /**
+     * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPC UC TS v1.0.0 3.2.2.2.5.1
+     * @param power_consumption_max_w
+     * @param power_consumption_contract_max_w
+     */
+    void update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w);
 
 private:
     CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
