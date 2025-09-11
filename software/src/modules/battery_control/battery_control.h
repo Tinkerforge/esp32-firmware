@@ -34,8 +34,6 @@
 #define BC_SCHEDULE_EXPENSIVE_POS  (1)
 #define BC_SCHEDULE_EXPENSIVE_MASK (1 << BC_SCHEDULE_EXPENSIVE_POS)
 
-struct battery_control_action_info;
-
 class BatteryControl final : public IModule
 {
 public:
@@ -95,34 +93,39 @@ private:
 
     Config rule_prototype;
 
-    uint64_t evaluation_task_id = 0;
     size_t trace_buffer_idx;
 
-    const control_rule *permit_grid_charge_rules = nullptr;
-    const control_rule *forbid_discharge_rules   = nullptr;
-    const control_rule *forbid_charge_rules      = nullptr;
-    uint8_t permit_grid_charge_rules_count = 0;
-    uint8_t forbid_discharge_rules_count   = 0;
-    uint8_t forbid_charge_rules_count      = 0;
+    struct battery_control_data {
+        uint64_t evaluation_task_id = 0;
 
-    bool forbid_discharge_during_fast_charge = false;
-    bool evaluation_must_update_soc = false;
-    bool evaluation_must_check_rules = false;
-    bool network_connect_seen = false;
+        const control_rule *permit_grid_charge_rules = nullptr;
+        const control_rule *forbid_discharge_rules   = nullptr;
+        const control_rule *forbid_charge_rules      = nullptr;
+        uint8_t permit_grid_charge_rules_count = 0;
+        uint8_t forbid_discharge_rules_count   = 0;
+        uint8_t forbid_charge_rules_count      = 0;
 
-    int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
-    int32_t price_cache    = std::numeric_limits<decltype(price_cache   )>::min();
-    int32_t forecast_cache = std::numeric_limits<decltype(forecast_cache)>::min();
-    uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
-    bool fast_charger_in_c_cache = false;
+        bool forbid_discharge_during_fast_charge = false;
+        bool evaluation_must_update_soc = false;
+        bool evaluation_must_check_rules = false;
+        bool network_connect_seen = false;
 
-    int32_t tariff_schedule_start_min = 0;
-    uint8_t tariff_schedule[24 * 4] = {0};
-    uint8_t tariff_schedule_cache = 0;
+        int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
+        int32_t price_cache    = std::numeric_limits<decltype(price_cache   )>::min();
+        int32_t forecast_cache = std::numeric_limits<decltype(forecast_cache)>::min();
+        uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
+        bool fast_charger_in_c_cache = false;
 
-    battery_repeat_data *battery_repeats = nullptr;
-    uint8_t max_used_batteries           = 0;
-    bool must_repeat                     = false;
+        int32_t tariff_schedule_start_min = 0;
+        uint8_t tariff_schedule[24 * 4] = {0};
+        uint8_t tariff_schedule_cache = 0;
 
-    action_influence_data action_influence_active[3];
+        battery_repeat_data *battery_repeats = nullptr;
+        uint8_t max_used_batteries           = 0;
+        bool must_repeat                     = false;
+
+        action_influence_data action_influence_active[3];
+    };
+
+    battery_control_data *data = nullptr;
 };

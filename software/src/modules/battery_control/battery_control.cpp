@@ -37,8 +37,8 @@ void BatteryControl::pre_setup()
 
     config = Config::Object({
         {"forbid_discharge_during_fast_charge", Config::Bool(false)},
-        {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(tariff_schedule))},
-        {"expensive_tariff_quarters", Config::Uint8(0, sizeof(tariff_schedule))},
+        {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
+        {"expensive_tariff_quarters", Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
     });
 
     rule_prototype = Config::Object({
@@ -72,6 +72,8 @@ void BatteryControl::setup()
 
     initialized = true;
 
+    uint8_t max_used_batteries = 0;
+
     for (uint8_t i = OPTIONS_BATTERIES_MAX_SLOTS(); i > 0; i--) {
         if (batteries.get_battery_class(i - 1) != BatteryClassID::None) {
             max_used_batteries = i;
@@ -83,10 +85,20 @@ void BatteryControl::setup()
         return;
     }
 
-    battery_repeats = static_cast<battery_repeat_data *>(malloc(max_used_batteries * sizeof(battery_repeat_data)));
+    void *ptr = malloc(sizeof(*data));
 
-    if (battery_repeats == nullptr) {
-        logger.printfln("No memory for battery repeats. Battery Control disabled.");
+    if (ptr == nullptr) {
+        logger.printfln("No memory for runtime data. Module disabled.");
+        return;
+    }
+
+    data = new(ptr) typeof(*data); // Use placement new to initialize member variables.
+
+    data->max_used_batteries = max_used_batteries;
+    data->battery_repeats = static_cast<battery_repeat_data *>(malloc(max_used_batteries * sizeof(battery_repeat_data)));
+
+    if (data->battery_repeats == nullptr) {
+        logger.printfln("No memory for battery repeats. Module disabled.");
         return;
     }
 
@@ -96,13 +108,13 @@ void BatteryControl::setup()
 
         battery->get_repeat_intervals(intervals_s);
 
-        battery_repeat_data *repeat_data = battery_repeats + battery_i;
+        battery_repeat_data *repeat_data = data->battery_repeats + battery_i;
 
         for (size_t action_i = 0; action_i < ARRAY_SIZE(intervals_s); action_i++) {
             const uint16_t interval_s = intervals_s[action_i];
 
             if (interval_s != 0) {
-                must_repeat = true;
+                data->must_repeat = true;
             }
 
             repeat_data->repeat_interval[action_i]    = seconds_t{interval_s};
@@ -110,11 +122,11 @@ void BatteryControl::setup()
         }
     }
 
-    for (size_t i = 0; i < ARRAY_SIZE(soc_cache); i++) {
-        soc_cache[i] = std::numeric_limits<uint8_t>::max();
+    for (size_t i = 0; i < ARRAY_SIZE(data->soc_cache); i++) {
+        data->soc_cache[i] = std::numeric_limits<uint8_t>::max();
     }
 
-    forbid_discharge_during_fast_charge = config.get("forbid_discharge_during_fast_charge")->asBool() && charge_manager.get_charger_count() > 0;
+    data->forbid_discharge_during_fast_charge = config.get("forbid_discharge_during_fast_charge")->asBool() && charge_manager.get_charger_count() > 0;
 
     const size_t permit_grid_charge_rules_cnt = rules_permit_grid_charge.count();
     const size_t forbid_discharge_rules_cnt   = rules_forbid_discharge.count();
@@ -130,24 +142,24 @@ void BatteryControl::setup()
 
         control_rule *pgc_rules = rules;
         if (permit_grid_charge_rules_cnt > 0) {
-            permit_grid_charge_rules       = pgc_rules;
-            permit_grid_charge_rules_count = static_cast<uint8_t>(permit_grid_charge_rules_cnt);
+            data->permit_grid_charge_rules       = pgc_rules;
+            data->permit_grid_charge_rules_count = static_cast<uint8_t>(permit_grid_charge_rules_cnt);
 
             preprocess_rules(&rules_permit_grid_charge, pgc_rules, permit_grid_charge_rules_cnt);
         }
 
-        control_rule *fd_rules = pgc_rules + permit_grid_charge_rules_count;
+        control_rule *fd_rules = pgc_rules + data->permit_grid_charge_rules_count;
         if (forbid_discharge_rules_cnt > 0) {
-            forbid_discharge_rules       = fd_rules;
-            forbid_discharge_rules_count = static_cast<uint8_t>(forbid_discharge_rules_cnt);
+            data->forbid_discharge_rules       = fd_rules;
+            data->forbid_discharge_rules_count = static_cast<uint8_t>(forbid_discharge_rules_cnt);
 
             preprocess_rules(&rules_forbid_discharge, fd_rules, forbid_discharge_rules_cnt);
         }
 
-        control_rule *fc_rules = fd_rules + forbid_discharge_rules_count;
+        control_rule *fc_rules = fd_rules + data->forbid_discharge_rules_count;
         if (forbid_charge_rules_cnt > 0) {
-            forbid_charge_rules       = fc_rules;
-            forbid_charge_rules_count = static_cast<uint8_t>(forbid_charge_rules_cnt);
+            data->forbid_charge_rules       = fc_rules;
+            data->forbid_charge_rules_count = static_cast<uint8_t>(forbid_charge_rules_cnt);
 
             preprocess_rules(&rules_forbid_charge, fc_rules, forbid_charge_rules_cnt);
         }
@@ -165,9 +177,13 @@ void BatteryControl::register_urls()
 
 void BatteryControl::register_events()
 {
-    const size_t total_rules_cnt = static_cast<size_t>(permit_grid_charge_rules_count) + static_cast<size_t>(forbid_discharge_rules_count) + static_cast<size_t>(forbid_charge_rules_count);
+    if (data == nullptr) {
+        return;
+    }
 
-    if (forbid_discharge_during_fast_charge || total_rules_cnt > 0) {
+    const size_t total_rules_cnt = static_cast<size_t>(data->permit_grid_charge_rules_count) + static_cast<size_t>(data->forbid_discharge_rules_count) + static_cast<size_t>(data->forbid_charge_rules_count);
+
+    if (data->forbid_discharge_during_fast_charge || total_rules_cnt > 0) {
 #if MODULE_NETWORK_AVAILABLE()
         network.on_network_connected([this](const Config *connected) {
             if (!connected->asBool()) {
@@ -217,11 +233,11 @@ void BatteryControl::register_events()
                     const float soc = config_soc->asFloat();
 
                     if (!isnan(soc)) {
-                        this->soc_cache[slot] = static_cast<uint8_t>(soc);
-                        logger.tracefln(this->trace_buffer_idx, "meter %lu SOC=%hhu%%", slot, this->soc_cache[slot]);
+                        this->data->soc_cache[slot] = static_cast<uint8_t>(soc);
+                        logger.tracefln(this->trace_buffer_idx, "meter %lu SOC=%hhu%%", slot, this->data->soc_cache[slot]);
 
-                        this->evaluation_must_update_soc  = true;
-                        this->evaluation_must_check_rules = true;
+                        this->data->evaluation_must_update_soc  = true;
+                        this->data->evaluation_must_check_rules = true;
                         this->schedule_evaluation();
                     } else {
                         logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot);
@@ -247,12 +263,12 @@ void BatteryControl::register_events()
             logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
 
             if (price == std::numeric_limits<decltype(price)>::max()) {
-                this->price_cache = std::numeric_limits<decltype(this->price_cache)>::min();
+                this->data->price_cache = std::numeric_limits<decltype(this->data->price_cache)>::min();
             } else {
-                this->price_cache = price;
+                this->data->price_cache = price;
             }
 
-            this->evaluation_must_check_rules = true;
+            this->data->evaluation_must_check_rules = true;
             this->schedule_evaluation();
         }
 
@@ -298,8 +314,8 @@ void BatteryControl::register_events()
         }
 
         logger.tracefln(this->trace_buffer_idx, "wh_tomorrow=%li", wh_tomorrow);
-        this->forecast_cache = wh_tomorrow;
-        this->evaluation_must_check_rules = true;
+        this->data->forecast_cache = wh_tomorrow;
+        this->data->evaluation_must_check_rules = true;
         this->schedule_evaluation();
 
         return EventResult::OK;
@@ -328,8 +344,8 @@ void BatteryControl::update_avg_soc()
     uint32_t soc_sum = 0;
     uint32_t soc_count = 0;
 
-    for (size_t i = 0; i < ARRAY_SIZE(soc_cache); i++) {
-        const uint8_t soc = soc_cache[i];
+    for (size_t i = 0; i < ARRAY_SIZE(data->soc_cache); i++) {
+        const uint8_t soc = data->soc_cache[i];
         if (soc == std::numeric_limits<decltype(soc)>::max()) {
             continue;
         }
@@ -342,9 +358,9 @@ void BatteryControl::update_avg_soc()
         return;
     }
 
-    soc_cache_avg = static_cast<decltype(soc_cache_avg)>(soc_sum / soc_count);
+    data->soc_cache_avg = static_cast<decltype(data->soc_cache_avg)>(soc_sum / soc_count);
 
-    logger.tracefln(trace_buffer_idx, "soc_avg=%li", soc_cache_avg);
+    logger.tracefln(trace_buffer_idx, "soc_avg=%li", data->soc_cache_avg);
 }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
@@ -381,36 +397,36 @@ void BatteryControl::update_tariff_schedule()
         // Loop to readjust to 20h in case DST changed.
     } while (true);
 
-    tariff_schedule_start_min = static_cast<int32_t>(schedule_start_s / 60);
+    data->tariff_schedule_start_min = static_cast<int32_t>(schedule_start_s / 60);
 
-    bool cheap_hours    [sizeof(tariff_schedule)];
-    bool expensive_hours[sizeof(tariff_schedule)];
+    bool cheap_hours    [sizeof(data->tariff_schedule)];
+    bool expensive_hours[sizeof(data->tariff_schedule)];
     bool any_data_available = false;
 
-    if (day_ahead_prices.get_cheap_and_expensive_15m(tariff_schedule_start_min, sizeof(cheap_hours),     cheap_tariff_quarters,     cheap_hours, nullptr)) {
+    if (day_ahead_prices.get_cheap_and_expensive_15m(data->tariff_schedule_start_min, sizeof(cheap_hours),     cheap_tariff_quarters,     cheap_hours, nullptr)) {
         any_data_available = true;
     } else {
         memset(cheap_hours, false, sizeof(cheap_hours));
     }
 
-    if (day_ahead_prices.get_cheap_and_expensive_15m(tariff_schedule_start_min, sizeof(expensive_hours), expensive_tariff_quarters, nullptr,     expensive_hours)) {
+    if (day_ahead_prices.get_cheap_and_expensive_15m(data->tariff_schedule_start_min, sizeof(expensive_hours), expensive_tariff_quarters, nullptr,     expensive_hours)) {
         any_data_available = true;
     } else {
         memset(expensive_hours, false, sizeof(expensive_hours));
     }
 
     if (any_data_available) {
-        for (size_t i = 0; i < sizeof(tariff_schedule); i++) {
-            tariff_schedule[i] = cheap_hours[i]     << BC_SCHEDULE_CHEAP_POS
-                               | expensive_hours[i] << BC_SCHEDULE_EXPENSIVE_POS;
+        for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
+            data->tariff_schedule[i] = cheap_hours[i]     << BC_SCHEDULE_CHEAP_POS
+                                     | expensive_hours[i] << BC_SCHEDULE_EXPENSIVE_POS;
         }
     } else {
-        memset(tariff_schedule, 0, sizeof(tariff_schedule));
+        memset(data->tariff_schedule, 0, sizeof(data->tariff_schedule));
     }
 
-    char str[sizeof(tariff_schedule) + 1];
-    for (size_t i = 0; i < sizeof(tariff_schedule); i++) {
-        str[i] = '0' + tariff_schedule[i];
+    char str[sizeof(data->tariff_schedule) + 1];
+    for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
+        str[i] = '0' + data->tariff_schedule[i];
     }
     str[sizeof(str) - 1] = 0;
     logger.tracefln(this->trace_buffer_idx, "Schedule: %s", str);
@@ -423,46 +439,46 @@ void BatteryControl::evaluate_tariff_schedule()
 {
     const int32_t now_min = static_cast<int32_t>(time(nullptr) / 60);
 
-    if (now_min < tariff_schedule_start_min) {
-        logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, tariff_schedule_start_min);
-        tariff_schedule_cache = 0;
+    if (now_min < data->tariff_schedule_start_min) {
+        logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, data->tariff_schedule_start_min);
+        data->tariff_schedule_cache = 0;
         return;
     }
 
-    const uint32_t quarter_index = static_cast<uint32_t>(now_min - tariff_schedule_start_min) / 15;
+    const uint32_t quarter_index = static_cast<uint32_t>(now_min - data->tariff_schedule_start_min) / 15;
 
-    if (quarter_index >= sizeof(tariff_schedule)) {
-        logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(tariff_schedule));
-        tariff_schedule_cache = 0;
+    if (quarter_index >= sizeof(data->tariff_schedule)) {
+        logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(data->tariff_schedule));
+        data->tariff_schedule_cache = 0;
         return;
     }
 
-    const uint8_t charge_permitted_schedule_cache_update = tariff_schedule[quarter_index];
+    const uint8_t charge_permitted_schedule_cache_update = data->tariff_schedule[quarter_index];
 
-    if (tariff_schedule_cache != charge_permitted_schedule_cache_update) {
-        tariff_schedule_cache  = charge_permitted_schedule_cache_update;
-        logger.tracefln(this->trace_buffer_idx, "tariff_schedule_cache=%hhu", tariff_schedule_cache);
-        evaluation_must_check_rules = true;
+    if (data->tariff_schedule_cache != charge_permitted_schedule_cache_update) {
+        data->tariff_schedule_cache  = charge_permitted_schedule_cache_update;
+        logger.tracefln(this->trace_buffer_idx, "tariff_schedule_cache=%hhu", data->tariff_schedule_cache);
+        data->evaluation_must_check_rules = true;
         schedule_evaluation();
     }
 }
 
 void BatteryControl::schedule_evaluation()
 {
-    if (evaluation_task_id != 0) {
+    if (data->evaluation_task_id != 0) {
         return;
     }
 
-    evaluation_task_id = task_scheduler.scheduleOnce([this]() {
+    data->evaluation_task_id = task_scheduler.scheduleOnce([this]() {
         logger.tracefln(this->trace_buffer_idx, "Evaluating");
 
-        this->evaluation_task_id = 0;
+        this->data->evaluation_task_id = 0;
 
-        if (this->evaluation_must_check_rules) {
-            this->evaluation_must_check_rules = false;
+        if (this->data->evaluation_must_check_rules) {
+            this->data->evaluation_must_check_rules = false;
 
-            if (this->evaluation_must_update_soc) {
-                this->evaluation_must_update_soc = false;
+            if (this->data->evaluation_must_update_soc) {
+                this->data->evaluation_must_update_soc = false;
 
                 this->update_avg_soc();
             }
@@ -523,10 +539,10 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
     for (size_t i = 0; i < rules_count; i++) {
         const control_rule *rule = rules + i;
 
-        if (rule_condition_failed(rule->soc_cond,      rule->soc_th,      soc_cache_avg )) continue;
-        if (rule_condition_failed(rule->price_cond,    rule->price_th,    price_cache   )) continue;
-        if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, forecast_cache)) continue;
-        if (schedule_rule_condition_failed(rule->schedule_cond, tariff_schedule_cache)) continue;
+        if (rule_condition_failed(rule->soc_cond,      rule->soc_th,      data->soc_cache_avg )) continue;
+        if (rule_condition_failed(rule->price_cond,    rule->price_th,    data->price_cache   )) continue;
+        if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, data->forecast_cache)) continue;
+        if (schedule_rule_condition_failed(rule->schedule_cond, data->tariff_schedule_cache)) continue;
 
         // Complete rule matches.
         logger.tracefln(this->trace_buffer_idx, "%s rule %zu matches", rules_type_name, i);
@@ -538,14 +554,14 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
 
 void BatteryControl::evaluate_all_rules()
 {
-    action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules = evaluate_rules(permit_grid_charge_rules, permit_grid_charge_rules_count, "Permit grid charge");
-    action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules = evaluate_rules(forbid_discharge_rules,   forbid_discharge_rules_count,   "Forbid discharge"  );
-    action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules = evaluate_rules(forbid_charge_rules,      forbid_charge_rules_count,      "Forbid charge"     );
+    data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules = evaluate_rules(data->permit_grid_charge_rules, data->permit_grid_charge_rules_count, "Permit grid charge");
+    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules = evaluate_rules(data->forbid_discharge_rules,   data->forbid_discharge_rules_count,   "Forbid discharge"  );
+    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules = evaluate_rules(data->forbid_charge_rules,      data->forbid_charge_rules_count,      "Forbid charge"     );
 
     logger.tracefln(this->trace_buffer_idx, "charge_permitted_by_rules=%u discharge_forbidden_by_rules=%u charge_forbidden_by_rules=%u",
-                    static_cast<unsigned>(action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules),
-                    static_cast<unsigned>(action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules),
-                    static_cast<unsigned>(action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules));
+                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules),
+                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules),
+                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules));
 }
 
 void BatteryControl::evaluate_summary()
@@ -554,24 +570,25 @@ void BatteryControl::evaluate_summary()
     evaluate_action_pair(ActionPair::ForbidCharge);
 
     TristateBool discharge_forbidden_update;
+    action_influence_data *forbid_discharge_influence = data->action_influence_active + static_cast<size_t>(ActionPair::ForbidDischarge);
 
-    if (action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules == TristateBool::True) {
+    if (forbid_discharge_influence->activated_by_rules == TristateBool::True) {
         discharge_forbidden_update = TristateBool::True;
-    } else if (forbid_discharge_during_fast_charge && fast_charger_in_c_cache) {
+    } else if (data->forbid_discharge_during_fast_charge && data->fast_charger_in_c_cache) {
         discharge_forbidden_update = TristateBool::True;
     } else {
         discharge_forbidden_update = TristateBool::False;
     }
 
-    if (action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated != discharge_forbidden_update) {
-        action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated  = discharge_forbidden_update;
+    if (forbid_discharge_influence->activated != discharge_forbidden_update) {
+        forbid_discharge_influence->activated  = discharge_forbidden_update;
         update_batteries_and_state(ActionPair::ForbidDischarge, true);
     }
 }
 
 void BatteryControl::evaluate_action_pair(ActionPair action_pair)
 {
-    action_influence_data *action_influence = action_influence_active + static_cast<size_t>(action_pair);
+    action_influence_data *action_influence = data->action_influence_active + static_cast<size_t>(action_pair);
 
     if (action_influence->activated != action_influence->activated_by_rules) {
         action_influence->activated  = action_influence->activated_by_rules;
@@ -582,26 +599,26 @@ void BatteryControl::evaluate_action_pair(ActionPair action_pair)
 
 void BatteryControl::periodic_update()
 {
-    if (forbid_discharge_during_fast_charge) {
+    if (data->forbid_discharge_during_fast_charge) {
         const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
 
-        if (fast_charger_in_c_cm != fast_charger_in_c_cache) {
+        if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
             logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
-            fast_charger_in_c_cache = fast_charger_in_c_cm;
+            data->fast_charger_in_c_cache = fast_charger_in_c_cm;
             schedule_evaluation();
         }
     }
 
-    if (must_repeat) {
+    if (data->must_repeat) {
         const micros_t now = now_us();
 
-        for (size_t action_pair_i = 0; action_pair_i < ARRAY_SIZE(action_influence_active); action_pair_i++) {
-            const action_influence_data *action_influence = action_influence_active + action_pair_i;
+        for (size_t action_pair_i = 0; action_pair_i < ARRAY_SIZE(data->action_influence_active); action_pair_i++) {
+            const action_influence_data *action_influence = data->action_influence_active + action_pair_i;
             const bool influence_active = action_influence->activated == TristateBool::True;
             const size_t active_action_num = action_pair_i * 2 + (influence_active ? 0 : 1);
 
-            for (uint8_t battery_i = 0; battery_i < max_used_batteries; battery_i++) {
-                if (now >= battery_repeats[battery_i].next_action_update[active_action_num]) {
+            for (uint8_t battery_i = 0; battery_i < data->max_used_batteries; battery_i++) {
+                if (now >= data->battery_repeats[battery_i].next_action_update[active_action_num]) {
                     update_batteries_and_state(static_cast<ActionPair>(action_pair_i), false, battery_i);
                 }
             }
@@ -646,7 +663,7 @@ void BatteryControl::update_batteries_and_state(ActionPair action_pair, bool cha
     const size_t action_pair_num = static_cast<size_t>(action_pair);
     const battery_control_action_info *action_info = action_infos + action_pair_num;
 
-    const bool influence_active = action_influence_active[action_pair_num].activated == TristateBool::True;
+    const bool influence_active = data->action_influence_active[action_pair_num].activated == TristateBool::True;
 
     this->state.get(action_info->state_name)->updateBool(influence_active);
 
@@ -673,7 +690,7 @@ void BatteryControl::update_batteries_and_state(ActionPair action_pair, bool cha
 
     if (battery_slot == std::numeric_limits<decltype(battery_slot)>::max()) {
         battery_i_start = 0;
-        battery_i_end   = max_used_batteries;
+        battery_i_end   = data->max_used_batteries;
     } else {
         battery_i_start = battery_slot;
         battery_i_end   = battery_slot + 1;
@@ -685,7 +702,7 @@ void BatteryControl::update_batteries_and_state(ActionPair action_pair, bool cha
         if (battery == nullptr) {
             logger.printfln("Cannot execute action on non-existing battery slot %lu", battery_i);
         } else {
-            battery_repeat_data *battery_repeat = battery_repeats + battery_i;
+            battery_repeat_data *battery_repeat = data->battery_repeats + battery_i;
 
             static_assert(OPTIONS_BATTERIES_MAX_SLOTS() < std::numeric_limits<uint16_t>::max());
             const uint16_t battery_i_capture = static_cast<uint16_t>(battery_i);
