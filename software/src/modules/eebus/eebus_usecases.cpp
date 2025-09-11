@@ -311,6 +311,11 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
     return CmdClassifierType::reply;
 }
 
+EvseEntity::EvseEntity()
+{
+    update_billing_data(1, 0_s, 0_s, 0, 0, 100, 100, 0, 0);
+}
+
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
@@ -405,6 +410,7 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
 {
     usecase_interface = new_usecase_interface;
 }
+
 
 UseCaseInformationDataType EvseEntity::get_usecase_information()
 {
@@ -535,6 +541,9 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
         }
     }
     bill_list_data.billData->push_back(billData);
+    eebus.data_handler->billlistdatatype = bill_list_data;
+    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
+    eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, eebus.data_handler.get());
 }
 
 
@@ -581,34 +590,7 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
 ControllableSystemEntity::ControllableSystemEntity()
 {
     // Initialize DeviceConfiguration feature
-    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData.emplace();
-    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->clear();
-    device_configuration_key_value_list.deviceConfigurationKeyValueData.emplace();
-    device_configuration_key_value_list.deviceConfigurationKeyValueData->clear();
-
-    DeviceConfigurationKeyValueDescriptionDataType failsafeConsumptionActivePowerLimitDescription{};
-    DeviceConfigurationKeyValueDataType failsafeConsumptionActivePowerLimit{};
-    failsafeConsumptionActivePowerLimitDescription.keyId = failsafeConsumptionActivePowerLimit.keyId = 1;
-    failsafeConsumptionActivePowerLimitDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit;
-    failsafeConsumptionActivePowerLimitDescription.unit = UnitOfMeasurementEnumType::W;
-    failsafeConsumptionActivePowerLimitDescription.valueType = DeviceConfigurationKeyValueTypeType::scaledNumber;
-    failsafeConsumptionActivePowerLimit.isValueChangeable = true;
-    failsafeConsumptionActivePowerLimit.value->scaledNumber.emplace();
-    failsafeConsumptionActivePowerLimit.value->scaledNumber->number = 0;
-    failsafeConsumptionActivePowerLimit.value->scaledNumber->scale = 0;
-
-    DeviceConfigurationKeyValueDescriptionDataType failsafeDurationMinimumDescription{};
-    DeviceConfigurationKeyValueDataType failsafeDurationMinimum{};
-    failsafeDurationMinimumDescription.keyId = failsafeDurationMinimum.keyId = 2;
-    failsafeDurationMinimumDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
-    failsafeDurationMinimumDescription.valueType = DeviceConfigurationKeyValueTypeType::duration;
-    failsafeDurationMinimum.isValueChangeable = true;
-    failsafeDurationMinimum.value->duration = EEBUS_USECASE_HELPERS::iso_duration_to_string(2_h);
-
-    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeConsumptionActivePowerLimitDescription);
-    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
-    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeConsumptionActivePowerLimit);
-    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeDurationMinimum);
+    update_failsafe(0, 0_s);
 
     // Initialize DeviceDiagnosis feature
     task_scheduler.scheduleWithFixedDelay([this]() {
@@ -624,6 +606,8 @@ ControllableSystemEntity::ControllableSystemEntity()
                                           },
                                           60_s,
                                           60_s);
+    // Initialize ElectricalConnection feature
+    update_constraints(0, 0);
 }
 
 UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
@@ -760,6 +744,62 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     return features;
 }
 
+void ControllableSystemEntity::update_failsafe(int power_limit_w, seconds_t duration)
+{
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData.emplace();
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->clear();
+    device_configuration_key_value_list.deviceConfigurationKeyValueData.emplace();
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->clear();
+
+    DeviceConfigurationKeyValueDescriptionDataType failsafeConsumptionActivePowerLimitDescription{};
+    DeviceConfigurationKeyValueDataType failsafeConsumptionActivePowerLimit{};
+    failsafeConsumptionActivePowerLimitDescription.keyId = failsafeConsumptionActivePowerLimit.keyId = 1;
+    failsafeConsumptionActivePowerLimitDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit;
+    failsafeConsumptionActivePowerLimitDescription.unit = UnitOfMeasurementEnumType::W;
+    failsafeConsumptionActivePowerLimitDescription.valueType = DeviceConfigurationKeyValueTypeType::scaledNumber;
+    failsafeConsumptionActivePowerLimit.isValueChangeable = true;
+    failsafeConsumptionActivePowerLimit.value->scaledNumber.emplace();
+    failsafeConsumptionActivePowerLimit.value->scaledNumber->number = power_limit_w;
+    failsafeConsumptionActivePowerLimit.value->scaledNumber->scale = 0;
+
+    DeviceConfigurationKeyValueDescriptionDataType failsafeDurationMinimumDescription{};
+    DeviceConfigurationKeyValueDataType failsafeDurationMinimum{};
+    failsafeDurationMinimumDescription.keyId = failsafeDurationMinimum.keyId = 2;
+    failsafeDurationMinimumDescription.keyName = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
+    failsafeDurationMinimumDescription.valueType = DeviceConfigurationKeyValueTypeType::duration;
+    failsafeDurationMinimum.isValueChangeable = true;
+    failsafeDurationMinimum.value->duration = EEBUS_USECASE_HELPERS::iso_duration_to_string(duration);
+
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeConsumptionActivePowerLimitDescription);
+    device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeConsumptionActivePowerLimit);
+    device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeDurationMinimum);
+}
+
+void ControllableSystemEntity::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
+{
+    ElectricalConnectionCharacteristicDataType power_consumption_max{};
+    power_consumption_max.electricalConnectionId = 1;
+    power_consumption_max.characteristicId = 1;
+    power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+    power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
+    power_consumption_max.value->number = power_consumption_max_w;
+    power_consumption_max.unit = UnitOfMeasurementEnumType::W;
+
+    ElectricalConnectionCharacteristicDataType contractual_power_consumption_max{};
+    contractual_power_consumption_max.electricalConnectionId = 1;
+    contractual_power_consumption_max.parameterId = 1;
+    contractual_power_consumption_max.characteristicId = 2;
+    contractual_power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+    contractual_power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax;
+    contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
+    contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
+
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->clear();
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(power_consumption_max);
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);
+}
+
 CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     //TODO: Implement
@@ -782,6 +822,7 @@ CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderTy
         // We only accept writes from nodes we are bound to and we only do full writes
         if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
             device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
+            // TODO: Update API
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                      "Configuration updated successfully");
@@ -866,7 +907,10 @@ CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType 
 
 CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    // TODO
+    if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
+        response["electricalConnectionCharacteristicListData"] = electrical_connection_characteristic_list;
+        return CmdClassifierType::reply;
+    }
     return CmdClassifierType::EnumUndefined;
 }
 
