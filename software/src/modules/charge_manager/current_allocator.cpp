@@ -32,8 +32,6 @@
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
 
-#include "global_decision.union.h"
-
 //#include "gcc_warnings.h"
 
 #define LOCAL_LOG_FULL(indent, fmt, ...) \
@@ -351,17 +349,6 @@ static void clear_charger_decision_all(StageContext &sc, T tag) {
     for (int i = 0; i < sc.charger_count; ++i) {
         clear_charger_decision(sc, i, tag);
     }
-}
-
-static void set_global_decision(StageContext &sc, GlobalDecision &&decision) {
-    *sc.global_decision = decision;
-}
-
-static void clear_global_decision(StageContext &sc, GlobalDecisionTag tag) {
-    if (sc.global_decision->tag != tag)
-        return;
-
-    *sc.global_decision = GlobalDecision::None();
 }
 
 // Stage 1: Deactivate non-active chargers and handle rotation.
@@ -817,9 +804,10 @@ static void stage_3(StageContext &sc) {
         // to create a better status message. We would like to know which chargers
         // are going to be shut down first.
 
-        if (wnd_min.pv <= sc.limits->max_pv)  {
-            // Window minimum less than max pv limit -> PV not permanently overloaded
-            trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, sc.limits->max_pv);
+        if (wnd_min.pv >= sc.limits->raw[GridPhase::PV])  {
+            // The currently available PV excess is more than the window minimum
+            // -> Everything's fine.
+            // TODO clear decisions here
             break;
         }
 
@@ -838,13 +826,20 @@ static void stage_3(StageContext &sc) {
         if (state->observe_pv_limit && min_cost.pv <= state->guaranteed_pv_current)
             continue;
 
+        if (wnd_min.pv <= sc.limits->max_pv)  {
+            // Window minimum less than max pv limit -> PV not permanently overloaded
+            trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, sc.limits->max_pv);
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoCloudFilterBlocksUntil(sc.limits->max_pv_expiration_ts, wnd_min.pv - sc.limits->max_pv));
+            continue;
+        }
+
         // This check looks to be too late, but at this point we've found a charger that
         // would be shut down if the hysteresis was elapsed. Don't log that we will start
         // to shut down chargers if we don't find one that will be shut down soon.
         if (!sc.ca_state->global_hysteresis_elapsed) {
-            auto hyst_elapsed_at = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::PVExcessOverloadedHysteresisBlocksUntil(hyst_elapsed_at, wnd_min.pv - sc.limits->max_pv));
-            break;
+            auto hyst_elapsed_at = sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis;
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoHysteresisBlocksUntil(hyst_elapsed_at, wnd_min.pv - sc.limits->max_pv));
+            continue;
         }
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
@@ -1685,8 +1680,7 @@ int allocate_current(
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
     uint32_t *allocated_current,
-    ChargerDecision *charger_decisions,
-    GlobalDecision *global_decision
+    ChargerDecision *charger_decisions
     )
 {
     logger.trace_timestamp(charge_manager.trace_buffer_index);
@@ -1831,7 +1825,6 @@ int allocate_current(
         current_array,
         phases_array,
         charger_decisions,
-        global_decision,
         limits,
         charger_state,
         cfg->charger_count,
@@ -1841,9 +1834,6 @@ int allocate_current(
         charger_allocation_state,
         0xFFFFFFFF
     };
-
-    if (ca_state->global_hysteresis_elapsed)
-        clear_global_decision(sc, GlobalDecisionTag::HysteresisElapsesAt);
 
     trace_alloc(0, sc);
     trace("__all__");
