@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Goodwe Hybrid Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Goodwe Hybrid Inverter', 247),
 ]

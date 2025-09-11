@@ -1,5 +1,9 @@
 # This is the same register table as Alpha ESS
 
+table_prototypes = [
+    ('Hailei Hybrid Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Hailei Hybrid Inverter', 85),
 ]

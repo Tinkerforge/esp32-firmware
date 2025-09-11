@@ -1,3 +1,8 @@
+table_prototypes = [
+    ('Solax Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Solax String Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Solax Hybrid Inverter', 1),
     ('Solax String Inverter', 1),

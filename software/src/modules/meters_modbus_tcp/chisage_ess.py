@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Chisage ESS Hybrid Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Chisage ESS Hybrid Inverter', 1),
 ]

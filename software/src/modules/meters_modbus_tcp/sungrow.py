@@ -1,3 +1,8 @@
+table_prototypes = [
+    ('Sungrow Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Sungrow String Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Sungrow Hybrid Inverter', 1),
     ('Sungrow String Inverter', 1),

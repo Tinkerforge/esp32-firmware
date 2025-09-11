@@ -1,6 +1,10 @@
 def index_to_address(index):
     return 2100 + 2 * index
 
+table_prototypes = [
+    ('Tinkerforge WARP Charger', None),
+]
+
 default_device_addresses = [
     ('Tinkerforge WARP Charger', 1),
 ]

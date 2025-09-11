@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Victron Energy GX', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Victron Energy GX', 100),
 ]

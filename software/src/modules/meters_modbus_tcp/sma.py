@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('SMA Hybrid Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('SMA Hybrid Inverter', 3),
 ]

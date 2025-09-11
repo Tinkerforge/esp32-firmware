@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Solarmax Max Storage', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Solarmax Max Storage', 1),
 ]

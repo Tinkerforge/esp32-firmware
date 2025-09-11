@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Solaredge', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Solaredge', 1),
 ]

@@ -1,8 +1,17 @@
+table_prototypes = [
+    ('Siemens PAC2200', ['device_address']),
+    ('Siemens PAC3120', ['device_address']),
+    ('Siemens PAC3200', ['device_address']),
+    ('Siemens PAC3220', ['device_address']),
+    ('Siemens PAC4200', ['device_address']),
+    ('Siemens PAC4220', ['device_address']),
+]
+
 default_device_addresses = [
     ('Siemens PAC2200', 1),
     ('Siemens PAC3120', 1),
-    ('Siemens PAC3220', 1),
     ('Siemens PAC3200', 1),
+    ('Siemens PAC3220', 1),
     ('Siemens PAC4200', 1),
     ('Siemens PAC4220', 1),
 ]

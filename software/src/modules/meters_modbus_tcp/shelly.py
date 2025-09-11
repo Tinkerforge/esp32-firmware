@@ -1,3 +1,17 @@
+table_prototypes = [
+    ('Shelly Pro EM', [
+        'device_address',
+        ('monophase_channel', 'Config::Enum(ShellyEMMonophaseChannel::None)'),
+        ('monophase_mapping', 'Config::Enum(ShellyEMMonophaseMapping::None)'),
+    ]),
+    ('Shelly Pro 3EM', [
+        'device_address',
+        ('device_profile', 'Config::Enum(ShellyPro3EMDeviceProfile::Triphase)'),
+        ('monophase_channel', 'Config::Enum(ShellyEMMonophaseChannel::None)'),
+        ('monophase_mapping', 'Config::Enum(ShellyEMMonophaseMapping::None)'),
+    ]),
+]
+
 default_device_addresses = [
     ('Shelly Pro EM', 1),
     ('Shelly Pro 3EM', 1),

@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('E3DC', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('E3DC', 1),
 ]

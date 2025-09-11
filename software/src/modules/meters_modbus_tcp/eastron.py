@@ -1,3 +1,7 @@
+table_prototypes = [
+    ('Eastron SDM630 TCP', ['device_address']),
+]
+
 default_device_addresses = [
     ('Eastron SDM630 TCP', 1),
 ]

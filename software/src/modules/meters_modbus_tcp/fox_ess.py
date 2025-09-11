@@ -1,3 +1,9 @@
+table_prototypes = [
+    ('Fox ESS H3 Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Fox ESS H3 Smart Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Fox ESS H3 Pro Hybrid Inverter', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Fox ESS H3 Hybrid Inverter', 247),
     ('Fox ESS H3 Smart Hybrid Inverter', 247),

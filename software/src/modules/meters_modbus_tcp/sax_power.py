@@ -1,3 +1,8 @@
+table_prototypes = [
+    ('SAX Power Home Basic Mode', ['virtual_meter', 'device_address']),
+    ('SAX Power Home Extended Mode', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('SAX Power Home Basic Mode', 64),
     ('SAX Power Home Extended Mode', 40),

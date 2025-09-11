@@ -2,6 +2,10 @@
 
 from copy import deepcopy
 
+table_prototypes = [
+    ('Fronius GEN24 Plus', ['virtual_meter', 'device_address']),
+]
+
 default_device_addresses = [
     ('Fronius GEN24 Plus', 1),
 ]

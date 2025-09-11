@@ -52,21 +52,42 @@ modules = [
     chisage_ess,
 ]
 
+table_prototypes = []
 default_device_addresses = []
 specs = []
+virtual_meters = {}
 
 for module in modules:
+    if hasattr(module, 'table_prototypes'):
+        if isinstance(module.table_prototypes, str):
+            table_prototypes.append(module.table_prototypes)
+        else:
+            for table_prototype in module.table_prototypes:
+                table_id = util.FlavoredName(table_prototype[0]).get()
+
+                if table_prototype[1] == None:
+                    table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
+                else:
+                    table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, Config::Object({{')
+
+                    for member in table_prototype[1]:
+                        if member == 'virtual_meter':
+                            table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
+                        elif member == 'device_address':
+                            table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
+                        elif isinstance(member, tuple):
+                            table_prototypes.append(f'        {{"{member[0]}", {member[1]}}},')
+                        else:
+                            print(f'Error: Table prototype {table_id.space} has unknown member {member}')
+                            sys.exit(1)
+
+                    table_prototypes.append('    })});')
+
     default_device_addresses += module.default_device_addresses
     specs += module.specs
 
 specs_h = []
 specs_cpp = []
-
-specs_h.append('namespace DefaultDeviceAddress {\n\n'
-              f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};\n\n'
-               '}')
-
-virtual_meters = {}
 
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
@@ -209,10 +230,16 @@ ts += '}\n'
 tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
 
 h  = '// WARNING: This file is generated.\n\n'
-h += '#include "meter_modbus_tcp.h"\n\n'
+h += '#include "config.h"\n'
+h += '#include "meter_modbus_tcp.h"\n'
+h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
 h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
 h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
 h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'
+h += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes);\n\n'
+h += 'namespace DefaultDeviceAddress {\n\n'
+h += f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};\n\n'
+h += '}\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.h', h)
@@ -224,6 +251,10 @@ cpp += '#include "meter_modbus_tcp_specs.h"\n\n'
 cpp += '#include "event_log_prefix.h"\n'
 cpp += '#include "module_dependencies.h"\n\n'
 cpp += '#include "gcc_warnings.h"\n\n'
+cpp += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes)\n'
+cpp += '{'
+cpp += '\n'.join(table_prototypes).rstrip() + '\n'
+cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)

@@ -1,3 +1,19 @@
+table_prototypes = [
+    ('Carlo Gavazzi EM24 DIN', ['device_address']),
+    ('Carlo Gavazzi EM24 E1', ['device_address']),
+    ('Carlo Gavazzi EM100', ['device_address', ('phase', 'Config::Enum(CarloGavazziPhase::None)')]),
+    ('Carlo Gavazzi ET100', ['device_address', ('phase', 'Config::Enum(CarloGavazziPhase::None)')]),
+    ('Carlo Gavazzi EM210', ['device_address']),
+    ('Carlo Gavazzi EM270', ['virtual_meter', 'device_address']),
+    ('Carlo Gavazzi EM280', ['virtual_meter', 'device_address']),
+    ('Carlo Gavazzi EM300', ['device_address']),
+    ('Carlo Gavazzi ET300', ['device_address']),
+    ('Carlo Gavazzi EM510', ['device_address', ('phase', 'Config::Enum(CarloGavazziPhase::None)')]),
+    ('Carlo Gavazzi EM530', ['device_address']),
+    ('Carlo Gavazzi EM540', ['device_address']),
+    ('Carlo Gavazzi EM580', ['device_address']),
+]
+
 default_device_addresses = [
     ('Carlo Gavazzi EM24 DIN', 1),
     ('Carlo Gavazzi EM24 E1', 1),
