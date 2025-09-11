@@ -224,7 +224,7 @@ void RemoteAccess::setup()
     if (!config.get("enable")->asBool())
         return;
 
-    logger.printfln("Remote Access is enabled trying to connect");
+    logger.printfln("Remote Access is enabled, trying to connect");
 }
 
 static std::unique_ptr<uint8_t[]> decode_base64(const String &input, size_t buffer_size)
