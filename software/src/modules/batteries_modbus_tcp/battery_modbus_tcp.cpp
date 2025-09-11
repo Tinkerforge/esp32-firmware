@@ -113,6 +113,16 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
     free(table);
 }
 
+static void get_device_addresses(const Config *config, uint8_t device_addresses[6])
+{
+    device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = config->get("permit_grid_charge"         )->get("device_address")->asUint8();
+    device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
+    device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = config->get("forbid_discharge"           )->get("device_address")->asUint8();
+    device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
+    device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = config->get("forbid_charge"              )->get("device_address")->asUint8();
+    device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = config->get("revoke_charge_override"     )->get("device_address")->asUint8();
+}
+
 static void execute_finish(Execution *execution, const char *error)
 {
     execution->callback(error);
@@ -296,35 +306,13 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     case BatteryModbusTCPTableID::VictronEnergyGX:
-        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = &victron_energy_gx_permit_grid_charge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = &victron_energy_gx_revoke_grid_charge_override_table;
-        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = &victron_energy_gx_forbid_discharge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = &victron_energy_gx_revoke_discharge_override_table;
-        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = &victron_energy_gx_forbid_charge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = &victron_energy_gx_revoke_charge_override_table;
-
-        device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = table_config->get("permit_grid_charge"         )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = table_config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = table_config->get("forbid_discharge"           )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = table_config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = table_config->get("forbid_charge"              )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = table_config->get("revoke_charge_override"     )->get("device_address")->asUint8();
+        get_victron_energy_gx_tables(tables);
+        get_device_addresses(table_config, device_addresses);
         break;
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:
-        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = &deye_hybrid_inverter_permit_grid_charge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = &deye_hybrid_inverter_revoke_grid_charge_override_table;
-        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = &deye_hybrid_inverter_forbid_discharge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = &deye_hybrid_inverter_revoke_discharge_override_table;
-        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = &deye_hybrid_inverter_forbid_charge_table;
-        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = &deye_hybrid_inverter_revoke_charge_override_table;
-
-        device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = table_config->get("permit_grid_charge"         )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = table_config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = table_config->get("forbid_discharge"           )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = table_config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = table_config->get("forbid_charge"              )->get("device_address")->asUint8();
-        device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = table_config->get("revoke_charge_override"     )->get("device_address")->asUint8();
+        get_deye_hybrid_inverter_tables(tables);
+        get_device_addresses(table_config, device_addresses);
         break;
 
     default:

@@ -2,6 +2,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Permit Grid Charge',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {
@@ -18,6 +19,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Grid Charge Override',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {
@@ -34,6 +36,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Forbid Discharge',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {
@@ -57,6 +60,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Discharge Override',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {
@@ -80,6 +84,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Forbid Charge',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {
@@ -103,6 +108,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Charge Override',
+        'table_prototype': ['device_address'],
         'default_device_address': 100,
         'register_blocks': [
             {

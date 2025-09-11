@@ -27,7 +27,7 @@ import { BatteryClassID } from "../batteries/battery_class_id.enum";
 import { BatteryAction } from "../batteries/battery_action.enum";
 import { BatteryConfig } from "../batteries/types";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
-import { DefaultDeviceAddress, get_default_device_address } from "./battery_modbus_tcp_specs";
+import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config } from "./battery_modbus_tcp_specs";
 import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -36,65 +36,6 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
-
-type TableConfigNone = [
-    BatteryModbusTCPTableID.None,
-    {},
-];
-
-type RegisterBlock = {
-    desc: string;
-    func: number; // ModbusFunctionCode
-    addr: number;
-    vals: number[];
-};
-
-type RegisterTable = {
-    device_address: number;
-    register_blocks: RegisterBlock[];
-};
-
-type TableConfigCustom = [
-    BatteryModbusTCPTableID.Custom,
-    {
-        register_address_mode: number, // ModbusRegisterAddressMode
-        permit_grid_charge: RegisterTable,
-        revoke_grid_charge_override: RegisterTable,
-        forbid_discharge: RegisterTable,
-        revoke_discharge_override: RegisterTable,
-        forbid_charge: RegisterTable,
-        revoke_charge_override: RegisterTable,
-    },
-];
-
-type TableConfigVictronEnergyGX = [
-    BatteryModbusTCPTableID.VictronEnergyGX,
-    {
-        permit_grid_charge: {device_address: number},
-        revoke_grid_charge_override: {device_address: number},
-        forbid_discharge: {device_address: number},
-        revoke_discharge_override: {device_address: number},
-        forbid_charge: {device_address: number},
-        revoke_charge_override: {device_address: number},
-    },
-];
-
-type TableConfigDeyeHybridInverter = [
-    BatteryModbusTCPTableID.DeyeHybridInverter,
-    {
-        permit_grid_charge: {device_address: number},
-        revoke_grid_charge_override: {device_address: number},
-        forbid_discharge: {device_address: number},
-        revoke_discharge_override: {device_address: number},
-        forbid_charge: {device_address: number},
-        revoke_charge_override: {device_address: number},
-    },
-];
-
-type TableConfig = TableConfigNone |
-                   TableConfigCustom |
-                   TableConfigVictronEnergyGX |
-                   TableConfigDeyeHybridInverter;
 
 export type ModbusTCPBatteriesConfig = [
     BatteryClassID.ModbusTCP,
@@ -105,44 +46,6 @@ export type ModbusTCPBatteriesConfig = [
         table: TableConfig;
     },
 ];
-
-function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
-    switch (table) {
-        case BatteryModbusTCPTableID.Custom:
-            return [BatteryModbusTCPTableID.Custom, {
-                register_address_mode:       null,
-                permit_grid_charge:          {device_address: 1, register_blocks: []},
-                revoke_grid_charge_override: {device_address: 1, register_blocks: []},
-                forbid_discharge:            {device_address: 1, register_blocks: []},
-                revoke_discharge_override:   {device_address: 1, register_blocks: []},
-                forbid_charge:               {device_address: 1, register_blocks: []},
-                revoke_charge_override:      {device_address: 1, register_blocks: []},
-            }];
-
-        case BatteryModbusTCPTableID.VictronEnergyGX:
-            return [BatteryModbusTCPTableID.VictronEnergyGX, {
-                permit_grid_charge:          {device_address: DefaultDeviceAddress.VictronEnergyGX_PermitGridCharge},
-                revoke_grid_charge_override: {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeGridChargeOverride},
-                forbid_discharge:            {device_address: DefaultDeviceAddress.VictronEnergyGX_ForbidDischarge},
-                revoke_discharge_override:   {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeDischargeOverride},
-                forbid_charge:               {device_address: DefaultDeviceAddress.VictronEnergyGX_ForbidCharge},
-                revoke_charge_override:      {device_address: DefaultDeviceAddress.VictronEnergyGX_RevokeChargeOverride},
-            }];
-
-        case BatteryModbusTCPTableID.DeyeHybridInverter:
-            return [BatteryModbusTCPTableID.DeyeHybridInverter, {
-                permit_grid_charge:          {device_address: DefaultDeviceAddress.DeyeHybridInverter_PermitGridCharge},
-                revoke_grid_charge_override: {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeGridChargeOverride},
-                forbid_discharge:            {device_address: DefaultDeviceAddress.DeyeHybridInverter_ForbidDischarge},
-                revoke_discharge_override:   {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeDischargeOverride},
-                forbid_charge:               {device_address: DefaultDeviceAddress.DeyeHybridInverter_ForbidCharge},
-                revoke_charge_override:      {device_address: DefaultDeviceAddress.DeyeHybridInverter_RevokeChargeOverride},
-            }];
-
-        default:
-            return [BatteryModbusTCPTableID.None, null];
-    }
-}
 
 interface RegisterEditorProps {
     register_address_mode: ModbusRegisterAddressMode;

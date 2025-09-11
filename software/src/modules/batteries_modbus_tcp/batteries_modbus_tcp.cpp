@@ -138,47 +138,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
     })});
 
-    table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
-        {"permit_grid_charge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_PermitGridCharge)},
-        })},
-        {"revoke_grid_charge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeGridChargeOverride)},
-        })},
-        {"forbid_discharge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_ForbidDischarge)},
-        })},
-        {"revoke_discharge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeDischargeOverride)},
-        })},
-        {"forbid_charge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_ForbidCharge)},
-        })},
-        {"revoke_charge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX_RevokeChargeOverride)},
-        })},
-    })});
-
-    table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
-        {"permit_grid_charge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_PermitGridCharge)},
-        })},
-        {"revoke_grid_charge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeGridChargeOverride)},
-        })},
-        {"forbid_discharge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_ForbidDischarge)},
-        })},
-        {"revoke_discharge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeDischargeOverride)},
-        })},
-        {"forbid_charge", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_ForbidCharge)},
-        })},
-        {"revoke_charge_override", Config::Object({
-            {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter_RevokeChargeOverride)},
-        })},
-    })});
+    get_battery_modbus_tcp_table_prototypes(&table_prototypes);
 
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},

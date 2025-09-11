@@ -19,17 +19,20 @@ for module in modules:
 
 specs_h = []
 specs_cpp = []
-
-all_actions = {}
 default_device_addresses = []
+all_actions = {}
+all_table_prototypes = {}
+all_table_typedefs = {}
+table_typenames = []
+all_table_news = {}
 
 for spec in specs:
     spec_group = util.FlavoredName(spec['group']).get()
     spec_action = util.FlavoredName(spec['action']).get()
 
-    all_actions.setdefault(spec_group, []).append(spec_action)
-
     default_device_addresses.append((spec_group, spec_action, spec['default_device_address']))
+
+    all_actions.setdefault(spec_group, []).append(spec_action)
 
     register_block_descs = []
     register_block_specs = []
@@ -90,7 +93,6 @@ for spec in specs:
 
     specs_h.append(f'extern const BatteryModbusTCP::TableSpec {spec_group.under}_{spec_action.under}_table;')
 
-
     specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {spec_group.under}_{spec_action.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
 
     specs_cpp.append(f'extern const BatteryModbusTCP::TableSpec {spec_group.under}_{spec_action.under}_table = {{\n'
@@ -98,8 +100,60 @@ for spec in specs:
                      f'    ARRAY_SIZE({spec_group.under}_{spec_action.under}_register_blocks),\n'
                       '};')
 
+    table_prototype = []
+    table_typedef = []
+    table_new = []
+
+    if spec['table_prototype'] == None:
+        table_prototype.append(f'        {{"{spec_action.under}", *Config::Null()}},')
+    else:
+        table_prototype.append(f'        {{"{spec_action.under}", Config::Object({{')
+
+        for member in spec['table_prototype']:
+            if member == 'device_address':
+                table_prototype.append(f'            {{"device_address", Config::Uint8(DefaultDeviceAddress::{spec_group.camel}_{spec_action.camel})}},')
+            elif isinstance(member, tuple):
+                table_prototype.append(f'            {{"{member[0]}", {member[1]}}},')
+            else:
+                print(f'Error: Table prototype {spec_group.space} / {spec_action.space} has unknown member {member}')
+                sys.exit(1)
+
+        table_prototype.append('        })},')
+
+    table_typedef.append(f'        {spec_action.under}: {{')
+    table_new.append(f'            {spec_action.under}: {{')
+
+    if spec['table_prototype'] == None:
+        table_new.append('null')
+    else:
+        for member in spec['table_prototype']:
+            if isinstance(member, tuple):
+                member_name = member[0]
+            else:
+                member_name = member
+
+            table_typedef.append(f'            {member_name}: number;')
+
+            if member_name == 'device_address':
+                table_new.append(f'                device_address: DefaultDeviceAddress.{spec_group.camel}_{spec_action.camel},')
+            else:
+                table_new.append(f'                {member_name}: null,')
+
+    table_typedef.append('        },')
+    table_new.append('            },')
+
+    table_typename = f'TableConfig{spec_group.camel}'
+
+    if table_typename not in table_typenames:
+        table_typenames.append(table_typename)
+
+    all_table_prototypes.setdefault(spec_group, []).extend(table_prototype)
+    all_table_typedefs.setdefault(spec_group, []).extend(table_typedef)
+    all_table_news.setdefault(spec_group, []).extend(table_new)
+
 for group, actions in all_actions.items():
     specs_h.append(f'const BatteryModbusTCP::TableSpec *get_{group.under}_table(BatteryAction action);')
+    specs_h.append(f'void get_{group.under}_tables(const BatteryModbusTCP::TableSpec *tables[6]);')
 
     specs_cpp.append('[[gnu::const]]\n'
                     f'const BatteryModbusTCP::TableSpec *get_{group.under}_table(BatteryAction action)\n'
@@ -114,6 +168,14 @@ for group, actions in all_actions.items():
                       '        return nullptr;\n'
                       '    }\n'
                       '}')
+
+    specs_cpp.append(f'void get_{group.under}_tables(const BatteryModbusTCP::TableSpec *tables[6])\n'
+                      '{\r')
+
+    for action in actions:
+        specs_cpp.append(f'    tables[static_cast<size_t>(BatteryAction::{action.camel})] = &{group.under}_{action.under}_table;\r')
+
+    specs_cpp.append('}')
 
 specs_h.append('namespace DefaultDeviceAddress {')
 specs_h.append(f'enum {{\n{"\n".join([f"    {group.camel}_{action.camel} = {value}," for group, action, value in default_device_addresses])}\n}};')
@@ -141,12 +203,75 @@ for group, actions in all_actions.items():
 
 ts += '    default: return undefined;\n'
 ts += '    }\n'
+ts += '}\n\n'
+ts += 'type TableConfigNone = [\n'
+ts += '    BatteryModbusTCPTableID.None,\n'
+ts += '    {},\n'
+ts += '];\n\n'
+ts += 'export type RegisterBlock = {\n'
+ts += '    desc: string;\n'
+ts += '    func: number; // ModbusFunctionCode\n'
+ts += '    addr: number;\n'
+ts += '    vals: number[];\n'
+ts += '};\n\n'
+ts += 'export type RegisterTable = {\n'
+ts += '    device_address: number;\n'
+ts += '    register_blocks: RegisterBlock[];\n'
+ts += '};\n\n'
+ts += 'export type TableConfigCustom = [\n'
+ts += '    BatteryModbusTCPTableID.Custom,\n'
+ts += '    {\n'
+ts += '        register_address_mode: number, // ModbusRegisterAddressMode\n'
+ts += '        permit_grid_charge: RegisterTable,\n'
+ts += '        revoke_grid_charge_override: RegisterTable,\n'
+ts += '        forbid_discharge: RegisterTable,\n'
+ts += '        revoke_discharge_override: RegisterTable,\n'
+ts += '        forbid_charge: RegisterTable,\n'
+ts += '        revoke_charge_override: RegisterTable,\n'
+ts += '    },\n'
+ts += '];\n\n'
+
+for group, table_typedefs in all_table_typedefs.items():
+    ts += f'type TableConfig{group.camel} = [\n'
+    ts += f'    BatteryModbusTCPTableID.{group.camel},\n'
+    ts +=  '    {\n'
+    ts +=  '\n'.join(table_typedefs) + '\n'
+    ts +=  '    },\n'
+    ts +=  '];\n\n'
+
+ts += 'export type TableConfig = TableConfigNone |\n'
+ts += '                          TableConfigCustom |\n'
+ts += '                          ' + ' |\n                          '.join(table_typenames) + ';\n\n'
+ts += 'export function new_table_config(table: BatteryModbusTCPTableID): TableConfig {\n'
+ts += '    switch (table) {\n'
+ts += '    case BatteryModbusTCPTableID.Custom:\n'
+ts += '        return [BatteryModbusTCPTableID.Custom, {\n'
+ts += '            register_address_mode: null,\n'
+ts += '            permit_grid_charge: {device_address: 1, register_blocks: []},\n'
+ts += '            revoke_grid_charge_override: {device_address: 1, register_blocks: []},\n'
+ts += '            forbid_discharge: {device_address: 1, register_blocks: []},\n'
+ts += '            revoke_discharge_override: {device_address: 1, register_blocks: []},\n'
+ts += '            forbid_charge: {device_address: 1, register_blocks: []},\n'
+ts += '            revoke_charge_override: {device_address: 1, register_blocks: []},\n'
+ts += '        }];\n\n'
+
+for group, table_news in all_table_news.items():
+    ts += f'    case BatteryModbusTCPTableID.{group.camel}:\n'
+    ts += f'        return [BatteryModbusTCPTableID.{group.camel}, {{\n'
+    ts +=  '\n'.join(table_news) + '\n'
+    ts +=  '        }];\n\n'
+
+ts += '    default:\n'
+ts += '        return [BatteryModbusTCPTableID.None, null];\n'
+ts += '    }\n'
 ts += '}\n'
 
 tfutil.write_file_if_different('../../../web/src/modules/batteries_modbus_tcp/battery_modbus_tcp_specs.ts', ts)
 
 h  = '// WARNING: This file is generated.\n\n'
+h += '#include "config.h"\n'
 h += '#include "battery_modbus_tcp.h"\n\n'
+h += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('battery_modbus_tcp_specs.h', h)
@@ -155,6 +280,15 @@ cpp  = '// WARNING: This file is generated.\n\n'
 cpp += '#include "battery_modbus_tcp_specs.h"\n\n'
 cpp += '#include "tools.h"\n\n'
 cpp += '#include "gcc_warnings.h"\n\n'
+cpp += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes)\n'
+cpp += '{'
+
+for group, table_prototypes in all_table_prototypes.items():
+    cpp += f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{group.camel}, Config::Object({{\n'
+    cpp += '\n'.join(table_prototypes) + '\n'
+    cpp += '    })});\n'
+
+cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('battery_modbus_tcp_specs.cpp', cpp)
