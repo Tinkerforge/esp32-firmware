@@ -61,58 +61,54 @@ specs = []
 virtual_meters = {}
 
 for module in modules:
-    if hasattr(module, 'table_prototypes'):
-        if isinstance(module.table_prototypes, str):
-            table_prototypes.append(module.table_prototypes)
+    for table_prototype in module.table_prototypes:
+        table_id = util.FlavoredName(table_prototype[0]).get()
+
+        if table_prototype[1] == None:
+            table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
         else:
-            for table_prototype in module.table_prototypes:
-                table_id = util.FlavoredName(table_prototype[0]).get()
+            table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, Config::Object({{')
 
-                if table_prototype[1] == None:
-                    table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
+            for member in table_prototype[1]:
+                if member == 'virtual_meter':
+                    table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
+                elif member == 'device_address':
+                    table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
+                elif isinstance(member, tuple):
+                    table_prototypes.append(f'        {{"{member[0]}", {member[1]}}},')
                 else:
-                    table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, Config::Object({{')
+                    print(f'Error: Table prototype {table_id.space} has unknown member {member}')
+                    sys.exit(1)
 
-                    for member in table_prototype[1]:
-                        if member == 'virtual_meter':
-                            table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
-                        elif member == 'device_address':
-                            table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
-                        elif isinstance(member, tuple):
-                            table_prototypes.append(f'        {{"{member[0]}", {member[1]}}},')
-                        else:
-                            print(f'Error: Table prototype {table_id.space} has unknown member {member}')
-                            sys.exit(1)
+            table_prototypes.append('    })});')
 
-                    table_prototypes.append('    })});')
+        table_typedefs.append(f'type TableConfig{table_id.camel} = [\n'
+                              f'    MeterModbusTCPTableID.{table_id.camel},\n    {{')
 
-                table_typedefs.append(f'type TableConfig{table_id.camel} = [\n'
-                                      f'    MeterModbusTCPTableID.{table_id.camel},\n    {{')
+        table_new = []
 
-                table_new = []
-
-                if table_prototype[1] == None:
-                    table_new.append('null')
+        if table_prototype[1] == None:
+            table_new.append('null')
+        else:
+            for member in table_prototype[1]:
+                if isinstance(member, tuple):
+                    member_name = member[0]
                 else:
-                    for member in table_prototype[1]:
-                        if isinstance(member, tuple):
-                            member_name = member[0]
-                        else:
-                            member_name = member
+                    member_name = member
 
-                        table_typedefs.append(f'        {member_name}: number;')
+                table_typedefs.append(f'        {member_name}: number;')
 
-                        if member_name == 'device_address':
-                            table_new.append(f'device_address: DefaultDeviceAddress.{table_id.camel}')
-                        else:
-                            table_new.append(f'{member_name}: null')
+                if member_name == 'device_address':
+                    table_new.append(f'device_address: DefaultDeviceAddress.{table_id.camel}')
+                else:
+                    table_new.append(f'{member_name}: null')
 
-                table_typedefs.append('    },\n];\n')
+        table_typedefs.append('    },\n];\n')
 
-                table_typenames.append(f'TableConfig{table_id.camel}')
+        table_typenames.append(f'TableConfig{table_id.camel}')
 
-                table_news.append(f'    case MeterModbusTCPTableID.{table_id.camel}:')
-                table_news.append(f'        return [MeterModbusTCPTableID.{table_id.camel}, {{{", ".join(table_new)}}}];\n'.replace('{null}', 'null'))
+        table_news.append(f'    case MeterModbusTCPTableID.{table_id.camel}:')
+        table_news.append(f'        return [MeterModbusTCPTableID.{table_id.camel}, {{{", ".join(table_new)}}}];\n'.replace('{null}', 'null'))
 
     default_device_addresses += module.default_device_addresses
     specs += module.specs
