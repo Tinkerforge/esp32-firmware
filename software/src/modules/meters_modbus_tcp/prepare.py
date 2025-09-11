@@ -53,6 +53,9 @@ modules = [
 ]
 
 table_prototypes = []
+table_typedefs = []
+table_typenames = []
+table_news = []
 default_device_addresses = []
 specs = []
 virtual_meters = {}
@@ -82,6 +85,34 @@ for module in modules:
                             sys.exit(1)
 
                     table_prototypes.append('    })});')
+
+                table_typedefs.append(f'type TableConfig{table_id.camel} = [\n'
+                                      f'    MeterModbusTCPTableID.{table_id.camel},\n    {{')
+
+                table_new = []
+
+                if table_prototype[1] == None:
+                    table_new.append('null')
+                else:
+                    for member in table_prototype[1]:
+                        if isinstance(member, tuple):
+                            member_name = member[0]
+                        else:
+                            member_name = member
+
+                        table_typedefs.append(f'        {member_name}: number;')
+
+                        if member_name == 'device_address':
+                            table_new.append(f'device_address: DefaultDeviceAddress.{table_id.camel}')
+                        else:
+                            table_new.append(f'{member_name}: null')
+
+                table_typedefs.append('    },\n];\n')
+
+                table_typenames.append(f'TableConfig{table_id.camel}')
+
+                table_news.append(f'    case MeterModbusTCPTableID.{table_id.camel}:')
+                table_news.append(f'        return [MeterModbusTCPTableID.{table_id.camel}, {{{", ".join(table_new)}}}];\n'.replace('{null}', 'null'))
 
     default_device_addresses += module.default_device_addresses
     specs += module.specs
@@ -224,6 +255,39 @@ ts += '{\n'
 ts += '    switch (table_id) {\n'
 ts += '\n'.join([f'    case MeterModbusTCPTableID.{util.FlavoredName(name).get().camel}: return DefaultDeviceAddress.{util.FlavoredName(name).get().camel};' for name, value in default_device_addresses]) + '\n'
 ts += '    default: return undefined;\n'
+ts += '    }\n'
+ts += '}\n\n'
+ts += 'type TableConfigNone = [\n'
+ts += '    MeterModbusTCPTableID.None,\n'
+ts += '    {},\n'
+ts += '];\n\n'
+ts += 'export type Register = {\n'
+ts += '    rtype: number; // ModbusRegisterType\n'
+ts += '    addr: number;\n'
+ts += '    vtype: number; // ModbusValueType\n'
+ts += '    off: number;\n'
+ts += '    scale: number;\n'
+ts += '    id: number; // MeterValueID\n'
+ts += '};\n\n'
+ts += 'export type TableConfigCustom = [\n'
+ts += '    MeterModbusTCPTableID.Custom,\n'
+ts += '    {\n'
+ts += '        device_address: number;\n'
+ts += '        register_address_mode: number; // ModbusRegisterAddressMode\n'
+ts += '        registers: Register[];\n'
+ts += '    },\n'
+ts += '];\n\n'
+ts += '\n'.join(table_typedefs) + '\n'
+ts += 'export type TableConfig = TableConfigNone |\n'
+ts += '                          TableConfigCustom |\n'
+ts += '                          ' + ' |\n                          '.join(table_typenames) + ';\n\n'
+ts += 'export function new_table_config(table: MeterModbusTCPTableID): TableConfig {\n'
+ts += '    switch (table) {\n'
+ts += '    case MeterModbusTCPTableID.Custom:\n'
+ts += '        return [MeterModbusTCPTableID.Custom, {device_address: 1, register_address_mode: null, registers: []}];\n\n'
+ts += '\n'.join(table_news) + '\n'
+ts += '    default:\n'
+ts += '        return [MeterModbusTCPTableID.None, null];\n'
 ts += '    }\n'
 ts += '}\n'
 
