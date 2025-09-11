@@ -35,7 +35,6 @@ struct CurrentAllocatorState;
 struct ChargerState;
 struct ChargerAllocationState;
 struct ChargerDecision;
-struct GlobalDecision;
 
 namespace ChargeMode {
     enum Type {
@@ -163,7 +162,6 @@ private:
     CurrentAllocatorState *ca_state = nullptr;
 
     ChargerDecision *charger_decisions = nullptr;
-    GlobalDecision *global_decision = nullptr;
 
     std::array<uint8_t, 2> supported_charge_mode_bitmask;
 };
