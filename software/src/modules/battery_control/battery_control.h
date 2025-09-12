@@ -76,6 +76,7 @@ private:
     void update_avg_soc();
     void update_tariff_schedule();
     void evaluate_tariff_schedule();
+    void update_solar_forecast(int localtime_hour_now, const Config *state);
     void schedule_evaluation();
     TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
     void evaluate_all_rules();
