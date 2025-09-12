@@ -23,6 +23,7 @@
 #include "module_dependencies.h"
 
 #include "event_log_prefix.h"
+#include "tools/malloc.h"
 #include "TFTools/Micros.h"
 
 // Stolen from evse_common.h, which cannot be included or depended on because the EM doesn't have any EVSE code.
@@ -89,7 +90,7 @@ void EMPhaseSwitcher::setup()
     }
 
     if (proxy_mode) {
-        charger_host = strdup(charge_manager.get_charger_host(0).c_str());
+        charger_host = perm_strdup(charge_manager.get_charger_host(0).c_str());
 
         cm_networking.register_manager(&charger_host, 1, nullptr, nullptr);
         cm_networking.register_client(nullptr);

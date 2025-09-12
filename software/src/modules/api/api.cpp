@@ -214,7 +214,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 
 void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
-    this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
+    this->addCommand(perm_strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
 
 void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
@@ -302,7 +302,7 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 
 void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
 {
-    this->addState(strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency);
+    this->addState(perm_strdup(path.c_str()), config, keys_to_censor, keys_to_censor_in_debug_report, low_latency);
 }
 
 bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)

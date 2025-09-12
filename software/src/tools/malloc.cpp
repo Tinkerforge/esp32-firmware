@@ -19,6 +19,8 @@
 
 #include "malloc.h"
 
+#include <string.h>
+
 #include <esp_heap_caps.h>
 
 #include "linear_allocator.h"
@@ -102,6 +104,15 @@ void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, R
 
 void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
     return perm_alloc_aligned_prefer(align(size), size, r1, r2, r3);
+}
+
+char *perm_strdup(const char *c) {
+    auto len = strlen(c) + 1;
+    auto *dst = perm_alloc(len, DRAM);
+    if (dst == nullptr)
+        return nullptr;
+    memcpy(dst, c, len);
+    return static_cast<char *>(dst);
 }
 
 void *malloc_32bit_addressed(size_t size)
