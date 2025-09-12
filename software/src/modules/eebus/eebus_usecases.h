@@ -24,6 +24,7 @@
 #include "config.h"
 #include "spine_connection.h"
 #include "spine_types.h"
+#include "lpc_state.enum.h"
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 3
@@ -292,11 +293,25 @@ private:
     CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
     CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 
+    // State handling
+    // State machine as described in LPC UC TS v1.0.0 2.3
+    LPCState lpc_state;
+    uint64_t initialization_timeout;
+    bool switch_state(LPCState state);
+    bool init_state();
+    bool unlimited_controlled_state();
+    bool limited_state();
+    bool failsafe_state();
+    bool unlimited_autonomous_state();
+
     // These can be freely assigned but need to be unique within the entity.
     int loadControl_feature_address = 10;
     int deviceConfiguration_feature_address = 20;
     int deviceDiagnosis_feature_address = 30;
     int electricalConnection_feature_address = 40;
+
+    // LoadControl configuraiton as required for scenario 1 - Control Active Power
+
 
     // Device Configuration Data as required for Scenario 2 - Device Configuration
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
@@ -307,7 +322,8 @@ private:
     bool heartbeatEnabled = false;
     uint64_t heartbeatCounter = 0;
     uint64_t heartbeat_timeout_task = 0;
-    void handle_heartbeat_timeout() const;
+    void handle_heartbeat_timeout();
+    bool heartbeat_received = false;
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
     ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
