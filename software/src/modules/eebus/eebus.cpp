@@ -115,14 +115,6 @@ void EEBus::pre_setup()
     };
     scan_command = ConfigRoot(Config::Object({}));
 
-    charges_prototype = Config::Object({
-        {"id", Config::Uint16(0)},
-        {"charged_kwh", Config::Float(0)},
-        {"start_time", Config::Uint32(0)},
-        {"duration", Config::Uint16(0)},
-        {"cost", Config::Float(0)}
-    });
-
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
@@ -140,14 +132,41 @@ void EEBus::pre_setup()
                           MAX_PEER_REMEMBERED,
                           Config::type_id<Config::ConfObject>())
         },
-        {"charge_state", Config::Array({
-                                           charges_prototype},
-                                       &charges_prototype,
-                                       0,
-                                       32,
-                                       Config::type_id<Config::ConfObject>())},
 
     });
+
+    // A list of all charges, ideally with their cost and which percentage of it was self produced energy
+    charges_prototype = Config::Object({
+        {"id", Config::Uint16(0)},
+        {"charged_kwh", Config::Float(0)},
+        {"start_time", Config::Uint32(0)},
+        {"duration", Config::Uint16(0)},
+        {"cost", Config::Float(0)},
+        {"percent_self_produced_energy", Config::Uint16(0)},
+        {"percent_self_produced_cost", Config::Uint16(0)}
+    });
+
+    // Currently eebus state and eebus config are one config. Maybe split them?
+    eebus_usecase_state = ConfigRoot{Config::Object({
+            {"charging_summary", Config::Array({
+                                                   // Read/Write
+                                                   // Usecase EV Charging summary
+                                                   charges_prototype},
+                                               &charges_prototype,
+                                               0,
+                                               8,
+                                               Config::type_id<Config::ConfObject>())
+            },
+            {"power_consumption_limitation", Config::Object({
+                 // Usecase Limitation of power consumption
+                 {"usecase_state", Config::Enum(LPCState::Init)},
+                 {"failsafe_limit_power_w", Config::Uint16(0)}, // The limit which may have been set by the energy guard
+                 {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
+                 {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable
+                 {"constraints_power_maximum_contractual", Config::Uint16(0)} //The maximum consumption the consumer is contractually allowed
+             })}
+        }
+        )};
 
     ship.pre_setup();
 }
@@ -170,6 +189,8 @@ void EEBus::register_urls()
 {
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state, {}, {}, true);
+
+    api.addState("eebus/usecases", &eebus_usecase_state, {}, {}, false);
 
     api.addCommand(
         "eebus/add",
