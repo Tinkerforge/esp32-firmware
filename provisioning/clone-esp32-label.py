@@ -30,7 +30,6 @@ def main():
         passphrase = m.group(2)
 
         print('SSID:', ssid)
-        print('Passphrase:', passphrase)
 
         subprocess.check_call(['./print-esp32-label.py', ssid, passphrase])
 
