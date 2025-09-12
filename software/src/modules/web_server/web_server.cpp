@@ -26,7 +26,7 @@
 #include "digest_auth.h"
 #include "cool_string.h"
 #include "esp_httpd_priv.h"
-
+#include "tools/malloc.h"
 
 #include "sdkconfig.h"
 #ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
@@ -350,7 +350,7 @@ WebServerHandler *WebServer::addHandler(const char *uri,
 
     WebServerHandler *result = &handlers.front();
 #ifdef DEBUG_FS_ENABLE
-    result->uri = strdup(uri);
+    result->uri = perm_strdup(uri);
     result->method = method;
     result->accepts_upload = uploadCallback != nullptr;
 #endif
