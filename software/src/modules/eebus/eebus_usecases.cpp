@@ -311,11 +311,6 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
     return CmdClassifierType::reply;
 }
 
-EvseEntity::EvseEntity()
-{
-    update_billing_data(1, 0_s, 0_s, 0, 0, 100, 100, 0, 0);
-}
-
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
@@ -411,6 +406,11 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
     usecase_interface = new_usecase_interface;
 }
 
+
+EvseEntity::EvseEntity()
+{
+    update_billing_data(1, 0_s, 0_s, 0, 0, 100, 100, 0, 0);
+}
 
 UseCaseInformationDataType EvseEntity::get_usecase_information()
 {
@@ -549,6 +549,7 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
 
 CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
+    //TODO: Support partial reads, writes and deletes
     if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
         BillDescriptionListDataType billDescriptionListData{};
@@ -608,6 +609,8 @@ ControllableSystemEntity::ControllableSystemEntity()
                                           60_s);
     // Initialize ElectricalConnection feature
     update_constraints(0, 0);
+    lpc_state = LPCState::Init;
+    switch_state(LPCState::Init);
 }
 
 UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
@@ -892,6 +895,7 @@ CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType 
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
             // Just reset timeout here. Resetting on replies is not quite conform but its still possible
+            heartbeat_received = true;
             task_scheduler.cancel(heartbeat_timeout_task);
             heartbeat_timeout_task = task_scheduler.scheduleOnce(
                 [this]() {
@@ -914,9 +918,86 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
     return CmdClassifierType::EnumUndefined;
 }
 
-void ControllableSystemEntity::handle_heartbeat_timeout() const
+bool ControllableSystemEntity::switch_state(LPCState state)
+{
+    switch (state) {
+        case LPCState::Init:
+            return init_state();
+            break;
+        case LPCState::UnlimitedControlled:
+            return unlimited_controlled_state();
+            break;
+        case LPCState::Limited:
+            return limited_state();
+            break;
+        case LPCState::Failsafe:
+            return failsafe_state();
+            break;
+        case LPCState::UnlimitedAutonomous:
+            return unlimited_autonomous_state();
+            break;
+    }
+    return false;
+}
+
+bool ControllableSystemEntity::init_state()
+{
+    // This handles the initialization of the state machine
+    if (lpc_state == LPCState::Init) {
+        initialization_timeout = task_scheduler.scheduleOnce(
+            [this]() {
+                this->switch_state(LPCState::UnlimitedAutonomous);
+            },
+            120_s);
+        return true;
+    }
+    return false;
+}
+
+bool ControllableSystemEntity::unlimited_controlled_state()
+{
+    if (lpc_state == LPCState::Init) {
+        lpc_state = LPCState::UnlimitedControlled;
+        task_scheduler.cancel(initialization_timeout);
+        // TODO: Set limits
+        return true;
+    }
+    if (lpc_state == LPCState::Limited) {
+        lpc_state = LPCState::UnlimitedControlled;
+        //TODO
+        return true;
+    }
+    if (lpc_state == LPCState::Failsafe) {
+        lpc_state = LPCState::UnlimitedControlled;
+        // TODO
+        return true;
+    }
+    if (lpc_state == LPCState::UnlimitedAutonomous) {
+        lpc_state = LPCState::UnlimitedControlled;
+// TODO
+        return true;
+
+    }
+    eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, LPCState::UnlimitedControlled);
+    return false;
+}
+
+bool ControllableSystemEntity::limited_state()
+{
+}
+
+bool ControllableSystemEntity::failsafe_state()
+{
+}
+
+bool ControllableSystemEntity::unlimited_autonomous_state()
+{
+}
+
+void ControllableSystemEntity::handle_heartbeat_timeout()
 {
     if (heartbeatEnabled) {
+        heartbeat_received = false;
         eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
         // TODO: It is up to us what do to when heartbeat times out.
     }
