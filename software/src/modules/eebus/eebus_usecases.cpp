@@ -26,6 +26,7 @@
 #include <chrono>
 #include <regex>
 
+
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
@@ -591,14 +592,16 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
 ControllableSystemEntity::ControllableSystemEntity()
 {
     // Initialize DeviceConfiguration feature
-    update_failsafe(0, 0_s);
+    update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
+
 
     // Initialize DeviceDiagnosis feature
     task_scheduler.scheduleWithFixedDelay([this]() {
                                               DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
                                               outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
                                               outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-                                              outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
+                                              outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes()); // TODO: Get some kind of timestamp
+
                                               eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
                                               eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
                                               if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, eebus.data_handler.get()) > 0) {
@@ -608,7 +611,7 @@ ControllableSystemEntity::ControllableSystemEntity()
                                           60_s,
                                           60_s);
     // Initialize ElectricalConnection feature
-    update_constraints(0, 0);
+    update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
     lpc_state = LPCState::Init;
     switch_state(LPCState::Init);
 }
@@ -845,7 +848,7 @@ CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType 
             DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
             outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
             outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-            outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
+            outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes());
             response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
 
             // Initialize  read on their heartbeat
@@ -994,6 +997,18 @@ bool ControllableSystemEntity::failsafe_state()
 
 bool ControllableSystemEntity::unlimited_autonomous_state()
 {
+    if (lpc_state == LPCState::Init) {
+        lpc_state = LPCState::UnlimitedAutonomous;
+        task_scheduler.cancel(initialization_timeout);
+        //current_active_consumption_limit_w =
+        return true;
+    }
+    if (lpc_state == LPCState::Failsafe) {
+        lpc_state = LPCState::UnlimitedAutonomous;
+        // TODO
+        return true;
+    }
+    eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, LPCState::UnlimitedControlled);
     return false;
 }
 

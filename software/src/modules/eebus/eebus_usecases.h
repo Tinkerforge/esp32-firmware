@@ -28,10 +28,10 @@
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 3
-#define EEBUS_USECASE_EVCS_ENABLE // Enable the EV Charging Summary Usecase
-#define EEBUS_USECASE_LPC_ENABLE // Enable the Limitation of Power Consumption Usecase
-#define EEBUS_USECASE_CEVC_ENABLE // Enable the Coordinated EV Charging Usecase
-#define EEBUS_USECASE_EVSECC_ENABLE // Enable the EV Commissioning and Configuration Usecase
+
+// Configuration related to the LPC usecases
+// The power consumption limit at startup in w. Should be the technical limit of the Warp Charger
+#define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 3600
 
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
@@ -313,7 +313,7 @@ private:
     int electricalConnection_feature_address = 40;
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
-    int current_active_consumption_limit_w = 0;
+    int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
 
     // Device Configuration Data as required for Scenario 2 - Device Configuration
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
