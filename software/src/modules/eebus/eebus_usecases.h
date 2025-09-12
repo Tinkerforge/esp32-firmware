@@ -304,14 +304,16 @@ private:
     bool failsafe_state();
     bool unlimited_autonomous_state();
 
+    void update_api();
+
     // These can be freely assigned but need to be unique within the entity.
     int loadControl_feature_address = 10;
     int deviceConfiguration_feature_address = 20;
     int deviceDiagnosis_feature_address = 30;
     int electricalConnection_feature_address = 40;
 
-    // LoadControl configuraiton as required for scenario 1 - Control Active Power
-
+    // LoadControl configuration as required for scenario 1 - Control Active Power
+    int current_active_consumption_limit_w = 0;
 
     // Device Configuration Data as required for Scenario 2 - Device Configuration
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};

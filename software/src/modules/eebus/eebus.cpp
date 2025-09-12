@@ -147,7 +147,7 @@ void EEBus::pre_setup()
     });
 
     // Currently eebus state and eebus config are one config. Maybe split them?
-    eebus_usecase_state = ConfigRoot{Config::Object({
+    eebus_usecase_state = Config::Object({
             {"charging_summary", Config::Array({
                                                    // Read/Write
                                                    // Usecase EV Charging summary
@@ -160,13 +160,14 @@ void EEBus::pre_setup()
             {"power_consumption_limitation", Config::Object({
                  // Usecase Limitation of power consumption
                  {"usecase_state", Config::Enum(LPCState::Init)},
+                {"current_active_limit", Config::Uint16(0)},
                  {"failsafe_limit_power_w", Config::Uint16(0)}, // The limit which may have been set by the energy guard
                  {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
-                 {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable
+                 {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
                  {"constraints_power_maximum_contractual", Config::Uint16(0)} //The maximum consumption the consumer is contractually allowed
              })}
         }
-        )};
+        );
 
     ship.pre_setup();
 }
