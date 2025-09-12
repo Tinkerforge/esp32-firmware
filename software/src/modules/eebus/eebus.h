@@ -67,12 +67,17 @@ public:
 
     Config config_peers_prototype;
     Config state_connections_prototype;
-    Config charges_prototype;
+
     ConfigRoot add_peer;
     ConfigRoot remove_peer;
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot scan_command;
+
+    ConfigRoot eebus_usecase_state;
+    Config charges_prototype;
+
+
     Ship ship;
     unique_ptr_any<EEBusUseCases> usecases;
     //EEBusUseCases usecases{};

@@ -44,14 +44,14 @@ export interface ChargeProcesses {
     start_time: number;
     duration: number;
     cost: number;
+    percent_self_produced_energy: number;
+    percent_self_produced_cost: number;
 }
 
 export interface state {
     ski: string;
     discovery_state: number;
     connections: Connection[];
-    charge_state: ChargeProcesses[];
-
 }
 
 export interface scan {
