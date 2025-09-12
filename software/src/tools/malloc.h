@@ -107,6 +107,8 @@ T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
     return ptr;
 }
 
+char *perm_strdup(const char *c);
+
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);
 
