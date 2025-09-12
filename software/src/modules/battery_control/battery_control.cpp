@@ -31,6 +31,15 @@
 static constexpr const uint16_t MAX_RULES_PER_TYPE = 32;
 static_assert(MAX_RULES_PER_TYPE < 256, "MAX_RULES_PER_TYPE must be below 256 to fit into an uint8_t");
 
+static int get_localtime_hour()
+{
+    const time_t time_utc = time(nullptr);
+    struct tm tm_local;
+    localtime_r(&time_utc, &tm_local);
+
+    return tm_local.tm_hour;
+}
+
 void BatteryControl::pre_setup()
 {
     trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 8192);
@@ -251,6 +260,29 @@ void BatteryControl::register_events()
         });
     }
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE() || MODULE_SOLAR_FORECAST_AVAILABLE()
+        // Update forecasts at at 20:00.
+        // The wall clock task has to run hourly and check the local time manually.
+        // Registering the wall clock task with a 24h interval and a time-zone-dependent delay would schedule the task at midnight with a large delay.
+        // If the device was restarted between midnight and 20:00, the task would not be scheduled until the next day.
+        // Checking the local time here also means that DST doesn't matter.
+        task_scheduler.scheduleWallClock([this]() {
+            const int localtime_hour_now = get_localtime_hour();
+
+            if (localtime_hour_now != 20) {
+                return;
+            }
+
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
+            this->update_tariff_schedule();
+#endif
+
+#if MODULE_SOLAR_FORECAST_AVAILABLE()
+            this->update_solar_forecast(localtime_hour_now, api.getState("solar_forecast/state"));
+#endif
+        }, 1_h, 0_ms, false);
+#endif
+
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
     event.registerEvent("day_ahead_prices/state", {}, [this](const Config *cfg) {
         const uint8_t event_api_backend_flag = event.get_api_backend_flag();
@@ -260,12 +292,12 @@ void BatteryControl::register_events()
         if (current_price_cfg->was_updated(event_api_backend_flag)) {
             const int32_t price = current_price_cfg->asInt();
 
-            logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
-
             if (price == std::numeric_limits<decltype(price)>::max()) {
                 this->data->price_cache = std::numeric_limits<decltype(this->data->price_cache)>::min();
+                logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized current_price from DAP");
             } else {
                 this->data->price_cache = price;
+                logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
             }
 
             this->data->evaluation_must_check_rules = true;
@@ -283,40 +315,15 @@ void BatteryControl::register_events()
     });
 
     if (config.get("cheap_tariff_quarters")->asUint() != 0 || config.get("expensive_tariff_quarters")->asUint() != 0) {
-        // Call update_tariff_schedule at 20:00.
-        // The wall clock task has to run hourly and check the local time manually.
-        // Registering the wall clock task with a 24h interval and a time-zone-dependent delay would schedule the task at midnight with a large delay.
-        // If the device was restarted between midnight and 20:00, the task would not be scheduled until the next day.
-        // Checking the local time here also means that DST doesn't matter.
-        task_scheduler.scheduleWallClock([this]() {
-            time_t time_utc = time(nullptr);
-            struct tm tm_local;
-            localtime_r(&time_utc, &tm_local);
-
-            if (tm_local.tm_hour == 20) {
-                this->update_tariff_schedule();
-            }
-        }, 1_h, 0_ms, false);
-
         task_scheduler.scheduleWallClock([this]() {
             this->evaluate_tariff_schedule();
-        }, 15_min, 100_ms, false); // Slightly delayed to give the previous task a chance to update the schedule first.
+        }, 15_min, 100_ms, false); // Slightly delayed to give the hourly task a chance to update the schedule first.
     }
 #endif
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
-    event.registerEvent("solar_forecast/state", {"wh_tomorrow"}, [this](const Config *cfg) {
-        const int32_t wh_tomorrow = cfg->asInt();
-
-        if (wh_tomorrow < 0) {
-            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized forecast: %li", wh_tomorrow);
-            return EventResult::OK;
-        }
-
-        logger.tracefln(this->trace_buffer_idx, "wh_tomorrow=%li", wh_tomorrow);
-        this->data->forecast_cache = wh_tomorrow;
-        this->data->evaluation_must_check_rules = true;
-        this->schedule_evaluation();
+    event.registerEvent("solar_forecast/state", {}, [this](const Config *sf_state) {
+        update_solar_forecast(get_localtime_hour(), sf_state);
 
         return EventResult::OK;
     });
@@ -462,6 +469,28 @@ void BatteryControl::evaluate_tariff_schedule()
         schedule_evaluation();
     }
 }
+
+#if MODULE_SOLAR_FORECAST_AVAILABLE()
+void BatteryControl::update_solar_forecast(int localtime_hour_now, const Config *sf_state)
+{
+    const char *const forecast_field_name = localtime_hour_now < 20 ? "wh_today" : "wh_tomorrow";
+    const int32_t wh_forecast = sf_state->get(forecast_field_name)->asInt();
+
+    if (wh_forecast < 0) {
+        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized %s forecast: %li", forecast_field_name, wh_forecast);
+        return;
+    }
+
+    if (this->data->forecast_cache == wh_forecast) {
+        logger.tracefln(this->trace_buffer_idx, "%s=%li unchanged", forecast_field_name, wh_forecast);
+    } else {
+        logger.tracefln(this->trace_buffer_idx, "%s=%li changed", forecast_field_name, wh_forecast);
+        this->data->forecast_cache = wh_forecast;
+        this->data->evaluation_must_check_rules = true;
+        this->schedule_evaluation();
+    }
+}
+#endif
 
 void BatteryControl::schedule_evaluation()
 {
