@@ -1,14 +1,20 @@
 #!/usr/bin/python3 -u
 
+import tinkerforge_util as tfutil
+
+tfutil.create_parent_module(__file__, 'provisioning')
+
 import re
 import subprocess
+import getpass
+from provisioning.provision_common.provision_common import *
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
 
 
 def main():
     while True:
-        qr_code = input('Scan ESP32 label: ').strip()
+        qr_code = getpass.getpass(green('Scan ESP32 label: ')).strip()
 
         if len(qr_code) == 0:
             print('Aborted!')
@@ -27,8 +33,6 @@ def main():
         print('Passphrase:', passphrase)
 
         subprocess.check_call(['./print-esp32-label.py', ssid, passphrase])
-
-        break
 
 
 if __name__ == '__main__':
