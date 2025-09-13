@@ -109,16 +109,8 @@ public:
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
-    // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
-    [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    inline uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleOnce(std::move(fn), millis_t{delay_ms}, src_location);}
-
     inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), 0_ms, delay_ms, src_location);}
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
-
-    // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
-    [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{first_delay_ms}, millis_t{delay_ms}, src_location);}
 
     uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location = std::source_location::current());
 
