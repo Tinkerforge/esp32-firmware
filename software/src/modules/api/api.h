@@ -143,12 +143,6 @@ public:
     bool addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
     void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
 
-    // TODO Remove deprecated functions. Marked as deprecated on 2024-10-04.
-    [[gnu::deprecated("Please add a 'String &' parameter to the callback lambda. It can be unused or unnamed.")]]
-    void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
-    [[gnu::deprecated("Please add a 'String &' parameter to the callback lambda. It can be unused or unnamed.")]]
-    void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action);
-
     bool hasFeature(const char *name);
 
     static void writeConfig(const String &path, Config *config);

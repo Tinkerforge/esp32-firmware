@@ -152,12 +152,6 @@ String API::getLittleFSConfigPath(const String &path, bool tmp) {
     return (tmp ? String("/config/.") : String("/config/")) + path_copy;
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void()> &&callback, bool is_action)
-{
-    // The lambda's by-copy capture creates a safe copy of the callback.
-    this->addCommand(path, config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
-}
-
 void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
     size_t path_len = strlen(path);
@@ -212,11 +206,6 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 #if MODULE_DEBUG_AVAILABLE()
     debug.api_command_count(commands_size);
 #endif
-}
-
-void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
-    // The lambda's by-copy capture creates a safe copy of the callback.
-    this->addCommand(strdup(path.c_str()), config, keys_to_censor_in_debug_report, [callback](String &){callback();}, is_action);
 }
 
 void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
