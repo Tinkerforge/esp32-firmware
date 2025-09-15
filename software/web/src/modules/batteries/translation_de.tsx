@@ -33,6 +33,8 @@ let x = {
 
             "managed_batteries": "Kontrollierte Batteriespeicher",
 
+            "enable_battery_control": "Speichersteuerung aktiviert",
+
             "table_battery_display_name": "Anzeigename",
             "table_battery_class": "Klasse",
 
