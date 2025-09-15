@@ -316,6 +316,16 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         get_device_addresses(table_config, device_addresses);
         break;
 
+    case BatteryModbusTCPTableID::AlphaESSHybridInverter:
+        get_alpha_ess_hybrid_inverter_tables(tables);
+        get_device_addresses(table_config, device_addresses);
+        break;
+
+    case BatteryModbusTCPTableID::HaileiHybridInverter:
+        get_hailei_hybrid_inverter_tables(tables);
+        get_device_addresses(table_config, device_addresses);
+        break;
+
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
