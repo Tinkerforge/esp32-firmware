@@ -81,6 +81,10 @@ void BatteryControl::setup()
 
     initialized = true;
 
+    if (!batteries.get_enabled()) {
+        return;
+    }
+
     uint8_t max_used_batteries = 0;
 
     for (uint8_t i = OPTIONS_BATTERIES_MAX_SLOTS(); i > 0; i--) {
