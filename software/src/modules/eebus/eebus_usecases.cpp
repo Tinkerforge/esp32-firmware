@@ -594,7 +594,6 @@ ControllableSystemEntity::ControllableSystemEntity()
     // Initialize DeviceConfiguration feature
     update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
 
-
     // Initialize DeviceDiagnosis feature
     task_scheduler.scheduleWithFixedDelay([this]() {
                                               DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
@@ -923,24 +922,31 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
 
 bool ControllableSystemEntity::switch_state(LPCState state)
 {
+    bool state_chaged = false;
     switch (state) {
         case LPCState::Init:
-            return init_state();
+            state_chaged = init_state();
             break;
         case LPCState::UnlimitedControlled:
-            return unlimited_controlled_state();
+            state_chaged = unlimited_controlled_state();
             break;
         case LPCState::Limited:
-            return limited_state();
+            state_chaged = limited_state();
             break;
         case LPCState::Failsafe:
-            return failsafe_state();
+            state_chaged = failsafe_state();
             break;
         case LPCState::UnlimitedAutonomous:
-            return unlimited_autonomous_state();
+            state_chaged = unlimited_autonomous_state();
             break;
     }
-    return false;
+    if (state_chaged) {
+        update_api();
+    } else {
+        eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, state);
+
+    }
+    return state_chaged;
 }
 
 bool ControllableSystemEntity::init_state()
@@ -981,17 +987,47 @@ bool ControllableSystemEntity::unlimited_controlled_state()
         return true;
 
     }
-    eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, LPCState::UnlimitedControlled);
     return false;
 }
 
 bool ControllableSystemEntity::limited_state()
 {
+    if (lpc_state == LPCState::Init) {
+        lpc_state = LPCState::Limited;
+        task_scheduler.cancel(initialization_timeout);
+        //current_active_consumption_limit_w =
+        return true;
+    }
+    if (lpc_state == LPCState::UnlimitedControlled) {
+        lpc_state = LPCState::Limited;
+        // TODO
+        return true;
+    }
+    if (lpc_state == LPCState::UnlimitedAutonomous) {
+        lpc_state = LPCState::Limited;
+        // TODO
+        return true;
+    }
+    if (lpc_state == LPCState::Failsafe) {
+        lpc_state = LPCState::Limited;
+        // TODO
+        return true;
+    }
     return false;
 }
 
 bool ControllableSystemEntity::failsafe_state()
 {
+    if (lpc_state == LPCState::UnlimitedControlled) {
+        lpc_state = LPCState::Failsafe;
+        // TODO
+        return true;
+    }
+    if (lpc_state == LPCState::Limited) {
+        lpc_state = LPCState::Failsafe;
+        // TODO
+        return true;
+    }
     return false;
 }
 
@@ -1000,7 +1036,7 @@ bool ControllableSystemEntity::unlimited_autonomous_state()
     if (lpc_state == LPCState::Init) {
         lpc_state = LPCState::UnlimitedAutonomous;
         task_scheduler.cancel(initialization_timeout);
-        //current_active_consumption_limit_w =
+        current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
         return true;
     }
     if (lpc_state == LPCState::Failsafe) {
@@ -1016,7 +1052,8 @@ void ControllableSystemEntity::update_api()
 {
     auto api_entry = eebus.eebus_usecase_state.get("power_consumption_limitation");
     api_entry->get("usecase_state")->updateEnum(lpc_state);
-    api_entry->get("current_active_limit")->updateUint(current_active_consumption_limit_w);
+    api_entry->get("limit_active")->updateBool(limit_engaged);
+    api_entry->get("current_limit")->updateUint(current_active_consumption_limit_w);
     api_entry->get("failsafe_limit_power_w")->updateUint(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(0).value->scaledNumber->number.get());
     api_entry->get("failsafe_limit_duration_s")->updateUint(EEBUS_USECASE_HELPERS::iso_duration_to_seconds(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(1).value->duration.get()).as<uint64_t>());
     api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
