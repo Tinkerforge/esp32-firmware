@@ -146,15 +146,9 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                     body: () => {
                                         const [copiedKeys, setCopiedKeys] = useState<{public: boolean, private: boolean}>({public: false, private: false});
                                         const copy = (txt: string, keyType: 'public' | 'private') => {
-                                            try {
-                                                if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-                                                    navigator.clipboard.writeText(txt);
-                                                    setCopiedKeys(prev => ({...prev, [keyType]: true}));
-                                                    setTimeout(() => {
-                                                        setCopiedKeys(prev => ({...prev, [keyType]: false}));
-                                                    }, 2000);
-                                                }
-                                            } catch(_) {}
+                                            util.copyToClipboard(txt);
+                                            setCopiedKeys({...copiedKeys, [keyType]: true});
+                                            setTimeout(() => setCopiedKeys({...copiedKeys, [keyType]: false}), 2000);
                                         };
                                         return <div style="word-break: break-all">
                                             <p>{__("wireguard.content.public_key_body")}</p>
