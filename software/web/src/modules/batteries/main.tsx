@@ -263,6 +263,25 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                     }}
                                     value={this.state.edit_rule_config.schedule_cond.toString()} />
                             </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_fast_chg")}>
+                                <InputSelect
+                                    placeholder={__("select")}
+                                    items={[
+                                        [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
+                                        [RuleCondition.Below.toString(),  __("batteries.content.condition_fast_chg_inactive")],
+                                        [RuleCondition.Above.toString(),  __("batteries.content.condition_fast_chg_active")],
+                                    ]}
+                                    onValue={(v) => {
+                                        let fast_chg_cond = parseInt(v);
+
+                                        if (fast_chg_cond != RuleCondition.Ignore) {
+                                            this.setState({all_conditions_ignored: false});
+                                        }
+
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, fast_chg_cond: fast_chg_cond}});
+                                    }}
+                                    value={this.state.edit_rule_config.fast_chg_cond.toString()} />
+                            </FormRow>,
                             <Collapse in={this.state.all_conditions_ignored}>
                                 <div>
                                     <Alert variant="danger">
@@ -276,7 +295,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         const all_ignored = this.state.edit_rule_config.soc_cond      == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.price_cond    == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.forecast_cond == RuleCondition.Ignore &&
-                                            this.state.edit_rule_config.schedule_cond == ScheduleRuleCondition.Ignore;
+                                            this.state.edit_rule_config.schedule_cond == ScheduleRuleCondition.Ignore &&
+                                            this.state.edit_rule_config.fast_chg_cond == RuleCondition.Ignore;
 
                         return new Promise<boolean>((resolve) => {
                             this.setState({all_conditions_ignored: all_ignored}, () => resolve(!all_ignored));
@@ -306,6 +326,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     forecast_cond: RuleCondition.Ignore,
                     forecast_th: null,
                     schedule_cond: ScheduleRuleCondition.Ignore,
+                    fast_chg_cond: ScheduleRuleCondition.Ignore,
                 };
 
                 this.setState({add_rule_config: rule_config, all_conditions_ignored: false});
@@ -439,6 +460,25 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             }}
                             value={this.state.add_rule_config.schedule_cond.toString()} />
                     </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_fast_chg")}>
+                        <InputSelect
+                            placeholder={__("select")}
+                            items={[
+                                [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
+                                [RuleCondition.Below.toString(),  __("batteries.content.condition_fast_chg_inactive")],
+                                [RuleCondition.Above.toString(),  __("batteries.content.condition_fast_chg_active")],
+                            ]}
+                            onValue={(v) => {
+                                const fast_chg_cond = parseInt(v);
+
+                                if (fast_chg_cond != RuleCondition.Ignore) {
+                                    this.setState({all_conditions_ignored: false});
+                                }
+
+                                this.setState({add_rule_config: {...this.state.add_rule_config, fast_chg_cond: fast_chg_cond}});
+                            }}
+                            value={this.state.add_rule_config.fast_chg_cond.toString()} />
+                    </FormRow>,
                     <Collapse in={this.state.all_conditions_ignored}>
                         <div>
                             <Alert variant="danger">
@@ -452,7 +492,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                 const all_ignored = this.state.add_rule_config.soc_cond      == RuleCondition.Ignore &&
                                     this.state.add_rule_config.price_cond    == RuleCondition.Ignore &&
                                     this.state.add_rule_config.forecast_cond == RuleCondition.Ignore &&
-                                    this.state.add_rule_config.schedule_cond == ScheduleRuleCondition.Ignore;
+                                    this.state.add_rule_config.schedule_cond == ScheduleRuleCondition.Ignore &&
+                                    this.state.add_rule_config.fast_chg_cond == RuleCondition.Ignore;
 
                 return new Promise<boolean>((resolve) => {
                     this.setState({all_conditions_ignored: all_ignored}, () => resolve(!all_ignored));
@@ -1105,12 +1146,6 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
                     <FormSeparator heading={__("batteries.content.rules_forbid_discharge")} />
                     <div class="form-group">
-                        <FormRow label={__("batteries.content.forbid_discharge_during_fast_charge")}>
-                            <Switch desc={__("batteries.content.forbid_discharge_during_fast_charge_desc")}
-                                checked={this.state.battery_control_config.forbid_discharge_during_fast_charge}
-                                onClick={() => this.setState({battery_control_config: {...this.state.battery_control_config, forbid_discharge_during_fast_charge: !this.state.battery_control_config.forbid_discharge_during_fast_charge}})}
-                            />
-                        </FormRow>
                         <RulesEditor rules={this.state.rules_forbid_discharge} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_forbid_discharge: rules});
                             this.setDirty(true);
