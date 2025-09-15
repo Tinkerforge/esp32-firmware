@@ -28,7 +28,15 @@
             "preshared_key_muted": "optional",
             "allowed_ip": "Allowed source IP address of received packets",
             "allowed_ip_invalid": "The IP address must have four groups between 0 and 255 separated with a dot. For example 10.0.0.2",
-            "allowed_subnet": "Allowed subnet mask of received packets"
+            "allowed_subnet": "Allowed subnet mask of received packets",
+            "generate_keypair": "Generate key pair",
+            "generate_keypair_button": "Generate",
+            "wireguard_keypair": "WireGuard key pair",
+            "wireguard_public_key": "Public key",
+            "wireguard_private_key": "Private key",
+            "generate_keypair_abort": "Abort",
+            "generate_keypair_confirm": "Apply",
+            "public_key_body": "Configure the following public key on your WireGuard peer."
         },
         "script": {
             "save_failed": "Failed to save the WireGuard settings.",

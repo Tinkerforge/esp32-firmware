@@ -28,7 +28,15 @@
             "preshared_key_muted": "optional",
             "allowed_ip": "Erlaubte Quell-IP-Adresse empfangener Pakete",
             "allowed_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
-            "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete"
+            "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
+            "generate_keypair": "Schlüsselpaar generieren",
+            "generate_keypair_button": "Generieren",
+            "wireguard_keypair": "WireGuard-Schlüsselpaar",
+            "wireguard_public_key": "Öffentlicher Schlüssel",
+            "wireguard_private_key": "Privater Schlüssel",
+            "generate_keypair_abort": "Abbrechen",
+            "generate_keypair_confirm": "Anwenden",
+            "public_key_body": "Konfigurieren Sie den folgenden öffentlichen Schlüssel auf Ihrem WireGuard-Peer."
         },
         "script": {
             "save_failed": "Speichern der WireGuard-Einstellungen fehlgeschlagen.",

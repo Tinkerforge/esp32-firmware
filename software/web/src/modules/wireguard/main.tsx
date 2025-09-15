@@ -19,7 +19,8 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, Component, RefObject } from "preact";
+import { h, Component, RefObject } from "preact";
+import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -29,13 +30,14 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputPassword } from "../../ts/components/input_password";
 import { Switch } from "../../ts/components/switch";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
-import { Slash } from "react-feather";
+import { Slash, Copy as CopyIcon, Check as CheckIcon } from "react-feather";
 import { InputIP } from "../../ts/components/input_ip";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSubnet } from "../../ts/components/input_subnet";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
+import { Button } from "react-bootstrap";
 
 export function WireguardNavbar() {
     return (
@@ -130,6 +132,64 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                        value={state.private_key}
                                        onValue={this.set("private_key")}
                                        />
+                    </FormRow>
+
+            <FormRow label={__("wireguard.content.generate_keypair")}>
+                        <Button className="form-control" onClick={async () => {
+                            const modal = util.async_modal_ref.current;
+                            if(!modal) return;
+                            // Generate new keypair using existing wireguard helper (same as remote_access)
+                            try {
+                                const kp = (window as any).wireguard.generateKeypair();
+                                const accepted = await modal.show({
+                                    title: () => __("wireguard.content.wireguard_keypair"),
+                                    body: () => {
+                                        const [copiedKeys, setCopiedKeys] = useState<{public: boolean, private: boolean}>({public: false, private: false});
+                                        const copy = (txt: string, keyType: 'public' | 'private') => {
+                                            try {
+                                                if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+                                                    navigator.clipboard.writeText(txt);
+                                                    setCopiedKeys(prev => ({...prev, [keyType]: true}));
+                                                    setTimeout(() => {
+                                                        setCopiedKeys(prev => ({...prev, [keyType]: false}));
+                                                    }, 2000);
+                                                }
+                                            } catch(_) {}
+                                        };
+                                        return <div style="word-break: break-all">
+                                            <p>{__("wireguard.content.public_key_body")}</p>
+                                            <FormRow label={__("wireguard.content.wireguard_public_key")}>
+                                                <div class="input-group mb-2">
+                                                    <input type="text" class="form-control" readonly value={kp.publicKey} />
+                                                    <Button className="px-2 py-1" onClick={() => copy(kp.publicKey, 'public')} aria-label="Copy public key" style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
+                                                        {copiedKeys.public ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
+                                                    </Button>
+                                                </div>
+                                            </FormRow>
+                                            <FormRow label={__("wireguard.content.wireguard_private_key")}>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" readonly value={kp.privateKey} />
+                                                    <Button className="px-2 py-1" onClick={() => copy(kp.privateKey, 'private')} aria-label="Copy private key" style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
+                                                        {copiedKeys.private ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
+                                                    </Button>
+                                                </div>
+                                            </FormRow>
+                                        </div>;
+                                    },
+                    no_text: () => __("wireguard.content.generate_keypair_abort"),
+                    yes_text: () => __("wireguard.content.generate_keypair_confirm"),
+                    no_variant: "secondary",
+                    yes_variant: "primary",
+                    nestingDepth: 1,
+                                });
+                                if (accepted) {
+                                    this.setState({private_key: kp.privateKey});
+                                    this.setDirty(true);
+                                }
+                            } catch(e) {
+                                console.error("Failed to generate WireGuard keypair", e);
+                            }
+            }}>{__("wireguard.content.generate_keypair_button")}</Button>
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.remote_public_key")}>
