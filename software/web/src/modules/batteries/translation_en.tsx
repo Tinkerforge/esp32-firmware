@@ -71,6 +71,7 @@ let x = {
             "add_rule_price_muted" : "market price",
             "add_rule_forecast": "Solar forecast",
             "add_rule_schedule": "Dynamic tariff schedule",
+            "add_rule_fast_chg": "Vehicle fast charge",
 
             "edit_rule_title": "Edit rule",
             "edit_rule_desc": "Description",
@@ -79,6 +80,7 @@ let x = {
             "edit_rule_price_muted" : "market price",
             "edit_rule_forecast": "Solar forecast",
             "edit_rule_schedule": "Dynamic tariff schedule",
+            "edit_rule_fast_chg": "Vehicle fast charge",
 
             "condition_ignore": "Is ignored",
             "condition_below": "Smaller than",
@@ -89,6 +91,9 @@ let x = {
             "condition_schedule_expensive": "Expensive hours",
             "condition_schedule_not_expensive": "Not expensive hours",
             "condition_schedule_moderate": "Moderately-priced hours (neither cheap nor expensive)",
+
+            "condition_fast_chg_inactive": "No fast charge active",
+            "condition_fast_chg_active": "Fast charge active",
 
             "invalid_feedback_all_ignored": "Cannot ignore all conditions at the same time."
         },

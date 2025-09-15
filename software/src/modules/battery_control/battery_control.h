@@ -53,6 +53,7 @@ private:
         RuleCondition price_cond;
         RuleCondition forecast_cond;
         ScheduleRuleCondition schedule_cond;
+        RuleCondition fast_chg_cond;
     };
 
     struct battery_repeat_data {
@@ -106,7 +107,6 @@ private:
         uint8_t forbid_discharge_rules_count   = 0;
         uint8_t forbid_charge_rules_count      = 0;
 
-        bool forbid_discharge_during_fast_charge = false;
         bool evaluation_must_update_soc = false;
         bool evaluation_must_check_rules = false;
         bool network_connect_seen = false;

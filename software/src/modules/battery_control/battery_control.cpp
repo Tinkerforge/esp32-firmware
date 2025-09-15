@@ -45,7 +45,6 @@ void BatteryControl::pre_setup()
     trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 8192);
 
     config = Config::Object({
-        {"forbid_discharge_during_fast_charge", Config::Bool(false)},
         {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
         {"expensive_tariff_quarters", Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
     });
@@ -59,6 +58,7 @@ void BatteryControl::pre_setup()
         {"forecast_cond", Config::Enum  (RuleCondition::Ignore)},
         {"forecast_th",   Config::Uint16(0)}, // in kWh     (0 to 65 MWh)
         {"schedule_cond", Config::Enum  (ScheduleRuleCondition::Ignore)},
+        {"fast_chg_cond", Config::Enum  (RuleCondition::Ignore)},
     });
 
     rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
@@ -139,8 +139,6 @@ void BatteryControl::setup()
         data->soc_cache[i] = std::numeric_limits<uint8_t>::max();
     }
 
-    data->forbid_discharge_during_fast_charge = config.get("forbid_discharge_during_fast_charge")->asBool() && charge_manager.get_charger_count() > 0;
-
     const size_t permit_grid_charge_rules_cnt = rules_permit_grid_charge.count();
     const size_t forbid_discharge_rules_cnt   = rules_forbid_discharge.count();
     const size_t forbid_charge_rules_cnt      = rules_forbid_charge.count();
@@ -196,29 +194,27 @@ void BatteryControl::register_events()
 
     const size_t total_rules_cnt = static_cast<size_t>(data->permit_grid_charge_rules_count) + static_cast<size_t>(data->forbid_discharge_rules_count) + static_cast<size_t>(data->forbid_charge_rules_count);
 
-    if (data->forbid_discharge_during_fast_charge || total_rules_cnt > 0) {
-#if MODULE_NETWORK_AVAILABLE()
-        network.on_network_connected([this](const Config *connected) {
-            if (!connected->asBool()) {
-                return EventResult::OK;
-            }
-
-            task_scheduler.scheduleWithFixedDelay([this]() {
-                this->periodic_update();
-            }, 5_s, 1_s);
-
-            return EventResult::Deregister;
-        });
-#else
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->periodic_update();
-        }, 10_s, 1_s);
-#endif
-    }
-
     if (total_rules_cnt == 0) {
         return;
     }
+
+#if MODULE_NETWORK_AVAILABLE()
+    network.on_network_connected([this](const Config *connected) {
+        if (!connected->asBool()) {
+            return EventResult::OK;
+        }
+
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            this->periodic_update();
+        }, 5_s, 1_s);
+
+        return EventResult::Deregister;
+    });
+#else
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        this->periodic_update();
+    }, 10_s, 1_s);
+#endif
 
     for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         if (meters.get_meter_location(slot) != MeterLocation::Battery) {
@@ -347,6 +343,7 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         rule->forecast_cond =                       rule_config->get("forecast_cond")->asEnum<RuleCondition>();
         rule->forecast_th   = static_cast<int32_t >(rule_config->get("forecast_th"  )->asUint() * 1000);        // kWh -> Wh
         rule->schedule_cond =                       rule_config->get("schedule_cond")->asEnum<ScheduleRuleCondition>();
+        rule->fast_chg_cond =                       rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
     }
 }
 
@@ -575,6 +572,7 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
         if (rule_condition_failed(rule->soc_cond,      rule->soc_th,      data->soc_cache_avg )) continue;
         if (rule_condition_failed(rule->price_cond,    rule->price_th,    data->price_cache   )) continue;
         if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, data->forecast_cache)) continue;
+        if (rule_condition_failed(rule->fast_chg_cond, 0, data->fast_charger_in_c_cache * 2 - 1)) continue;
         if (schedule_rule_condition_failed(rule->schedule_cond, data->tariff_schedule_cache)) continue;
 
         // Complete rule matches.
@@ -600,23 +598,8 @@ void BatteryControl::evaluate_all_rules()
 void BatteryControl::evaluate_summary()
 {
     evaluate_action_pair(ActionPair::PermitGridCharge);
+    evaluate_action_pair(ActionPair::ForbidDischarge);
     evaluate_action_pair(ActionPair::ForbidCharge);
-
-    TristateBool discharge_forbidden_update;
-    action_influence_data *forbid_discharge_influence = data->action_influence_active + static_cast<size_t>(ActionPair::ForbidDischarge);
-
-    if (forbid_discharge_influence->activated_by_rules == TristateBool::True) {
-        discharge_forbidden_update = TristateBool::True;
-    } else if (data->forbid_discharge_during_fast_charge && data->fast_charger_in_c_cache) {
-        discharge_forbidden_update = TristateBool::True;
-    } else {
-        discharge_forbidden_update = TristateBool::False;
-    }
-
-    if (forbid_discharge_influence->activated != discharge_forbidden_update) {
-        forbid_discharge_influence->activated  = discharge_forbidden_update;
-        update_batteries_and_state(ActionPair::ForbidDischarge, true);
-    }
 }
 
 void BatteryControl::evaluate_action_pair(ActionPair action_pair)
@@ -632,14 +615,14 @@ void BatteryControl::evaluate_action_pair(ActionPair action_pair)
 
 void BatteryControl::periodic_update()
 {
-    if (data->forbid_discharge_during_fast_charge) {
-        const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
+    const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
 
-        if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
-            logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
-            data->fast_charger_in_c_cache = fast_charger_in_c_cm;
-            schedule_evaluation();
-        }
+    if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
+        logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
+        data->fast_charger_in_c_cache = fast_charger_in_c_cm;
+
+        data->evaluation_must_check_rules = true;
+        schedule_evaluation();
     }
 
     if (data->must_repeat) {
