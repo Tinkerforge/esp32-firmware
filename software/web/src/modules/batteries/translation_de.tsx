@@ -71,6 +71,7 @@ let x = {
             "add_rule_price_muted": "Börsenpreis",
             "add_rule_forecast": "PV-Ertragsprognose",
             "add_rule_schedule": "Dynamischer Strompreisplan",
+            "add_rule_fast_chg": "Fahrzeug-Schnellladung",
 
             "edit_rule_title": "Regel bearbeiten",
             "edit_rule_desc": "Beschreibung",
@@ -79,6 +80,7 @@ let x = {
             "edit_rule_price_muted": "Börsenpreis",
             "edit_rule_forecast": "PV-Ertragsprognose",
             "edit_rule_schedule": "Dynamischer Strompreisplan",
+            "edit_rule_fast_chg": "Fahrzeug-Schnelladung",
 
             "condition_ignore": "Wird ignoriert",
             "condition_below": "Kleiner als",
@@ -89,6 +91,9 @@ let x = {
             "condition_schedule_expensive": "Teure Stunden",
             "condition_schedule_not_expensive": "Nicht teure Stunden",
             "condition_schedule_moderate": "Preislich moderate Stunden (weder günstig noch teuer)",
+
+            "condition_fast_chg_inactive": "Keine Schnellladung aktiv",
+            "condition_fast_chg_active": "Schnellladung aktiv",
 
             "invalid_feedback_all_ignored": "Es können nicht alle Bedingungen gleichzeitig ignoriert werden."
         },
