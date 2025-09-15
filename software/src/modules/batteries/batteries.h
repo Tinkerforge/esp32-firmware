@@ -60,7 +60,7 @@ public:
     IBattery *get_battery(uint32_t slot);
     uint32_t get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity);
     BatteryClassID get_battery_class(uint32_t slot);
-    void start_action_all(BatteryAction action);
+    bool get_enabled();
 
     String get_path(uint32_t slot, PathType path_type);
 
@@ -77,6 +77,8 @@ private:
 
     IBatteryGenerator *get_generator_for_class(BatteryClassID battery_class);
     IBattery *new_battery_of_class(BatteryClassID battery_class, uint32_t slot, Config *state, Config *errors);
+
+    ConfigRoot config;
 
     BatterySlot battery_slots[OPTIONS_BATTERIES_MAX_SLOTS()];
 

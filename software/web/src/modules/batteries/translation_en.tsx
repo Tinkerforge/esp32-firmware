@@ -33,6 +33,8 @@ let x = {
 
             "managed_batteries": "Managed battery storages",
 
+            "enable_battery_control": "Battery control enabled",
+
             "table_battery_display_name": "Display name",
             "table_battery_class": "Class",
 
