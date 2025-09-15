@@ -1564,60 +1564,39 @@ interface MetersAlertState {
 const ACCEPTABLE_VOLTAGE_L_N_MIN = 207.0; // V
 const ACCEPTABLE_VOLTAGE_L_N_MAX = 253.0; // V
 
-export class MetersAlert extends Component<{}, MetersAlertState>
-{
-    constructor() {
-        super();
+util.addApiEventListener_unchecked('evse/meter_config', () => {
+    const config = API.get_unchecked('evse/meter_config');
 
-        this.state = {
-            evse_meter_slot: null,
-        };
-
-        util.addApiEventListener_unchecked('evse/meter_config', () => {
-            let config = API.get_unchecked('evse/meter_config');
-
-            this.setState({
-                evse_meter_slot: config.slot,
-            });
-        });
+    if (!API.hasFeature("meters")) {
+        return;
     }
 
-    render() {
-        if (!util.render_allowed() || !API.hasFeature("meters") || !util.hasValue(this.state.evse_meter_slot))
-            return <StatusSection name="meters_alert" />
+    const value_ids = API.get_unchecked(`meters/${config.slot}/value_ids`);
+    const values = API.get_unchecked(`meters/${config.slot}/values`);
+    let voltages_out_of_range: [string, number][] = [];
 
-        const value_ids = API.get_unchecked(`meters/${this.state.evse_meter_slot}/value_ids`);
-        const values = API.get_unchecked(`meters/${this.state.evse_meter_slot}/values`);
-        let voltages_out_of_range: [string, number][] = [];
+    if (util.hasValue(value_ids) && value_ids.length > 0 && util.hasValue(values)) {
+        let voltage_l1_n = values[value_ids.indexOf(MeterValueID.VoltageL1N)];
+        let voltage_l2_n = values[value_ids.indexOf(MeterValueID.VoltageL2N)];
+        let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
 
-        if (util.hasValue(value_ids) && value_ids.length > 0 && util.hasValue(values)) {
-            let voltage_l1_n = values[value_ids.indexOf(MeterValueID.VoltageL1N)];
-            let voltage_l2_n = values[value_ids.indexOf(MeterValueID.VoltageL2N)];
-            let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
-
-            if (util.hasValue(voltage_l1_n) && voltage_l1_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L1', voltage_l1_n]);
-            }
-
-            if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L2', voltage_l2_n]);
-            }
-
-            if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L3', voltage_l3_n]);
-            }
+        if (util.hasValue(voltage_l1_n) && voltage_l1_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+            voltages_out_of_range.push(['L1', voltage_l1_n]);
         }
 
-        return <StatusSection name="meters_alert">
-            {voltages_out_of_range.length > 0 ?
-                <FormRow label={__("meters.status.voltage_alert_label")}>
-                    <Alert variant="danger" className="mb-0">
-                        {__("meters.status.voltage_alert_message")(voltages_out_of_range)}
-                    </Alert>
-                </FormRow> : undefined}
-            </StatusSection>;
+        if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+            voltages_out_of_range.push(['L2', voltage_l2_n]);
+        }
+
+        if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+            voltages_out_of_range.push(['L3', voltage_l3_n]);
+        }
     }
-}
+
+    if (voltages_out_of_range.length !== 0) {
+        util.add_status_alert("meters", "danger", () => __("meters.status.voltage_alert_label"), () => __("meters.status.voltage_alert_message")(voltages_out_of_range));
+    }
+});
 
 export function init() {
     let result = plugins_init();
