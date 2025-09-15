@@ -40,6 +40,7 @@ public:
     };
 
     struct TableSpec {
+        uint16_t repeat_interval;
         const RegisterBlockSpec *register_blocks;
         size_t register_blocks_count;
     };
