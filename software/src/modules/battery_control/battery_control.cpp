@@ -261,7 +261,7 @@ void BatteryControl::register_events()
     }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE() || MODULE_SOLAR_FORECAST_AVAILABLE()
-        // Update forecasts at at 20:00.
+        // Update forecasts at 20:00.
         // The wall clock task has to run hourly and check the local time manually.
         // Registering the wall clock task with a 24h interval and a time-zone-dependent delay would schedule the task at midnight with a large delay.
         // If the device was restarted between midnight and 20:00, the task would not be scheduled until the next day.
