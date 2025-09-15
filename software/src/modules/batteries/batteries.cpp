@@ -45,6 +45,10 @@ static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batt
 
 void Batteries::pre_setup()
 {
+    config = Config::Object({
+        {"enabled", Config::Bool(false)},
+    });
+
     generators.reserve(BATTERY_CLASS_ID_COUNT);
     register_battery_generator(BatteryClassID::None, &battery_generator_none);
 
@@ -78,6 +82,8 @@ void Batteries::pre_setup()
 void Batteries::setup()
 {
     generators.shrink_to_fit();
+
+    api.restorePersistentConfig("batteries/config", &config);
 
     // Create config prototypes, depending on available generators.
     uint8_t class_count = static_cast<uint8_t>(generators.size());
@@ -136,6 +142,8 @@ void Batteries::setup()
 
 void Batteries::register_urls()
 {
+    api.addPersistentConfig("batteries/config", &config);
+
     for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         BatterySlot &battery_slot = battery_slots[slot];
         IBattery *battery = battery_slot.battery;
@@ -270,17 +278,9 @@ String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
     return path;
 }
 
-void Batteries::start_action_all(BatteryAction action)
+bool Batteries::get_enabled()
 {
-    for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
-        IBattery *battery = battery_slots[slot].battery;
-
-        battery->start_action(action, [slot, action](bool success) {
-            if (!success) {
-                logger.printfln_battery("Failed to start action %u", static_cast<uint8_t>(action));
-            }
-        });
-    }
+    return config.get("enabled")->asBool();
 }
 
 char *format_battery_slot(uint32_t slot)
