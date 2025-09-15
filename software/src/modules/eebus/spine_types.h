@@ -18,6 +18,10 @@ template <typename T> struct Converter<std::vector<T>>
 };
 } // namespace ArduinoJson
 
+/**
+ * An alternative optional implementation that automatically fills itself if needed.
+ * @tparam T The typename of the optional value.
+ */
 template <typename T>
 class SpineOptional
 {
@@ -32,6 +36,11 @@ public:
     {
     }
 
+    /**
+     * Assign value to the optional and mark it as set.
+     * @param v the value assigned
+     * @return
+     */
     SpineOptional &operator=(const T &v)
     {
         value = v;
@@ -44,16 +53,28 @@ public:
         return is_set;
     }
 
+    /**
+     *
+     * @return The value contained in the optional.
+     */
     T &operator*()
     {
         return value;
     }
 
+    /**
+     *
+     * @return The value contained in the optional.
+     */
     const T &operator*() const
     {
         return value;
     }
 
+    /**
+     *
+     * @return The pointer to the value contained in the optional. If the optional is not set, it will be default constructed and set.
+     */
     T *operator->()
     {
         if (!is_set) {
@@ -63,6 +84,10 @@ public:
         return &value;
     }
 
+    /**
+     *
+     * @return The pointer to the value contained in the optional. If the optional is not set, it will be default constructed and set.
+     */
     const T *operator->() const
     {
         if (!is_set) {
@@ -89,6 +114,9 @@ public:
         return is_set;
     }
 
+    /**
+     * Resets the optional to an unset state and clears the value.
+     */
     void reset()
     {
         is_set = false;
@@ -100,6 +128,9 @@ public:
         return !is_set;
     }
 
+    /**
+     * Resets the optional to a set state and default constructs the value.
+     */
     void emplace()
     {
         is_set = true;
