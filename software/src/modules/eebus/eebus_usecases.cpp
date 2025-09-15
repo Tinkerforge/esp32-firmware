@@ -779,6 +779,7 @@ void ControllableSystemEntity::update_failsafe(int power_limit_w, seconds_t dura
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
     device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeConsumptionActivePowerLimit);
     device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeDurationMinimum);
+    // TODO: Inform Subscribers
 }
 
 void ControllableSystemEntity::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
@@ -808,8 +809,46 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
     // TODO: Inform Subscribers
 }
 
+void ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
+{
+    load_control_limit_description_list.loadControlLimitDescriptionData.reset();
+    LoadControlLimitDescriptionDataType limit_description{};
+    limit_description.limitId = 1;
+    limit_description.limitType = LoadControlLimitTypeEnumType::signDependentAbsValueLimit;
+    limit_description.limitCategory = LoadControlCategoryEnumType::obligation;
+    limit_description.limitDirection = EnergyDirectionEnumType::consume;
+    limit_description.measurementId = 1;
+    limit_description.unit = UnitOfMeasurementEnumType::W;
+    limit_description.scopeType = ScopeTypeEnumType::activePowerLimit;
+    load_control_limit_description_list.loadControlLimitDescriptionData->push_back(limit_description);
+
+
+    // TODO: Check if limit can be applied
+    load_control_limit_list.loadControlLimitData.emplace();
+    LoadControlLimitDataType limit_data{};
+    limit_data.limitId = 1;
+    limit_data.isLimitChangeable = true;
+    limit_data.isLimitActive = limit_active;
+    limit_data.timePeriod->endTime = std::to_string(endtime);
+    limit_data.value->number = current_limit_w;
+    limit_data.value->scale = 0;
+    load_control_limit_list.loadControlLimitData->push_back(limit_data);
+    // TODO: Inform subscribers
+
+}
+
 CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
+            response["loadControlLimitConstraintsListData"] = load_control_limit_description_list;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
+            response["loadControlLimitConstraintsList"] = load_control_limit_list;
+            return CmdClassifierType::reply;
+        }
+    }
     //TODO: Implement
     return CmdClassifierType::EnumUndefined;
 }

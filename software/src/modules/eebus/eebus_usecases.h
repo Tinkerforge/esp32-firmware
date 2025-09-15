@@ -217,7 +217,7 @@ public:
      * @param self_produced_energy_percent The amount of self produced energy used for charging in Wh
      * @param self_produced_cost_percent The cost of the self produced energy used for charging in Euro cents
      */
-    void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent=100, int grid_cost_percent=100, int self_produced_energy_percent=0, int self_produced_cost_percent=0);
+    void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
 
 private:
     int bill_feature_address = 1;
@@ -274,12 +274,22 @@ public:
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
+
+    /**
+     * Update the limit the system is supposed to be consuming.
+     * @param limit_active If the limit is active or not.
+     * @param current_limit_w The limit in W.
+     * @param endtime Timestamp until which the limit shall be set
+     */
+    void update_lpc(bool limit_active, int current_limit_w, uint64_t endtime);
+
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
      * @param power_limit_w Power limit in watts.
      * @param duration Duration in seconds.
      */
     void update_failsafe(int power_limit_w, seconds_t duration);
+
     /**
      * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPC UC TS v1.0.0 3.2.2.2.5.1
      * @param power_consumption_max_w
