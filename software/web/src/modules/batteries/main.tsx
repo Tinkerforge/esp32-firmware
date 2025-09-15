@@ -39,9 +39,11 @@ import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
 import { RuleConfig } from "../battery_control/types";
 import { RuleCondition } from "../battery_control/rule_condition.enum";
 import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
+//#endif
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index } from "../day_ahead_prices/main";
 //#endif
@@ -70,6 +72,7 @@ function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfi
     return battery_name;
 }
 
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
 interface RulesEditorState {
     add_rule_config: RuleConfig;
     edit_rule_config: RuleConfig;
@@ -467,6 +470,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
             />;
     }
 }
+//#endif
 
 interface BatteriesState {
     configs: {[battery_slot: number]: BatteryConfig};
@@ -474,17 +478,20 @@ interface BatteriesState {
     add_battery_config: BatteryConfig;
     edit_battery_slot: number;
     edit_battery_config: BatteryConfig;
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+    battery_control_config: API.getType['battery_control/config'];
     rules_permit_grid_charge: RuleConfig[];
     rules_forbid_discharge: RuleConfig[];
     rules_forbid_charge: RuleConfig[];
+//#endif
 }
 
-export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
+export class Batteries extends ConfigComponent<'batteries/config', {}, BatteriesState> {
     uplot_loader_ref  = createRef();
     uplot_wrapper_ref = createRef();
 
     constructor() {
-        super('battery_control/config',
+        super('batteries/config',
               () => __("batteries.script.save_failed"),
               () => __("batteries.script.reboot_content_changed"), {
                   configs: {},
@@ -492,9 +499,12 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                   add_battery_config: [BatteryClassID.None, null],
                   edit_battery_slot: null,
                   edit_battery_config: [BatteryClassID.None, null],
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+                  battery_control_config: null,
                   rules_permit_grid_charge: null,
                   rules_forbid_discharge: null,
                   rules_forbid_charge: null,
+//#endif
               });
 
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
@@ -511,6 +521,13 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                 }
             });
         }
+
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+        util.addApiEventListener('battery_control/config', (ev) => {
+            if (!this.isDirty()) {
+                this.setState({battery_control_config: ev.data});
+            }
+        });
 
         util.addApiEventListener('battery_control/rules_permit_grid_charge', () => {
             if (!this.isDirty()) {
@@ -539,15 +556,21 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
 //#endif
+//#endif
     }
 
-    override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
+    override async sendSave(topic: 'batteries/config', new_config: API.getType['batteries/config']) {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
             await API.save_unchecked(
                 `batteries/${battery_slot}/config`,
                 this.state.configs[battery_slot],
                 () => __("batteries.script.save_failed"));
         }
+
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+        await API.save_unchecked('battery_control/config',
+                       this.state.battery_control_config,
+                       () => __("batteries.script.save_failed"));
 
         // FIXME: API.save() cannot handle top-level array
         await API.save_unchecked('battery_control/rules_permit_grid_charge',
@@ -563,27 +586,36 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         await API.save_unchecked('battery_control/rules_forbid_charge',
                        this.state.rules_forbid_charge,
                        () => __("batteries.script.save_failed"));
+//#endif
 
         await super.sendSave(topic, new_config);
     }
 
-    override async sendReset(topic: 'battery_control/config') {
+    override async sendReset(topic: 'batteries/config') {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
             await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string);
         }
 
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+        await API.reset('battery_control/config');
         await API.reset('battery_control/rules_permit_grid_charge', this.error_string);
         await API.reset('battery_control/rules_forbid_discharge', this.error_string);
         await API.reset('battery_control/rules_forbid_charge', this.error_string);
+//#endif
 
         await super.sendReset(topic);
     }
 
-    override getIsModified(topic: 'battery_control/config'): boolean {
+    override getIsModified(topic: 'batteries/config'): boolean {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
             if (API.is_modified_unchecked(`batteries/${battery_slot}/config`)) {
                 return true;
             }
+        }
+
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
+        if (API.is_modified('battery_control/config')) {
+            return true;
         }
 
         if (API.is_modified('battery_control/rules_permit_grid_charge')) {
@@ -597,10 +629,12 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         if (API.is_modified('battery_control/rules_forbid_charge')) {
             return true;
         }
+//#endif
 
         return super.getIsModified(topic);
     }
 
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
     date_with_day_offset(date: Date, day_offset: number) {
         let date_copy = new Date(date);
@@ -718,8 +752,8 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
             data.values[0].push(sample_time);
             data.values[1].push(sample_percent);
 
-            this.draw_cheap_expensive_bars(data, graph_start_time / 60, yesterday_20h, today_20h,    this.state.cheap_tariff_quarters, this.state.expensive_tariff_quarters);
-            this.draw_cheap_expensive_bars(data, graph_start_time / 60, today_20h,     tomorrow_20h, this.state.cheap_tariff_quarters, this.state.expensive_tariff_quarters);
+            this.draw_cheap_expensive_bars(data, graph_start_time / 60, yesterday_20h, today_20h,    this.state.battery_control_config.cheap_tariff_quarters, this.state.battery_control_config.expensive_tariff_quarters);
+            this.draw_cheap_expensive_bars(data, graph_start_time / 60, today_20h,     tomorrow_20h, this.state.battery_control_config.cheap_tariff_quarters, this.state.battery_control_config.expensive_tariff_quarters);
 
             // Add vertical line at current time
             const resolution_divisor = 15;
@@ -732,6 +766,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
         this.uplot_wrapper_ref.current.set_data(data);
     }
+//#endif
 //#endif
 
     import_config(json: string, current_config: BatteryConfig) {
@@ -773,12 +808,16 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         if (!util.render_allowed())
             return <SubPage name="batteries" />;
 
+//#if MODULE_BATTERY_CONTROL_AVAILABLE
         const bc_state = API.get("battery_control/state");
+//#endif
+
         let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
 
         return (
             <SubPage name="batteries">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+{/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
                     <FormRow label={__("batteries.content.grid_charge_permitted")}>
                         <IndicatorGroup
                             style="width: 100%"
@@ -811,9 +850,17 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                 ["warning", __("batteries.content.forbidden_yes")],
                             ]}/>
                     </FormRow>
+{/*#endif*/}
 
                     <FormSeparator heading={__("batteries.content.managed_batteries")} />
                     <div class="form-group">
+                        <FormRow label={__("batteries.content.enable_battery_control")}>
+                            <Switch
+                                checked={this.state.enabled}
+                                onClick={this.toggle("enabled")}
+                            />
+                        </FormRow>
+
                         <Table
                             columnNames={[__("batteries.content.table_battery_display_name"), __("batteries.content.table_battery_class")]}
                             rows={active_battery_slots.map((battery_slot_str) => {
@@ -989,27 +1036,28 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             />
                     </div>
 
+{/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
 {/*#if MODULE_DAY_AHEAD_PRICES_AVAILABLE*/}
                     <FormSeparator heading={__("batteries.content.dynamic_tariff_schedule")} />
                     <FormRow label={__("batteries.content.schedule_cheap_hours")} label_muted={__("batteries.content.schedule_hours_muted")} help={__("batteries.content.schedule_cheap_hours_help")}>
                         <InputFloat
                             unit="h"
-                            value={this.state.cheap_tariff_quarters * 100 / 4}
-                            onValue={(v) => this.setState({cheap_tariff_quarters: Math.round(v * 4 / 100)}, this.update_uplot)}
+                            value={this.state.battery_control_config.cheap_tariff_quarters * 100 / 4}
+                            onValue={(v) => this.setState({battery_control_config: {...this.state.battery_control_config, cheap_tariff_quarters: Math.round(v * 4 / 100)}}, this.update_uplot)}
                             digits={2}
                             min={0}
-                            max={2000 - this.state.expensive_tariff_quarters * 100 / 4}
+                            max={2000 - this.state.battery_control_config.expensive_tariff_quarters * 100 / 4}
                         />
                     </FormRow>
 
                     <FormRow label={__("batteries.content.schedule_expensive_hours")} label_muted={__("batteries.content.schedule_hours_muted")} help={__("batteries.content.schedule_expensive_hours_help")}>
                         <InputFloat
                             unit="h"
-                            value={this.state.expensive_tariff_quarters * 100 / 4}
-                            onValue={(v) => this.setState({expensive_tariff_quarters: Math.round(v * 4 / 100)}, this.update_uplot)}
+                            value={this.state.battery_control_config.expensive_tariff_quarters * 100 / 4}
+                            onValue={(v) => this.setState({battery_control_config: {...this.state.battery_control_config, expensive_tariff_quarters: Math.round(v * 4 / 100)}}, this.update_uplot)}
                             digits={2}
                             min={0}
-                            max={2000 - this.state.cheap_tariff_quarters * 100 / 4}
+                            max={2000 - this.state.battery_control_config.cheap_tariff_quarters * 100 / 4}
                         />
                     </FormRow>
 
@@ -1059,8 +1107,8 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                     <div class="form-group">
                         <FormRow label={__("batteries.content.forbid_discharge_during_fast_charge")}>
                             <Switch desc={__("batteries.content.forbid_discharge_during_fast_charge_desc")}
-                                checked={this.state.forbid_discharge_during_fast_charge}
-                                onClick={this.toggle("forbid_discharge_during_fast_charge")}
+                                checked={this.state.battery_control_config.forbid_discharge_during_fast_charge}
+                                onClick={() => this.setState({battery_control_config: {...this.state.battery_control_config, forbid_discharge_during_fast_charge: !this.state.battery_control_config.forbid_discharge_during_fast_charge}})}
                             />
                         </FormRow>
                         <RulesEditor rules={this.state.rules_forbid_discharge} on_rules={(rules: RuleConfig[]) => {
@@ -1076,6 +1124,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             this.setDirty(true);
                         }} />
                     </div>
+{/*#endif*/}
                 </ConfigForm>
             </SubPage>
         );
