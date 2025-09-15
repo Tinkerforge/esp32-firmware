@@ -181,6 +181,16 @@ void BatteriesModbusTCP::pre_setup()
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
+    execute_table_prototypes.push_back({BatteryModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
+        {"device_address", Config::Uint8(1)},
+        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+    })});
+
+    execute_table_prototypes.push_back({BatteryModbusTCPTableID::HaileiHybridInverter, Config::Object({
+        {"device_address", Config::Uint8(1)},
+        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+    })});
+
     execute_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
@@ -235,6 +245,30 @@ void BatteriesModbusTCP::register_urls()
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Deye Hybrid Inverter action: %u", static_cast<uint8_t>(action));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::AlphaESSHybridInverter:
+            device_address = table_config->get("device_address")->asUint8();
+            action = table_config->get("action")->asEnum<BatteryAction>();
+            table = get_alpha_ess_hybrid_inverter_table(action);
+
+            if (table == nullptr) {
+                report_errorf(cookie, "Unknown Alpha ESS Hybrid Inverter action: %u", static_cast<uint8_t>(action));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::HaileiHybridInverter:
+            device_address = table_config->get("device_address")->asUint8();
+            action = table_config->get("action")->asEnum<BatteryAction>();
+            table = get_hailei_hybrid_inverter_table(action);
+
+            if (table == nullptr) {
+                report_errorf(cookie, "Unknown Hailei Hybrid Inverter action: %u", static_cast<uint8_t>(action));
                 return;
             }
 

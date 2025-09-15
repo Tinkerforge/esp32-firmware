@@ -2,6 +2,8 @@ import sys
 import tinkerforge_util as tfutil
 import victron_energy
 import deye
+import alpha_ess
+import hailei
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -10,6 +12,8 @@ from software import util
 modules = [
     victron_energy,
     deye,
+    alpha_ess,
+    hailei,
 ]
 
 specs = []
@@ -93,13 +97,20 @@ for spec in specs:
 
     specs_h.append(f'extern const BatteryModbusTCP::TableSpec {spec_group.under}_{spec_action.under}_table;')
 
-    specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {spec_group.under}_{spec_action.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
+    if len(register_block_specs) > 0:
+        specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {spec_group.under}_{spec_action.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')
 
     specs_cpp.append(f'extern const BatteryModbusTCP::TableSpec {spec_group.under}_{spec_action.under}_table = {{\n'
-                     f'    {spec["repeat_interval"]},\n'
-                     f'    {spec_group.under}_{spec_action.under}_register_blocks,\n'
-                     f'    ARRAY_SIZE({spec_group.under}_{spec_action.under}_register_blocks),\n'
-                      '};')
+                     f'    {spec["repeat_interval"]},\r')
+
+    if len(register_block_specs) > 0:
+        specs_cpp.append(f'    {spec_group.under}_{spec_action.under}_register_blocks,\n'
+                         f'    ARRAY_SIZE({spec_group.under}_{spec_action.under}_register_blocks),\r')
+    else:
+        specs_cpp.append('    nullptr,\n'
+                         '    0,\r')
+
+    specs_cpp.append('};')
 
     table_prototype = []
     table_typedef = []
