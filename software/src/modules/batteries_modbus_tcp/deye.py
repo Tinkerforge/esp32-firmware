@@ -4,6 +4,7 @@ specs = [
         'action': 'Permit Grid Charge',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Time Points',
@@ -51,6 +52,7 @@ specs = [
         'action': 'Revoke Grid Charge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Target SoC (Minimum)',
@@ -72,6 +74,7 @@ specs = [
         'action': 'Forbid Discharge',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Max A discharge',
@@ -88,6 +91,7 @@ specs = [
         'action': 'Revoke Discharge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Max A discharge',
@@ -104,6 +108,7 @@ specs = [
         'action': 'Forbid Charge',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Max A charge',
@@ -120,6 +125,7 @@ specs = [
         'action': 'Revoke Charge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 1,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Max A charge',

@@ -45,6 +45,7 @@ BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config, 
     size_t register_blocks_count         = register_blocks_config->count();
     TableSpec *table                     = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
 
+    table->repeat_interval       = config->get("repeat_interval")->asUint16();
     table->register_blocks       = static_cast<RegisterBlockSpec *>(malloc(sizeof(RegisterBlockSpec) * register_blocks_count));
     table->register_blocks_count = register_blocks_count;
 
@@ -343,7 +344,7 @@ void BatteryModbusTCP::pre_reboot()
 void BatteryModbusTCP::get_repeat_intervals(uint16_t intervals_s[6]) const
 {
     for (size_t i = 0; i < 6; i++) {
-        intervals_s[i] = 60; // TODO Use values from config. In seconds, 0 = no repeat.
+        intervals_s[i] = tables[i]->repeat_interval; // In seconds, 0 = no repeat.
     }
 }
 
