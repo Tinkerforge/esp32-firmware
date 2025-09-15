@@ -504,8 +504,21 @@ function import_register_table(table: RegisterTable)
         return null;
     }
 
+    if (table.device_address === undefined) {
+        table.device_address = 1;
+    }
+
     if (typeof table.device_address != "number") {
         console.log("Batteries Modbus/TCP: Imported config register table device address is not a number");
+        return null;
+    }
+
+    if (table.repeat_interval === undefined) {
+        table.repeat_interval = 60;
+    }
+
+    if (typeof table.repeat_interval != "number") {
+        console.log("Batteries Modbus/TCP: Imported config register table repeat interval is not a number");
         return null;
     }
 
@@ -571,7 +584,7 @@ function import_register_table(table: RegisterTable)
         });
     }
 
-    return {device_address: table.device_address, register_blocks: register_blocks};
+    return {device_address: table.device_address, repeat_interval: table.repeat_interval, register_blocks: register_blocks};
 }
 
 function import_battery_action(action: {device_address: number})
@@ -579,6 +592,10 @@ function import_battery_action(action: {device_address: number})
     if (!util.isNonNullObject(action)) {
         console.log("Batteries Modbus/TCP: Imported config action is not an object");
         return null;
+    }
+
+    if (action.device_address === undefined) {
+        action.device_address = 1;
     }
 
     if (typeof action.device_address != "number") {
@@ -902,6 +919,17 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
                                     }} />
                             </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].permit_grid_charge.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, repeat_interval: v}})}));
+                                    }} />
+                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
@@ -921,6 +949,17 @@ export function init() {
                                     value={config[1].table[1].revoke_grid_charge_override.device_address}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].revoke_grid_charge_override.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, repeat_interval: v}})}));
                                     }} />
                             </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
@@ -944,6 +983,17 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
                                     }} />
                             </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].forbid_discharge.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, repeat_interval: v}})}));
+                                    }} />
+                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
@@ -963,6 +1013,17 @@ export function init() {
                                     value={config[1].table[1].revoke_discharge_override.device_address}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].revoke_discharge_override.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, repeat_interval: v}})}));
                                     }} />
                             </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
@@ -986,6 +1047,17 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: {...(config[1].table as TableConfigCustom)[1].forbid_charge, device_address: v}})}));
                                     }} />
                             </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].forbid_charge.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: {...(config[1].table as TableConfigCustom)[1].forbid_charge, repeat_interval: v}})}));
+                                    }} />
+                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
@@ -1005,6 +1077,17 @@ export function init() {
                                     value={config[1].table[1].revoke_charge_override.device_address}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_charge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                                <InputNumber
+                                    required
+                                    unit={"s"}
+                                    min={0}
+                                    max={65535}
+                                    value={config[1].table[1].revoke_charge_override.repeat_interval}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_charge_override, repeat_interval: v}})}));
                                     }} />
                             </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
