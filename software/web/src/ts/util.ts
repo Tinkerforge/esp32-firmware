@@ -39,8 +39,14 @@ type StrictVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' 
 
 let alerts: DeepSignal<Array<{id: string, variant: StrictVariant, title: () => ComponentChildren, text: () => ComponentChildren}>> = deepSignal([]);
 
+let statusAlerts: DeepSignal<Array<{id: string, variant: StrictVariant, moduleName: () => ComponentChildren, text: () => ComponentChildren, onClose?: () => void}>> = deepSignal([]);
+
 export function get_alerts() {
     return alerts;
+}
+
+export function get_status_alerts() {
+    return statusAlerts;
 }
 
 export function add_alert(id: string, variant: StrictVariant, title: () => ComponentChildren, text: () => ComponentChildren) {
@@ -55,11 +61,31 @@ export function add_alert(id: string, variant: StrictVariant, title: () => Compo
     }
 }
 
+export function add_status_alert(id: string, variant: StrictVariant, moduleName: () => ComponentChildren, text: () => ComponentChildren, onClose?: () => void) {
+    let idx = statusAlerts.findIndex((alert) => alert.id == id);
+    let alert = {id, variant, moduleName, text, onClose};
+
+    if (idx >= 0) {
+        statusAlerts[idx] = alert;
+    }
+    else {
+        statusAlerts.push(alert);
+    }
+}
+
 export function remove_alert(id: string) {
     let idx = alerts.findIndex((alert) => alert.id == id);
 
     if (idx >= 0) {
         alerts.splice(idx, 1);
+    }
+}
+
+export function remove_status_alert(id: string) {
+    let idx = statusAlerts.findIndex((alert) => alert.id == id);
+
+    if (idx >= 0) {
+        statusAlerts.splice(idx, 1);
     }
 }
 
