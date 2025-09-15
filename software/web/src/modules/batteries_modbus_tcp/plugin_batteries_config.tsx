@@ -497,10 +497,10 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
     }
 }
 
-function import_register_table(table: RegisterTable)
+function import_custom_table(table: RegisterTable)
 {
     if (!util.isNonNullObject(table)) {
-        console.log("Batteries Modbus/TCP: Imported config register table is not an object");
+        console.log("Batteries Modbus/TCP: Imported config is not an object");
         return null;
     }
 
@@ -509,7 +509,7 @@ function import_register_table(table: RegisterTable)
     }
 
     if (typeof table.device_address != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register table device address is not a number");
+        console.log("Batteries Modbus/TCP: Imported config device address is not a number");
         return null;
     }
 
@@ -518,17 +518,17 @@ function import_register_table(table: RegisterTable)
     }
 
     if (typeof table.repeat_interval != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register table repeat interval is not a number");
+        console.log("Batteries Modbus/TCP: Imported config repeat interval is not a number");
         return null;
     }
 
     if (!util.isNonNullObject(table.register_blocks)) {
-        console.log("Batteries Modbus/TCP: Imported config register table register blocks is not an object");
+        console.log("Batteries Modbus/TCP: Imported config register blocks is not an object");
         return null;
     }
 
     if (typeof table.register_blocks.length != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register table register blocks has no length");
+        console.log("Batteries Modbus/TCP: Imported config register blocks has no length");
         return null;
     }
 
@@ -536,32 +536,32 @@ function import_register_table(table: RegisterTable)
 
     for (let i = 0; i < table.register_blocks.length; ++i) {
         if (!util.isNonNullObject(table.register_blocks[i])) {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item is not an object");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item is not an object");
             return null;
         }
 
         if (typeof table.register_blocks[i].desc != "string") {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item desc is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item desc is not a number");
             return null;
         }
 
         if (typeof table.register_blocks[i].func != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item func is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item func is not a number");
             return null;
         }
 
         if (typeof table.register_blocks[i].addr != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item addr is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item addr is not a number");
             return null;
         }
 
         if (!util.isNonNullObject(table.register_blocks[i].vals)) {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals is not an object");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item vals is not an object");
             return null;
         }
 
         if (typeof table.register_blocks[i].vals.length != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals has no length");
+            console.log("Batteries Modbus/TCP: Imported config register blocks item vals has no length");
             return null;
         }
 
@@ -569,7 +569,7 @@ function import_register_table(table: RegisterTable)
 
         for (let k = 0; k < table.register_blocks[i].vals.length; ++k) {
             if (typeof table.register_blocks[i].vals[k] != "number") {
-                console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals item is not a number");
+                console.log("Batteries Modbus/TCP: Imported config register blocks item vals item is not a number");
                 return null;
             }
 
@@ -587,23 +587,23 @@ function import_register_table(table: RegisterTable)
     return {device_address: table.device_address, repeat_interval: table.repeat_interval, register_blocks: register_blocks};
 }
 
-function import_battery_action(action: {device_address: number})
+function import_preset_table(table: {device_address: number})
 {
-    if (!util.isNonNullObject(action)) {
-        console.log("Batteries Modbus/TCP: Imported config action is not an object");
+    if (!util.isNonNullObject(table)) {
+        console.log("Batteries Modbus/TCP: Imported config is not an object");
         return null;
     }
 
-    if (action.device_address === undefined) {
-        action.device_address = 1;
+    if (table.device_address === undefined) {
+        table.device_address = 1;
     }
 
-    if (typeof action.device_address != "number") {
-        console.log("Batteries Modbus/TCP: Imported config action device address is not a number");
+    if (typeof table.device_address != "number") {
+        console.log("Batteries Modbus/TCP: Imported config device address is not a number");
         return null;
     }
 
-    return {device_address: action.device_address};
+    return {device_address: table.device_address};
 }
 
 export function init() {
@@ -649,12 +649,12 @@ export function init() {
 
                         table = [BatteryModbusTCPTableID.Custom, {
                             register_address_mode:       new_config[1].table[1].register_address_mode,
-                            permit_grid_charge:          import_register_table(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_register_table(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_register_table(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_register_table(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_register_table(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_register_table(new_config[1].table[1].revoke_charge_override),
+                            permit_grid_charge:          import_custom_table(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_custom_table(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_custom_table(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_custom_table(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_custom_table(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_custom_table(new_config[1].table[1].revoke_charge_override),
                         }];
 
                         if (!util.hasValue(table[1].permit_grid_charge)
@@ -670,12 +670,12 @@ export function init() {
 
                     case BatteryModbusTCPTableID.VictronEnergyGX:
                         table = [BatteryModbusTCPTableID.VictronEnergyGX, {
-                            permit_grid_charge:          import_battery_action(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_battery_action(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_battery_action(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_battery_action(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_battery_action(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_battery_action(new_config[1].table[1].revoke_charge_override),
+                            permit_grid_charge:          import_preset_table(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_preset_table(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_preset_table(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_preset_table(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_preset_table(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_preset_table(new_config[1].table[1].revoke_charge_override),
                         }];
 
                         if (!util.hasValue(table[1].permit_grid_charge)
@@ -691,12 +691,12 @@ export function init() {
 
                     case BatteryModbusTCPTableID.DeyeHybridInverter:
                         table = [BatteryModbusTCPTableID.DeyeHybridInverter, {
-                            permit_grid_charge:          import_battery_action(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_battery_action(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_battery_action(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_battery_action(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_battery_action(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_battery_action(new_config[1].table[1].revoke_charge_override),
+                            permit_grid_charge:          import_preset_table(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_preset_table(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_preset_table(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_preset_table(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_preset_table(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_preset_table(new_config[1].table[1].revoke_charge_override),
                         }];
 
                         if (!util.hasValue(table[1].permit_grid_charge)
