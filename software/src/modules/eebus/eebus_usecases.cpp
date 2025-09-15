@@ -783,6 +783,8 @@ void ControllableSystemEntity::update_failsafe(int power_limit_w, seconds_t dura
 
 void ControllableSystemEntity::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
 {
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->clear();
+
     ElectricalConnectionCharacteristicDataType power_consumption_max{};
     power_consumption_max.electricalConnectionId = 1;
     power_consumption_max.characteristicId = 1;
@@ -790,7 +792,10 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
     power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
     power_consumption_max.value->number = power_consumption_max_w;
     power_consumption_max.unit = UnitOfMeasurementEnumType::W;
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(power_consumption_max);
 
+    // As stated in EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.6.4.1, the contractual consumption is not something the CS is supposed to handle
+    /*
     ElectricalConnectionCharacteristicDataType contractual_power_consumption_max{};
     contractual_power_consumption_max.electricalConnectionId = 1;
     contractual_power_consumption_max.parameterId = 1;
@@ -799,10 +804,8 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
     contractual_power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax;
     contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
     contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
-
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->clear();
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(power_consumption_max);
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
+    // TODO: Inform Subscribers
 }
 
 CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
