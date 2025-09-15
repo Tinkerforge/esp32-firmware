@@ -23,6 +23,8 @@ let x = {
             "table_custom": "Benutzerdefiniert",
             "table_victron_energy_gx": "Victron Energy GX",
             "table_deye_hybrid_inverter": "Deye Hybrid-Wechselrichter",
+            "table_alpha_ess_hybrid_inverter": "Alpha ESS Hybrid-Wechselrichter",
+            "table_hailei_hybrid_inverter": "Hailei Hybrid-Wechselrichter (TPH-Serie)",
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
