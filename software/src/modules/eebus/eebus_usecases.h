@@ -314,6 +314,7 @@ private:
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    bool limit_engaged = false;
 
     // Device Configuration Data as required for Scenario 2 - Device Configuration
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
@@ -329,7 +330,8 @@ private:
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
     ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
-
+    LoadControlLimitDescriptionListDataType load_control_limit_description_list{};
+    LoadControlLimitListDataType load_control_limit_list{};
 };
 
 /**
