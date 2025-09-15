@@ -126,7 +126,7 @@ static bool matchWildcards(const char *pTopicName,
         }
         else
         {
-            /* If we have reached here, the the loop terminated on the
+            /* If we have reached here, the loop terminated on the
              * ( *pNameIndex < topicNameLength) condition, which means that have
              * reached past the end of the topic name, and thus, we decrement the
              * index to the last character in the topic name.*/
