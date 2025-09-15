@@ -4,6 +4,7 @@ specs = [
         'action': 'Permit Grid Charge',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set AC grid setpoint override to 65 kW',
@@ -21,6 +22,7 @@ specs = [
         'action': 'Revoke Grid Charge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set AC grid setpoint override to 0 W',
@@ -38,6 +40,7 @@ specs = [
         'action': 'Forbid Discharge',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set ESS max discharge current to 0 A',
@@ -62,6 +65,7 @@ specs = [
         'action': 'Revoke Discharge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set ESS max discharge current to -1 A',
@@ -86,6 +90,7 @@ specs = [
         'action': 'Forbid Charge',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set ESS max charge current to 0 %',
@@ -110,6 +115,7 @@ specs = [
         'action': 'Revoke Charge Override',
         'table_prototype': ['device_address'],
         'default_device_address': 100,
+        'repeat_interval': 60,
         'register_blocks': [
             {
                 'description': 'Set ESS max charge current to 100 %',

@@ -84,6 +84,7 @@ void BatteriesModbusTCP::pre_setup()
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
         {"permit_grid_charge", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
@@ -93,6 +94,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_grid_charge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
@@ -102,6 +104,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"forbid_discharge", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
@@ -111,6 +114,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_discharge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
@@ -120,6 +124,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"forbid_charge", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
@@ -129,6 +134,7 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_charge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
+            {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
