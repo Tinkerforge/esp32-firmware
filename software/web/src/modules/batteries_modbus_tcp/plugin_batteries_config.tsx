@@ -200,7 +200,6 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 
     format_vals(function_code: number, vals: number[]) {
-        console.log("format_vals", function_code, vals);
         let values = "";
 
         if (function_code == ModbusFunctionCode.WriteSingleCoil
