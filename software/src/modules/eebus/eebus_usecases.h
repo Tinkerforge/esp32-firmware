@@ -17,6 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+/*
+This file contains the definitions of the EEBUS Usecases as defined in the EEBUS Usecase Technical Specifications.
+The usecase names may have been shortened and the spec is referred to as much as possible:
+EVCS -> Electric Vehicle Charging Summary. Implemented according to EEBUS_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
+LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
+NMC -> Node Management and Control. Implemented according to EEBUS_SPINE_TS_ProtocolSpecification.pdf, technically nodemanagement is not a usecase but it behaves like one in many ways and is therefore implemented alongside
+
+
+Sometimes the following references are used e.g. LPC-905, these refer to rules laid out in the spec and can be found in the according technical spec.
+*/
+
 #pragma once
 
 #include "build.h"
@@ -280,8 +292,9 @@ public:
      * @param limit_active If the limit is active or not.
      * @param current_limit_w The limit in W.
      * @param endtime Timestamp until which the limit shall be set
+     * @return true if the limit is accepted and set.
      */
-    void update_lpc(bool limit_active, int current_limit_w, uint64_t endtime);
+    bool update_lpc(bool limit_active, int current_limit_w, uint64_t endtime);
 
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
@@ -306,7 +319,7 @@ private:
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
     LPCState lpc_state;
-    uint64_t initialization_timeout;
+    uint64_t state_change_timeout;
     bool switch_state(LPCState state);
     bool init_state();
     bool unlimited_controlled_state();
