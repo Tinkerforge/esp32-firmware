@@ -22,6 +22,7 @@
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -36,7 +37,7 @@ void Config::ConfTuple::slotDebugHook(const Slot *slot) {
 
 Config::ConfTuple::Slot *Config::ConfTuple::allocSlotBuf(size_t elements)
 {
-    return new(std::nothrow) Config::ConfTuple::Slot[elements]();
+    return perm_new_array<Config::ConfTuple::Slot>(elements, DRAM);
 }
 
 [[gnu::noinline]]
