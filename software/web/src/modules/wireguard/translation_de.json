@@ -31,12 +31,8 @@
             "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
             "generate_keypair": "Schlüsselpaar generieren",
             "generate_keypair_button": "Generieren",
-            "wireguard_keypair": "WireGuard-Schlüsselpaar",
             "wireguard_public_key": "Öffentlicher Schlüssel",
-            "wireguard_private_key": "Privater Schlüssel",
-            "generate_keypair_abort": "Abbrechen",
-            "generate_keypair_confirm": "Anwenden",
-            "public_key_body": "Konfigurieren Sie den folgenden öffentlichen Schlüssel auf Ihrem WireGuard-Peer."
+            "invalid_private_key": "Ungültiger privater Schlüssel"
         },
         "script": {
             "save_failed": "Speichern der WireGuard-Einstellungen fehlgeschlagen.",

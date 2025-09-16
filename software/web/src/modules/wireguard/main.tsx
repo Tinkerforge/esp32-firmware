@@ -46,14 +46,27 @@ export function WireguardNavbar() {
         } />);
 }
 
+interface WireGuardState {
+    publicKey: string;
+    publicKeyCopied: boolean;
+};
 type WireguardConfig = API.getType["wireguard/config"];
 
-export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?: RefObject<WireguardStatus>}> {
+export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?: RefObject<WireguardStatus>}, WireGuardState> {
     ipconfig_valid: boolean = true;
     constructor() {
         super('wireguard/config',
               () => __("wireguard.script.save_failed"),
               () => __("wireguard.script.reboot_content_changed"));
+
+        this.state = {
+            publicKey: "",
+            publicKeyCopied: false
+        } as any;
+
+        util.addApiEventListener("wireguard/state", () => {
+            this.setState({publicKey: API.get("wireguard/state").public_key} as any);
+        });
     }
 
     render(props: {}, state: Readonly<WireguardConfig>) {
@@ -127,63 +140,44 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                      onValue={this.set("local_port")}/>
                     </FormRow>
 
+                    <FormRow label={__("wireguard.content.generate_keypair")}>
+                        <Button className="form-control" onClick={async () => {
+                            const keypair = (window as any).wireguard.generateKeypair();
+                            this.setState({publicKey: keypair.publicKey, private_key: keypair.privateKey});
+                            this.setDirty(true);
+                         }}>{__("wireguard.content.generate_keypair_button")}</Button>
+                    </FormRow>
+
                     <FormRow label={__("wireguard.content.private_key")}>
                         <InputPassword maxLength={44}
                                        value={state.private_key}
-                                       onValue={this.set("private_key")}
+                                       onValue={(val) => {
+                                            let publicKey = "";
+                                            console.log(val);
+                                            if (val !== null && val !== "") {
+                                                publicKey = (window as any).wireguard.generatePublicKey(val);
+                                                if (publicKey === null) {
+                                                    publicKey = __("wireguard.content.invalid_private_key");
+                                                }
+                                            } if (val === null) {
+                                                publicKey = API.get("wireguard/state").public_key;
+                                            }
+                                            this.setState({publicKey: publicKey, private_key: val});
+                                       }}
                                        />
                     </FormRow>
 
-            <FormRow label={__("wireguard.content.generate_keypair")}>
-                        <Button className="form-control" onClick={async () => {
-                            const modal = util.async_modal_ref.current;
-                            if(!modal) return;
-                            // Generate new keypair using existing wireguard helper (same as remote_access)
-                            try {
-                                const kp = (window as any).wireguard.generateKeypair();
-                                const accepted = await modal.show({
-                                    title: () => __("wireguard.content.wireguard_keypair"),
-                                    body: () => {
-                                        const [copiedKeys, setCopiedKeys] = useState<{public: boolean, private: boolean}>({public: false, private: false});
-                                        const copy = (txt: string, keyType: 'public' | 'private') => {
-                                            util.copyToClipboard(txt);
-                                            setCopiedKeys({...copiedKeys, [keyType]: true});
-                                            setTimeout(() => setCopiedKeys({...copiedKeys, [keyType]: false}), 2000);
-                                        };
-                                        return <div style="word-break: break-all">
-                                            <p>{__("wireguard.content.public_key_body")}</p>
-                                            <FormRow label={__("wireguard.content.wireguard_public_key")}>
-                                                <div class="input-group mb-2">
-                                                    <input type="text" class="form-control" readonly value={kp.publicKey} />
-                                                    <Button className="px-2 py-1" onClick={() => copy(kp.publicKey, 'public')} aria-label="Copy public key" style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
-                                                        {copiedKeys.public ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
-                                                    </Button>
-                                                </div>
-                                            </FormRow>
-                                            <FormRow label={__("wireguard.content.wireguard_private_key")}>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control" readonly value={kp.privateKey} />
-                                                    <Button className="px-2 py-1" onClick={() => copy(kp.privateKey, 'private')} aria-label="Copy private key" style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
-                                                        {copiedKeys.private ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
-                                                    </Button>
-                                                </div>
-                                            </FormRow>
-                                        </div>;
-                                    },
-                    no_text: () => __("wireguard.content.generate_keypair_abort"),
-                    yes_text: () => __("wireguard.content.generate_keypair_confirm"),
-                    no_variant: "secondary",
-                    yes_variant: "primary",
-                    nestingDepth: 1,
-                                });
-                                if (accepted) {
-                                    this.setState({private_key: kp.privateKey});
-                                    this.setDirty(true);
-                                }
-                            } catch(e) {
-                                console.error("Failed to generate WireGuard keypair", e);
-                            }
-            }}>{__("wireguard.content.generate_keypair_button")}</Button>
+                    <FormRow label={__("wireguard.content.wireguard_public_key")}>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" readonly value={this.state.publicKey} />
+                            <Button className="px-2 py-1" onClick={() => {
+                                util.copyToClipboard(this.state.publicKey);
+                                this.setState({publicKeyCopied: true});
+                                setTimeout(() => this.setState({publicKeyCopied: false}), 2000);
+                            }} aria-label="Copy public key" style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
+                                {this.state.publicKeyCopied ? <CheckIcon size={18} /> : <CopyIcon size={18} />}
+                            </Button>
+                        </div>
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.remote_public_key")}>

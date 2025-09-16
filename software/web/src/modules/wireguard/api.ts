@@ -15,5 +15,6 @@ export interface config {
 }
 
 export interface state {
+    public_key: string;
     state: number;
 }

@@ -105,6 +105,7 @@ void Wireguard::pre_setup()
     state = Config::Object({
         {"connection_start", Config::Uptime()},
         {"connection_end", Config::Uptime()},
+        {"public_key", Config::Str("", 0, 44)},
         {"state", Config::Uint8(0)} // 0 not configured, 1 waiting for time sync 2 not connected 3 connected
     });
 }
@@ -195,13 +196,31 @@ void Wireguard::setup()
 {
     api.restorePersistentConfig("wireguard/config", &config);
 
+    const String &private_key_b64 = config.get("private_key")->asString();
+    char public_key_b64[45] = {0};
+
+    if (private_key_b64.length() == 44) {
+        uint8_t public_key[32];
+        uint8_t private_key[32];
+        size_t olen;
+        if (mbedtls_base64_decode(private_key, sizeof(private_key), &olen, (const unsigned char *)private_key_b64.c_str(), private_key_b64.length()) != 0) {
+            logger.printfln("Failed to decode WireGuard private key");
+        }
+        WireGuard::derive_public_key(public_key, private_key);
+        if (mbedtls_base64_encode((unsigned char *)public_key_b64, sizeof(public_key_b64), &olen, public_key, sizeof(public_key)) != 0) {
+            logger.printfln("Failed to encode WireGuard public key");
+        }
+    }
+
+    state.get("public_key")->updateString(public_key_b64);
+
     initialized = true;
 
     if (!config.get("enable")->asBool())
         return;
 
     wg_data = new wg_data_t;
-    wg_data->private_key = config.get("private_key")->asString(); // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
+    wg_data->private_key = private_key_b64; // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
     wg_data->remote_host = config.get("remote_host")->asString(); // Local copy of unsafe conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
     logger.printfln("WireGuard enabled. Waiting for network and time sync.");

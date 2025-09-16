@@ -182,6 +182,20 @@
 				publicKey: keyToBase64(publicKey),
 				privateKey: keyToBase64(privateKey)
 			};
+		},
+		generatePublicKey: function(privateKeyB64) {
+			var privateKey = new Uint8Array(32);
+			var keyBytes;
+			try {
+				keyBytes = atob(privateKeyB64);
+			} catch {
+				return null;
+			}
+			for (var i = 0; i < keyBytes.length && i < 32; ++i)
+				privateKey[i] = keyBytes.charCodeAt(i);
+			clamp(privateKey);
+			var publicKey = generatePublicKey(privateKey);
+			return keyToBase64(publicKey);
 		}
 	};
 })();
