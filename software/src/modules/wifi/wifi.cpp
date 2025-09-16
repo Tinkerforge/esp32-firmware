@@ -334,10 +334,10 @@ bool Wifi::apply_sta_config_and_connect()
 
     if (runtime_sta->bssid_lock) {
         bssid = runtime_sta->bssid;
-        logger.printfln("Connecting to '%s', locked to BSSID %02X:%02X:%02X:%02X:%02X:%02X", ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
+        logger.printfln("Connecting to WiFi, BSSID lock enabled");
     } else {
         bssid = nullptr;
-        logger.printfln("Connecting to '%s'", ssid);
+        logger.printfln("Connecting to WiFi");
     }
 
     const EapConfigID eap_config_id = runtime_sta->runtime_eap ? static_cast<EapConfigID>(runtime_sta->runtime_eap->eap_config_id) : EapConfigID::None;
@@ -642,11 +642,11 @@ void Wifi::setup()
                 uint8_t reason_code = info.wifi_sta_disconnected.reason;
                 const char *reason = reason2str(reason_code);
                 if (!this->runtime_sta->was_connected) {
-                    logger.printfln("Failed to connect to '%s': %s (%u)", runtime_sta->ssid_passphrase, reason, reason_code);
+                    logger.printfln("Failed to connect to WiFi: %s (%u)", reason, reason_code);
                 } else {
                     const micros_t now = now_us();
                     const uint64_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint64_t>();
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %llu seconds.", runtime_sta->ssid_passphrase, reason, reason_code, connected_for_s);
+                    logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %llu seconds.", reason, reason_code, connected_for_s);
 
                     task_scheduler.scheduleOnce([this, now](){
                         state.get("connection_end")->updateUptime(now);
@@ -714,7 +714,7 @@ void Wifi::setup()
                             wifi_info.rssi,
                             wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
 
-                    logger.printfln("Connected to Wifi: %s", buf);
+                    logger.printfln("Connected to WiFi: %s", buf);
                 }
 
                 this->runtime_sta->was_connected = true;
