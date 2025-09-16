@@ -308,7 +308,7 @@ void ChargeManager::start_manager_task()
 
     millis_t cm_send_delay = 1000_ms / millis_t{charger_count};
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         static int i = 0;
 
         if (i >= charger_count)
@@ -488,7 +488,7 @@ void ChargeManager::setup()
 
     this->next_allocation = now_us() + ca_config->allocation_interval;
 
-    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
+    task_scheduler.scheduleUncancelable([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
             if (!deadline_elapsed(this->next_allocation))
                 return;
 
@@ -699,7 +699,7 @@ void ChargeManager::register_urls()
     }, false);
 
     if (static_cm && config.get("enable_watchdog")->asBool()) {
-        task_scheduler.scheduleWithFixedDelay([this](){this->check_watchdog();}, 1_s, 1_s);
+        task_scheduler.scheduleUncancelable([this](){this->check_watchdog();}, 1_s, 1_s);
     }
 }
 

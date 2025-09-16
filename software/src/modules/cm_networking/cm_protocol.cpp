@@ -302,7 +302,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
     (void)xTask;
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback, manager_queue](){
+    task_scheduler.scheduleUncancelable([this, manager_callback, manager_error_callback, manager_queue](){
         static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
         static bool initialized = false;
         if (!initialized) {
@@ -495,7 +495,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
     memset(&manager_addr, 0, sizeof(manager_addr));
 
-    task_scheduler.scheduleWithFixedDelay([this, client_callback](){
+    task_scheduler.scheduleUncancelable([this, client_callback](){
         static uint16_t last_seen_seq_num = 255;
         static micros_t last_successful_recv = now_us();
 

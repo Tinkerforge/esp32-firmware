@@ -206,7 +206,7 @@ void ESP32EthernetBrick::setup()
     tf_hal_set_local(&hal, &local);
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([](){
+    task_scheduler.scheduleUncancelable([](){
 #if MODULE_WATCHDOG_AVAILABLE()
     static int watchdog_handle = watchdog.add("esp_ethernet_led_blink", "Main thread blocked");
     watchdog.reset(watchdog_handle);

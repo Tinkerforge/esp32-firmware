@@ -126,7 +126,7 @@ void WS::register_urls()
 
     web_sockets.start("/ws", "/info/ws", server.httpd);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         char *payload;
         int payload_len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
         if (payload_len > 0)

@@ -45,7 +45,7 @@ void EMSDcard::setup()
 
     update_sdcard_info();
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         update_sdcard_info();
     }, 10_s, 10_s);
 

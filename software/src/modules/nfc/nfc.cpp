@@ -435,11 +435,11 @@ void NFC::setup()
 
     seen_tags.setCount(TAG_LIST_LENGTH);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->check_nfc_state();
     }, 5_min, 5_min);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->update_seen_tags();
     }, 300_ms);
 }

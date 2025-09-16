@@ -403,7 +403,7 @@ bool Wifi::apply_sta_config_and_connect()
 
 void Wifi::start_sta_connection()
 {
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         int rssi = -127;
         esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
         state.get("sta_rssi")->updateInt(rssi);
@@ -910,7 +910,7 @@ void Wifi::setup()
         if (!runtime_ap->ap_fallback_only) {
             apply_soft_ap_config_and_start();
         } else {
-            task_scheduler.scheduleWithFixedDelay([this]() {
+            task_scheduler.scheduleUncancelable([this]() {
                 bool connected = this->state.get("connection_state")->asEnum<WifiState>() == WifiState::Connected;
 
 #if MODULE_ETHERNET_AVAILABLE()
@@ -943,13 +943,13 @@ void Wifi::setup()
             ? 30_s : 6_s, 10_s); // When Ethernet is not connected yet, wait 6 seconds: 4s for link up, 1s for DHCP, 1s for tolerance.
         }
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             state.get("ap_state")->updateUint(get_ap_state());
         }, 5_s, 5_s);
     }
 
     if (runtime_sta != nullptr) { // STA enabled
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             state.get("connection_state")->updateEnum(get_connection_state());
         }, 1_s);
 

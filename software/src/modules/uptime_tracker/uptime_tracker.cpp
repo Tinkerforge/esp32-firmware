@@ -62,7 +62,7 @@ void UptimeTracker::setup()
 
     initialized = true;
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
             data.uptime = now_us().to<millis_t>().as<uint64_t>();
             data.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data), (sizeof(data) - sizeof(data.checksum)) / sizeof(uint16_t));
     }, 10_s);

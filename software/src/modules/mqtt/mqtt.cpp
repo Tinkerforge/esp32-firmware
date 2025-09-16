@@ -748,7 +748,7 @@ void Mqtt::setup()
 
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->resubscribe();
     }, 1_s, 1_s);
 }

@@ -230,7 +230,7 @@ void MeterRS485Bricklet::setup(Config *ephemeral_config)
         return;
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->tick();
     }, 10_ms);
 }

@@ -305,7 +305,7 @@ void EvseCommon::setup()
     });
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         backend->update_all_data();
     }, 250_ms);
 
@@ -413,7 +413,7 @@ void EvseCommon::register_urls()
         next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
     });
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         if (!deadline_elapsed(next_cm_send_deadline))
             return;
 
@@ -421,7 +421,7 @@ void EvseCommon::register_urls()
         next_cm_send_deadline = now_us() + 2500_ms;
     }, 100_ms, 100_ms);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         if (!deadline_elapsed(last_current_update + 30_s))
             return;
         if (!management_enabled.get("enabled")->asBool()) {
@@ -622,7 +622,7 @@ void EvseCommon::register_urls()
 
 #if MODULE_AUTOMATION_AVAILABLE()
     if (automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd)) {
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleUncancelable([this](){
             static bool was_triggered = false;
             const bool elapsed = deadline_elapsed(last_external_update + 30_s);
             if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
