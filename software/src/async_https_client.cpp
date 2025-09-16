@@ -478,10 +478,17 @@ size_t translate_HTTPError_detailed(const esp_tls_error_handle_t error_handle, c
                     if (needs_divider) {
                         sw.puts("; ");
                     }
-                    const char *error_str = strerror(sock_errno);
-                    if (!error_str) {
-                        error_str = "Unknown system error code";
+
+                    const char *error_str;
+                    if (sock_errno == EAGAIN) { // The Xtensa toolchain's string description of EAGAIN returned by strerror uses the outdated "No more processes".
+                        error_str = "Resource temporarily unavailable"; // POSIX.1-2001's meaning
+                    } else {
+                        error_str = strerror(sock_errno);
+                        if (!error_str) {
+                            error_str = "Unknown system error code";
+                        }
                     }
+
                     sw.printf("%s (%i)", error_str, sock_errno);
                 }
             }
