@@ -20,7 +20,7 @@
 #include "sdm630_defs.h"
 
 #include "module_dependencies.h"
-#include "modules/meters/sdm_helpers.h"
+#include "modules/meters/rs485_helpers.h"
 
 static const RegRead sdm630_slow[] {
     //{1, 88},  // Full register set, including unused demand registers.
@@ -79,7 +79,7 @@ static void sdm630_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot,
     all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 1] = all_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH] - reset->get("energy_export")->asFloat();
 
     size_t values = METER_ALL_VALUES_RESETTABLE_COUNT;
-    sdm_helper_pack_all_values(METER_TYPE_SDM630, all_values, &values);
+    rs485_helper_pack_all_values(METER_TYPE_SDM630, all_values, &values);
     meters.update_all_values(meter_slot, all_values);
 }
 

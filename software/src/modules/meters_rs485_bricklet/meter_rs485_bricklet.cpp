@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "meters_rs485_bricklet.h"
 #include "modules/meters/meter_value_id.h"
-#include "modules/meters/sdm_helpers.h"
+#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 #include "sdm630_defs.h"
 #include "sdm72dmv2_defs.h"
@@ -59,7 +59,7 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
 
     MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
     size_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
-    sdm_helper_get_value_ids(meter_type, ids, &id_count);
+    rs485_helper_get_value_ids(meter_type, ids, &id_count);
     meters.declare_value_ids(slot, ids, id_count);
 
     value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);

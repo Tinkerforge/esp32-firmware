@@ -22,7 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
-#include "modules/meters/sdm_helpers.h"
+#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"
@@ -71,7 +71,7 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 
         MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
         size_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
-        sdm_helper_parse_values(meter_type, all_values, &id_count, ids, value_packing_cache);
+        rs485_helper_parse_values(meter_type, all_values, &id_count, ids, value_packing_cache);
         value_count = id_count;
         meters.declare_value_ids(slot, ids, id_count);
 
@@ -115,7 +115,7 @@ void MeterEVSEV2::update_all_values(float *values)
             return;
     }
 
-    sdm_helper_pack_all_values(values, value_count, value_packing_cache);
+    rs485_helper_pack_all_values(values, value_count, value_packing_cache);
 
     meters.update_all_values(slot, values);
 }

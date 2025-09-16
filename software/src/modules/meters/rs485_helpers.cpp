@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "sdm_helpers"
+#define EVENT_LOG_PREFIX "rs485_helpers"
 
-#include "sdm_helpers.h"
+#include "rs485_helpers.h"
 
 #include <string.h>
 
@@ -28,7 +28,7 @@
 #include "tools.h"
 #include "gcc_warnings.h"
 
-const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
+const MeterValueID rs485_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::VoltageL1N,
     MeterValueID::VoltageL2N,
     MeterValueID::VoltageL3N,
@@ -119,11 +119,11 @@ const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT] = {
     MeterValueID::EnergyActiveLSumExportResettable,
 };
 
-const uint32_t sdm_helper_630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
-const uint32_t sdm_helper_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
-const uint32_t sdm_helper_72_all_value_indices[7]    = {24,30,31,65,85,86,87};
+const uint32_t rs485_helper_630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
+const uint32_t rs485_helper_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
+const uint32_t rs485_helper_72_all_value_indices[7]    = {24,30,31,65,85,86,87};
 
-void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len)
+void rs485_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len)
 {
     const uint32_t *all_value_indices;
     size_t id_count = 0;
@@ -131,18 +131,18 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
     switch (meter_type) {
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM630MCTV2:
-            all_value_indices = sdm_helper_630_all_value_indices;
-            id_count = ARRAY_SIZE(sdm_helper_630_all_value_indices);
+            all_value_indices = rs485_helper_630_all_value_indices;
+            id_count = ARRAY_SIZE(rs485_helper_630_all_value_indices);
             break;
 
         case METER_TYPE_SDM72DMV2:
-            all_value_indices = sdm_helper_72v2_all_value_indices;
-            id_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
+            all_value_indices = rs485_helper_72v2_all_value_indices;
+            id_count = ARRAY_SIZE(rs485_helper_72v2_all_value_indices);
             break;
 
         case METER_TYPE_SDM72DM:
-            all_value_indices = sdm_helper_72_all_value_indices;
-            id_count = ARRAY_SIZE(sdm_helper_72_all_value_indices);
+            all_value_indices = rs485_helper_72_all_value_indices;
+            id_count = ARRAY_SIZE(rs485_helper_72_all_value_indices);
             break;
 
         default:
@@ -161,12 +161,12 @@ void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size
 
     for (size_t i = 0; i < id_count; i++) {
         size_t src_i = all_value_indices[i];
-        value_ids[i] = sdm_helper_all_ids[src_i];
+        value_ids[i] = rs485_helper_all_ids[src_i];
     }
     *value_ids_len = id_count;
 }
 
-void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache)
+void rs485_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache)
 {
     size_t i_out = 0;
     for (size_t i_in = 0; i_in < METER_ALL_VALUES_RESETTABLE_COUNT; i_in++) {
@@ -178,7 +178,7 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
             break;
         }
 
-        MeterValueID value_id = sdm_helper_all_ids[i_in];
+        MeterValueID value_id = rs485_helper_all_ids[i_in];
         if (value_id == MeterValueID::NotSupported)
             continue;
 
@@ -192,7 +192,7 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
     if (meter_type != METER_TYPE_NONE && meter_type < 100) {
         MeterValueID static_value_ids[METER_ALL_VALUES_RESETTABLE_COUNT];
         size_t value_ids_len = METER_ALL_VALUES_RESETTABLE_COUNT;
-        sdm_helper_get_value_ids(meter_type, static_value_ids, &value_ids_len);
+        rs485_helper_get_value_ids(meter_type, static_value_ids, &value_ids_len);
 
         if (i_out != value_ids_len) {
             if (!value_ids_len) {
@@ -212,7 +212,7 @@ void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VAL
     }
 }
 
-void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len)
+void rs485_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len)
 {
     const uint32_t *all_value_indices;
     size_t values_count = 0;
@@ -220,18 +220,18 @@ void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *valu
     switch (meter_type) {
         case METER_TYPE_SDM630:
         case METER_TYPE_SDM630MCTV2:
-            all_value_indices = sdm_helper_630_all_value_indices;
-            values_count = ARRAY_SIZE(sdm_helper_630_all_value_indices);
+            all_value_indices = rs485_helper_630_all_value_indices;
+            values_count = ARRAY_SIZE(rs485_helper_630_all_value_indices);
             break;
 
         case METER_TYPE_SDM72DMV2:
-            all_value_indices = sdm_helper_72v2_all_value_indices;
-            values_count = ARRAY_SIZE(sdm_helper_72v2_all_value_indices);
+            all_value_indices = rs485_helper_72v2_all_value_indices;
+            values_count = ARRAY_SIZE(rs485_helper_72v2_all_value_indices);
             break;
 
         case METER_TYPE_SDM72DM:
-            all_value_indices = sdm_helper_72_all_value_indices;
-            values_count = ARRAY_SIZE(sdm_helper_72_all_value_indices);
+            all_value_indices = rs485_helper_72_all_value_indices;
+            values_count = ARRAY_SIZE(rs485_helper_72_all_value_indices);
             break;
 
         default:
@@ -253,7 +253,7 @@ void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *valu
     *values_len = values_count;
 }
 
-void sdm_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache)
+void rs485_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache)
 {
     for (size_t i = 0; i < values_len; i++) {
         uint8_t source_index = packing_cache[i];

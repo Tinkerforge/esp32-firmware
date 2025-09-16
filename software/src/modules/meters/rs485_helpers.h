@@ -30,13 +30,13 @@
 // If this is changed, almost all indices will be wrong.
 static_assert(METER_ALL_VALUES_RESETTABLE_COUNT == 88);
 
-extern const MeterValueID sdm_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT];
+extern const MeterValueID rs485_helper_all_ids[METER_ALL_VALUES_RESETTABLE_COUNT];
 
-extern const uint32_t sdm_helper_630_all_value_indices[76];
-extern const uint32_t sdm_helper_72v2_all_value_indices[38];
-extern const uint32_t sdm_helper_72_all_value_indices[7];
+extern const uint32_t rs485_helper_630_all_value_indices[76];
+extern const uint32_t rs485_helper_72v2_all_value_indices[38];
+extern const uint32_t rs485_helper_72_all_value_indices[7];
 
-extern void sdm_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len);
-extern void sdm_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache);
-extern void sdm_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len);
-extern void sdm_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache);
+extern void rs485_helper_get_value_ids(uint32_t meter_type, MeterValueID *value_ids, size_t *value_ids_len);
+extern void rs485_helper_parse_values(uint32_t meter_type, float all_values[METER_ALL_VALUES_RESETTABLE_COUNT], size_t *value_count, MeterValueID *value_ids, uint8_t *packing_cache);
+extern void rs485_helper_pack_all_values(uint32_t meter_type, float *values, size_t *values_len);
+extern void rs485_helper_pack_all_values(float *values, size_t values_len, uint8_t *packing_cache);

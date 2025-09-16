@@ -26,7 +26,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "options.h"
-#include "modules/meters/sdm_helpers.h"
+#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"
@@ -333,7 +333,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }
 
-    fill_index_array(value_indices_legacy_all_values_to_linked_meter, sdm_helper_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
+    fill_index_array(value_indices_legacy_all_values_to_linked_meter, rs485_helper_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
 
     // Get power index
     fill_index_array(value_indices_legacy_values_to_linked_meter, legacy_values_ids, 1, meter_value_ids, linked_meter_value_count);
@@ -394,9 +394,9 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         }
     }
 
-    can_be_sdm72   = indices_match_meter_indices(all_values_present, sdm_helper_72_all_value_indices,   ARRAY_SIZE(sdm_helper_72_all_value_indices));
-    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, sdm_helper_72v2_all_value_indices, ARRAY_SIZE(sdm_helper_72v2_all_value_indices));
-    can_be_sdm630  = indices_match_meter_indices(all_values_present, sdm_helper_630_all_value_indices,  ARRAY_SIZE(sdm_helper_630_all_value_indices));
+    can_be_sdm72   = indices_match_meter_indices(all_values_present, rs485_helper_72_all_value_indices,   ARRAY_SIZE(rs485_helper_72_all_value_indices));
+    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, rs485_helper_72v2_all_value_indices, ARRAY_SIZE(rs485_helper_72v2_all_value_indices));
+    can_be_sdm630  = indices_match_meter_indices(all_values_present, rs485_helper_630_all_value_indices,  ARRAY_SIZE(rs485_helper_630_all_value_indices));
 
     uint32_t can_be_count = can_be_sdm72 + can_be_sdm72v2 + can_be_sdm630;
     uint32_t meter_type = METER_TYPE_NONE;

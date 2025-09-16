@@ -27,7 +27,7 @@
 #include "module_dependencies.h"
 #include "options.h"
 #include "bindings/hal_common.h"
-#include "modules/meters/sdm_helpers.h"
+#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 #include "modules/meters_rs485_bricklet/meter_defs.h"
 
@@ -207,8 +207,8 @@ EventResult ModbusMeterSimulator::on_value_ids_change(const Config *value_ids)
         return EventResult::OK;
     }
 
-    uint32_t index_cache_compact[ARRAY_SIZE(sdm_helper_all_ids)];
-    meters.fill_index_cache(source_meter_slot, ARRAY_SIZE(sdm_helper_all_ids), sdm_helper_all_ids, index_cache_compact);
+    uint32_t index_cache_compact[ARRAY_SIZE(rs485_helper_all_ids)];
+    meters.fill_index_cache(source_meter_slot, ARRAY_SIZE(rs485_helper_all_ids), rs485_helper_all_ids, index_cache_compact);
 
     for (size_t i = 0; i < MODBUS_METER_SIMULATOR_REGISTER_COUNT; i++) {
         uint32_t compact_index = addr2values[i];
