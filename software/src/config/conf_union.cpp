@@ -19,6 +19,7 @@
 
 #include "config/private.h"
 #include "config/slot_allocator.h"
+#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -33,7 +34,7 @@ void Config::ConfUnion::slotDebugHook(const Slot *slot) {
 
 Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
 {
-    return new(std::nothrow) Config::ConfUnion::Slot[elements];
+    return perm_new_array<Config::ConfUnion::Slot>(elements, DRAM);
 }
 
 bool Config::ConfUnion::changeUnionVariant(uint8_t tag)

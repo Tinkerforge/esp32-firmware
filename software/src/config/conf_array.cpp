@@ -22,6 +22,7 @@
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -36,7 +37,7 @@ void Config::ConfArray::slotDebugHook(const Slot *slot) {
 
 Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 {
-    return new(std::nothrow) Config::ConfArray::Slot[elements]();
+    return perm_new_array<Config::ConfArray::Slot>(elements, DRAM);
 }
 
 [[gnu::noinline]]

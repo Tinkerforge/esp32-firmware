@@ -19,6 +19,7 @@
 
 #include "config/private.h"
 #include "config/slot_allocator.h"
+#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -33,7 +34,7 @@ void Config::ConfString::slotDebugHook(const Slot *slot) {
 
 Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
 {
-    auto *result = new(std::nothrow) Config::ConfString::Slot[elements];
+    auto *result = perm_new_array<Config::ConfString::Slot>(elements, DRAM);
     if (result == nullptr)
         return nullptr;
 

@@ -94,7 +94,7 @@ struct Config {
         static bool slotEmpty(const Slot *slot);
         static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfString";
-        static Slot *allocSlotBuf(size_t elements);
+        [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
         CoolString *getVal();
         const CoolString *getVal() const;
@@ -301,7 +301,7 @@ struct Config {
         static bool slotEmpty(const Slot *slot);
         static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfArray";
-        static Slot *allocSlotBuf(size_t elements);
+        [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
         Config *get(size_t i);
         Config *get_or_null(size_t i);
@@ -362,7 +362,7 @@ struct Config {
         static bool slotEmpty(const Slot *slot);
         static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfUnion";
-        static Slot *allocSlotBuf(size_t elements);
+        [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
         Config *getTag() const;
         bool changeUnionVariant(uint8_t tag);
@@ -392,7 +392,7 @@ struct Config {
         static bool slotEmpty(const Slot *slot);
         static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfTuple";
-        static Slot *allocSlotBuf(size_t elements);
+        [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
         Config *get(size_t i);
         Config *get_or_null(size_t i);
