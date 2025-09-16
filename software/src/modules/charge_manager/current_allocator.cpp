@@ -804,8 +804,8 @@ static void stage_3(StageContext &sc) {
         // to create a better status message. We would like to know which chargers
         // are going to be shut down first.
 
-        if (wnd_min.pv >= sc.limits->raw[GridPhase::PV])  {
-            // The currently available PV excess is more than the window minimum
+        if (sc.limits->raw[GridPhase::PV] >= wnd_min.pv)  {
+            // The currently available PV excess is equal or more than the window minimum
             // -> Everything's fine.
             // TODO clear decisions here
             break;
@@ -826,9 +826,9 @@ static void stage_3(StageContext &sc) {
         if (state->observe_pv_limit && min_cost.pv <= state->guaranteed_pv_current)
             continue;
 
-        if (wnd_min.pv <= sc.limits->max_pv)  {
+        if (wnd_min.pv < sc.limits->max_pv)  {
             // Window minimum less than max pv limit -> PV not permanently overloaded
-            trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, sc.limits->max_pv);
+            trace("3: wnd_min %d < max_pv %d", wnd_min.pv, sc.limits->max_pv);
             set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoCloudFilterBlocksUntil(sc.limits->max_pv_expiration_ts, wnd_min.pv - sc.limits->max_pv));
             continue;
         }
