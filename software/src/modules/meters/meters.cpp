@@ -175,6 +175,7 @@ char *format_meter_slot(uint32_t slot)
 {
     char *result;
 
+    // There are other reasons that asprintf can fail for (except allocation failure).
     if (asprintf(&result, "Meter %lu: ", slot) < 0) {
         result = strdup("Meter ?: ");
     }
