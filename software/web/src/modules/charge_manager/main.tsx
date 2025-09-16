@@ -148,8 +148,10 @@ interface ChargeManagerStatusState {
 
 function with_timespan(fn: (timespan: string) => string, timestamp: number) {
     const now = API.get('info/keep_alive').uptime;
-    if (timestamp < now)
-        return ""
+    if (timestamp < now) {
+        console.log("timestamp:", timestamp, "now:", now, "formatted:", util.format_timespan_ms(now - timestamp));
+        return fn(" Elapsed for " + util.format_timespan_ms(now - timestamp));
+    }
     return fn(util.format_timespan_ms(timestamp - now));
 }
 
