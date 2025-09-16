@@ -229,7 +229,7 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-    charge_mode = Config::Array({}, new Config{Config::Enum<ConfigChargeMode>(ConfigChargeMode::Default)}, 0, MAX_CONTROLLED_CHARGERS);
+    charge_mode = Config::Array({}, new Config{Config::Enum(ConfigChargeMode::Default)}, 0, MAX_CONTROLLED_CHARGERS);
 
     pm_charge_mode = Config::Object({
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
