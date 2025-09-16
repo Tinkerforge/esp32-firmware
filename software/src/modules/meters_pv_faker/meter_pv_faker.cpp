@@ -108,7 +108,7 @@ void MeterPvFaker::setup(Config *ephemeral_config)
 
     meters.declare_value_ids(slot, pv_faker_value_ids, ARRAY_SIZE(pv_faker_value_ids));
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         meters.update_all_values(this->slot, this->values);
     }, 2_s, 2_s);
 }

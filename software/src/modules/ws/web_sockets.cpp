@@ -676,11 +676,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 
     httpd_register_uri_handler(httpd, &ws);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->triggerHttpThread();
     }, 100_ms, 100_ms);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->updateDebugState();
     }, 1_s, 1_s);
 
@@ -691,11 +691,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         WORKER_WATCHDOG_TIMEOUT.to<millis_t>());
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->pingActiveClients();
     }, 1_s, 1_s);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         checkActiveClients();
     }, 100_ms, 100_ms);
 

@@ -118,7 +118,7 @@ void RequireMeter::start_task()
     automation.set_enabled(AutomationTriggerID::RequireMeter, true);
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         bool meter_timeout = false;
 
         if (!meters.meter_has_value_changed(evse_common.get_charger_meter(), METER_TIMEOUT)) {

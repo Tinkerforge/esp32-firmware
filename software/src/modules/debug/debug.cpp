@@ -211,7 +211,7 @@ void Debug::pre_setup()
 
 void Debug::setup()
 {
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         multi_heap_info_t dram_info;
         multi_heap_info_t iram_info;
         multi_heap_info_t psram_info;
@@ -289,7 +289,7 @@ void Debug::setup()
         this->integrity_check_runtime_max = 0;
     }, 1_s, 1_s);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         uint8_t lwip_socks_in_use = 0;
         // NUM_SOCKETS is expected to be CONFIG_LWIP_MAX_SOCKETS, but NUM_SOCKETS is what lwIP uses internally.
         for (int i = 0; i < NUM_SOCKETS; i++) {

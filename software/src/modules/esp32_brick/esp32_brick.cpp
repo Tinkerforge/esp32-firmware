@@ -99,7 +99,7 @@ void ESP32Brick::setup()
     blue_led_pin = BLUE_LED;
     button_pin = BUTTON;
 
-    task_scheduler.scheduleWithFixedDelay([](){
+    task_scheduler.scheduleUncancelable([](){
 #if MODULE_WATCHDOG_AVAILABLE()
         static int watchdog_handle = watchdog.add("esp_led_blink", "Main thread blocked");
         watchdog.reset(watchdog_handle);
@@ -109,7 +109,7 @@ void ESP32Brick::setup()
 
 
 #if MODULE_SYSTEM_AVAILABLE()
-    task_scheduler.scheduleWithFixedDelay([](){
+    task_scheduler.scheduleUncancelable([](){
         static bool last_btn_value = false;
         static micros_t last_btn_change = 0_us;
 

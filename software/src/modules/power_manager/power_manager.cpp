@@ -281,7 +281,7 @@ void PowerManager::setup()
         config.get("enabled")->updateBool(false);
 
         // Update phase information when PM disabled because the back-end might change state by itself.
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             this->update_phase_switcher();
         }, 1_s, 1_s);
 
@@ -454,7 +454,7 @@ void PowerManager::setup()
     this->trace_header = th.first;
     this->trace_header_length = th.second;
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->update_data();
         this->update_energy();
         this->update_phase_switcher();
@@ -540,7 +540,7 @@ void PowerManager::register_urls()
             }
         }, true);
 
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleUncancelable([this](){
             uint32_t ext_state = EXTERNAL_CONTROL_STATE_AVAILABLE;
             switch(phase_switcher_backend->get_phase_switching_state()) {
                 case PhaseSwitcherBackend::SwitchingState::Error:

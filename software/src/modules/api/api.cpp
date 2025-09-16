@@ -87,7 +87,7 @@ void API::setup()
     version.get("config")->updateString(config_version);
     version.get("config_type")->updateString(config_type);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         bool skip_high_latency_states = state_update_counter % 4 != 0;
         ++state_update_counter;
 

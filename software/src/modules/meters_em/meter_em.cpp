@@ -84,7 +84,7 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 
         update_all_values(all_values);
 
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleUncancelable([this](){
             update_all_values(nullptr);
         }, 990_ms, 990_ms);
 

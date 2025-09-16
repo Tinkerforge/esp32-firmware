@@ -141,7 +141,7 @@ void Proxy::register_urls()
     api.addState("proxy/devices", &devices);
     api.addPersistentConfig("proxy/config", &config, {"authentication_secret"});
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         char char_str[2];
         char_str[1] = 0;
 

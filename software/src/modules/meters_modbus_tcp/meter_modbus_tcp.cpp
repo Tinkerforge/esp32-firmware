@@ -715,7 +715,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     }
 
     if (table->specs_length > 0) {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             if (read_allowed) {
                 read_next();
             }

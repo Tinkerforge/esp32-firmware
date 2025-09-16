@@ -380,7 +380,7 @@ void Users::setup()
     }
 
     auto outer_charger_state = get_charger_state();
-    task_scheduler.scheduleWithFixedDelay([this, outer_charger_state](){
+    task_scheduler.scheduleUncancelable([this, outer_charger_state](){
         static uint8_t last_charger_state = outer_charger_state;
 
         uint8_t charger_state = get_charger_state();
@@ -663,7 +663,7 @@ void Users::register_urls()
     });
 
 #if MODULE_EVSE_LED_AVAILABLE()
-    task_scheduler.scheduleWithFixedDelay([](){check_waiting_for_start();}, 1_s, 1_s);
+    task_scheduler.scheduleUncancelable([](){check_waiting_for_start();}, 1_s, 1_s);
 #endif
 }
 

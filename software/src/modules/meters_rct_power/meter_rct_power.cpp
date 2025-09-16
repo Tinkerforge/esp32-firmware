@@ -229,7 +229,7 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         ephemeral_config->get("location")->updateEnum(default_location);
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         if (read_allowed) {
             read_next();
         }

@@ -82,7 +82,7 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 
         update_all_values(all_values);
 
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleUncancelable([this](){
             update_all_values(nullptr);
         }, 990_ms, 990_ms);
 

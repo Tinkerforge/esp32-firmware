@@ -139,7 +139,7 @@ void MetersRS485Bricklet::setup()
     if (!device_found)
         return;
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->checkRS485State();
     }, 10_s, 10_s);
 }

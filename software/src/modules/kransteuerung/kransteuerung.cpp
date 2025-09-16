@@ -85,7 +85,7 @@ void Kransteuerung::setup()
     tf_dual_button_v2_set_state_changed_callback_configuration(&left, true);
     tf_dual_button_v2_set_state_changed_callback_configuration(&right, true);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         bool task_value[4] = {false, false, false, false};
         tf_industrial_quad_relay_v2_get_value(&relay, task_value);
         tf_dual_button_v2_set_led_state(&left,  TF_DUAL_BUTTON_V2_LED_STATE_ON, task_value[1] ? TF_DUAL_BUTTON_V2_LED_STATE_ON : TF_DUAL_BUTTON_V2_LED_STATE_OFF);
