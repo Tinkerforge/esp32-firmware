@@ -21,16 +21,12 @@ spec = Union("Three Phase Decision", 20, variants=[
         Member('Available mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
-    Variant('Yes Improves Spread'),
     Variant('No Forced 1p Until', [
         Member('Timestamp', Types.Uptime)
     ]),
     Variant('No Fixed 1p'),
     Variant('Yes Unknown Rot Switchable'),
     Variant('No Hysteresis Blocked Until', [
-        Member('Timestamp', Types.Uptime)
-    ]),
-    Variant('No Phase Switch Blocked Until', [
         Member('Timestamp', Types.Uptime)
     ]),
     Variant('Yes Waking Up'),

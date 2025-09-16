@@ -953,10 +953,6 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
             }
         }
     } else if (check_improvement) {
-        if (is_3p_activation)
-            set_charger_decision(sc, charger_idx, ThreePhaseDecision::YesImprovesSpread());
-        else
-            set_charger_decision(sc, charger_idx, OnePhaseDecision::YesImprovesSpread());
         sw.printf(" impr_spread ");
     }
 
@@ -1242,7 +1238,7 @@ static void stage_5(StageContext &sc) {
         // The global hysteresis is not elapsed yet, but this charger was switched less than one hysteresis ago.
         // This could have been a phase switch, so don't switch again immediately.
         if (!deadline_elapsed(phase_switch_hyst)) {
-            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoPhaseSwitchBlockedUntil(phase_switch_hyst));
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoForced1pUntil(phase_switch_hyst));
             continue;
         }
 
