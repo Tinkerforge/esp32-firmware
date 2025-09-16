@@ -194,8 +194,6 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
             return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d1[1][3])} too low: required ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, d1[1][0]);
         case OnePhaseDecisionTag.NoPhaseImprovement:
             return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, d1[1][0]);
-        case OnePhaseDecisionTag.YesImprovesSpread:
-            return "Yes: Improves spread";
         case OnePhaseDecisionTag.NoForced3pUntil:
             return with_timespan((timespan) => "No: Force to 3p charge for " + timespan, d1[1]);
         case OnePhaseDecisionTag.NoFixed3p:
@@ -219,8 +217,6 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
             return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d3[1][3])} too low: required ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, d3[1][0]);
         case ThreePhaseDecisionTag.NoPhaseImprovement:
             return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, d3[1][0]);
-        case ThreePhaseDecisionTag.YesImprovesSpread:
-            return "Yes: Improves spread";
         case ThreePhaseDecisionTag.NoForced1pUntil:
             return with_timespan((timespan) => "No: Force to 1p charge for " + timespan, d3[1]);
         case ThreePhaseDecisionTag.NoFixed1p:
@@ -229,8 +225,6 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
             return "Yes: Charger is switchable and phase rotation is not known. Preferring three phase charging ";
         case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
             return with_timespan((timespan) => "No: Hysteresis blocks for " + timespan, d3[1]);
-        case ThreePhaseDecisionTag.NoPhaseSwitchBlockedUntil:
-            return with_timespan((timespan) => "No: Phase switch blocked for " + timespan, d3[1]);
         case ThreePhaseDecisionTag.YesWakingUp:
             return "Yes: Waking up vehicle";
         case ThreePhaseDecisionTag.YesNormal:
