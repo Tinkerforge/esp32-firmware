@@ -108,7 +108,7 @@ void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
 
 char *perm_strdup(const char *c) {
     auto len = strlen(c) + 1;
-    auto *dst = perm_alloc(len, DRAM);
+    auto *dst = perm_alloc_aligned(1, len, DRAM);
     if (dst == nullptr)
         return nullptr;
     memcpy(dst, c, len);
