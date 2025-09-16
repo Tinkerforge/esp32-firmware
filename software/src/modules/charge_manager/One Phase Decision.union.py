@@ -21,7 +21,6 @@ spec = Union("One Phase Decision", 20, variants=[
         Member('Available mA', Types.S32),
         Member('Phase', Types.U8),
     ]),
-    Variant('Yes Improves Spread'),
     Variant('No Forced 3p Until', [
         Member('Timestamp', Types.Uptime)
     ]),
