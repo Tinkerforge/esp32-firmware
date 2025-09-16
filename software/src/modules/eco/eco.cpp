@@ -108,7 +108,7 @@ void Eco::setup()
 
     // Wait for clock to be synced and day ahead prices to be available to initialize chart data
     task_scheduler.scheduleWhenClockSynced([this]() {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        (void)task_scheduler.scheduleWithFixedDelay([this]() {
             if (day_ahead_prices.prices_sorted_available) {
                 set_chargers_state_chart_data(255, nullptr, 0, true);
                 task_scheduler.cancel(task_scheduler.currentTaskId());

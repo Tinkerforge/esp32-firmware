@@ -302,7 +302,7 @@ void ModbusMeterSimulator::setup()
     if (!initialized)
         return;
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->checkRS485State();
     }, 10_s, 10_s);
 }

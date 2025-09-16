@@ -232,7 +232,7 @@ bool EMCommon::has_triggered(const Config *conf, void *data)
 
 void EMCommon::start_network_check_task()
 {
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         bool disconnected;
         do {
 #if MODULE_ETHERNET_AVAILABLE()

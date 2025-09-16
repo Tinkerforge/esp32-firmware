@@ -104,7 +104,7 @@ static void add_charger_services() {
     add_mdns_service_display_name_by_event();
     add_mdns_service_enabled_by_evse_event();
 #else
-    task_scheduler.scheduleWithFixedDelay([]() {
+    task_scheduler.scheduleUncancelable([]() {
 #if MODULE_DEVICE_NAME_AVAILABLE()
         // Keep "display_name" updated because it can be changed at runtime without reboot.
         add_mdns_service_display_name(device_name.display_name.get("display_name")->asUnsafeCStr());
@@ -131,7 +131,7 @@ static void add_wem_services() {
     add_mdns_service_display_name_by_event();
     add_mdns_service_proxy_by_event();
 #else
-    task_scheduler.scheduleWithFixedDelay([]() {
+    task_scheduler.scheduleUncancelable([]() {
         // Keep "display_name" updated because it can be changed at runtime without reboot.
         add_mdns_service_display_name(device_name.display_name.get("display_name")->asUnsafeCStr());
         add_mdns_service_proxy(cfg->get("host")->asEphemeralCStr());

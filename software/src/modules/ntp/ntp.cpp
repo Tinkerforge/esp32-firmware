@@ -167,7 +167,7 @@ void NTP::time_synced_NTPThread() {
             logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
         });
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             if (deadline_elapsed(this->sync_expires_at)) {
                 this->set_synced(false);
             }

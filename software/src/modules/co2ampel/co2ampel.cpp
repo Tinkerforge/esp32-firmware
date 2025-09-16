@@ -115,7 +115,7 @@ void Co2Ampel::setup()
 
     tf_rgb_led_v2_set_status_led_config(&rgb, TF_RGB_LED_V2_STATUS_LED_CONFIG_OFF);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         uint16_t co2_concentration, humidity, air_pressure; int16_t temperature;
         check(tf_co2_v2_get_all_values(&co2, &co2_concentration, &temperature, &humidity), "get all values");
         state.get("co2")->updateUint(co2_concentration);

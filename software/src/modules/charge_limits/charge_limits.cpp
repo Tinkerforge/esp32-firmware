@@ -173,7 +173,7 @@ void ChargeLimits::register_urls()
     evse_common.set_charge_limits_slot(32000, true);
 
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         bool charging = charge_tracker.current_charge.get("user_id")->asInt() != -1;
         uint16_t target_current = 32000;
 

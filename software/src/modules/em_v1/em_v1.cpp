@@ -186,7 +186,7 @@ void EMV1::setup()
     update_all_data();
 
     // Start this task even if a config error is set below: If only MeterEM::update_all_values runs, there will be 2.5 sec gaps in the meters data.
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->update_all_data();
     }, EM_TASK_DELAY);
 

@@ -204,6 +204,13 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, m
     return task_id;
 }
 
+void TaskScheduler::scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
+{
+    std::lock_guard<std::mutex> lock{this->task_mutex};
+    // All uncancelable tasks have task ID 0.
+    tasks.emplace(perm_new<Task>(DRAM, std::move(fn), 0ull, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false));
+}
+
 uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location)
 {
     // Check if the clock is already synced and avoid the sync check task.
@@ -239,7 +246,7 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
 
     if (!wall_clock_worker_started) {
         wall_clock_worker_started = true;
-        this->scheduleWithFixedDelay([this](){this->wall_clock_worker();}, 0_ms, 1_s /* Don't forward src_location. */); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
+        this->scheduleUncancelable([this](){this->wall_clock_worker();}, 0_ms, 1_s /* Don't forward src_location. */); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
     }
 
     return task_id;
@@ -283,8 +290,15 @@ uint64_t TaskScheduler::currentTaskId()
     }
 
     std::lock_guard<std::mutex> lock{this->task_mutex};
-    if (this->currentTask != nullptr)
-        return this->currentTask->task_id;
+    if (this->currentTask != nullptr) {
+        if (this->currentTask->task_id != 0) {
+            return this->currentTask->task_id;
+        }
+        esp_system_abort("Calling currentTaskId is not allowed in an uncancelable task!");
+    } else {
+        esp_system_abort("Calling currentTaskId is not allowed outside of task code!");
+    }
+
     return 0;
 }
 

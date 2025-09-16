@@ -197,7 +197,7 @@ void EVSEV2::post_setup()
     // Manually triggering a test resets the 24 hour counter, so that the
     // EVSE is now roughly synchronized and tests should typically not be
     // observable by the user.
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         struct timeval tv;
         if (!rtc.clock_synced(&tv))
             return;

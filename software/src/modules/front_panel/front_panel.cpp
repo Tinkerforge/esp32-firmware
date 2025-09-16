@@ -153,7 +153,7 @@ void FrontPanel::setup()
 
     api.restorePersistentConfig("front_panel/config", &config);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->check_bricklet_state();
     }, 5_min, 5_min);
 
@@ -166,7 +166,7 @@ void FrontPanel::register_urls()
 {
     api.addPersistentConfig("front_panel/config", &config);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         this->update();
     }, 100_ms, UPDATE_INTERVAL);
 

@@ -66,7 +66,7 @@ void WarpEsp32I2c::setup()
 
     initialized = true;
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_PORT, tmp_cmd_handle, i2c_timeout);
         if(ret != ESP_OK) {
             logger.printfln("Temperature read failed: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));

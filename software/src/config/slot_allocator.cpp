@@ -274,7 +274,7 @@ static void check_slot_accounting()
 void config_post_setup()
 {
 #ifdef DEBUG_FS_ENABLE
-    task_scheduler.scheduleWithFixedDelay([]() {
+    task_scheduler.scheduleUncancelable([]() {
         check_slot_accounting<Config::ConfUint>();
         check_slot_accounting<Config::ConfInt>();
         check_slot_accounting<Config::ConfFloat>();

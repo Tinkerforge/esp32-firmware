@@ -119,7 +119,7 @@ void DeviceName::setup()
         display_name.get("display_name")->updateString(name.get("name")->asString());
     }
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         this->updateDisplayType();
     }, 60_s);
 

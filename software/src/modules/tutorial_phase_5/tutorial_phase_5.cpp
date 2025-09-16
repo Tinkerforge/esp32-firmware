@@ -113,7 +113,7 @@ void TutorialPhase5::setup()
     // Start task with 1 second interval to read back current color
     // value of the RGB LED Button Bricklet. This allows to externally change
     // the color value and make the ESP32 (Ethernet) Brick notice this.
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         poll_bricklet_color();
     }, 1_s);
 

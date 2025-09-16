@@ -1044,7 +1044,7 @@ void RemoteAccess::register_urls()
         return;
     }
 
-    task_scheduler.scheduleWithFixedDelay(
+    task_scheduler.scheduleUncancelable(
         [this]() {
             struct timeval now;
             if (!rtc.clock_synced(&now)) {
@@ -1072,7 +1072,7 @@ void RemoteAccess::register_urls()
         1_s,
         1_s);
 
-    task_scheduler.scheduleWithFixedDelay(
+    task_scheduler.scheduleUncancelable(
         [this]() {
             struct timeval now;
             if (!rtc.clock_synced(&now)) {
@@ -1847,7 +1847,7 @@ void RemoteAccess::connect_management()
                       &management_filter_in,
                       &management_filter_out);
 
-    task_scheduler.scheduleWithFixedDelay(
+    task_scheduler.scheduleUncancelable(
         [this]() {
             this->run_management();
         },

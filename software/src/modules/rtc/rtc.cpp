@@ -114,7 +114,7 @@ void Rtc::register_urls() {
         this->push_system_time(timeval, Rtc::Quality::Low);
     }, true);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         struct timeval tv{};
         gettimeofday(&tv, nullptr);
 
@@ -140,7 +140,7 @@ void Rtc::register_urls() {
         time.get("weekday")->updateUint(tm.tm_wday);
     }, 200_ms);
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         update_system_time_from_rtc();
     }, RTC_TO_SYS_INTERVAL);
 }

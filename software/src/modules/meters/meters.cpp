@@ -304,7 +304,7 @@ void Meters::setup()
     // For ',' between the values.
     ++history_chars_per_value;
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         micros_t now = now_us();
         uint32_t current_history_slot = (now / minutes_t{HISTORY_MINUTE_INTERVAL}).as<uint32_t>();
         bool update_history = current_history_slot != last_history_slot;

@@ -62,7 +62,7 @@ void ESP32EthernetV2CoBricklet::setup()
 
     rtc.register_backend(this);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleUncancelable([this](){
         int16_t temperature = 0;
         const int rc = tf_warp_esp32_ethernet_v2_co_get_temperature(&device, &temperature);
         if (rc != TF_E_OK) {

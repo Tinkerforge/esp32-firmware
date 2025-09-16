@@ -170,7 +170,7 @@ void Wireguard::connect_wireguard()
         return;
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
+    task_scheduler.scheduleUncancelable([this]() {
         bool up = this->wg_data->wg.is_peer_up(nullptr, nullptr);
 
         if(state.get("state")->updateUint(up ? 3 : 2))

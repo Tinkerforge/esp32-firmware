@@ -154,7 +154,7 @@ void Automation::setup()
     last_run = heap_alloc_array<micros_t>(task_count);
 
     if (has_task_with_trigger(AutomationTriggerID::Cron)) {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             static int last_min = 0;
             static bool was_synced = false;
             timeval tv;

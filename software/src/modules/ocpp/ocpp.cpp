@@ -160,7 +160,7 @@ void Ocpp::setup()
             return;
         }
 
-        task_scheduler.scheduleWithFixedDelay([this](){
+        task_scheduler.scheduleUncancelable([this](){
             cp->tick();
         }, 100_ms, 100_ms);
     }, 5_s);

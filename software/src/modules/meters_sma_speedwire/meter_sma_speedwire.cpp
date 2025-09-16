@@ -198,7 +198,7 @@ void MeterSMASpeedwire::register_events()
 
         // Tested Speedwire products send one packet per second.
         // Poll twice a second to reduce latency and packet backlog.
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             parse_packet();
         }, 500_ms);
 
