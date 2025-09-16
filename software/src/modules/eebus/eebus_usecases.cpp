@@ -611,8 +611,10 @@ ControllableSystemEntity::ControllableSystemEntity()
                                           60_s);
     // Initialize ElectricalConnection feature
     update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
+    update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
     lpc_state = LPCState::Init;
     switch_state(LPCState::Init);
+
 }
 
 UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
@@ -795,6 +797,8 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
     power_consumption_max.unit = UnitOfMeasurementEnumType::W;
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(power_consumption_max);
 
+    // TODO: Inform Subscribers
+
     // As stated in EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.6.4.1, the contractual consumption is not something the CS is supposed to handle
     /*
     ElectricalConnectionCharacteristicDataType contractual_power_consumption_max{};
@@ -806,11 +810,12 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
     contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
     contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
-    // TODO: Inform Subscribers
+
 }
 
-void ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
+bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
 {
+
     load_control_limit_description_list.loadControlLimitDescriptionData.reset();
     LoadControlLimitDescriptionDataType limit_description{};
     limit_description.limitId = 1;
@@ -822,19 +827,33 @@ void ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
     limit_description.scopeType = ScopeTypeEnumType::activePowerLimit;
     load_control_limit_description_list.loadControlLimitDescriptionData->push_back(limit_description);
 
+    // TODO: Check if limit can be applied, currently it can always be applied
+    bool limit_accepted = true;
 
-    // TODO: Check if limit can be applied
     load_control_limit_list.loadControlLimitData.emplace();
     LoadControlLimitDataType limit_data{};
     limit_data.limitId = 1;
     limit_data.isLimitChangeable = true;
-    limit_data.isLimitActive = limit_active;
-    limit_data.timePeriod->endTime = std::to_string(endtime);
+    limit_data.isLimitActive = limit_active && limit_accepted;
+    if (endtime > 0) {
+        limit_data.timePeriod->endTime = std::to_string(endtime);
+    }
     limit_data.value->number = current_limit_w;
     limit_data.value->scale = 0;
     load_control_limit_list.loadControlLimitData->push_back(limit_data);
-    // TODO: Inform subscribers
 
+    if (limit_accepted && heartbeat_received && limit_active) {
+        // LPC-902, LPC-904
+        switch_state(LPCState::Limited);
+    } else if (heartbeat_received && !limit_active) {
+        //LPC-905
+        switch_state(LPCState::UnlimitedControlled);
+    } else {
+        // LPC-906
+        switch_state(LPCState::UnlimitedControlled);
+    }
+    // TODO: Inform subscribers
+    return limit_accepted;
 }
 
 CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
@@ -849,7 +868,27 @@ CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &hea
             return CmdClassifierType::reply;
         }
     }
-    //TODO: Implement
+    if (header.cmdClassifier == CmdClassifierType::write) {
+        FeatureAddressType feature_address{};
+        feature_address.entity = entity_address;
+        feature_address.feature = loadControl_feature_address;
+        feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+
+        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
+            LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitdatatype.get();
+            if (update_lpc(load_control_limit_data.isLimitActive.get(), load_control_limit_data.value->number.get() * 10 * *(load_control_limit_data.value->scale), load_control_limit_data.timePeriod->endTime.has_value() ? std::stoull(load_control_limit_data.timePeriod->endTime.get()) : 0)) {
+                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Limit applied");
+            } else {
+                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
+            }
+            return CmdClassifierType::result;
+
+        }
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired,
+                                                 "Load Control requires binding");
+        return CmdClassifierType::result;
+    }
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -993,13 +1032,15 @@ bool ControllableSystemEntity::switch_state(LPCState state)
 
 bool ControllableSystemEntity::init_state()
 {
-    // This handles the initialization of the state machine
+    // Switching from init to init triggers initialization of the statemachine
     if (lpc_state == LPCState::Init) {
-        initialization_timeout = task_scheduler.scheduleOnce(
+        state_change_timeout = task_scheduler.scheduleOnce(
             [this]() {
                 this->switch_state(LPCState::UnlimitedAutonomous);
             },
             120_s);
+        limit_engaged = false;
+        current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
         return true;
     }
     return false;
@@ -1007,67 +1048,41 @@ bool ControllableSystemEntity::init_state()
 
 bool ControllableSystemEntity::unlimited_controlled_state()
 {
-    if (lpc_state == LPCState::Init) {
+    if (lpc_state == LPCState::Init || lpc_state == LPCState::Limited || lpc_state == LPCState::Failsafe || lpc_state == LPCState::UnlimitedAutonomous) {
         lpc_state = LPCState::UnlimitedControlled;
-        task_scheduler.cancel(initialization_timeout);
-        // TODO: Set limits
+        task_scheduler.cancel(state_change_timeout);
+        limit_engaged = false;
+        current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
         return true;
     }
-    if (lpc_state == LPCState::Limited) {
-        lpc_state = LPCState::UnlimitedControlled;
-        //TODO
-        return true;
-    }
-    if (lpc_state == LPCState::Failsafe) {
-        lpc_state = LPCState::UnlimitedControlled;
-        // TODO
-        return true;
-    }
-    if (lpc_state == LPCState::UnlimitedAutonomous) {
-        lpc_state = LPCState::UnlimitedControlled;
-        // TODO
-        return true;
 
-    }
     return false;
 }
 
 bool ControllableSystemEntity::limited_state()
 {
-    if (lpc_state == LPCState::Init) {
+    if (lpc_state == LPCState::Init || lpc_state == LPCState::UnlimitedControlled || lpc_state == LPCState::UnlimitedAutonomous || lpc_state == LPCState::Failsafe) {
         lpc_state = LPCState::Limited;
-        task_scheduler.cancel(initialization_timeout);
-        //current_active_consumption_limit_w =
+        task_scheduler.cancel(state_change_timeout);
+        current_active_consumption_limit_w = load_control_limit_list.loadControlLimitData->at(0).value->number.get();
         return true;
     }
-    if (lpc_state == LPCState::UnlimitedControlled) {
-        lpc_state = LPCState::Limited;
-        // TODO
-        return true;
-    }
-    if (lpc_state == LPCState::UnlimitedAutonomous) {
-        lpc_state = LPCState::Limited;
-        // TODO
-        return true;
-    }
-    if (lpc_state == LPCState::Failsafe) {
-        lpc_state = LPCState::Limited;
-        // TODO
-        return true;
-    }
+
     return false;
 }
 
 bool ControllableSystemEntity::failsafe_state()
 {
-    if (lpc_state == LPCState::UnlimitedControlled) {
+    if (lpc_state == LPCState::UnlimitedControlled || lpc_state == LPCState::Limited) {
         lpc_state = LPCState::Failsafe;
-        // TODO
-        return true;
-    }
-    if (lpc_state == LPCState::Limited) {
-        lpc_state = LPCState::Failsafe;
-        // TODO
+        task_scheduler.cancel(state_change_timeout);
+        current_active_consumption_limit_w = device_configuration_key_value_list.deviceConfigurationKeyValueData->at(0).value->scaledNumber->number.get();
+        seconds_t failsafe_duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(1).value->duration.get());
+        state_change_timeout = task_scheduler.scheduleOnce(
+            [this]() {
+                this->switch_state(LPCState::UnlimitedAutonomous);
+            },
+            failsafe_duration);
         return true;
     }
     return false;
@@ -1075,15 +1090,10 @@ bool ControllableSystemEntity::failsafe_state()
 
 bool ControllableSystemEntity::unlimited_autonomous_state()
 {
-    if (lpc_state == LPCState::Init) {
+    if (lpc_state == LPCState::Init || lpc_state == LPCState::Failsafe) {
         lpc_state = LPCState::UnlimitedAutonomous;
-        task_scheduler.cancel(initialization_timeout);
+        task_scheduler.cancel(state_change_timeout);
         current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-        return true;
-    }
-    if (lpc_state == LPCState::Failsafe) {
-        lpc_state = LPCState::UnlimitedAutonomous;
-        // TODO
         return true;
     }
     eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, LPCState::UnlimitedControlled);
@@ -1108,6 +1118,7 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
     if (heartbeatEnabled) {
         heartbeat_received = false;
         eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
+        switch_state(LPCState::Failsafe);
         // TODO: It is up to us what do to when heartbeat times out.
     }
 }
