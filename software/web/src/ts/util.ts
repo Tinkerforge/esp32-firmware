@@ -937,7 +937,11 @@ export function hsvToRgb(h: number, s: number, v: number): [number, number, numb
 export function blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, _) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
+        reader.onloadend = () => {
+            const base64data = reader.result as string;
+            const split = base64data.split('base64,')[1];
+            resolve(split);
+        };
         reader.readAsDataURL(blob);
     });
 }

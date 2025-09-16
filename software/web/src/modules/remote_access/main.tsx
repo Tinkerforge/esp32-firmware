@@ -305,7 +305,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 parallelism: 1,
                 type: ArgonType.Argon2id
             });
-            const loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
+            const loginKey = (await util.blobToBase64(new Blob([loginHash.hash])));
 
             try {
                 await this.login({
@@ -389,7 +389,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 config: cfg,
                 note: this.state.addUser.note,
                 login_key: this.state.login_key,
-                secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+                secret_key: secret_key_string,
                 mgmt_charger_public: mg_charger_keypair.publicKey,
                 mgmt_charger_private: mg_charger_keypair.privateKey,
                 mgmt_psk: psk,
@@ -466,7 +466,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 parallelism: 1,
                 type: ArgonType.Argon2id
             });
-            loginKey = (await util.blobToBase64(new Blob([loginHash.hash]))).replace("data:application/octet-stream;base64,", "");
+            loginKey = (await util.blobToBase64(new Blob([loginHash.hash])));
 
             try {
                 await this.login({
@@ -541,7 +541,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         let add_user_data: add_user;
         if (this.state.addUser.auth_token === "") {
             add_user_data = {
-                secret_key: secret_key_string.replace("data:application/octet-stream;base64,", ""),
+                secret_key: secret_key_string,
                 login_key: loginKey,
                 note: this.state.addUser.note,
                 email: this.state.addUser.email,
