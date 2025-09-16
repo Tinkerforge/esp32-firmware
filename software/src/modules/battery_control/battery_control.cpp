@@ -445,23 +445,28 @@ void BatteryControl::update_tariff_schedule()
 
 void BatteryControl::evaluate_tariff_schedule()
 {
-    const int32_t now_min = static_cast<int32_t>(time(nullptr) / 60);
+    uint8_t charge_permitted_schedule_cache_update;
 
-    if (now_min < data->tariff_schedule_start_min) {
-        logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, data->tariff_schedule_start_min);
-        data->tariff_schedule_cache = 0;
-        return;
+    if (data->tariff_schedule_start_min <= 0) {
+        logger.printfln("Tariff schedule uninitialized: %li", data->tariff_schedule_start_min);
+        charge_permitted_schedule_cache_update = 0;
+    } else {
+        const int32_t now_min = static_cast<int32_t>(time(nullptr) / 60);
+
+        if (now_min < data->tariff_schedule_start_min) {
+            logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, data->tariff_schedule_start_min);
+            charge_permitted_schedule_cache_update = 0;
+        } else {
+            const uint32_t quarter_index = static_cast<uint32_t>(now_min - data->tariff_schedule_start_min) / 15;
+
+            if (quarter_index >= sizeof(data->tariff_schedule)) {
+                logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(data->tariff_schedule));
+                charge_permitted_schedule_cache_update = 0;
+            } else {
+                charge_permitted_schedule_cache_update = data->tariff_schedule[quarter_index];
+            }
+        }
     }
-
-    const uint32_t quarter_index = static_cast<uint32_t>(now_min - data->tariff_schedule_start_min) / 15;
-
-    if (quarter_index >= sizeof(data->tariff_schedule)) {
-        logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(data->tariff_schedule));
-        data->tariff_schedule_cache = 0;
-        return;
-    }
-
-    const uint8_t charge_permitted_schedule_cache_update = data->tariff_schedule[quarter_index];
 
     if (data->tariff_schedule_cache != charge_permitted_schedule_cache_update) {
         data->tariff_schedule_cache  = charge_permitted_schedule_cache_update;
