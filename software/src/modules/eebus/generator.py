@@ -653,6 +653,10 @@ def generate_data_handler_class() -> (str, str):
         return last_cmd;
     }}""" for function in type_function_mapping)
 
+    reset_calls = ''.join(
+        f"\n\t\t{cpp_datatype.name.lower()}.reset();" for cpp_datatype in cpp_datatypes)
+
+
     output_h = f"""
 class SpineDataTypeHandler {{
     public:
@@ -673,6 +677,7 @@ class SpineDataTypeHandler {{
         Function handle_cmd(JsonObjectConst obj);
         String function_to_string(Function function);
         void last_cmd_to_json(JsonVariant &dst);
+        void reset();
 }};
     """
     output_cpp_code = f"""
@@ -700,6 +705,11 @@ String SpineDataTypeHandler::function_to_string(Function function) {{
 
 void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst) {{
     {last_cmd_to_json_mapping}
+}}
+
+void SpineDataTypeHandler::reset() {{
+    last_cmd = Function::None;
+    {reset_calls}
 }}
     """
 

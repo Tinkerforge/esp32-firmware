@@ -399,6 +399,7 @@ size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityT
             sent_count++;
         }
     }
+    data->reset();
     return sent_count;
 };
 
@@ -1061,7 +1062,7 @@ bool ControllableSystemEntity::switch_state(LPCState state)
 
 bool ControllableSystemEntity::init_state()
 {
-    // Switching from init to init triggers initialization of the statemachine
+    task_scheduler.cancel(state_change_timeout);
     state_change_timeout = task_scheduler.scheduleOnce(
         [this]() {
             this->switch_state(LPCState::UnlimitedAutonomous);
@@ -1203,6 +1204,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         }
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
     }
+    data->reset();
 }
 
 size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
