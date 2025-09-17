@@ -182,7 +182,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
     http_config.event_handler = event_handler;
     http_config.user_data = this;
     http_config.is_async = true;
-    http_config.timeout_ms = 50;
+    http_config.timeout_ms = 1000;
     http_config.buffer_size = 1024;
     http_config.buffer_size_tx = 1024;
 
