@@ -20,7 +20,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { InputText } from "../../ts/components/input_text";
 import { Alert, Button } from "react-bootstrap";
 import { Save } from "react-feather";
@@ -59,19 +59,6 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
                     </InputText>
                 </form>
             </PageHeader>
-            {util.get_status_alerts().map((v) => {
-                return <FormRow label={v.moduleName()}>
-                    <Alert variant={v.variant} className="mb-0" onClose={() => {
-                        if(v.onClose) {
-                            v.onClose();
-                        }
-                        util.remove_status_alert(v.id);
-                    }}
-                        dismissible={v.onClose !== undefined}>
-                        {v.text()}
-                    </Alert>
-                </FormRow>
-            })}
         </StatusSection>;
     }
 }
