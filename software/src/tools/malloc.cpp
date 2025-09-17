@@ -25,15 +25,15 @@
 
 #include "linear_allocator.h"
 
-static LinearAllocator dram_lin_alloc{
+LinearAllocator dram_lin_alloc{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);},
     1, 8192, 1024};
 
-static LinearAllocator iram_lin_alloc{
+LinearAllocator iram_lin_alloc{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_IRAM);},
     4, 8192, 1024};
 #if defined(BOARD_HAS_PSRAM)
-static LinearAllocator psram_lin_alloc{
+LinearAllocator psram_lin_alloc{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_SPIRAM);},
     1, 8192, 8192};
 #endif
