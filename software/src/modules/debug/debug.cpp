@@ -480,8 +480,18 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
 }
 #endif
 
+extern LinearAllocator dram_lin_alloc;
+extern LinearAllocator iram_lin_alloc;
+extern LinearAllocator psram_lin_alloc;
+
 void Debug::register_urls()
 {
+    task_scheduler.scheduleOnce([](){
+        dram_lin_alloc.print_statistics();
+        iram_lin_alloc.print_statistics();
+        psram_lin_alloc.print_statistics();
+    }, 10_s);
+
     api.addState("debug/state_static", &state_static);
     api.addState("debug/state_fast", &state_fast);
     api.addState("debug/state_slow", &state_slow);
