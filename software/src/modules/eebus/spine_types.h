@@ -19462,4 +19462,5 @@ public:
     Function handle_cmd(JsonObjectConst obj);
     String function_to_string(Function function);
     void last_cmd_to_json(JsonVariant &dst);
+    void reset();
 };
