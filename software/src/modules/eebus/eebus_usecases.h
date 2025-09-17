@@ -42,7 +42,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_USECASES_ACTIVE 3
 
 // Configuration related to the LPC usecases
-// The power consumption limit at startup in w. Should be the technical limit of the Warp Charger
+// The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 3600
 
 
@@ -311,9 +311,38 @@ public:
     void update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w);
 
 private:
+    /**
+     * The Load Control feature as required for Scenario 1 - Control active power consumption.
+     * It is the primary feature of the entity and major part of the LPC Usecases.
+     * Takes in a limit, if its enabled and a duration and attempts to apply it.
+     * Requires a binding to write.
+     * Supports subscriptions.
+     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.1 and 3.4.1
+     */
     CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+    /**
+     * The Device Configuration feature as required for Scenario 2 - Failsafe Values.
+     * Reports the current failsafe values and allows them to be updated.
+     * A failsafe value is the maximum power that can be consumed if no contact to the energy guard can be established and always comes with a duration for which the failsafe will be active.
+     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.2 and 3.4.2
+     */
     CmdClassifierType deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+    /**
+     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
+     * Implements a heartbeat mechanism to ensure that the energy guard is still online and reachable, if not it enters the failsafe state.
+     * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
+     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
+     */
     CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+    /**
+     * The Electrical Connection feature as required for Scenario 4 - Constraints.
+     * Reports the current constraints of the system and is read only.
+     * Constraints are the maximum power the system is capable of consuming.
+     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
+     */
     CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 
     // State handling
