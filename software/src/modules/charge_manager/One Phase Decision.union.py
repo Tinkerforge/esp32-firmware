@@ -6,9 +6,12 @@ from software.util import *
 
 spec = Union("One Phase Decision", 20, variants=[
     Variant('None'),
+    Variant('Yes Switched To Fixed 1p'),
+    Variant('Yes Normal'),
     Variant('Yes Welcome Charge Until', [
         Member('Timestamp', Types.Uptime)
     ]),
+    Variant('Yes Waking Up'),
     Variant('No Phase Minimum', [
         Member('Timestamp', Types.Uptime),
         Member('Required mA', Types.S32),
@@ -25,8 +28,6 @@ spec = Union("One Phase Decision", 20, variants=[
         Member('Timestamp', Types.Uptime)
     ]),
     Variant('No Fixed 3p'),
-    Variant('Yes Waking Up'),
-    Variant('Yes Normal'),
     Variant('No Hysteresis Blocked Until', [
         Member('Timestamp', Types.Uptime)
     ]),
