@@ -177,12 +177,10 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
             return "Rotated for charger of higher priority";
         case ZeroPhaseDecisionTag.YesPhaseOverload:
             return with_timespan((timespan) => "Phase overload: " + d0[1][1] + " mA on phase " + phase_to_string(d0[1][2]) + ": " + timespan, d0[1][0]);
-        case ZeroPhaseDecisionTag.YesUnknown:
-            return "Unknown";
         case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
-            return with_timespan((timespan) => "PV excess overload: " + d0[1][1] + " mA, but cloud filter prevents shutdown for " + timespan, d0[1][0]);
+            return with_timespan((timespan) => "PV excess overload, but cloud filter prevents shutdown for " + timespan + " because of max seen PV excess of " + d0[1][1] + " mA", d0[1][0]);
         case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
-            return with_timespan((timespan) => "PV excess overload: " + d0[1][1] + " mA, but hysteresis prevents shutdown for " + timespan, d0[1][0]);
+            return with_timespan((timespan) => "PV excess overload, but hysteresis prevents shutdown for " + timespan, d0[1]);
     }
 }
 
@@ -206,6 +204,8 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
             return "Yes";
         case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
             return with_timespan((timespan) => "No: Hysteresis blocks for " + timespan, d1[1]);
+        case OnePhaseDecisionTag.YesSwitchedToFixed1p:
+            return "Yes: Charger detected vehicle charging on single phase only";
     }
 }
 
@@ -231,6 +231,8 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
             return "Yes: Waking up vehicle";
         case ThreePhaseDecisionTag.YesNormal:
             return "Yes";
+        case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
+            return "Yes: Charger detected vehicle charging on three phases";
     }
 }
 
