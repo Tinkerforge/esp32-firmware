@@ -22,6 +22,8 @@
 #include "current_allocator.h"
 
 struct StageContext {
+    bool elapsed(micros_t timestamp) const { return timestamp < now; }
+
     int *idx_array;
     int *current_allocation;
     uint8_t *phase_allocation;
@@ -34,6 +36,7 @@ struct StageContext {
     CurrentAllocatorState *ca_state;
     const ChargerAllocationState *charger_allocation_state;
     uint32_t charge_mode_filter;
+    const micros_t now = now_us();
 };
 
 
@@ -66,17 +69,17 @@ struct CompareContext {
     const CurrentAllocatorConfig *cfg;
 };
 
-typedef bool(*filter_fn)(const FilterContext &ctx);
+typedef bool(*filter_fn)(const StageContext &sc, const FilterContext &ctx);
 
-int filter_chargers_impl(filter_fn filter, StageContext &sc, int matched);
+int filter_chargers_impl(filter_fn filter, const StageContext &sc, int matched);
 
-typedef int(*group_fn)(const GroupContext &ctx);
+typedef int(*group_fn)(const StageContext &sc, const GroupContext &ctx);
 
-typedef bool(*compare_fn)(const CompareContext &ctx);
+typedef bool(*compare_fn)(const StageContext &sc, const CompareContext &ctx);
 
-void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc, int matched);
+void sort_chargers_impl(group_fn group, compare_fn compare, const StageContext &sc, int matched);
 
-#define filter_n_chargers(n, predicate) filter_chargers_impl([](const FilterContext &ctx) { \
+#define filter_n_chargers(n, predicate) filter_chargers_impl([](const StageContext &sc_, const FilterContext &ctx) { \
             return (predicate); \
         }, \
         sc, \
@@ -86,10 +89,10 @@ void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc, in
 
 #define sort_chargers(group, filter) do {\
     sort_chargers_impl( \
-        [](const GroupContext &ctx) { \
+        [](const StageContext &sc_, const GroupContext &ctx) { \
             return (group); \
         }, \
-        [](const CompareContext &ctx) { \
+        [](const StageContext &sc_,const CompareContext &ctx) { \
             return (filter); \
         }, \
         sc, \
