@@ -414,14 +414,14 @@ specs = [
             },
             {
                 'name': 'Total Battery Discharge Energy [0.1 kWh]',
-                'value_id': 'EnergyActiveLSumExport',
+                'value_id': 'EnergyDCDischarge',
                 'start_address': 13027,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
             {
                 'name': 'Total Charge Energy [0.1 kWh]',
-                'value_id': 'EnergyActiveLSumImport',
+                'value_id': 'EnergyDCCharge',
                 'start_address': 13041,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
