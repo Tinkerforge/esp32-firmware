@@ -1543,7 +1543,7 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
 
 struct MinWithDecision {
     void operator()(int new_current, CurrentDecision &&decision) {
-        if (std::min(current, new_current) == current)
+        if (current <= new_current)
             return;
 
         set_charger_decision(sc, charger_idx, std::move(decision));
