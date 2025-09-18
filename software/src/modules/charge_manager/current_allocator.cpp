@@ -960,6 +960,13 @@ static void stage_3(StageContext &sc) {
         auto min_cost = get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
 
         // This is a Min(+PV?) charger that is guaranteed enough PV current to continue charging.
+        bool is_min = state->guaranteed_pv_current > 0;
+        bool uses_min_number_of_phases = !state->phase_switch_supported || state->phases == 1;
+
+        // Don't shut down a Min+* charger if it already uses the minimum number of phases possible.
+        if (is_min && uses_min_number_of_phases)
+            continue;
+
         if (state->observe_pv_limit && min_cost.pv <= state->guaranteed_pv_current)
             continue;
 
@@ -1165,7 +1172,14 @@ static bool try_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
 
     get_enable_cost(state, activate_3p, have_active_chargers, &new_cost, &new_enable_cost, sc.cfg);
 
-    // If this charger's mode is at least Min, it has a guaranteed PV current > 0.
+    // If this charger's mode is Min(+*) , it has a guaranteed PV current > 0.
+    // If it is already only using the minimum number of phases
+    bool is_min = state->guaranteed_pv_current > 0;
+    bool uses_min_number_of_phases = !state->phase_switch_supported || !activate_3p;
+
+    bool ignore_pv = !state->observe_pv_limit || (is_min && uses_min_number_of_phases);
+
+    // If this charger's mode is Min(+*), it has a guaranteed PV current > 0.
     // If this current is sufficient to enable the charger, we don't have to check
     // for any improvement: If there's enough current available to enable a Min
     // charger, enable it.
@@ -1176,10 +1190,10 @@ static bool try_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
     // Phase limits are hard limits. PV can be exceeded for some time.
     // Ignore PV limit completely if this charger is not PV charging.
     Cost check_phase{
-        (!state->observe_pv_limit ? 0 :
-            improve_check | (have_active_chargers
+        (ignore_pv ? 0 :
+            (improve_check | (have_active_chargers
                                                 ? CHECK_MIN_WINDOW_ENABLE
-                                                : CHECK_MIN_WINDOW_MIN)),
+                                                : CHECK_MIN_WINDOW_MIN))),
         improve_check | CHECK_MIN_WINDOW_ENABLE,
         improve_check | CHECK_MIN_WINDOW_ENABLE,
         improve_check | CHECK_MIN_WINDOW_ENABLE
