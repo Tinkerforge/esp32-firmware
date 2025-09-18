@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <LittleFS.h>
+#include <format>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -1050,6 +1051,23 @@ static void check_remote_client_status(SendChargeLogArgs &upload_args)
 #endif
 }
 
+static String build_filename(const time_t start, const time_t end, FileType file_type, bool english) {
+    struct tm start_tm;
+    struct tm end_tm;
+    localtime_r(&start, &start_tm);
+    localtime_r(&end, &end_tm);
+
+    const String &type = device_name.name.get("type")->asString();
+    const String &uid = device_name.name.get("uid")->asString();
+    const std::string start_date = std::format("{:04}-{:02}-{:02}", start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday);
+    const std::string end_date = std::format("{:04}-{:02}-{:02}", end_tm.tm_year + 1900, end_tm.tm_mon + 1, end_tm.tm_mday);
+    const String intermediate = english ? "Chargelog" : "Ladelog";
+    const std::string extension = file_type == FileType::PDF ? "pdf" : "csv";
+    std::string filename = std::format("{}-{}-{}-{}-{}.{}", type.c_str(), uid.c_str(), intermediate.c_str(), start_date, end_date, extension);
+
+    return String(filename.c_str());
+}
+
 // since this function can block for a long time, it must not be called from the main thread
 void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
@@ -1121,11 +1139,12 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
         return;
     };
 
+    const String filename = build_filename(((time_t)upload_args.last_month_start_min) * 60, ((time_t)upload_args.last_month_end_min) * 60, file_type, english);
     String json_header = "{";
     json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
     json_header += "\"password\":\"" + password + "\",";
     json_header += "\"user_uuid\":\"" + user_uuid + "\",";
-    json_header += "\"filename\":\"chargelog." + String(file_type == FileType::PDF ? "pdf" : "csv") + "\",";
+    json_header += "\"filename\":\"" + filename + "\",";
     json_header += "\"chargelog\":[";
     upload_args.remote_client->send_chunk(json_header.c_str(), json_header.length());
 
