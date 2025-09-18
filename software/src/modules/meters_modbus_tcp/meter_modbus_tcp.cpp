@@ -1698,25 +1698,64 @@ void MeterModbusTCP::parse_next()
          || register_start_address == SungrowStringInverterGridAddress::GridFrequency) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
-                // as 0.1 Hz, but some inverters report it as 0.01 Hz
+                // as 0.1 Hz, but some sungrow inverters report it as 0.01 Hz
                 value /= 10;
             }
         }
     }
     else if (is_sungrow_hybrid_inverter_battery_meter()) {
+        // older sungrow inverter firmwares report the battery current and battery power as unsigned
+        // values, along with two status flags that indicate charging/discharging mode. newer sungrow
+        // inverter firmwares report the battery current as signed value (negative while charging),
+        // but the battery power is still reported as an unsigned value. the two status flags are still
+        // reported in general but sometimes the status register is all zero. in case the status flags
+        // are available use them to derive the charging/discharging mode. in case the status flags are
+        // not available derive the charging/discharging mode from the sign of the battery current
+        //
+        // https://github.com/evcc-io/evcc/issues/18270
+        // https://github.com/evcc-io/evcc/pull/18473
+        // https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant/blob/a3b82db9a3b33bdda5c35108578d4c7685f82f7d/modbus_sungrow.yaml#L1281
         if (register_start_address == SungrowHybridInverterBatteryAddress::RunningState) {
             sungrow_hybrid_inverter.running_state = c16.u;
         }
-        else if (register_start_address == SungrowHybridInverterBatteryAddress::BatteryCurrent
-              || register_start_address == SungrowHybridInverterBatteryAddress::BatteryPower) {
-            // it seems that from october 2024 the running-state register stays at 0 and
-            // the current and power values are reported signed already
-            //
-            // https://github.com/evcc-io/evcc/issues/18270
-            // https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant/blob/a3b82db9a3b33bdda5c35108578d4c7685f82f7d/modbus_sungrow.yaml#L1281
-            if ((sungrow_hybrid_inverter.running_state & (1 << 2)) != 0) {
-                // discharging flag is set, assume unsigned value, but fabs anyway to be sure
+        else if (register_start_address == SungrowHybridInverterBatteryAddress::BatteryCurrent) {
+            // raw battery current might be negative while charging
+            sungrow_hybrid_inverter.battery_current = static_cast<int16_t>(c16.u);
+
+            if ((sungrow_hybrid_inverter.running_state & (1 << 1)) != 0) {
+                // charging flag is set, force positive battery current
+                value = fabs(value);
+            }
+            else if ((sungrow_hybrid_inverter.running_state & (1 << 2)) != 0) {
+                // discharging flag is set, force negative battery current
                 value = zero_safe_negation(fabs(value));
+            }
+            else {
+                // neither charging nor discharging flag is set, assume raw battery current is negative
+                // while charging. invert it to get positive battery current for charging and negative
+                // battery current for discharging
+                value = zero_safe_negation(value);
+            }
+        }
+        else if (register_start_address == SungrowHybridInverterBatteryAddress::BatteryPower) {
+            if ((sungrow_hybrid_inverter.running_state & (1 << 1)) != 0) {
+                // charging flag is set, force positive battery power
+                value = fabs(value);
+            }
+            else if ((sungrow_hybrid_inverter.running_state & (1 << 2)) != 0) {
+                // discharging flag is set, force negative battery power
+                value = zero_safe_negation(fabs(value));
+            }
+            else {
+                // neither charging nor discharging flag is set, assume raw battery current is negative while charging
+                if (sungrow_hybrid_inverter.battery_current < 0) {
+                    // raw battery current is negative (charging), force positive battery power
+                    value = fabs(value);
+                }
+                else {
+                    // raw battery current is positive (discharging), force negative battery power
+                    value = zero_safe_negation(fabs(value));
+                }
             }
         }
     }
