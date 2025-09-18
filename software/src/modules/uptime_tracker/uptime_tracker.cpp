@@ -89,7 +89,7 @@ void UptimeTracker::setup()
         api.writeConfig("info/last_boots", &uptimes);
 
         logger.printfln("Wrote last uptime to flash");
-    }, UPDATE_LAST_BOOTS_TIMEOUT);
+    }, UPDATE_LAST_BOOTS_DELAY);
 }
 
 void UptimeTracker::register_urls()

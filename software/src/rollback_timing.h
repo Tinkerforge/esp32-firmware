@@ -26,6 +26,6 @@
 // but update it before setting the firmware to good,
 // so that those processes don't race against each other.
 
-constexpr auto WEB_SERVER_DEAD_TIMEOUT   = 5_min;
-constexpr auto UPDATE_LAST_BOOTS_TIMEOUT = 6_min;
-constexpr auto FIRMWARE_GOOD_TIMEOUT     = 7_min;
+constexpr auto WEB_SERVER_DEAD_TIMEOUT = 5_min;
+constexpr auto UPDATE_LAST_BOOTS_DELAY = 6_min;
+constexpr auto VALIDATE_FIRMWARE_DELAY = 7_min;

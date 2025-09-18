@@ -21,14 +21,13 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "rollback_timing.h"
 #include "tools.h"
 #include "tools/net.h"
 #include "tools/memory.h"
 #include "esp_httpd_priv.h"
 
 #include "gcc_warnings.h"
-
-#include "rollback_timing.h"
 
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 

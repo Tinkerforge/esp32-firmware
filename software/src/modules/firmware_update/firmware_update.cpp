@@ -346,7 +346,7 @@ void FirmwareUpdate::setup()
     if (enable_rollback) {
         task_scheduler.scheduleOnce([this]() {
             change_running_partition_from_pending_verify_to_valid();
-        }, FIRMWARE_GOOD_TIMEOUT);
+        }, VALIDATE_FIRMWARE_DELAY);
     }
 
     initialized = true;
