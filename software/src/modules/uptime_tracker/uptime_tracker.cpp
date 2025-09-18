@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "rollback_timing.h"
 
 #define MAX_UPTIMES 10
 
@@ -88,7 +89,7 @@ void UptimeTracker::setup()
         api.writeConfig("info/last_boots", &uptimes);
 
         logger.printfln("Wrote last uptime to flash");
-    }, 5_min);
+    }, UPDATE_LAST_BOOTS_TIMEOUT);
 }
 
 void UptimeTracker::register_urls()

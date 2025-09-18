@@ -30,6 +30,7 @@
 #include "tools.h"
 #include "options.h"
 #include "build.h"
+#include "rollback_timing.h"
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
 #include "check_state.enum.h"
@@ -345,7 +346,7 @@ void FirmwareUpdate::setup()
     if (enable_rollback) {
         task_scheduler.scheduleOnce([this]() {
             change_running_partition_from_pending_verify_to_valid();
-        }, 5_min);
+        }, FIRMWARE_GOOD_TIMEOUT);
     }
 
     initialized = true;

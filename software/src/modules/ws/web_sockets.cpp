@@ -28,10 +28,11 @@
 
 #include "gcc_warnings.h"
 
+#include "rollback_timing.h"
+
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
 #if MODULE_WATCHDOG_AVAILABLE()
-static constexpr micros_t WORKER_WATCHDOG_TIMEOUT = 5_min;
 static int watchdog_handle = -1;
 #endif
 
@@ -566,7 +567,7 @@ void WebSockets::triggerHttpThread()
     // Don't schedule work task if no work is pending.
     // Schedule it anyway once in a while to reset the watchdog.
 #if MODULE_WATCHDOG_AVAILABLE()
-    if (!deadline_elapsed(last_worker_run + WORKER_WATCHDOG_TIMEOUT / 8_us))
+    if (!deadline_elapsed(last_worker_run + WEB_SERVER_DEAD_TIMEOUT / 8_us))
 #endif
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
@@ -688,7 +689,9 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     watchdog_handle = watchdog.add(
         "websocket_worker",
         "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
-        WORKER_WATCHDOG_TIMEOUT.to<millis_t>());
+        WEB_SERVER_DEAD_TIMEOUT,
+        WEB_SERVER_DEAD_TIMEOUT,
+        true); // Force the initial deadline to WEB_SERVER_DEAD_TIMEOUT (currently 5 minutes). The firmware is accepted as good after 7 minutes.
 #endif
 
     task_scheduler.scheduleWithFixedDelay([this](){
