@@ -1595,6 +1595,8 @@ util.addApiEventListener_unchecked('evse/meter_config', () => {
 
     if (voltages_out_of_range.length !== 0) {
         util.add_status_alert("meters", "danger", () => __("meters.status.voltage_alert_label"), () => __("meters.status.voltage_alert_message")(voltages_out_of_range));
+    } else {
+        util.remove_status_alert("meters");
     }
 });
 

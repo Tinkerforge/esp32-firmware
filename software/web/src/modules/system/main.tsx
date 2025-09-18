@@ -180,6 +180,8 @@ util.addApiEventListener('system/last_reset', (v) => {
         util.add_status_alert("system", "warning", () => __("system.status.system"), () => __("system.status.last_reset")(v.data.reason, version.firmware), () => {
             API.call("system/hide_last_reset_warning", {}, () => __("system.status.hide_last_reset_warning_failed"));
         });
+    } else {
+        util.remove_status_alert("system");
     }
 })
 
