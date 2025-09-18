@@ -611,7 +611,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     value={this.state.register_address_mode.toString()}
                     onValue={(v) => this.setState({register_address_mode: parseInt(v)})} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.start_address_dec")}>
+            <FormRow
+                label={
+                    this.state.register_address_mode == ModbusRegisterAddressMode.Address
+                    ? __("modbus_tcp_debug.content.start_address_dec")
+                    : __("modbus_tcp_debug.content.start_number_dec")
+                }>
                 <InputNumber
                     required
                     disabled={this.state.waiting}
@@ -625,7 +630,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         this.setState({start_address: start_address, data_count: data_count});
                     }} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.start_address_hex")}>
+            <FormRow
+                label={
+                    this.state.register_address_mode == ModbusRegisterAddressMode.Address
+                    ? __("modbus_tcp_debug.content.start_address_hex")
+                    : __("modbus_tcp_debug.content.start_number_hex")
+                }>
                 <InputTextPatterned
                     required
                     disabled={this.state.waiting}
@@ -645,7 +655,11 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         this.setState({start_address: start_address, data_count: data_count});
                     }}
-                    invalidFeedback={__("modbus_tcp_debug.content.start_address_hex_invalid")} />
+                    invalidFeedback={
+                        this.state.register_address_mode == ModbusRegisterAddressMode.Address
+                        ? __("modbus_tcp_debug.content.start_address_hex_invalid")
+                        : __("modbus_tcp_debug.content.start_number_hex_invalid")
+                    } />
             </FormRow>
 
             {this.state.function_code == ModbusFunctionCode.ReadCoils
