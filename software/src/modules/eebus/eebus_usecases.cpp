@@ -543,9 +543,9 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
         }
     }
     bill_list_data.billData->push_back(billData);
-    eebus.data_handler->billlistdatatype = bill_list_data;
-    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
-    eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, eebus.data_handler.get());
+    //eebus.data_handler->billlistdatatype = bill_list_data;
+    //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
+    //eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, eebus.data_handler.get());
 }
 
 
@@ -876,13 +876,13 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
         // LPC-906
         switch_state(LPCState::UnlimitedControlled);
     }
-    eebus.data_handler->loadcontrollimitdescriptionlistdatatype = load_control_limit_description_list;
-    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitDescriptionListData;
-    eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
+    //eebus.data_handler->loadcontrollimitdescriptionlistdatatype = load_control_limit_description_list;
+    //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitDescriptionListData;
+    //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
 
-    eebus.data_handler->loadcontrollimitlistdatatype = load_control_limit_list;
-    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitListData;
-    eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
+    //eebus.data_handler->loadcontrollimitlistdatatype = load_control_limit_list;
+    //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitListData;
+    //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
 
     return limit_accepted;
 }
@@ -1137,7 +1137,7 @@ void ControllableSystemEntity::update_api()
     api_entry->get("failsafe_limit_power_w")->updateUint(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(0).value->scaledNumber->number.get());
     api_entry->get("failsafe_limit_duration_s")->updateUint(EEBUS_USECASE_HELPERS::iso_duration_to_seconds(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(1).value->duration.get()).as<uint64_t>());
     api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
-    api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
+    //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
 
 }
 

@@ -36,6 +36,10 @@ import {Switch} from "../../ts/components/switch";
 import {ShipDiscoveryState} from "./ship_discovery_state.enum";
 import {ShipConnectionState} from "./ship_connection_state.enum";
 import {NodeState} from "./node_state.enum";
+import {CollapsedSection} from "../../ts/components/collapsed_section";
+import {FormSeparator} from "../../ts/components/form_separator";
+import {LPCState} from "./lpc_state.enum";
+import {usecases} from "./api";
 
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
@@ -46,11 +50,13 @@ type EEBusScan = API.getType["eebus/scan"];
 type EEBusAdd = API.getType["eebus/add"];
 type EEBusRemove = API.getType["eebus/remove"];
 type EEBusStateType = API.getType["eebus/state"];
+type EEBusUsecases = API.getType["eebus/usecases"];
 
 interface EEBusState {
     add: EEBusAdd;
     state: EEBusStateType;
     config: EEBusConfig;
+    usecases: EEBusUsecases;
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
@@ -76,13 +82,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
         return (
             <SubPage name="eebus">
-               <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
+                <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")} help={__("eebus.content.enable_eebus_help")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
-                                />
+                        />
                     </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}>
                         <Table
@@ -343,10 +349,51 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         : __("eebus.content.search_failed")}
                         </Button>
                     </FormRow>
-                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")} help={__("eebus.content.ski_help")}>
+                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")}
+                             help={__("eebus.content.ski_help")}>
                         <InputText value={ski}/>
                     </FormRow>
                 </ConfigForm>
+
+                Test12345
+                <table>
+                    <tr>
+                        <td>test1</td>
+                        <td>test2</td>
+                    </tr>
+                </table>
+
+                <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
+
+                    <FormSeparator heading={__("eebus.content.show_usecase_details")}/>
+
+                    <table class="table table-bordered table-sm">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>Usecase</th>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Charging Summary</td>
+                            <td>Number of Charge Processes</td>
+                            <td>{state.usecases.toString()}</td>
+                        </tr>
+                        <tr>
+                            <td>Limitation of Power Consumption</td>
+                            <td>Usecase State</td>
+                            <td>{state.usecases.power_consumption_limitation.usecase_state}</td>
+                        </tr>
+                        <tr>
+                            <td>Limitation of Power Consumption</td>
+                            <td>Limit Active</td>
+                            <td>{state.usecases.power_consumption_limitation.limit_active}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </CollapsedSection>
             </SubPage>
         );
     }
