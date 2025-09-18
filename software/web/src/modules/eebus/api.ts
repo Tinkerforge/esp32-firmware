@@ -54,5 +54,18 @@ export interface state {
     connections: Connection[];
 }
 
+export interface usecases {
+    charging_summary: ChargeProcesses[];
+    power_consumption_limitation: {
+        usecase_state: number;
+        limit_active: boolean;
+        current_limit: number;
+        failsafe_limit_power_w: number;
+        failsafe_limit_duration_s: number;
+        constraints_power_maximum: number;
+        constraints_power_maximum_contractual: number;
+    };
+}
+
 export interface scan {
 }

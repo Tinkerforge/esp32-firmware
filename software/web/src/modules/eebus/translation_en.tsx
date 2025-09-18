@@ -66,7 +66,8 @@ let x = {
                 "state_discovered": "Discovered",
                 "autoregister": "Autoregistration enabled",
                 "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected."
-            }
+            },
+            "show_usecase_details": "Use Case Details anzeigen"
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
