@@ -482,14 +482,18 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
 
 extern LinearAllocator dram_lin_alloc;
 extern LinearAllocator iram_lin_alloc;
+#if defined(BOARD_HAS_PSRAM)
 extern LinearAllocator psram_lin_alloc;
+#endif
 
 void Debug::register_urls()
 {
     task_scheduler.scheduleOnce([](){
         dram_lin_alloc.print_statistics();
         iram_lin_alloc.print_statistics();
+#if defined(BOARD_HAS_PSRAM)
         psram_lin_alloc.print_statistics();
+#endif
     }, 10_s);
 
     api.addState("debug/state_static", &state_static);
