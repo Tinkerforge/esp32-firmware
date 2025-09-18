@@ -177,6 +177,7 @@ private:
             SungrowHybridInverterVirtualMeter virtual_meter;
             int output_type;
             uint16_t running_state;
+            int16_t battery_current;
             float mppt1_voltage;
             float mppt1_current;
             float mppt2_voltage;
