@@ -927,15 +927,26 @@ void ChargeTracker::register_urls()
             time_t last_send_time = last_send_minutes * 60;
             localtime_r(&last_send_time, &last_send);
 
-            tm last_month_start = last_send;
-            tm last_month_end = last_send;
+            tm last_month_start = now;
             last_month_start.tm_mday = 1;
+            if (last_month_start.tm_mon == 0) {
+                last_month_start.tm_mon = 11;
+            } else {
+                last_month_start.tm_mon--;
+            }
+            last_month_start.tm_hour = 0;
+            last_month_start.tm_min = 0;
+            last_month_start.tm_sec = 0;
+
+
+            tm last_month_end = now;
             last_month_end.tm_mday = 1;
-            last_month_end.tm_mon++;
             last_month_end.tm_hour = 0;
             last_month_end.tm_min = 0;
+            last_month_end.tm_sec = 0;
+
             time_t last_month_start_tv = mktime(&last_month_start);
-            time_t last_month_end_tv = mktime(&last_month_end);
+            time_t last_month_end_tv = mktime(&last_month_end) - 1;
 
             if (!send_in_progress && now.tm_mday >= 2 &&
                 (last_send_minutes == 0
