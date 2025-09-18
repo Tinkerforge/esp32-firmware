@@ -23,6 +23,7 @@
 #include <string.h> // For strlen
 #include <math.h> // For isnan
 #include <algorithm>
+#include <type_traits>
 #include <stdio.h> // For snprintf
 
 #include "event_log_prefix.h"
@@ -351,6 +352,159 @@ static void clear_charger_decision_all(StageContext &sc, T tag) {
     }
 }
 
+static constexpr OnePhaseDecisionTag to_clear_pre_1p[] = {
+    OnePhaseDecisionTag::YesWelcomeChargeUntil,
+    OnePhaseDecisionTag::YesWakingUp,
+    OnePhaseDecisionTag::NoPhaseMinimum,
+    OnePhaseDecisionTag::NoPhaseImprovement,
+    OnePhaseDecisionTag::NoForced3pUntil,
+    OnePhaseDecisionTag::NoFixed3p,
+};
+
+static constexpr ThreePhaseDecisionTag to_clear_pre_3p[] = {
+    ThreePhaseDecisionTag::YesWelcomeChargeUntil,
+    ThreePhaseDecisionTag::YesWakingUp,
+    ThreePhaseDecisionTag::NoPhaseMinimum,
+    ThreePhaseDecisionTag::NoPhaseImprovement,
+    ThreePhaseDecisionTag::NoForced1pUntil,
+    ThreePhaseDecisionTag::NoFixed1p
+};
+
+static constexpr OnePhaseDecisionTag yes_1p[] = {
+    OnePhaseDecisionTag::YesSwitchedToFixed1p,
+    OnePhaseDecisionTag::YesNormal,
+    OnePhaseDecisionTag::YesWelcomeChargeUntil,
+    OnePhaseDecisionTag::YesWakingUp
+};
+
+static constexpr OnePhaseDecisionTag no_1p[] = {
+    OnePhaseDecisionTag::NoPhaseMinimum,
+    OnePhaseDecisionTag::NoPhaseImprovement,
+    OnePhaseDecisionTag::NoForced3pUntil,
+    OnePhaseDecisionTag::NoFixed3p,
+    OnePhaseDecisionTag::NoHysteresisBlockedUntil
+};
+
+static constexpr ThreePhaseDecisionTag yes_3p[] = {
+    ThreePhaseDecisionTag::YesSwitchedToFixed3p,
+    ThreePhaseDecisionTag::YesNormal,
+    ThreePhaseDecisionTag::YesUnknownRotSwitchable,
+    ThreePhaseDecisionTag::YesWelcomeChargeUntil,
+    ThreePhaseDecisionTag::YesWakingUp
+};
+
+static constexpr ThreePhaseDecisionTag no_3p[] = {
+    ThreePhaseDecisionTag::NoPhaseMinimum,
+    ThreePhaseDecisionTag::NoPhaseImprovement,
+    ThreePhaseDecisionTag::NoForced1pUntil,
+    ThreePhaseDecisionTag::NoFixed1p,
+    ThreePhaseDecisionTag::NoHysteresisBlockedUntil,
+};
+
+static_assert(ARRAY_SIZE(yes_1p) + ARRAY_SIZE(no_1p) + 1/*None*/ == ONE_PHASE_DECISION_TAG_COUNT);
+static_assert(ARRAY_SIZE(yes_3p) + ARRAY_SIZE(no_3p) + 1/*None*/ == THREE_PHASE_DECISION_TAG_COUNT);
+
+template<typename T>
+static consteval bool is_consecutive_in_enum(T* block, size_t len) {
+    using utype = std::underlying_type_t<std::remove_cvref_t<decltype(*to_clear_pre_1p)>>;
+    for(size_t i = 0; i < len - 1; ++i) {
+        auto cur = static_cast<utype>(block[i]);
+        auto next = static_cast<utype>(block[i + 1]);
+        if (cur + 1 != next)
+            return false;
+    }
+    return true;
+}
+
+static_assert(is_consecutive_in_enum(to_clear_pre_1p, ARRAY_SIZE(to_clear_pre_1p)));
+static_assert(is_consecutive_in_enum(to_clear_pre_3p, ARRAY_SIZE(to_clear_pre_3p)));
+static_assert(is_consecutive_in_enum(yes_1p, ARRAY_SIZE(yes_1p)));
+static_assert(is_consecutive_in_enum(yes_3p, ARRAY_SIZE(yes_3p)));
+static_assert(is_consecutive_in_enum(no_1p, ARRAY_SIZE(no_1p)));
+static_assert(is_consecutive_in_enum(no_3p, ARRAY_SIZE(no_3p)));
+
+static void decision_preprocess(StageContext &sc) {
+    const auto to_clear_0_1p_start = to_clear_pre_1p[0];
+    const auto to_clear_0_1p_end   = to_clear_pre_1p[ARRAY_SIZE(to_clear_pre_1p) - 1];
+    const auto to_clear_0_3p_start = to_clear_pre_3p[0];
+    const auto to_clear_0_3p_end   = to_clear_pre_3p[ARRAY_SIZE(to_clear_pre_3p) - 1];
+
+    // Clear all decisions of chargers without vehicle attached
+    for (int i = 0; i < sc.charger_count; ++i) {
+        const auto *state = &sc.charger_state[i];
+        if (!state->is_charging && !state->wants_to_charge && !state->wants_to_charge_low_priority) {
+            set_charger_decision(sc, i, ZeroPhaseDecision::None());
+            set_charger_decision(sc, i, OnePhaseDecision::None());
+            set_charger_decision(sc, i, ThreePhaseDecision::None());
+            set_charger_decision(sc, i, CurrentDecision::None());
+            continue;
+        }
+
+        clear_charger_decision(sc, i, ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil);
+        clear_charger_decision(sc, i, ZeroPhaseDecisionTag::NoHysteresisBlocksUntil);
+
+        // set/clear ChargeModeOff <==> state->off
+        if (state->off)
+            set_charger_decision(sc, i, ZeroPhaseDecision::YesChargeModeOff());
+        else
+            clear_charger_decision(sc, i, ZeroPhaseDecisionTag::YesChargeModeOff);
+
+        const auto tag_1p = sc.charger_decisions[i].one.tag;
+        const auto tag_3p = sc.charger_decisions[i].three.tag;
+
+        if (tag_1p >= to_clear_0_1p_start && tag_1p <= to_clear_0_1p_end)
+            set_charger_decision(sc, i, OnePhaseDecision::None());
+        if (tag_3p >= to_clear_0_3p_start && tag_3p <= to_clear_0_3p_end)
+            set_charger_decision(sc, i, ThreePhaseDecision::None());
+    }
+
+    clear_charger_decision_all(sc, ZeroPhaseDecisionTag::YesWaitingForRotation);
+}
+
+static void decision_postprocess(StageContext &sc) {
+    const auto yes_1p_start = yes_1p[0];
+    const auto yes_1p_end   = yes_1p[ARRAY_SIZE(yes_1p) - 1];
+
+    const auto yes_3p_start = yes_3p[0];
+    const auto yes_3p_end   = yes_3p[ARRAY_SIZE(yes_3p) - 1];
+
+    /*const auto no_1p_start = no_1p[0];
+    const auto no_1p_end   = no_1p[ARRAY_SIZE(no_1p) - 1];
+
+    const auto no_3p_start = no_3p[0];
+    const auto no_3p_end   = no_3p[ARRAY_SIZE(no_3p) - 1];*/
+
+    for (int i = 0; i < sc.charger_count; ++i) {
+        const auto tag_1p = sc.charger_decisions[i].one.tag;
+        const auto tag_3p = sc.charger_decisions[i].three.tag;
+
+        bool desc_1_yes = tag_1p >= yes_1p_start && tag_1p <= yes_1p_end;
+        bool desc_3_yes = tag_3p >= yes_3p_start && tag_3p <= yes_3p_end;
+
+        const auto allocd = sc.phase_allocation[i];
+
+        // If we've allocated 0 or 1 phases, but the 3p decision is still a "yes", clear the 3p decision.
+        if ((allocd == 0 || allocd == 1) && desc_3_yes) {
+            set_charger_decision(sc, i, ThreePhaseDecision::None());
+        }
+
+        // Clear 1p decision vice-versa if 0 or 3 phases are allocated.
+        if ((allocd == 0 || allocd == 3) && desc_1_yes) {
+            set_charger_decision(sc, i, OnePhaseDecision::None());
+        }
+
+        // TODO: is this necessary?
+        if (allocd == 1 && !desc_1_yes) {
+            set_charger_decision(sc, i, OnePhaseDecision::YesNormal());
+        }
+
+        // TODO: is this necessary?
+        if (allocd == 3 && !desc_3_yes) {
+            set_charger_decision(sc, i, ThreePhaseDecision::YesNormal());
+        }
+    }
+}
+
 // Stage 1: Deactivate non-active chargers and handle rotation.
 //
 // If there are more chargers that want to charge (or are charging) than we can activate
@@ -380,17 +534,6 @@ static void stage_1(StageContext &sc) {
     Cost b1_on_phase= {0, 0, 0, 0};
     int highest_charge_mode_bit_seen = 0;
 
-    // Clear all decisions of chargers without vehicle attached
-    for (int i = 0; i < sc.charger_count; ++i) {
-        const auto *state = &sc.charger_state[i];
-        if (!state->is_charging && !state->wants_to_charge && !state->wants_to_charge_low_priority) {
-            set_charger_decision(sc, i, ZeroPhaseDecision::None());
-            set_charger_decision(sc, i, OnePhaseDecision::None());
-            set_charger_decision(sc, i, ThreePhaseDecision::None());
-            set_charger_decision(sc, i, CurrentDecision::None());
-        }
-    }
-
     bool have_active_chargers = false;
     for (int i = 0; i < sc.charger_count; ++i) {
         if (sc.phase_allocation[i] > 0) {
@@ -418,8 +561,6 @@ static void stage_1(StageContext &sc) {
 
         if (is_b1 && have_active_chargers)
             set_charger_decision(sc, i, ZeroPhaseDecision::YesWaitingForRotation(sc.ca_state->next_rotation));
-        else
-            clear_charger_decision(sc, i, ZeroPhaseDecisionTag::YesWaitingForRotation);
 
         if (is_b1) {
             have_b1 = true;
@@ -503,10 +644,6 @@ static void stage_1(StageContext &sc) {
                 set_charger_decision(sc, i, ZeroPhaseDecision::YesRotatedForB1());
             else if (rotate_for_higher_prio)
                 set_charger_decision(sc, i, ZeroPhaseDecision::YesRotatedForHigherPrio());
-            else if (state->off)
-                set_charger_decision(sc, i, ZeroPhaseDecision::YesChargeModeOff());
-            else
-                set_charger_decision(sc, i, ZeroPhaseDecision::YesUnknown());
 
             sc.phase_allocation[i] = 0;
             continue;
@@ -515,10 +652,14 @@ static void stage_1(StageContext &sc) {
         // If a charger does not support phase switching (anymore),
         // the connected number of phases wins against the allocated number of phases.
         if (!state->phase_switch_supported) {
-            if (sc.phase_allocation[i] == 3 && state->phases == 1)
+            if (sc.phase_allocation[i] == 3 && state->phases == 1) {
                 set_charger_decision(sc, i, ThreePhaseDecision::NoFixed1p());
-            else if (sc.phase_allocation[i] == 1 && state->phases == 3)
+                set_charger_decision(sc, i, OnePhaseDecision::YesSwitchedToFixed1p());
+            }
+            else if (sc.phase_allocation[i] == 1 && state->phases == 3) {
                 set_charger_decision(sc, i, OnePhaseDecision::NoFixed3p());
+                set_charger_decision(sc, i, ThreePhaseDecision::YesSwitchedToFixed3p());
+            }
 
             sc.phase_allocation[i] = state->phases;
             continue;
@@ -544,9 +685,6 @@ static bool was_just_plugged_in(const ChargerState *state) {
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 static void stage_2(StageContext &sc) {
-    clear_charger_decision_all(sc, OnePhaseDecisionTag::YesWelcomeChargeUntil);
-    clear_charger_decision_all(sc, ThreePhaseDecisionTag::YesWelcomeChargeUntil);
-
     int matched = filter_chargers(was_just_plugged_in(ctx.state));
 
     // Charger that is plugged in for the longest time first.
@@ -807,7 +945,6 @@ static void stage_3(StageContext &sc) {
         if (sc.limits->raw[GridPhase::PV] >= wnd_min.pv)  {
             // The currently available PV excess is equal or more than the window minimum
             // -> Everything's fine.
-            // TODO clear decisions here
             break;
         }
 
@@ -829,7 +966,7 @@ static void stage_3(StageContext &sc) {
         if (wnd_min.pv < sc.limits->max_pv)  {
             // Window minimum less than max pv limit -> PV not permanently overloaded
             trace("3: wnd_min %d < max_pv %d", wnd_min.pv, sc.limits->max_pv);
-            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoCloudFilterBlocksUntil(sc.limits->max_pv_expiration_ts, wnd_min.pv - sc.limits->max_pv));
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoCloudFilterBlocksUntil(sc.limits->max_pv_expiration_ts, sc.limits->max_pv));
             continue;
         }
 
@@ -838,7 +975,7 @@ static void stage_3(StageContext &sc) {
         // to shut down chargers if we don't find one that will be shut down soon.
         if (!sc.ca_state->global_hysteresis_elapsed) {
             auto hyst_elapsed_at = sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis;
-            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoHysteresisBlocksUntil(hyst_elapsed_at, wnd_min.pv - sc.limits->max_pv));
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::NoHysteresisBlocksUntil(hyst_elapsed_at));
             continue;
         }
 
@@ -1833,6 +1970,7 @@ int allocate_current(
 
     trace_alloc(0, sc);
     trace("__all__");
+    decision_preprocess(sc);
     stage_1(sc);
     trace("__all except Off__");
     auto not_off_count = filter_chargers(!ctx.state->off);
@@ -1863,6 +2001,7 @@ int allocate_current(
     trace("__all except Off__");
     sc.charger_count = not_off_count;
     stage_9(sc);
+    decision_postprocess(sc);
     trace_alloc(9, sc);
     //logger.printfln("Took %u µs", end - start);
 
