@@ -459,12 +459,12 @@ void EvseCommon::register_urls()
 
     api.addState("evse/external_current", &external_current);
     api.addCommand("evse/external_current_update", &external_current_update, {}, [this](String &/*errmsg*/) {
-        auto current = external_current_update.get("current")->asUint();
+        const uint32_t current = external_current_update.get("current")->asUint();
         // Only reset the watchdog if this was a "valid" current.
         // We don't want to return an error if this current is invalid to not break home automation UIs.
         if (current == 0 || (current >= 6000 && current <= 32000))
             this->last_external_update = now_us();
-        backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, external_current_update.get("current")->asUint());
+        backend->set_charging_slot_max_current(CHARGING_SLOT_EXTERNAL, current);
     }, false);
 
     api.addState("evse/external_clear_on_disconnect", &external_clear_on_disconnect);
