@@ -68,6 +68,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         util.addApiEventListener('eebus/config', () => {
             this.setState({config: API.get('eebus/config')});
         });
+        util.addApiEventListener('eebus/config', () => {
+            this.setState({usecases: API.get('eebus/usecases')});
+        });
     }
 
 
@@ -355,41 +358,66 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     </FormRow>
                 </ConfigForm>
 
-                Test12345
-                <table>
-                    <tr>
-                        <td>test1</td>
-                        <td>test2</td>
-                    </tr>
-                </table>
-
                 <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
 
-                    <FormSeparator heading={__("eebus.content.show_usecase_details")}/>
 
                     <table class="table table-bordered table-sm">
                         <thead class="thead-light">
                         <tr>
                             <th>Usecase</th>
-                            <th>Name</th>
-                            <th>Value</th>
+                            <th>Details</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
                             <td>Charging Summary</td>
-                            <td>Number of Charge Processes</td>
-                            <td>{state.usecases.toString()}</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td>Number of Charge Processes</td>
+                                        <td>{state.usecases.charging_summary.length}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
                         </tr>
                         <tr>
                             <td>Limitation of Power Consumption</td>
-                            <td>Usecase State</td>
-                            <td>{state.usecases.power_consumption_limitation.usecase_state}</td>
-                        </tr>
-                        <tr>
-                            <td>Limitation of Power Consumption</td>
-                            <td>Limit Active</td>
-                            <td>{state.usecases.power_consumption_limitation.limit_active}</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td>Usecase State</td>
+                                        <td>
+                                            {{
+                                                [LPCState.Init]: "Init",
+                                                [LPCState.UnlimitedControlled]: "UnlimitedControlled",
+                                                [LPCState.Limited]: "Limited",
+                                                [LPCState.Failsafe]: "Failsafe",
+                                                [LPCState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                            }[state.usecases.power_consumption_limitation.usecase_state] ?? "undefined"}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Limit Active</td>
+                                        <td>{state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.active") : __("eebus.content.inactive")}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Current Limit (W)</td>
+                                        <td>{state.usecases.power_consumption_limitation.current_limit} W</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Failsafe Limit Power (W)</td>
+                                        <td>{state.usecases.power_consumption_limitation.failsafe_limit_power_w} W</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Failsafe Limit Duration (s)</td>
+                                        <td>{state.usecases.power_consumption_limitation.failsafe_limit_duration_s} s</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
