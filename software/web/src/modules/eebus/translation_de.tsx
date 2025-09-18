@@ -67,7 +67,9 @@ let x = {
                 "autoregister": "Autoregistrierung aktiv",
                 "overwrite_notice": "Diese Einstellungen werden überschrieben wenn ein EEBUS Gerät mit der SKI gefunden wird."
             },
-            "show_usecase_details": "Use Case Details anzeigen"
+            "show_usecase_details": "EEBUS Details anzeigen",
+            "active": "Aktiv",
+            "inactive": "Inaktiv"
         },
         "script": {
             "save_failed": "Speichern der EEBUS-Einstellungen fehlgeschlagen.",
