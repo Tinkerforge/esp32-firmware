@@ -54,8 +54,7 @@ cd ~
 git clone https://github.com/espressif/esp32-arduino-lib-builder
 cd esp32-arduino-lib-builder
 ../esp32-firmware/software/lib-builder/apply_patches.py . ../esp32-firmware/software/patches/lib-builder-pre
-AR_BRANCH="tf-20241023" ./build.sh -t esp32 -b menuconfig # replace branch name with the one you want to build.
-# press [s] [return] [return] to write sdkconfig, [q] to quit
+AR_BRANCH="tf-3-3-1" ./build.sh -t esp32 -b reconfigure # Replace branch name with the one you want to build from the arduino-esp32 git.
 cp sdkconfig sdkconfig.vanilla
 ```
 
