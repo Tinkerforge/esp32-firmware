@@ -194,9 +194,11 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     }
                 }
                 else {
-                    let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
+                    let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS       Binary [15..0]    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
 
                     result = header + "\n";
+
+                    let ascii_all = "";
 
                     for (let i = 0; i < transact_result.read_data.length / 4; ++i) {
                         let a = this.state.start_address + i;
@@ -224,17 +226,24 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         i_pad = i_pad.substring(i_pad.length - 3);
 
                         let hex = transact_result.read_data.substring(i * 4, i * 4 + 4);
+                        let u16 = parseInt(hex, 16);
 
                         let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
                         let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
 
-                        let u16 = parseInt(hex, 16);
+                        ascii_all += ascii_0;
+                        ascii_all += ascii_1;
+
+                        let binary_pad = "000000000000000" + u16.toString(2);
+
+                        binary_pad = binary_pad.substring(binary_pad.length - 16);
+                        binary_pad = binary_pad.substring(0, 4) + " " + binary_pad.substring(4, 8) + " " + binary_pad.substring(8, 12) + " " + binary_pad.substring(12, 16);
+
                         let u16_pad = "    " + u16;
 
                         u16_pad = u16_pad.substring(u16_pad.length - 5);
 
-                        let s16 = (u16 << 16) >> 16;
-                        let s16_pad = "     " + s16;
+                        let s16_pad = "     " + ((u16 << 16) >> 16);
 
                         s16_pad = s16_pad.substring(s16_pad.length - 6);
 
@@ -286,12 +295,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
                         s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
 
-                        result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+                        result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + binary_pad + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
 
                         if (i % 20 == 19 && i < transact_result.read_data.length / 4 - 1) {
                             result += "\n\n" + header + "\n";
                         }
                     }
+
+                    result += "\n\nASCII: " + ascii_all;
                 }
             }
 
