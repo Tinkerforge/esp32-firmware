@@ -51,6 +51,212 @@ static constexpr micros_t TIMEOUT = 32_s;
 
 #define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
 
+static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t car_stopped_charging, uint16_t target_allocated_current)
+{
+    if (charger_state == 0) // not connected
+        return 0;
+    if (charger_state == 3) // charging
+        return 4;
+    if (charger_state == 4) // error
+        return 5;
+    if (charger_state == 1 && supported_current == 0) // connected but blocked, supported current == 0 means another slot blocks
+        return 1;
+    if (charger_state == 1 && supported_current != 0) { // blocked by charge management (as supported current != 0)
+        if (car_stopped_charging == 0)
+            return 2; // Not charged this session
+        else
+            return 6; // Charged at least once
+    }
+    if (charger_state == 2)
+        return 3; // Waiting for the car to start charging
+
+    logger.printfln("Unknown state! cs %u sc %u ct %lu tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
+    return 5;
+}
+
+bool update_from_client_packet(
+    uint8_t client_id,
+    cm_state_v1 *v1,
+    cm_state_v2 *v2,
+    cm_state_v3 *v3,
+    cm_state_v4 *v4,
+    const CurrentAllocatorConfig *cfg,
+    ChargerState *charger_state,
+    ChargerAllocationState *charger_allocation_state,
+    const char * const *hosts,
+    const std::function<const char *(uint8_t)> &get_charger_name
+    )
+{
+    // TODO: bounds check
+    auto &target = charger_state[client_id];
+    auto &target_alloc = charger_allocation_state[client_id];
+
+    // Don't update if the uptimes are the same.
+    // This means, that the EVSE hangs or the communication
+    // is not working. As last_update will now hang too,
+    // the management will stop all charging after some time.
+    if (target.uptime == v1->evse_uptime) {
+        logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
+            get_charger_name(client_id), hosts[client_id],
+            v1->evse_uptime);
+        if (deadline_elapsed(target.last_update + 10_s)) {
+            target_alloc.state = 5;
+            target_alloc.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
+        }
+
+        return false;
+    }
+
+    target.uid = v1->esp32_uid;
+    target.uptime = v1->evse_uptime;
+
+    // If we've just resolved this charger but the charger did not reboot
+    // we can receive a packet before successfully sending the first one
+    // If the allocation algorithm runs between receiving the first packet
+    // and sending the first packet, we wrongly assume that this charger's EVSE
+    // does not react. (This only happens if resolving the charger takes just long enough, ~ 30 seconds)
+    // To fix this, fake that we've sent a config just now.
+    if (charger_allocation_state->last_sent_config == 0_us)
+        charger_allocation_state->last_sent_config = now_us();
+
+#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
+    // Immediately block firmware updates if this charger reports a connected vehicle.
+    if (v1->charger_state != 0)
+        firmware_update.vehicle_connected = true;
+#endif
+
+    // A charger wants to charge if:
+    // the charging time is 0 (it has not charged this vehicle yet), no other slot blocks
+    //     AND we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
+    //         or 2 (i.e. already have current allocated)
+    // OR the charger is already charging
+    bool wants_to_charge = (v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3;
+    target.wants_to_charge = wants_to_charge;
+
+    // A charger wants to charge and has low priority if it has already charged this vehicle
+    // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
+    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
+
+    if (!target.wants_to_charge_low_priority && low_prio)
+        target.last_wakeup = now_us() - cfg->wakeup_time;
+
+    target.wants_to_charge_low_priority = low_prio;
+
+    target.is_charging = v1->charger_state == 3;
+    if (v1->charger_state != 1 && v1->charger_state != 2)
+        target.last_wakeup = 0_us;
+
+    // Reset allocated energy if no car is connected
+    if (v1->charger_state == 0) {
+        target.allocated_energy = 0;
+        target.allocated_average_power = 0;
+        target_alloc.allocated_current = 0;
+        target_alloc.allocated_phases = 0;
+    }
+
+    target.allowed_current = v1->allowed_charging_current;
+
+    if (target.supported_current != v1->supported_current)
+        trace("RECV %d: supported %u -> %u mA", client_id, target.supported_current, v1->supported_current);
+    target.supported_current = v1->supported_current;
+    target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
+    target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
+
+    if (target.charger_state == 0 && v1->charger_state != 0) {
+        target.last_plug_in = now_us();
+
+        // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
+        // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
+        if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
+            target.just_plugged_in_timestamp = now_us();
+    }
+
+    // If this charger just switched to state C (i.e. the contactor switched on)
+    // set last_phase_switch to now to make sure we don't immediately switch again.
+    // The delay between the phase switch and the car requesting current again
+    // could be longer than the hysteresis. In that case we would be able to
+    // immediately phase switch again after switching to C, if we don't prevent this here.
+    if (target.charger_state != v1->charger_state && v1->charger_state == 3)
+        target.last_phase_switch = now_us();
+
+    if (v1->charger_state == 0) {
+        target.last_phase_switch = -cfg->global_hysteresis;
+        target.time_in_state_c = 0_us;
+        target.last_plug_in = 0_us;
+    }
+
+    target.charger_state = v1->charger_state;
+    target.last_update = now_us();
+
+    uint16_t requested_current = v1->supported_current;
+
+    if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= cfg->requested_current_threshold * 1000) {
+        int max_phase_current = -1;
+
+        for (int i = 0; i < 3; i++) {
+            if (isnan(v1->line_currents[i])) {
+                // Don't trust the line currents if one is missing.
+                max_phase_current = 32000;
+                break;
+            }
+
+            max_phase_current = std::max(max_phase_current, (int)(v1->line_currents[i] * 1000.0f));
+        }
+        // The CM protocol sends 0 instead of nan.
+        if (max_phase_current == 0)
+            max_phase_current = 32000;
+
+        max_phase_current += cfg->requested_current_margin;
+
+        max_phase_current = std::max(6000, std::min(32000, max_phase_current));
+        requested_current = std::min(requested_current, (uint16_t)max_phase_current);
+    }
+    if (abs((int)target.requested_current - (int)requested_current) > 1500) {
+        trace("RECV %d: requested %u -> %u mA (measured %.3fA %.3fA %.3fA)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
+    }
+
+    target.requested_current = requested_current;
+
+    target.meter_supported = CM_FEATURE_FLAGS_METER_IS_SET(v1->feature_flags);
+    if (!isnan(v1->power_total)) {
+        target.power_total_sum = target.power_total_sum + v1->power_total;
+        target.power_total_count = target.power_total_count + 1;
+    }
+    if (!isnan(v1->energy_abs)) {
+        target.energy_abs = v1->energy_abs;
+    }
+
+    if (v1->error_state != 0) {
+        target_alloc.error = CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state);
+    }
+
+    if (target_alloc.error < 128 || target_alloc.error == CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE) {
+        target_alloc.error = 0;
+    }
+
+    if (target_alloc.error == 0 || target_alloc.error >= CHARGE_MANAGER_CLIENT_ERROR_START)
+        target_alloc.state = get_charge_state(v1->charger_state,
+                                              v1->supported_current,
+                                              v1->car_stopped_charging,
+                                              target_alloc.allocated_current);
+
+    if (v3 != nullptr) {
+        uint8_t new_phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
+        uint8_t new_pss =  CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
+        if (new_phases != target.phases)
+            trace("RECV %d: phases %u -> %u", client_id, target.phases, new_phases);
+        if (new_pss != target.phase_switch_supported)
+            trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
+        target.phases = new_phases;
+        target.phase_switch_supported = new_pss;
+    } else {
+        target.phases = 3;
+        target.phase_switch_supported = false;
+    }
+
+    return true;
+}
+
 static void print_alloc(int stage, const StageContext &sc) {
     char buf[768] = {};
     logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) spread(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
@@ -2164,212 +2370,4 @@ int allocate_current(
 #endif
 
     return result;
-}
-
-
-static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t car_stopped_charging, uint16_t target_allocated_current)
-{
-    if (charger_state == 0) // not connected
-        return 0;
-    if (charger_state == 3) // charging
-        return 4;
-    if (charger_state == 4) // error
-        return 5;
-    if (charger_state == 1 && supported_current == 0) // connected but blocked, supported current == 0 means another slot blocks
-        return 1;
-    if (charger_state == 1 && supported_current != 0) { // blocked by charge management (as supported current != 0)
-        if (car_stopped_charging == 0)
-            return 2; // Not charged this session
-        else
-            return 6; // Charged at least once
-    }
-    if (charger_state == 2)
-        return 3; // Waiting for the car to start charging
-
-    logger.printfln("Unknown state! cs %u sc %u ct %lu tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
-    return 5;
-}
-
-
-bool update_from_client_packet(
-    uint8_t client_id,
-    cm_state_v1 *v1,
-    cm_state_v2 *v2,
-    cm_state_v3 *v3,
-    cm_state_v4 *v4,
-    const CurrentAllocatorConfig *cfg,
-    ChargerState *charger_state,
-    ChargerAllocationState *charger_allocation_state,
-    const char * const *hosts,
-    const std::function<const char *(uint8_t)> &get_charger_name
-    )
-{
-    // TODO: bounds check
-    auto &target = charger_state[client_id];
-    auto &target_alloc = charger_allocation_state[client_id];
-
-    // Don't update if the uptimes are the same.
-    // This means, that the EVSE hangs or the communication
-    // is not working. As last_update will now hang too,
-    // the management will stop all charging after some time.
-    if (target.uptime == v1->evse_uptime) {
-        logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
-            get_charger_name(client_id), hosts[client_id],
-            v1->evse_uptime);
-        if (deadline_elapsed(target.last_update + 10_s)) {
-            target_alloc.state = 5;
-            target_alloc.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
-        }
-
-        return false;
-    }
-
-    target.uid = v1->esp32_uid;
-    target.uptime = v1->evse_uptime;
-
-    // If we've just resolved this charger but the charger did not reboot
-    // we can receive a packet before successfully sending the first one
-    // If the allocation algorithm runs between receiving the first packet
-    // and sending the first packet, we wrongly assume that this charger's EVSE
-    // does not react. (This only happens if resolving the charger takes just long enough, ~ 30 seconds)
-    // To fix this, fake that we've sent a config just now.
-    if (charger_allocation_state->last_sent_config == 0_us)
-        charger_allocation_state->last_sent_config = now_us();
-
-#if MODULE_FIRMWARE_UPDATE_AVAILABLE() && MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
-    // Immediately block firmware updates if this charger reports a connected vehicle.
-    if (v1->charger_state != 0)
-        firmware_update.vehicle_connected = true;
-#endif
-
-    // A charger wants to charge if:
-    // the charging time is 0 (it has not charged this vehicle yet), no other slot blocks
-    //     AND we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
-    //         or 2 (i.e. already have current allocated)
-    // OR the charger is already charging
-    bool wants_to_charge = (v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3;
-    target.wants_to_charge = wants_to_charge;
-
-    // A charger wants to charge and has low priority if it has already charged this vehicle
-    // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
-    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
-
-    if (!target.wants_to_charge_low_priority && low_prio)
-        target.last_wakeup = now_us() - cfg->wakeup_time;
-
-    target.wants_to_charge_low_priority = low_prio;
-
-    target.is_charging = v1->charger_state == 3;
-    if (v1->charger_state != 1 && v1->charger_state != 2)
-        target.last_wakeup = 0_us;
-
-    // Reset allocated energy if no car is connected
-    if (v1->charger_state == 0) {
-        target.allocated_energy = 0;
-        target.allocated_average_power = 0;
-        target_alloc.allocated_current = 0;
-        target_alloc.allocated_phases = 0;
-    }
-
-    target.allowed_current = v1->allowed_charging_current;
-
-    if (target.supported_current != v1->supported_current)
-        trace("RECV %d: supported %u -> %u mA", client_id, target.supported_current, v1->supported_current);
-    target.supported_current = v1->supported_current;
-    target.cp_disconnect_supported = CM_FEATURE_FLAGS_CP_DISCONNECT_IS_SET(v1->feature_flags);
-    target.cp_disconnect_state = CM_STATE_FLAGS_CP_DISCONNECTED_IS_SET(v1->state_flags);
-
-    if (target.charger_state == 0 && v1->charger_state != 0) {
-        target.last_plug_in = now_us();
-
-        // Wait for A -> non-A transitions, but ignore chargers that are already in a non-A state in their first packet.
-        // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
-        if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
-            target.just_plugged_in_timestamp = now_us();
-    }
-
-    // If this charger just switched to state C (i.e. the contactor switched on)
-    // set last_phase_switch to now to make sure we don't immediately switch again.
-    // The delay between the phase switch and the car requesting current again
-    // could be longer than the hysteresis. In that case we would be able to
-    // immediately phase switch again after switching to C, if we don't prevent this here.
-    if (target.charger_state != v1->charger_state && v1->charger_state == 3)
-        target.last_phase_switch = now_us();
-
-    if (v1->charger_state == 0) {
-        target.last_phase_switch = -cfg->global_hysteresis;
-        target.time_in_state_c = 0_us;
-        target.last_plug_in = 0_us;
-    }
-
-    target.charger_state = v1->charger_state;
-    target.last_update = now_us();
-
-    uint16_t requested_current = v1->supported_current;
-
-    if (v2 != nullptr && v1->charger_state == 3 && v2->time_since_state_change >= cfg->requested_current_threshold * 1000) {
-        int max_phase_current = -1;
-
-        for (int i = 0; i < 3; i++) {
-            if (isnan(v1->line_currents[i])) {
-                // Don't trust the line currents if one is missing.
-                max_phase_current = 32000;
-                break;
-            }
-
-            max_phase_current = std::max(max_phase_current, (int)(v1->line_currents[i] * 1000.0f));
-        }
-        // The CM protocol sends 0 instead of nan.
-        if (max_phase_current == 0)
-            max_phase_current = 32000;
-
-        max_phase_current += cfg->requested_current_margin;
-
-        max_phase_current = std::max(6000, std::min(32000, max_phase_current));
-        requested_current = std::min(requested_current, (uint16_t)max_phase_current);
-    }
-    if (abs((int)target.requested_current - (int)requested_current) > 1500) {
-        trace("RECV %d: requested %u -> %u mA (measured %.3fA %.3fA %.3fA)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
-    }
-
-    target.requested_current = requested_current;
-
-    target.meter_supported = CM_FEATURE_FLAGS_METER_IS_SET(v1->feature_flags);
-    if (!isnan(v1->power_total)) {
-        target.power_total_sum = target.power_total_sum + v1->power_total;
-        target.power_total_count = target.power_total_count + 1;
-    }
-    if (!isnan(v1->energy_abs)) {
-        target.energy_abs = v1->energy_abs;
-    }
-
-    if (v1->error_state != 0) {
-        target_alloc.error = CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state);
-    }
-
-    if (target_alloc.error < 128 || target_alloc.error == CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE) {
-        target_alloc.error = 0;
-    }
-
-    if (target_alloc.error == 0 || target_alloc.error >= CHARGE_MANAGER_CLIENT_ERROR_START)
-        target_alloc.state = get_charge_state(v1->charger_state,
-                                              v1->supported_current,
-                                              v1->car_stopped_charging,
-                                              target_alloc.allocated_current);
-
-    if (v3 != nullptr) {
-        uint8_t new_phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);
-        uint8_t new_pss =  CM_STATE_V3_CAN_PHASE_SWITCH_IS_SET(v3->phases);
-        if (new_phases != target.phases)
-            trace("RECV %d: phases %u -> %u", client_id, target.phases, new_phases);
-        if (new_pss != target.phase_switch_supported)
-            trace("RECV %d: phase_switch_supported %u -> %u", client_id, target.phase_switch_supported, new_pss);
-        target.phases = new_phases;
-        target.phase_switch_supported = new_pss;
-    } else {
-        target.phases = 3;
-        target.phase_switch_supported = false;
-    }
-
-    return true;
 }
