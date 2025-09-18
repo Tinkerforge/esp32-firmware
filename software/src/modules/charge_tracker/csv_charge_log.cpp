@@ -22,6 +22,7 @@
 #include "module_dependencies.h"
 #include "tools/string_builder.h"
 #include "tools/malloc.h"
+#include "event_log_prefix.h"
 #include <LittleFS.h>
 #include <cmath>
 #include <vector>
@@ -29,6 +30,9 @@
 #include <cstring>
 #include <Arduino.h>
 
+#define EVENT_LOG_PREFIX "csv_charge_log"
+#define MAX_ACCUMULATED 2048
+#define BUFFER_SIZE 4096
 
 String chargeRecordFilename(uint32_t i)
 {
@@ -83,13 +87,10 @@ const char* CSVTranslations::getUnknownChargeStart(bool english) {
 }
 
 CSVChargeLogGenerator::CSVChargeLogGenerator() {
-    buffer = static_cast<char*>(malloc(BUFFER_SIZE));
+    buffer = heap_alloc_array<char>(BUFFER_SIZE);
 }
 
 CSVChargeLogGenerator::~CSVChargeLogGenerator() {
-    if (buffer) {
-        free(buffer);
-    }
 }
 
 String CSVChargeLogGenerator::escapeCSVField(const String& field) {
@@ -279,7 +280,7 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
 
 bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t last_record,
                                               std::function<bool(const uint8_t* record_data, size_t record_size)> record_callback) {
-    if (!buffer) {
+    if (buffer == nullptr) {
         return false;
     }
 
@@ -301,13 +302,13 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
         size_t complete_records = file_size / record_size;
 
         for (size_t i = 0; i < complete_records; i++) {
-            size_t bytes_read = file.read(reinterpret_cast<uint8_t*>(buffer), record_size);
+            size_t bytes_read = file.read(reinterpret_cast<uint8_t*>(buffer.get()), record_size);
 
             if (bytes_read != record_size) {
                 break;
             }
 
-            if (!record_callback(reinterpret_cast<const uint8_t*>(buffer), record_size)) {
+            if (!record_callback(reinterpret_cast<const uint8_t*>(buffer.get()), record_size)) {
                 file.close();
                 return false;
             }
@@ -321,7 +322,7 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
 
 bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                                         std::function<bool(const char* data, size_t length)> callback) {
-    if (!buffer) {
+    if (buffer == nullptr) {
         return false;
     }
 
@@ -343,25 +344,14 @@ bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     }
 
     String accumulated_data;
-    const size_t MAX_ACCUMULATED = 2048;
 
     bool success = readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
         [&](const uint8_t* record_data, size_t record_size) -> bool {
-            if (record_size != sizeof(Charge)) {
-                return true;
-            }
-
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
-            if (record->cs.timestamp_minutes != 0) {
-                if (record->cs.timestamp_minutes < params.start_timestamp_min) {
-                    accumulated_data = final_header;
-                    return true;
-                }
-
-                if (record->cs.timestamp_minutes > params.end_timestamp_min) {
-                    return false;
-                }
+            if (record->cs.timestamp_minutes < params.start_timestamp_min ||
+                record->cs.timestamp_minutes > params.end_timestamp_min) {
+                return true;
             }
 
             if (isUserFiltered(record->cs.user_id, params.user_filter)) {

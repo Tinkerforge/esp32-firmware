@@ -91,8 +91,7 @@ private:
 
     String convertToWindows1252(const String& utf8_string);
 
-    static const size_t BUFFER_SIZE = 4096;
-    char* buffer;
+    std::unique_ptr<char[]> buffer = nullptr;
 };
 
 
