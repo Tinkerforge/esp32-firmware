@@ -75,7 +75,9 @@ let x = {
             "target_user_placeholder": "Benutzer auswählen",
             "charge_log_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
-            "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/
+            "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
+            "last_sent": "Letzter Versand",
+            "never": "Nie"
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",

@@ -548,6 +548,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         onAddSubmit={() => this.onAddRemoteUploadConfigSubmit()}
                     />
                 </FormRow>
+                <FormRow label={__("charge_tracker.content.last_sent")}>
+                    <InputText value={state.last_upload_timestamp_min == 0 ? __("charge_tracker.content.never") : util.timestamp_min_to_date(state.last_upload_timestamp_min)}/>
+                </FormRow>
             </>
 //#endif
 
