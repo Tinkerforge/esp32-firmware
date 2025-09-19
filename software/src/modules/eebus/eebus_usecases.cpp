@@ -387,19 +387,22 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
     return features;
 }
 
-size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
+template <typename T>
+size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
 {
+    if (subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
+        return 0;
+    }
     size_t sent_count = 0;
     BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
-    JsonVariant dst = response.createNestedObject(data->function_to_string(data->last_cmd));
-    data->last_cmd_to_json(dst);
+    JsonObject dst = response.to<JsonObject>();
+    dst[function_name] = data;
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
-            eebus.usecases->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
+            EEBusUseCases::send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
             sent_count++;
         }
     }
-    data->reset();
     return sent_count;
 };
 
@@ -546,7 +549,7 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
 
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
-    //eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, eebus.data_handler.get());
+    eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, bill_list_data, "billListData");
 }
 
 
@@ -605,7 +608,7 @@ ControllableSystemEntity::ControllableSystemEntity()
 
                                               eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
                                               eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, eebus.data_handler.get()) > 0) {
+                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
                                                   heartbeatCounter++;
                                               }
                                               if (!heartbeat_received) {
@@ -877,6 +880,8 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
         // LPC-906
         switch_state(LPCState::UnlimitedControlled);
     }
+
+    // TODO: Fix subscriptions
     //eebus.data_handler->loadcontrollimitdescriptionlistdatatype = load_control_limit_description_list;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitDescriptionListData;
     //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
@@ -884,6 +889,9 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
     //eebus.data_handler->loadcontrollimitlistdatatype = load_control_limit_list;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitListData;
     //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
+    eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_description_list, "loadControlLimitDescriptionListData");
+    eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_list, "loadControlLimitListData");
+
 
     return limit_accepted;
 }
@@ -1208,9 +1216,10 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     data->reset();
 }
 
-size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
+template <typename T>
+size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
 {
-    return node_management.inform_subscribers(entity, feature, data);
+    return node_management.inform_subscribers(entity, feature, data, function_name);
 }
 
 bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)

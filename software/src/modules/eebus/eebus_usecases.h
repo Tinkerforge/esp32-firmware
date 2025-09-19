@@ -164,9 +164,11 @@ public:
      * @param entity The entity emitting the notification
      * @param feature The feature emitting the notification
      * @param data The Data to be sent. The last_cmd value needs to be set to the appropriate function and the corresponding data field needs to be set.
+     * @param function_name Name of the function that is informing the subscribers.
      * @return The number of subscribers that have been informed. 0 if no subscribers have been found.
      */
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
+    template<typename T>
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -410,7 +412,8 @@ public:
      * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
+    template<typename T>
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
 
     /**
      * Send a message to a spine destination.
