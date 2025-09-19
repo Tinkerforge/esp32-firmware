@@ -42,7 +42,7 @@ static int get_localtime_hour()
 
 void BatteryControl::pre_setup()
 {
-    trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 8192);
+    trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 32768);
 
     config = Config::Object({
         {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
@@ -58,6 +58,9 @@ void BatteryControl::pre_setup()
         {"forecast_cond", Config::Enum  (RuleCondition::Ignore)},
         {"forecast_th",   Config::Uint16(0)}, // in kWh     (0 to 65 MWh)
         {"schedule_cond", Config::Enum  (ScheduleRuleCondition::Ignore)},
+        {"time_cond",     Config::Enum  (RuleCondition::Ignore)},
+        {"time_start",    Config::Uint16(0)}, // in minutes since midnight
+        {"time_end",      Config::Uint16(0)}, // in minutes since midnight
         {"fast_chg_cond", Config::Enum  (RuleCondition::Ignore)},
     });
 
@@ -175,6 +178,20 @@ void BatteryControl::setup()
             preprocess_rules(&rules_forbid_charge, fc_rules, forbid_charge_rules_cnt);
         }
     }
+
+    {
+        char buf[56];
+        StringWriter sw(buf, sizeof(buf));
+
+        if (data->have_soc_rule            ) sw.puts(" SoC");
+        if (data->have_price_rule          ) sw.puts(" Price");
+        if (data->have_solar_forecast_rule ) sw.puts(" SolarForecast");
+        if (data->have_tariff_schedule_rule) sw.puts(" TariffSchedule");
+        if (data->have_time_rule           ) sw.puts(" Time");
+        if (data->have_fast_chg_rule       ) sw.puts(" FastChg");
+
+        logger.tracefln(this->trace_buffer_idx, "Rules:%s", buf);
+    }
 }
 
 void BatteryControl::register_urls()
@@ -198,68 +215,73 @@ void BatteryControl::register_events()
         return;
     }
 
+    if (data->have_fast_chg_rule || data->must_repeat) {
 #if MODULE_NETWORK_AVAILABLE()
-    network.on_network_connected([this](const Config *connected) {
-        if (!connected->asBool()) {
-            return EventResult::OK;
-        }
-
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            this->periodic_update();
-        }, 5_s, 1_s);
-
-        return EventResult::Deregister;
-    });
-#else
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        this->periodic_update();
-    }, 10_s, 1_s);
-#endif
-
-    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
-        if (meters.get_meter_location(slot) != MeterLocation::Battery) {
-            continue;
-        }
-        logger.tracefln(this->trace_buffer_idx, "Meter %lu is a battery", slot);
-
-        // Register on the ConfigRoot.
-        event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *cfg) {
-            const size_t count = cfg->count();
-
-            if (count == 0) {
-                logger.tracefln(this->trace_buffer_idx, "Ignoring blank value IDs update from meter in slot %lu.", slot);
+        network.on_network_connected([this](const Config *connected) {
+            if (!connected->asBool()) {
                 return EventResult::OK;
             }
 
-            const MeterValueID soc_vid = MeterValueID::StateOfCharge;
-            uint32_t soc_index = std::numeric_limits<decltype(soc_index)>::max();
-            meters.fill_index_cache(slot, 1, &soc_vid, &soc_index);
-
-            if (soc_index == std::numeric_limits<decltype(soc_index)>::max()) {
-                logger.printfln("Battery meter in slot %lu doesn't provide SOC.", slot);
-            } else {
-                event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<size_t>(soc_index)}, [this, slot](const Config *config_soc) {
-                    const float soc = config_soc->asFloat();
-
-                    if (!isnan(soc)) {
-                        this->data->soc_cache[slot] = static_cast<uint8_t>(soc);
-                        logger.tracefln(this->trace_buffer_idx, "meter %lu SOC=%hhu%%", slot, this->data->soc_cache[slot]);
-
-                        this->data->evaluation_must_update_soc  = true;
-                        this->data->evaluation_must_check_rules = true;
-                        this->schedule_evaluation();
-                    } else {
-                        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot);
-                    }
-
-                    return EventResult::OK;
-                });
-            }
+            task_scheduler.scheduleUncancelable([this]() {
+                this->periodic_update();
+            }, 5_s, 1_s);
 
             return EventResult::Deregister;
         });
+#else
+        task_scheduler.scheduleUncancelable([this]() {
+            this->periodic_update();
+        }, 10_s, 1_s);
+#endif
     }
 
+    if (data->have_soc_rule) {
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+            if (meters.get_meter_location(slot) != MeterLocation::Battery) {
+                continue;
+            }
+            logger.tracefln(this->trace_buffer_idx, "Meter %lu is a battery", slot);
+
+            // Register on the ConfigRoot.
+            event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *cfg) {
+                const size_t count = cfg->count();
+
+                if (count == 0) {
+                    logger.tracefln(this->trace_buffer_idx, "Ignoring blank value IDs update from meter in slot %lu.", slot);
+                    return EventResult::OK;
+                }
+
+                const MeterValueID soc_vid = MeterValueID::StateOfCharge;
+                uint32_t soc_index = std::numeric_limits<decltype(soc_index)>::max();
+                meters.fill_index_cache(slot, 1, &soc_vid, &soc_index);
+
+                if (soc_index == std::numeric_limits<decltype(soc_index)>::max()) {
+                    logger.printfln("Battery meter in slot %lu doesn't provide SOC.", slot);
+                } else {
+                    event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<size_t>(soc_index)}, [this, slot](const Config *config_soc) {
+                        const float soc = config_soc->asFloat();
+
+                        if (!isnan(soc)) {
+                            this->data->soc_cache[slot] = static_cast<uint8_t>(soc);
+                            logger.tracefln(this->trace_buffer_idx, "meter %lu SOC=%hhu%%", slot, this->data->soc_cache[slot]);
+
+                            this->data->evaluation_must_update_soc  = true;
+                            this->data->evaluation_must_check_rules = true;
+                            this->schedule_evaluation();
+                        } else {
+                            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot);
+                        }
+
+                        return EventResult::OK;
+                    });
+                }
+
+                return EventResult::Deregister;
+            });
+        }
+    }
+
+    if (data->have_tariff_schedule_rule || data->have_solar_forecast_rule) {
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE() || MODULE_SOLAR_FORECAST_AVAILABLE()
         // Update forecasts at 20:00.
         // The wall clock task has to run hourly and check the local time manually.
@@ -274,47 +296,58 @@ void BatteryControl::register_events()
             }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-            this->update_tariff_schedule();
+            if (this->data->have_tariff_schedule_rule) {
+                this->update_tariff_schedule();
+            }
 #endif
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
-            this->update_solar_forecast(localtime_hour_now, api.getState("solar_forecast/state"));
+            if (this->data->have_solar_forecast_rule) {
+                this->update_solar_forecast(localtime_hour_now, api.getState("solar_forecast/state"));
+            }
 #endif
         }, 1_h, 0_ms, false);
 #endif
+    }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-    event.registerEvent("day_ahead_prices/state", {}, [this](const Config *cfg) {
-        const uint8_t event_api_backend_flag = event.get_api_backend_flag();
+    if (data->have_price_rule || data->have_tariff_schedule_rule) {
+        event.registerEvent("day_ahead_prices/state", {}, [this](const Config *cfg) {
+            const uint8_t event_api_backend_flag = event.get_api_backend_flag();
 
-        const Config *current_price_cfg = static_cast<const Config *>(cfg->get("current_price"));
+            if (this->data->have_price_rule) {
+                const Config *current_price_cfg = static_cast<const Config *>(cfg->get("current_price"));
 
-        if (current_price_cfg->was_updated(event_api_backend_flag)) {
-            const int32_t price = current_price_cfg->asInt();
+                if (current_price_cfg->was_updated(event_api_backend_flag)) {
+                    const int32_t price = current_price_cfg->asInt();
 
-            if (price == std::numeric_limits<decltype(price)>::max()) {
-                this->data->price_cache = std::numeric_limits<decltype(this->data->price_cache)>::min();
-                logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized current_price from DAP");
-            } else {
-                this->data->price_cache = price;
-                logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
+                    if (price == std::numeric_limits<decltype(price)>::max()) {
+                        this->data->price_cache = std::numeric_limits<decltype(this->data->price_cache)>::min();
+                        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized current_price from DAP");
+                    } else {
+                        this->data->price_cache = price;
+                        logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
+                    }
+
+                    this->data->evaluation_must_check_rules = true;
+                    this->schedule_evaluation();
+                }
             }
 
-            this->data->evaluation_must_check_rules = true;
-            this->schedule_evaluation();
-        }
+            if (this->data->have_tariff_schedule_rule) {
+                const Config *last_sync_cfg = static_cast<const Config *>(cfg->get("last_sync"));
 
-        const Config *last_sync_cfg = static_cast<const Config *>(cfg->get("last_sync"));
+                if (last_sync_cfg->was_updated(event_api_backend_flag) && last_sync_cfg->asUint() != 0) {
+                    logger.tracefln(this->trace_buffer_idx, "DAP last_sync at %lu", last_sync_cfg->asUint());
+                    this->update_tariff_schedule();
+                }
+            }
 
-        if (last_sync_cfg->was_updated(event_api_backend_flag) && last_sync_cfg->asUint() != 0) {
-            logger.tracefln(this->trace_buffer_idx, "DAP last_sync at %lu", last_sync_cfg->asUint());
-            this->update_tariff_schedule();
-        }
+            return EventResult::OK;
+        });
+    }
 
-        return EventResult::OK;
-    });
-
-    if (config.get("cheap_tariff_quarters")->asUint() != 0 || config.get("expensive_tariff_quarters")->asUint() != 0) {
+    if (data->have_tariff_schedule_rule && (config.get("cheap_tariff_quarters")->asUint() != 0 || config.get("expensive_tariff_quarters")->asUint() != 0)) {
         task_scheduler.scheduleWallClock([this]() {
             this->evaluate_tariff_schedule();
         }, 15_min, 100_ms, false); // Slightly delayed to give the hourly task a chance to update the schedule first.
@@ -322,12 +355,21 @@ void BatteryControl::register_events()
 #endif
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
-    event.registerEvent("solar_forecast/state", {}, [this](const Config *sf_state) {
-        update_solar_forecast(get_localtime_hour(), sf_state);
+    if (data->have_solar_forecast_rule) {
+        event.registerEvent("solar_forecast/state", {}, [this](const Config *sf_state) {
+            update_solar_forecast(get_localtime_hour(), sf_state);
 
-        return EventResult::OK;
-    });
+            return EventResult::OK;
+        });
+    }
 #endif
+
+    if (data->have_time_rule) {
+        task_scheduler.scheduleWallClock([this]() {
+            this->data->evaluation_must_check_rules = true;
+            this->schedule_evaluation();
+        }, 1_min, 0_ms, false);
+    }
 }
 
 void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count)
@@ -336,14 +378,24 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         const auto rule_config = rules_config->get(i);
         control_rule *rule = rules + i;
 
-        rule->soc_cond      =                       rule_config->get("soc_cond"     )->asEnum<RuleCondition>();
-        rule->soc_th        = static_cast<uint8_t >(rule_config->get("soc_th"       )->asUint());
-        rule->price_cond    =                       rule_config->get("price_cond"   )->asEnum<RuleCondition>();
-        rule->price_th      =                       rule_config->get("price_th"     )->asInt()  *  100;         // ct/10 -> ct/1000
-        rule->forecast_cond =                       rule_config->get("forecast_cond")->asEnum<RuleCondition>();
-        rule->forecast_th   = static_cast<int32_t >(rule_config->get("forecast_th"  )->asUint() * 1000);        // kWh -> Wh
-        rule->schedule_cond =                       rule_config->get("schedule_cond")->asEnum<ScheduleRuleCondition>();
-        rule->fast_chg_cond =                       rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
+        rule->soc_cond      = rule_config->get("soc_cond"     )->asEnum<RuleCondition>();
+        rule->soc_th        = rule_config->get("soc_th"       )->asUint8();
+        rule->price_cond    = rule_config->get("price_cond"   )->asEnum<RuleCondition>();
+        rule->price_th      = rule_config->get("price_th"     )->asInt16()  *  100;     // ct/10 -> ct/1000
+        rule->forecast_cond = rule_config->get("forecast_cond")->asEnum<RuleCondition>();
+        rule->forecast_th   = rule_config->get("forecast_th"  )->asUint16() * 1000;     // kWh -> Wh
+        rule->schedule_cond = rule_config->get("schedule_cond")->asEnum<ScheduleRuleCondition>();
+        rule->time_cond     = rule_config->get("time_cond"    )->asEnum<RuleCondition>();
+        rule->time_start_s  = rule_config->get("time_start"   )->asUint16() * 60UL;
+        rule->time_end_s    = rule_config->get("time_end"     )->asUint16() * 60UL;
+        rule->fast_chg_cond = rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
+
+        if (rule->soc_cond      != RuleCondition::Ignore        ) data->have_soc_rule             = true;
+        if (rule->price_cond    != RuleCondition::Ignore        ) data->have_price_rule           = true;
+        if (rule->forecast_cond != RuleCondition::Ignore        ) data->have_solar_forecast_rule  = true;
+        if (rule->schedule_cond != ScheduleRuleCondition::Ignore) data->have_tariff_schedule_rule = true;
+        if (rule->time_cond     != RuleCondition::Ignore        ) data->have_time_rule            = true;
+        if (rule->fast_chg_cond != RuleCondition::Ignore        ) data->have_fast_chg_rule        = true;
     }
 }
 
@@ -535,11 +587,11 @@ static bool rule_condition_failed(const RuleCondition cond, const int32_t th, co
         return true; // Input value is uninitialized, rule cannot be true.
     }
 
-    if (cond == RuleCondition::Below) {
+    if (cond == RuleCondition::BelowOrNo) {
         return !(value < th); // intentionally negated
     }
 
-    // RuleCondition::Above
+    // RuleCondition::AboveOrYes
     return !(value > th); // intentionally negated
 }
 
@@ -569,7 +621,23 @@ static bool schedule_rule_condition_failed(const ScheduleRuleCondition cond, con
     return value != 0; // 0 = neither cheap nor expensive
 }
 
-TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name)
+static bool time_rule_condition_failed(const RuleCondition cond, const uint32_t time_start_s, const uint32_t time_end_s, uint32_t time_since_midnight_s)
+{
+    if (cond == RuleCondition::Ignore) {
+        return false;
+    }
+
+    const bool inside_time_window = time_start_s <= time_since_midnight_s && time_since_midnight_s < time_end_s; // not <= end
+
+    if (cond == RuleCondition::BelowOrNo) {
+        return inside_time_window; // intentionally inverted
+    }
+
+    // RuleCondition::AboveOrYes
+    return !inside_time_window; // intentionally negated
+}
+
+TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s)
 {
     for (size_t i = 0; i < rules_count; i++) {
         const control_rule *rule = rules + i;
@@ -579,6 +647,7 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
         if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, data->forecast_cache)) continue;
         if (rule_condition_failed(rule->fast_chg_cond, 0, data->fast_charger_in_c_cache * 2 - 1)) continue;
         if (schedule_rule_condition_failed(rule->schedule_cond, data->tariff_schedule_cache)) continue;
+        if (time_rule_condition_failed(rule->time_cond, rule->time_start_s, rule->time_end_s, time_since_midnight_s)) continue;
 
         // Complete rule matches.
         logger.tracefln(this->trace_buffer_idx, "%s rule %zu matches", rules_type_name, i);
@@ -590,11 +659,23 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
 
 void BatteryControl::evaluate_all_rules()
 {
-    data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules = evaluate_rules(data->permit_grid_charge_rules, data->permit_grid_charge_rules_count, "Permit grid charge");
-    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules = evaluate_rules(data->forbid_discharge_rules,   data->forbid_discharge_rules_count,   "Forbid discharge"  );
-    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules = evaluate_rules(data->forbid_charge_rules,      data->forbid_charge_rules_count,      "Forbid charge"     );
+    uint32_t time_since_midnight_s;
 
-    logger.tracefln(this->trace_buffer_idx, "charge_permitted_by_rules=%u discharge_forbidden_by_rules=%u charge_forbidden_by_rules=%u",
+    if (data->have_time_rule) {
+        const time_t time_utc = time(nullptr);
+        struct tm tm_local;
+        localtime_r(&time_utc, &tm_local);
+
+        time_since_midnight_s = static_cast<uint32_t>((tm_local.tm_hour * 60 + tm_local.tm_min) * 60 + tm_local.tm_sec);
+    } else {
+        time_since_midnight_s = 0;
+    }
+
+    data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules = evaluate_rules(data->permit_grid_charge_rules, data->permit_grid_charge_rules_count, "Permit grid charge", time_since_midnight_s);
+    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules = evaluate_rules(data->forbid_discharge_rules,   data->forbid_discharge_rules_count,   "Forbid discharge",   time_since_midnight_s);
+    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules = evaluate_rules(data->forbid_charge_rules,      data->forbid_charge_rules_count,      "Forbid charge",      time_since_midnight_s);
+
+    logger.tracefln(this->trace_buffer_idx, "Rules: PChg=%u FDis=%u FChg=%u",
                     static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules),
                     static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules),
                     static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules));
@@ -620,14 +701,16 @@ void BatteryControl::evaluate_action_pair(ActionPair action_pair)
 
 void BatteryControl::periodic_update()
 {
-    const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
+    if (data->have_fast_chg_rule) {
+        const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
 
-    if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
-        logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
-        data->fast_charger_in_c_cache = fast_charger_in_c_cm;
+        if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
+            logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
+            data->fast_charger_in_c_cache = fast_charger_in_c_cm;
 
-        data->evaluation_must_check_rules = true;
-        schedule_evaluation();
+            data->evaluation_must_check_rules = true;
+            schedule_evaluation();
+        }
     }
 
     if (data->must_repeat) {

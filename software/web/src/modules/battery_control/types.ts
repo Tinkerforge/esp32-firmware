@@ -26,5 +26,8 @@ export interface RuleConfig {
     forecast_cond: number;
     forecast_th:   number; // kWh
     schedule_cond: number;
+    time_cond:     number;
+    time_start:    number; // minutes since midnight
+    time_end:      number; // minutes since midnight
     fast_chg_cond: number;
 }

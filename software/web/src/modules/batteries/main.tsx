@@ -84,11 +84,42 @@ interface RulesEditorProps {
     on_rules: (rules: RuleConfig[]) => void;
 }
 
+function number_to_two_digits(num: number) {
+    const str = num.toString();
+    return num < 10 ? "0" + str : str;
+}
+
+function create_twodigit_items(max: number) {
+    let items: [string, string][] = [];
+    for (let i = 0; i <= max; i++) {
+        const i_str = i.toString();
+        const i_padded = number_to_two_digits(i);
+        items[i] = [i_str, i_padded];
+    }
+
+    return items;
+}
+
+function get_column_time_cond(rule_config: RuleConfig) {
+    if (rule_config.time_cond == RuleCondition.Ignore) {
+        return '';
+    }
+
+    const prefix = rule_config.time_cond == RuleCondition.BelowOrNo ? __("batteries.content.condition_time_not") + " " : "";
+
+    const start_h   = number_to_two_digits(Math.trunc(rule_config.time_start / 60));
+    const start_min = number_to_two_digits(rule_config.time_start % 60);
+    const end_h     = number_to_two_digits(Math.trunc(rule_config.time_end   / 60));
+    const end_min   = number_to_two_digits(rule_config.time_end   % 60);
+
+    return prefix + start_h + ":" + start_min + "–" + end_h + ":" + end_min;
+}
+
 function get_column_cond(cond: number, th_str: string) {
     switch (cond) {
-        case RuleCondition.Ignore: return '';
-        case RuleCondition.Below:  return '< ' + th_str;
-        case RuleCondition.Above:  return '> ' + th_str;
+        case RuleCondition.Ignore:     return '';
+        case RuleCondition.BelowOrNo:  return '< ' + th_str;
+        case RuleCondition.AboveOrYes: return '> ' + th_str;
     }
 
     return '???';
@@ -97,11 +128,21 @@ function get_column_cond(cond: number, th_str: string) {
 function get_column_schedule_cond(cond: number) {
     switch (cond) {
         case ScheduleRuleCondition.Ignore:       return '';
-        case ScheduleRuleCondition.Cheap:        return __("batteries.content.condition_schedule_cheap");
-        case ScheduleRuleCondition.NotCheap:     return __("batteries.content.condition_schedule_not_cheap");
-        case ScheduleRuleCondition.Expensive:    return __("batteries.content.condition_schedule_expensive");
-        case ScheduleRuleCondition.NotExpensive: return __("batteries.content.condition_schedule_not_expensive");
-        case ScheduleRuleCondition.Moderate:     return __("batteries.content.condition_schedule_moderate");
+        case ScheduleRuleCondition.Cheap:        return __("batteries.content.condition_schedule_cheap_compact");
+        case ScheduleRuleCondition.NotCheap:     return __("batteries.content.condition_schedule_not_cheap_compact");
+        case ScheduleRuleCondition.Expensive:    return __("batteries.content.condition_schedule_expensive_compact");
+        case ScheduleRuleCondition.NotExpensive: return __("batteries.content.condition_schedule_not_expensive_compact");
+        case ScheduleRuleCondition.Moderate:     return __("batteries.content.condition_schedule_moderate_compact");
+    }
+
+    return '???';
+}
+
+function get_column_fast_chg_cond(cond: number) {
+    switch (cond) {
+        case RuleCondition.Ignore:     return '';
+        case RuleCondition.BelowOrNo:  return __("batteries.content.table_rule_fast_chg_not_active");
+        case RuleCondition.AboveOrYes: return __("batteries.content.table_rule_fast_chg_active");
     }
 
     return '???';
@@ -120,26 +161,31 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
     render() {
         return <Table
-            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule")]}
+            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg")]}
             rows={this.props.rules.map((rule_config, i) => {
                 return {
                     columnValues: [
                         rule_config.desc,
+                        get_column_time_cond(rule_config),
                         get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
                         get_column_cond(rule_config.price_cond, `${util.toLocaleFixed(rule_config.price_th / 10, 1)} ct`),
                         get_column_cond(rule_config.forecast_cond, `${rule_config.forecast_th} kWh`),
                         get_column_schedule_cond(rule_config.schedule_cond),
+                        get_column_fast_chg_cond(rule_config.fast_chg_cond),
                     ],
                     editTitle: __("batteries.content.edit_rule_title"),
                     onEditShow: async () => {
                         this.setState({edit_rule_config: {...rule_config}, all_conditions_ignored: false});
                     },
                     onEditGetChildren: () => {
-                        let cond_items: [string, string][] = [
-                            [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
-                            [RuleCondition.Below.toString(),  __("batteries.content.condition_below")],
-                            [RuleCondition.Above.toString(),  __("batteries.content.condition_above")],
+                        const cond_items: [string, string][] = [
+                            [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                            [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_below")],
+                            [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_above")],
                         ];
+
+                        const hour_items   = create_twodigit_items(24);
+                        const minute_items = create_twodigit_items(59);
 
                         return [
                             <FormRow label={__("batteries.content.edit_rule_desc")}>
@@ -149,6 +195,90 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                     onValue={(v) => {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, desc: v}});
                                     }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_time")}>
+                                <div class="row no-gutters">
+                                    <div class="col-md-4 input-group">
+                                        <InputSelect
+                                            placeholder={__("select")}
+                                            items={[
+                                                [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                                                [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_time_not")],
+                                                [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_time_only")],
+                                            ]}
+                                            onValue={(v) => {
+                                                const time_cond = parseInt(v);
+
+                                                if (time_cond != RuleCondition.Ignore) {
+                                                    this.setState({all_conditions_ignored: false});
+                                                }
+
+                                                this.setState({edit_rule_config: {...this.state.edit_rule_config, time_cond: time_cond}});
+                                            }}
+                                            value={this.state.edit_rule_config.time_cond.toString()}
+                                        />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group pl-2">
+                                            <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span></div>
+                                            <InputSelect
+                                                required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
+                                                disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
+                                                items={hour_items}
+                                                onValue={(v) => {
+                                                    const hours   = parseInt(v);
+                                                    const minutes = hours >= 24 ? 0 : this.state.edit_rule_config.time_start % 60;
+
+                                                    this.setState({edit_rule_config: {...this.state.edit_rule_config, time_start: hours * 60 + minutes}});
+                                                }}
+                                                value={Math.trunc(this.state.edit_rule_config.time_start / 60).toString()}
+                                            />
+                                            <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                            <InputSelect
+                                                required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
+                                                disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
+                                                items={this.state.edit_rule_config.time_start >= 24 * 60 ? [["0", "00"]] : minute_items}
+                                                onValue={(v) => {
+                                                    const hours   = Math.trunc(this.state.edit_rule_config.time_start / 60);
+                                                    const minutes = parseInt(v);
+
+                                                    this.setState({edit_rule_config: {...this.state.edit_rule_config, time_start: hours * 60 + minutes}});
+                                                }}
+                                                value={(this.state.edit_rule_config.time_start % 60).toString()}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group pl-2">
+                                            <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span></div>
+                                            <InputSelect
+                                                required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
+                                                disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
+                                                items={hour_items}
+                                                onValue={(v) => {
+                                                    const hours   = parseInt(v);
+                                                    const minutes = hours >= 24 ? 0 : this.state.edit_rule_config.time_end % 60;
+
+                                                    this.setState({edit_rule_config: {...this.state.edit_rule_config, time_end: hours * 60 + minutes}});
+                                                }}
+                                                value={Math.trunc(this.state.edit_rule_config.time_end / 60).toString()}
+                                            />
+                                            <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                            <InputSelect
+                                                required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
+                                                disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
+                                                items={this.state.edit_rule_config.time_end >= 24 * 60 ? [["0", "00"]] : minute_items}
+                                                onValue={(v) => {
+                                                    const hours   = Math.trunc(this.state.edit_rule_config.time_end / 60);
+                                                    const minutes = parseInt(v);
+
+                                                    this.setState({edit_rule_config: {...this.state.edit_rule_config, time_end: hours * 60 + minutes}});
+                                                }}
+                                                value={(this.state.edit_rule_config.time_end % 60).toString()}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_soc")}>
                                 <InputNumber
@@ -267,9 +397,9 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 <InputSelect
                                     placeholder={__("select")}
                                     items={[
-                                        [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
-                                        [RuleCondition.Below.toString(),  __("batteries.content.condition_fast_chg_inactive")],
-                                        [RuleCondition.Above.toString(),  __("batteries.content.condition_fast_chg_active")],
+                                        [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                                        [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_fast_chg_inactive")],
+                                        [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_fast_chg_active")],
                                     ]}
                                     onValue={(v) => {
                                         let fast_chg_cond = parseInt(v);
@@ -292,7 +422,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         ];
                     },
                     onEditCheck: async () => {
-                        const all_ignored = this.state.edit_rule_config.soc_cond      == RuleCondition.Ignore &&
+                        const all_ignored = this.state.edit_rule_config.time_cond     == RuleCondition.Ignore &&
+                                            this.state.edit_rule_config.soc_cond      == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.price_cond    == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.forecast_cond == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.schedule_cond == ScheduleRuleCondition.Ignore &&
@@ -326,6 +457,9 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     forecast_cond: RuleCondition.Ignore,
                     forecast_th: null,
                     schedule_cond: ScheduleRuleCondition.Ignore,
+                    time_cond: RuleCondition.Ignore,
+                    time_start: 0,
+                    time_end: 0,
                     fast_chg_cond: ScheduleRuleCondition.Ignore,
                 };
 
@@ -333,10 +467,13 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
             }}
             onAddGetChildren={() => {
                 let cond_items: [string, string][] = [
-                    [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
-                    [RuleCondition.Below.toString(),  __("batteries.content.condition_below")],
-                    [RuleCondition.Above.toString(),  __("batteries.content.condition_above")],
+                    [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                    [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_below")],
+                    [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_above")],
                 ];
+
+                const hour_items   = create_twodigit_items(24);
+                const minute_items = create_twodigit_items(59);
 
                 return [
                     <FormRow label={__("batteries.content.add_rule_desc")}>
@@ -346,6 +483,90 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             onValue={(v) => {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, desc: v}});
                             }} />
+                    </FormRow>,
+                    <FormRow label={__("batteries.content.edit_rule_time")}>
+                        <div class="row no-gutters">
+                            <div class="col-md-4 input-group">
+                                <InputSelect
+                                    placeholder={__("select")}
+                                    items={[
+                                        [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                                        [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_time_not")],
+                                        [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_time_only")],
+                                    ]}
+                                    onValue={(v) => {
+                                        const time_cond = parseInt(v);
+
+                                        if (time_cond != RuleCondition.Ignore) {
+                                            this.setState({all_conditions_ignored: false});
+                                        }
+
+                                        this.setState({add_rule_config: {...this.state.add_rule_config, time_cond: time_cond}});
+                                    }}
+                                    value={this.state.add_rule_config.time_cond.toString()}
+                                />
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group pl-2">
+                                    <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span></div>
+                                    <InputSelect
+                                        required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
+                                        disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
+                                        items={hour_items}
+                                        onValue={(v) => {
+                                            const hours   = parseInt(v);
+                                            const minutes = hours >= 24 ? 0 : this.state.add_rule_config.time_start % 60;
+
+                                            this.setState({add_rule_config: {...this.state.add_rule_config, time_start: hours * 60 + minutes}});
+                                        }}
+                                        value={Math.trunc(this.state.add_rule_config.time_start / 60).toString()}
+                                    />
+                                    <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                    <InputSelect
+                                        required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
+                                        disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
+                                        items={this.state.add_rule_config.time_start >= 24 * 60 ? [["0", "00"]] : minute_items}
+                                        onValue={(v) => {
+                                            const hours   = Math.trunc(this.state.add_rule_config.time_start / 60);
+                                            const minutes = parseInt(v);
+
+                                            this.setState({add_rule_config: {...this.state.add_rule_config, time_start: hours * 60 + minutes}});
+                                        }}
+                                        value={(this.state.add_rule_config.time_start % 60).toString()}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group pl-2">
+                                    <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span></div>
+                                    <InputSelect
+                                        required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
+                                        disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
+                                        items={hour_items}
+                                        onValue={(v) => {
+                                            const hours   = parseInt(v);
+                                            const minutes = hours >= 24 ? 0 : this.state.add_rule_config.time_end % 60;
+
+                                            this.setState({add_rule_config: {...this.state.add_rule_config, time_end: hours * 60 + minutes}});
+                                        }}
+                                        value={Math.trunc(this.state.add_rule_config.time_end / 60).toString()}
+                                    />
+                                    <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                    <InputSelect
+                                        required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
+                                        disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
+                                        items={this.state.add_rule_config.time_end >= 24 * 60 ? [["0", "00"]] : minute_items}
+                                        onValue={(v) => {
+                                            const hours   = Math.trunc(this.state.add_rule_config.time_end / 60);
+                                            const minutes = parseInt(v);
+
+                                            this.setState({add_rule_config: {...this.state.add_rule_config, time_end: hours * 60 + minutes}});
+                                        }}
+                                        value={(this.state.add_rule_config.time_end % 60).toString()}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </FormRow>,
                     <FormRow label={__("batteries.content.add_rule_soc")}>
                        <InputNumber
@@ -464,9 +685,9 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         <InputSelect
                             placeholder={__("select")}
                             items={[
-                                [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
-                                [RuleCondition.Below.toString(),  __("batteries.content.condition_fast_chg_inactive")],
-                                [RuleCondition.Above.toString(),  __("batteries.content.condition_fast_chg_active")],
+                                [RuleCondition.Ignore.toString(),     __("batteries.content.condition_ignore")],
+                                [RuleCondition.BelowOrNo.toString(),  __("batteries.content.condition_fast_chg_inactive")],
+                                [RuleCondition.AboveOrYes.toString(), __("batteries.content.condition_fast_chg_active")],
                             ]}
                             onValue={(v) => {
                                 const fast_chg_cond = parseInt(v);
@@ -489,7 +710,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                 ];
             }}
             onAddCheck={async () => {
-                const all_ignored = this.state.add_rule_config.soc_cond      == RuleCondition.Ignore &&
+                const all_ignored = this.state.add_rule_config.time_cond     == RuleCondition.Ignore &&
+                                    this.state.add_rule_config.soc_cond      == RuleCondition.Ignore &&
                                     this.state.add_rule_config.price_cond    == RuleCondition.Ignore &&
                                     this.state.add_rule_config.forecast_cond == RuleCondition.Ignore &&
                                     this.state.add_rule_config.schedule_cond == ScheduleRuleCondition.Ignore &&
