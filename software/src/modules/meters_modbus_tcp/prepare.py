@@ -152,10 +152,17 @@ for spec in specs:
 
             value_names.append(value['name'])
 
-            start_address_offset = value.get('start_address_offset', spec.get('start_address_offset', 0))
-            start_address = value['start_address'] - start_address_offset if value['start_address'] != 'START_ADDRESS_VIRTUAL' else 'START_ADDRESS_VIRTUAL'
+            start_number = value.get('start_number')
 
-            if start_address != "START_ADDRESS_VIRTUAL":
+            if start_number != None:
+                if start_number == 'START_NUMBER_VIRTUAL':
+                    start_address = 'START_ADDRESS_VIRTUAL'
+                else:
+                    start_address = start_number - 1
+            else:
+                start_address = value['start_address']
+
+            if start_address != 'START_ADDRESS_VIRTUAL':
                 address_name_words = value['name'].split('|', 1)[-1].split('[')[0].replace('-', ' ').replace('/', ' ').replace('.', ' ').split(' ')
                 address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
