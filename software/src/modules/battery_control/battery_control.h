@@ -46,13 +46,16 @@ public:
 
 private:
     struct control_rule {
-        int32_t       price_th;    // in ct/1000
-        int32_t       forecast_th; // in Wh
-        uint8_t       soc_th;      // in percent
+        uint32_t      time_start_s; // in seconds since midnight
+        uint32_t      time_end_s;   // in seconds since midnight
+        int32_t       price_th;     // in ct/1000
+        int32_t       forecast_th;  // in Wh
+        uint8_t       soc_th;       // in percent
         RuleCondition soc_cond;
         RuleCondition price_cond;
         RuleCondition forecast_cond;
         ScheduleRuleCondition schedule_cond;
+        RuleCondition time_cond;
         RuleCondition fast_chg_cond;
     };
 
@@ -79,7 +82,7 @@ private:
     void evaluate_tariff_schedule();
     void update_solar_forecast(int localtime_hour_now, const Config *state);
     void schedule_evaluation();
-    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
+    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s);
     void evaluate_all_rules();
     void evaluate_summary();
     void evaluate_action_pair(ActionPair action_pair);
@@ -110,6 +113,13 @@ private:
         bool evaluation_must_update_soc = false;
         bool evaluation_must_check_rules = false;
         bool network_connect_seen = false;
+
+        bool have_soc_rule             = false;
+        bool have_price_rule           = false;
+        bool have_solar_forecast_rule  = false;
+        bool have_tariff_schedule_rule = false;
+        bool have_time_rule            = false;
+        bool have_fast_chg_rule        = false;
 
         int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
         int32_t price_cache    = std::numeric_limits<decltype(price_cache   )>::min();
