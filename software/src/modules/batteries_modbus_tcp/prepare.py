@@ -4,6 +4,8 @@ import victron_energy
 import deye
 import alpha_ess
 import hailei
+import sungrow
+
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -14,6 +16,7 @@ modules = [
     deye,
     alpha_ess,
     hailei,
+    sungrow,
 ]
 
 specs = []

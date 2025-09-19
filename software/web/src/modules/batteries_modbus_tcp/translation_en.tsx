@@ -25,6 +25,7 @@ let x = {
             "table_deye_hybrid_inverter": "Deye hybrid inverter",
             "table_alpha_ess_hybrid_inverter": "Alpha ESS hybrid inverter",
             "table_hailei_hybrid_inverter": "Hailei hybrid inverter (TPH series)",
+            "table_sungrow_hybrid_inverter": "Sungrow hybrid inverter (SH series)",
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "repeat_interval": "Repeat interval",
