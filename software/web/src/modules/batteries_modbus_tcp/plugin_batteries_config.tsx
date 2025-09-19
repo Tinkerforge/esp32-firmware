@@ -752,6 +752,27 @@ export function init() {
 
                         break;
 
+                    case BatteryModbusTCPTableID.SungrowHybridInverter:
+                        table = [BatteryModbusTCPTableID.SungrowHybridInverter, {
+                            permit_grid_charge:          import_preset_table(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_preset_table(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_preset_table(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_preset_table(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_preset_table(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_preset_table(new_config[1].table[1].revoke_charge_override),
+                        }];
+
+                        if (!util.hasValue(table[1].permit_grid_charge)
+                         || !util.hasValue(table[1].revoke_grid_charge_override)
+                         || !util.hasValue(table[1].forbid_discharge)
+                         || !util.hasValue(table[1].revoke_discharge_override)
+                         || !util.hasValue(table[1].forbid_charge)
+                         || !util.hasValue(table[1].revoke_charge_override)) {
+                            return null;
+                        }
+
+                        break;
+
                     default:
                         console.log("Batteries Modbus/TCP: Imported config table has unknown class:", new_config[1].table[0]);
                         return null;
@@ -819,8 +840,9 @@ export function init() {
                             items={[
                                 // Keep alphabetically sorted
                                 [BatteryModbusTCPTableID.AlphaESSHybridInverter.toString(), __("batteries_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
+                                [BatteryModbusTCPTableID.SungrowHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
                                 [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
                             ]}
@@ -836,7 +858,8 @@ export function init() {
                  && (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX
                   || config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter)) {
+                  || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
+                  || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter)) {
                     edit_children.push(
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
                             <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0], BatteryAction.PermitGridCharge))}>
