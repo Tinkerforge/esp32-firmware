@@ -48,8 +48,12 @@ for spec in specs:
 
         register_block_descs.append(register_block['description'])
 
-        start_address_offset = register_block.get('start_address_offset', spec.get('start_address_offset', 0))
-        start_address = register_block['start_address'] - start_address_offset
+        start_number = register_block.get('start_number')
+
+        if start_number != None:
+            start_address = start_number - 1
+        else:
+            start_address = register_block['start_address']
 
         if len(register_block['values']) == 0:
             print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has no values')
