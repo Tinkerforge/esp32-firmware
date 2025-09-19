@@ -60,6 +60,11 @@ class SpineOptional
 public:
     using value_type = T;
     SpineOptional() = default;
+    SpineOptional(const SpineOptional&) = default;
+    SpineOptional(SpineOptional&&) noexcept = default;
+    SpineOptional& operator=(const SpineOptional&) = default;
+    SpineOptional& operator=(SpineOptional&&) noexcept = default;
+    
 
     SpineOptional(const T &v) : value(v), is_set(true)
     {
@@ -489,7 +494,7 @@ def process_complex_type(complex_type):
             # Done
             if is_vec:
                 variable_type = "std::vector<" + variable_type + ">"
-            new_type.code += f"\tSpineOptional<{variable_type}> {variable_name_cpp};\n"
+            new_type.code += f"\tSpineOptional<{variable_type}> {variable_name_cpp}{{}};\n"
             if variable_type == "None" or variable_type is None:
                 print("Variable type is None while making complex type")
                 unprocessed_elements += 1
@@ -504,6 +509,7 @@ def process_complex_type(complex_type):
             from_json_reformat = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\t\n\t\t{new_type.from_json_code}\n\t\n"""
             new_type.from_json_code = from_json_reformat
 
+        new_type.code += f"\n\t{struct_type_name}(const {struct_type_name}& other) = default;\n"
         if not GENERATE_DEFAULT_CONSTRUCTOR:
             new_type.code += f"\n\t{struct_type_name}() = default;\n}};\n"
         else:
@@ -516,6 +522,7 @@ def process_complex_type(complex_type):
                 new_type.code += f"\n\t\t{variable_name_cpp}({variable_type}{{}}),"
             new_type.code = new_type.code[:-1]  # remove last comma
             new_type.code += "\n\t{}\n};\n"
+
 
         new_type.code += f"""/**\n * Convert a {struct_type_name} to its JSON representation\n * @param src The {struct_type_name} to convert\n * @param dst The JSON variant to fill with the converted data.\n * @return true if the conversion was successful, false otherwise.\n */\nbool convertToJson(const {struct_type_name} &src, JsonVariant& dst);\n"""
         new_type.code += f"""/**\n * Convert a JSON representation to a {struct_type_name}\n * @param src The JSON variant to convert\n * @param dst The {struct_type_name} to fill with the converted data.\n */\nvoid convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);\n\n"""
@@ -639,7 +646,7 @@ def generate_data_handler_class() -> (str, str):
         f"\n\tif (function == SpineDataTypeHandler::Function::{function[0]}) return \"{function[0]}\";" for function in
         type_function_mapping)
     data_types = ''.join(
-        f"\n\t\tSpineOptional<{cpp_datatype.name}> {cpp_datatype.name.lower()};" for cpp_datatype in cpp_datatypes)
+        f"\n\t\tSpineOptional<{cpp_datatype.name}> {cpp_datatype.name.lower()}{{}};" for cpp_datatype in cpp_datatypes)
 
     last_cmd_to_json_mapping = ''.join(f"""
     if (last_cmd == SpineDataTypeHandler::Function::{function[0]}) {{

@@ -31,6 +31,11 @@ class SpineOptional
 public:
     using value_type = T;
     SpineOptional() = default;
+    SpineOptional(const SpineOptional &) = default;
+    SpineOptional(SpineOptional &&) noexcept = default;
+    SpineOptional &operator=(const SpineOptional &) = default;
+    SpineOptional &operator=(SpineOptional &&) noexcept = default;
+
 
     SpineOptional(const T &v) : value(v), is_set(true)
     {
@@ -3125,8 +3130,10 @@ void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst);
 */
 struct ScaledNumberType
 {
-    SpineOptional<NumberType> number;
-    SpineOptional<ScaleType> scale;
+    SpineOptional<NumberType> number{};
+    SpineOptional<ScaleType> scale{};
+
+    ScaledNumberType(const ScaledNumberType &other) = default;
 
     ScaledNumberType() = default;
 };
@@ -3150,16 +3157,18 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst);
 */
 struct DirectControlActivityDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<DirectControlActivityStateEnumType> activityState;
-    SpineOptional<bool> isActivityStateChangeable;
-    SpineOptional<EnergyModeEnumType> energyMode;
-    SpineOptional<bool> isEnergyModeChangeable;
-    SpineOptional<ScaledNumberType> power;
-    SpineOptional<bool> isPowerChangeable;
-    SpineOptional<ScaledNumberType> energy;
-    SpineOptional<bool> isEnergyChangeable;
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<DirectControlActivityStateEnumType> activityState{};
+    SpineOptional<bool> isActivityStateChangeable{};
+    SpineOptional<EnergyModeEnumType> energyMode{};
+    SpineOptional<bool> isEnergyModeChangeable{};
+    SpineOptional<ScaledNumberType> power{};
+    SpineOptional<bool> isPowerChangeable{};
+    SpineOptional<ScaledNumberType> energy{};
+    SpineOptional<bool> isEnergyChangeable{};
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    DirectControlActivityDataType(const DirectControlActivityDataType &other) = default;
 
     DirectControlActivityDataType() = default;
 };
@@ -3184,6 +3193,8 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
 struct ElementTagType
 {
 
+    ElementTagType(const ElementTagType &other) = default;
+
     ElementTagType() = default;
 };
 
@@ -3206,8 +3217,10 @@ void convertFromJson(const JsonVariantConst &src, ElementTagType &dst);
 */
 struct ScaledNumberElementsType
 {
-    SpineOptional<ElementTagType> number;
-    SpineOptional<ElementTagType> scale;
+    SpineOptional<ElementTagType> number{};
+    SpineOptional<ElementTagType> scale{};
+
+    ScaledNumberElementsType(const ScaledNumberElementsType &other) = default;
 
     ScaledNumberElementsType() = default;
 };
@@ -3231,16 +3244,18 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
 */
 struct DirectControlActivityDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> activityState;
-    SpineOptional<ElementTagType> isActivityStateChangeable;
-    SpineOptional<ElementTagType> energyMode;
-    SpineOptional<ElementTagType> isEnergyModeChangeable;
-    SpineOptional<ScaledNumberElementsType> power;
-    SpineOptional<ElementTagType> isPowerChangeable;
-    SpineOptional<ScaledNumberElementsType> energy;
-    SpineOptional<ElementTagType> isEnergyChangeable;
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> activityState{};
+    SpineOptional<ElementTagType> isActivityStateChangeable{};
+    SpineOptional<ElementTagType> energyMode{};
+    SpineOptional<ElementTagType> isEnergyModeChangeable{};
+    SpineOptional<ScaledNumberElementsType> power{};
+    SpineOptional<ElementTagType> isPowerChangeable{};
+    SpineOptional<ScaledNumberElementsType> energy{};
+    SpineOptional<ElementTagType> isEnergyChangeable{};
+    SpineOptional<ElementTagType> sequenceId{};
+
+    DirectControlActivityDataElementsType(const DirectControlActivityDataElementsType &other) = default;
 
     DirectControlActivityDataElementsType() = default;
 };
@@ -3264,7 +3279,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
 */
 struct DirectControlActivityListDataType
 {
-    SpineOptional<std::vector<DirectControlActivityDataType>> directControlActivityData;
+    SpineOptional<std::vector<DirectControlActivityDataType>> directControlActivityData{};
+
+    DirectControlActivityListDataType(const DirectControlActivityListDataType &other) = default;
 
     DirectControlActivityListDataType() = default;
 };
@@ -3288,8 +3305,10 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataT
 */
 struct TimestampIntervalType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> startTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> endTime;
+    SpineOptional<AbsoluteOrRelativeTimeType> startTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> endTime{};
+
+    TimestampIntervalType(const TimestampIntervalType &other) = default;
 
     TimestampIntervalType() = default;
 };
@@ -3313,7 +3332,9 @@ void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst);
 */
 struct DirectControlActivityListDataSelectorsType
 {
-    SpineOptional<TimestampIntervalType> timestampInterval;
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+
+    DirectControlActivityListDataSelectorsType(const DirectControlActivityListDataSelectorsType &other) = default;
 
     DirectControlActivityListDataSelectorsType() = default;
 };
@@ -3337,9 +3358,11 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataS
 */
 struct DirectControlDescriptionDataType
 {
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
-    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit{};
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit{};
+
+    DirectControlDescriptionDataType(const DirectControlDescriptionDataType &other) = default;
 
     DirectControlDescriptionDataType() = default;
 };
@@ -3363,9 +3386,11 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataTy
 */
 struct DirectControlDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> powerUnit;
-    SpineOptional<ElementTagType> energyUnit;
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> powerUnit{};
+    SpineOptional<ElementTagType> energyUnit{};
+
+    DirectControlDescriptionDataElementsType(const DirectControlDescriptionDataElementsType &other) = default;
 
     DirectControlDescriptionDataElementsType() = default;
 };
@@ -3389,8 +3414,10 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataEl
 */
 struct TimePeriodType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> startTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> endTime;
+    SpineOptional<AbsoluteOrRelativeTimeType> startTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> endTime{};
+
+    TimePeriodType(const TimePeriodType &other) = default;
 
     TimePeriodType() = default;
 };
@@ -3414,8 +3441,10 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst);
 */
 struct TimePeriodElementsType
 {
-    SpineOptional<ElementTagType> startTime;
-    SpineOptional<ElementTagType> endTime;
+    SpineOptional<ElementTagType> startTime{};
+    SpineOptional<ElementTagType> endTime{};
+
+    TimePeriodElementsType(const TimePeriodElementsType &other) = default;
 
     TimePeriodElementsType() = default;
 };
@@ -3439,13 +3468,15 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst);
 */
 struct DaysOfWeekType
 {
-    SpineOptional<ElementTagType> monday;
-    SpineOptional<ElementTagType> tuesday;
-    SpineOptional<ElementTagType> wednesday;
-    SpineOptional<ElementTagType> thursday;
-    SpineOptional<ElementTagType> friday;
-    SpineOptional<ElementTagType> saturday;
-    SpineOptional<ElementTagType> sunday;
+    SpineOptional<ElementTagType> monday{};
+    SpineOptional<ElementTagType> tuesday{};
+    SpineOptional<ElementTagType> wednesday{};
+    SpineOptional<ElementTagType> thursday{};
+    SpineOptional<ElementTagType> friday{};
+    SpineOptional<ElementTagType> saturday{};
+    SpineOptional<ElementTagType> sunday{};
+
+    DaysOfWeekType(const DaysOfWeekType &other) = default;
 
     DaysOfWeekType() = default;
 };
@@ -3469,14 +3500,16 @@ void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst);
 */
 struct AbsoluteOrRecurringTimeType
 {
-    SpineOptional<std::string> dateTime;
-    SpineOptional<MonthType> month;
-    SpineOptional<DayOfMonthType> dayOfMonth;
-    SpineOptional<CalendarWeekType> calendarWeek;
-    SpineOptional<OccurrenceEnumType> dayOfWeekOccurrence;
-    SpineOptional<DaysOfWeekType> daysOfWeek;
-    SpineOptional<std::string> time;
-    SpineOptional<std::string> relative;
+    SpineOptional<std::string> dateTime{};
+    SpineOptional<MonthType> month{};
+    SpineOptional<DayOfMonthType> dayOfMonth{};
+    SpineOptional<CalendarWeekType> calendarWeek{};
+    SpineOptional<OccurrenceEnumType> dayOfWeekOccurrence{};
+    SpineOptional<DaysOfWeekType> daysOfWeek{};
+    SpineOptional<std::string> time{};
+    SpineOptional<std::string> relative{};
+
+    AbsoluteOrRecurringTimeType(const AbsoluteOrRecurringTimeType &other) = default;
 
     AbsoluteOrRecurringTimeType() = default;
 };
@@ -3500,14 +3533,16 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &d
 */
 struct AbsoluteOrRecurringTimeElementsType
 {
-    SpineOptional<ElementTagType> dateTime;
-    SpineOptional<ElementTagType> month;
-    SpineOptional<ElementTagType> dayOfMonth;
-    SpineOptional<ElementTagType> calendarWeek;
-    SpineOptional<ElementTagType> dayOfWeekOccurrence;
-    SpineOptional<ElementTagType> daysOfWeek;
-    SpineOptional<ElementTagType> time;
-    SpineOptional<ElementTagType> relative;
+    SpineOptional<ElementTagType> dateTime{};
+    SpineOptional<ElementTagType> month{};
+    SpineOptional<ElementTagType> dayOfMonth{};
+    SpineOptional<ElementTagType> calendarWeek{};
+    SpineOptional<ElementTagType> dayOfWeekOccurrence{};
+    SpineOptional<ElementTagType> daysOfWeek{};
+    SpineOptional<ElementTagType> time{};
+    SpineOptional<ElementTagType> relative{};
+
+    AbsoluteOrRecurringTimeElementsType(const AbsoluteOrRecurringTimeElementsType &other) = default;
 
     AbsoluteOrRecurringTimeElementsType() = default;
 };
@@ -3531,11 +3566,13 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
 */
 struct RecurrenceInformationType
 {
-    SpineOptional<RecurringIntervalEnumType> recurringInterval;
-    SpineOptional<uint32_t> recurringIntervalStep;
-    SpineOptional<std::string> firstExecution;
-    SpineOptional<uint32_t> executionCount;
-    SpineOptional<std::string> lastExecution;
+    SpineOptional<RecurringIntervalEnumType> recurringInterval{};
+    SpineOptional<uint32_t> recurringIntervalStep{};
+    SpineOptional<std::string> firstExecution{};
+    SpineOptional<uint32_t> executionCount{};
+    SpineOptional<std::string> lastExecution{};
+
+    RecurrenceInformationType(const RecurrenceInformationType &other) = default;
 
     RecurrenceInformationType() = default;
 };
@@ -3559,11 +3596,13 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
 */
 struct RecurrenceInformationElementsType
 {
-    SpineOptional<ElementTagType> recurringInterval;
-    SpineOptional<ElementTagType> recurringIntervalStep;
-    SpineOptional<ElementTagType> firstExecution;
-    SpineOptional<ElementTagType> executionCount;
-    SpineOptional<ElementTagType> lastExecution;
+    SpineOptional<ElementTagType> recurringInterval{};
+    SpineOptional<ElementTagType> recurringIntervalStep{};
+    SpineOptional<ElementTagType> firstExecution{};
+    SpineOptional<ElementTagType> executionCount{};
+    SpineOptional<ElementTagType> lastExecution{};
+
+    RecurrenceInformationElementsType(const RecurrenceInformationElementsType &other) = default;
 
     RecurrenceInformationElementsType() = default;
 };
@@ -3587,8 +3626,10 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
 */
 struct ScaledNumberRangeType
 {
-    SpineOptional<ScaledNumberType> min;
-    SpineOptional<ScaledNumberType> max;
+    SpineOptional<ScaledNumberType> min{};
+    SpineOptional<ScaledNumberType> max{};
+
+    ScaledNumberRangeType(const ScaledNumberRangeType &other) = default;
 
     ScaledNumberRangeType() = default;
 };
@@ -3612,8 +3653,10 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst);
 */
 struct ScaledNumberRangeElementsType
 {
-    SpineOptional<ScaledNumberElementsType> min;
-    SpineOptional<ScaledNumberElementsType> max;
+    SpineOptional<ScaledNumberElementsType> min{};
+    SpineOptional<ScaledNumberElementsType> max{};
+
+    ScaledNumberRangeElementsType(const ScaledNumberRangeElementsType &other) = default;
 
     ScaledNumberRangeElementsType() = default;
 };
@@ -3637,8 +3680,10 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType 
 */
 struct ScaledNumberSetType
 {
-    SpineOptional<std::vector<ScaledNumberType>> value;
-    SpineOptional<std::vector<ScaledNumberRangeType>> range;
+    SpineOptional<std::vector<ScaledNumberType>> value{};
+    SpineOptional<std::vector<ScaledNumberRangeType>> range{};
+
+    ScaledNumberSetType(const ScaledNumberSetType &other) = default;
 
     ScaledNumberSetType() = default;
 };
@@ -3662,8 +3707,10 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst);
 */
 struct ScaledNumberSetElementsType
 {
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<ScaledNumberRangeElementsType> range;
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<ScaledNumberRangeElementsType> range{};
+
+    ScaledNumberSetElementsType(const ScaledNumberSetElementsType &other) = default;
 
     ScaledNumberSetElementsType() = default;
 };
@@ -3687,7 +3734,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &d
 */
 struct DeviceAddressType
 {
-    SpineOptional<AddressDeviceType> device;
+    SpineOptional<AddressDeviceType> device{};
+
+    DeviceAddressType(const DeviceAddressType &other) = default;
 
     DeviceAddressType() = default;
 };
@@ -3711,7 +3760,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst);
 */
 struct DeviceAddressElementsType
 {
-    SpineOptional<ElementTagType> device;
+    SpineOptional<ElementTagType> device{};
+
+    DeviceAddressElementsType(const DeviceAddressElementsType &other) = default;
 
     DeviceAddressElementsType() = default;
 };
@@ -3735,8 +3786,10 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst
 */
 struct EntityAddressType
 {
-    SpineOptional<AddressDeviceType> device;
-    SpineOptional<std::vector<AddressEntityType>> entity;
+    SpineOptional<AddressDeviceType> device{};
+    SpineOptional<std::vector<AddressEntityType>> entity{};
+
+    EntityAddressType(const EntityAddressType &other) = default;
 
     EntityAddressType() = default;
 };
@@ -3760,8 +3813,10 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst);
 */
 struct EntityAddressElementsType
 {
-    SpineOptional<ElementTagType> device;
-    SpineOptional<ElementTagType> entity;
+    SpineOptional<ElementTagType> device{};
+    SpineOptional<ElementTagType> entity{};
+
+    EntityAddressElementsType(const EntityAddressElementsType &other) = default;
 
     EntityAddressElementsType() = default;
 };
@@ -3785,9 +3840,11 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst
 */
 struct FeatureAddressType
 {
-    SpineOptional<AddressDeviceType> device;
-    SpineOptional<std::vector<AddressEntityType>> entity;
-    SpineOptional<AddressFeatureType> feature;
+    SpineOptional<AddressDeviceType> device{};
+    SpineOptional<std::vector<AddressEntityType>> entity{};
+    SpineOptional<AddressFeatureType> feature{};
+
+    FeatureAddressType(const FeatureAddressType &other) = default;
 
     FeatureAddressType() = default;
 };
@@ -3811,9 +3868,11 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst);
 */
 struct FeatureAddressElementsType
 {
-    SpineOptional<ElementTagType> device;
-    SpineOptional<ElementTagType> entity;
-    SpineOptional<ElementTagType> feature;
+    SpineOptional<ElementTagType> device{};
+    SpineOptional<ElementTagType> entity{};
+    SpineOptional<ElementTagType> feature{};
+
+    FeatureAddressElementsType(const FeatureAddressElementsType &other) = default;
 
     FeatureAddressElementsType() = default;
 };
@@ -3837,7 +3896,9 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &ds
 */
 struct PossibleOperationsClassifierType
 {
-    SpineOptional<ElementTagType> partial;
+    SpineOptional<ElementTagType> partial{};
+
+    PossibleOperationsClassifierType(const PossibleOperationsClassifierType &other) = default;
 
     PossibleOperationsClassifierType() = default;
 };
@@ -3861,7 +3922,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierTy
 */
 struct PossibleOperationsReadType
 {
-    SpineOptional<ElementTagType> partial;
+    SpineOptional<ElementTagType> partial{};
+
+    PossibleOperationsReadType(const PossibleOperationsReadType &other) = default;
 
     PossibleOperationsReadType() = default;
 };
@@ -3885,7 +3948,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &ds
 */
 struct PossibleOperationsWriteType
 {
-    SpineOptional<ElementTagType> partial;
+    SpineOptional<ElementTagType> partial{};
+
+    PossibleOperationsWriteType(const PossibleOperationsWriteType &other) = default;
 
     PossibleOperationsWriteType() = default;
 };
@@ -3909,8 +3974,10 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &d
 */
 struct PossibleOperationsType
 {
-    SpineOptional<PossibleOperationsReadType> read;
-    SpineOptional<PossibleOperationsWriteType> write;
+    SpineOptional<PossibleOperationsReadType> read{};
+    SpineOptional<PossibleOperationsWriteType> write{};
+
+    PossibleOperationsType(const PossibleOperationsType &other) = default;
 
     PossibleOperationsType() = default;
 };
@@ -3934,8 +4001,10 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst);
 */
 struct PossibleOperationsElementsType
 {
-    SpineOptional<ElementTagType> read;
-    SpineOptional<ElementTagType> write;
+    SpineOptional<ElementTagType> read{};
+    SpineOptional<ElementTagType> write{};
+
+    PossibleOperationsElementsType(const PossibleOperationsElementsType &other) = default;
 
     PossibleOperationsElementsType() = default;
 };
@@ -3959,8 +4028,10 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType
 */
 struct FunctionPropertyType
 {
-    SpineOptional<FunctionEnumType> function;
-    SpineOptional<PossibleOperationsType> possibleOperations;
+    SpineOptional<FunctionEnumType> function{};
+    SpineOptional<PossibleOperationsType> possibleOperations{};
+
+    FunctionPropertyType(const FunctionPropertyType &other) = default;
 
     FunctionPropertyType() = default;
 };
@@ -3984,8 +4055,10 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst);
 */
 struct FunctionPropertyElementsType
 {
-    SpineOptional<ElementTagType> function;
-    SpineOptional<PossibleOperationsElementsType> possibleOperations;
+    SpineOptional<ElementTagType> function{};
+    SpineOptional<PossibleOperationsElementsType> possibleOperations{};
+
+    FunctionPropertyElementsType(const FunctionPropertyElementsType &other) = default;
 
     FunctionPropertyElementsType() = default;
 };
@@ -4009,13 +4082,15 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &
 */
 struct PowerTimeSlotScheduleDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<std::string> defaultDuration;
-    SpineOptional<std::string> durationUncertainty;
-    SpineOptional<bool> slotActivated;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<std::string> defaultDuration{};
+    SpineOptional<std::string> durationUncertainty{};
+    SpineOptional<bool> slotActivated{};
+    SpineOptional<DescriptionType> description{};
+
+    PowerTimeSlotScheduleDataType(const PowerTimeSlotScheduleDataType &other) = default;
 
     PowerTimeSlotScheduleDataType() = default;
 };
@@ -4039,13 +4114,15 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType 
 */
 struct PowerTimeSlotScheduleDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> slotNumber;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ElementTagType> defaultDuration;
-    SpineOptional<ElementTagType> durationUncertainty;
-    SpineOptional<ElementTagType> slotActivated;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> slotNumber{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ElementTagType> defaultDuration{};
+    SpineOptional<ElementTagType> durationUncertainty{};
+    SpineOptional<ElementTagType> slotActivated{};
+    SpineOptional<ElementTagType> description{};
+
+    PowerTimeSlotScheduleDataElementsType(const PowerTimeSlotScheduleDataElementsType &other) = default;
 
     PowerTimeSlotScheduleDataElementsType() = default;
 };
@@ -4069,7 +4146,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataEleme
 */
 struct PowerTimeSlotScheduleListDataType
 {
-    SpineOptional<std::vector<PowerTimeSlotScheduleDataType>> powerTimeSlotScheduleData;
+    SpineOptional<std::vector<PowerTimeSlotScheduleDataType>> powerTimeSlotScheduleData{};
+
+    PowerTimeSlotScheduleListDataType(const PowerTimeSlotScheduleListDataType &other) = default;
 
     PowerTimeSlotScheduleListDataType() = default;
 };
@@ -4093,8 +4172,10 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataT
 */
 struct PowerTimeSlotScheduleListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+
+    PowerTimeSlotScheduleListDataSelectorsType(const PowerTimeSlotScheduleListDataSelectorsType &other) = default;
 
     PowerTimeSlotScheduleListDataSelectorsType() = default;
 };
@@ -4118,10 +4199,12 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataS
 */
 struct PowerTimeSlotValueDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType;
-    SpineOptional<ScaledNumberType> value;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType{};
+    SpineOptional<ScaledNumberType> value{};
+
+    PowerTimeSlotValueDataType(const PowerTimeSlotValueDataType &other) = default;
 
     PowerTimeSlotValueDataType() = default;
 };
@@ -4145,10 +4228,12 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &ds
 */
 struct PowerTimeSlotValueDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> slotNumber;
-    SpineOptional<ElementTagType> valueType;
-    SpineOptional<ScaledNumberElementsType> value;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> slotNumber{};
+    SpineOptional<ElementTagType> valueType{};
+    SpineOptional<ScaledNumberElementsType> value{};
+
+    PowerTimeSlotValueDataElementsType(const PowerTimeSlotValueDataElementsType &other) = default;
 
     PowerTimeSlotValueDataElementsType() = default;
 };
@@ -4172,7 +4257,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElements
 */
 struct PowerTimeSlotValueListDataType
 {
-    SpineOptional<std::vector<PowerTimeSlotValueDataType>> powerTimeSlotValueData;
+    SpineOptional<std::vector<PowerTimeSlotValueDataType>> powerTimeSlotValueData{};
+
+    PowerTimeSlotValueListDataType(const PowerTimeSlotValueListDataType &other) = default;
 
     PowerTimeSlotValueListDataType() = default;
 };
@@ -4196,9 +4283,11 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType
 */
 struct PowerTimeSlotValueListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType{};
+
+    PowerTimeSlotValueListDataSelectorsType(const PowerTimeSlotValueListDataSelectorsType &other) = default;
 
     PowerTimeSlotValueListDataSelectorsType() = default;
 };
@@ -4222,13 +4311,15 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSele
 */
 struct PowerTimeSlotScheduleConstraintsDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<AbsoluteOrRelativeTimeType> earliestStartTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> latestEndTime;
-    SpineOptional<std::string> minDuration;
-    SpineOptional<std::string> maxDuration;
-    SpineOptional<bool> optionalSlot;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+    SpineOptional<AbsoluteOrRelativeTimeType> earliestStartTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> latestEndTime{};
+    SpineOptional<std::string> minDuration{};
+    SpineOptional<std::string> maxDuration{};
+    SpineOptional<bool> optionalSlot{};
+
+    PowerTimeSlotScheduleConstraintsDataType(const PowerTimeSlotScheduleConstraintsDataType &other) = default;
 
     PowerTimeSlotScheduleConstraintsDataType() = default;
 };
@@ -4252,13 +4343,15 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
 */
 struct PowerTimeSlotScheduleConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> slotNumber;
-    SpineOptional<ElementTagType> earliestStartTime;
-    SpineOptional<ElementTagType> latestEndTime;
-    SpineOptional<ElementTagType> minDuration;
-    SpineOptional<ElementTagType> maxDuration;
-    SpineOptional<ElementTagType> optionalSlot;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> slotNumber{};
+    SpineOptional<ElementTagType> earliestStartTime{};
+    SpineOptional<ElementTagType> latestEndTime{};
+    SpineOptional<ElementTagType> minDuration{};
+    SpineOptional<ElementTagType> maxDuration{};
+    SpineOptional<ElementTagType> optionalSlot{};
+
+    PowerTimeSlotScheduleConstraintsDataElementsType(const PowerTimeSlotScheduleConstraintsDataElementsType &other) = default;
 
     PowerTimeSlotScheduleConstraintsDataElementsType() = default;
 };
@@ -4282,7 +4375,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
 */
 struct PowerTimeSlotScheduleConstraintsListDataType
 {
-    SpineOptional<std::vector<PowerTimeSlotScheduleConstraintsDataType>> powerTimeSlotScheduleConstraintsData;
+    SpineOptional<std::vector<PowerTimeSlotScheduleConstraintsDataType>> powerTimeSlotScheduleConstraintsData{};
+
+    PowerTimeSlotScheduleConstraintsListDataType(const PowerTimeSlotScheduleConstraintsListDataType &other) = default;
 
     PowerTimeSlotScheduleConstraintsListDataType() = default;
 };
@@ -4306,8 +4401,10 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
 */
 struct PowerTimeSlotScheduleConstraintsListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerTimeSlotNumberType> slotNumber;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerTimeSlotNumberType> slotNumber{};
+
+    PowerTimeSlotScheduleConstraintsListDataSelectorsType(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &other) = default;
 
     PowerTimeSlotScheduleConstraintsListDataSelectorsType() = default;
 };
@@ -4331,8 +4428,10 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
 */
 struct PowerSequenceAlternativesRelationDataType
 {
-    SpineOptional<AlternativesIdType> alternativesId;
-    SpineOptional<std::vector<PowerSequenceIdType>> sequenceId;
+    SpineOptional<AlternativesIdType> alternativesId{};
+    SpineOptional<std::vector<PowerSequenceIdType>> sequenceId{};
+
+    PowerSequenceAlternativesRelationDataType(const PowerSequenceAlternativesRelationDataType &other) = default;
 
     PowerSequenceAlternativesRelationDataType() = default;
 };
@@ -4356,8 +4455,10 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
 */
 struct PowerSequenceAlternativesRelationDataElementsType
 {
-    SpineOptional<ElementTagType> alternativesId;
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> alternativesId{};
+    SpineOptional<ElementTagType> sequenceId{};
+
+    PowerSequenceAlternativesRelationDataElementsType(const PowerSequenceAlternativesRelationDataElementsType &other) = default;
 
     PowerSequenceAlternativesRelationDataElementsType() = default;
 };
@@ -4381,7 +4482,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
 */
 struct PowerSequenceAlternativesRelationListDataType
 {
-    SpineOptional<std::vector<PowerSequenceAlternativesRelationDataType>> powerSequenceAlternativesRelationData;
+    SpineOptional<std::vector<PowerSequenceAlternativesRelationDataType>> powerSequenceAlternativesRelationData{};
+
+    PowerSequenceAlternativesRelationListDataType(const PowerSequenceAlternativesRelationListDataType &other) = default;
 
     PowerSequenceAlternativesRelationListDataType() = default;
 };
@@ -4405,8 +4508,10 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
 */
 struct PowerSequenceAlternativesRelationListDataSelectorsType
 {
-    SpineOptional<AlternativesIdType> alternativesId;
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<AlternativesIdType> alternativesId{};
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceAlternativesRelationListDataSelectorsType(const PowerSequenceAlternativesRelationListDataSelectorsType &other) = default;
 
     PowerSequenceAlternativesRelationListDataSelectorsType() = default;
 };
@@ -4430,15 +4535,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
 */
 struct PowerSequenceDescriptionDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
-    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
-    SpineOptional<MeasurementValueSourceEnumType> valueSource;
-    SpineOptional<PowerSequenceScopeEnumType> scope;
-    SpineOptional<uint32_t> taskIdentifier;
-    SpineOptional<uint32_t> repetitionsTotal;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit{};
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit{};
+    SpineOptional<MeasurementValueSourceEnumType> valueSource{};
+    SpineOptional<PowerSequenceScopeEnumType> scope{};
+    SpineOptional<uint32_t> taskIdentifier{};
+    SpineOptional<uint32_t> repetitionsTotal{};
+
+    PowerSequenceDescriptionDataType(const PowerSequenceDescriptionDataType &other) = default;
 
     PowerSequenceDescriptionDataType() = default;
 };
@@ -4462,15 +4569,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
 */
 struct PowerSequenceDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> powerUnit;
-    SpineOptional<ElementTagType> energyUnit;
-    SpineOptional<ElementTagType> valueSource;
-    SpineOptional<ElementTagType> scope;
-    SpineOptional<ElementTagType> taskIdentifier;
-    SpineOptional<ElementTagType> repetitionsTotal;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> powerUnit{};
+    SpineOptional<ElementTagType> energyUnit{};
+    SpineOptional<ElementTagType> valueSource{};
+    SpineOptional<ElementTagType> scope{};
+    SpineOptional<ElementTagType> taskIdentifier{};
+    SpineOptional<ElementTagType> repetitionsTotal{};
+
+    PowerSequenceDescriptionDataElementsType(const PowerSequenceDescriptionDataElementsType &other) = default;
 
     PowerSequenceDescriptionDataElementsType() = default;
 };
@@ -4494,7 +4603,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
 */
 struct PowerSequenceDescriptionListDataType
 {
-    SpineOptional<std::vector<PowerSequenceDescriptionDataType>> powerSequenceDescriptionData;
+    SpineOptional<std::vector<PowerSequenceDescriptionDataType>> powerSequenceDescriptionData{};
+
+    PowerSequenceDescriptionListDataType(const PowerSequenceDescriptionListDataType &other) = default;
 
     PowerSequenceDescriptionListDataType() = default;
 };
@@ -4518,7 +4629,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
 */
 struct PowerSequenceDescriptionListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceDescriptionListDataSelectorsType(const PowerSequenceDescriptionListDataSelectorsType &other) = default;
 
     PowerSequenceDescriptionListDataSelectorsType() = default;
 };
@@ -4542,14 +4655,16 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
 */
 struct PowerSequenceStateDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerSequenceStateEnumType> state;
-    SpineOptional<PowerTimeSlotNumberType> activeSlotNumber;
-    SpineOptional<std::string> elapsedSlotTime;
-    SpineOptional<std::string> remainingSlotTime;
-    SpineOptional<bool> sequenceRemoteControllable;
-    SpineOptional<uint32_t> activeRepetitionNumber;
-    SpineOptional<std::string> remainingPauseTime;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<PowerSequenceStateEnumType> state{};
+    SpineOptional<PowerTimeSlotNumberType> activeSlotNumber{};
+    SpineOptional<std::string> elapsedSlotTime{};
+    SpineOptional<std::string> remainingSlotTime{};
+    SpineOptional<bool> sequenceRemoteControllable{};
+    SpineOptional<uint32_t> activeRepetitionNumber{};
+    SpineOptional<std::string> remainingPauseTime{};
+
+    PowerSequenceStateDataType(const PowerSequenceStateDataType &other) = default;
 
     PowerSequenceStateDataType() = default;
 };
@@ -4573,14 +4688,16 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
 */
 struct PowerSequenceStateDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> state;
-    SpineOptional<ElementTagType> activeSlotNumber;
-    SpineOptional<ElementTagType> elapsedSlotTime;
-    SpineOptional<ElementTagType> remainingSlotTime;
-    SpineOptional<ElementTagType> sequenceRemoteControllable;
-    SpineOptional<ElementTagType> activeRepetitionNumber;
-    SpineOptional<ElementTagType> remainingPauseTime;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> state{};
+    SpineOptional<ElementTagType> activeSlotNumber{};
+    SpineOptional<ElementTagType> elapsedSlotTime{};
+    SpineOptional<ElementTagType> remainingSlotTime{};
+    SpineOptional<ElementTagType> sequenceRemoteControllable{};
+    SpineOptional<ElementTagType> activeRepetitionNumber{};
+    SpineOptional<ElementTagType> remainingPauseTime{};
+
+    PowerSequenceStateDataElementsType(const PowerSequenceStateDataElementsType &other) = default;
 
     PowerSequenceStateDataElementsType() = default;
 };
@@ -4604,7 +4721,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
 */
 struct PowerSequenceStateListDataType
 {
-    SpineOptional<std::vector<PowerSequenceStateDataType>> powerSequenceStateData;
+    SpineOptional<std::vector<PowerSequenceStateDataType>> powerSequenceStateData{};
+
+    PowerSequenceStateListDataType(const PowerSequenceStateListDataType &other) = default;
 
     PowerSequenceStateListDataType() = default;
 };
@@ -4628,7 +4747,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType
 */
 struct PowerSequenceStateListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceStateListDataSelectorsType(const PowerSequenceStateListDataSelectorsType &other) = default;
 
     PowerSequenceStateListDataSelectorsType() = default;
 };
@@ -4652,9 +4773,11 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSele
 */
 struct PowerSequenceScheduleDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<AbsoluteOrRelativeTimeType> startTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> endTime;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> startTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> endTime{};
+
+    PowerSequenceScheduleDataType(const PowerSequenceScheduleDataType &other) = default;
 
     PowerSequenceScheduleDataType() = default;
 };
@@ -4678,9 +4801,11 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType 
 */
 struct PowerSequenceScheduleDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> startTime;
-    SpineOptional<ElementTagType> endTime;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> startTime{};
+    SpineOptional<ElementTagType> endTime{};
+
+    PowerSequenceScheduleDataElementsType(const PowerSequenceScheduleDataElementsType &other) = default;
 
     PowerSequenceScheduleDataElementsType() = default;
 };
@@ -4704,7 +4829,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataEleme
 */
 struct PowerSequenceScheduleListDataType
 {
-    SpineOptional<std::vector<PowerSequenceScheduleDataType>> powerSequenceScheduleData;
+    SpineOptional<std::vector<PowerSequenceScheduleDataType>> powerSequenceScheduleData{};
+
+    PowerSequenceScheduleListDataType(const PowerSequenceScheduleListDataType &other) = default;
 
     PowerSequenceScheduleListDataType() = default;
 };
@@ -4728,7 +4855,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataT
 */
 struct PowerSequenceScheduleListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceScheduleListDataSelectorsType(const PowerSequenceScheduleListDataSelectorsType &other) = default;
 
     PowerSequenceScheduleListDataSelectorsType() = default;
 };
@@ -4752,12 +4881,14 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataS
 */
 struct PowerSequenceScheduleConstraintsDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<AbsoluteOrRelativeTimeType> earliestStartTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> latestStartTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> earliestEndTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> latestEndTime;
-    SpineOptional<bool> optionalSequence;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> earliestStartTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> latestStartTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> earliestEndTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> latestEndTime{};
+    SpineOptional<bool> optionalSequence{};
+
+    PowerSequenceScheduleConstraintsDataType(const PowerSequenceScheduleConstraintsDataType &other) = default;
 
     PowerSequenceScheduleConstraintsDataType() = default;
 };
@@ -4781,12 +4912,14 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
 */
 struct PowerSequenceScheduleConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> earliestStartTime;
-    SpineOptional<ElementTagType> latestStartTime;
-    SpineOptional<ElementTagType> earliestEndTime;
-    SpineOptional<ElementTagType> latestEndTime;
-    SpineOptional<ElementTagType> optionalSequence;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> earliestStartTime{};
+    SpineOptional<ElementTagType> latestStartTime{};
+    SpineOptional<ElementTagType> earliestEndTime{};
+    SpineOptional<ElementTagType> latestEndTime{};
+    SpineOptional<ElementTagType> optionalSequence{};
+
+    PowerSequenceScheduleConstraintsDataElementsType(const PowerSequenceScheduleConstraintsDataElementsType &other) = default;
 
     PowerSequenceScheduleConstraintsDataElementsType() = default;
 };
@@ -4810,7 +4943,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
 */
 struct PowerSequenceScheduleConstraintsListDataType
 {
-    SpineOptional<std::vector<PowerSequenceScheduleConstraintsDataType>> powerSequenceScheduleConstraintsData;
+    SpineOptional<std::vector<PowerSequenceScheduleConstraintsDataType>> powerSequenceScheduleConstraintsData{};
+
+    PowerSequenceScheduleConstraintsListDataType(const PowerSequenceScheduleConstraintsListDataType &other) = default;
 
     PowerSequenceScheduleConstraintsListDataType() = default;
 };
@@ -4834,7 +4969,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
 */
 struct PowerSequenceScheduleConstraintsListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceScheduleConstraintsListDataSelectorsType(const PowerSequenceScheduleConstraintsListDataSelectorsType &other) = default;
 
     PowerSequenceScheduleConstraintsListDataSelectorsType() = default;
 };
@@ -4858,10 +4995,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
 */
 struct PowerSequencePriceDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<AbsoluteOrRelativeTimeType> potentialStartTime;
-    SpineOptional<ScaledNumberType> price;
-    SpineOptional<CurrencyEnumType> currency;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> potentialStartTime{};
+    SpineOptional<ScaledNumberType> price{};
+    SpineOptional<CurrencyEnumType> currency{};
+
+    PowerSequencePriceDataType(const PowerSequencePriceDataType &other) = default;
 
     PowerSequencePriceDataType() = default;
 };
@@ -4885,10 +5024,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &ds
 */
 struct PowerSequencePriceDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> potentialStartTime;
-    SpineOptional<ScaledNumberElementsType> price;
-    SpineOptional<ElementTagType> currency;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> potentialStartTime{};
+    SpineOptional<ScaledNumberElementsType> price{};
+    SpineOptional<ElementTagType> currency{};
+
+    PowerSequencePriceDataElementsType(const PowerSequencePriceDataElementsType &other) = default;
 
     PowerSequencePriceDataElementsType() = default;
 };
@@ -4912,7 +5053,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElements
 */
 struct PowerSequencePriceListDataType
 {
-    SpineOptional<std::vector<PowerSequencePriceDataType>> powerSequencePriceData;
+    SpineOptional<std::vector<PowerSequencePriceDataType>> powerSequencePriceData{};
+
+    PowerSequencePriceListDataType(const PowerSequencePriceListDataType &other) = default;
 
     PowerSequencePriceListDataType() = default;
 };
@@ -4936,8 +5079,10 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType
 */
 struct PowerSequencePriceListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<TimestampIntervalType> potentialStartTimeInterval;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<TimestampIntervalType> potentialStartTimeInterval{};
+
+    PowerSequencePriceListDataSelectorsType(const PowerSequencePriceListDataSelectorsType &other) = default;
 
     PowerSequencePriceListDataSelectorsType() = default;
 };
@@ -4961,9 +5106,11 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSele
 */
 struct PowerSequenceSchedulePreferenceDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<bool> greenest;
-    SpineOptional<bool> cheapest;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<bool> greenest{};
+    SpineOptional<bool> cheapest{};
+
+    PowerSequenceSchedulePreferenceDataType(const PowerSequenceSchedulePreferenceDataType &other) = default;
 
     PowerSequenceSchedulePreferenceDataType() = default;
 };
@@ -4987,9 +5134,11 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
 */
 struct PowerSequenceSchedulePreferenceDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> greenest;
-    SpineOptional<ElementTagType> cheapest;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> greenest{};
+    SpineOptional<ElementTagType> cheapest{};
+
+    PowerSequenceSchedulePreferenceDataElementsType(const PowerSequenceSchedulePreferenceDataElementsType &other) = default;
 
     PowerSequenceSchedulePreferenceDataElementsType() = default;
 };
@@ -5013,7 +5162,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
 */
 struct PowerSequenceSchedulePreferenceListDataType
 {
-    SpineOptional<std::vector<PowerSequenceSchedulePreferenceDataType>> powerSequenceSchedulePreferenceData;
+    SpineOptional<std::vector<PowerSequenceSchedulePreferenceDataType>> powerSequenceSchedulePreferenceData{};
+
+    PowerSequenceSchedulePreferenceListDataType(const PowerSequenceSchedulePreferenceListDataType &other) = default;
 
     PowerSequenceSchedulePreferenceListDataType() = default;
 };
@@ -5037,7 +5188,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
 */
 struct PowerSequenceSchedulePreferenceListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceSchedulePreferenceListDataSelectorsType(const PowerSequenceSchedulePreferenceListDataSelectorsType &other) = default;
 
     PowerSequenceSchedulePreferenceListDataSelectorsType() = default;
 };
@@ -5061,11 +5214,13 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
 */
 struct PowerSequenceNodeScheduleInformationDataType
 {
-    SpineOptional<bool> nodeRemoteControllable;
-    SpineOptional<bool> supportsSingleSlotSchedulingOnly;
-    SpineOptional<uint32_t> alternativesCount;
-    SpineOptional<uint32_t> totalSequencesCountMax;
-    SpineOptional<bool> supportsReselection;
+    SpineOptional<bool> nodeRemoteControllable{};
+    SpineOptional<bool> supportsSingleSlotSchedulingOnly{};
+    SpineOptional<uint32_t> alternativesCount{};
+    SpineOptional<uint32_t> totalSequencesCountMax{};
+    SpineOptional<bool> supportsReselection{};
+
+    PowerSequenceNodeScheduleInformationDataType(const PowerSequenceNodeScheduleInformationDataType &other) = default;
 
     PowerSequenceNodeScheduleInformationDataType() = default;
 };
@@ -5089,11 +5244,13 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
 */
 struct PowerSequenceNodeScheduleInformationDataElementsType
 {
-    SpineOptional<ElementTagType> nodeRemoteControllable;
-    SpineOptional<ElementTagType> supportsSingleSlotSchedulingOnly;
-    SpineOptional<ElementTagType> alternativesCount;
-    SpineOptional<ElementTagType> totalSequencesCountMax;
-    SpineOptional<ElementTagType> supportsReselection;
+    SpineOptional<ElementTagType> nodeRemoteControllable{};
+    SpineOptional<ElementTagType> supportsSingleSlotSchedulingOnly{};
+    SpineOptional<ElementTagType> alternativesCount{};
+    SpineOptional<ElementTagType> totalSequencesCountMax{};
+    SpineOptional<ElementTagType> supportsReselection{};
+
+    PowerSequenceNodeScheduleInformationDataElementsType(const PowerSequenceNodeScheduleInformationDataElementsType &other) = default;
 
     PowerSequenceNodeScheduleInformationDataElementsType() = default;
 };
@@ -5117,7 +5274,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
 */
 struct PowerSequenceScheduleConfigurationRequestCallType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    PowerSequenceScheduleConfigurationRequestCallType(const PowerSequenceScheduleConfigurationRequestCallType &other) = default;
 
     PowerSequenceScheduleConfigurationRequestCallType() = default;
 };
@@ -5141,7 +5300,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
 */
 struct PowerSequenceScheduleConfigurationRequestCallElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> sequenceId{};
+
+    PowerSequenceScheduleConfigurationRequestCallElementsType(const PowerSequenceScheduleConfigurationRequestCallElementsType &other) = default;
 
     PowerSequenceScheduleConfigurationRequestCallElementsType() = default;
 };
@@ -5165,8 +5326,10 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
 */
 struct PowerSequencePriceCalculationRequestCallType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<AbsoluteOrRelativeTimeType> potentialStartTime;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> potentialStartTime{};
+
+    PowerSequencePriceCalculationRequestCallType(const PowerSequencePriceCalculationRequestCallType &other) = default;
 
     PowerSequencePriceCalculationRequestCallType() = default;
 };
@@ -5190,8 +5353,10 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
 */
 struct PowerSequencePriceCalculationRequestCallElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> potentialStartTime;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> potentialStartTime{};
+
+    PowerSequencePriceCalculationRequestCallElementsType(const PowerSequencePriceCalculationRequestCallElementsType &other) = default;
 
     PowerSequencePriceCalculationRequestCallElementsType() = default;
 };
@@ -5215,14 +5380,16 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
 */
 struct MeasurementDataType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeEnumType> valueType;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<MeasurementValueSourceEnumType> valueSource;
-    SpineOptional<MeasurementValueTendencyEnumType> valueTendency;
-    SpineOptional<MeasurementValueStateEnumType> valueState;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementValueTypeEnumType> valueType{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<TimePeriodType> evaluationPeriod{};
+    SpineOptional<MeasurementValueSourceEnumType> valueSource{};
+    SpineOptional<MeasurementValueTendencyEnumType> valueTendency{};
+    SpineOptional<MeasurementValueStateEnumType> valueState{};
+
+    MeasurementDataType(const MeasurementDataType &other) = default;
 
     MeasurementDataType() = default;
 };
@@ -5246,14 +5413,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst);
 */
 struct MeasurementDataElementsType
 {
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> valueType;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<TimePeriodElementsType> evaluationPeriod;
-    SpineOptional<ElementTagType> valueSource;
-    SpineOptional<ElementTagType> valueTendency;
-    SpineOptional<ElementTagType> valueState;
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> valueType{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<TimePeriodElementsType> evaluationPeriod{};
+    SpineOptional<ElementTagType> valueSource{};
+    SpineOptional<ElementTagType> valueTendency{};
+    SpineOptional<ElementTagType> valueState{};
+
+    MeasurementDataElementsType(const MeasurementDataElementsType &other) = default;
 
     MeasurementDataElementsType() = default;
 };
@@ -5277,7 +5446,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &d
 */
 struct MeasurementListDataType
 {
-    SpineOptional<std::vector<MeasurementDataType>> measurementData;
+    SpineOptional<std::vector<MeasurementDataType>> measurementData{};
+
+    MeasurementListDataType(const MeasurementListDataType &other) = default;
 
     MeasurementListDataType() = default;
 };
@@ -5301,9 +5472,11 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst);
 */
 struct MeasurementListDataSelectorsType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeEnumType> valueType;
-    SpineOptional<TimestampIntervalType> timestampInterval;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementValueTypeEnumType> valueType{};
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+
+    MeasurementListDataSelectorsType(const MeasurementListDataSelectorsType &other) = default;
 
     MeasurementListDataSelectorsType() = default;
 };
@@ -5327,14 +5500,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsTy
 */
 struct MeasurementSeriesDataType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeEnumType> valueType;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<MeasurementValueSourceEnumType> valueSource;
-    SpineOptional<MeasurementValueTendencyEnumType> valueTendency;
-    SpineOptional<MeasurementValueStateEnumType> valueState;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementValueTypeEnumType> valueType{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<TimePeriodType> evaluationPeriod{};
+    SpineOptional<MeasurementValueSourceEnumType> valueSource{};
+    SpineOptional<MeasurementValueTendencyEnumType> valueTendency{};
+    SpineOptional<MeasurementValueStateEnumType> valueState{};
+
+    MeasurementSeriesDataType(const MeasurementSeriesDataType &other) = default;
 
     MeasurementSeriesDataType() = default;
 };
@@ -5358,14 +5533,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst
 */
 struct MeasurementSeriesDataElementsType
 {
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> valueType;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<TimePeriodElementsType> evaluationPeriod;
-    SpineOptional<ElementTagType> valueSource;
-    SpineOptional<ElementTagType> valueTendency;
-    SpineOptional<ElementTagType> valueState;
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> valueType{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<TimePeriodElementsType> evaluationPeriod{};
+    SpineOptional<ElementTagType> valueSource{};
+    SpineOptional<ElementTagType> valueTendency{};
+    SpineOptional<ElementTagType> valueState{};
+
+    MeasurementSeriesDataElementsType(const MeasurementSeriesDataElementsType &other) = default;
 
     MeasurementSeriesDataElementsType() = default;
 };
@@ -5389,7 +5566,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsT
 */
 struct MeasurementSeriesListDataType
 {
-    SpineOptional<std::vector<MeasurementSeriesDataType>> measurementSeriesData;
+    SpineOptional<std::vector<MeasurementSeriesDataType>> measurementSeriesData{};
+
+    MeasurementSeriesListDataType(const MeasurementSeriesListDataType &other) = default;
 
     MeasurementSeriesListDataType() = default;
 };
@@ -5413,9 +5592,11 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType 
 */
 struct MeasurementSeriesListDataSelectorsType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeEnumType> valueType;
-    SpineOptional<TimestampIntervalType> timestampInterval;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementValueTypeEnumType> valueType{};
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+
+    MeasurementSeriesListDataSelectorsType(const MeasurementSeriesListDataSelectorsType &other) = default;
 
     MeasurementSeriesListDataSelectorsType() = default;
 };
@@ -5439,10 +5620,12 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelec
 */
 struct MeasurementConstraintsDataType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScaledNumberType> valueRangeMin;
-    SpineOptional<ScaledNumberType> valueRangeMax;
-    SpineOptional<ScaledNumberType> valueStepSize;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ScaledNumberType> valueRangeMin{};
+    SpineOptional<ScaledNumberType> valueRangeMax{};
+    SpineOptional<ScaledNumberType> valueStepSize{};
+
+    MeasurementConstraintsDataType(const MeasurementConstraintsDataType &other) = default;
 
     MeasurementConstraintsDataType() = default;
 };
@@ -5466,10 +5649,12 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType
 */
 struct MeasurementConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ScaledNumberElementsType> valueRangeMin;
-    SpineOptional<ScaledNumberElementsType> valueRangeMax;
-    SpineOptional<ScaledNumberElementsType> valueStepSize;
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ScaledNumberElementsType> valueRangeMin{};
+    SpineOptional<ScaledNumberElementsType> valueRangeMax{};
+    SpineOptional<ScaledNumberElementsType> valueStepSize{};
+
+    MeasurementConstraintsDataElementsType(const MeasurementConstraintsDataElementsType &other) = default;
 
     MeasurementConstraintsDataElementsType() = default;
 };
@@ -5493,7 +5678,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElem
 */
 struct MeasurementConstraintsListDataType
 {
-    SpineOptional<std::vector<MeasurementConstraintsDataType>> measurementConstraintsData;
+    SpineOptional<std::vector<MeasurementConstraintsDataType>> measurementConstraintsData{};
+
+    MeasurementConstraintsListDataType(const MeasurementConstraintsListDataType &other) = default;
 
     MeasurementConstraintsListDataType() = default;
 };
@@ -5517,7 +5704,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
 */
 struct MeasurementConstraintsListDataSelectorsType
 {
-    SpineOptional<MeasurementIdType> measurementId;
+    SpineOptional<MeasurementIdType> measurementId{};
+
+    MeasurementConstraintsListDataSelectorsType(const MeasurementConstraintsListDataSelectorsType &other) = default;
 
     MeasurementConstraintsListDataSelectorsType() = default;
 };
@@ -5541,14 +5730,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
 */
 struct MeasurementDescriptionDataType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementTypeEnumType> measurementType;
-    SpineOptional<CommodityTypeEnumType> commodityType;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScaledNumberType> calibrationValue;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementTypeEnumType> measurementType{};
+    SpineOptional<CommodityTypeEnumType> commodityType{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScaledNumberType> calibrationValue{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    MeasurementDescriptionDataType(const MeasurementDescriptionDataType &other) = default;
 
     MeasurementDescriptionDataType() = default;
 };
@@ -5572,14 +5763,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType
 */
 struct MeasurementDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> measurementType;
-    SpineOptional<ElementTagType> commodityType;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ScaledNumberElementsType> calibrationValue;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> measurementType{};
+    SpineOptional<ElementTagType> commodityType{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ScaledNumberElementsType> calibrationValue{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    MeasurementDescriptionDataElementsType(const MeasurementDescriptionDataElementsType &other) = default;
 
     MeasurementDescriptionDataElementsType() = default;
 };
@@ -5603,7 +5796,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElem
 */
 struct MeasurementDescriptionListDataType
 {
-    SpineOptional<std::vector<MeasurementDescriptionDataType>> measurementDescriptionData;
+    SpineOptional<std::vector<MeasurementDescriptionDataType>> measurementDescriptionData{};
+
+    MeasurementDescriptionListDataType(const MeasurementDescriptionListDataType &other) = default;
 
     MeasurementDescriptionListDataType() = default;
 };
@@ -5627,10 +5822,12 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
 */
 struct MeasurementDescriptionListDataSelectorsType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementTypeEnumType> measurementType;
-    SpineOptional<CommodityTypeEnumType> commodityType;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<MeasurementTypeEnumType> measurementType{};
+    SpineOptional<CommodityTypeEnumType> commodityType{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    MeasurementDescriptionListDataSelectorsType(const MeasurementDescriptionListDataSelectorsType &other) = default;
 
     MeasurementDescriptionListDataSelectorsType() = default;
 };
@@ -5654,8 +5851,10 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
 */
 struct MeasurementThresholdRelationDataType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<std::vector<ThresholdIdType>> thresholdId;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<std::vector<ThresholdIdType>> thresholdId{};
+
+    MeasurementThresholdRelationDataType(const MeasurementThresholdRelationDataType &other) = default;
 
     MeasurementThresholdRelationDataType() = default;
 };
@@ -5679,8 +5878,10 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
 */
 struct MeasurementThresholdRelationDataElementsType
 {
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> thresholdId;
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> thresholdId{};
+
+    MeasurementThresholdRelationDataElementsType(const MeasurementThresholdRelationDataElementsType &other) = default;
 
     MeasurementThresholdRelationDataElementsType() = default;
 };
@@ -5704,7 +5905,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
 */
 struct MeasurementThresholdRelationListDataType
 {
-    SpineOptional<std::vector<MeasurementThresholdRelationDataType>> measurementThresholdRelationData;
+    SpineOptional<std::vector<MeasurementThresholdRelationDataType>> measurementThresholdRelationData{};
+
+    MeasurementThresholdRelationListDataType(const MeasurementThresholdRelationListDataType &other) = default;
 
     MeasurementThresholdRelationListDataType() = default;
 };
@@ -5728,8 +5931,10 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
 */
 struct MeasurementThresholdRelationListDataSelectorsType
 {
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ThresholdIdType> thresholdId;
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ThresholdIdType> thresholdId{};
+
+    MeasurementThresholdRelationListDataSelectorsType(const MeasurementThresholdRelationListDataSelectorsType &other) = default;
 
     MeasurementThresholdRelationListDataSelectorsType() = default;
 };
@@ -5753,8 +5958,10 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
 */
 struct ThresholdDataType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ScaledNumberType> thresholdValue;
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<ScaledNumberType> thresholdValue{};
+
+    ThresholdDataType(const ThresholdDataType &other) = default;
 
     ThresholdDataType() = default;
 };
@@ -5778,8 +5985,10 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst);
 */
 struct ThresholdDataElementsType
 {
-    SpineOptional<ElementTagType> thresholdId;
-    SpineOptional<ScaledNumberElementsType> thresholdValue;
+    SpineOptional<ElementTagType> thresholdId{};
+    SpineOptional<ScaledNumberElementsType> thresholdValue{};
+
+    ThresholdDataElementsType(const ThresholdDataElementsType &other) = default;
 
     ThresholdDataElementsType() = default;
 };
@@ -5803,7 +6012,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst
 */
 struct ThresholdListDataType
 {
-    SpineOptional<std::vector<ThresholdDataType>> thresholdData;
+    SpineOptional<std::vector<ThresholdDataType>> thresholdData{};
+
+    ThresholdListDataType(const ThresholdListDataType &other) = default;
 
     ThresholdListDataType() = default;
 };
@@ -5827,7 +6038,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst);
 */
 struct ThresholdListDataSelectorsType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
+    SpineOptional<ThresholdIdType> thresholdId{};
+
+    ThresholdListDataSelectorsType(const ThresholdListDataSelectorsType &other) = default;
 
     ThresholdListDataSelectorsType() = default;
 };
@@ -5851,10 +6064,12 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType
 */
 struct ThresholdConstraintsDataType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ScaledNumberType> thresholdRangeMin;
-    SpineOptional<ScaledNumberType> thresholdRangeMax;
-    SpineOptional<ScaledNumberType> thresholdStepSize;
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<ScaledNumberType> thresholdRangeMin{};
+    SpineOptional<ScaledNumberType> thresholdRangeMax{};
+    SpineOptional<ScaledNumberType> thresholdStepSize{};
+
+    ThresholdConstraintsDataType(const ThresholdConstraintsDataType &other) = default;
 
     ThresholdConstraintsDataType() = default;
 };
@@ -5878,10 +6093,12 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &
 */
 struct ThresholdConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> thresholdId;
-    SpineOptional<ScaledNumberElementsType> thresholdRangeMin;
-    SpineOptional<ScaledNumberElementsType> thresholdRangeMax;
-    SpineOptional<ScaledNumberElementsType> thresholdStepSize;
+    SpineOptional<ElementTagType> thresholdId{};
+    SpineOptional<ScaledNumberElementsType> thresholdRangeMin{};
+    SpineOptional<ScaledNumberElementsType> thresholdRangeMax{};
+    SpineOptional<ScaledNumberElementsType> thresholdStepSize{};
+
+    ThresholdConstraintsDataElementsType(const ThresholdConstraintsDataElementsType &other) = default;
 
     ThresholdConstraintsDataElementsType() = default;
 };
@@ -5905,7 +6122,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElemen
 */
 struct ThresholdConstraintsListDataType
 {
-    SpineOptional<std::vector<ThresholdConstraintsDataType>> thresholdConstraintsData;
+    SpineOptional<std::vector<ThresholdConstraintsDataType>> thresholdConstraintsData{};
+
+    ThresholdConstraintsListDataType(const ThresholdConstraintsListDataType &other) = default;
 
     ThresholdConstraintsListDataType() = default;
 };
@@ -5929,7 +6148,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataTy
 */
 struct ThresholdConstraintsListDataSelectorsType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
+    SpineOptional<ThresholdIdType> thresholdId{};
+
+    ThresholdConstraintsListDataSelectorsType(const ThresholdConstraintsListDataSelectorsType &other) = default;
 
     ThresholdConstraintsListDataSelectorsType() = default;
 };
@@ -5953,12 +6174,14 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSe
 */
 struct ThresholdDescriptionDataType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ThresholdTypeEnumType> thresholdType;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<ThresholdTypeEnumType> thresholdType{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    ThresholdDescriptionDataType(const ThresholdDescriptionDataType &other) = default;
 
     ThresholdDescriptionDataType() = default;
 };
@@ -5982,12 +6205,14 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
 */
 struct ThresholdDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> thresholdId;
-    SpineOptional<ElementTagType> thresholdType;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> thresholdId{};
+    SpineOptional<ElementTagType> thresholdType{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    ThresholdDescriptionDataElementsType(const ThresholdDescriptionDataElementsType &other) = default;
 
     ThresholdDescriptionDataElementsType() = default;
 };
@@ -6011,7 +6236,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
 */
 struct ThresholdDescriptionListDataType
 {
-    SpineOptional<std::vector<ThresholdDescriptionDataType>> thresholdDescriptionData;
+    SpineOptional<std::vector<ThresholdDescriptionDataType>> thresholdDescriptionData{};
+
+    ThresholdDescriptionListDataType(const ThresholdDescriptionListDataType &other) = default;
 
     ThresholdDescriptionListDataType() = default;
 };
@@ -6035,8 +6262,10 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataTy
 */
 struct ThresholdDescriptionListDataSelectorsType
 {
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    ThresholdDescriptionListDataSelectorsType(const ThresholdDescriptionListDataSelectorsType &other) = default;
 
     ThresholdDescriptionListDataSelectorsType() = default;
 };
@@ -6060,11 +6289,13 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSe
 */
 struct OperatingConstraintsInterruptDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<bool> isPausable;
-    SpineOptional<bool> isStoppable;
-    SpineOptional<bool> notInterruptibleAtHighPower;
-    SpineOptional<uint32_t> maxCyclesPerDay;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<bool> isPausable{};
+    SpineOptional<bool> isStoppable{};
+    SpineOptional<bool> notInterruptibleAtHighPower{};
+    SpineOptional<uint32_t> maxCyclesPerDay{};
+
+    OperatingConstraintsInterruptDataType(const OperatingConstraintsInterruptDataType &other) = default;
 
     OperatingConstraintsInterruptDataType() = default;
 };
@@ -6088,11 +6319,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
 */
 struct OperatingConstraintsInterruptDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> isPausable;
-    SpineOptional<ElementTagType> isStoppable;
-    SpineOptional<ElementTagType> notInterruptibleAtHighPower;
-    SpineOptional<ElementTagType> maxCyclesPerDay;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> isPausable{};
+    SpineOptional<ElementTagType> isStoppable{};
+    SpineOptional<ElementTagType> notInterruptibleAtHighPower{};
+    SpineOptional<ElementTagType> maxCyclesPerDay{};
+
+    OperatingConstraintsInterruptDataElementsType(const OperatingConstraintsInterruptDataElementsType &other) = default;
 
     OperatingConstraintsInterruptDataElementsType() = default;
 };
@@ -6116,7 +6349,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
 */
 struct OperatingConstraintsInterruptListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsInterruptDataType>> operatingConstraintsInterruptData;
+    SpineOptional<std::vector<OperatingConstraintsInterruptDataType>> operatingConstraintsInterruptData{};
+
+    OperatingConstraintsInterruptListDataType(const OperatingConstraintsInterruptListDataType &other) = default;
 
     OperatingConstraintsInterruptListDataType() = default;
 };
@@ -6140,7 +6375,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
 */
 struct OperatingConstraintsInterruptListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsInterruptListDataSelectorsType(const OperatingConstraintsInterruptListDataSelectorsType &other) = default;
 
     OperatingConstraintsInterruptListDataSelectorsType() = default;
 };
@@ -6164,13 +6401,15 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
 */
 struct OperatingConstraintsDurationDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<std::string> activeDurationMin;
-    SpineOptional<std::string> activeDurationMax;
-    SpineOptional<std::string> pauseDurationMin;
-    SpineOptional<std::string> pauseDurationMax;
-    SpineOptional<std::string> activeDurationSumMin;
-    SpineOptional<std::string> activeDurationSumMax;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<std::string> activeDurationMin{};
+    SpineOptional<std::string> activeDurationMax{};
+    SpineOptional<std::string> pauseDurationMin{};
+    SpineOptional<std::string> pauseDurationMax{};
+    SpineOptional<std::string> activeDurationSumMin{};
+    SpineOptional<std::string> activeDurationSumMax{};
+
+    OperatingConstraintsDurationDataType(const OperatingConstraintsDurationDataType &other) = default;
 
     OperatingConstraintsDurationDataType() = default;
 };
@@ -6194,13 +6433,15 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
 */
 struct OperatingConstraintsDurationDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> activeDurationMin;
-    SpineOptional<ElementTagType> activeDurationMax;
-    SpineOptional<ElementTagType> pauseDurationMin;
-    SpineOptional<ElementTagType> pauseDurationMax;
-    SpineOptional<ElementTagType> activeDurationSumMin;
-    SpineOptional<ElementTagType> activeDurationSumMax;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> activeDurationMin{};
+    SpineOptional<ElementTagType> activeDurationMax{};
+    SpineOptional<ElementTagType> pauseDurationMin{};
+    SpineOptional<ElementTagType> pauseDurationMax{};
+    SpineOptional<ElementTagType> activeDurationSumMin{};
+    SpineOptional<ElementTagType> activeDurationSumMax{};
+
+    OperatingConstraintsDurationDataElementsType(const OperatingConstraintsDurationDataElementsType &other) = default;
 
     OperatingConstraintsDurationDataElementsType() = default;
 };
@@ -6224,7 +6465,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
 */
 struct OperatingConstraintsDurationListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsDurationDataType>> operatingConstraintsDurationData;
+    SpineOptional<std::vector<OperatingConstraintsDurationDataType>> operatingConstraintsDurationData{};
+
+    OperatingConstraintsDurationListDataType(const OperatingConstraintsDurationListDataType &other) = default;
 
     OperatingConstraintsDurationListDataType() = default;
 };
@@ -6248,7 +6491,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
 */
 struct OperatingConstraintsDurationListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsDurationListDataSelectorsType(const OperatingConstraintsDurationListDataSelectorsType &other) = default;
 
     OperatingConstraintsDurationListDataSelectorsType() = default;
 };
@@ -6272,11 +6517,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
 */
 struct OperatingConstraintsPowerDescriptionDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
-    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit{};
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit{};
+    SpineOptional<DescriptionType> description{};
+
+    OperatingConstraintsPowerDescriptionDataType(const OperatingConstraintsPowerDescriptionDataType &other) = default;
 
     OperatingConstraintsPowerDescriptionDataType() = default;
 };
@@ -6300,11 +6547,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
 */
 struct OperatingConstraintsPowerDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> powerUnit;
-    SpineOptional<ElementTagType> energyUnit;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> powerUnit{};
+    SpineOptional<ElementTagType> energyUnit{};
+    SpineOptional<ElementTagType> description{};
+
+    OperatingConstraintsPowerDescriptionDataElementsType(const OperatingConstraintsPowerDescriptionDataElementsType &other) = default;
 
     OperatingConstraintsPowerDescriptionDataElementsType() = default;
 };
@@ -6328,7 +6577,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
 */
 struct OperatingConstraintsPowerDescriptionListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsPowerDescriptionDataType>> operatingConstraintsPowerDescriptionData;
+    SpineOptional<std::vector<OperatingConstraintsPowerDescriptionDataType>> operatingConstraintsPowerDescriptionData{};
+
+    OperatingConstraintsPowerDescriptionListDataType(const OperatingConstraintsPowerDescriptionListDataType &other) = default;
 
     OperatingConstraintsPowerDescriptionListDataType() = default;
 };
@@ -6352,7 +6603,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
 */
 struct OperatingConstraintsPowerDescriptionListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsPowerDescriptionListDataSelectorsType(const OperatingConstraintsPowerDescriptionListDataSelectorsType &other) = default;
 
     OperatingConstraintsPowerDescriptionListDataSelectorsType() = default;
 };
@@ -6376,11 +6629,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
 */
 struct OperatingConstraintsPowerRangeDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<ScaledNumberType> powerMin;
-    SpineOptional<ScaledNumberType> powerMax;
-    SpineOptional<ScaledNumberType> energyMin;
-    SpineOptional<ScaledNumberType> energyMax;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<ScaledNumberType> powerMin{};
+    SpineOptional<ScaledNumberType> powerMax{};
+    SpineOptional<ScaledNumberType> energyMin{};
+    SpineOptional<ScaledNumberType> energyMax{};
+
+    OperatingConstraintsPowerRangeDataType(const OperatingConstraintsPowerRangeDataType &other) = default;
 
     OperatingConstraintsPowerRangeDataType() = default;
 };
@@ -6404,11 +6659,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
 */
 struct OperatingConstraintsPowerRangeDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ScaledNumberElementsType> powerMin;
-    SpineOptional<ScaledNumberElementsType> powerMax;
-    SpineOptional<ScaledNumberElementsType> energyMin;
-    SpineOptional<ScaledNumberElementsType> energyMax;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ScaledNumberElementsType> powerMin{};
+    SpineOptional<ScaledNumberElementsType> powerMax{};
+    SpineOptional<ScaledNumberElementsType> energyMin{};
+    SpineOptional<ScaledNumberElementsType> energyMax{};
+
+    OperatingConstraintsPowerRangeDataElementsType(const OperatingConstraintsPowerRangeDataElementsType &other) = default;
 
     OperatingConstraintsPowerRangeDataElementsType() = default;
 };
@@ -6432,7 +6689,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
 */
 struct OperatingConstraintsPowerRangeListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsPowerRangeDataType>> operatingConstraintsPowerRangeData;
+    SpineOptional<std::vector<OperatingConstraintsPowerRangeDataType>> operatingConstraintsPowerRangeData{};
+
+    OperatingConstraintsPowerRangeListDataType(const OperatingConstraintsPowerRangeListDataType &other) = default;
 
     OperatingConstraintsPowerRangeListDataType() = default;
 };
@@ -6456,7 +6715,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
 */
 struct OperatingConstraintsPowerRangeListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsPowerRangeListDataSelectorsType(const OperatingConstraintsPowerRangeListDataSelectorsType &other) = default;
 
     OperatingConstraintsPowerRangeListDataSelectorsType() = default;
 };
@@ -6480,8 +6741,10 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
 */
 struct OperatingConstraintsPowerLevelDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<std::vector<ScaledNumberType>> power;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<std::vector<ScaledNumberType>> power{};
+
+    OperatingConstraintsPowerLevelDataType(const OperatingConstraintsPowerLevelDataType &other) = default;
 
     OperatingConstraintsPowerLevelDataType() = default;
 };
@@ -6505,8 +6768,10 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
 */
 struct OperatingConstraintsPowerLevelDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ScaledNumberElementsType> power;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ScaledNumberElementsType> power{};
+
+    OperatingConstraintsPowerLevelDataElementsType(const OperatingConstraintsPowerLevelDataElementsType &other) = default;
 
     OperatingConstraintsPowerLevelDataElementsType() = default;
 };
@@ -6530,7 +6795,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
 */
 struct OperatingConstraintsPowerLevelListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsPowerLevelDataType>> operatingConstraintsPowerLevelData;
+    SpineOptional<std::vector<OperatingConstraintsPowerLevelDataType>> operatingConstraintsPowerLevelData{};
+
+    OperatingConstraintsPowerLevelListDataType(const OperatingConstraintsPowerLevelListDataType &other) = default;
 
     OperatingConstraintsPowerLevelListDataType() = default;
 };
@@ -6554,7 +6821,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
 */
 struct OperatingConstraintsPowerLevelListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsPowerLevelListDataSelectorsType(const OperatingConstraintsPowerLevelListDataSelectorsType &other) = default;
 
     OperatingConstraintsPowerLevelListDataSelectorsType() = default;
 };
@@ -6578,11 +6847,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
 */
 struct OperatingConstraintsResumeImplicationDataType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<ScaledNumberType> resumeEnergyEstimated;
-    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
-    SpineOptional<ScaledNumberType> resumeCostEstimated;
-    SpineOptional<CurrencyEnumType> currency;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+    SpineOptional<ScaledNumberType> resumeEnergyEstimated{};
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit{};
+    SpineOptional<ScaledNumberType> resumeCostEstimated{};
+    SpineOptional<CurrencyEnumType> currency{};
+
+    OperatingConstraintsResumeImplicationDataType(const OperatingConstraintsResumeImplicationDataType &other) = default;
 
     OperatingConstraintsResumeImplicationDataType() = default;
 };
@@ -6606,11 +6877,13 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
 */
 struct OperatingConstraintsResumeImplicationDataElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
-    SpineOptional<ScaledNumberElementsType> resumeEnergyEstimated;
-    SpineOptional<ElementTagType> energyUnit;
-    SpineOptional<ScaledNumberElementsType> resumeCostEstimated;
-    SpineOptional<ElementTagType> currency;
+    SpineOptional<ElementTagType> sequenceId{};
+    SpineOptional<ScaledNumberElementsType> resumeEnergyEstimated{};
+    SpineOptional<ElementTagType> energyUnit{};
+    SpineOptional<ScaledNumberElementsType> resumeCostEstimated{};
+    SpineOptional<ElementTagType> currency{};
+
+    OperatingConstraintsResumeImplicationDataElementsType(const OperatingConstraintsResumeImplicationDataElementsType &other) = default;
 
     OperatingConstraintsResumeImplicationDataElementsType() = default;
 };
@@ -6634,7 +6907,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
 */
 struct OperatingConstraintsResumeImplicationListDataType
 {
-    SpineOptional<std::vector<OperatingConstraintsResumeImplicationDataType>> operatingConstraintsResumeImplicationData;
+    SpineOptional<std::vector<OperatingConstraintsResumeImplicationDataType>> operatingConstraintsResumeImplicationData{};
+
+    OperatingConstraintsResumeImplicationListDataType(const OperatingConstraintsResumeImplicationListDataType &other) = default;
 
     OperatingConstraintsResumeImplicationListDataType() = default;
 };
@@ -6658,7 +6933,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
 */
 struct OperatingConstraintsResumeImplicationListDataSelectorsType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    OperatingConstraintsResumeImplicationListDataSelectorsType(const OperatingConstraintsResumeImplicationListDataSelectorsType &other) = default;
 
     OperatingConstraintsResumeImplicationListDataSelectorsType() = default;
 };
@@ -6682,10 +6959,12 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
 */
 struct BillValueType
 {
-    SpineOptional<BillValueIdType> valueId;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<ScaledNumberType> valuePercentage;
+    SpineOptional<BillValueIdType> valueId{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<ScaledNumberType> valuePercentage{};
+
+    BillValueType(const BillValueType &other) = default;
 
     BillValueType() = default;
 };
@@ -6709,10 +6988,12 @@ void convertFromJson(const JsonVariantConst &src, BillValueType &dst);
 */
 struct BillValueElementsType
 {
-    SpineOptional<ElementTagType> valueId;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<ScaledNumberElementsType> valuePercentage;
+    SpineOptional<ElementTagType> valueId{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<ScaledNumberElementsType> valuePercentage{};
+
+    BillValueElementsType(const BillValueElementsType &other) = default;
 
     BillValueElementsType() = default;
 };
@@ -6736,13 +7017,15 @@ void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst);
 */
 struct BillCostType
 {
-    SpineOptional<BillCostIdType> costId;
-    SpineOptional<BillCostTypeEnumType> costType;
-    SpineOptional<BillValueIdType> valueId;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<CurrencyEnumType> currency;
-    SpineOptional<ScaledNumberType> cost;
-    SpineOptional<ScaledNumberType> costPercentage;
+    SpineOptional<BillCostIdType> costId{};
+    SpineOptional<BillCostTypeEnumType> costType{};
+    SpineOptional<BillValueIdType> valueId{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<CurrencyEnumType> currency{};
+    SpineOptional<ScaledNumberType> cost{};
+    SpineOptional<ScaledNumberType> costPercentage{};
+
+    BillCostType(const BillCostType &other) = default;
 
     BillCostType() = default;
 };
@@ -6766,13 +7049,15 @@ void convertFromJson(const JsonVariantConst &src, BillCostType &dst);
 */
 struct BillCostElementsType
 {
-    SpineOptional<ElementTagType> costId;
-    SpineOptional<ElementTagType> costType;
-    SpineOptional<ElementTagType> valueId;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> currency;
-    SpineOptional<ScaledNumberElementsType> cost;
-    SpineOptional<ScaledNumberElementsType> costPercentage;
+    SpineOptional<ElementTagType> costId{};
+    SpineOptional<ElementTagType> costType{};
+    SpineOptional<ElementTagType> valueId{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> currency{};
+    SpineOptional<ScaledNumberElementsType> cost{};
+    SpineOptional<ScaledNumberElementsType> costPercentage{};
+
+    BillCostElementsType(const BillCostElementsType &other) = default;
 
     BillCostElementsType() = default;
 };
@@ -6796,13 +7081,15 @@ void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst);
 */
 struct BillPositionType
 {
-    SpineOptional<BillPositionIdType> positionId;
-    SpineOptional<BillPositionTypeEnumType> positionType;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<std::vector<BillValueType>> value;
-    SpineOptional<std::vector<BillCostType>> cost;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<BillPositionIdType> positionId{};
+    SpineOptional<BillPositionTypeEnumType> positionType{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<std::vector<BillValueType>> value{};
+    SpineOptional<std::vector<BillCostType>> cost{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    BillPositionType(const BillPositionType &other) = default;
 
     BillPositionType() = default;
 };
@@ -6826,13 +7113,15 @@ void convertFromJson(const JsonVariantConst &src, BillPositionType &dst);
 */
 struct BillPositionElementsType
 {
-    SpineOptional<ElementTagType> positionId;
-    SpineOptional<ElementTagType> positionType;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<BillValueElementsType> value;
-    SpineOptional<BillCostElementsType> cost;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> positionId{};
+    SpineOptional<ElementTagType> positionType{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<BillValueElementsType> value{};
+    SpineOptional<BillCostElementsType> cost{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    BillPositionElementsType(const BillPositionElementsType &other) = default;
 
     BillPositionElementsType() = default;
 };
@@ -6856,11 +7145,13 @@ void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
 */
 struct BillDataType
 {
-    SpineOptional<BillIdType> billId;
-    SpineOptional<BillTypeEnumType> billType;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<BillPositionType> total;
-    SpineOptional<std::vector<BillPositionType>> position;
+    SpineOptional<BillIdType> billId{};
+    SpineOptional<BillTypeEnumType> billType{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<BillPositionType> total{};
+    SpineOptional<std::vector<BillPositionType>> position{};
+
+    BillDataType(const BillDataType &other) = default;
 
     BillDataType() = default;
 };
@@ -6884,11 +7175,13 @@ void convertFromJson(const JsonVariantConst &src, BillDataType &dst);
 */
 struct BillDataElementsType
 {
-    SpineOptional<ElementTagType> billId;
-    SpineOptional<ElementTagType> billType;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<BillPositionElementsType> total;
-    SpineOptional<BillPositionElementsType> position;
+    SpineOptional<ElementTagType> billId{};
+    SpineOptional<ElementTagType> billType{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<BillPositionElementsType> total{};
+    SpineOptional<BillPositionElementsType> position{};
+
+    BillDataElementsType(const BillDataElementsType &other) = default;
 
     BillDataElementsType() = default;
 };
@@ -6912,7 +7205,9 @@ void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst);
 */
 struct BillListDataType
 {
-    SpineOptional<std::vector<BillDataType>> billData;
+    SpineOptional<std::vector<BillDataType>> billData{};
+
+    BillListDataType(const BillListDataType &other) = default;
 
     BillListDataType() = default;
 };
@@ -6936,8 +7231,10 @@ void convertFromJson(const JsonVariantConst &src, BillListDataType &dst);
 */
 struct BillListDataSelectorsType
 {
-    SpineOptional<BillIdType> billId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<BillIdType> billId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    BillListDataSelectorsType(const BillListDataSelectorsType &other) = default;
 
     BillListDataSelectorsType() = default;
 };
@@ -6961,9 +7258,11 @@ void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst
 */
 struct BillConstraintsDataType
 {
-    SpineOptional<BillIdType> billId;
-    SpineOptional<BillPositionCountType> positionCountMin;
-    SpineOptional<BillPositionCountType> positionCountMax;
+    SpineOptional<BillIdType> billId{};
+    SpineOptional<BillPositionCountType> positionCountMin{};
+    SpineOptional<BillPositionCountType> positionCountMax{};
+
+    BillConstraintsDataType(const BillConstraintsDataType &other) = default;
 
     BillConstraintsDataType() = default;
 };
@@ -6987,9 +7286,11 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst);
 */
 struct BillConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> billId;
-    SpineOptional<ElementTagType> positionCountMin;
-    SpineOptional<ElementTagType> positionCountMax;
+    SpineOptional<ElementTagType> billId{};
+    SpineOptional<ElementTagType> positionCountMin{};
+    SpineOptional<ElementTagType> positionCountMax{};
+
+    BillConstraintsDataElementsType(const BillConstraintsDataElementsType &other) = default;
 
     BillConstraintsDataElementsType() = default;
 };
@@ -7013,7 +7314,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsTyp
 */
 struct BillConstraintsListDataType
 {
-    SpineOptional<std::vector<BillConstraintsDataType>> billConstraintsData;
+    SpineOptional<std::vector<BillConstraintsDataType>> billConstraintsData{};
+
+    BillConstraintsListDataType(const BillConstraintsListDataType &other) = default;
 
     BillConstraintsListDataType() = default;
 };
@@ -7037,7 +7340,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &d
 */
 struct BillConstraintsListDataSelectorsType
 {
-    SpineOptional<BillIdType> billId;
+    SpineOptional<BillIdType> billId{};
+
+    BillConstraintsListDataSelectorsType(const BillConstraintsListDataSelectorsType &other) = default;
 
     BillConstraintsListDataSelectorsType() = default;
 };
@@ -7061,11 +7366,13 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelecto
 */
 struct BillDescriptionDataType
 {
-    SpineOptional<BillIdType> billId;
-    SpineOptional<bool> billWriteable;
-    SpineOptional<bool> updateRequired;
-    SpineOptional<std::vector<BillTypeEnumType>> supportedBillType;
-    SpineOptional<SessionIdType> sessionId;
+    SpineOptional<BillIdType> billId{};
+    SpineOptional<bool> billWriteable{};
+    SpineOptional<bool> updateRequired{};
+    SpineOptional<std::vector<BillTypeEnumType>> supportedBillType{};
+    SpineOptional<SessionIdType> sessionId{};
+
+    BillDescriptionDataType(const BillDescriptionDataType &other) = default;
 
     BillDescriptionDataType() = default;
 };
@@ -7089,11 +7396,13 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst);
 */
 struct BillDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> billId;
-    SpineOptional<ElementTagType> billWriteable;
-    SpineOptional<ElementTagType> updateRequired;
-    SpineOptional<ElementTagType> supportedBillType;
-    SpineOptional<ElementTagType> sessionId;
+    SpineOptional<ElementTagType> billId{};
+    SpineOptional<ElementTagType> billWriteable{};
+    SpineOptional<ElementTagType> updateRequired{};
+    SpineOptional<ElementTagType> supportedBillType{};
+    SpineOptional<ElementTagType> sessionId{};
+
+    BillDescriptionDataElementsType(const BillDescriptionDataElementsType &other) = default;
 
     BillDescriptionDataElementsType() = default;
 };
@@ -7117,7 +7426,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsTyp
 */
 struct BillDescriptionListDataType
 {
-    SpineOptional<std::vector<BillDescriptionDataType>> billDescriptionData;
+    SpineOptional<std::vector<BillDescriptionDataType>> billDescriptionData{};
+
+    BillDescriptionListDataType(const BillDescriptionListDataType &other) = default;
 
     BillDescriptionListDataType() = default;
 };
@@ -7141,7 +7452,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &d
 */
 struct BillDescriptionListDataSelectorsType
 {
-    SpineOptional<BillIdType> billId;
+    SpineOptional<BillIdType> billId{};
+
+    BillDescriptionListDataSelectorsType(const BillDescriptionListDataSelectorsType &other) = default;
 
     BillDescriptionListDataSelectorsType() = default;
 };
@@ -7165,10 +7478,12 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelecto
 */
 struct IdentificationDataType
 {
-    SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<IdentificationTypeEnumType> identificationType;
-    SpineOptional<IdentificationValueType> identificationValue;
-    SpineOptional<bool> authorized;
+    SpineOptional<IdentificationIdType> identificationId{};
+    SpineOptional<IdentificationTypeEnumType> identificationType{};
+    SpineOptional<IdentificationValueType> identificationValue{};
+    SpineOptional<bool> authorized{};
+
+    IdentificationDataType(const IdentificationDataType &other) = default;
 
     IdentificationDataType() = default;
 };
@@ -7192,10 +7507,12 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst);
 */
 struct IdentificationDataElementsType
 {
-    SpineOptional<ElementTagType> identificationId;
-    SpineOptional<ElementTagType> identificationType;
-    SpineOptional<ElementTagType> identificationValue;
-    SpineOptional<ElementTagType> authorized;
+    SpineOptional<ElementTagType> identificationId{};
+    SpineOptional<ElementTagType> identificationType{};
+    SpineOptional<ElementTagType> identificationValue{};
+    SpineOptional<ElementTagType> authorized{};
+
+    IdentificationDataElementsType(const IdentificationDataElementsType &other) = default;
 
     IdentificationDataElementsType() = default;
 };
@@ -7219,7 +7536,9 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType
 */
 struct IdentificationListDataType
 {
-    SpineOptional<std::vector<IdentificationDataType>> identificationData;
+    SpineOptional<std::vector<IdentificationDataType>> identificationData{};
+
+    IdentificationListDataType(const IdentificationListDataType &other) = default;
 
     IdentificationListDataType() = default;
 };
@@ -7243,8 +7562,10 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &ds
 */
 struct IdentificationListDataSelectorsType
 {
-    SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<IdentificationTypeEnumType> identificationType;
+    SpineOptional<IdentificationIdType> identificationId{};
+    SpineOptional<IdentificationTypeEnumType> identificationType{};
+
+    IdentificationListDataSelectorsType(const IdentificationListDataSelectorsType &other) = default;
 
     IdentificationListDataSelectorsType() = default;
 };
@@ -7268,10 +7589,12 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelector
 */
 struct SessionIdentificationDataType
 {
-    SpineOptional<SessionIdType> sessionId;
-    SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<bool> isLatestSession;
-    SpineOptional<TimePeriodType> timePeriod;
+    SpineOptional<SessionIdType> sessionId{};
+    SpineOptional<IdentificationIdType> identificationId{};
+    SpineOptional<bool> isLatestSession{};
+    SpineOptional<TimePeriodType> timePeriod{};
+
+    SessionIdentificationDataType(const SessionIdentificationDataType &other) = default;
 
     SessionIdentificationDataType() = default;
 };
@@ -7295,10 +7618,12 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType 
 */
 struct SessionIdentificationDataElementsType
 {
-    SpineOptional<ElementTagType> sessionId;
-    SpineOptional<ElementTagType> identificationId;
-    SpineOptional<ElementTagType> isLatestSession;
-    SpineOptional<TimePeriodElementsType> timePeriod;
+    SpineOptional<ElementTagType> sessionId{};
+    SpineOptional<ElementTagType> identificationId{};
+    SpineOptional<ElementTagType> isLatestSession{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+
+    SessionIdentificationDataElementsType(const SessionIdentificationDataElementsType &other) = default;
 
     SessionIdentificationDataElementsType() = default;
 };
@@ -7322,7 +7647,9 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataEleme
 */
 struct SessionIdentificationListDataType
 {
-    SpineOptional<std::vector<SessionIdentificationDataType>> sessionIdentificationData;
+    SpineOptional<std::vector<SessionIdentificationDataType>> sessionIdentificationData{};
+
+    SessionIdentificationListDataType(const SessionIdentificationListDataType &other) = default;
 
     SessionIdentificationListDataType() = default;
 };
@@ -7346,10 +7673,12 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataT
 */
 struct SessionIdentificationListDataSelectorsType
 {
-    SpineOptional<SessionIdType> sessionId;
-    SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<bool> isLatestSession;
-    SpineOptional<TimePeriodType> timePeriod;
+    SpineOptional<SessionIdType> sessionId{};
+    SpineOptional<IdentificationIdType> identificationId{};
+    SpineOptional<bool> isLatestSession{};
+    SpineOptional<TimePeriodType> timePeriod{};
+
+    SessionIdentificationListDataSelectorsType(const SessionIdentificationListDataSelectorsType &other) = default;
 
     SessionIdentificationListDataSelectorsType() = default;
 };
@@ -7373,8 +7702,10 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataS
 */
 struct SessionMeasurementRelationDataType
 {
-    SpineOptional<SessionIdType> sessionId;
-    SpineOptional<std::vector<MeasurementIdType>> measurementId;
+    SpineOptional<SessionIdType> sessionId{};
+    SpineOptional<std::vector<MeasurementIdType>> measurementId{};
+
+    SessionMeasurementRelationDataType(const SessionMeasurementRelationDataType &other) = default;
 
     SessionMeasurementRelationDataType() = default;
 };
@@ -7398,8 +7729,10 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
 */
 struct SessionMeasurementRelationDataElementsType
 {
-    SpineOptional<ElementTagType> sessionId;
-    SpineOptional<ElementTagType> measurementId;
+    SpineOptional<ElementTagType> sessionId{};
+    SpineOptional<ElementTagType> measurementId{};
+
+    SessionMeasurementRelationDataElementsType(const SessionMeasurementRelationDataElementsType &other) = default;
 
     SessionMeasurementRelationDataElementsType() = default;
 };
@@ -7423,7 +7756,9 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
 */
 struct SessionMeasurementRelationListDataType
 {
-    SpineOptional<std::vector<SessionMeasurementRelationDataType>> sessionMeasurementRelationData;
+    SpineOptional<std::vector<SessionMeasurementRelationDataType>> sessionMeasurementRelationData{};
+
+    SessionMeasurementRelationListDataType(const SessionMeasurementRelationListDataType &other) = default;
 
     SessionMeasurementRelationListDataType() = default;
 };
@@ -7447,8 +7782,10 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
 */
 struct SessionMeasurementRelationListDataSelectorsType
 {
-    SpineOptional<SessionIdType> sessionId;
-    SpineOptional<MeasurementIdType> measurementId;
+    SpineOptional<SessionIdType> sessionId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+
+    SessionMeasurementRelationListDataSelectorsType(const SessionMeasurementRelationListDataSelectorsType &other) = default;
 
     SessionMeasurementRelationListDataSelectorsType() = default;
 };
@@ -7472,15 +7809,17 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
 */
 struct SetpointDataType
 {
-    SpineOptional<SetpointIdType> setpointId;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<ScaledNumberType> valueMin;
-    SpineOptional<ScaledNumberType> valueMax;
-    SpineOptional<ScaledNumberType> valueToleranceAbsolute;
-    SpineOptional<ScaledNumberType> valueTolerancePercentage;
-    SpineOptional<bool> isSetpointChangeable;
-    SpineOptional<bool> isSetpointActive;
-    SpineOptional<TimePeriodType> timePeriod;
+    SpineOptional<SetpointIdType> setpointId{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<ScaledNumberType> valueMin{};
+    SpineOptional<ScaledNumberType> valueMax{};
+    SpineOptional<ScaledNumberType> valueToleranceAbsolute{};
+    SpineOptional<ScaledNumberType> valueTolerancePercentage{};
+    SpineOptional<bool> isSetpointChangeable{};
+    SpineOptional<bool> isSetpointActive{};
+    SpineOptional<TimePeriodType> timePeriod{};
+
+    SetpointDataType(const SetpointDataType &other) = default;
 
     SetpointDataType() = default;
 };
@@ -7504,15 +7843,17 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst);
 */
 struct SetpointDataElementsType
 {
-    SpineOptional<ElementTagType> setpointId;
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<ScaledNumberElementsType> valueMin;
-    SpineOptional<ScaledNumberElementsType> valueMax;
-    SpineOptional<ScaledNumberElementsType> valueToleranceAbsolute;
-    SpineOptional<ScaledNumberElementsType> valueTolerancePercentage;
-    SpineOptional<ElementTagType> isSetpointChangeable;
-    SpineOptional<ElementTagType> isSetpointActive;
-    SpineOptional<TimePeriodElementsType> timePeriod;
+    SpineOptional<ElementTagType> setpointId{};
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<ScaledNumberElementsType> valueMin{};
+    SpineOptional<ScaledNumberElementsType> valueMax{};
+    SpineOptional<ScaledNumberElementsType> valueToleranceAbsolute{};
+    SpineOptional<ScaledNumberElementsType> valueTolerancePercentage{};
+    SpineOptional<ElementTagType> isSetpointChangeable{};
+    SpineOptional<ElementTagType> isSetpointActive{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+
+    SetpointDataElementsType(const SetpointDataElementsType &other) = default;
 
     SetpointDataElementsType() = default;
 };
@@ -7536,7 +7877,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
 */
 struct SetpointListDataType
 {
-    SpineOptional<std::vector<SetpointDataType>> setpointData;
+    SpineOptional<std::vector<SetpointDataType>> setpointData{};
+
+    SetpointListDataType(const SetpointListDataType &other) = default;
 
     SetpointListDataType() = default;
 };
@@ -7560,7 +7903,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst);
 */
 struct SetpointListDataSelectorsType
 {
-    SpineOptional<SetpointIdType> setpointId;
+    SpineOptional<SetpointIdType> setpointId{};
+
+    SetpointListDataSelectorsType(const SetpointListDataSelectorsType &other) = default;
 
     SetpointListDataSelectorsType() = default;
 };
@@ -7584,10 +7929,12 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType 
 */
 struct SetpointConstraintsDataType
 {
-    SpineOptional<SetpointIdType> setpointId;
-    SpineOptional<ScaledNumberType> setpointRangeMin;
-    SpineOptional<ScaledNumberType> setpointRangeMax;
-    SpineOptional<ScaledNumberType> setpointStepSize;
+    SpineOptional<SetpointIdType> setpointId{};
+    SpineOptional<ScaledNumberType> setpointRangeMin{};
+    SpineOptional<ScaledNumberType> setpointRangeMax{};
+    SpineOptional<ScaledNumberType> setpointStepSize{};
+
+    SetpointConstraintsDataType(const SetpointConstraintsDataType &other) = default;
 
     SetpointConstraintsDataType() = default;
 };
@@ -7611,10 +7958,12 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &d
 */
 struct SetpointConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> setpointId;
-    SpineOptional<ScaledNumberElementsType> setpointRangeMin;
-    SpineOptional<ScaledNumberElementsType> setpointRangeMax;
-    SpineOptional<ScaledNumberElementsType> setpointStepSize;
+    SpineOptional<ElementTagType> setpointId{};
+    SpineOptional<ScaledNumberElementsType> setpointRangeMin{};
+    SpineOptional<ScaledNumberElementsType> setpointRangeMax{};
+    SpineOptional<ScaledNumberElementsType> setpointStepSize{};
+
+    SetpointConstraintsDataElementsType(const SetpointConstraintsDataElementsType &other) = default;
 
     SetpointConstraintsDataElementsType() = default;
 };
@@ -7638,7 +7987,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElement
 */
 struct SetpointConstraintsListDataType
 {
-    SpineOptional<std::vector<SetpointConstraintsDataType>> setpointConstraintsData;
+    SpineOptional<std::vector<SetpointConstraintsDataType>> setpointConstraintsData{};
+
+    SetpointConstraintsListDataType(const SetpointConstraintsListDataType &other) = default;
 
     SetpointConstraintsListDataType() = default;
 };
@@ -7662,7 +8013,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataTyp
 */
 struct SetpointConstraintsListDataSelectorsType
 {
-    SpineOptional<SetpointIdType> setpointId;
+    SpineOptional<SetpointIdType> setpointId{};
+
+    SetpointConstraintsListDataSelectorsType(const SetpointConstraintsListDataSelectorsType &other) = default;
 
     SetpointConstraintsListDataSelectorsType() = default;
 };
@@ -7686,14 +8039,16 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSel
 */
 struct SetpointDescriptionDataType
 {
-    SpineOptional<SetpointIdType> setpointId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<SetpointTypeEnumType> setpointType;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<SetpointIdType> setpointId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<SetpointTypeEnumType> setpointType{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    SetpointDescriptionDataType(const SetpointDescriptionDataType &other) = default;
 
     SetpointDescriptionDataType() = default;
 };
@@ -7717,14 +8072,16 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &d
 */
 struct SetpointDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> setpointId;
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> setpointType;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> setpointId{};
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> setpointType{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    SetpointDescriptionDataElementsType(const SetpointDescriptionDataElementsType &other) = default;
 
     SetpointDescriptionDataElementsType() = default;
 };
@@ -7748,7 +8105,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElement
 */
 struct SetpointDescriptionListDataType
 {
-    SpineOptional<std::vector<SetpointDescriptionDataType>> setpointDescriptionData;
+    SpineOptional<std::vector<SetpointDescriptionDataType>> setpointDescriptionData{};
+
+    SetpointDescriptionListDataType(const SetpointDescriptionListDataType &other) = default;
 
     SetpointDescriptionListDataType() = default;
 };
@@ -7772,11 +8131,13 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataTyp
 */
 struct SetpointDescriptionListDataSelectorsType
 {
-    SpineOptional<SetpointIdType> setpointId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<SetpointTypeEnumType> setpointType;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<SetpointIdType> setpointId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<SetpointTypeEnumType> setpointType{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    SetpointDescriptionListDataSelectorsType(const SetpointDescriptionListDataSelectorsType &other) = default;
 
     SetpointDescriptionListDataSelectorsType() = default;
 };
@@ -7800,11 +8161,13 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSel
 */
 struct TimeTableDataType
 {
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<TimeSlotIdType> timeSlotId;
-    SpineOptional<RecurrenceInformationType> recurrenceInformation;
-    SpineOptional<AbsoluteOrRecurringTimeType> startTime;
-    SpineOptional<AbsoluteOrRecurringTimeType> endTime;
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<TimeSlotIdType> timeSlotId{};
+    SpineOptional<RecurrenceInformationType> recurrenceInformation{};
+    SpineOptional<AbsoluteOrRecurringTimeType> startTime{};
+    SpineOptional<AbsoluteOrRecurringTimeType> endTime{};
+
+    TimeTableDataType(const TimeTableDataType &other) = default;
 
     TimeTableDataType() = default;
 };
@@ -7828,11 +8191,13 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst);
 */
 struct TimeTableDataElementsType
 {
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> timeSlotId;
-    SpineOptional<RecurrenceInformationElementsType> recurrenceInformation;
-    SpineOptional<AbsoluteOrRecurringTimeElementsType> startTime;
-    SpineOptional<AbsoluteOrRecurringTimeElementsType> endTime;
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> timeSlotId{};
+    SpineOptional<RecurrenceInformationElementsType> recurrenceInformation{};
+    SpineOptional<AbsoluteOrRecurringTimeElementsType> startTime{};
+    SpineOptional<AbsoluteOrRecurringTimeElementsType> endTime{};
+
+    TimeTableDataElementsType(const TimeTableDataElementsType &other) = default;
 
     TimeTableDataElementsType() = default;
 };
@@ -7856,7 +8221,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
 */
 struct TimeTableListDataType
 {
-    SpineOptional<std::vector<TimeTableDataType>> timeTableData;
+    SpineOptional<std::vector<TimeTableDataType>> timeTableData{};
+
+    TimeTableListDataType(const TimeTableListDataType &other) = default;
 
     TimeTableListDataType() = default;
 };
@@ -7880,8 +8247,10 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst);
 */
 struct TimeTableListDataSelectorsType
 {
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<TimeSlotIdType> timeSlotId;
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<TimeSlotIdType> timeSlotId{};
+
+    TimeTableListDataSelectorsType(const TimeTableListDataSelectorsType &other) = default;
 
     TimeTableListDataSelectorsType() = default;
 };
@@ -7905,14 +8274,16 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType
 */
 struct TimeTableConstraintsDataType
 {
-    SpineOptional<uint32_t> timeTableId;
-    SpineOptional<TimeSlotCountType> slotCountMin;
-    SpineOptional<TimeSlotCountType> slotCountMax;
-    SpineOptional<std::string> slotDurationMin;
-    SpineOptional<std::string> slotDurationMax;
-    SpineOptional<std::string> slotDurationStepSize;
-    SpineOptional<std::string> slotShiftStepSize;
-    SpineOptional<std::string> firstSlotBeginsAt;
+    SpineOptional<uint32_t> timeTableId{};
+    SpineOptional<TimeSlotCountType> slotCountMin{};
+    SpineOptional<TimeSlotCountType> slotCountMax{};
+    SpineOptional<std::string> slotDurationMin{};
+    SpineOptional<std::string> slotDurationMax{};
+    SpineOptional<std::string> slotDurationStepSize{};
+    SpineOptional<std::string> slotShiftStepSize{};
+    SpineOptional<std::string> firstSlotBeginsAt{};
+
+    TimeTableConstraintsDataType(const TimeTableConstraintsDataType &other) = default;
 
     TimeTableConstraintsDataType() = default;
 };
@@ -7936,14 +8307,16 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &
 */
 struct TimeTableConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> slotCountMin;
-    SpineOptional<ElementTagType> slotCountMax;
-    SpineOptional<ElementTagType> slotDurationMin;
-    SpineOptional<ElementTagType> slotDurationMax;
-    SpineOptional<ElementTagType> slotDurationStepSize;
-    SpineOptional<ElementTagType> slotShiftStepSize;
-    SpineOptional<ElementTagType> firstSlotBeginsAt;
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> slotCountMin{};
+    SpineOptional<ElementTagType> slotCountMax{};
+    SpineOptional<ElementTagType> slotDurationMin{};
+    SpineOptional<ElementTagType> slotDurationMax{};
+    SpineOptional<ElementTagType> slotDurationStepSize{};
+    SpineOptional<ElementTagType> slotShiftStepSize{};
+    SpineOptional<ElementTagType> firstSlotBeginsAt{};
+
+    TimeTableConstraintsDataElementsType(const TimeTableConstraintsDataElementsType &other) = default;
 
     TimeTableConstraintsDataElementsType() = default;
 };
@@ -7967,7 +8340,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElemen
 */
 struct TimeTableConstraintsListDataType
 {
-    SpineOptional<std::vector<TimeTableConstraintsDataType>> timeTableConstraintsData;
+    SpineOptional<std::vector<TimeTableConstraintsDataType>> timeTableConstraintsData{};
+
+    TimeTableConstraintsListDataType(const TimeTableConstraintsListDataType &other) = default;
 
     TimeTableConstraintsListDataType() = default;
 };
@@ -7991,7 +8366,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataTy
 */
 struct TimeTableConstraintsListDataSelectorsType
 {
-    SpineOptional<TimeTableIdType> timeTableId;
+    SpineOptional<TimeTableIdType> timeTableId{};
+
+    TimeTableConstraintsListDataSelectorsType(const TimeTableConstraintsListDataSelectorsType &other) = default;
 
     TimeTableConstraintsListDataSelectorsType() = default;
 };
@@ -8015,12 +8392,14 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSe
 */
 struct TimeTableDescriptionDataType
 {
-    SpineOptional<uint32_t> timeTableId;
-    SpineOptional<bool> timeSlotCountChangeable;
-    SpineOptional<bool> timeSlotTimesChangeable;
-    SpineOptional<TimeSlotTimeModeEnumType> timeSlotTimeMode;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<uint32_t> timeTableId{};
+    SpineOptional<bool> timeSlotCountChangeable{};
+    SpineOptional<bool> timeSlotTimesChangeable{};
+    SpineOptional<TimeSlotTimeModeEnumType> timeSlotTimeMode{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    TimeTableDescriptionDataType(const TimeTableDescriptionDataType &other) = default;
 
     TimeTableDescriptionDataType() = default;
 };
@@ -8044,12 +8423,14 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
 */
 struct TimeTableDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> timeSlotCountChangeable;
-    SpineOptional<ElementTagType> timeSlotTimesChangeable;
-    SpineOptional<ElementTagType> timeSlotTimeMode;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> timeSlotCountChangeable{};
+    SpineOptional<ElementTagType> timeSlotTimesChangeable{};
+    SpineOptional<ElementTagType> timeSlotTimeMode{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    TimeTableDescriptionDataElementsType(const TimeTableDescriptionDataElementsType &other) = default;
 
     TimeTableDescriptionDataElementsType() = default;
 };
@@ -8073,7 +8454,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
 */
 struct TimeTableDescriptionListDataType
 {
-    SpineOptional<std::vector<TimeTableDescriptionDataType>> timeTableDescriptionData;
+    SpineOptional<std::vector<TimeTableDescriptionDataType>> timeTableDescriptionData{};
+
+    TimeTableDescriptionListDataType(const TimeTableDescriptionListDataType &other) = default;
 
     TimeTableDescriptionListDataType() = default;
 };
@@ -8097,7 +8480,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataTy
 */
 struct TimeTableDescriptionListDataSelectorsType
 {
-    SpineOptional<TimeTableIdType> timeTableId;
+    SpineOptional<TimeTableIdType> timeTableId{};
+
+    TimeTableDescriptionListDataSelectorsType(const TimeTableDescriptionListDataSelectorsType &other) = default;
 
     TimeTableDescriptionListDataSelectorsType() = default;
 };
@@ -8121,9 +8506,11 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSe
 */
 struct SensingDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<SensingStateEnumType> state;
-    SpineOptional<ScaledNumberType> value;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<SensingStateEnumType> state{};
+    SpineOptional<ScaledNumberType> value{};
+
+    SensingDataType(const SensingDataType &other) = default;
 
     SensingDataType() = default;
 };
@@ -8147,9 +8534,11 @@ void convertFromJson(const JsonVariantConst &src, SensingDataType &dst);
 */
 struct SensingDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> state;
-    SpineOptional<ScaledNumberElementsType> value;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> state{};
+    SpineOptional<ScaledNumberElementsType> value{};
+
+    SensingDataElementsType(const SensingDataElementsType &other) = default;
 
     SensingDataElementsType() = default;
 };
@@ -8173,7 +8562,9 @@ void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst);
 */
 struct SensingListDataType
 {
-    SpineOptional<std::vector<SensingDataType>> sensingData;
+    SpineOptional<std::vector<SensingDataType>> sensingData{};
+
+    SensingListDataType(const SensingListDataType &other) = default;
 
     SensingListDataType() = default;
 };
@@ -8197,7 +8588,9 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst);
 */
 struct SensingListDataSelectorsType
 {
-    SpineOptional<TimestampIntervalType> timestampInterval;
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+
+    SensingListDataSelectorsType(const SensingListDataSelectorsType &other) = default;
 
     SensingListDataSelectorsType() = default;
 };
@@ -8221,11 +8614,13 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &
 */
 struct SensingDescriptionDataType
 {
-    SpineOptional<SensingTypeEnumType> sensingType;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<SensingTypeEnumType> sensingType{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    SensingDescriptionDataType(const SensingDescriptionDataType &other) = default;
 
     SensingDescriptionDataType() = default;
 };
@@ -8249,11 +8644,13 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &ds
 */
 struct SensingDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> sensingType;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> sensingType{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    SensingDescriptionDataElementsType(const SensingDescriptionDataElementsType &other) = default;
 
     SensingDescriptionDataElementsType() = default;
 };
@@ -8277,8 +8674,10 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElements
 */
 struct ResultDataType
 {
-    SpineOptional<ErrorNumberType> errorNumber;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<ErrorNumberType> errorNumber{};
+    SpineOptional<DescriptionType> description{};
+
+    ResultDataType(const ResultDataType &other) = default;
 
     ResultDataType() = default;
 };
@@ -8302,7 +8701,9 @@ void convertFromJson(const JsonVariantConst &src, ResultDataType &dst);
 */
 struct ActuatorSwitchDataType
 {
-    SpineOptional<ActuatorSwitchFctEnumType> function;
+    SpineOptional<ActuatorSwitchFctEnumType> function{};
+
+    ActuatorSwitchDataType(const ActuatorSwitchDataType &other) = default;
 
     ActuatorSwitchDataType() = default;
 };
@@ -8326,7 +8727,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst);
 */
 struct ActuatorSwitchDataElementsType
 {
-    SpineOptional<ElementTagType> function;
+    SpineOptional<ElementTagType> function{};
+
+    ActuatorSwitchDataElementsType(const ActuatorSwitchDataElementsType &other) = default;
 
     ActuatorSwitchDataElementsType() = default;
 };
@@ -8350,8 +8753,10 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType
 */
 struct ActuatorSwitchDescriptionDataType
 {
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    ActuatorSwitchDescriptionDataType(const ActuatorSwitchDescriptionDataType &other) = default;
 
     ActuatorSwitchDescriptionDataType() = default;
 };
@@ -8375,8 +8780,10 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataT
 */
 struct ActuatorSwitchDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    ActuatorSwitchDescriptionDataElementsType(const ActuatorSwitchDescriptionDataElementsType &other) = default;
 
     ActuatorSwitchDescriptionDataElementsType() = default;
 };
@@ -8400,11 +8807,13 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataE
 */
 struct NetworkManagementAddNodeCallType
 {
-    SpineOptional<FeatureAddressType> nodeAddress;
-    SpineOptional<NetworkManagementNativeSetupType> nativeSetup;
-    SpineOptional<NetworkManagementProcessTimeoutType> timeout;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<FeatureAddressType> nodeAddress{};
+    SpineOptional<NetworkManagementNativeSetupType> nativeSetup{};
+    SpineOptional<NetworkManagementProcessTimeoutType> timeout{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementAddNodeCallType(const NetworkManagementAddNodeCallType &other) = default;
 
     NetworkManagementAddNodeCallType() = default;
 };
@@ -8428,11 +8837,13 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallTy
 */
 struct NetworkManagementAddNodeCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> nodeAddress;
-    SpineOptional<ElementTagType> nativeSetup;
-    SpineOptional<ElementTagType> timeout;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<FeatureAddressElementsType> nodeAddress{};
+    SpineOptional<ElementTagType> nativeSetup{};
+    SpineOptional<ElementTagType> timeout{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementAddNodeCallElementsType(const NetworkManagementAddNodeCallElementsType &other) = default;
 
     NetworkManagementAddNodeCallElementsType() = default;
 };
@@ -8456,8 +8867,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallEl
 */
 struct NetworkManagementRemoveNodeCallType
 {
-    SpineOptional<FeatureAddressType> nodeAddress;
-    SpineOptional<NetworkManagementProcessTimeoutType> timeout;
+    SpineOptional<FeatureAddressType> nodeAddress{};
+    SpineOptional<NetworkManagementProcessTimeoutType> timeout{};
+
+    NetworkManagementRemoveNodeCallType(const NetworkManagementRemoveNodeCallType &other) = default;
 
     NetworkManagementRemoveNodeCallType() = default;
 };
@@ -8481,8 +8894,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
 */
 struct NetworkManagementRemoveNodeCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> nodeAddress;
-    SpineOptional<ElementTagType> timeout;
+    SpineOptional<FeatureAddressElementsType> nodeAddress{};
+    SpineOptional<ElementTagType> timeout{};
+
+    NetworkManagementRemoveNodeCallElementsType(const NetworkManagementRemoveNodeCallElementsType &other) = default;
 
     NetworkManagementRemoveNodeCallElementsType() = default;
 };
@@ -8506,11 +8921,13 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
 */
 struct NetworkManagementModifyNodeCallType
 {
-    SpineOptional<FeatureAddressType> nodeAddress;
-    SpineOptional<NetworkManagementNativeSetupType> nativeSetup;
-    SpineOptional<NetworkManagementProcessTimeoutType> timeout;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<FeatureAddressType> nodeAddress{};
+    SpineOptional<NetworkManagementNativeSetupType> nativeSetup{};
+    SpineOptional<NetworkManagementProcessTimeoutType> timeout{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementModifyNodeCallType(const NetworkManagementModifyNodeCallType &other) = default;
 
     NetworkManagementModifyNodeCallType() = default;
 };
@@ -8534,11 +8951,13 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
 */
 struct NetworkManagementModifyNodeCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> nodeAddress;
-    SpineOptional<ElementTagType> nativeSetup;
-    SpineOptional<ElementTagType> timeout;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<FeatureAddressElementsType> nodeAddress{};
+    SpineOptional<ElementTagType> nativeSetup{};
+    SpineOptional<ElementTagType> timeout{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementModifyNodeCallElementsType(const NetworkManagementModifyNodeCallElementsType &other) = default;
 
     NetworkManagementModifyNodeCallElementsType() = default;
 };
@@ -8562,8 +8981,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
 */
 struct NetworkManagementScanNetworkCallType
 {
-    SpineOptional<NetworkManagementScanSetupType> scanSetup;
-    SpineOptional<NetworkManagementProcessTimeoutType> timeout;
+    SpineOptional<NetworkManagementScanSetupType> scanSetup{};
+    SpineOptional<NetworkManagementProcessTimeoutType> timeout{};
+
+    NetworkManagementScanNetworkCallType(const NetworkManagementScanNetworkCallType &other) = default;
 
     NetworkManagementScanNetworkCallType() = default;
 };
@@ -8587,8 +9008,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
 */
 struct NetworkManagementScanNetworkCallElementsType
 {
-    SpineOptional<ElementTagType> scanSetup;
-    SpineOptional<ElementTagType> timeout;
+    SpineOptional<ElementTagType> scanSetup{};
+    SpineOptional<ElementTagType> timeout{};
+
+    NetworkManagementScanNetworkCallElementsType(const NetworkManagementScanNetworkCallElementsType &other) = default;
 
     NetworkManagementScanNetworkCallElementsType() = default;
 };
@@ -8612,7 +9035,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
 */
 struct NetworkManagementDiscoverCallType
 {
-    SpineOptional<FeatureAddressType> discoverAddress;
+    SpineOptional<FeatureAddressType> discoverAddress{};
+
+    NetworkManagementDiscoverCallType(const NetworkManagementDiscoverCallType &other) = default;
 
     NetworkManagementDiscoverCallType() = default;
 };
@@ -8636,7 +9061,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallT
 */
 struct NetworkManagementDiscoverCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> discoverAddress;
+    SpineOptional<FeatureAddressElementsType> discoverAddress{};
+
+    NetworkManagementDiscoverCallElementsType(const NetworkManagementDiscoverCallElementsType &other) = default;
 
     NetworkManagementDiscoverCallElementsType() = default;
 };
@@ -8661,6 +9088,8 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
 struct NetworkManagementAbortCallType
 {
 
+    NetworkManagementAbortCallType(const NetworkManagementAbortCallType &other) = default;
+
     NetworkManagementAbortCallType() = default;
 };
 
@@ -8684,6 +9113,8 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType
 struct NetworkManagementAbortCallElementsType
 {
 
+    NetworkManagementAbortCallElementsType(const NetworkManagementAbortCallElementsType &other) = default;
+
     NetworkManagementAbortCallElementsType() = default;
 };
 
@@ -8706,8 +9137,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElem
 */
 struct NetworkManagementProcessStateDataType
 {
-    SpineOptional<NetworkManagementProcessStateStateType> state;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<NetworkManagementProcessStateStateType> state{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementProcessStateDataType(const NetworkManagementProcessStateDataType &other) = default;
 
     NetworkManagementProcessStateDataType() = default;
 };
@@ -8731,8 +9164,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
 */
 struct NetworkManagementProcessStateDataElementsType
 {
-    SpineOptional<ElementTagType> state;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> state{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementProcessStateDataElementsType(const NetworkManagementProcessStateDataElementsType &other) = default;
 
     NetworkManagementProcessStateDataElementsType() = default;
 };
@@ -8756,7 +9191,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
 */
 struct NetworkManagementJoiningModeDataType
 {
-    SpineOptional<NetworkManagementSetupType> setup;
+    SpineOptional<NetworkManagementSetupType> setup{};
+
+    NetworkManagementJoiningModeDataType(const NetworkManagementJoiningModeDataType &other) = default;
 
     NetworkManagementJoiningModeDataType() = default;
 };
@@ -8780,7 +9217,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
 */
 struct NetworkManagementJoiningModeDataElementsType
 {
-    SpineOptional<ElementTagType> setup;
+    SpineOptional<ElementTagType> setup{};
+
+    NetworkManagementJoiningModeDataElementsType(const NetworkManagementJoiningModeDataElementsType &other) = default;
 
     NetworkManagementJoiningModeDataElementsType() = default;
 };
@@ -8804,10 +9243,12 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
 */
 struct NetworkManagementReportCandidateDataType
 {
-    SpineOptional<NetworkManagementCandidateSetupType> candidateSetup;
-    SpineOptional<bool> setupUsableForAdd;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<NetworkManagementCandidateSetupType> candidateSetup{};
+    SpineOptional<bool> setupUsableForAdd{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementReportCandidateDataType(const NetworkManagementReportCandidateDataType &other) = default;
 
     NetworkManagementReportCandidateDataType() = default;
 };
@@ -8831,10 +9272,12 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
 */
 struct NetworkManagementReportCandidateDataElementsType
 {
-    SpineOptional<ElementTagType> candidateSetup;
-    SpineOptional<ElementTagType> setupUsableForAdd;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> candidateSetup{};
+    SpineOptional<ElementTagType> setupUsableForAdd{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementReportCandidateDataElementsType(const NetworkManagementReportCandidateDataElementsType &other) = default;
 
     NetworkManagementReportCandidateDataElementsType() = default;
 };
@@ -8858,17 +9301,19 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
 */
 struct NetworkManagementDeviceDescriptionDataType
 {
-    SpineOptional<DeviceAddressType> deviceAddress;
-    SpineOptional<DeviceTypeEnumType> deviceType;
-    SpineOptional<FeatureAddressType> networkManagementResponsibleAddress;
-    SpineOptional<NetworkManagementNativeSetupType> nativeSetup;
-    SpineOptional<NetworkManagementTechnologyAddressType> technologyAddress;
-    SpineOptional<NetworkManagementCommunicationsTechnologyInformationType> communicationsTechnologyInformation;
-    SpineOptional<NetworkManagementFeatureSetType> networkFeatureSet;
-    SpineOptional<NetworkManagementStateChangeType> lastStateChange;
-    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<DeviceAddressType> deviceAddress{};
+    SpineOptional<DeviceTypeEnumType> deviceType{};
+    SpineOptional<FeatureAddressType> networkManagementResponsibleAddress{};
+    SpineOptional<NetworkManagementNativeSetupType> nativeSetup{};
+    SpineOptional<NetworkManagementTechnologyAddressType> technologyAddress{};
+    SpineOptional<NetworkManagementCommunicationsTechnologyInformationType> communicationsTechnologyInformation{};
+    SpineOptional<NetworkManagementFeatureSetType> networkFeatureSet{};
+    SpineOptional<NetworkManagementStateChangeType> lastStateChange{};
+    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementDeviceDescriptionDataType(const NetworkManagementDeviceDescriptionDataType &other) = default;
 
     NetworkManagementDeviceDescriptionDataType() = default;
 };
@@ -8892,17 +9337,19 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 */
 struct NetworkManagementDeviceDescriptionDataElementsType
 {
-    SpineOptional<DeviceAddressElementsType> deviceAddress;
-    SpineOptional<ElementTagType> deviceType;
-    SpineOptional<ElementTagType> networkManagementResponsibleAddress;
-    SpineOptional<ElementTagType> nativeSetup;
-    SpineOptional<ElementTagType> technologyAddress;
-    SpineOptional<ElementTagType> communicationsTechnologyInformation;
-    SpineOptional<ElementTagType> networkFeatureSet;
-    SpineOptional<ElementTagType> lastStateChange;
-    SpineOptional<ElementTagType> minimumTrustLevel;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<DeviceAddressElementsType> deviceAddress{};
+    SpineOptional<ElementTagType> deviceType{};
+    SpineOptional<ElementTagType> networkManagementResponsibleAddress{};
+    SpineOptional<ElementTagType> nativeSetup{};
+    SpineOptional<ElementTagType> technologyAddress{};
+    SpineOptional<ElementTagType> communicationsTechnologyInformation{};
+    SpineOptional<ElementTagType> networkFeatureSet{};
+    SpineOptional<ElementTagType> lastStateChange{};
+    SpineOptional<ElementTagType> minimumTrustLevel{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementDeviceDescriptionDataElementsType(const NetworkManagementDeviceDescriptionDataElementsType &other) = default;
 
     NetworkManagementDeviceDescriptionDataElementsType() = default;
 };
@@ -8926,7 +9373,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 */
 struct NetworkManagementDeviceDescriptionListDataType
 {
-    SpineOptional<std::vector<NetworkManagementDeviceDescriptionDataType>> networkManagementDeviceDescriptionData;
+    SpineOptional<std::vector<NetworkManagementDeviceDescriptionDataType>> networkManagementDeviceDescriptionData{};
+
+    NetworkManagementDeviceDescriptionListDataType(const NetworkManagementDeviceDescriptionListDataType &other) = default;
 
     NetworkManagementDeviceDescriptionListDataType() = default;
 };
@@ -8950,8 +9399,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 */
 struct NetworkManagementDeviceDescriptionListDataSelectorsType
 {
-    SpineOptional<DeviceAddressType> deviceAddress;
-    SpineOptional<DeviceTypeEnumType> deviceType;
+    SpineOptional<DeviceAddressType> deviceAddress{};
+    SpineOptional<DeviceTypeEnumType> deviceType{};
+
+    NetworkManagementDeviceDescriptionListDataSelectorsType(const NetworkManagementDeviceDescriptionListDataSelectorsType &other) = default;
 
     NetworkManagementDeviceDescriptionListDataSelectorsType() = default;
 };
@@ -8975,12 +9426,14 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 */
 struct NetworkManagementEntityDescriptionDataType
 {
-    SpineOptional<EntityAddressType> entityAddress;
-    SpineOptional<EntityTypeEnumType> entityType;
-    SpineOptional<NetworkManagementStateChangeType> lastStateChange;
-    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<EntityAddressType> entityAddress{};
+    SpineOptional<EntityTypeEnumType> entityType{};
+    SpineOptional<NetworkManagementStateChangeType> lastStateChange{};
+    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    NetworkManagementEntityDescriptionDataType(const NetworkManagementEntityDescriptionDataType &other) = default;
 
     NetworkManagementEntityDescriptionDataType() = default;
 };
@@ -9004,12 +9457,14 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 */
 struct NetworkManagementEntityDescriptionDataElementsType
 {
-    SpineOptional<EntityAddressElementsType> entityAddress;
-    SpineOptional<ElementTagType> entityType;
-    SpineOptional<ElementTagType> lastStateChange;
-    SpineOptional<ElementTagType> minimumTrustLevel;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<EntityAddressElementsType> entityAddress{};
+    SpineOptional<ElementTagType> entityType{};
+    SpineOptional<ElementTagType> lastStateChange{};
+    SpineOptional<ElementTagType> minimumTrustLevel{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    NetworkManagementEntityDescriptionDataElementsType(const NetworkManagementEntityDescriptionDataElementsType &other) = default;
 
     NetworkManagementEntityDescriptionDataElementsType() = default;
 };
@@ -9033,7 +9488,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 */
 struct NetworkManagementEntityDescriptionListDataType
 {
-    SpineOptional<std::vector<NetworkManagementEntityDescriptionDataType>> networkManagementEntityDescriptionData;
+    SpineOptional<std::vector<NetworkManagementEntityDescriptionDataType>> networkManagementEntityDescriptionData{};
+
+    NetworkManagementEntityDescriptionListDataType(const NetworkManagementEntityDescriptionListDataType &other) = default;
 
     NetworkManagementEntityDescriptionListDataType() = default;
 };
@@ -9057,8 +9514,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 */
 struct NetworkManagementEntityDescriptionListDataSelectorsType
 {
-    SpineOptional<EntityAddressType> entityAddress;
-    SpineOptional<EntityTypeEnumType> entityType;
+    SpineOptional<EntityAddressType> entityAddress{};
+    SpineOptional<EntityTypeEnumType> entityType{};
+
+    NetworkManagementEntityDescriptionListDataSelectorsType(const NetworkManagementEntityDescriptionListDataSelectorsType &other) = default;
 
     NetworkManagementEntityDescriptionListDataSelectorsType() = default;
 };
@@ -9082,17 +9541,19 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 */
 struct NetworkManagementFeatureDescriptionDataType
 {
-    SpineOptional<FeatureAddressType> featureAddress;
-    SpineOptional<FeatureTypeEnumType> featureType;
-    SpineOptional<std::vector<FeatureSpecificUsageType>> specificUsage;
-    SpineOptional<FeatureGroupType> featureGroup;
-    SpineOptional<RoleType> role;
-    SpineOptional<std::vector<FunctionPropertyType>> supportedFunction;
-    SpineOptional<NetworkManagementStateChangeType> lastStateChange;
-    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<MaxResponseDelayType> maxResponseDelay;
+    SpineOptional<FeatureAddressType> featureAddress{};
+    SpineOptional<FeatureTypeEnumType> featureType{};
+    SpineOptional<std::vector<FeatureSpecificUsageType>> specificUsage{};
+    SpineOptional<FeatureGroupType> featureGroup{};
+    SpineOptional<RoleType> role{};
+    SpineOptional<std::vector<FunctionPropertyType>> supportedFunction{};
+    SpineOptional<NetworkManagementStateChangeType> lastStateChange{};
+    SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<MaxResponseDelayType> maxResponseDelay{};
+
+    NetworkManagementFeatureDescriptionDataType(const NetworkManagementFeatureDescriptionDataType &other) = default;
 
     NetworkManagementFeatureDescriptionDataType() = default;
 };
@@ -9116,17 +9577,19 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
 */
 struct NetworkManagementFeatureDescriptionDataElementsType
 {
-    SpineOptional<FeatureAddressElementsType> featureAddress;
-    SpineOptional<ElementTagType> featureType;
-    SpineOptional<ElementTagType> specificUsage;
-    SpineOptional<ElementTagType> featureGroup;
-    SpineOptional<ElementTagType> role;
-    SpineOptional<FunctionPropertyElementsType> supportedFunction;
-    SpineOptional<ElementTagType> lastStateChange;
-    SpineOptional<ElementTagType> minimumTrustLevel;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> maxResponseDelay;
+    SpineOptional<FeatureAddressElementsType> featureAddress{};
+    SpineOptional<ElementTagType> featureType{};
+    SpineOptional<ElementTagType> specificUsage{};
+    SpineOptional<ElementTagType> featureGroup{};
+    SpineOptional<ElementTagType> role{};
+    SpineOptional<FunctionPropertyElementsType> supportedFunction{};
+    SpineOptional<ElementTagType> lastStateChange{};
+    SpineOptional<ElementTagType> minimumTrustLevel{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> maxResponseDelay{};
+
+    NetworkManagementFeatureDescriptionDataElementsType(const NetworkManagementFeatureDescriptionDataElementsType &other) = default;
 
     NetworkManagementFeatureDescriptionDataElementsType() = default;
 };
@@ -9150,7 +9613,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
 */
 struct NetworkManagementFeatureDescriptionListDataType
 {
-    SpineOptional<std::vector<NetworkManagementFeatureDescriptionDataType>> networkManagementFeatureDescriptionData;
+    SpineOptional<std::vector<NetworkManagementFeatureDescriptionDataType>> networkManagementFeatureDescriptionData{};
+
+    NetworkManagementFeatureDescriptionListDataType(const NetworkManagementFeatureDescriptionListDataType &other) = default;
 
     NetworkManagementFeatureDescriptionListDataType() = default;
 };
@@ -9174,8 +9639,10 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
 */
 struct NetworkManagementFeatureDescriptionListDataSelectorsType
 {
-    SpineOptional<FeatureAddressType> featureAddress;
-    SpineOptional<FeatureTypeEnumType> featureType;
+    SpineOptional<FeatureAddressType> featureAddress{};
+    SpineOptional<FeatureTypeEnumType> featureType{};
+
+    NetworkManagementFeatureDescriptionListDataSelectorsType(const NetworkManagementFeatureDescriptionListDataSelectorsType &other) = default;
 
     NetworkManagementFeatureDescriptionListDataSelectorsType() = default;
 };
@@ -9199,15 +9666,17 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
 */
 struct SupplyConditionDataType
 {
-    SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<SupplyConditionEventTypeEnumType> eventType;
-    SpineOptional<SupplyConditionOriginatorEnumType> originator;
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ScaledNumberType> thresholdPercentage;
-    SpineOptional<TimePeriodType> relevantPeriod;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<GridConditionEnumType> gridCondition;
+    SpineOptional<ConditionIdType> conditionId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<SupplyConditionEventTypeEnumType> eventType{};
+    SpineOptional<SupplyConditionOriginatorEnumType> originator{};
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<ScaledNumberType> thresholdPercentage{};
+    SpineOptional<TimePeriodType> relevantPeriod{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<GridConditionEnumType> gridCondition{};
+
+    SupplyConditionDataType(const SupplyConditionDataType &other) = default;
 
     SupplyConditionDataType() = default;
 };
@@ -9231,15 +9700,17 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst);
 */
 struct SupplyConditionDataElementsType
 {
-    SpineOptional<ElementTagType> conditionId;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> eventType;
-    SpineOptional<ElementTagType> originator;
-    SpineOptional<ElementTagType> thresholdId;
-    SpineOptional<ScaledNumberElementsType> thresholdPercentage;
-    SpineOptional<TimePeriodElementsType> relevantPeriod;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> gridCondition;
+    SpineOptional<ElementTagType> conditionId{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> eventType{};
+    SpineOptional<ElementTagType> originator{};
+    SpineOptional<ElementTagType> thresholdId{};
+    SpineOptional<ScaledNumberElementsType> thresholdPercentage{};
+    SpineOptional<TimePeriodElementsType> relevantPeriod{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> gridCondition{};
+
+    SupplyConditionDataElementsType(const SupplyConditionDataElementsType &other) = default;
 
     SupplyConditionDataElementsType() = default;
 };
@@ -9263,7 +9734,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsTyp
 */
 struct SupplyConditionListDataType
 {
-    SpineOptional<std::vector<SupplyConditionDataType>> supplyConditionData;
+    SpineOptional<std::vector<SupplyConditionDataType>> supplyConditionData{};
+
+    SupplyConditionListDataType(const SupplyConditionListDataType &other) = default;
 
     SupplyConditionListDataType() = default;
 };
@@ -9287,10 +9760,12 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &d
 */
 struct SupplyConditionListDataSelectorsType
 {
-    SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<TimestampIntervalType> timestampInterval;
-    SpineOptional<SupplyConditionEventTypeEnumType> eventType;
-    SpineOptional<SupplyConditionOriginatorEnumType> originator;
+    SpineOptional<ConditionIdType> conditionId{};
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+    SpineOptional<SupplyConditionEventTypeEnumType> eventType{};
+    SpineOptional<SupplyConditionOriginatorEnumType> originator{};
+
+    SupplyConditionListDataSelectorsType(const SupplyConditionListDataSelectorsType &other) = default;
 
     SupplyConditionListDataSelectorsType() = default;
 };
@@ -9314,11 +9789,13 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelecto
 */
 struct SupplyConditionDescriptionDataType
 {
-    SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<CommodityTypeEnumType> commodityType;
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<ConditionIdType> conditionId{};
+    SpineOptional<CommodityTypeEnumType> commodityType{};
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    SupplyConditionDescriptionDataType(const SupplyConditionDescriptionDataType &other) = default;
 
     SupplyConditionDescriptionDataType() = default;
 };
@@ -9342,11 +9819,13 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
 */
 struct SupplyConditionDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> conditionId;
-    SpineOptional<ElementTagType> commodityType;
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> conditionId{};
+    SpineOptional<ElementTagType> commodityType{};
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    SupplyConditionDescriptionDataElementsType(const SupplyConditionDescriptionDataElementsType &other) = default;
 
     SupplyConditionDescriptionDataElementsType() = default;
 };
@@ -9370,7 +9849,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
 */
 struct SupplyConditionDescriptionListDataType
 {
-    SpineOptional<std::vector<SupplyConditionDescriptionDataType>> supplyConditionDescriptionData;
+    SpineOptional<std::vector<SupplyConditionDescriptionDataType>> supplyConditionDescriptionData{};
+
+    SupplyConditionDescriptionListDataType(const SupplyConditionDescriptionListDataType &other) = default;
 
     SupplyConditionDescriptionListDataType() = default;
 };
@@ -9394,7 +9875,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
 */
 struct SupplyConditionDescriptionListDataSelectorsType
 {
-    SpineOptional<ConditionIdType> conditionId;
+    SpineOptional<ConditionIdType> conditionId{};
+
+    SupplyConditionDescriptionListDataSelectorsType(const SupplyConditionDescriptionListDataSelectorsType &other) = default;
 
     SupplyConditionDescriptionListDataSelectorsType() = default;
 };
@@ -9418,8 +9901,10 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
 */
 struct SupplyConditionThresholdRelationDataType
 {
-    SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<std::vector<ThresholdIdType>> thresholdId;
+    SpineOptional<ConditionIdType> conditionId{};
+    SpineOptional<std::vector<ThresholdIdType>> thresholdId{};
+
+    SupplyConditionThresholdRelationDataType(const SupplyConditionThresholdRelationDataType &other) = default;
 
     SupplyConditionThresholdRelationDataType() = default;
 };
@@ -9443,8 +9928,10 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
 */
 struct SupplyConditionThresholdRelationDataElementsType
 {
-    SpineOptional<ElementTagType> conditionId;
-    SpineOptional<ElementTagType> thresholdId;
+    SpineOptional<ElementTagType> conditionId{};
+    SpineOptional<ElementTagType> thresholdId{};
+
+    SupplyConditionThresholdRelationDataElementsType(const SupplyConditionThresholdRelationDataElementsType &other) = default;
 
     SupplyConditionThresholdRelationDataElementsType() = default;
 };
@@ -9468,7 +9955,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
 */
 struct SupplyConditionThresholdRelationListDataType
 {
-    SpineOptional<std::vector<SupplyConditionThresholdRelationDataType>> supplyConditionThresholdRelationData;
+    SpineOptional<std::vector<SupplyConditionThresholdRelationDataType>> supplyConditionThresholdRelationData{};
+
+    SupplyConditionThresholdRelationListDataType(const SupplyConditionThresholdRelationListDataType &other) = default;
 
     SupplyConditionThresholdRelationListDataType() = default;
 };
@@ -9492,8 +9981,10 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
 */
 struct SupplyConditionThresholdRelationListDataSelectorsType
 {
-    SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<ThresholdIdType> thresholdId;
+    SpineOptional<ConditionIdType> conditionId{};
+    SpineOptional<ThresholdIdType> thresholdId{};
+
+    SupplyConditionThresholdRelationListDataSelectorsType(const SupplyConditionThresholdRelationListDataSelectorsType &other) = default;
 
     SupplyConditionThresholdRelationListDataSelectorsType() = default;
 };
@@ -9517,15 +10008,17 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
 */
 struct AlarmDataType
 {
-    SpineOptional<AlarmIdType> alarmId;
-    SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<AlarmTypeEnumType> alarmType;
-    SpineOptional<ScaledNumberType> measuredValue;
-    SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<AlarmIdType> alarmId{};
+    SpineOptional<ThresholdIdType> thresholdId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<AlarmTypeEnumType> alarmType{};
+    SpineOptional<ScaledNumberType> measuredValue{};
+    SpineOptional<TimePeriodType> evaluationPeriod{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    AlarmDataType(const AlarmDataType &other) = default;
 
     AlarmDataType() = default;
 };
@@ -9549,15 +10042,17 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst);
 */
 struct AlarmDataElementsType
 {
-    SpineOptional<ElementTagType> alarmId;
-    SpineOptional<ElementTagType> thresholdId;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> alarmType;
-    SpineOptional<ScaledNumberElementsType> measuredValue;
-    SpineOptional<TimePeriodElementsType> evaluationPeriod;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> alarmId{};
+    SpineOptional<ElementTagType> thresholdId{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> alarmType{};
+    SpineOptional<ScaledNumberElementsType> measuredValue{};
+    SpineOptional<TimePeriodElementsType> evaluationPeriod{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    AlarmDataElementsType(const AlarmDataElementsType &other) = default;
 
     AlarmDataElementsType() = default;
 };
@@ -9581,7 +10076,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst);
 */
 struct AlarmListDataType
 {
-    SpineOptional<std::vector<AlarmDataType>> alarmData;
+    SpineOptional<std::vector<AlarmDataType>> alarmData{};
+
+    AlarmListDataType(const AlarmListDataType &other) = default;
 
     AlarmListDataType() = default;
 };
@@ -9605,8 +10102,10 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst);
 */
 struct AlarmListDataSelectorsType
 {
-    SpineOptional<AlarmIdType> alarmId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<AlarmIdType> alarmId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    AlarmListDataSelectorsType(const AlarmListDataSelectorsType &other) = default;
 
     AlarmListDataSelectorsType() = default;
 };
@@ -9630,7 +10129,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &ds
 */
 struct NodeManagementSpecificationVersionListType
 {
-    SpineOptional<std::vector<SpecificationVersionType>> specificationVersion;
+    SpineOptional<std::vector<SpecificationVersionType>> specificationVersion{};
+
+    NodeManagementSpecificationVersionListType(const NodeManagementSpecificationVersionListType &other) = default;
 
     NodeManagementSpecificationVersionListType() = default;
 };
@@ -9654,7 +10155,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
 */
 struct NodeManagementDetailedDiscoveryDeviceInformationType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionDataType> description;
+    SpineOptional<NetworkManagementDeviceDescriptionDataType> description{};
+
+    NodeManagementDetailedDiscoveryDeviceInformationType(const NodeManagementDetailedDiscoveryDeviceInformationType &other) = default;
 
     NodeManagementDetailedDiscoveryDeviceInformationType() = default;
 };
@@ -9678,7 +10181,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryEntityInformationType
 {
-    SpineOptional<NetworkManagementEntityDescriptionDataType> description;
+    SpineOptional<NetworkManagementEntityDescriptionDataType> description{};
+
+    NodeManagementDetailedDiscoveryEntityInformationType(const NodeManagementDetailedDiscoveryEntityInformationType &other) = default;
 
     NodeManagementDetailedDiscoveryEntityInformationType() = default;
 };
@@ -9702,7 +10207,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryFeatureInformationType
 {
-    SpineOptional<NetworkManagementFeatureDescriptionDataType> description;
+    SpineOptional<NetworkManagementFeatureDescriptionDataType> description{};
+
+    NodeManagementDetailedDiscoveryFeatureInformationType(const NodeManagementDetailedDiscoveryFeatureInformationType &other) = default;
 
     NodeManagementDetailedDiscoveryFeatureInformationType() = default;
 };
@@ -9726,10 +10233,12 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryDataType
 {
-    SpineOptional<NodeManagementSpecificationVersionListType> specificationVersionList;
-    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationType> deviceInformation;
-    SpineOptional<std::vector<NodeManagementDetailedDiscoveryEntityInformationType>> entityInformation;
-    SpineOptional<std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>> featureInformation;
+    SpineOptional<NodeManagementSpecificationVersionListType> specificationVersionList{};
+    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationType> deviceInformation{};
+    SpineOptional<std::vector<NodeManagementDetailedDiscoveryEntityInformationType>> entityInformation{};
+    SpineOptional<std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>> featureInformation{};
+
+    NodeManagementDetailedDiscoveryDataType(const NodeManagementDetailedDiscoveryDataType &other) = default;
 
     NodeManagementDetailedDiscoveryDataType() = default;
 };
@@ -9754,6 +10263,8 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 struct SpecificationVersionDataElementsType
 {
 
+    SpecificationVersionDataElementsType(const SpecificationVersionDataElementsType &other) = default;
+
     SpecificationVersionDataElementsType() = default;
 };
 
@@ -9776,7 +10287,9 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElemen
 */
 struct NodeManagementSpecificationVersionListElementsType
 {
-    SpineOptional<SpecificationVersionDataElementsType> specificationVersion;
+    SpineOptional<SpecificationVersionDataElementsType> specificationVersion{};
+
+    NodeManagementSpecificationVersionListElementsType(const NodeManagementSpecificationVersionListElementsType &other) = default;
 
     NodeManagementSpecificationVersionListElementsType() = default;
 };
@@ -9800,7 +10313,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
 */
 struct NodeManagementDetailedDiscoveryDeviceInformationElementsType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> description;
+    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> description{};
+
+    NodeManagementDetailedDiscoveryDeviceInformationElementsType(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &other) = default;
 
     NodeManagementDetailedDiscoveryDeviceInformationElementsType() = default;
 };
@@ -9824,7 +10339,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryEntityInformationElementsType
 {
-    SpineOptional<NetworkManagementEntityDescriptionDataElementsType> description;
+    SpineOptional<NetworkManagementEntityDescriptionDataElementsType> description{};
+
+    NodeManagementDetailedDiscoveryEntityInformationElementsType(const NodeManagementDetailedDiscoveryEntityInformationElementsType &other) = default;
 
     NodeManagementDetailedDiscoveryEntityInformationElementsType() = default;
 };
@@ -9848,7 +10365,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryFeatureInformationElementsType
 {
-    SpineOptional<NetworkManagementFeatureDescriptionDataElementsType> description;
+    SpineOptional<NetworkManagementFeatureDescriptionDataElementsType> description{};
+
+    NodeManagementDetailedDiscoveryFeatureInformationElementsType(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &other) = default;
 
     NodeManagementDetailedDiscoveryFeatureInformationElementsType() = default;
 };
@@ -9872,10 +10391,12 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryDataElementsType
 {
-    SpineOptional<NodeManagementSpecificationVersionListElementsType> specificationVersionList;
-    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> deviceInformation;
-    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationElementsType> entityInformation;
-    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> featureInformation;
+    SpineOptional<NodeManagementSpecificationVersionListElementsType> specificationVersionList{};
+    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> deviceInformation{};
+    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationElementsType> entityInformation{};
+    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> featureInformation{};
+
+    NodeManagementDetailedDiscoveryDataElementsType(const NodeManagementDetailedDiscoveryDataElementsType &other) = default;
 
     NodeManagementDetailedDiscoveryDataElementsType() = default;
 };
@@ -9899,9 +10420,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct NodeManagementDetailedDiscoveryDataSelectorsType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceInformation;
-    SpineOptional<NetworkManagementEntityDescriptionListDataSelectorsType> entityInformation;
-    SpineOptional<NetworkManagementFeatureDescriptionListDataSelectorsType> featureInformation;
+    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceInformation{};
+    SpineOptional<NetworkManagementEntityDescriptionListDataSelectorsType> entityInformation{};
+    SpineOptional<NetworkManagementFeatureDescriptionListDataSelectorsType> featureInformation{};
+
+    NodeManagementDetailedDiscoveryDataSelectorsType(const NodeManagementDetailedDiscoveryDataSelectorsType &other) = default;
 
     NodeManagementDetailedDiscoveryDataSelectorsType() = default;
 };
@@ -9925,11 +10448,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct BindingManagementEntryDataType
 {
-    SpineOptional<BindingIdType> bindingId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<BindingIdType> bindingId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    BindingManagementEntryDataType(const BindingManagementEntryDataType &other) = default;
 
     BindingManagementEntryDataType() = default;
 };
@@ -9953,7 +10478,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType
 */
 struct NodeManagementBindingDataType
 {
-    SpineOptional<std::vector<BindingManagementEntryDataType>> bindingEntry;
+    SpineOptional<std::vector<BindingManagementEntryDataType>> bindingEntry{};
+
+    NodeManagementBindingDataType(const NodeManagementBindingDataType &other) = default;
 
     NodeManagementBindingDataType() = default;
 };
@@ -9977,11 +10504,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType 
 */
 struct BindingManagementEntryDataElementsType
 {
-    SpineOptional<ElementTagType> bindingId;
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> bindingId{};
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    BindingManagementEntryDataElementsType(const BindingManagementEntryDataElementsType &other) = default;
 
     BindingManagementEntryDataElementsType() = default;
 };
@@ -10005,7 +10534,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElem
 */
 struct NodeManagementBindingDataElementsType
 {
-    SpineOptional<BindingManagementEntryDataElementsType> bindingEntry;
+    SpineOptional<BindingManagementEntryDataElementsType> bindingEntry{};
+
+    NodeManagementBindingDataElementsType(const NodeManagementBindingDataElementsType &other) = default;
 
     NodeManagementBindingDataElementsType() = default;
 };
@@ -10029,9 +10560,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataEleme
 */
 struct BindingManagementEntryListDataSelectorsType
 {
-    SpineOptional<BindingIdType> bindingId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
+    SpineOptional<BindingIdType> bindingId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+
+    BindingManagementEntryListDataSelectorsType(const BindingManagementEntryListDataSelectorsType &other) = default;
 
     BindingManagementEntryListDataSelectorsType() = default;
 };
@@ -10055,7 +10588,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
 */
 struct NodeManagementBindingDataSelectorsType
 {
-    SpineOptional<BindingManagementEntryListDataSelectorsType> bindingEntry;
+    SpineOptional<BindingManagementEntryListDataSelectorsType> bindingEntry{};
+
+    NodeManagementBindingDataSelectorsType(const NodeManagementBindingDataSelectorsType &other) = default;
 
     NodeManagementBindingDataSelectorsType() = default;
 };
@@ -10079,9 +10614,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelec
 */
 struct BindingManagementRequestCallType
 {
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<FeatureTypeEnumType> serverFeatureType;
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+    SpineOptional<FeatureTypeEnumType> serverFeatureType{};
+
+    BindingManagementRequestCallType(const BindingManagementRequestCallType &other) = default;
 
     BindingManagementRequestCallType() = default;
 };
@@ -10105,7 +10642,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallTy
 */
 struct NodeManagementBindingRequestCallType
 {
-    SpineOptional<BindingManagementRequestCallType> bindingRequest;
+    SpineOptional<BindingManagementRequestCallType> bindingRequest{};
+
+    NodeManagementBindingRequestCallType(const NodeManagementBindingRequestCallType &other) = default;
 
     NodeManagementBindingRequestCallType() = default;
 };
@@ -10129,9 +10668,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
 */
 struct BindingManagementRequestCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
-    SpineOptional<ElementTagType> serverFeatureType;
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+    SpineOptional<ElementTagType> serverFeatureType{};
+
+    BindingManagementRequestCallElementsType(const BindingManagementRequestCallElementsType &other) = default;
 
     BindingManagementRequestCallElementsType() = default;
 };
@@ -10155,7 +10696,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallEl
 */
 struct NodeManagementBindingRequestCallElementsType
 {
-    SpineOptional<BindingManagementRequestCallElementsType> bindingRequest;
+    SpineOptional<BindingManagementRequestCallElementsType> bindingRequest{};
+
+    NodeManagementBindingRequestCallElementsType(const NodeManagementBindingRequestCallElementsType &other) = default;
 
     NodeManagementBindingRequestCallElementsType() = default;
 };
@@ -10179,9 +10722,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
 */
 struct BindingManagementDeleteCallType
 {
-    SpineOptional<BindingIdType> bindingId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
+    SpineOptional<BindingIdType> bindingId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+
+    BindingManagementDeleteCallType(const BindingManagementDeleteCallType &other) = default;
 
     BindingManagementDeleteCallType() = default;
 };
@@ -10205,7 +10750,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallTyp
 */
 struct NodeManagementBindingDeleteCallType
 {
-    SpineOptional<BindingManagementDeleteCallType> bindingDelete;
+    SpineOptional<BindingManagementDeleteCallType> bindingDelete{};
+
+    NodeManagementBindingDeleteCallType(const NodeManagementBindingDeleteCallType &other) = default;
 
     NodeManagementBindingDeleteCallType() = default;
 };
@@ -10229,9 +10776,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
 */
 struct BindingManagementDeleteCallElementsType
 {
-    SpineOptional<ElementTagType> bindingId;
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
+    SpineOptional<ElementTagType> bindingId{};
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+
+    BindingManagementDeleteCallElementsType(const BindingManagementDeleteCallElementsType &other) = default;
 
     BindingManagementDeleteCallElementsType() = default;
 };
@@ -10255,7 +10804,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallEle
 */
 struct NodeManagementBindingDeleteCallElementsType
 {
-    SpineOptional<BindingManagementDeleteCallElementsType> bindingDelete;
+    SpineOptional<BindingManagementDeleteCallElementsType> bindingDelete{};
+
+    NodeManagementBindingDeleteCallElementsType(const NodeManagementBindingDeleteCallElementsType &other) = default;
 
     NodeManagementBindingDeleteCallElementsType() = default;
 };
@@ -10279,11 +10830,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
 */
 struct SubscriptionManagementEntryDataType
 {
-    SpineOptional<SubscriptionIdType> subscriptionId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<SubscriptionIdType> subscriptionId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    SubscriptionManagementEntryDataType(const SubscriptionManagementEntryDataType &other) = default;
 
     SubscriptionManagementEntryDataType() = default;
 };
@@ -10307,7 +10860,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
 */
 struct NodeManagementSubscriptionDataType
 {
-    SpineOptional<std::vector<SubscriptionManagementEntryDataType>> subscriptionEntry;
+    SpineOptional<std::vector<SubscriptionManagementEntryDataType>> subscriptionEntry{};
+
+    NodeManagementSubscriptionDataType(const NodeManagementSubscriptionDataType &other) = default;
 
     NodeManagementSubscriptionDataType() = default;
 };
@@ -10331,11 +10886,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
 */
 struct SubscriptionManagementEntryDataElementsType
 {
-    SpineOptional<ElementTagType> subscriptionId;
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> subscriptionId{};
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    SubscriptionManagementEntryDataElementsType(const SubscriptionManagementEntryDataElementsType &other) = default;
 
     SubscriptionManagementEntryDataElementsType() = default;
 };
@@ -10359,7 +10916,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
 */
 struct NodeManagementSubscriptionDataElementsType
 {
-    SpineOptional<SubscriptionManagementEntryDataElementsType> subscriptionEntry;
+    SpineOptional<SubscriptionManagementEntryDataElementsType> subscriptionEntry{};
+
+    NodeManagementSubscriptionDataElementsType(const NodeManagementSubscriptionDataElementsType &other) = default;
 
     NodeManagementSubscriptionDataElementsType() = default;
 };
@@ -10383,9 +10942,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
 */
 struct SubscriptionManagementEntryListDataSelectorsType
 {
-    SpineOptional<SubscriptionIdType> subscriptionId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
+    SpineOptional<SubscriptionIdType> subscriptionId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+
+    SubscriptionManagementEntryListDataSelectorsType(const SubscriptionManagementEntryListDataSelectorsType &other) = default;
 
     SubscriptionManagementEntryListDataSelectorsType() = default;
 };
@@ -10409,7 +10970,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
 */
 struct NodeManagementSubscriptionDataSelectorsType
 {
-    SpineOptional<SubscriptionManagementEntryListDataSelectorsType> subscriptionEntry;
+    SpineOptional<SubscriptionManagementEntryListDataSelectorsType> subscriptionEntry{};
+
+    NodeManagementSubscriptionDataSelectorsType(const NodeManagementSubscriptionDataSelectorsType &other) = default;
 
     NodeManagementSubscriptionDataSelectorsType() = default;
 };
@@ -10433,9 +10996,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
 */
 struct SubscriptionManagementRequestCallType
 {
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<FeatureTypeEnumType> serverFeatureType;
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+    SpineOptional<FeatureTypeEnumType> serverFeatureType{};
+
+    SubscriptionManagementRequestCallType(const SubscriptionManagementRequestCallType &other) = default;
 
     SubscriptionManagementRequestCallType() = default;
 };
@@ -10459,7 +11024,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
 */
 struct NodeManagementSubscriptionRequestCallType
 {
-    SpineOptional<SubscriptionManagementRequestCallType> subscriptionRequest;
+    SpineOptional<SubscriptionManagementRequestCallType> subscriptionRequest{};
+
+    NodeManagementSubscriptionRequestCallType(const NodeManagementSubscriptionRequestCallType &other) = default;
 
     NodeManagementSubscriptionRequestCallType() = default;
 };
@@ -10483,9 +11050,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
 */
 struct SubscriptionManagementRequestCallElementsType
 {
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
-    SpineOptional<ElementTagType> serverFeatureType;
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+    SpineOptional<ElementTagType> serverFeatureType{};
+
+    SubscriptionManagementRequestCallElementsType(const SubscriptionManagementRequestCallElementsType &other) = default;
 
     SubscriptionManagementRequestCallElementsType() = default;
 };
@@ -10509,7 +11078,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
 */
 struct NodeManagementSubscriptionRequestCallElementsType
 {
-    SpineOptional<SubscriptionManagementRequestCallElementsType> subscriptionRequest;
+    SpineOptional<SubscriptionManagementRequestCallElementsType> subscriptionRequest{};
+
+    NodeManagementSubscriptionRequestCallElementsType(const NodeManagementSubscriptionRequestCallElementsType &other) = default;
 
     NodeManagementSubscriptionRequestCallElementsType() = default;
 };
@@ -10533,9 +11104,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
 */
 struct SubscriptionManagementDeleteCallType
 {
-    SpineOptional<SubscriptionIdType> subscriptionId;
-    SpineOptional<FeatureAddressType> clientAddress;
-    SpineOptional<FeatureAddressType> serverAddress;
+    SpineOptional<SubscriptionIdType> subscriptionId{};
+    SpineOptional<FeatureAddressType> clientAddress{};
+    SpineOptional<FeatureAddressType> serverAddress{};
+
+    SubscriptionManagementDeleteCallType(const SubscriptionManagementDeleteCallType &other) = default;
 
     SubscriptionManagementDeleteCallType() = default;
 };
@@ -10559,7 +11132,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
 */
 struct NodeManagementSubscriptionDeleteCallType
 {
-    SpineOptional<SubscriptionManagementDeleteCallType> subscriptionDelete;
+    SpineOptional<SubscriptionManagementDeleteCallType> subscriptionDelete{};
+
+    NodeManagementSubscriptionDeleteCallType(const NodeManagementSubscriptionDeleteCallType &other) = default;
 
     NodeManagementSubscriptionDeleteCallType() = default;
 };
@@ -10583,9 +11158,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
 */
 struct SubscriptionManagementDeleteCallElementsType
 {
-    SpineOptional<ElementTagType> subscriptionId;
-    SpineOptional<FeatureAddressElementsType> clientAddress;
-    SpineOptional<FeatureAddressElementsType> serverAddress;
+    SpineOptional<ElementTagType> subscriptionId{};
+    SpineOptional<FeatureAddressElementsType> clientAddress{};
+    SpineOptional<FeatureAddressElementsType> serverAddress{};
+
+    SubscriptionManagementDeleteCallElementsType(const SubscriptionManagementDeleteCallElementsType &other) = default;
 
     SubscriptionManagementDeleteCallElementsType() = default;
 };
@@ -10609,7 +11186,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
 */
 struct NodeManagementSubscriptionDeleteCallElementsType
 {
-    SpineOptional<SubscriptionManagementDeleteCallElementsType> subscriptionDelete;
+    SpineOptional<SubscriptionManagementDeleteCallElementsType> subscriptionDelete{};
+
+    NodeManagementSubscriptionDeleteCallElementsType(const NodeManagementSubscriptionDeleteCallElementsType &other) = default;
 
     NodeManagementSubscriptionDeleteCallElementsType() = default;
 };
@@ -10633,7 +11212,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
 */
 struct NodeManagementDestinationDataType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionDataType> deviceDescription;
+    SpineOptional<NetworkManagementDeviceDescriptionDataType> deviceDescription{};
+
+    NodeManagementDestinationDataType(const NodeManagementDestinationDataType &other) = default;
 
     NodeManagementDestinationDataType() = default;
 };
@@ -10657,7 +11238,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataT
 */
 struct NodeManagementDestinationDataElementsType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> deviceDescription;
+    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> deviceDescription{};
+
+    NodeManagementDestinationDataElementsType(const NodeManagementDestinationDataElementsType &other) = default;
 
     NodeManagementDestinationDataElementsType() = default;
 };
@@ -10681,7 +11264,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataE
 */
 struct NodeManagementDestinationListDataType
 {
-    SpineOptional<std::vector<NodeManagementDestinationDataType>> nodeManagementDestinationData;
+    SpineOptional<std::vector<NodeManagementDestinationDataType>> nodeManagementDestinationData{};
+
+    NodeManagementDestinationListDataType(const NodeManagementDestinationListDataType &other) = default;
 
     NodeManagementDestinationListDataType() = default;
 };
@@ -10705,7 +11290,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
 */
 struct NodeManagementDestinationListDataSelectorsType
 {
-    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceDescription;
+    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceDescription{};
+
+    NodeManagementDestinationListDataSelectorsType(const NodeManagementDestinationListDataSelectorsType &other) = default;
 
     NodeManagementDestinationListDataSelectorsType() = default;
 };
@@ -10729,11 +11316,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
 */
 struct UseCaseSupportType
 {
-    SpineOptional<UseCaseNameType> useCaseName;
-    SpineOptional<SpecificationVersionType> useCaseVersion;
-    SpineOptional<bool> useCaseAvailable;
-    SpineOptional<std::vector<UseCaseScenarioSupportType>> scenarioSupport;
-    SpineOptional<std::string> useCaseDocumentSubRevision;
+    SpineOptional<UseCaseNameType> useCaseName{};
+    SpineOptional<SpecificationVersionType> useCaseVersion{};
+    SpineOptional<bool> useCaseAvailable{};
+    SpineOptional<std::vector<UseCaseScenarioSupportType>> scenarioSupport{};
+    SpineOptional<std::string> useCaseDocumentSubRevision{};
+
+    UseCaseSupportType(const UseCaseSupportType &other) = default;
 
     UseCaseSupportType() = default;
 };
@@ -10757,9 +11346,11 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst);
 */
 struct UseCaseInformationDataType
 {
-    SpineOptional<FeatureAddressType> address;
-    SpineOptional<UseCaseActorType> actor;
-    SpineOptional<std::vector<UseCaseSupportType>> useCaseSupport;
+    SpineOptional<FeatureAddressType> address{};
+    SpineOptional<UseCaseActorType> actor{};
+    SpineOptional<std::vector<UseCaseSupportType>> useCaseSupport{};
+
+    UseCaseInformationDataType(const UseCaseInformationDataType &other) = default;
 
     UseCaseInformationDataType() = default;
 };
@@ -10783,7 +11374,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &ds
 */
 struct NodeManagementUseCaseDataType
 {
-    SpineOptional<std::vector<UseCaseInformationDataType>> useCaseInformation;
+    SpineOptional<std::vector<UseCaseInformationDataType>> useCaseInformation{};
+
+    NodeManagementUseCaseDataType(const NodeManagementUseCaseDataType &other) = default;
 
     NodeManagementUseCaseDataType() = default;
 };
@@ -10807,11 +11400,13 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType 
 */
 struct UseCaseSupportElementsType
 {
-    SpineOptional<ElementTagType> useCaseName;
-    SpineOptional<ElementTagType> useCaseVersion;
-    SpineOptional<ElementTagType> useCaseAvailable;
-    SpineOptional<ElementTagType> scenarioSupport;
-    SpineOptional<ElementTagType> useCaseDocumentSubRevision;
+    SpineOptional<ElementTagType> useCaseName{};
+    SpineOptional<ElementTagType> useCaseVersion{};
+    SpineOptional<ElementTagType> useCaseAvailable{};
+    SpineOptional<ElementTagType> scenarioSupport{};
+    SpineOptional<ElementTagType> useCaseDocumentSubRevision{};
+
+    UseCaseSupportElementsType(const UseCaseSupportElementsType &other) = default;
 
     UseCaseSupportElementsType() = default;
 };
@@ -10835,9 +11430,11 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &ds
 */
 struct UseCaseInformationDataElementsType
 {
-    SpineOptional<FeatureAddressElementsType> address;
-    SpineOptional<ElementTagType> actor;
-    SpineOptional<UseCaseSupportElementsType> useCaseSupport;
+    SpineOptional<FeatureAddressElementsType> address{};
+    SpineOptional<ElementTagType> actor{};
+    SpineOptional<UseCaseSupportElementsType> useCaseSupport{};
+
+    UseCaseInformationDataElementsType(const UseCaseInformationDataElementsType &other) = default;
 
     UseCaseInformationDataElementsType() = default;
 };
@@ -10861,7 +11458,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElements
 */
 struct NodeManagementUseCaseDataElementsType
 {
-    SpineOptional<UseCaseInformationDataElementsType> useCaseInformation;
+    SpineOptional<UseCaseInformationDataElementsType> useCaseInformation{};
+
+    NodeManagementUseCaseDataElementsType(const NodeManagementUseCaseDataElementsType &other) = default;
 
     NodeManagementUseCaseDataElementsType() = default;
 };
@@ -10885,9 +11484,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataEleme
 */
 struct UseCaseSupportSelectorsType
 {
-    SpineOptional<UseCaseNameType> useCaseName;
-    SpineOptional<SpecificationVersionType> useCaseVersion;
-    SpineOptional<UseCaseScenarioSupportType> scenarioSupport;
+    SpineOptional<UseCaseNameType> useCaseName{};
+    SpineOptional<SpecificationVersionType> useCaseVersion{};
+    SpineOptional<UseCaseScenarioSupportType> scenarioSupport{};
+
+    UseCaseSupportSelectorsType(const UseCaseSupportSelectorsType &other) = default;
 
     UseCaseSupportSelectorsType() = default;
 };
@@ -10911,9 +11512,11 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &d
 */
 struct UseCaseInformationListDataSelectorsType
 {
-    SpineOptional<FeatureAddressType> address;
-    SpineOptional<UseCaseActorType> actor;
-    SpineOptional<UseCaseSupportSelectorsType> useCaseSupport;
+    SpineOptional<FeatureAddressType> address{};
+    SpineOptional<UseCaseActorType> actor{};
+    SpineOptional<UseCaseSupportSelectorsType> useCaseSupport{};
+
+    UseCaseInformationListDataSelectorsType(const UseCaseInformationListDataSelectorsType &other) = default;
 
     UseCaseInformationListDataSelectorsType() = default;
 };
@@ -10937,7 +11540,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSele
 */
 struct NodeManagementUseCaseDataSelectorsType
 {
-    SpineOptional<UseCaseInformationListDataSelectorsType> useCaseInformation;
+    SpineOptional<UseCaseInformationListDataSelectorsType> useCaseInformation{};
+
+    NodeManagementUseCaseDataSelectorsType(const NodeManagementUseCaseDataSelectorsType &other) = default;
 
     NodeManagementUseCaseDataSelectorsType() = default;
 };
@@ -10961,7 +11566,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelec
 */
 struct BindingManagementEntryListDataType
 {
-    SpineOptional<std::vector<BindingManagementEntryDataType>> bindingManagementEntryData;
+    SpineOptional<std::vector<BindingManagementEntryDataType>> bindingManagementEntryData{};
+
+    BindingManagementEntryListDataType(const BindingManagementEntryListDataType &other) = default;
 
     BindingManagementEntryListDataType() = default;
 };
@@ -10985,7 +11592,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
 */
 struct SubscriptionManagementEntryListDataType
 {
-    SpineOptional<std::vector<SubscriptionManagementEntryDataType>> subscriptionManagementEntryData;
+    SpineOptional<std::vector<SubscriptionManagementEntryDataType>> subscriptionManagementEntryData{};
+
+    SubscriptionManagementEntryListDataType(const SubscriptionManagementEntryListDataType &other) = default;
 
     SubscriptionManagementEntryListDataType() = default;
 };
@@ -11009,7 +11618,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
 */
 struct UseCaseInformationListDataType
 {
-    SpineOptional<std::vector<UseCaseInformationDataType>> useCaseInformationData;
+    SpineOptional<std::vector<UseCaseInformationDataType>> useCaseInformationData{};
+
+    UseCaseInformationListDataType(const UseCaseInformationListDataType &other) = default;
 
     UseCaseInformationListDataType() = default;
 };
@@ -11033,7 +11644,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType
 */
 struct SpecificationVersionListDataType
 {
-    SpineOptional<std::vector<SpecificationVersionType>> specificationVersionData;
+    SpineOptional<std::vector<SpecificationVersionType>> specificationVersionData{};
+
+    SpecificationVersionListDataType(const SpecificationVersionListDataType &other) = default;
 
     SpecificationVersionListDataType() = default;
 };
@@ -11058,6 +11671,8 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataTy
 struct SpecificationVersionListDataSelectorsType
 {
 
+    SpecificationVersionListDataSelectorsType(const SpecificationVersionListDataSelectorsType &other) = default;
+
     SpecificationVersionListDataSelectorsType() = default;
 };
 
@@ -11080,6 +11695,8 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSe
 */
 struct TaskManagementDirectControlRelatedType
 {
+
+    TaskManagementDirectControlRelatedType(const TaskManagementDirectControlRelatedType &other) = default;
 
     TaskManagementDirectControlRelatedType() = default;
 };
@@ -11104,6 +11721,8 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRel
 struct TaskManagementDirectControlRelatedElementsType
 {
 
+    TaskManagementDirectControlRelatedElementsType(const TaskManagementDirectControlRelatedElementsType &other) = default;
+
     TaskManagementDirectControlRelatedElementsType() = default;
 };
 
@@ -11126,7 +11745,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRel
 */
 struct TaskManagementHvacRelatedType
 {
-    SpineOptional<HvacOverrunIdType> overrunId;
+    SpineOptional<HvacOverrunIdType> overrunId{};
+
+    TaskManagementHvacRelatedType(const TaskManagementHvacRelatedType &other) = default;
 
     TaskManagementHvacRelatedType() = default;
 };
@@ -11150,7 +11771,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType 
 */
 struct TaskManagementHvacRelatedElementsType
 {
-    SpineOptional<ElementTagType> overrunId;
+    SpineOptional<ElementTagType> overrunId{};
+
+    TaskManagementHvacRelatedElementsType(const TaskManagementHvacRelatedElementsType &other) = default;
 
     TaskManagementHvacRelatedElementsType() = default;
 };
@@ -11174,7 +11797,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedEleme
 */
 struct TaskManagementLoadControlReleatedType
 {
-    SpineOptional<LoadControlEventIdType> eventId;
+    SpineOptional<LoadControlEventIdType> eventId{};
+
+    TaskManagementLoadControlReleatedType(const TaskManagementLoadControlReleatedType &other) = default;
 
     TaskManagementLoadControlReleatedType() = default;
 };
@@ -11198,7 +11823,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
 */
 struct TaskManagementLoadControlReleatedElementsType
 {
-    SpineOptional<ElementTagType> eventId;
+    SpineOptional<ElementTagType> eventId{};
+
+    TaskManagementLoadControlReleatedElementsType(const TaskManagementLoadControlReleatedElementsType &other) = default;
 
     TaskManagementLoadControlReleatedElementsType() = default;
 };
@@ -11222,7 +11849,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
 */
 struct TaskManagementPowerSequencesRelatedType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    TaskManagementPowerSequencesRelatedType(const TaskManagementPowerSequencesRelatedType &other) = default;
 
     TaskManagementPowerSequencesRelatedType() = default;
 };
@@ -11246,7 +11875,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
 */
 struct TaskManagementPowerSequencesRelatedElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> sequenceId{};
+
+    TaskManagementPowerSequencesRelatedElementsType(const TaskManagementPowerSequencesRelatedElementsType &other) = default;
 
     TaskManagementPowerSequencesRelatedElementsType() = default;
 };
@@ -11270,7 +11901,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
 */
 struct TaskManagementSmartEnergyManagementPsRelatedType
 {
-    SpineOptional<PowerSequenceIdType> sequenceId;
+    SpineOptional<PowerSequenceIdType> sequenceId{};
+
+    TaskManagementSmartEnergyManagementPsRelatedType(const TaskManagementSmartEnergyManagementPsRelatedType &other) = default;
 
     TaskManagementSmartEnergyManagementPsRelatedType() = default;
 };
@@ -11294,7 +11927,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
 */
 struct TaskManagementSmartEnergyManagementPsRelatedElementsType
 {
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> sequenceId{};
+
+    TaskManagementSmartEnergyManagementPsRelatedElementsType(const TaskManagementSmartEnergyManagementPsRelatedElementsType &other) = default;
 
     TaskManagementSmartEnergyManagementPsRelatedElementsType() = default;
 };
@@ -11318,11 +11953,13 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
 */
 struct TaskManagementJobDataType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<TaskManagementJobStateType> jobState;
-    SpineOptional<std::string> elapsedTime;
-    SpineOptional<std::string> remainingTime;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<TaskManagementJobStateType> jobState{};
+    SpineOptional<std::string> elapsedTime{};
+    SpineOptional<std::string> remainingTime{};
+
+    TaskManagementJobDataType(const TaskManagementJobDataType &other) = default;
 
     TaskManagementJobDataType() = default;
 };
@@ -11346,11 +11983,13 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst
 */
 struct TaskManagementJobDataElementsType
 {
-    SpineOptional<ElementTagType> jobId;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> jobState;
-    SpineOptional<ElementTagType> elapsedTime;
-    SpineOptional<ElementTagType> remainingTime;
+    SpineOptional<ElementTagType> jobId{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> jobState{};
+    SpineOptional<ElementTagType> elapsedTime{};
+    SpineOptional<ElementTagType> remainingTime{};
+
+    TaskManagementJobDataElementsType(const TaskManagementJobDataElementsType &other) = default;
 
     TaskManagementJobDataElementsType() = default;
 };
@@ -11374,7 +12013,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsT
 */
 struct TaskManagementJobListDataType
 {
-    SpineOptional<std::vector<TaskManagementJobDataType>> taskManagementJobData;
+    SpineOptional<std::vector<TaskManagementJobDataType>> taskManagementJobData{};
+
+    TaskManagementJobListDataType(const TaskManagementJobListDataType &other) = default;
 
     TaskManagementJobListDataType() = default;
 };
@@ -11398,8 +12039,10 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType 
 */
 struct TaskManagementJobListDataSelectorsType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementJobStateType> jobState;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+    SpineOptional<TaskManagementJobStateType> jobState{};
+
+    TaskManagementJobListDataSelectorsType(const TaskManagementJobListDataSelectorsType &other) = default;
 
     TaskManagementJobListDataSelectorsType() = default;
 };
@@ -11423,12 +12066,14 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelec
 */
 struct TaskManagementJobRelationDataType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementDirectControlRelatedType> directControlRelated;
-    SpineOptional<TaskManagementHvacRelatedType> hvacRelated;
-    SpineOptional<TaskManagementLoadControlReleatedType> loadControlReleated;
-    SpineOptional<TaskManagementPowerSequencesRelatedType> powerSequencesRelated;
-    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedType> smartEnergyManagementPsRelated;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+    SpineOptional<TaskManagementDirectControlRelatedType> directControlRelated{};
+    SpineOptional<TaskManagementHvacRelatedType> hvacRelated{};
+    SpineOptional<TaskManagementLoadControlReleatedType> loadControlReleated{};
+    SpineOptional<TaskManagementPowerSequencesRelatedType> powerSequencesRelated{};
+    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedType> smartEnergyManagementPsRelated{};
+
+    TaskManagementJobRelationDataType(const TaskManagementJobRelationDataType &other) = default;
 
     TaskManagementJobRelationDataType() = default;
 };
@@ -11452,12 +12097,14 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataT
 */
 struct TaskManagementJobRelationDataElementsType
 {
-    SpineOptional<ElementTagType> jobId;
-    SpineOptional<TaskManagementDirectControlRelatedElementsType> directControlRelated;
-    SpineOptional<TaskManagementHvacRelatedElementsType> hvacRelated;
-    SpineOptional<TaskManagementLoadControlReleatedElementsType> loadControlReleated;
-    SpineOptional<TaskManagementPowerSequencesRelatedElementsType> powerSequencesRelated;
-    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedElementsType> smartEnergyManagementPsRelated;
+    SpineOptional<ElementTagType> jobId{};
+    SpineOptional<TaskManagementDirectControlRelatedElementsType> directControlRelated{};
+    SpineOptional<TaskManagementHvacRelatedElementsType> hvacRelated{};
+    SpineOptional<TaskManagementLoadControlReleatedElementsType> loadControlReleated{};
+    SpineOptional<TaskManagementPowerSequencesRelatedElementsType> powerSequencesRelated{};
+    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedElementsType> smartEnergyManagementPsRelated{};
+
+    TaskManagementJobRelationDataElementsType(const TaskManagementJobRelationDataElementsType &other) = default;
 
     TaskManagementJobRelationDataElementsType() = default;
 };
@@ -11481,7 +12128,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataE
 */
 struct TaskManagementJobRelationListDataType
 {
-    SpineOptional<std::vector<TaskManagementJobRelationDataType>> taskManagementJobRelationData;
+    SpineOptional<std::vector<TaskManagementJobRelationDataType>> taskManagementJobRelationData{};
+
+    TaskManagementJobRelationListDataType(const TaskManagementJobRelationListDataType &other) = default;
 
     TaskManagementJobRelationListDataType() = default;
 };
@@ -11505,7 +12154,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
 */
 struct TaskManagementJobRelationListDataSelectorsType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+
+    TaskManagementJobRelationListDataSelectorsType(const TaskManagementJobRelationListDataSelectorsType &other) = default;
 
     TaskManagementJobRelationListDataSelectorsType() = default;
 };
@@ -11529,10 +12180,12 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
 */
 struct TaskManagementJobDescriptionDataType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementJobSourceEnumType> jobSource;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+    SpineOptional<TaskManagementJobSourceEnumType> jobSource{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    TaskManagementJobDescriptionDataType(const TaskManagementJobDescriptionDataType &other) = default;
 
     TaskManagementJobDescriptionDataType() = default;
 };
@@ -11556,10 +12209,12 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
 */
 struct TaskManagementJobDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> jobId;
-    SpineOptional<ElementTagType> jobSource;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> jobId{};
+    SpineOptional<ElementTagType> jobSource{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    TaskManagementJobDescriptionDataElementsType(const TaskManagementJobDescriptionDataElementsType &other) = default;
 
     TaskManagementJobDescriptionDataElementsType() = default;
 };
@@ -11583,7 +12238,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
 */
 struct TaskManagementJobDescriptionListDataType
 {
-    SpineOptional<std::vector<TaskManagementJobDescriptionDataType>> taskManagementJobDescriptionData;
+    SpineOptional<std::vector<TaskManagementJobDescriptionDataType>> taskManagementJobDescriptionData{};
+
+    TaskManagementJobDescriptionListDataType(const TaskManagementJobDescriptionListDataType &other) = default;
 
     TaskManagementJobDescriptionListDataType() = default;
 };
@@ -11607,8 +12264,10 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
 */
 struct TaskManagementJobDescriptionListDataSelectorsType
 {
-    SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementJobSourceEnumType> jobSource;
+    SpineOptional<TaskManagementJobIdType> jobId{};
+    SpineOptional<TaskManagementJobSourceEnumType> jobSource{};
+
+    TaskManagementJobDescriptionListDataSelectorsType(const TaskManagementJobDescriptionListDataSelectorsType &other) = default;
 
     TaskManagementJobDescriptionListDataSelectorsType() = default;
 };
@@ -11632,8 +12291,10 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
 */
 struct TaskManagementOverviewDataType
 {
-    SpineOptional<bool> remoteControllable;
-    SpineOptional<bool> jobsActive;
+    SpineOptional<bool> remoteControllable{};
+    SpineOptional<bool> jobsActive{};
+
+    TaskManagementOverviewDataType(const TaskManagementOverviewDataType &other) = default;
 
     TaskManagementOverviewDataType() = default;
 };
@@ -11657,8 +12318,10 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType
 */
 struct TaskManagementOverviewDataElementsType
 {
-    SpineOptional<ElementTagType> remoteControllable;
-    SpineOptional<ElementTagType> jobsActive;
+    SpineOptional<ElementTagType> remoteControllable{};
+    SpineOptional<ElementTagType> jobsActive{};
+
+    TaskManagementOverviewDataElementsType(const TaskManagementOverviewDataElementsType &other) = default;
 
     TaskManagementOverviewDataElementsType() = default;
 };
@@ -11682,12 +12345,14 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElem
 */
 struct HvacSystemFunctionDataType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<HvacOperationModeIdType> currentOperationModeId;
-    SpineOptional<bool> isOperationModeIdChangeable;
-    SpineOptional<SetpointIdType> currentSetpointId;
-    SpineOptional<bool> isSetpointIdChangeable;
-    SpineOptional<bool> isOverrunActive;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<HvacOperationModeIdType> currentOperationModeId{};
+    SpineOptional<bool> isOperationModeIdChangeable{};
+    SpineOptional<SetpointIdType> currentSetpointId{};
+    SpineOptional<bool> isSetpointIdChangeable{};
+    SpineOptional<bool> isOverrunActive{};
+
+    HvacSystemFunctionDataType(const HvacSystemFunctionDataType &other) = default;
 
     HvacSystemFunctionDataType() = default;
 };
@@ -11711,12 +12376,14 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
 */
 struct HvacSystemFunctionDataElementsType
 {
-    SpineOptional<ElementTagType> systemFunctionId;
-    SpineOptional<ElementTagType> currentOperationModeId;
-    SpineOptional<ElementTagType> isOperationModeIdChangeable;
-    SpineOptional<ElementTagType> currentSetpointId;
-    SpineOptional<ElementTagType> isSetpointIdChangeable;
-    SpineOptional<ElementTagType> isOverrunActive;
+    SpineOptional<ElementTagType> systemFunctionId{};
+    SpineOptional<ElementTagType> currentOperationModeId{};
+    SpineOptional<ElementTagType> isOperationModeIdChangeable{};
+    SpineOptional<ElementTagType> currentSetpointId{};
+    SpineOptional<ElementTagType> isSetpointIdChangeable{};
+    SpineOptional<ElementTagType> isOverrunActive{};
+
+    HvacSystemFunctionDataElementsType(const HvacSystemFunctionDataElementsType &other) = default;
 
     HvacSystemFunctionDataElementsType() = default;
 };
@@ -11740,7 +12407,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
 */
 struct HvacSystemFunctionListDataType
 {
-    SpineOptional<std::vector<HvacSystemFunctionDataType>> hvacSystemFunctionData;
+    SpineOptional<std::vector<HvacSystemFunctionDataType>> hvacSystemFunctionData{};
+
+    HvacSystemFunctionListDataType(const HvacSystemFunctionListDataType &other) = default;
 
     HvacSystemFunctionListDataType() = default;
 };
@@ -11764,7 +12433,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType
 */
 struct HvacSystemFunctionListDataSelectorsType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+
+    HvacSystemFunctionListDataSelectorsType(const HvacSystemFunctionListDataSelectorsType &other) = default;
 
     HvacSystemFunctionListDataSelectorsType() = default;
 };
@@ -11788,8 +12459,10 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSele
 */
 struct HvacSystemFunctionOperationModeRelationDataType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<std::vector<HvacOperationModeIdType>> operationModeId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<std::vector<HvacOperationModeIdType>> operationModeId{};
+
+    HvacSystemFunctionOperationModeRelationDataType(const HvacSystemFunctionOperationModeRelationDataType &other) = default;
 
     HvacSystemFunctionOperationModeRelationDataType() = default;
 };
@@ -11813,8 +12486,10 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
 */
 struct HvacSystemFunctionOperationModeRelationDataElementsType
 {
-    SpineOptional<ElementTagType> systemFunctionId;
-    SpineOptional<ElementTagType> operationModeId;
+    SpineOptional<ElementTagType> systemFunctionId{};
+    SpineOptional<ElementTagType> operationModeId{};
+
+    HvacSystemFunctionOperationModeRelationDataElementsType(const HvacSystemFunctionOperationModeRelationDataElementsType &other) = default;
 
     HvacSystemFunctionOperationModeRelationDataElementsType() = default;
 };
@@ -11838,7 +12513,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
 */
 struct HvacSystemFunctionOperationModeRelationListDataType
 {
-    SpineOptional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData;
+    SpineOptional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData{};
+
+    HvacSystemFunctionOperationModeRelationListDataType(const HvacSystemFunctionOperationModeRelationListDataType &other) = default;
 
     HvacSystemFunctionOperationModeRelationListDataType() = default;
 };
@@ -11862,7 +12539,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
 */
 struct HvacSystemFunctionOperationModeRelationListDataSelectorsType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+
+    HvacSystemFunctionOperationModeRelationListDataSelectorsType(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &other) = default;
 
     HvacSystemFunctionOperationModeRelationListDataSelectorsType() = default;
 };
@@ -11886,9 +12565,11 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
 */
 struct HvacSystemFunctionSetpointRelationDataType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<HvacOperationModeIdType> operationModeId;
-    SpineOptional<std::vector<SetpointIdType>> setpointId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<HvacOperationModeIdType> operationModeId{};
+    SpineOptional<std::vector<SetpointIdType>> setpointId{};
+
+    HvacSystemFunctionSetpointRelationDataType(const HvacSystemFunctionSetpointRelationDataType &other) = default;
 
     HvacSystemFunctionSetpointRelationDataType() = default;
 };
@@ -11912,9 +12593,11 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
 */
 struct HvacSystemFunctionSetpointRelationDataElementsType
 {
-    SpineOptional<ElementTagType> systemFunctionId;
-    SpineOptional<ElementTagType> operationModeId;
-    SpineOptional<ElementTagType> setpointId;
+    SpineOptional<ElementTagType> systemFunctionId{};
+    SpineOptional<ElementTagType> operationModeId{};
+    SpineOptional<ElementTagType> setpointId{};
+
+    HvacSystemFunctionSetpointRelationDataElementsType(const HvacSystemFunctionSetpointRelationDataElementsType &other) = default;
 
     HvacSystemFunctionSetpointRelationDataElementsType() = default;
 };
@@ -11938,7 +12621,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
 */
 struct HvacSystemFunctionSetpointRelationListDataType
 {
-    SpineOptional<std::vector<HvacSystemFunctionSetpointRelationDataType>> hvacSystemFunctionSetpointRelationData;
+    SpineOptional<std::vector<HvacSystemFunctionSetpointRelationDataType>> hvacSystemFunctionSetpointRelationData{};
+
+    HvacSystemFunctionSetpointRelationListDataType(const HvacSystemFunctionSetpointRelationListDataType &other) = default;
 
     HvacSystemFunctionSetpointRelationListDataType() = default;
 };
@@ -11962,8 +12647,10 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
 */
 struct HvacSystemFunctionSetpointRelationListDataSelectorsType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<HvacOperationModeIdType> operationModeId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<HvacOperationModeIdType> operationModeId{};
+
+    HvacSystemFunctionSetpointRelationListDataSelectorsType(const HvacSystemFunctionSetpointRelationListDataSelectorsType &other) = default;
 
     HvacSystemFunctionSetpointRelationListDataSelectorsType() = default;
 };
@@ -11987,8 +12674,10 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
 */
 struct HvacSystemFunctionPowerSequenceRelationDataType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<std::vector<PowerSequenceIdType>> sequenceId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<std::vector<PowerSequenceIdType>> sequenceId{};
+
+    HvacSystemFunctionPowerSequenceRelationDataType(const HvacSystemFunctionPowerSequenceRelationDataType &other) = default;
 
     HvacSystemFunctionPowerSequenceRelationDataType() = default;
 };
@@ -12012,8 +12701,10 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 */
 struct HvacSystemFunctionPowerSequenceRelationDataElementsType
 {
-    SpineOptional<ElementTagType> systemFunctionId;
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> systemFunctionId{};
+    SpineOptional<ElementTagType> sequenceId{};
+
+    HvacSystemFunctionPowerSequenceRelationDataElementsType(const HvacSystemFunctionPowerSequenceRelationDataElementsType &other) = default;
 
     HvacSystemFunctionPowerSequenceRelationDataElementsType() = default;
 };
@@ -12037,7 +12728,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 */
 struct HvacSystemFunctionPowerSequenceRelationListDataType
 {
-    SpineOptional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData;
+    SpineOptional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData{};
+
+    HvacSystemFunctionPowerSequenceRelationListDataType(const HvacSystemFunctionPowerSequenceRelationListDataType &other) = default;
 
     HvacSystemFunctionPowerSequenceRelationListDataType() = default;
 };
@@ -12061,7 +12754,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 */
 struct HvacSystemFunctionPowerSequenceRelationListDataSelectorsType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+
+    HvacSystemFunctionPowerSequenceRelationListDataSelectorsType(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &other) = default;
 
     HvacSystemFunctionPowerSequenceRelationListDataSelectorsType() = default;
 };
@@ -12085,10 +12780,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 */
 struct HvacSystemFunctionDescriptionDataType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<HvacSystemFunctionTypeEnumType> systemFunctionType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+    SpineOptional<HvacSystemFunctionTypeEnumType> systemFunctionType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    HvacSystemFunctionDescriptionDataType(const HvacSystemFunctionDescriptionDataType &other) = default;
 
     HvacSystemFunctionDescriptionDataType() = default;
 };
@@ -12112,10 +12809,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
 */
 struct HvacSystemFunctionDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> systemFunctionId;
-    SpineOptional<ElementTagType> systemFunctionType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> systemFunctionId{};
+    SpineOptional<ElementTagType> systemFunctionType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    HvacSystemFunctionDescriptionDataElementsType(const HvacSystemFunctionDescriptionDataElementsType &other) = default;
 
     HvacSystemFunctionDescriptionDataElementsType() = default;
 };
@@ -12139,7 +12838,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
 */
 struct HvacSystemFunctionDescriptionListDataType
 {
-    SpineOptional<std::vector<HvacSystemFunctionDescriptionDataType>> hvacSystemFunctionDescriptionData;
+    SpineOptional<std::vector<HvacSystemFunctionDescriptionDataType>> hvacSystemFunctionDescriptionData{};
+
+    HvacSystemFunctionDescriptionListDataType(const HvacSystemFunctionDescriptionListDataType &other) = default;
 
     HvacSystemFunctionDescriptionListDataType() = default;
 };
@@ -12163,7 +12864,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
 */
 struct HvacSystemFunctionDescriptionListDataSelectorsType
 {
-    SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
+    SpineOptional<HvacSystemFunctionIdType> systemFunctionId{};
+
+    HvacSystemFunctionDescriptionListDataSelectorsType(const HvacSystemFunctionDescriptionListDataSelectorsType &other) = default;
 
     HvacSystemFunctionDescriptionListDataSelectorsType() = default;
 };
@@ -12187,10 +12890,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
 */
 struct HvacOperationModeDescriptionDataType
 {
-    SpineOptional<HvacOperationModeIdType> operationModeId;
-    SpineOptional<HvacOperationModeTypeEnumType> operationModeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<HvacOperationModeIdType> operationModeId{};
+    SpineOptional<HvacOperationModeTypeEnumType> operationModeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    HvacOperationModeDescriptionDataType(const HvacOperationModeDescriptionDataType &other) = default;
 
     HvacOperationModeDescriptionDataType() = default;
 };
@@ -12214,10 +12919,12 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
 */
 struct HvacOperationModeDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> operationModeId;
-    SpineOptional<ElementTagType> operationModeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> operationModeId{};
+    SpineOptional<ElementTagType> operationModeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    HvacOperationModeDescriptionDataElementsType(const HvacOperationModeDescriptionDataElementsType &other) = default;
 
     HvacOperationModeDescriptionDataElementsType() = default;
 };
@@ -12241,7 +12948,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
 */
 struct HvacOperationModeDescriptionListDataType
 {
-    SpineOptional<std::vector<HvacOperationModeDescriptionDataType>> hvacOperationModeDescriptionData;
+    SpineOptional<std::vector<HvacOperationModeDescriptionDataType>> hvacOperationModeDescriptionData{};
+
+    HvacOperationModeDescriptionListDataType(const HvacOperationModeDescriptionListDataType &other) = default;
 
     HvacOperationModeDescriptionListDataType() = default;
 };
@@ -12265,7 +12974,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
 */
 struct HvacOperationModeDescriptionListDataSelectorsType
 {
-    SpineOptional<HvacOperationModeIdType> operationModeId;
+    SpineOptional<HvacOperationModeIdType> operationModeId{};
+
+    HvacOperationModeDescriptionListDataSelectorsType(const HvacOperationModeDescriptionListDataSelectorsType &other) = default;
 
     HvacOperationModeDescriptionListDataSelectorsType() = default;
 };
@@ -12289,10 +13000,12 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
 */
 struct HvacOverrunDataType
 {
-    SpineOptional<HvacOverrunIdType> overrunId;
-    SpineOptional<HvacOverrunStatusEnumType> overrunStatus;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<bool> isOverrunStatusChangeable;
+    SpineOptional<HvacOverrunIdType> overrunId{};
+    SpineOptional<HvacOverrunStatusEnumType> overrunStatus{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<bool> isOverrunStatusChangeable{};
+
+    HvacOverrunDataType(const HvacOverrunDataType &other) = default;
 
     HvacOverrunDataType() = default;
 };
@@ -12316,10 +13029,12 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst);
 */
 struct HvacOverrunDataElementsType
 {
-    SpineOptional<ElementTagType> overrunId;
-    SpineOptional<ElementTagType> overrunStatus;
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> isOverrunStatusChangeable;
+    SpineOptional<ElementTagType> overrunId{};
+    SpineOptional<ElementTagType> overrunStatus{};
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> isOverrunStatusChangeable{};
+
+    HvacOverrunDataElementsType(const HvacOverrunDataElementsType &other) = default;
 
     HvacOverrunDataElementsType() = default;
 };
@@ -12343,7 +13058,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &d
 */
 struct HvacOverrunListDataType
 {
-    SpineOptional<std::vector<HvacOverrunDataType>> hvacOverrunData;
+    SpineOptional<std::vector<HvacOverrunDataType>> hvacOverrunData{};
+
+    HvacOverrunListDataType(const HvacOverrunListDataType &other) = default;
 
     HvacOverrunListDataType() = default;
 };
@@ -12367,7 +13084,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst);
 */
 struct HvacOverrunListDataSelectorsType
 {
-    SpineOptional<HvacOverrunIdType> overrunId;
+    SpineOptional<HvacOverrunIdType> overrunId{};
+
+    HvacOverrunListDataSelectorsType(const HvacOverrunListDataSelectorsType &other) = default;
 
     HvacOverrunListDataSelectorsType() = default;
 };
@@ -12391,11 +13110,13 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsTy
 */
 struct HvacOverrunDescriptionDataType
 {
-    SpineOptional<HvacOverrunIdType> overrunId;
-    SpineOptional<HvacOverrunTypeEnumType> overrunType;
-    SpineOptional<std::vector<HvacSystemFunctionIdType>> affectedSystemFunctionId;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<HvacOverrunIdType> overrunId{};
+    SpineOptional<HvacOverrunTypeEnumType> overrunType{};
+    SpineOptional<std::vector<HvacSystemFunctionIdType>> affectedSystemFunctionId{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    HvacOverrunDescriptionDataType(const HvacOverrunDescriptionDataType &other) = default;
 
     HvacOverrunDescriptionDataType() = default;
 };
@@ -12419,11 +13140,13 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
 */
 struct HvacOverrunDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> overrunId;
-    SpineOptional<ElementTagType> overrunType;
-    SpineOptional<ElementTagType> affectedSystemFunctionId;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> overrunId{};
+    SpineOptional<ElementTagType> overrunType{};
+    SpineOptional<ElementTagType> affectedSystemFunctionId{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    HvacOverrunDescriptionDataElementsType(const HvacOverrunDescriptionDataElementsType &other) = default;
 
     HvacOverrunDescriptionDataElementsType() = default;
 };
@@ -12447,7 +13170,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
 */
 struct HvacOverrunDescriptionListDataType
 {
-    SpineOptional<std::vector<HvacOverrunDescriptionDataType>> hvacOverrunDescriptionData;
+    SpineOptional<std::vector<HvacOverrunDescriptionDataType>> hvacOverrunDescriptionData{};
+
+    HvacOverrunDescriptionListDataType(const HvacOverrunDescriptionListDataType &other) = default;
 
     HvacOverrunDescriptionListDataType() = default;
 };
@@ -12471,7 +13196,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
 */
 struct HvacOverrunDescriptionListDataSelectorsType
 {
-    SpineOptional<HvacOverrunIdType> overrunId;
+    SpineOptional<HvacOverrunIdType> overrunId{};
+
+    HvacOverrunDescriptionListDataSelectorsType(const HvacOverrunDescriptionListDataSelectorsType &other) = default;
 
     HvacOverrunDescriptionListDataSelectorsType() = default;
 };
@@ -12495,7 +13222,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
 */
 struct LoadControlNodeDataType
 {
-    SpineOptional<bool> isNodeRemoteControllable;
+    SpineOptional<bool> isNodeRemoteControllable{};
+
+    LoadControlNodeDataType(const LoadControlNodeDataType &other) = default;
 
     LoadControlNodeDataType() = default;
 };
@@ -12519,7 +13248,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst);
 */
 struct LoadControlNodeDataElementsType
 {
-    SpineOptional<ElementTagType> isNodeRemoteControllable;
+    SpineOptional<ElementTagType> isNodeRemoteControllable{};
+
+    LoadControlNodeDataElementsType(const LoadControlNodeDataElementsType &other) = default;
 
     LoadControlNodeDataElementsType() = default;
 };
@@ -12543,11 +13274,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsTyp
 */
 struct LoadControlEventDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<LoadControlEventIdType> eventId;
-    SpineOptional<LoadControlEventActionEnumType> eventActionConsume;
-    SpineOptional<LoadControlEventActionEnumType> eventActionProduce;
-    SpineOptional<TimePeriodType> timePeriod;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<LoadControlEventIdType> eventId{};
+    SpineOptional<LoadControlEventActionEnumType> eventActionConsume{};
+    SpineOptional<LoadControlEventActionEnumType> eventActionProduce{};
+    SpineOptional<TimePeriodType> timePeriod{};
+
+    LoadControlEventDataType(const LoadControlEventDataType &other) = default;
 
     LoadControlEventDataType() = default;
 };
@@ -12571,11 +13304,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst)
 */
 struct LoadControlEventDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> eventId;
-    SpineOptional<ElementTagType> eventActionConsume;
-    SpineOptional<ElementTagType> eventActionProduce;
-    SpineOptional<TimePeriodElementsType> timePeriod;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> eventId{};
+    SpineOptional<ElementTagType> eventActionConsume{};
+    SpineOptional<ElementTagType> eventActionProduce{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+
+    LoadControlEventDataElementsType(const LoadControlEventDataElementsType &other) = default;
 
     LoadControlEventDataElementsType() = default;
 };
@@ -12599,7 +13334,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsTy
 */
 struct LoadControlEventListDataType
 {
-    SpineOptional<std::vector<LoadControlEventDataType>> loadControlEventData;
+    SpineOptional<std::vector<LoadControlEventDataType>> loadControlEventData{};
+
+    LoadControlEventListDataType(const LoadControlEventListDataType &other) = default;
 
     LoadControlEventListDataType() = default;
 };
@@ -12623,8 +13360,10 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &
 */
 struct LoadControlEventListDataSelectorsType
 {
-    SpineOptional<TimestampIntervalType> timestampInterval;
-    SpineOptional<LoadControlEventIdType> eventId;
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+    SpineOptional<LoadControlEventIdType> eventId{};
+
+    LoadControlEventListDataSelectorsType(const LoadControlEventListDataSelectorsType &other) = default;
 
     LoadControlEventListDataSelectorsType() = default;
 };
@@ -12648,12 +13387,14 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelect
 */
 struct LoadControlStateDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<LoadControlEventIdType> eventId;
-    SpineOptional<LoadControlEventStateEnumType> eventStateConsume;
-    SpineOptional<LoadControlEventActionEnumType> appliedEventActionConsume;
-    SpineOptional<LoadControlEventStateEnumType> eventStateProduce;
-    SpineOptional<LoadControlEventActionEnumType> appliedEventActionProduce;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<LoadControlEventIdType> eventId{};
+    SpineOptional<LoadControlEventStateEnumType> eventStateConsume{};
+    SpineOptional<LoadControlEventActionEnumType> appliedEventActionConsume{};
+    SpineOptional<LoadControlEventStateEnumType> eventStateProduce{};
+    SpineOptional<LoadControlEventActionEnumType> appliedEventActionProduce{};
+
+    LoadControlStateDataType(const LoadControlStateDataType &other) = default;
 
     LoadControlStateDataType() = default;
 };
@@ -12677,12 +13418,14 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
 */
 struct LoadControlStateDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> eventId;
-    SpineOptional<ElementTagType> eventStateConsume;
-    SpineOptional<ElementTagType> appliedEventActionConsume;
-    SpineOptional<ElementTagType> eventStateProduce;
-    SpineOptional<ElementTagType> appliedEventActionProduce;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> eventId{};
+    SpineOptional<ElementTagType> eventStateConsume{};
+    SpineOptional<ElementTagType> appliedEventActionConsume{};
+    SpineOptional<ElementTagType> eventStateProduce{};
+    SpineOptional<ElementTagType> appliedEventActionProduce{};
+
+    LoadControlStateDataElementsType(const LoadControlStateDataElementsType &other) = default;
 
     LoadControlStateDataElementsType() = default;
 };
@@ -12706,7 +13449,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
 */
 struct LoadControlStateListDataType
 {
-    SpineOptional<std::vector<LoadControlStateDataType>> loadControlStateData;
+    SpineOptional<std::vector<LoadControlStateDataType>> loadControlStateData{};
+
+    LoadControlStateListDataType(const LoadControlStateListDataType &other) = default;
 
     LoadControlStateListDataType() = default;
 };
@@ -12730,8 +13475,10 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &
 */
 struct LoadControlStateListDataSelectorsType
 {
-    SpineOptional<TimestampIntervalType> timestampInterval;
-    SpineOptional<LoadControlEventIdType> eventId;
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+    SpineOptional<LoadControlEventIdType> eventId{};
+
+    LoadControlStateListDataSelectorsType(const LoadControlStateListDataSelectorsType &other) = default;
 
     LoadControlStateListDataSelectorsType() = default;
 };
@@ -12755,11 +13502,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelect
 */
 struct LoadControlLimitDataType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<bool> isLimitChangeable;
-    SpineOptional<bool> isLimitActive;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<ScaledNumberType> value;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+    SpineOptional<bool> isLimitChangeable{};
+    SpineOptional<bool> isLimitActive{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<ScaledNumberType> value{};
+
+    LoadControlLimitDataType(const LoadControlLimitDataType &other) = default;
 
     LoadControlLimitDataType() = default;
 };
@@ -12783,11 +13532,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
 */
 struct LoadControlLimitDataElementsType
 {
-    SpineOptional<ElementTagType> limitId;
-    SpineOptional<ElementTagType> isLimitChangeable;
-    SpineOptional<ElementTagType> isLimitActive;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ScaledNumberElementsType> value;
+    SpineOptional<ElementTagType> limitId{};
+    SpineOptional<ElementTagType> isLimitChangeable{};
+    SpineOptional<ElementTagType> isLimitActive{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ScaledNumberElementsType> value{};
+
+    LoadControlLimitDataElementsType(const LoadControlLimitDataElementsType &other) = default;
 
     LoadControlLimitDataElementsType() = default;
 };
@@ -12811,7 +13562,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsTy
 */
 struct LoadControlLimitListDataType
 {
-    SpineOptional<std::vector<LoadControlLimitDataType>> loadControlLimitData;
+    SpineOptional<std::vector<LoadControlLimitDataType>> loadControlLimitData{};
+
+    LoadControlLimitListDataType(const LoadControlLimitListDataType &other) = default;
 
     LoadControlLimitListDataType() = default;
 };
@@ -12835,7 +13588,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &
 */
 struct LoadControlLimitListDataSelectorsType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+
+    LoadControlLimitListDataSelectorsType(const LoadControlLimitListDataSelectorsType &other) = default;
 
     LoadControlLimitListDataSelectorsType() = default;
 };
@@ -12859,10 +13614,12 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelect
 */
 struct LoadControlLimitConstraintsDataType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<ScaledNumberType> valueRangeMin;
-    SpineOptional<ScaledNumberType> valueRangeMax;
-    SpineOptional<ScaledNumberType> valueStepSize;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+    SpineOptional<ScaledNumberType> valueRangeMin{};
+    SpineOptional<ScaledNumberType> valueRangeMax{};
+    SpineOptional<ScaledNumberType> valueStepSize{};
+
+    LoadControlLimitConstraintsDataType(const LoadControlLimitConstraintsDataType &other) = default;
 
     LoadControlLimitConstraintsDataType() = default;
 };
@@ -12886,10 +13643,12 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
 */
 struct LoadControlLimitConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> limitId;
-    SpineOptional<ScaledNumberElementsType> valueRangeMin;
-    SpineOptional<ScaledNumberElementsType> valueRangeMax;
-    SpineOptional<ScaledNumberElementsType> valueStepSize;
+    SpineOptional<ElementTagType> limitId{};
+    SpineOptional<ScaledNumberElementsType> valueRangeMin{};
+    SpineOptional<ScaledNumberElementsType> valueRangeMax{};
+    SpineOptional<ScaledNumberElementsType> valueStepSize{};
+
+    LoadControlLimitConstraintsDataElementsType(const LoadControlLimitConstraintsDataElementsType &other) = default;
 
     LoadControlLimitConstraintsDataElementsType() = default;
 };
@@ -12913,7 +13672,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
 */
 struct LoadControlLimitConstraintsListDataType
 {
-    SpineOptional<std::vector<LoadControlLimitConstraintsDataType>> loadControlLimitConstraintsData;
+    SpineOptional<std::vector<LoadControlLimitConstraintsDataType>> loadControlLimitConstraintsData{};
+
+    LoadControlLimitConstraintsListDataType(const LoadControlLimitConstraintsListDataType &other) = default;
 
     LoadControlLimitConstraintsListDataType() = default;
 };
@@ -12937,7 +13698,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
 */
 struct LoadControlLimitConstraintsListDataSelectorsType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+
+    LoadControlLimitConstraintsListDataSelectorsType(const LoadControlLimitConstraintsListDataSelectorsType &other) = default;
 
     LoadControlLimitConstraintsListDataSelectorsType() = default;
 };
@@ -12961,15 +13724,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
 */
 struct LoadControlLimitDescriptionDataType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<LoadControlLimitTypeEnumType> limitType;
-    SpineOptional<LoadControlCategoryEnumType> limitCategory;
-    SpineOptional<EnergyDirectionEnumType> limitDirection;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+    SpineOptional<LoadControlLimitTypeEnumType> limitType{};
+    SpineOptional<LoadControlCategoryEnumType> limitCategory{};
+    SpineOptional<EnergyDirectionEnumType> limitDirection{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    LoadControlLimitDescriptionDataType(const LoadControlLimitDescriptionDataType &other) = default;
 
     LoadControlLimitDescriptionDataType() = default;
 };
@@ -12993,15 +13758,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
 */
 struct LoadControlLimitDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> limitId;
-    SpineOptional<ElementTagType> limitType;
-    SpineOptional<ElementTagType> limitCategory;
-    SpineOptional<ElementTagType> limitDirection;
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> limitId{};
+    SpineOptional<ElementTagType> limitType{};
+    SpineOptional<ElementTagType> limitCategory{};
+    SpineOptional<ElementTagType> limitDirection{};
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    LoadControlLimitDescriptionDataElementsType(const LoadControlLimitDescriptionDataElementsType &other) = default;
 
     LoadControlLimitDescriptionDataElementsType() = default;
 };
@@ -13025,7 +13792,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
 */
 struct LoadControlLimitDescriptionListDataType
 {
-    SpineOptional<std::vector<LoadControlLimitDescriptionDataType>> loadControlLimitDescriptionData;
+    SpineOptional<std::vector<LoadControlLimitDescriptionDataType>> loadControlLimitDescriptionData{};
+
+    LoadControlLimitDescriptionListDataType(const LoadControlLimitDescriptionListDataType &other) = default;
 
     LoadControlLimitDescriptionListDataType() = default;
 };
@@ -13049,11 +13818,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
 */
 struct LoadControlLimitDescriptionListDataSelectorsType
 {
-    SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<LoadControlLimitTypeEnumType> limitType;
-    SpineOptional<EnergyDirectionEnumType> limitDirection;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<LoadControlLimitIdType> limitId{};
+    SpineOptional<LoadControlLimitTypeEnumType> limitType{};
+    SpineOptional<EnergyDirectionEnumType> limitDirection{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    LoadControlLimitDescriptionListDataSelectorsType(const LoadControlLimitDescriptionListDataSelectorsType &other) = default;
 
     LoadControlLimitDescriptionListDataSelectorsType() = default;
 };
@@ -13077,18 +13848,20 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
 */
 struct DeviceClassificationManufacturerDataType
 {
-    SpineOptional<DeviceClassificationStringType> deviceName;
-    SpineOptional<DeviceClassificationStringType> deviceCode;
-    SpineOptional<DeviceClassificationStringType> serialNumber;
-    SpineOptional<DeviceClassificationStringType> softwareRevision;
-    SpineOptional<DeviceClassificationStringType> hardwareRevision;
-    SpineOptional<DeviceClassificationStringType> vendorName;
-    SpineOptional<DeviceClassificationStringType> vendorCode;
-    SpineOptional<DeviceClassificationStringType> brandName;
-    SpineOptional<PowerSourceEnumType> powerSource;
-    SpineOptional<DeviceClassificationStringType> manufacturerNodeIdentification;
-    SpineOptional<LabelType> manufacturerLabel;
-    SpineOptional<DescriptionType> manufacturerDescription;
+    SpineOptional<DeviceClassificationStringType> deviceName{};
+    SpineOptional<DeviceClassificationStringType> deviceCode{};
+    SpineOptional<DeviceClassificationStringType> serialNumber{};
+    SpineOptional<DeviceClassificationStringType> softwareRevision{};
+    SpineOptional<DeviceClassificationStringType> hardwareRevision{};
+    SpineOptional<DeviceClassificationStringType> vendorName{};
+    SpineOptional<DeviceClassificationStringType> vendorCode{};
+    SpineOptional<DeviceClassificationStringType> brandName{};
+    SpineOptional<PowerSourceEnumType> powerSource{};
+    SpineOptional<DeviceClassificationStringType> manufacturerNodeIdentification{};
+    SpineOptional<LabelType> manufacturerLabel{};
+    SpineOptional<DescriptionType> manufacturerDescription{};
+
+    DeviceClassificationManufacturerDataType(const DeviceClassificationManufacturerDataType &other) = default;
 
     DeviceClassificationManufacturerDataType() = default;
 };
@@ -13112,18 +13885,20 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
 */
 struct DeviceClassificationManufacturerDataElementsType
 {
-    SpineOptional<ElementTagType> deviceName;
-    SpineOptional<ElementTagType> deviceCode;
-    SpineOptional<ElementTagType> serialNumber;
-    SpineOptional<ElementTagType> softwareRevision;
-    SpineOptional<ElementTagType> hardwareRevision;
-    SpineOptional<ElementTagType> vendorName;
-    SpineOptional<ElementTagType> vendorCode;
-    SpineOptional<ElementTagType> brandName;
-    SpineOptional<ElementTagType> powerSource;
-    SpineOptional<ElementTagType> manufacturerNodeIdentification;
-    SpineOptional<ElementTagType> manufacturerLabel;
-    SpineOptional<ElementTagType> manufacturerDescription;
+    SpineOptional<ElementTagType> deviceName{};
+    SpineOptional<ElementTagType> deviceCode{};
+    SpineOptional<ElementTagType> serialNumber{};
+    SpineOptional<ElementTagType> softwareRevision{};
+    SpineOptional<ElementTagType> hardwareRevision{};
+    SpineOptional<ElementTagType> vendorName{};
+    SpineOptional<ElementTagType> vendorCode{};
+    SpineOptional<ElementTagType> brandName{};
+    SpineOptional<ElementTagType> powerSource{};
+    SpineOptional<ElementTagType> manufacturerNodeIdentification{};
+    SpineOptional<ElementTagType> manufacturerLabel{};
+    SpineOptional<ElementTagType> manufacturerDescription{};
+
+    DeviceClassificationManufacturerDataElementsType(const DeviceClassificationManufacturerDataElementsType &other) = default;
 
     DeviceClassificationManufacturerDataElementsType() = default;
 };
@@ -13147,9 +13922,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
 */
 struct DeviceClassificationUserDataType
 {
-    SpineOptional<DeviceClassificationStringType> userNodeIdentification;
-    SpineOptional<LabelType> userLabel;
-    SpineOptional<DescriptionType> userDescription;
+    SpineOptional<DeviceClassificationStringType> userNodeIdentification{};
+    SpineOptional<LabelType> userLabel{};
+    SpineOptional<DescriptionType> userDescription{};
+
+    DeviceClassificationUserDataType(const DeviceClassificationUserDataType &other) = default;
 
     DeviceClassificationUserDataType() = default;
 };
@@ -13173,9 +13950,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataTy
 */
 struct DeviceClassificationUserDataElementsType
 {
-    SpineOptional<ElementTagType> userNodeIdentification;
-    SpineOptional<ElementTagType> userLabel;
-    SpineOptional<ElementTagType> userDescription;
+    SpineOptional<ElementTagType> userNodeIdentification{};
+    SpineOptional<ElementTagType> userLabel{};
+    SpineOptional<ElementTagType> userDescription{};
+
+    DeviceClassificationUserDataElementsType(const DeviceClassificationUserDataElementsType &other) = default;
 
     DeviceClassificationUserDataElementsType() = default;
 };
@@ -13199,8 +13978,10 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
 */
 struct ActuatorLevelDataType
 {
-    SpineOptional<ActuatorLevelFctEnumType> function;
-    SpineOptional<ScaledNumberType> value;
+    SpineOptional<ActuatorLevelFctEnumType> function{};
+    SpineOptional<ScaledNumberType> value{};
+
+    ActuatorLevelDataType(const ActuatorLevelDataType &other) = default;
 
     ActuatorLevelDataType() = default;
 };
@@ -13224,8 +14005,10 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst);
 */
 struct ActuatorLevelDataElementsType
 {
-    SpineOptional<ElementTagType> function;
-    SpineOptional<ScaledNumberElementsType> value;
+    SpineOptional<ElementTagType> function{};
+    SpineOptional<ScaledNumberElementsType> value{};
+
+    ActuatorLevelDataElementsType(const ActuatorLevelDataElementsType &other) = default;
 
     ActuatorLevelDataElementsType() = default;
 };
@@ -13249,9 +14032,11 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType 
 */
 struct ActuatorLevelDescriptionDataType
 {
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<UnitOfMeasurementEnumType> levelDefaultUnit;
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<UnitOfMeasurementEnumType> levelDefaultUnit{};
+
+    ActuatorLevelDescriptionDataType(const ActuatorLevelDescriptionDataType &other) = default;
 
     ActuatorLevelDescriptionDataType() = default;
 };
@@ -13275,9 +14060,11 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataTy
 */
 struct ActuatorLevelDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> levelDefaultUnit;
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> levelDefaultUnit{};
+
+    ActuatorLevelDescriptionDataElementsType(const ActuatorLevelDescriptionDataElementsType &other) = default;
 
     ActuatorLevelDescriptionDataElementsType() = default;
 };
@@ -13301,13 +14088,15 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataEl
 */
 struct TimeSeriesSlotType
 {
-    SpineOptional<TimeSeriesSlotIdType> timeSeriesSlotId;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<std::string> duration;
-    SpineOptional<AbsoluteOrRecurringTimeType> recurrenceInformation;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<ScaledNumberType> minValue;
-    SpineOptional<ScaledNumberType> maxValue;
+    SpineOptional<TimeSeriesSlotIdType> timeSeriesSlotId{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<std::string> duration{};
+    SpineOptional<AbsoluteOrRecurringTimeType> recurrenceInformation{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<ScaledNumberType> minValue{};
+    SpineOptional<ScaledNumberType> maxValue{};
+
+    TimeSeriesSlotType(const TimeSeriesSlotType &other) = default;
 
     TimeSeriesSlotType() = default;
 };
@@ -13331,13 +14120,15 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst);
 */
 struct TimeSeriesSlotElementsType
 {
-    SpineOptional<ElementTagType> timeSeriesSlotId;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ElementTagType> duration;
-    SpineOptional<AbsoluteOrRecurringTimeElementsType> recurrenceInformation;
-    SpineOptional<ElementTagType> value;
-    SpineOptional<ElementTagType> minValue;
-    SpineOptional<ElementTagType> maxValue;
+    SpineOptional<ElementTagType> timeSeriesSlotId{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ElementTagType> duration{};
+    SpineOptional<AbsoluteOrRecurringTimeElementsType> recurrenceInformation{};
+    SpineOptional<ElementTagType> value{};
+    SpineOptional<ElementTagType> minValue{};
+    SpineOptional<ElementTagType> maxValue{};
+
+    TimeSeriesSlotElementsType(const TimeSeriesSlotElementsType &other) = default;
 
     TimeSeriesSlotElementsType() = default;
 };
@@ -13361,9 +14152,11 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
 */
 struct TimeSeriesDataType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<std::vector<TimeSeriesSlotType>> timeSeriesSlot;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<std::vector<TimeSeriesSlotType>> timeSeriesSlot{};
+
+    TimeSeriesDataType(const TimeSeriesDataType &other) = default;
 
     TimeSeriesDataType() = default;
 };
@@ -13387,9 +14180,11 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst);
 */
 struct TimeSeriesDataElementsType
 {
-    SpineOptional<ElementTagType> timeSeriesId;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<TimeSeriesSlotElementsType> timeSeriesSlot;
+    SpineOptional<ElementTagType> timeSeriesId{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<TimeSeriesSlotElementsType> timeSeriesSlot{};
+
+    TimeSeriesDataElementsType(const TimeSeriesDataElementsType &other) = default;
 
     TimeSeriesDataElementsType() = default;
 };
@@ -13413,7 +14208,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &ds
 */
 struct TimeSeriesListDataType
 {
-    SpineOptional<std::vector<TimeSeriesDataType>> timeSeriesData;
+    SpineOptional<std::vector<TimeSeriesDataType>> timeSeriesData{};
+
+    TimeSeriesListDataType(const TimeSeriesListDataType &other) = default;
 
     TimeSeriesListDataType() = default;
 };
@@ -13437,8 +14234,10 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst);
 */
 struct TimeSeriesListDataSelectorsType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesSlotIdType> timeSeriesSlotId;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+    SpineOptional<TimeSeriesSlotIdType> timeSeriesSlotId{};
+
+    TimeSeriesListDataSelectorsType(const TimeSeriesListDataSelectorsType &other) = default;
 
     TimeSeriesListDataSelectorsType() = default;
 };
@@ -13462,16 +14261,18 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsTyp
 */
 struct TimeSeriesDescriptionDataType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType;
-    SpineOptional<bool> timeSeriesWriteable;
-    SpineOptional<bool> updateRequired;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<CurrencyEnumType> currency;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType{};
+    SpineOptional<bool> timeSeriesWriteable{};
+    SpineOptional<bool> updateRequired{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<CurrencyEnumType> currency{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    TimeSeriesDescriptionDataType(const TimeSeriesDescriptionDataType &other) = default;
 
     TimeSeriesDescriptionDataType() = default;
 };
@@ -13495,16 +14296,18 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
 */
 struct TimeSeriesDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> timeSeriesId;
-    SpineOptional<ElementTagType> timeSeriesType;
-    SpineOptional<ElementTagType> timeSeriesWriteable;
-    SpineOptional<ElementTagType> updateRequired;
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> currency;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> scopeType;
+    SpineOptional<ElementTagType> timeSeriesId{};
+    SpineOptional<ElementTagType> timeSeriesType{};
+    SpineOptional<ElementTagType> timeSeriesWriteable{};
+    SpineOptional<ElementTagType> updateRequired{};
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> currency{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> scopeType{};
+
+    TimeSeriesDescriptionDataElementsType(const TimeSeriesDescriptionDataElementsType &other) = default;
 
     TimeSeriesDescriptionDataElementsType() = default;
 };
@@ -13528,7 +14331,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
 */
 struct TimeSeriesDescriptionListDataType
 {
-    SpineOptional<std::vector<TimeSeriesDescriptionDataType>> timeSeriesDescriptionData;
+    SpineOptional<std::vector<TimeSeriesDescriptionDataType>> timeSeriesDescriptionData{};
+
+    TimeSeriesDescriptionListDataType(const TimeSeriesDescriptionListDataType &other) = default;
 
     TimeSeriesDescriptionListDataType() = default;
 };
@@ -13552,10 +14357,12 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataT
 */
 struct TimeSeriesDescriptionListDataSelectorsType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    TimeSeriesDescriptionListDataSelectorsType(const TimeSeriesDescriptionListDataSelectorsType &other) = default;
 
     TimeSeriesDescriptionListDataSelectorsType() = default;
 };
@@ -13579,17 +14386,19 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
 */
 struct TimeSeriesConstraintsDataType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesSlotCountType> slotCountMin;
-    SpineOptional<TimeSeriesSlotCountType> slotCountMax;
-    SpineOptional<std::string> slotDurationMin;
-    SpineOptional<std::string> slotDurationMax;
-    SpineOptional<std::string> slotDurationStepSize;
-    SpineOptional<AbsoluteOrRelativeTimeType> earliestTimeSeriesStartTime;
-    SpineOptional<AbsoluteOrRelativeTimeType> latestTimeSeriesEndTime;
-    SpineOptional<ScaledNumberType> slotValueMin;
-    SpineOptional<ScaledNumberType> slotValueMax;
-    SpineOptional<ScaledNumberType> slotValueStepSize;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+    SpineOptional<TimeSeriesSlotCountType> slotCountMin{};
+    SpineOptional<TimeSeriesSlotCountType> slotCountMax{};
+    SpineOptional<std::string> slotDurationMin{};
+    SpineOptional<std::string> slotDurationMax{};
+    SpineOptional<std::string> slotDurationStepSize{};
+    SpineOptional<AbsoluteOrRelativeTimeType> earliestTimeSeriesStartTime{};
+    SpineOptional<AbsoluteOrRelativeTimeType> latestTimeSeriesEndTime{};
+    SpineOptional<ScaledNumberType> slotValueMin{};
+    SpineOptional<ScaledNumberType> slotValueMax{};
+    SpineOptional<ScaledNumberType> slotValueStepSize{};
+
+    TimeSeriesConstraintsDataType(const TimeSeriesConstraintsDataType &other) = default;
 
     TimeSeriesConstraintsDataType() = default;
 };
@@ -13613,17 +14422,19 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
 */
 struct TimeSeriesConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> timeSeriesId;
-    SpineOptional<ElementTagType> slotCountMin;
-    SpineOptional<ElementTagType> slotCountMax;
-    SpineOptional<ElementTagType> slotDurationMin;
-    SpineOptional<ElementTagType> slotDurationMax;
-    SpineOptional<ElementTagType> slotDurationStepSize;
-    SpineOptional<ElementTagType> earliestTimeSeriesStartTime;
-    SpineOptional<ElementTagType> latestTimeSeriesEndTime;
-    SpineOptional<ScaledNumberElementsType> slotValueMin;
-    SpineOptional<ScaledNumberElementsType> slotValueMax;
-    SpineOptional<ScaledNumberElementsType> slotValueStepSize;
+    SpineOptional<ElementTagType> timeSeriesId{};
+    SpineOptional<ElementTagType> slotCountMin{};
+    SpineOptional<ElementTagType> slotCountMax{};
+    SpineOptional<ElementTagType> slotDurationMin{};
+    SpineOptional<ElementTagType> slotDurationMax{};
+    SpineOptional<ElementTagType> slotDurationStepSize{};
+    SpineOptional<ElementTagType> earliestTimeSeriesStartTime{};
+    SpineOptional<ElementTagType> latestTimeSeriesEndTime{};
+    SpineOptional<ScaledNumberElementsType> slotValueMin{};
+    SpineOptional<ScaledNumberElementsType> slotValueMax{};
+    SpineOptional<ScaledNumberElementsType> slotValueStepSize{};
+
+    TimeSeriesConstraintsDataElementsType(const TimeSeriesConstraintsDataElementsType &other) = default;
 
     TimeSeriesConstraintsDataElementsType() = default;
 };
@@ -13647,7 +14458,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
 */
 struct TimeSeriesConstraintsListDataType
 {
-    SpineOptional<std::vector<TimeSeriesConstraintsDataType>> timeSeriesConstraintsData;
+    SpineOptional<std::vector<TimeSeriesConstraintsDataType>> timeSeriesConstraintsData{};
+
+    TimeSeriesConstraintsListDataType(const TimeSeriesConstraintsListDataType &other) = default;
 
     TimeSeriesConstraintsListDataType() = default;
 };
@@ -13671,7 +14484,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataT
 */
 struct TimeSeriesConstraintsListDataSelectorsType
 {
-    SpineOptional<TimeSeriesIdType> timeSeriesId;
+    SpineOptional<TimeSeriesIdType> timeSeriesId{};
+
+    TimeSeriesConstraintsListDataSelectorsType(const TimeSeriesConstraintsListDataSelectorsType &other) = default;
 
     TimeSeriesConstraintsListDataSelectorsType() = default;
 };
@@ -13695,7 +14510,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataS
 */
 struct SmartEnergyManagementPsAlternativesRelationType
 {
-    SpineOptional<AlternativesIdType> alternativesId;
+    SpineOptional<AlternativesIdType> alternativesId{};
+
+    SmartEnergyManagementPsAlternativesRelationType(const SmartEnergyManagementPsAlternativesRelationType &other) = default;
 
     SmartEnergyManagementPsAlternativesRelationType() = default;
 };
@@ -13719,7 +14536,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
 */
 struct SmartEnergyManagementPsPowerTimeSlotValueListType
 {
-    SpineOptional<std::vector<PowerTimeSlotValueDataType>> value;
+    SpineOptional<std::vector<PowerTimeSlotValueDataType>> value{};
+
+    SmartEnergyManagementPsPowerTimeSlotValueListType(const SmartEnergyManagementPsPowerTimeSlotValueListType &other) = default;
 
     SmartEnergyManagementPsPowerTimeSlotValueListType() = default;
 };
@@ -13743,9 +14562,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
 */
 struct SmartEnergyManagementPsPowerTimeSlotType
 {
-    SpineOptional<PowerTimeSlotScheduleDataType> schedule;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListType> valueList;
-    SpineOptional<PowerTimeSlotScheduleConstraintsDataType> scheduleConstraints;
+    SpineOptional<PowerTimeSlotScheduleDataType> schedule{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListType> valueList{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsDataType> scheduleConstraints{};
+
+    SmartEnergyManagementPsPowerTimeSlotType(const SmartEnergyManagementPsPowerTimeSlotType &other) = default;
 
     SmartEnergyManagementPsPowerTimeSlotType() = default;
 };
@@ -13769,15 +14590,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
 */
 struct SmartEnergyManagementPsPowerSequenceType
 {
-    SpineOptional<PowerSequenceDescriptionDataType> description;
-    SpineOptional<PowerSequenceStateDataType> state;
-    SpineOptional<PowerSequenceScheduleDataType> schedule;
-    SpineOptional<PowerSequenceScheduleConstraintsDataType> scheduleConstraints;
-    SpineOptional<PowerSequenceSchedulePreferenceDataType> schedulePreference;
-    SpineOptional<OperatingConstraintsInterruptDataType> operatingConstraintsInterrupt;
-    SpineOptional<OperatingConstraintsDurationDataType> operatingConstraintsDuration;
-    SpineOptional<OperatingConstraintsResumeImplicationDataType> operatingConstraintsResumeImplication;
-    SpineOptional<std::vector<SmartEnergyManagementPsPowerTimeSlotType>> powerTimeSlot;
+    SpineOptional<PowerSequenceDescriptionDataType> description{};
+    SpineOptional<PowerSequenceStateDataType> state{};
+    SpineOptional<PowerSequenceScheduleDataType> schedule{};
+    SpineOptional<PowerSequenceScheduleConstraintsDataType> scheduleConstraints{};
+    SpineOptional<PowerSequenceSchedulePreferenceDataType> schedulePreference{};
+    SpineOptional<OperatingConstraintsInterruptDataType> operatingConstraintsInterrupt{};
+    SpineOptional<OperatingConstraintsDurationDataType> operatingConstraintsDuration{};
+    SpineOptional<OperatingConstraintsResumeImplicationDataType> operatingConstraintsResumeImplication{};
+    SpineOptional<std::vector<SmartEnergyManagementPsPowerTimeSlotType>> powerTimeSlot{};
+
+    SmartEnergyManagementPsPowerSequenceType(const SmartEnergyManagementPsPowerSequenceType &other) = default;
 
     SmartEnergyManagementPsPowerSequenceType() = default;
 };
@@ -13801,8 +14624,10 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
 */
 struct SmartEnergyManagementPsAlternativesType
 {
-    SpineOptional<SmartEnergyManagementPsAlternativesRelationType> relation;
-    SpineOptional<std::vector<SmartEnergyManagementPsPowerSequenceType>> powerSequence;
+    SpineOptional<SmartEnergyManagementPsAlternativesRelationType> relation{};
+    SpineOptional<std::vector<SmartEnergyManagementPsPowerSequenceType>> powerSequence{};
+
+    SmartEnergyManagementPsAlternativesType(const SmartEnergyManagementPsAlternativesType &other) = default;
 
     SmartEnergyManagementPsAlternativesType() = default;
 };
@@ -13826,8 +14651,10 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
 */
 struct SmartEnergyManagementPsDataType
 {
-    SpineOptional<PowerSequenceNodeScheduleInformationDataType> nodeScheduleInformation;
-    SpineOptional<std::vector<SmartEnergyManagementPsAlternativesType>> alternatives;
+    SpineOptional<PowerSequenceNodeScheduleInformationDataType> nodeScheduleInformation{};
+    SpineOptional<std::vector<SmartEnergyManagementPsAlternativesType>> alternatives{};
+
+    SmartEnergyManagementPsDataType(const SmartEnergyManagementPsDataType &other) = default;
 
     SmartEnergyManagementPsDataType() = default;
 };
@@ -13851,7 +14678,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataTyp
 */
 struct SmartEnergyManagementPsAlternativesRelationElementsType
 {
-    SpineOptional<ElementTagType> alternativesId;
+    SpineOptional<ElementTagType> alternativesId{};
+
+    SmartEnergyManagementPsAlternativesRelationElementsType(const SmartEnergyManagementPsAlternativesRelationElementsType &other) = default;
 
     SmartEnergyManagementPsAlternativesRelationElementsType() = default;
 };
@@ -13875,7 +14704,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
 */
 struct SmartEnergyManagementPsPowerTimeSlotValueListElementsType
 {
-    SpineOptional<PowerTimeSlotValueDataElementsType> value;
+    SpineOptional<PowerTimeSlotValueDataElementsType> value{};
+
+    SmartEnergyManagementPsPowerTimeSlotValueListElementsType(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &other) = default;
 
     SmartEnergyManagementPsPowerTimeSlotValueListElementsType() = default;
 };
@@ -13899,9 +14730,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
 */
 struct SmartEnergyManagementPsPowerTimeSlotElementsType
 {
-    SpineOptional<PowerTimeSlotScheduleDataElementsType> schedule;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> valueList;
-    SpineOptional<PowerTimeSlotScheduleConstraintsDataElementsType> scheduleConstraints;
+    SpineOptional<PowerTimeSlotScheduleDataElementsType> schedule{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> valueList{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsDataElementsType> scheduleConstraints{};
+
+    SmartEnergyManagementPsPowerTimeSlotElementsType(const SmartEnergyManagementPsPowerTimeSlotElementsType &other) = default;
 
     SmartEnergyManagementPsPowerTimeSlotElementsType() = default;
 };
@@ -13925,15 +14758,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
 */
 struct SmartEnergyManagementPsPowerSequenceElementsType
 {
-    SpineOptional<PowerSequenceDescriptionDataElementsType> description;
-    SpineOptional<PowerSequenceStateDataElementsType> state;
-    SpineOptional<PowerSequenceScheduleDataElementsType> schedule;
-    SpineOptional<PowerSequenceScheduleConstraintsDataElementsType> scheduleConstraints;
-    SpineOptional<PowerSequenceSchedulePreferenceDataElementsType> schedulePreference;
-    SpineOptional<OperatingConstraintsInterruptDataElementsType> operatingConstraintsInterrupt;
-    SpineOptional<OperatingConstraintsDurationDataElementsType> operatingConstraintsDuration;
-    SpineOptional<OperatingConstraintsResumeImplicationDataElementsType> operatingConstraintsResumeImplication;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotElementsType> powerTimeSlot;
+    SpineOptional<PowerSequenceDescriptionDataElementsType> description{};
+    SpineOptional<PowerSequenceStateDataElementsType> state{};
+    SpineOptional<PowerSequenceScheduleDataElementsType> schedule{};
+    SpineOptional<PowerSequenceScheduleConstraintsDataElementsType> scheduleConstraints{};
+    SpineOptional<PowerSequenceSchedulePreferenceDataElementsType> schedulePreference{};
+    SpineOptional<OperatingConstraintsInterruptDataElementsType> operatingConstraintsInterrupt{};
+    SpineOptional<OperatingConstraintsDurationDataElementsType> operatingConstraintsDuration{};
+    SpineOptional<OperatingConstraintsResumeImplicationDataElementsType> operatingConstraintsResumeImplication{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotElementsType> powerTimeSlot{};
+
+    SmartEnergyManagementPsPowerSequenceElementsType(const SmartEnergyManagementPsPowerSequenceElementsType &other) = default;
 
     SmartEnergyManagementPsPowerSequenceElementsType() = default;
 };
@@ -13957,8 +14792,10 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
 */
 struct SmartEnergyManagementPsAlternativesElementsType
 {
-    SpineOptional<SmartEnergyManagementPsAlternativesRelationElementsType> relation;
-    SpineOptional<SmartEnergyManagementPsPowerSequenceElementsType> powerSequence;
+    SpineOptional<SmartEnergyManagementPsAlternativesRelationElementsType> relation{};
+    SpineOptional<SmartEnergyManagementPsPowerSequenceElementsType> powerSequence{};
+
+    SmartEnergyManagementPsAlternativesElementsType(const SmartEnergyManagementPsAlternativesElementsType &other) = default;
 
     SmartEnergyManagementPsAlternativesElementsType() = default;
 };
@@ -13982,8 +14819,10 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
 */
 struct SmartEnergyManagementPsDataElementsType
 {
-    SpineOptional<PowerSequenceNodeScheduleInformationDataElementsType> nodeScheduleInformation;
-    SpineOptional<SmartEnergyManagementPsAlternativesElementsType> alternatives;
+    SpineOptional<PowerSequenceNodeScheduleInformationDataElementsType> nodeScheduleInformation{};
+    SpineOptional<SmartEnergyManagementPsAlternativesElementsType> alternatives{};
+
+    SmartEnergyManagementPsDataElementsType(const SmartEnergyManagementPsDataElementsType &other) = default;
 
     SmartEnergyManagementPsDataElementsType() = default;
 };
@@ -14007,10 +14846,12 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataEle
 */
 struct SmartEnergyManagementPsDataSelectorsType
 {
-    SpineOptional<PowerSequenceAlternativesRelationListDataSelectorsType> alternativesRelation;
-    SpineOptional<PowerSequenceDescriptionListDataSelectorsType> powerSequenceDescription;
-    SpineOptional<PowerTimeSlotScheduleListDataSelectorsType> powerTimeSlotSchedule;
-    SpineOptional<PowerTimeSlotValueListDataSelectorsType> powerTimeSlotValue;
+    SpineOptional<PowerSequenceAlternativesRelationListDataSelectorsType> alternativesRelation{};
+    SpineOptional<PowerSequenceDescriptionListDataSelectorsType> powerSequenceDescription{};
+    SpineOptional<PowerTimeSlotScheduleListDataSelectorsType> powerTimeSlotSchedule{};
+    SpineOptional<PowerTimeSlotValueListDataSelectorsType> powerTimeSlotValue{};
+
+    SmartEnergyManagementPsDataSelectorsType(const SmartEnergyManagementPsDataSelectorsType &other) = default;
 
     SmartEnergyManagementPsDataSelectorsType() = default;
 };
@@ -14034,7 +14875,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
 */
 struct SmartEnergyManagementPsPriceDataType
 {
-    SpineOptional<std::vector<PowerSequencePriceDataType>> price;
+    SpineOptional<std::vector<PowerSequencePriceDataType>> price{};
+
+    SmartEnergyManagementPsPriceDataType(const SmartEnergyManagementPsPriceDataType &other) = default;
 
     SmartEnergyManagementPsPriceDataType() = default;
 };
@@ -14058,7 +14901,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
 */
 struct SmartEnergyManagementPsPriceDataElementsType
 {
-    SpineOptional<PowerSequencePriceDataElementsType> price;
+    SpineOptional<PowerSequencePriceDataElementsType> price{};
+
+    SmartEnergyManagementPsPriceDataElementsType(const SmartEnergyManagementPsPriceDataElementsType &other) = default;
 
     SmartEnergyManagementPsPriceDataElementsType() = default;
 };
@@ -14082,7 +14927,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
 */
 struct SmartEnergyManagementPsPriceDataSelectorsType
 {
-    SpineOptional<PowerSequencePriceListDataSelectorsType> price;
+    SpineOptional<PowerSequencePriceListDataSelectorsType> price{};
+
+    SmartEnergyManagementPsPriceDataSelectorsType(const SmartEnergyManagementPsPriceDataSelectorsType &other) = default;
 
     SmartEnergyManagementPsPriceDataSelectorsType() = default;
 };
@@ -14106,7 +14953,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
 */
 struct SmartEnergyManagementPsConfigurationRequestCallType
 {
-    SpineOptional<PowerSequenceScheduleConfigurationRequestCallType> scheduleConfigurationRequest;
+    SpineOptional<PowerSequenceScheduleConfigurationRequestCallType> scheduleConfigurationRequest{};
+
+    SmartEnergyManagementPsConfigurationRequestCallType(const SmartEnergyManagementPsConfigurationRequestCallType &other) = default;
 
     SmartEnergyManagementPsConfigurationRequestCallType() = default;
 };
@@ -14130,7 +14979,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
 */
 struct SmartEnergyManagementPsConfigurationRequestCallElementsType
 {
-    SpineOptional<PowerSequenceScheduleConfigurationRequestCallElementsType> scheduleConfigurationRequest;
+    SpineOptional<PowerSequenceScheduleConfigurationRequestCallElementsType> scheduleConfigurationRequest{};
+
+    SmartEnergyManagementPsConfigurationRequestCallElementsType(const SmartEnergyManagementPsConfigurationRequestCallElementsType &other) = default;
 
     SmartEnergyManagementPsConfigurationRequestCallElementsType() = default;
 };
@@ -14154,7 +15005,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
 */
 struct SmartEnergyManagementPsPriceCalculationRequestCallType
 {
-    SpineOptional<PowerSequencePriceCalculationRequestCallType> priceCalculationRequest;
+    SpineOptional<PowerSequencePriceCalculationRequestCallType> priceCalculationRequest{};
+
+    SmartEnergyManagementPsPriceCalculationRequestCallType(const SmartEnergyManagementPsPriceCalculationRequestCallType &other) = default;
 
     SmartEnergyManagementPsPriceCalculationRequestCallType() = default;
 };
@@ -14178,7 +15031,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
 */
 struct SmartEnergyManagementPsPriceCalculationRequestCallElementsType
 {
-    SpineOptional<PowerSequencePriceCalculationRequestCallElementsType> priceCalculationRequest;
+    SpineOptional<PowerSequencePriceCalculationRequestCallElementsType> priceCalculationRequest{};
+
+    SmartEnergyManagementPsPriceCalculationRequestCallElementsType(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &other) = default;
 
     SmartEnergyManagementPsPriceCalculationRequestCallElementsType() = default;
 };
@@ -14202,10 +15057,12 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
 */
 struct MessagingDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<MessagingNumberType> messagingNumber;
-    SpineOptional<MessagingTypeEnumType> type;
-    SpineOptional<MessagingDataTextType> text;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<MessagingNumberType> messagingNumber{};
+    SpineOptional<MessagingTypeEnumType> type{};
+    SpineOptional<MessagingDataTextType> text{};
+
+    MessagingDataType(const MessagingDataType &other) = default;
 
     MessagingDataType() = default;
 };
@@ -14229,10 +15086,12 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst);
 */
 struct MessagingDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> messagingNumber;
-    SpineOptional<ElementTagType> type;
-    SpineOptional<ElementTagType> text;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> messagingNumber{};
+    SpineOptional<ElementTagType> type{};
+    SpineOptional<ElementTagType> text{};
+
+    MessagingDataElementsType(const MessagingDataElementsType &other) = default;
 
     MessagingDataElementsType() = default;
 };
@@ -14256,7 +15115,9 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst
 */
 struct MessagingListDataType
 {
-    SpineOptional<std::vector<MessagingDataType>> messagingData;
+    SpineOptional<std::vector<MessagingDataType>> messagingData{};
+
+    MessagingListDataType(const MessagingListDataType &other) = default;
 
     MessagingListDataType() = default;
 };
@@ -14280,8 +15141,10 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst);
 */
 struct MessagingListDataSelectorsType
 {
-    SpineOptional<TimestampIntervalType> timestampInterval;
-    SpineOptional<MessagingNumberType> messagingNumber;
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+    SpineOptional<MessagingNumberType> messagingNumber{};
+
+    MessagingListDataSelectorsType(const MessagingListDataSelectorsType &other) = default;
 
     MessagingListDataSelectorsType() = default;
 };
@@ -14305,14 +15168,16 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType
 */
 struct TariffOverallConstraintsDataType
 {
-    SpineOptional<TariffCountType> maxTariffCount;
-    SpineOptional<TierBoundaryCountType> maxBoundaryCount;
-    SpineOptional<TierCountType> maxTierCount;
-    SpineOptional<IncentiveCountType> maxIncentiveCount;
-    SpineOptional<TierBoundaryCountType> maxBoundariesPerTariff;
-    SpineOptional<TierCountType> maxTiersPerTariff;
-    SpineOptional<TierBoundaryCountType> maxBoundariesPerTier;
-    SpineOptional<IncentiveCountType> maxIncentivesPerTier;
+    SpineOptional<TariffCountType> maxTariffCount{};
+    SpineOptional<TierBoundaryCountType> maxBoundaryCount{};
+    SpineOptional<TierCountType> maxTierCount{};
+    SpineOptional<IncentiveCountType> maxIncentiveCount{};
+    SpineOptional<TierBoundaryCountType> maxBoundariesPerTariff{};
+    SpineOptional<TierCountType> maxTiersPerTariff{};
+    SpineOptional<TierBoundaryCountType> maxBoundariesPerTier{};
+    SpineOptional<IncentiveCountType> maxIncentivesPerTier{};
+
+    TariffOverallConstraintsDataType(const TariffOverallConstraintsDataType &other) = default;
 
     TariffOverallConstraintsDataType() = default;
 };
@@ -14336,14 +15201,16 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
 */
 struct TariffOverallConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> maxTariffCount;
-    SpineOptional<ElementTagType> maxBoundaryCount;
-    SpineOptional<ElementTagType> maxTierCount;
-    SpineOptional<ElementTagType> maxIncentiveCount;
-    SpineOptional<ElementTagType> maxBoundariesPerTariff;
-    SpineOptional<ElementTagType> maxTiersPerTariff;
-    SpineOptional<ElementTagType> maxBoundariesPerTier;
-    SpineOptional<ElementTagType> maxIncentivesPerTier;
+    SpineOptional<ElementTagType> maxTariffCount{};
+    SpineOptional<ElementTagType> maxBoundaryCount{};
+    SpineOptional<ElementTagType> maxTierCount{};
+    SpineOptional<ElementTagType> maxIncentiveCount{};
+    SpineOptional<ElementTagType> maxBoundariesPerTariff{};
+    SpineOptional<ElementTagType> maxTiersPerTariff{};
+    SpineOptional<ElementTagType> maxBoundariesPerTier{};
+    SpineOptional<ElementTagType> maxIncentivesPerTier{};
+
+    TariffOverallConstraintsDataElementsType(const TariffOverallConstraintsDataElementsType &other) = default;
 
     TariffOverallConstraintsDataElementsType() = default;
 };
@@ -14367,8 +15234,10 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
 */
 struct TariffDataType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<std::vector<TierIdType>> activeTierId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<std::vector<TierIdType>> activeTierId{};
+
+    TariffDataType(const TariffDataType &other) = default;
 
     TariffDataType() = default;
 };
@@ -14392,8 +15261,10 @@ void convertFromJson(const JsonVariantConst &src, TariffDataType &dst);
 */
 struct TariffDataElementsType
 {
-    SpineOptional<ElementTagType> tariffId;
-    SpineOptional<ElementTagType> activeTierId;
+    SpineOptional<ElementTagType> tariffId{};
+    SpineOptional<ElementTagType> activeTierId{};
+
+    TariffDataElementsType(const TariffDataElementsType &other) = default;
 
     TariffDataElementsType() = default;
 };
@@ -14417,7 +15288,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst);
 */
 struct TariffListDataType
 {
-    SpineOptional<std::vector<TariffDataType>> tariffData;
+    SpineOptional<std::vector<TariffDataType>> tariffData{};
+
+    TariffListDataType(const TariffListDataType &other) = default;
 
     TariffListDataType() = default;
 };
@@ -14441,8 +15314,10 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst);
 */
 struct TariffListDataSelectorsType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<TierIdType> activeTierId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<TierIdType> activeTierId{};
+
+    TariffListDataSelectorsType(const TariffListDataSelectorsType &other) = default;
 
     TariffListDataSelectorsType() = default;
 };
@@ -14466,8 +15341,10 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &d
 */
 struct TariffTierRelationDataType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<std::vector<TierIdType>> tierId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<std::vector<TierIdType>> tierId{};
+
+    TariffTierRelationDataType(const TariffTierRelationDataType &other) = default;
 
     TariffTierRelationDataType() = default;
 };
@@ -14491,8 +15368,10 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &ds
 */
 struct TariffTierRelationDataElementsType
 {
-    SpineOptional<ElementTagType> tariffId;
-    SpineOptional<ElementTagType> tierId;
+    SpineOptional<ElementTagType> tariffId{};
+    SpineOptional<ElementTagType> tierId{};
+
+    TariffTierRelationDataElementsType(const TariffTierRelationDataElementsType &other) = default;
 
     TariffTierRelationDataElementsType() = default;
 };
@@ -14516,7 +15395,9 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElements
 */
 struct TariffTierRelationListDataType
 {
-    SpineOptional<std::vector<TariffTierRelationDataType>> tariffTierRelationData;
+    SpineOptional<std::vector<TariffTierRelationDataType>> tariffTierRelationData{};
+
+    TariffTierRelationListDataType(const TariffTierRelationListDataType &other) = default;
 
     TariffTierRelationListDataType() = default;
 };
@@ -14540,8 +15421,10 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType
 */
 struct TariffTierRelationListDataSelectorsType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<TierIdType> tierId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<TierIdType> tierId{};
+
+    TariffTierRelationListDataSelectorsType(const TariffTierRelationListDataSelectorsType &other) = default;
 
     TariffTierRelationListDataSelectorsType() = default;
 };
@@ -14565,8 +15448,10 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSele
 */
 struct TariffBoundaryRelationDataType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<std::vector<TierBoundaryIdType>> boundaryId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<std::vector<TierBoundaryIdType>> boundaryId{};
+
+    TariffBoundaryRelationDataType(const TariffBoundaryRelationDataType &other) = default;
 
     TariffBoundaryRelationDataType() = default;
 };
@@ -14590,8 +15475,10 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType
 */
 struct TariffBoundaryRelationDataElementsType
 {
-    SpineOptional<ElementTagType> tariffId;
-    SpineOptional<ElementTagType> boundaryId;
+    SpineOptional<ElementTagType> tariffId{};
+    SpineOptional<ElementTagType> boundaryId{};
+
+    TariffBoundaryRelationDataElementsType(const TariffBoundaryRelationDataElementsType &other) = default;
 
     TariffBoundaryRelationDataElementsType() = default;
 };
@@ -14615,7 +15502,9 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElem
 */
 struct TariffBoundaryRelationListDataType
 {
-    SpineOptional<std::vector<TariffBoundaryRelationDataType>> tariffBoundaryRelationData;
+    SpineOptional<std::vector<TariffBoundaryRelationDataType>> tariffBoundaryRelationData{};
+
+    TariffBoundaryRelationListDataType(const TariffBoundaryRelationListDataType &other) = default;
 
     TariffBoundaryRelationListDataType() = default;
 };
@@ -14639,8 +15528,10 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
 */
 struct TariffBoundaryRelationListDataSelectorsType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<TierBoundaryIdType> boundaryId;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<TierBoundaryIdType> boundaryId{};
+
+    TariffBoundaryRelationListDataSelectorsType(const TariffBoundaryRelationListDataSelectorsType &other) = default;
 
     TariffBoundaryRelationListDataSelectorsType() = default;
 };
@@ -14664,15 +15555,17 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
 */
 struct TariffDescriptionDataType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<bool> tariffWriteable;
-    SpineOptional<bool> updateRequired;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
-    SpineOptional<bool> slotIdSupport;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<CommodityIdType> commodityId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<bool> tariffWriteable{};
+    SpineOptional<bool> updateRequired{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+    SpineOptional<bool> slotIdSupport{};
+
+    TariffDescriptionDataType(const TariffDescriptionDataType &other) = default;
 
     TariffDescriptionDataType() = default;
 };
@@ -14696,15 +15589,17 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst
 */
 struct TariffDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> tariffId;
-    SpineOptional<ElementTagType> commodityId;
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> tariffWriteable;
-    SpineOptional<ElementTagType> updateRequired;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
-    SpineOptional<ElementTagType> slotIdSupport;
+    SpineOptional<ElementTagType> tariffId{};
+    SpineOptional<ElementTagType> commodityId{};
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> tariffWriteable{};
+    SpineOptional<ElementTagType> updateRequired{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+    SpineOptional<ElementTagType> slotIdSupport{};
+
+    TariffDescriptionDataElementsType(const TariffDescriptionDataElementsType &other) = default;
 
     TariffDescriptionDataElementsType() = default;
 };
@@ -14728,7 +15623,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsT
 */
 struct TariffDescriptionListDataType
 {
-    SpineOptional<std::vector<TariffDescriptionDataType>> tariffDescriptionData;
+    SpineOptional<std::vector<TariffDescriptionDataType>> tariffDescriptionData{};
+
+    TariffDescriptionListDataType(const TariffDescriptionListDataType &other) = default;
 
     TariffDescriptionListDataType() = default;
 };
@@ -14752,10 +15649,12 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType 
 */
 struct TariffDescriptionListDataSelectorsType
 {
-    SpineOptional<TariffIdType> tariffId;
-    SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<TariffIdType> tariffId{};
+    SpineOptional<CommodityIdType> commodityId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    TariffDescriptionListDataSelectorsType(const TariffDescriptionListDataSelectorsType &other) = default;
 
     TariffDescriptionListDataSelectorsType() = default;
 };
@@ -14779,11 +15678,13 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelec
 */
 struct TierBoundaryDataType
 {
-    SpineOptional<TierBoundaryIdType> boundaryId;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<ScaledNumberType> lowerBoundaryValue;
-    SpineOptional<ScaledNumberType> upperBoundaryValue;
+    SpineOptional<TierBoundaryIdType> boundaryId{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<ScaledNumberType> lowerBoundaryValue{};
+    SpineOptional<ScaledNumberType> upperBoundaryValue{};
+
+    TierBoundaryDataType(const TierBoundaryDataType &other) = default;
 
     TierBoundaryDataType() = default;
 };
@@ -14807,11 +15708,13 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst);
 */
 struct TierBoundaryDataElementsType
 {
-    SpineOptional<ElementTagType> boundaryId;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ScaledNumberElementsType> lowerBoundaryValue;
-    SpineOptional<ScaledNumberElementsType> upperBoundaryValue;
+    SpineOptional<ElementTagType> boundaryId{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ScaledNumberElementsType> lowerBoundaryValue{};
+    SpineOptional<ScaledNumberElementsType> upperBoundaryValue{};
+
+    TierBoundaryDataElementsType(const TierBoundaryDataElementsType &other) = default;
 
     TierBoundaryDataElementsType() = default;
 };
@@ -14835,7 +15738,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &
 */
 struct TierBoundaryListDataType
 {
-    SpineOptional<std::vector<TierBoundaryDataType>> tierBoundaryData;
+    SpineOptional<std::vector<TierBoundaryDataType>> tierBoundaryData{};
+
+    TierBoundaryListDataType(const TierBoundaryListDataType &other) = default;
 
     TierBoundaryListDataType() = default;
 };
@@ -14859,7 +15764,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst)
 */
 struct TierBoundaryListDataSelectorsType
 {
-    SpineOptional<TierBoundaryIdType> boundaryId;
+    SpineOptional<TierBoundaryIdType> boundaryId{};
+
+    TierBoundaryListDataSelectorsType(const TierBoundaryListDataSelectorsType &other) = default;
 
     TierBoundaryListDataSelectorsType() = default;
 };
@@ -14883,14 +15790,16 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsT
 */
 struct TierBoundaryDescriptionDataType
 {
-    SpineOptional<TierBoundaryIdType> boundaryId;
-    SpineOptional<TierBoundaryTypeEnumType> boundaryType;
-    SpineOptional<TierIdType> validForTierId;
-    SpineOptional<TierIdType> switchToTierIdWhenLower;
-    SpineOptional<TierIdType> switchToTierIdWhenHigher;
-    SpineOptional<UnitOfMeasurementEnumType> boundaryUnit;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<TierBoundaryIdType> boundaryId{};
+    SpineOptional<TierBoundaryTypeEnumType> boundaryType{};
+    SpineOptional<TierIdType> validForTierId{};
+    SpineOptional<TierIdType> switchToTierIdWhenLower{};
+    SpineOptional<TierIdType> switchToTierIdWhenHigher{};
+    SpineOptional<UnitOfMeasurementEnumType> boundaryUnit{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    TierBoundaryDescriptionDataType(const TierBoundaryDescriptionDataType &other) = default;
 
     TierBoundaryDescriptionDataType() = default;
 };
@@ -14914,14 +15823,16 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
 */
 struct TierBoundaryDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> boundaryId;
-    SpineOptional<ElementTagType> boundaryType;
-    SpineOptional<ElementTagType> validForTierId;
-    SpineOptional<ElementTagType> switchToTierIdWhenLower;
-    SpineOptional<ElementTagType> switchToTierIdWhenHigher;
-    SpineOptional<ElementTagType> boundaryUnit;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> boundaryId{};
+    SpineOptional<ElementTagType> boundaryType{};
+    SpineOptional<ElementTagType> validForTierId{};
+    SpineOptional<ElementTagType> switchToTierIdWhenLower{};
+    SpineOptional<ElementTagType> switchToTierIdWhenHigher{};
+    SpineOptional<ElementTagType> boundaryUnit{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    TierBoundaryDescriptionDataElementsType(const TierBoundaryDescriptionDataElementsType &other) = default;
 
     TierBoundaryDescriptionDataElementsType() = default;
 };
@@ -14945,7 +15856,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
 */
 struct TierBoundaryDescriptionListDataType
 {
-    SpineOptional<std::vector<TierBoundaryDescriptionDataType>> tierBoundaryDescriptionData;
+    SpineOptional<std::vector<TierBoundaryDescriptionDataType>> tierBoundaryDescriptionData{};
+
+    TierBoundaryDescriptionListDataType(const TierBoundaryDescriptionListDataType &other) = default;
 
     TierBoundaryDescriptionListDataType() = default;
 };
@@ -14969,8 +15882,10 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
 */
 struct TierBoundaryDescriptionListDataSelectorsType
 {
-    SpineOptional<TierBoundaryIdType> boundaryId;
-    SpineOptional<TierBoundaryTypeEnumType> boundaryType;
+    SpineOptional<TierBoundaryIdType> boundaryId{};
+    SpineOptional<TierBoundaryTypeEnumType> boundaryType{};
+
+    TierBoundaryDescriptionListDataSelectorsType(const TierBoundaryDescriptionListDataSelectorsType &other) = default;
 
     TierBoundaryDescriptionListDataSelectorsType() = default;
 };
@@ -14994,11 +15909,13 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
 */
 struct CommodityDataType
 {
-    SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<CommodityTypeEnumType> commodityType;
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<CommodityIdType> commodityId{};
+    SpineOptional<CommodityTypeEnumType> commodityType{};
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    CommodityDataType(const CommodityDataType &other) = default;
 
     CommodityDataType() = default;
 };
@@ -15022,11 +15939,13 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst);
 */
 struct CommodityDataElementsType
 {
-    SpineOptional<ElementTagType> commodityId;
-    SpineOptional<ElementTagType> commodityType;
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> commodityId{};
+    SpineOptional<ElementTagType> commodityType{};
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    CommodityDataElementsType(const CommodityDataElementsType &other) = default;
 
     CommodityDataElementsType() = default;
 };
@@ -15050,7 +15969,9 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
 */
 struct CommodityListDataType
 {
-    SpineOptional<std::vector<CommodityDataType>> commodityData;
+    SpineOptional<std::vector<CommodityDataType>> commodityData{};
+
+    CommodityListDataType(const CommodityListDataType &other) = default;
 
     CommodityListDataType() = default;
 };
@@ -15074,8 +15995,10 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst);
 */
 struct CommodityListDataSelectorsType
 {
-    SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<CommodityTypeEnumType> commodityType;
+    SpineOptional<CommodityIdType> commodityId{};
+    SpineOptional<CommodityTypeEnumType> commodityType{};
+
+    CommodityListDataSelectorsType(const CommodityListDataSelectorsType &other) = default;
 
     CommodityListDataSelectorsType() = default;
 };
@@ -15099,10 +16022,12 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType
 */
 struct TierDataType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<std::vector<IncentiveIdType>> activeIncentiveId;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<std::vector<IncentiveIdType>> activeIncentiveId{};
+
+    TierDataType(const TierDataType &other) = default;
 
     TierDataType() = default;
 };
@@ -15126,10 +16051,12 @@ void convertFromJson(const JsonVariantConst &src, TierDataType &dst);
 */
 struct TierDataElementsType
 {
-    SpineOptional<ElementTagType> tierId;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> activeIncentiveId;
+    SpineOptional<ElementTagType> tierId{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> activeIncentiveId{};
+
+    TierDataElementsType(const TierDataElementsType &other) = default;
 
     TierDataElementsType() = default;
 };
@@ -15153,7 +16080,9 @@ void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst);
 */
 struct TierListDataType
 {
-    SpineOptional<std::vector<TierDataType>> tierData;
+    SpineOptional<std::vector<TierDataType>> tierData{};
+
+    TierListDataType(const TierListDataType &other) = default;
 
     TierListDataType() = default;
 };
@@ -15177,8 +16106,10 @@ void convertFromJson(const JsonVariantConst &src, TierListDataType &dst);
 */
 struct TierListDataSelectorsType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<IncentiveIdType> activeIncentiveId;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<IncentiveIdType> activeIncentiveId{};
+
+    TierListDataSelectorsType(const TierListDataSelectorsType &other) = default;
 
     TierListDataSelectorsType() = default;
 };
@@ -15202,8 +16133,10 @@ void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst
 */
 struct TierIncentiveRelationDataType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<std::vector<IncentiveIdType>> incentiveId;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<std::vector<IncentiveIdType>> incentiveId{};
+
+    TierIncentiveRelationDataType(const TierIncentiveRelationDataType &other) = default;
 
     TierIncentiveRelationDataType() = default;
 };
@@ -15227,8 +16160,10 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType 
 */
 struct TierIncentiveRelationDataElementsType
 {
-    SpineOptional<ElementTagType> tierId;
-    SpineOptional<ElementTagType> incentiveId;
+    SpineOptional<ElementTagType> tierId{};
+    SpineOptional<ElementTagType> incentiveId{};
+
+    TierIncentiveRelationDataElementsType(const TierIncentiveRelationDataElementsType &other) = default;
 
     TierIncentiveRelationDataElementsType() = default;
 };
@@ -15252,7 +16187,9 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataEleme
 */
 struct TierIncentiveRelationListDataType
 {
-    SpineOptional<std::vector<TierIncentiveRelationDataType>> tierIncentiveRelationData;
+    SpineOptional<std::vector<TierIncentiveRelationDataType>> tierIncentiveRelationData{};
+
+    TierIncentiveRelationListDataType(const TierIncentiveRelationListDataType &other) = default;
 
     TierIncentiveRelationListDataType() = default;
 };
@@ -15276,8 +16213,10 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataT
 */
 struct TierIncentiveRelationListDataSelectorsType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<IncentiveIdType> incentiveId;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<IncentiveIdType> incentiveId{};
+
+    TierIncentiveRelationListDataSelectorsType(const TierIncentiveRelationListDataSelectorsType &other) = default;
 
     TierIncentiveRelationListDataSelectorsType() = default;
 };
@@ -15301,10 +16240,12 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataS
 */
 struct TierDescriptionDataType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<TierTypeEnumType> tierType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<TierTypeEnumType> tierType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    TierDescriptionDataType(const TierDescriptionDataType &other) = default;
 
     TierDescriptionDataType() = default;
 };
@@ -15328,10 +16269,12 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst);
 */
 struct TierDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> tierId;
-    SpineOptional<ElementTagType> tierType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> tierId{};
+    SpineOptional<ElementTagType> tierType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    TierDescriptionDataElementsType(const TierDescriptionDataElementsType &other) = default;
 
     TierDescriptionDataElementsType() = default;
 };
@@ -15355,7 +16298,9 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsTyp
 */
 struct TierDescriptionListDataType
 {
-    SpineOptional<std::vector<TierDescriptionDataType>> tierDescriptionData;
+    SpineOptional<std::vector<TierDescriptionDataType>> tierDescriptionData{};
+
+    TierDescriptionListDataType(const TierDescriptionListDataType &other) = default;
 
     TierDescriptionListDataType() = default;
 };
@@ -15379,8 +16324,10 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &d
 */
 struct TierDescriptionListDataSelectorsType
 {
-    SpineOptional<TierIdType> tierId;
-    SpineOptional<TierTypeEnumType> tierType;
+    SpineOptional<TierIdType> tierId{};
+    SpineOptional<TierTypeEnumType> tierType{};
+
+    TierDescriptionListDataSelectorsType(const TierDescriptionListDataSelectorsType &other) = default;
 
     TierDescriptionListDataSelectorsType() = default;
 };
@@ -15404,12 +16351,14 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelecto
 */
 struct IncentiveDataType
 {
-    SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveValueTypeEnumType> valueType;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<TimePeriodType> timePeriod;
-    SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<ScaledNumberType> value;
+    SpineOptional<IncentiveIdType> incentiveId{};
+    SpineOptional<IncentiveValueTypeEnumType> valueType{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<TimePeriodType> timePeriod{};
+    SpineOptional<TimeTableIdType> timeTableId{};
+    SpineOptional<ScaledNumberType> value{};
+
+    IncentiveDataType(const IncentiveDataType &other) = default;
 
     IncentiveDataType() = default;
 };
@@ -15433,12 +16382,14 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst);
 */
 struct IncentiveDataElementsType
 {
-    SpineOptional<ElementTagType> incentiveId;
-    SpineOptional<ElementTagType> valueType;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<TimePeriodElementsType> timePeriod;
-    SpineOptional<ElementTagType> timeTableId;
-    SpineOptional<ElementTagType> value;
+    SpineOptional<ElementTagType> incentiveId{};
+    SpineOptional<ElementTagType> valueType{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<TimePeriodElementsType> timePeriod{};
+    SpineOptional<ElementTagType> timeTableId{};
+    SpineOptional<ElementTagType> value{};
+
+    IncentiveDataElementsType(const IncentiveDataElementsType &other) = default;
 
     IncentiveDataElementsType() = default;
 };
@@ -15462,7 +16413,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst
 */
 struct IncentiveListDataType
 {
-    SpineOptional<std::vector<IncentiveDataType>> incentiveData;
+    SpineOptional<std::vector<IncentiveDataType>> incentiveData{};
+
+    IncentiveListDataType(const IncentiveListDataType &other) = default;
 
     IncentiveListDataType() = default;
 };
@@ -15486,9 +16439,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst);
 */
 struct IncentiveListDataSelectorsType
 {
-    SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveValueTypeEnumType> valueType;
-    SpineOptional<TimestampIntervalType> timestampInterval;
+    SpineOptional<IncentiveIdType> incentiveId{};
+    SpineOptional<IncentiveValueTypeEnumType> valueType{};
+    SpineOptional<TimestampIntervalType> timestampInterval{};
+
+    IncentiveListDataSelectorsType(const IncentiveListDataSelectorsType &other) = default;
 
     IncentiveListDataSelectorsType() = default;
 };
@@ -15512,13 +16467,15 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType
 */
 struct IncentiveDescriptionDataType
 {
-    SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveTypeEnumType> incentiveType;
-    SpineOptional<IncentivePriorityType> incentivePriority;
-    SpineOptional<CurrencyEnumType> currency;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<IncentiveIdType> incentiveId{};
+    SpineOptional<IncentiveTypeEnumType> incentiveType{};
+    SpineOptional<IncentivePriorityType> incentivePriority{};
+    SpineOptional<CurrencyEnumType> currency{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    IncentiveDescriptionDataType(const IncentiveDescriptionDataType &other) = default;
 
     IncentiveDescriptionDataType() = default;
 };
@@ -15542,13 +16499,15 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &
 */
 struct IncentiveDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> incentiveId;
-    SpineOptional<ElementTagType> incentiveType;
-    SpineOptional<ElementTagType> incentivePriority;
-    SpineOptional<ElementTagType> currency;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> incentiveId{};
+    SpineOptional<ElementTagType> incentiveType{};
+    SpineOptional<ElementTagType> incentivePriority{};
+    SpineOptional<ElementTagType> currency{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    IncentiveDescriptionDataElementsType(const IncentiveDescriptionDataElementsType &other) = default;
 
     IncentiveDescriptionDataElementsType() = default;
 };
@@ -15572,7 +16531,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElemen
 */
 struct IncentiveDescriptionListDataType
 {
-    SpineOptional<std::vector<IncentiveDescriptionDataType>> incentiveDescriptionData;
+    SpineOptional<std::vector<IncentiveDescriptionDataType>> incentiveDescriptionData{};
+
+    IncentiveDescriptionListDataType(const IncentiveDescriptionListDataType &other) = default;
 
     IncentiveDescriptionListDataType() = default;
 };
@@ -15596,8 +16557,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataTy
 */
 struct IncentiveDescriptionListDataSelectorsType
 {
-    SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveTypeEnumType> incentiveType;
+    SpineOptional<IncentiveIdType> incentiveId{};
+    SpineOptional<IncentiveTypeEnumType> incentiveType{};
+
+    IncentiveDescriptionListDataSelectorsType(const IncentiveDescriptionListDataSelectorsType &other) = default;
 
     IncentiveDescriptionListDataSelectorsType() = default;
 };
@@ -15621,11 +16584,13 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSe
 */
 struct StateInformationDataType
 {
-    SpineOptional<stateInformationIdType> stateInformationId;
-    SpineOptional<StateInformationType> stateInformation;
-    SpineOptional<bool> isActive;
-    SpineOptional<StateInformationCategoryEnumType> category;
-    SpineOptional<AbsoluteOrRelativeTimeType> timeOfLastChange;
+    SpineOptional<stateInformationIdType> stateInformationId{};
+    SpineOptional<StateInformationType> stateInformation{};
+    SpineOptional<bool> isActive{};
+    SpineOptional<StateInformationCategoryEnumType> category{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timeOfLastChange{};
+
+    StateInformationDataType(const StateInformationDataType &other) = default;
 
     StateInformationDataType() = default;
 };
@@ -15649,11 +16614,13 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst)
 */
 struct StateInformationDataElementsType
 {
-    SpineOptional<ElementTagType> stateInformationId;
-    SpineOptional<ElementTagType> stateInformation;
-    SpineOptional<ElementTagType> isActive;
-    SpineOptional<ElementTagType> category;
-    SpineOptional<ElementTagType> timeOfLastChange;
+    SpineOptional<ElementTagType> stateInformationId{};
+    SpineOptional<ElementTagType> stateInformation{};
+    SpineOptional<ElementTagType> isActive{};
+    SpineOptional<ElementTagType> category{};
+    SpineOptional<ElementTagType> timeOfLastChange{};
+
+    StateInformationDataElementsType(const StateInformationDataElementsType &other) = default;
 
     StateInformationDataElementsType() = default;
 };
@@ -15677,7 +16644,9 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsTy
 */
 struct StateInformationListDataType
 {
-    SpineOptional<std::vector<StateInformationDataType>> stateInformationData;
+    SpineOptional<std::vector<StateInformationDataType>> stateInformationData{};
+
+    StateInformationListDataType(const StateInformationListDataType &other) = default;
 
     StateInformationListDataType() = default;
 };
@@ -15701,10 +16670,12 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &
 */
 struct StateInformationListDataSelectorsType
 {
-    SpineOptional<stateInformationIdType> stateInformationId;
-    SpineOptional<StateInformationType> stateInformation;
-    SpineOptional<bool> isActive;
-    SpineOptional<StateInformationCategoryEnumType> category;
+    SpineOptional<stateInformationIdType> stateInformationId{};
+    SpineOptional<StateInformationType> stateInformation{};
+    SpineOptional<bool> isActive{};
+    SpineOptional<StateInformationCategoryEnumType> category{};
+
+    StateInformationListDataSelectorsType(const StateInformationListDataSelectorsType &other) = default;
 
     StateInformationListDataSelectorsType() = default;
 };
@@ -15728,18 +16699,20 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelect
 */
 struct ElectricalConnectionParameterDescriptionDataType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ElectricalConnectionVoltageTypeEnumType> voltageType;
-    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredPhases;
-    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredInReferenceTo;
-    SpineOptional<ElectricalConnectionAcMeasurementTypeEnumType> acMeasurementType;
-    SpineOptional<ElectricalConnectionMeasurandVariantEnumType> acMeasurementVariant;
-    SpineOptional<uint8_t> acMeasuredHarmonic;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ElectricalConnectionVoltageTypeEnumType> voltageType{};
+    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredPhases{};
+    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredInReferenceTo{};
+    SpineOptional<ElectricalConnectionAcMeasurementTypeEnumType> acMeasurementType{};
+    SpineOptional<ElectricalConnectionMeasurandVariantEnumType> acMeasurementVariant{};
+    SpineOptional<uint8_t> acMeasuredHarmonic{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    ElectricalConnectionParameterDescriptionDataType(const ElectricalConnectionParameterDescriptionDataType &other) = default;
 
     ElectricalConnectionParameterDescriptionDataType() = default;
 };
@@ -15763,18 +16736,20 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
 */
 struct ElectricalConnectionParameterDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> electricalConnectionId;
-    SpineOptional<ElementTagType> parameterId;
-    SpineOptional<ElementTagType> measurementId;
-    SpineOptional<ElementTagType> voltageType;
-    SpineOptional<ElementTagType> acMeasuredPhases;
-    SpineOptional<ElementTagType> acMeasuredInReferenceTo;
-    SpineOptional<ElementTagType> acMeasurementType;
-    SpineOptional<ElementTagType> acMeasurementVariant;
-    SpineOptional<ElementTagType> acMeasuredHarmonic;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> electricalConnectionId{};
+    SpineOptional<ElementTagType> parameterId{};
+    SpineOptional<ElementTagType> measurementId{};
+    SpineOptional<ElementTagType> voltageType{};
+    SpineOptional<ElementTagType> acMeasuredPhases{};
+    SpineOptional<ElementTagType> acMeasuredInReferenceTo{};
+    SpineOptional<ElementTagType> acMeasurementType{};
+    SpineOptional<ElementTagType> acMeasurementVariant{};
+    SpineOptional<ElementTagType> acMeasuredHarmonic{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    ElectricalConnectionParameterDescriptionDataElementsType(const ElectricalConnectionParameterDescriptionDataElementsType &other) = default;
 
     ElectricalConnectionParameterDescriptionDataElementsType() = default;
 };
@@ -15798,7 +16773,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
 */
 struct ElectricalConnectionParameterDescriptionListDataType
 {
-    SpineOptional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData;
+    SpineOptional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData{};
+
+    ElectricalConnectionParameterDescriptionListDataType(const ElectricalConnectionParameterDescriptionListDataType &other) = default;
 
     ElectricalConnectionParameterDescriptionListDataType() = default;
 };
@@ -15822,10 +16799,12 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
 */
 struct ElectricalConnectionParameterDescriptionListDataSelectorsType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
-    SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+    SpineOptional<MeasurementIdType> measurementId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    ElectricalConnectionParameterDescriptionListDataSelectorsType(const ElectricalConnectionParameterDescriptionListDataSelectorsType &other) = default;
 
     ElectricalConnectionParameterDescriptionListDataSelectorsType() = default;
 };
@@ -15849,9 +16828,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
 */
 struct ElectricalConnectionPermittedValueSetDataType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
-    SpineOptional<std::vector<ScaledNumberSetType>> permittedValueSet;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+    SpineOptional<std::vector<ScaledNumberSetType>> permittedValueSet{};
+
+    ElectricalConnectionPermittedValueSetDataType(const ElectricalConnectionPermittedValueSetDataType &other) = default;
 
     ElectricalConnectionPermittedValueSetDataType() = default;
 };
@@ -15875,9 +16856,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
 */
 struct ElectricalConnectionPermittedValueSetDataElementsType
 {
-    SpineOptional<ElementTagType> electricalConnectionId;
-    SpineOptional<ElementTagType> parameterId;
-    SpineOptional<ScaledNumberSetElementsType> permittedValueSet;
+    SpineOptional<ElementTagType> electricalConnectionId{};
+    SpineOptional<ElementTagType> parameterId{};
+    SpineOptional<ScaledNumberSetElementsType> permittedValueSet{};
+
+    ElectricalConnectionPermittedValueSetDataElementsType(const ElectricalConnectionPermittedValueSetDataElementsType &other) = default;
 
     ElectricalConnectionPermittedValueSetDataElementsType() = default;
 };
@@ -15901,7 +16884,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
 */
 struct ElectricalConnectionPermittedValueSetListDataType
 {
-    SpineOptional<std::vector<ElectricalConnectionPermittedValueSetDataType>> electricalConnectionPermittedValueSetData;
+    SpineOptional<std::vector<ElectricalConnectionPermittedValueSetDataType>> electricalConnectionPermittedValueSetData{};
+
+    ElectricalConnectionPermittedValueSetListDataType(const ElectricalConnectionPermittedValueSetListDataType &other) = default;
 
     ElectricalConnectionPermittedValueSetListDataType() = default;
 };
@@ -15925,8 +16910,10 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
 */
 struct ElectricalConnectionPermittedValueSetListDataSelectorsType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+
+    ElectricalConnectionPermittedValueSetListDataSelectorsType(const ElectricalConnectionPermittedValueSetListDataSelectorsType &other) = default;
 
     ElectricalConnectionPermittedValueSetListDataSelectorsType() = default;
 };
@@ -15950,13 +16937,15 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
 */
 struct ElectricalConnectionCharacteristicDataType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
-    SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext;
-    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType;
-    SpineOptional<ScaledNumberType> value;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+    SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId{};
+    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext{};
+    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType{};
+    SpineOptional<ScaledNumberType> value{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+
+    ElectricalConnectionCharacteristicDataType(const ElectricalConnectionCharacteristicDataType &other) = default;
 
     ElectricalConnectionCharacteristicDataType() = default;
 };
@@ -15980,13 +16969,15 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
 */
 struct ElectricalConnectionCharacteristicDataElementsType
 {
-    SpineOptional<ElementTagType> electricalConnectionId;
-    SpineOptional<ElementTagType> parameterId;
-    SpineOptional<ElementTagType> characteristicId;
-    SpineOptional<ElementTagType> characteristicContext;
-    SpineOptional<ElementTagType> characteristicType;
-    SpineOptional<ScaledNumberElementsType> value;
-    SpineOptional<ElementTagType> unit;
+    SpineOptional<ElementTagType> electricalConnectionId{};
+    SpineOptional<ElementTagType> parameterId{};
+    SpineOptional<ElementTagType> characteristicId{};
+    SpineOptional<ElementTagType> characteristicContext{};
+    SpineOptional<ElementTagType> characteristicType{};
+    SpineOptional<ScaledNumberElementsType> value{};
+    SpineOptional<ElementTagType> unit{};
+
+    ElectricalConnectionCharacteristicDataElementsType(const ElectricalConnectionCharacteristicDataElementsType &other) = default;
 
     ElectricalConnectionCharacteristicDataElementsType() = default;
 };
@@ -16010,7 +17001,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
 */
 struct ElectricalConnectionCharacteristicListDataType
 {
-    SpineOptional<std::vector<ElectricalConnectionCharacteristicDataType>> electricalConnectionCharacteristicData;
+    SpineOptional<std::vector<ElectricalConnectionCharacteristicDataType>> electricalConnectionCharacteristicData{};
+
+    ElectricalConnectionCharacteristicListDataType(const ElectricalConnectionCharacteristicListDataType &other) = default;
 
     ElectricalConnectionCharacteristicListDataType() = default;
 };
@@ -16034,11 +17027,13 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
 */
 struct ElectricalConnectionCharacteristicListDataSelectorsType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionParameterIdType> parameterId;
-    SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext;
-    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionParameterIdType> parameterId{};
+    SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId{};
+    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext{};
+    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType{};
+
+    ElectricalConnectionCharacteristicListDataSelectorsType(const ElectricalConnectionCharacteristicListDataSelectorsType &other) = default;
 
     ElectricalConnectionCharacteristicListDataSelectorsType() = default;
 };
@@ -16062,13 +17057,15 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
 */
 struct ElectricalConnectionStateDataType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<EnergyModeEnumType> currentEnergyMode;
-    SpineOptional<std::string> consumptionTime;
-    SpineOptional<std::string> productionTime;
-    SpineOptional<std::string> totalConsumptionTime;
-    SpineOptional<std::string> totalProductionTime;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<EnergyModeEnumType> currentEnergyMode{};
+    SpineOptional<std::string> consumptionTime{};
+    SpineOptional<std::string> productionTime{};
+    SpineOptional<std::string> totalConsumptionTime{};
+    SpineOptional<std::string> totalProductionTime{};
+
+    ElectricalConnectionStateDataType(const ElectricalConnectionStateDataType &other) = default;
 
     ElectricalConnectionStateDataType() = default;
 };
@@ -16092,13 +17089,15 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataT
 */
 struct ElectricalConnectionStateDataElementsType
 {
-    SpineOptional<ElementTagType> electricalConnectionId;
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> currentEnergyMode;
-    SpineOptional<ElementTagType> consumptionTime;
-    SpineOptional<ElementTagType> productionTime;
-    SpineOptional<ElementTagType> totalConsumptionTime;
-    SpineOptional<ElementTagType> totalProductionTime;
+    SpineOptional<ElementTagType> electricalConnectionId{};
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> currentEnergyMode{};
+    SpineOptional<ElementTagType> consumptionTime{};
+    SpineOptional<ElementTagType> productionTime{};
+    SpineOptional<ElementTagType> totalConsumptionTime{};
+    SpineOptional<ElementTagType> totalProductionTime{};
+
+    ElectricalConnectionStateDataElementsType(const ElectricalConnectionStateDataElementsType &other) = default;
 
     ElectricalConnectionStateDataElementsType() = default;
 };
@@ -16122,7 +17121,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataE
 */
 struct ElectricalConnectionStateListDataType
 {
-    SpineOptional<std::vector<ElectricalConnectionStateDataType>> electricalConnectionStateData;
+    SpineOptional<std::vector<ElectricalConnectionStateDataType>> electricalConnectionStateData{};
+
+    ElectricalConnectionStateListDataType(const ElectricalConnectionStateListDataType &other) = default;
 
     ElectricalConnectionStateListDataType() = default;
 };
@@ -16146,7 +17147,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
 */
 struct ElectricalConnectionStateListDataSelectorsType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+
+    ElectricalConnectionStateListDataSelectorsType(const ElectricalConnectionStateListDataSelectorsType &other) = default;
 
     ElectricalConnectionStateListDataSelectorsType() = default;
 };
@@ -16170,14 +17173,16 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
 */
 struct ElectricalConnectionDescriptionDataType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionVoltageTypeEnumType> powerSupplyType;
-    SpineOptional<uint32_t> acConnectedPhases;
-    SpineOptional<std::string> acRmsPeriodDuration;
-    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
-    SpineOptional<ScopeTypeEnumType> scopeType;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ElectricalConnectionVoltageTypeEnumType> powerSupplyType{};
+    SpineOptional<uint32_t> acConnectedPhases{};
+    SpineOptional<std::string> acRmsPeriodDuration{};
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    ElectricalConnectionDescriptionDataType(const ElectricalConnectionDescriptionDataType &other) = default;
 
     ElectricalConnectionDescriptionDataType() = default;
 };
@@ -16201,14 +17206,16 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
 */
 struct ElectricalConnectionDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> electricalConnectionId;
-    SpineOptional<ElementTagType> powerSupplyType;
-    SpineOptional<ElementTagType> acConnectedPhases;
-    SpineOptional<ElementTagType> acRmsPeriodDuration;
-    SpineOptional<ElementTagType> positiveEnergyDirection;
-    SpineOptional<ElementTagType> scopeType;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> electricalConnectionId{};
+    SpineOptional<ElementTagType> powerSupplyType{};
+    SpineOptional<ElementTagType> acConnectedPhases{};
+    SpineOptional<ElementTagType> acRmsPeriodDuration{};
+    SpineOptional<ElementTagType> positiveEnergyDirection{};
+    SpineOptional<ElementTagType> scopeType{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    ElectricalConnectionDescriptionDataElementsType(const ElectricalConnectionDescriptionDataElementsType &other) = default;
 
     ElectricalConnectionDescriptionDataElementsType() = default;
 };
@@ -16232,7 +17239,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
 */
 struct ElectricalConnectionDescriptionListDataType
 {
-    SpineOptional<std::vector<ElectricalConnectionDescriptionDataType>> electricalConnectionDescriptionData;
+    SpineOptional<std::vector<ElectricalConnectionDescriptionDataType>> electricalConnectionDescriptionData{};
+
+    ElectricalConnectionDescriptionListDataType(const ElectricalConnectionDescriptionListDataType &other) = default;
 
     ElectricalConnectionDescriptionListDataType() = default;
 };
@@ -16256,8 +17265,10 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
 */
 struct ElectricalConnectionDescriptionListDataSelectorsType
 {
-    SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ScopeTypeEnumType> scopeType;
+    SpineOptional<ElectricalConnectionIdType> electricalConnectionId{};
+    SpineOptional<ScopeTypeEnumType> scopeType{};
+
+    ElectricalConnectionDescriptionListDataSelectorsType(const ElectricalConnectionDescriptionListDataSelectorsType &other) = default;
 
     ElectricalConnectionDescriptionListDataSelectorsType() = default;
 };
@@ -16281,10 +17292,12 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
 */
 struct TimeInformationDataType
 {
-    SpineOptional<std::string> utc;
-    SpineOptional<std::string> utcOffset;
-    SpineOptional<DayOfWeekType> dayOfWeek;
-    SpineOptional<CalendarWeekType> calendarWeek;
+    SpineOptional<std::string> utc{};
+    SpineOptional<std::string> utcOffset{};
+    SpineOptional<DayOfWeekType> dayOfWeek{};
+    SpineOptional<CalendarWeekType> calendarWeek{};
+
+    TimeInformationDataType(const TimeInformationDataType &other) = default;
 
     TimeInformationDataType() = default;
 };
@@ -16308,10 +17321,12 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst);
 */
 struct TimeInformationDataElementsType
 {
-    SpineOptional<ElementTagType> utc;
-    SpineOptional<ElementTagType> utcOffset;
-    SpineOptional<ElementTagType> dayOfWeek;
-    SpineOptional<ElementTagType> calendarWeek;
+    SpineOptional<ElementTagType> utc{};
+    SpineOptional<ElementTagType> utcOffset{};
+    SpineOptional<ElementTagType> dayOfWeek{};
+    SpineOptional<ElementTagType> calendarWeek{};
+
+    TimeInformationDataElementsType(const TimeInformationDataElementsType &other) = default;
 
     TimeInformationDataElementsType() = default;
 };
@@ -16335,8 +17350,10 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsTyp
 */
 struct TimeDistributorDataType
 {
-    SpineOptional<bool> isTimeDistributor;
-    SpineOptional<uint32_t> distributorPriority;
+    SpineOptional<bool> isTimeDistributor{};
+    SpineOptional<uint32_t> distributorPriority{};
+
+    TimeDistributorDataType(const TimeDistributorDataType &other) = default;
 
     TimeDistributorDataType() = default;
 };
@@ -16360,8 +17377,10 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst);
 */
 struct TimeDistributorDataElementsType
 {
-    SpineOptional<ElementTagType> isTimeDistributor;
-    SpineOptional<ElementTagType> distributorPriority;
+    SpineOptional<ElementTagType> isTimeDistributor{};
+    SpineOptional<ElementTagType> distributorPriority{};
+
+    TimeDistributorDataElementsType(const TimeDistributorDataElementsType &other) = default;
 
     TimeDistributorDataElementsType() = default;
 };
@@ -16385,9 +17404,11 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsTyp
 */
 struct TimePrecisionDataType
 {
-    SpineOptional<bool> isSynchronised;
-    SpineOptional<std::string> lastSyncAt;
-    SpineOptional<int> clockDrift;
+    SpineOptional<bool> isSynchronised{};
+    SpineOptional<std::string> lastSyncAt{};
+    SpineOptional<int> clockDrift{};
+
+    TimePrecisionDataType(const TimePrecisionDataType &other) = default;
 
     TimePrecisionDataType() = default;
 };
@@ -16411,9 +17432,11 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst);
 */
 struct TimePrecisionDataElementsType
 {
-    SpineOptional<ElementTagType> isSynchronised;
-    SpineOptional<ElementTagType> lastSyncAt;
-    SpineOptional<ElementTagType> clockDrift;
+    SpineOptional<ElementTagType> isSynchronised{};
+    SpineOptional<ElementTagType> lastSyncAt{};
+    SpineOptional<ElementTagType> clockDrift{};
+
+    TimePrecisionDataElementsType(const TimePrecisionDataElementsType &other) = default;
 
     TimePrecisionDataElementsType() = default;
 };
@@ -16438,6 +17461,8 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
 struct TimeDistributorEnquiryCallType
 {
 
+    TimeDistributorEnquiryCallType(const TimeDistributorEnquiryCallType &other) = default;
+
     TimeDistributorEnquiryCallType() = default;
 };
 
@@ -16461,6 +17486,8 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType
 struct TimeDistributorEnquiryCallElementsType
 {
 
+    TimeDistributorEnquiryCallElementsType(const TimeDistributorEnquiryCallElementsType &other) = default;
+
     TimeDistributorEnquiryCallElementsType() = default;
 };
 
@@ -16483,13 +17510,15 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElem
 */
 struct DeviceDiagnosisStateDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<DeviceDiagnosisOperatingStateEnumType> operatingState;
-    SpineOptional<VendorStateCodeType> vendorStateCode;
-    SpineOptional<LastErrorCodeType> lastErrorCode;
-    SpineOptional<std::string> upTime;
-    SpineOptional<std::string> totalUpTime;
-    SpineOptional<PowerSupplyConditionEnumType> powerSupplyCondition;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<DeviceDiagnosisOperatingStateEnumType> operatingState{};
+    SpineOptional<VendorStateCodeType> vendorStateCode{};
+    SpineOptional<LastErrorCodeType> lastErrorCode{};
+    SpineOptional<std::string> upTime{};
+    SpineOptional<std::string> totalUpTime{};
+    SpineOptional<PowerSupplyConditionEnumType> powerSupplyCondition{};
+
+    DeviceDiagnosisStateDataType(const DeviceDiagnosisStateDataType &other) = default;
 
     DeviceDiagnosisStateDataType() = default;
 };
@@ -16513,13 +17542,15 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &
 */
 struct DeviceDiagnosisStateDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> operatingState;
-    SpineOptional<ElementTagType> vendorStateCode;
-    SpineOptional<ElementTagType> lastErrorCode;
-    SpineOptional<ElementTagType> upTime;
-    SpineOptional<ElementTagType> totalUpTime;
-    SpineOptional<ElementTagType> powerSupplyCondition;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> operatingState{};
+    SpineOptional<ElementTagType> vendorStateCode{};
+    SpineOptional<ElementTagType> lastErrorCode{};
+    SpineOptional<ElementTagType> upTime{};
+    SpineOptional<ElementTagType> totalUpTime{};
+    SpineOptional<ElementTagType> powerSupplyCondition{};
+
+    DeviceDiagnosisStateDataElementsType(const DeviceDiagnosisStateDataElementsType &other) = default;
 
     DeviceDiagnosisStateDataElementsType() = default;
 };
@@ -16543,9 +17574,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElemen
 */
 struct DeviceDiagnosisHeartbeatDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<uint64_t> heartbeatCounter;
-    SpineOptional<std::string> heartbeatTimeout;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<uint64_t> heartbeatCounter{};
+    SpineOptional<std::string> heartbeatTimeout{};
+
+    DeviceDiagnosisHeartbeatDataType(const DeviceDiagnosisHeartbeatDataType &other) = default;
 
     DeviceDiagnosisHeartbeatDataType() = default;
 };
@@ -16569,9 +17602,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataTy
 */
 struct DeviceDiagnosisHeartbeatDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> heartbeatCounter;
-    SpineOptional<ElementTagType> heartbeatTimeout;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> heartbeatCounter{};
+    SpineOptional<ElementTagType> heartbeatTimeout{};
+
+    DeviceDiagnosisHeartbeatDataElementsType(const DeviceDiagnosisHeartbeatDataElementsType &other) = default;
 
     DeviceDiagnosisHeartbeatDataElementsType() = default;
 };
@@ -16595,10 +17630,12 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataEl
 */
 struct DeviceDiagnosisServiceDataType
 {
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<AbsoluteOrRelativeTimeType> installationTime;
-    SpineOptional<uint64_t> bootCounter;
-    SpineOptional<AbsoluteOrRelativeTimeType> nextService;
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+    SpineOptional<AbsoluteOrRelativeTimeType> installationTime{};
+    SpineOptional<uint64_t> bootCounter{};
+    SpineOptional<AbsoluteOrRelativeTimeType> nextService{};
+
+    DeviceDiagnosisServiceDataType(const DeviceDiagnosisServiceDataType &other) = default;
 
     DeviceDiagnosisServiceDataType() = default;
 };
@@ -16622,10 +17659,12 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType
 */
 struct DeviceDiagnosisServiceDataElementsType
 {
-    SpineOptional<ElementTagType> timestamp;
-    SpineOptional<ElementTagType> installationTime;
-    SpineOptional<ElementTagType> bootCounter;
-    SpineOptional<ElementTagType> nextService;
+    SpineOptional<ElementTagType> timestamp{};
+    SpineOptional<ElementTagType> installationTime{};
+    SpineOptional<ElementTagType> bootCounter{};
+    SpineOptional<ElementTagType> nextService{};
+
+    DeviceDiagnosisServiceDataElementsType(const DeviceDiagnosisServiceDataElementsType &other) = default;
 
     DeviceDiagnosisServiceDataElementsType() = default;
 };
@@ -16649,14 +17688,16 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElem
 */
 struct DeviceConfigurationKeyValueValueType
 {
-    SpineOptional<bool> boolean;
-    SpineOptional<std::string> date;
-    SpineOptional<std::string> dateTime;
-    SpineOptional<std::string> duration;
-    SpineOptional<DeviceConfigurationKeyValueStringType> string;
-    SpineOptional<std::string> time;
-    SpineOptional<ScaledNumberType> scaledNumber;
-    SpineOptional<long> integer;
+    SpineOptional<bool> boolean{};
+    SpineOptional<std::string> date{};
+    SpineOptional<std::string> dateTime{};
+    SpineOptional<std::string> duration{};
+    SpineOptional<DeviceConfigurationKeyValueStringType> string{};
+    SpineOptional<std::string> time{};
+    SpineOptional<ScaledNumberType> scaledNumber{};
+    SpineOptional<long> integer{};
+
+    DeviceConfigurationKeyValueValueType(const DeviceConfigurationKeyValueValueType &other) = default;
 
     DeviceConfigurationKeyValueValueType() = default;
 };
@@ -16680,13 +17721,15 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
 */
 struct DeviceConfigurationKeyValueValueElementsType
 {
-    SpineOptional<ElementTagType> boolean;
-    SpineOptional<ElementTagType> date;
-    SpineOptional<ElementTagType> dateTime;
-    SpineOptional<ElementTagType> duration;
-    SpineOptional<ElementTagType> string;
-    SpineOptional<ElementTagType> time;
-    SpineOptional<ScaledNumberElementsType> scaledNumber;
+    SpineOptional<ElementTagType> boolean{};
+    SpineOptional<ElementTagType> date{};
+    SpineOptional<ElementTagType> dateTime{};
+    SpineOptional<ElementTagType> duration{};
+    SpineOptional<ElementTagType> string{};
+    SpineOptional<ElementTagType> time{};
+    SpineOptional<ScaledNumberElementsType> scaledNumber{};
+
+    DeviceConfigurationKeyValueValueElementsType(const DeviceConfigurationKeyValueValueElementsType &other) = default;
 
     DeviceConfigurationKeyValueValueElementsType() = default;
 };
@@ -16710,9 +17753,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
 */
 struct DeviceConfigurationKeyValueDataType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyValueValueType> value;
-    SpineOptional<bool> isValueChangeable;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+    SpineOptional<DeviceConfigurationKeyValueValueType> value{};
+    SpineOptional<bool> isValueChangeable{};
+
+    DeviceConfigurationKeyValueDataType(const DeviceConfigurationKeyValueDataType &other) = default;
 
     DeviceConfigurationKeyValueDataType() = default;
 };
@@ -16736,9 +17781,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
 */
 struct DeviceConfigurationKeyValueDataElementsType
 {
-    SpineOptional<ElementTagType> keyId;
-    SpineOptional<DeviceConfigurationKeyValueValueElementsType> value;
-    SpineOptional<ElementTagType> isValueChangeable;
+    SpineOptional<ElementTagType> keyId{};
+    SpineOptional<DeviceConfigurationKeyValueValueElementsType> value{};
+    SpineOptional<ElementTagType> isValueChangeable{};
+
+    DeviceConfigurationKeyValueDataElementsType(const DeviceConfigurationKeyValueDataElementsType &other) = default;
 
     DeviceConfigurationKeyValueDataElementsType() = default;
 };
@@ -16762,7 +17809,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
 */
 struct DeviceConfigurationKeyValueListDataType
 {
-    SpineOptional<std::vector<DeviceConfigurationKeyValueDataType>> deviceConfigurationKeyValueData;
+    SpineOptional<std::vector<DeviceConfigurationKeyValueDataType>> deviceConfigurationKeyValueData{};
+
+    DeviceConfigurationKeyValueListDataType(const DeviceConfigurationKeyValueListDataType &other) = default;
 
     DeviceConfigurationKeyValueListDataType() = default;
 };
@@ -16786,7 +17835,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
 */
 struct DeviceConfigurationKeyValueListDataSelectorsType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+
+    DeviceConfigurationKeyValueListDataSelectorsType(const DeviceConfigurationKeyValueListDataSelectorsType &other) = default;
 
     DeviceConfigurationKeyValueListDataSelectorsType() = default;
 };
@@ -16810,12 +17861,14 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
 */
 struct DeviceConfigurationKeyValueDescriptionDataType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName;
-    SpineOptional<DeviceConfigurationKeyValueTypeType> valueType;
-    SpineOptional<UnitOfMeasurementEnumType> unit;
-    SpineOptional<LabelType> label;
-    SpineOptional<DescriptionType> description;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName{};
+    SpineOptional<DeviceConfigurationKeyValueTypeType> valueType{};
+    SpineOptional<UnitOfMeasurementEnumType> unit{};
+    SpineOptional<LabelType> label{};
+    SpineOptional<DescriptionType> description{};
+
+    DeviceConfigurationKeyValueDescriptionDataType(const DeviceConfigurationKeyValueDescriptionDataType &other) = default;
 
     DeviceConfigurationKeyValueDescriptionDataType() = default;
 };
@@ -16839,12 +17892,14 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 */
 struct DeviceConfigurationKeyValueDescriptionDataElementsType
 {
-    SpineOptional<ElementTagType> keyId;
-    SpineOptional<ElementTagType> keyName;
-    SpineOptional<ElementTagType> valueType;
-    SpineOptional<ElementTagType> unit;
-    SpineOptional<ElementTagType> label;
-    SpineOptional<ElementTagType> description;
+    SpineOptional<ElementTagType> keyId{};
+    SpineOptional<ElementTagType> keyName{};
+    SpineOptional<ElementTagType> valueType{};
+    SpineOptional<ElementTagType> unit{};
+    SpineOptional<ElementTagType> label{};
+    SpineOptional<ElementTagType> description{};
+
+    DeviceConfigurationKeyValueDescriptionDataElementsType(const DeviceConfigurationKeyValueDescriptionDataElementsType &other) = default;
 
     DeviceConfigurationKeyValueDescriptionDataElementsType() = default;
 };
@@ -16868,7 +17923,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 */
 struct DeviceConfigurationKeyValueDescriptionListDataType
 {
-    SpineOptional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData;
+    SpineOptional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData{};
+
+    DeviceConfigurationKeyValueDescriptionListDataType(const DeviceConfigurationKeyValueDescriptionListDataType &other) = default;
 
     DeviceConfigurationKeyValueDescriptionListDataType() = default;
 };
@@ -16892,8 +17949,10 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 */
 struct DeviceConfigurationKeyValueDescriptionListDataSelectorsType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName{};
+
+    DeviceConfigurationKeyValueDescriptionListDataSelectorsType(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &other) = default;
 
     DeviceConfigurationKeyValueDescriptionListDataSelectorsType() = default;
 };
@@ -16917,10 +17976,12 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 */
 struct DeviceConfigurationKeyValueConstraintsDataType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyValueValueType> valueRangeMin;
-    SpineOptional<DeviceConfigurationKeyValueValueType> valueRangeMax;
-    SpineOptional<DeviceConfigurationKeyValueValueType> valueStepSize;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+    SpineOptional<DeviceConfigurationKeyValueValueType> valueRangeMin{};
+    SpineOptional<DeviceConfigurationKeyValueValueType> valueRangeMax{};
+    SpineOptional<DeviceConfigurationKeyValueValueType> valueStepSize{};
+
+    DeviceConfigurationKeyValueConstraintsDataType(const DeviceConfigurationKeyValueConstraintsDataType &other) = default;
 
     DeviceConfigurationKeyValueConstraintsDataType() = default;
 };
@@ -16944,10 +18005,12 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
 */
 struct DeviceConfigurationKeyValueConstraintsDataElementsType
 {
-    SpineOptional<ElementTagType> keyId;
-    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueRangeMin;
-    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueRangeMax;
-    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueStepSize;
+    SpineOptional<ElementTagType> keyId{};
+    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueRangeMin{};
+    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueRangeMax{};
+    SpineOptional<DeviceConfigurationKeyValueValueElementsType> valueStepSize{};
+
+    DeviceConfigurationKeyValueConstraintsDataElementsType(const DeviceConfigurationKeyValueConstraintsDataElementsType &other) = default;
 
     DeviceConfigurationKeyValueConstraintsDataElementsType() = default;
 };
@@ -16971,7 +18034,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
 */
 struct DeviceConfigurationKeyValueConstraintsListDataType
 {
-    SpineOptional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData;
+    SpineOptional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData{};
+
+    DeviceConfigurationKeyValueConstraintsListDataType(const DeviceConfigurationKeyValueConstraintsListDataType &other) = default;
 
     DeviceConfigurationKeyValueConstraintsListDataType() = default;
 };
@@ -16995,7 +18060,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
 */
 struct DeviceConfigurationKeyValueConstraintsListDataSelectorsType
 {
-    SpineOptional<DeviceConfigurationKeyIdType> keyId;
+    SpineOptional<DeviceConfigurationKeyIdType> keyId{};
+
+    DeviceConfigurationKeyValueConstraintsListDataSelectorsType(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &other) = default;
 
     DeviceConfigurationKeyValueConstraintsListDataSelectorsType() = default;
 };
@@ -17019,15 +18086,17 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
 */
 struct HeaderType
 {
-    SpineOptional<SpecificationVersionType> specificationVersion;
-    SpineOptional<FeatureAddressType> addressSource;
-    SpineOptional<FeatureAddressType> addressDestination;
-    SpineOptional<FeatureAddressType> addressOriginator;
-    SpineOptional<MsgCounterType> msgCounter;
-    SpineOptional<MsgCounterType> msgCounterReference;
-    SpineOptional<CmdClassifierType> cmdClassifier;
-    SpineOptional<bool> ackRequest;
-    SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
+    SpineOptional<SpecificationVersionType> specificationVersion{};
+    SpineOptional<FeatureAddressType> addressSource{};
+    SpineOptional<FeatureAddressType> addressDestination{};
+    SpineOptional<FeatureAddressType> addressOriginator{};
+    SpineOptional<MsgCounterType> msgCounter{};
+    SpineOptional<MsgCounterType> msgCounterReference{};
+    SpineOptional<CmdClassifierType> cmdClassifier{};
+    SpineOptional<bool> ackRequest{};
+    SpineOptional<AbsoluteOrRelativeTimeType> timestamp{};
+
+    HeaderType(const HeaderType &other) = default;
 
     HeaderType() = default;
 };
@@ -17051,8 +18120,10 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst);
 */
 struct CmdControlType
 {
-    SpineOptional<ElementTagType> var_delete;
-    SpineOptional<ElementTagType> partial;
+    SpineOptional<ElementTagType> var_delete{};
+    SpineOptional<ElementTagType> partial{};
+
+    CmdControlType(const CmdControlType &other) = default;
 
     CmdControlType() = default;
 };
@@ -17076,9 +18147,11 @@ void convertFromJson(const JsonVariantConst &src, CmdControlType &dst);
 */
 struct DataTunnelingHeaderType
 {
-    SpineOptional<PurposeIdType> purposeId;
-    SpineOptional<ChannelIdType> channelId;
-    SpineOptional<uint32_t> sequenceId;
+    SpineOptional<PurposeIdType> purposeId{};
+    SpineOptional<ChannelIdType> channelId{};
+    SpineOptional<uint32_t> sequenceId{};
+
+    DataTunnelingHeaderType(const DataTunnelingHeaderType &other) = default;
 
     DataTunnelingHeaderType() = default;
 };
@@ -17102,9 +18175,11 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst);
 */
 struct DataTunnelingHeaderElementsType
 {
-    SpineOptional<ElementTagType> purposeId;
-    SpineOptional<ElementTagType> channelId;
-    SpineOptional<ElementTagType> sequenceId;
+    SpineOptional<ElementTagType> purposeId{};
+    SpineOptional<ElementTagType> channelId{};
+    SpineOptional<ElementTagType> sequenceId{};
+
+    DataTunnelingHeaderElementsType(const DataTunnelingHeaderElementsType &other) = default;
 
     DataTunnelingHeaderElementsType() = default;
 };
@@ -17128,8 +18203,10 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsTyp
 */
 struct DataTunnelingCallType
 {
-    SpineOptional<DataTunnelingHeaderType> header;
-    SpineOptional<std::string> payload;
+    SpineOptional<DataTunnelingHeaderType> header{};
+    SpineOptional<std::string> payload{};
+
+    DataTunnelingCallType(const DataTunnelingCallType &other) = default;
 
     DataTunnelingCallType() = default;
 };
@@ -17153,8 +18230,10 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst);
 */
 struct DataTunnelingCallElementsType
 {
-    SpineOptional<DataTunnelingHeaderElementsType> header;
-    SpineOptional<ElementTagType> payload;
+    SpineOptional<DataTunnelingHeaderElementsType> header{};
+    SpineOptional<ElementTagType> payload{};
+
+    DataTunnelingCallElementsType(const DataTunnelingCallElementsType &other) = default;
 
     DataTunnelingCallElementsType() = default;
 };
@@ -17178,9 +18257,11 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType 
 */
 struct IncentiveTableTierType
 {
-    SpineOptional<TierDataType> tier;
-    SpineOptional<std::vector<TierBoundaryDataType>> boundary;
-    SpineOptional<std::vector<IncentiveDataType>> incentive;
+    SpineOptional<TierDataType> tier{};
+    SpineOptional<std::vector<TierBoundaryDataType>> boundary{};
+    SpineOptional<std::vector<IncentiveDataType>> incentive{};
+
+    IncentiveTableTierType(const IncentiveTableTierType &other) = default;
 
     IncentiveTableTierType() = default;
 };
@@ -17204,8 +18285,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst);
 */
 struct IncentiveTableIncentiveSlotType
 {
-    SpineOptional<TimeTableDataType> timeInterval;
-    SpineOptional<std::vector<IncentiveTableTierType>> tier;
+    SpineOptional<TimeTableDataType> timeInterval{};
+    SpineOptional<std::vector<IncentiveTableTierType>> tier{};
+
+    IncentiveTableIncentiveSlotType(const IncentiveTableIncentiveSlotType &other) = default;
 
     IncentiveTableIncentiveSlotType() = default;
 };
@@ -17229,8 +18312,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotTyp
 */
 struct IncentiveTableType
 {
-    SpineOptional<TariffDataType> tariff;
-    SpineOptional<std::vector<IncentiveTableIncentiveSlotType>> incentiveSlot;
+    SpineOptional<TariffDataType> tariff{};
+    SpineOptional<std::vector<IncentiveTableIncentiveSlotType>> incentiveSlot{};
+
+    IncentiveTableType(const IncentiveTableType &other) = default;
 
     IncentiveTableType() = default;
 };
@@ -17254,7 +18339,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst);
 */
 struct IncentiveTableDataType
 {
-    SpineOptional<std::vector<IncentiveTableType>> incentiveTable;
+    SpineOptional<std::vector<IncentiveTableType>> incentiveTable{};
+
+    IncentiveTableDataType(const IncentiveTableDataType &other) = default;
 
     IncentiveTableDataType() = default;
 };
@@ -17278,9 +18365,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst);
 */
 struct IncentiveTableTierElementsType
 {
-    SpineOptional<TierDataElementsType> tier;
-    SpineOptional<TierBoundaryDataElementsType> boundary;
-    SpineOptional<IncentiveDataElementsType> incentive;
+    SpineOptional<TierDataElementsType> tier{};
+    SpineOptional<TierBoundaryDataElementsType> boundary{};
+    SpineOptional<IncentiveDataElementsType> incentive{};
+
+    IncentiveTableTierElementsType(const IncentiveTableTierElementsType &other) = default;
 
     IncentiveTableTierElementsType() = default;
 };
@@ -17304,8 +18393,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType
 */
 struct IncentiveTableIncentiveSlotElementsType
 {
-    SpineOptional<TimeTableDataElementsType> timeInterval;
-    SpineOptional<IncentiveTableTierElementsType> tier;
+    SpineOptional<TimeTableDataElementsType> timeInterval{};
+    SpineOptional<IncentiveTableTierElementsType> tier{};
+
+    IncentiveTableIncentiveSlotElementsType(const IncentiveTableIncentiveSlotElementsType &other) = default;
 
     IncentiveTableIncentiveSlotElementsType() = default;
 };
@@ -17329,8 +18420,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotEle
 */
 struct IncentiveTableElementsType
 {
-    SpineOptional<TariffDataElementsType> tariff;
-    SpineOptional<IncentiveTableIncentiveSlotElementsType> incentiveSlot;
+    SpineOptional<TariffDataElementsType> tariff{};
+    SpineOptional<IncentiveTableIncentiveSlotElementsType> incentiveSlot{};
+
+    IncentiveTableElementsType(const IncentiveTableElementsType &other) = default;
 
     IncentiveTableElementsType() = default;
 };
@@ -17354,7 +18447,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &ds
 */
 struct IncentiveTableDataElementsType
 {
-    SpineOptional<IncentiveTableElementsType> incentiveTable;
+    SpineOptional<IncentiveTableElementsType> incentiveTable{};
+
+    IncentiveTableDataElementsType(const IncentiveTableDataElementsType &other) = default;
 
     IncentiveTableDataElementsType() = default;
 };
@@ -17378,7 +18473,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType
 */
 struct IncentiveTableDataSelectorsType
 {
-    SpineOptional<TariffListDataSelectorsType> tariff;
+    SpineOptional<TariffListDataSelectorsType> tariff{};
+
+    IncentiveTableDataSelectorsType(const IncentiveTableDataSelectorsType &other) = default;
 
     IncentiveTableDataSelectorsType() = default;
 };
@@ -17402,9 +18499,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsTyp
 */
 struct IncentiveTableDescriptionTierType
 {
-    SpineOptional<TierDescriptionDataType> tierDescription;
-    SpineOptional<std::vector<TierBoundaryDescriptionDataType>> boundaryDescription;
-    SpineOptional<std::vector<IncentiveDescriptionDataType>> incentiveDescription;
+    SpineOptional<TierDescriptionDataType> tierDescription{};
+    SpineOptional<std::vector<TierBoundaryDescriptionDataType>> boundaryDescription{};
+    SpineOptional<std::vector<IncentiveDescriptionDataType>> incentiveDescription{};
+
+    IncentiveTableDescriptionTierType(const IncentiveTableDescriptionTierType &other) = default;
 
     IncentiveTableDescriptionTierType() = default;
 };
@@ -17428,8 +18527,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierT
 */
 struct IncentiveTableDescriptionType
 {
-    SpineOptional<TariffDescriptionDataType> tariffDescription;
-    SpineOptional<std::vector<IncentiveTableDescriptionTierType>> tier;
+    SpineOptional<TariffDescriptionDataType> tariffDescription{};
+    SpineOptional<std::vector<IncentiveTableDescriptionTierType>> tier{};
+
+    IncentiveTableDescriptionType(const IncentiveTableDescriptionType &other) = default;
 
     IncentiveTableDescriptionType() = default;
 };
@@ -17453,7 +18554,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType 
 */
 struct IncentiveTableDescriptionDataType
 {
-    SpineOptional<std::vector<IncentiveTableDescriptionType>> incentiveTableDescription;
+    SpineOptional<std::vector<IncentiveTableDescriptionType>> incentiveTableDescription{};
+
+    IncentiveTableDescriptionDataType(const IncentiveTableDescriptionDataType &other) = default;
 
     IncentiveTableDescriptionDataType() = default;
 };
@@ -17477,9 +18580,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataT
 */
 struct IncentiveTableDescriptionTierElementsType
 {
-    SpineOptional<TierDescriptionDataElementsType> tierDescription;
-    SpineOptional<TierBoundaryDescriptionDataElementsType> boundaryDescription;
-    SpineOptional<IncentiveDescriptionDataElementsType> incentiveDescription;
+    SpineOptional<TierDescriptionDataElementsType> tierDescription{};
+    SpineOptional<TierBoundaryDescriptionDataElementsType> boundaryDescription{};
+    SpineOptional<IncentiveDescriptionDataElementsType> incentiveDescription{};
+
+    IncentiveTableDescriptionTierElementsType(const IncentiveTableDescriptionTierElementsType &other) = default;
 
     IncentiveTableDescriptionTierElementsType() = default;
 };
@@ -17503,8 +18608,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierE
 */
 struct IncentiveTableDescriptionElementsType
 {
-    SpineOptional<TariffDescriptionDataElementsType> tariffDescription;
-    SpineOptional<IncentiveTableDescriptionTierElementsType> tier;
+    SpineOptional<TariffDescriptionDataElementsType> tariffDescription{};
+    SpineOptional<IncentiveTableDescriptionTierElementsType> tier{};
+
+    IncentiveTableDescriptionElementsType(const IncentiveTableDescriptionElementsType &other) = default;
 
     IncentiveTableDescriptionElementsType() = default;
 };
@@ -17528,7 +18635,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionEleme
 */
 struct IncentiveTableDescriptionDataElementsType
 {
-    SpineOptional<IncentiveTableDescriptionElementsType> incentiveTableDescription;
+    SpineOptional<IncentiveTableDescriptionElementsType> incentiveTableDescription{};
+
+    IncentiveTableDescriptionDataElementsType(const IncentiveTableDescriptionDataElementsType &other) = default;
 
     IncentiveTableDescriptionDataElementsType() = default;
 };
@@ -17552,7 +18661,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataE
 */
 struct IncentiveTableDescriptionDataSelectorsType
 {
-    SpineOptional<TariffDescriptionListDataSelectorsType> tariffDescription;
+    SpineOptional<TariffDescriptionListDataSelectorsType> tariffDescription{};
+
+    IncentiveTableDescriptionDataSelectorsType(const IncentiveTableDescriptionDataSelectorsType &other) = default;
 
     IncentiveTableDescriptionDataSelectorsType() = default;
 };
@@ -17576,9 +18687,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataS
 */
 struct IncentiveTableConstraintsType
 {
-    SpineOptional<TariffDataType> tariff;
-    SpineOptional<TariffOverallConstraintsDataType> tariffConstraints;
-    SpineOptional<TimeTableConstraintsDataType> incentiveSlotConstraints;
+    SpineOptional<TariffDataType> tariff{};
+    SpineOptional<TariffOverallConstraintsDataType> tariffConstraints{};
+    SpineOptional<TimeTableConstraintsDataType> incentiveSlotConstraints{};
+
+    IncentiveTableConstraintsType(const IncentiveTableConstraintsType &other) = default;
 
     IncentiveTableConstraintsType() = default;
 };
@@ -17602,7 +18715,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType 
 */
 struct IncentiveTableConstraintsDataType
 {
-    SpineOptional<std::vector<IncentiveTableConstraintsType>> incentiveTableConstraints;
+    SpineOptional<std::vector<IncentiveTableConstraintsType>> incentiveTableConstraints{};
+
+    IncentiveTableConstraintsDataType(const IncentiveTableConstraintsDataType &other) = default;
 
     IncentiveTableConstraintsDataType() = default;
 };
@@ -17626,9 +18741,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataT
 */
 struct IncentiveTableConstraintsElementsType
 {
-    SpineOptional<TariffDataElementsType> tariff;
-    SpineOptional<TariffOverallConstraintsDataElementsType> tariffConstraints;
-    SpineOptional<TimeTableConstraintsDataElementsType> incentiveSlotConstraints;
+    SpineOptional<TariffDataElementsType> tariff{};
+    SpineOptional<TariffOverallConstraintsDataElementsType> tariffConstraints{};
+    SpineOptional<TimeTableConstraintsDataElementsType> incentiveSlotConstraints{};
+
+    IncentiveTableConstraintsElementsType(const IncentiveTableConstraintsElementsType &other) = default;
 
     IncentiveTableConstraintsElementsType() = default;
 };
@@ -17652,7 +18769,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsEleme
 */
 struct IncentiveTableConstraintsDataElementsType
 {
-    SpineOptional<IncentiveTableConstraintsElementsType> incentiveTableConstraints;
+    SpineOptional<IncentiveTableConstraintsElementsType> incentiveTableConstraints{};
+
+    IncentiveTableConstraintsDataElementsType(const IncentiveTableConstraintsDataElementsType &other) = default;
 
     IncentiveTableConstraintsDataElementsType() = default;
 };
@@ -17676,7 +18795,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataE
 */
 struct IncentiveTableConstraintsDataSelectorsType
 {
-    SpineOptional<TariffListDataSelectorsType> tariff;
+    SpineOptional<TariffListDataSelectorsType> tariff{};
+
+    IncentiveTableConstraintsDataSelectorsType(const IncentiveTableConstraintsDataSelectorsType &other) = default;
 
     IncentiveTableConstraintsDataSelectorsType() = default;
 };
@@ -17699,792 +18820,792 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataS
 class SpineDataTypeHandler
 {
 public:
-    SpineOptional<EnumExtendType> enumextendtype;
-    SpineOptional<DirectControlActivityStateType> directcontrolactivitystatetype;
-    SpineOptional<LabelType> labeltype;
-    SpineOptional<DescriptionType> descriptiontype;
-    SpineOptional<SpecificationVersionType> specificationversiontype;
-    SpineOptional<AbsoluteOrRelativeTimeType> absoluteorrelativetimetype;
-    SpineOptional<RecurringIntervalType> recurringintervaltype;
-    SpineOptional<DayOfMonthType> dayofmonthtype;
-    SpineOptional<CalendarWeekType> calendarweektype;
-    SpineOptional<OccurrenceType> occurrencetype;
-    SpineOptional<NumberType> numbertype;
-    SpineOptional<ScaleType> scaletype;
-    SpineOptional<MaxResponseDelayType> maxresponsedelaytype;
-    SpineOptional<CommodityTypeType> commoditytypetype;
-    SpineOptional<EnergyDirectionType> energydirectiontype;
-    SpineOptional<EnergyModeType> energymodetype;
-    SpineOptional<UnitOfMeasurementType> unitofmeasurementtype;
-    SpineOptional<CurrencyType> currencytype;
-    SpineOptional<AddressDeviceType> addressdevicetype;
-    SpineOptional<AddressEntityType> addressentitytype;
-    SpineOptional<AddressFeatureType> addressfeaturetype;
-    SpineOptional<ScopeTypeType> scopetypetype;
-    SpineOptional<FeatureGroupType> featuregrouptype;
-    SpineOptional<DeviceTypeType> devicetypetype;
-    SpineOptional<EntityTypeType> entitytypetype;
-    SpineOptional<FeatureTypeType> featuretypetype;
-    SpineOptional<FeatureSpecificUsageEnumType> featurespecificusageenumtype;
-    SpineOptional<FeatureSpecificUsageType> featurespecificusagetype;
-    SpineOptional<FunctionType> functiontype;
-    SpineOptional<AlternativesIdType> alternativesidtype;
-    SpineOptional<PowerSequenceIdType> powersequenceidtype;
-    SpineOptional<PowerTimeSlotNumberType> powertimeslotnumbertype;
-    SpineOptional<PowerTimeSlotValueTypeType> powertimeslotvaluetypetype;
-    SpineOptional<PowerSequenceScopeType> powersequencescopetype;
-    SpineOptional<PowerSequenceStateType> powersequencestatetype;
-    SpineOptional<MeasurementIdType> measurementidtype;
-    SpineOptional<MeasurementTypeType> measurementtypetype;
-    SpineOptional<MeasurementValueTypeType> measurementvaluetypetype;
-    SpineOptional<MeasurementValueSourceType> measurementvaluesourcetype;
-    SpineOptional<MeasurementValueTendencyType> measurementvaluetendencytype;
-    SpineOptional<MeasurementValueStateType> measurementvaluestatetype;
-    SpineOptional<ThresholdIdType> thresholdidtype;
-    SpineOptional<ThresholdTypeType> thresholdtypetype;
-    SpineOptional<BillIdType> billidtype;
-    SpineOptional<BillTypeType> billtypetype;
-    SpineOptional<BillPositionIdType> billpositionidtype;
-    SpineOptional<BillPositionCountType> billpositioncounttype;
-    SpineOptional<BillPositionTypeType> billpositiontypetype;
-    SpineOptional<BillValueIdType> billvalueidtype;
-    SpineOptional<BillCostIdType> billcostidtype;
-    SpineOptional<BillCostTypeType> billcosttypetype;
-    SpineOptional<IdentificationIdType> identificationidtype;
-    SpineOptional<IdentificationTypeType> identificationtypetype;
-    SpineOptional<IdentificationValueType> identificationvaluetype;
-    SpineOptional<SessionIdType> sessionidtype;
-    SpineOptional<SetpointIdType> setpointidtype;
-    SpineOptional<SetpointTypeType> setpointtypetype;
-    SpineOptional<TimeTableIdType> timetableidtype;
-    SpineOptional<TimeSlotIdType> timeslotidtype;
-    SpineOptional<TimeSlotCountType> timeslotcounttype;
-    SpineOptional<TimeSlotTimeModeType> timeslottimemodetype;
-    SpineOptional<SensingStateType> sensingstatetype;
-    SpineOptional<SensingTypeType> sensingtypetype;
-    SpineOptional<ErrorNumberType> errornumbertype;
-    SpineOptional<ActuatorSwitchFctType> actuatorswitchfcttype;
-    SpineOptional<NetworkManagementNativeSetupType> networkmanagementnativesetuptype;
-    SpineOptional<NetworkManagementScanSetupType> networkmanagementscansetuptype;
-    SpineOptional<NetworkManagementSetupType> networkmanagementsetuptype;
-    SpineOptional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype;
-    SpineOptional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype;
-    SpineOptional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype;
-    SpineOptional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype;
-    SpineOptional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype;
-    SpineOptional<ConditionIdType> conditionidtype;
-    SpineOptional<SupplyConditionEventTypeType> supplyconditioneventtypetype;
-    SpineOptional<SupplyConditionOriginatorType> supplyconditionoriginatortype;
-    SpineOptional<GridConditionType> gridconditiontype;
-    SpineOptional<AlarmIdType> alarmidtype;
-    SpineOptional<AlarmTypeType> alarmtypetype;
-    SpineOptional<BindingIdType> bindingidtype;
-    SpineOptional<SubscriptionIdType> subscriptionidtype;
-    SpineOptional<UseCaseActorEnumType> usecaseactorenumtype;
-    SpineOptional<UseCaseActorType> usecaseactortype;
-    SpineOptional<UseCaseNameEnumType> usecasenameenumtype;
-    SpineOptional<UseCaseNameType> usecasenametype;
-    SpineOptional<UseCaseScenarioSupportType> usecasescenariosupporttype;
-    SpineOptional<SpecificationVersionDataType> specificationversiondatatype;
-    SpineOptional<TaskManagementJobIdType> taskmanagementjobidtype;
-    SpineOptional<TaskManagementJobStateType> taskmanagementjobstatetype;
-    SpineOptional<TaskManagementJobSourceType> taskmanagementjobsourcetype;
-    SpineOptional<HvacSystemFunctionIdType> hvacsystemfunctionidtype;
-    SpineOptional<HvacSystemFunctionTypeType> hvacsystemfunctiontypetype;
-    SpineOptional<HvacOperationModeIdType> hvacoperationmodeidtype;
-    SpineOptional<HvacOperationModeTypeType> hvacoperationmodetypetype;
-    SpineOptional<HvacOverrunIdType> hvacoverrunidtype;
-    SpineOptional<HvacOverrunTypeType> hvacoverruntypetype;
-    SpineOptional<HvacOverrunStatusType> hvacoverrunstatustype;
-    SpineOptional<LoadControlEventIdType> loadcontroleventidtype;
-    SpineOptional<LoadControlEventActionType> loadcontroleventactiontype;
-    SpineOptional<LoadControlEventStateType> loadcontroleventstatetype;
-    SpineOptional<LoadControlLimitIdType> loadcontrollimitidtype;
-    SpineOptional<LoadControlLimitTypeType> loadcontrollimittypetype;
-    SpineOptional<LoadControlCategoryType> loadcontrolcategorytype;
-    SpineOptional<DeviceClassificationStringType> deviceclassificationstringtype;
-    SpineOptional<PowerSourceType> powersourcetype;
-    SpineOptional<ActuatorLevelFctType> actuatorlevelfcttype;
-    SpineOptional<TimeSeriesIdType> timeseriesidtype;
-    SpineOptional<TimeSeriesSlotIdType> timeseriesslotidtype;
-    SpineOptional<TimeSeriesSlotCountType> timeseriesslotcounttype;
-    SpineOptional<TimeSeriesTypeType> timeseriestypetype;
-    SpineOptional<MessagingNumberType> messagingnumbertype;
-    SpineOptional<MessagingTypeType> messagingtypetype;
-    SpineOptional<MessagingDataTextType> messagingdatatexttype;
-    SpineOptional<TariffIdType> tariffidtype;
-    SpineOptional<TariffCountType> tariffcounttype;
-    SpineOptional<TierBoundaryIdType> tierboundaryidtype;
-    SpineOptional<TierBoundaryCountType> tierboundarycounttype;
-    SpineOptional<TierBoundaryTypeType> tierboundarytypetype;
-    SpineOptional<CommodityIdType> commodityidtype;
-    SpineOptional<TierIdType> tieridtype;
-    SpineOptional<TierCountType> tiercounttype;
-    SpineOptional<TierTypeType> tiertypetype;
-    SpineOptional<IncentiveIdType> incentiveidtype;
-    SpineOptional<IncentiveCountType> incentivecounttype;
-    SpineOptional<IncentiveTypeType> incentivetypetype;
-    SpineOptional<IncentivePriorityType> incentiveprioritytype;
-    SpineOptional<IncentiveValueTypeType> incentivevaluetypetype;
-    SpineOptional<stateInformationIdType> stateinformationidtype;
-    SpineOptional<StateInformationType> stateinformationtype;
-    SpineOptional<StateInformationCategoryType> stateinformationcategorytype;
-    SpineOptional<ElectricalConnectionIdType> electricalconnectionidtype;
-    SpineOptional<ElectricalConnectionParameterIdType> electricalconnectionparameteridtype;
-    SpineOptional<ElectricalConnectionMeasurandVariantType> electricalconnectionmeasurandvarianttype;
-    SpineOptional<ElectricalConnectionVoltageTypeType> electricalconnectionvoltagetypetype;
-    SpineOptional<ElectricalConnectionAcMeasurementTypeType> electricalconnectionacmeasurementtypetype;
-    SpineOptional<ElectricalConnectionPhaseNameType> electricalconnectionphasenametype;
-    SpineOptional<ElectricalConnectionCharacteristicIdType> electricalconnectioncharacteristicidtype;
-    SpineOptional<ElectricalConnectionCharacteristicContextType> electricalconnectioncharacteristiccontexttype;
-    SpineOptional<ElectricalConnectionCharacteristicTypeType> electricalconnectioncharacteristictypetype;
-    SpineOptional<VendorStateCodeType> vendorstatecodetype;
-    SpineOptional<LastErrorCodeType> lasterrorcodetype;
-    SpineOptional<DeviceDiagnosisOperatingStateType> devicediagnosisoperatingstatetype;
-    SpineOptional<PowerSupplyConditionType> powersupplyconditiontype;
-    SpineOptional<DeviceConfigurationKeyIdType> deviceconfigurationkeyidtype;
-    SpineOptional<DeviceConfigurationKeyValueStringType> deviceconfigurationkeyvaluestringtype;
-    SpineOptional<DeviceConfigurationKeyNameType> deviceconfigurationkeynametype;
-    SpineOptional<MsgCounterType> msgcountertype;
-    SpineOptional<FilterIdType> filteridtype;
-    SpineOptional<PurposeIdType> purposeidtype;
-    SpineOptional<ChannelIdType> channelidtype;
-    SpineOptional<DirectControlActivityStateEnumType> directcontrolactivitystateenumtype;
-    SpineOptional<RecurringIntervalEnumType> recurringintervalenumtype;
-    SpineOptional<MonthType> monthtype;
-    SpineOptional<DayOfWeekType> dayofweektype;
-    SpineOptional<OccurrenceEnumType> occurrenceenumtype;
-    SpineOptional<CommodityTypeEnumType> commoditytypeenumtype;
-    SpineOptional<EnergyDirectionEnumType> energydirectionenumtype;
-    SpineOptional<EnergyModeEnumType> energymodeenumtype;
-    SpineOptional<UnitOfMeasurementEnumType> unitofmeasurementenumtype;
-    SpineOptional<CurrencyEnumType> currencyenumtype;
-    SpineOptional<ScopeTypeEnumType> scopetypeenumtype;
-    SpineOptional<RoleType> roletype;
-    SpineOptional<DeviceTypeEnumType> devicetypeenumtype;
-    SpineOptional<EntityTypeEnumType> entitytypeenumtype;
-    SpineOptional<FeatureTypeEnumType> featuretypeenumtype;
-    SpineOptional<FeatureDirectControlSpecificUsageEnumType> featuredirectcontrolspecificusageenumtype;
-    SpineOptional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype;
-    SpineOptional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype;
-    SpineOptional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype;
-    SpineOptional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype;
-    SpineOptional<FunctionEnumType> functionenumtype;
-    SpineOptional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype;
-    SpineOptional<PowerSequenceScopeEnumType> powersequencescopeenumtype;
-    SpineOptional<PowerSequenceStateEnumType> powersequencestateenumtype;
-    SpineOptional<MeasurementTypeEnumType> measurementtypeenumtype;
-    SpineOptional<MeasurementValueTypeEnumType> measurementvaluetypeenumtype;
-    SpineOptional<MeasurementValueSourceEnumType> measurementvaluesourceenumtype;
-    SpineOptional<MeasurementValueTendencyEnumType> measurementvaluetendencyenumtype;
-    SpineOptional<MeasurementValueStateEnumType> measurementvaluestateenumtype;
-    SpineOptional<ThresholdTypeEnumType> thresholdtypeenumtype;
-    SpineOptional<BillTypeEnumType> billtypeenumtype;
-    SpineOptional<BillPositionTypeEnumType> billpositiontypeenumtype;
-    SpineOptional<BillCostTypeEnumType> billcosttypeenumtype;
-    SpineOptional<IdentificationTypeEnumType> identificationtypeenumtype;
-    SpineOptional<SetpointTypeEnumType> setpointtypeenumtype;
-    SpineOptional<TimeSlotTimeModeEnumType> timeslottimemodeenumtype;
-    SpineOptional<SensingStateEnumType> sensingstateenumtype;
-    SpineOptional<SensingTypeEnumType> sensingtypeenumtype;
-    SpineOptional<ActuatorSwitchFctEnumType> actuatorswitchfctenumtype;
-    SpineOptional<NetworkManagementFeatureSetType> networkmanagementfeaturesettype;
-    SpineOptional<NetworkManagementProcessStateStateType> networkmanagementprocessstatestatetype;
-    SpineOptional<NetworkManagementStateChangeType> networkmanagementstatechangetype;
-    SpineOptional<SupplyConditionEventTypeEnumType> supplyconditioneventtypeenumtype;
-    SpineOptional<SupplyConditionOriginatorEnumType> supplyconditionoriginatorenumtype;
-    SpineOptional<GridConditionEnumType> gridconditionenumtype;
-    SpineOptional<AlarmTypeEnumType> alarmtypeenumtype;
-    SpineOptional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype;
-    SpineOptional<LoadControlEventStateEnumType> loadcontroleventstateenumtype;
-    SpineOptional<TaskManagementJobSourceEnumType> taskmanagementjobsourceenumtype;
-    SpineOptional<HvacSystemFunctionTypeEnumType> hvacsystemfunctiontypeenumtype;
-    SpineOptional<HvacOperationModeTypeEnumType> hvacoperationmodetypeenumtype;
-    SpineOptional<HvacOverrunTypeEnumType> hvacoverruntypeenumtype;
-    SpineOptional<LoadControlEventActionEnumType> loadcontroleventactionenumtype;
-    SpineOptional<LoadControlLimitTypeEnumType> loadcontrollimittypeenumtype;
-    SpineOptional<LoadControlCategoryEnumType> loadcontrolcategoryenumtype;
-    SpineOptional<PowerSourceEnumType> powersourceenumtype;
-    SpineOptional<ActuatorLevelFctEnumType> actuatorlevelfctenumtype;
-    SpineOptional<TimeSeriesTypeEnumType> timeseriestypeenumtype;
-    SpineOptional<MessagingTypeEnumType> messagingtypeenumtype;
-    SpineOptional<TierBoundaryTypeEnumType> tierboundarytypeenumtype;
-    SpineOptional<TierTypeEnumType> tiertypeenumtype;
-    SpineOptional<IncentiveTypeEnumType> incentivetypeenumtype;
-    SpineOptional<IncentiveValueTypeEnumType> incentivevaluetypeenumtype;
-    SpineOptional<StateInformationFunctionalityEnumType> stateinformationfunctionalityenumtype;
-    SpineOptional<StateInformationFailureEnumType> stateinformationfailureenumtype;
-    SpineOptional<StateInformationCategoryEnumType> stateinformationcategoryenumtype;
-    SpineOptional<ElectricalConnectionMeasurandVariantEnumType> electricalconnectionmeasurandvariantenumtype;
-    SpineOptional<ElectricalConnectionVoltageTypeEnumType> electricalconnectionvoltagetypeenumtype;
-    SpineOptional<ElectricalConnectionAcMeasurementTypeEnumType> electricalconnectionacmeasurementtypeenumtype;
-    SpineOptional<ElectricalConnectionPhaseNameEnumType> electricalconnectionphasenameenumtype;
-    SpineOptional<ElectricalConnectionConnectionPointType> electricalconnectionconnectionpointtype;
-    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> electricalconnectioncharacteristiccontextenumtype;
-    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> electricalconnectioncharacteristictypeenumtype;
-    SpineOptional<DeviceDiagnosisOperatingStateEnumType> devicediagnosisoperatingstateenumtype;
-    SpineOptional<PowerSupplyConditionEnumType> powersupplyconditionenumtype;
-    SpineOptional<DeviceConfigurationKeyNameEnumType> deviceconfigurationkeynameenumtype;
-    SpineOptional<DeviceConfigurationKeyValueTypeType> deviceconfigurationkeyvaluetypetype;
-    SpineOptional<CmdClassifierType> cmdclassifiertype;
-    SpineOptional<ScaledNumberType> scalednumbertype;
-    SpineOptional<DirectControlActivityDataType> directcontrolactivitydatatype;
-    SpineOptional<ElementTagType> elementtagtype;
-    SpineOptional<ScaledNumberElementsType> scalednumberelementstype;
-    SpineOptional<DirectControlActivityDataElementsType> directcontrolactivitydataelementstype;
-    SpineOptional<DirectControlActivityListDataType> directcontrolactivitylistdatatype;
-    SpineOptional<TimestampIntervalType> timestampintervaltype;
-    SpineOptional<DirectControlActivityListDataSelectorsType> directcontrolactivitylistdataselectorstype;
-    SpineOptional<DirectControlDescriptionDataType> directcontroldescriptiondatatype;
-    SpineOptional<DirectControlDescriptionDataElementsType> directcontroldescriptiondataelementstype;
-    SpineOptional<TimePeriodType> timeperiodtype;
-    SpineOptional<TimePeriodElementsType> timeperiodelementstype;
-    SpineOptional<DaysOfWeekType> daysofweektype;
-    SpineOptional<AbsoluteOrRecurringTimeType> absoluteorrecurringtimetype;
-    SpineOptional<AbsoluteOrRecurringTimeElementsType> absoluteorrecurringtimeelementstype;
-    SpineOptional<RecurrenceInformationType> recurrenceinformationtype;
-    SpineOptional<RecurrenceInformationElementsType> recurrenceinformationelementstype;
-    SpineOptional<ScaledNumberRangeType> scalednumberrangetype;
-    SpineOptional<ScaledNumberRangeElementsType> scalednumberrangeelementstype;
-    SpineOptional<ScaledNumberSetType> scalednumbersettype;
-    SpineOptional<ScaledNumberSetElementsType> scalednumbersetelementstype;
-    SpineOptional<DeviceAddressType> deviceaddresstype;
-    SpineOptional<DeviceAddressElementsType> deviceaddresselementstype;
-    SpineOptional<EntityAddressType> entityaddresstype;
-    SpineOptional<EntityAddressElementsType> entityaddresselementstype;
-    SpineOptional<FeatureAddressType> featureaddresstype;
-    SpineOptional<FeatureAddressElementsType> featureaddresselementstype;
-    SpineOptional<PossibleOperationsClassifierType> possibleoperationsclassifiertype;
-    SpineOptional<PossibleOperationsReadType> possibleoperationsreadtype;
-    SpineOptional<PossibleOperationsWriteType> possibleoperationswritetype;
-    SpineOptional<PossibleOperationsType> possibleoperationstype;
-    SpineOptional<PossibleOperationsElementsType> possibleoperationselementstype;
-    SpineOptional<FunctionPropertyType> functionpropertytype;
-    SpineOptional<FunctionPropertyElementsType> functionpropertyelementstype;
-    SpineOptional<PowerTimeSlotScheduleDataType> powertimeslotscheduledatatype;
-    SpineOptional<PowerTimeSlotScheduleDataElementsType> powertimeslotscheduledataelementstype;
-    SpineOptional<PowerTimeSlotScheduleListDataType> powertimeslotschedulelistdatatype;
-    SpineOptional<PowerTimeSlotScheduleListDataSelectorsType> powertimeslotschedulelistdataselectorstype;
-    SpineOptional<PowerTimeSlotValueDataType> powertimeslotvaluedatatype;
-    SpineOptional<PowerTimeSlotValueDataElementsType> powertimeslotvaluedataelementstype;
-    SpineOptional<PowerTimeSlotValueListDataType> powertimeslotvaluelistdatatype;
-    SpineOptional<PowerTimeSlotValueListDataSelectorsType> powertimeslotvaluelistdataselectorstype;
-    SpineOptional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype;
-    SpineOptional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype;
-    SpineOptional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype;
-    SpineOptional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype;
-    SpineOptional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype;
-    SpineOptional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype;
-    SpineOptional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype;
-    SpineOptional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype;
-    SpineOptional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype;
-    SpineOptional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype;
-    SpineOptional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype;
-    SpineOptional<PowerSequenceDescriptionListDataSelectorsType> powersequencedescriptionlistdataselectorstype;
-    SpineOptional<PowerSequenceStateDataType> powersequencestatedatatype;
-    SpineOptional<PowerSequenceStateDataElementsType> powersequencestatedataelementstype;
-    SpineOptional<PowerSequenceStateListDataType> powersequencestatelistdatatype;
-    SpineOptional<PowerSequenceStateListDataSelectorsType> powersequencestatelistdataselectorstype;
-    SpineOptional<PowerSequenceScheduleDataType> powersequencescheduledatatype;
-    SpineOptional<PowerSequenceScheduleDataElementsType> powersequencescheduledataelementstype;
-    SpineOptional<PowerSequenceScheduleListDataType> powersequenceschedulelistdatatype;
-    SpineOptional<PowerSequenceScheduleListDataSelectorsType> powersequenceschedulelistdataselectorstype;
-    SpineOptional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype;
-    SpineOptional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype;
-    SpineOptional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype;
-    SpineOptional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype;
-    SpineOptional<PowerSequencePriceDataType> powersequencepricedatatype;
-    SpineOptional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype;
-    SpineOptional<PowerSequencePriceListDataType> powersequencepricelistdatatype;
-    SpineOptional<PowerSequencePriceListDataSelectorsType> powersequencepricelistdataselectorstype;
-    SpineOptional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype;
-    SpineOptional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype;
-    SpineOptional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype;
-    SpineOptional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype;
-    SpineOptional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype;
-    SpineOptional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype;
-    SpineOptional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype;
-    SpineOptional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype;
-    SpineOptional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype;
-    SpineOptional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype;
-    SpineOptional<MeasurementDataType> measurementdatatype;
-    SpineOptional<MeasurementDataElementsType> measurementdataelementstype;
-    SpineOptional<MeasurementListDataType> measurementlistdatatype;
-    SpineOptional<MeasurementListDataSelectorsType> measurementlistdataselectorstype;
-    SpineOptional<MeasurementSeriesDataType> measurementseriesdatatype;
-    SpineOptional<MeasurementSeriesDataElementsType> measurementseriesdataelementstype;
-    SpineOptional<MeasurementSeriesListDataType> measurementserieslistdatatype;
-    SpineOptional<MeasurementSeriesListDataSelectorsType> measurementserieslistdataselectorstype;
-    SpineOptional<MeasurementConstraintsDataType> measurementconstraintsdatatype;
-    SpineOptional<MeasurementConstraintsDataElementsType> measurementconstraintsdataelementstype;
-    SpineOptional<MeasurementConstraintsListDataType> measurementconstraintslistdatatype;
-    SpineOptional<MeasurementConstraintsListDataSelectorsType> measurementconstraintslistdataselectorstype;
-    SpineOptional<MeasurementDescriptionDataType> measurementdescriptiondatatype;
-    SpineOptional<MeasurementDescriptionDataElementsType> measurementdescriptiondataelementstype;
-    SpineOptional<MeasurementDescriptionListDataType> measurementdescriptionlistdatatype;
-    SpineOptional<MeasurementDescriptionListDataSelectorsType> measurementdescriptionlistdataselectorstype;
-    SpineOptional<MeasurementThresholdRelationDataType> measurementthresholdrelationdatatype;
-    SpineOptional<MeasurementThresholdRelationDataElementsType> measurementthresholdrelationdataelementstype;
-    SpineOptional<MeasurementThresholdRelationListDataType> measurementthresholdrelationlistdatatype;
-    SpineOptional<MeasurementThresholdRelationListDataSelectorsType> measurementthresholdrelationlistdataselectorstype;
-    SpineOptional<ThresholdDataType> thresholddatatype;
-    SpineOptional<ThresholdDataElementsType> thresholddataelementstype;
-    SpineOptional<ThresholdListDataType> thresholdlistdatatype;
-    SpineOptional<ThresholdListDataSelectorsType> thresholdlistdataselectorstype;
-    SpineOptional<ThresholdConstraintsDataType> thresholdconstraintsdatatype;
-    SpineOptional<ThresholdConstraintsDataElementsType> thresholdconstraintsdataelementstype;
-    SpineOptional<ThresholdConstraintsListDataType> thresholdconstraintslistdatatype;
-    SpineOptional<ThresholdConstraintsListDataSelectorsType> thresholdconstraintslistdataselectorstype;
-    SpineOptional<ThresholdDescriptionDataType> thresholddescriptiondatatype;
-    SpineOptional<ThresholdDescriptionDataElementsType> thresholddescriptiondataelementstype;
-    SpineOptional<ThresholdDescriptionListDataType> thresholddescriptionlistdatatype;
-    SpineOptional<ThresholdDescriptionListDataSelectorsType> thresholddescriptionlistdataselectorstype;
-    SpineOptional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype;
-    SpineOptional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype;
-    SpineOptional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype;
-    SpineOptional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype;
-    SpineOptional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype;
-    SpineOptional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype;
-    SpineOptional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype;
-    SpineOptional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype;
-    SpineOptional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype;
-    SpineOptional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype;
-    SpineOptional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype;
-    SpineOptional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype;
-    SpineOptional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype;
-    SpineOptional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype;
-    SpineOptional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype;
-    SpineOptional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype;
-    SpineOptional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype;
-    SpineOptional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype;
-    SpineOptional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype;
-    SpineOptional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype;
-    SpineOptional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype;
-    SpineOptional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype;
-    SpineOptional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype;
-    SpineOptional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype;
-    SpineOptional<BillValueType> billvaluetype;
-    SpineOptional<BillValueElementsType> billvalueelementstype;
-    SpineOptional<BillCostType> billcosttype;
-    SpineOptional<BillCostElementsType> billcostelementstype;
-    SpineOptional<BillPositionType> billpositiontype;
-    SpineOptional<BillPositionElementsType> billpositionelementstype;
-    SpineOptional<BillDataType> billdatatype;
-    SpineOptional<BillDataElementsType> billdataelementstype;
-    SpineOptional<BillListDataType> billlistdatatype;
-    SpineOptional<BillListDataSelectorsType> billlistdataselectorstype;
-    SpineOptional<BillConstraintsDataType> billconstraintsdatatype;
-    SpineOptional<BillConstraintsDataElementsType> billconstraintsdataelementstype;
-    SpineOptional<BillConstraintsListDataType> billconstraintslistdatatype;
-    SpineOptional<BillConstraintsListDataSelectorsType> billconstraintslistdataselectorstype;
-    SpineOptional<BillDescriptionDataType> billdescriptiondatatype;
-    SpineOptional<BillDescriptionDataElementsType> billdescriptiondataelementstype;
-    SpineOptional<BillDescriptionListDataType> billdescriptionlistdatatype;
-    SpineOptional<BillDescriptionListDataSelectorsType> billdescriptionlistdataselectorstype;
-    SpineOptional<IdentificationDataType> identificationdatatype;
-    SpineOptional<IdentificationDataElementsType> identificationdataelementstype;
-    SpineOptional<IdentificationListDataType> identificationlistdatatype;
-    SpineOptional<IdentificationListDataSelectorsType> identificationlistdataselectorstype;
-    SpineOptional<SessionIdentificationDataType> sessionidentificationdatatype;
-    SpineOptional<SessionIdentificationDataElementsType> sessionidentificationdataelementstype;
-    SpineOptional<SessionIdentificationListDataType> sessionidentificationlistdatatype;
-    SpineOptional<SessionIdentificationListDataSelectorsType> sessionidentificationlistdataselectorstype;
-    SpineOptional<SessionMeasurementRelationDataType> sessionmeasurementrelationdatatype;
-    SpineOptional<SessionMeasurementRelationDataElementsType> sessionmeasurementrelationdataelementstype;
-    SpineOptional<SessionMeasurementRelationListDataType> sessionmeasurementrelationlistdatatype;
-    SpineOptional<SessionMeasurementRelationListDataSelectorsType> sessionmeasurementrelationlistdataselectorstype;
-    SpineOptional<SetpointDataType> setpointdatatype;
-    SpineOptional<SetpointDataElementsType> setpointdataelementstype;
-    SpineOptional<SetpointListDataType> setpointlistdatatype;
-    SpineOptional<SetpointListDataSelectorsType> setpointlistdataselectorstype;
-    SpineOptional<SetpointConstraintsDataType> setpointconstraintsdatatype;
-    SpineOptional<SetpointConstraintsDataElementsType> setpointconstraintsdataelementstype;
-    SpineOptional<SetpointConstraintsListDataType> setpointconstraintslistdatatype;
-    SpineOptional<SetpointConstraintsListDataSelectorsType> setpointconstraintslistdataselectorstype;
-    SpineOptional<SetpointDescriptionDataType> setpointdescriptiondatatype;
-    SpineOptional<SetpointDescriptionDataElementsType> setpointdescriptiondataelementstype;
-    SpineOptional<SetpointDescriptionListDataType> setpointdescriptionlistdatatype;
-    SpineOptional<SetpointDescriptionListDataSelectorsType> setpointdescriptionlistdataselectorstype;
-    SpineOptional<TimeTableDataType> timetabledatatype;
-    SpineOptional<TimeTableDataElementsType> timetabledataelementstype;
-    SpineOptional<TimeTableListDataType> timetablelistdatatype;
-    SpineOptional<TimeTableListDataSelectorsType> timetablelistdataselectorstype;
-    SpineOptional<TimeTableConstraintsDataType> timetableconstraintsdatatype;
-    SpineOptional<TimeTableConstraintsDataElementsType> timetableconstraintsdataelementstype;
-    SpineOptional<TimeTableConstraintsListDataType> timetableconstraintslistdatatype;
-    SpineOptional<TimeTableConstraintsListDataSelectorsType> timetableconstraintslistdataselectorstype;
-    SpineOptional<TimeTableDescriptionDataType> timetabledescriptiondatatype;
-    SpineOptional<TimeTableDescriptionDataElementsType> timetabledescriptiondataelementstype;
-    SpineOptional<TimeTableDescriptionListDataType> timetabledescriptionlistdatatype;
-    SpineOptional<TimeTableDescriptionListDataSelectorsType> timetabledescriptionlistdataselectorstype;
-    SpineOptional<SensingDataType> sensingdatatype;
-    SpineOptional<SensingDataElementsType> sensingdataelementstype;
-    SpineOptional<SensingListDataType> sensinglistdatatype;
-    SpineOptional<SensingListDataSelectorsType> sensinglistdataselectorstype;
-    SpineOptional<SensingDescriptionDataType> sensingdescriptiondatatype;
-    SpineOptional<SensingDescriptionDataElementsType> sensingdescriptiondataelementstype;
-    SpineOptional<ResultDataType> resultdatatype;
-    SpineOptional<ActuatorSwitchDataType> actuatorswitchdatatype;
-    SpineOptional<ActuatorSwitchDataElementsType> actuatorswitchdataelementstype;
-    SpineOptional<ActuatorSwitchDescriptionDataType> actuatorswitchdescriptiondatatype;
-    SpineOptional<ActuatorSwitchDescriptionDataElementsType> actuatorswitchdescriptiondataelementstype;
-    SpineOptional<NetworkManagementAddNodeCallType> networkmanagementaddnodecalltype;
-    SpineOptional<NetworkManagementAddNodeCallElementsType> networkmanagementaddnodecallelementstype;
-    SpineOptional<NetworkManagementRemoveNodeCallType> networkmanagementremovenodecalltype;
-    SpineOptional<NetworkManagementRemoveNodeCallElementsType> networkmanagementremovenodecallelementstype;
-    SpineOptional<NetworkManagementModifyNodeCallType> networkmanagementmodifynodecalltype;
-    SpineOptional<NetworkManagementModifyNodeCallElementsType> networkmanagementmodifynodecallelementstype;
-    SpineOptional<NetworkManagementScanNetworkCallType> networkmanagementscannetworkcalltype;
-    SpineOptional<NetworkManagementScanNetworkCallElementsType> networkmanagementscannetworkcallelementstype;
-    SpineOptional<NetworkManagementDiscoverCallType> networkmanagementdiscovercalltype;
-    SpineOptional<NetworkManagementDiscoverCallElementsType> networkmanagementdiscovercallelementstype;
-    SpineOptional<NetworkManagementAbortCallType> networkmanagementabortcalltype;
-    SpineOptional<NetworkManagementAbortCallElementsType> networkmanagementabortcallelementstype;
-    SpineOptional<NetworkManagementProcessStateDataType> networkmanagementprocessstatedatatype;
-    SpineOptional<NetworkManagementProcessStateDataElementsType> networkmanagementprocessstatedataelementstype;
-    SpineOptional<NetworkManagementJoiningModeDataType> networkmanagementjoiningmodedatatype;
-    SpineOptional<NetworkManagementJoiningModeDataElementsType> networkmanagementjoiningmodedataelementstype;
-    SpineOptional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype;
-    SpineOptional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype;
-    SpineOptional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype;
-    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype;
-    SpineOptional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype;
-    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype;
-    SpineOptional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype;
-    SpineOptional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype;
-    SpineOptional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype;
-    SpineOptional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype;
-    SpineOptional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype;
-    SpineOptional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype;
-    SpineOptional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype;
-    SpineOptional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype;
-    SpineOptional<SupplyConditionDataType> supplyconditiondatatype;
-    SpineOptional<SupplyConditionDataElementsType> supplyconditiondataelementstype;
-    SpineOptional<SupplyConditionListDataType> supplyconditionlistdatatype;
-    SpineOptional<SupplyConditionListDataSelectorsType> supplyconditionlistdataselectorstype;
-    SpineOptional<SupplyConditionDescriptionDataType> supplyconditiondescriptiondatatype;
-    SpineOptional<SupplyConditionDescriptionDataElementsType> supplyconditiondescriptiondataelementstype;
-    SpineOptional<SupplyConditionDescriptionListDataType> supplyconditiondescriptionlistdatatype;
-    SpineOptional<SupplyConditionDescriptionListDataSelectorsType> supplyconditiondescriptionlistdataselectorstype;
-    SpineOptional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype;
-    SpineOptional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype;
-    SpineOptional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype;
-    SpineOptional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype;
-    SpineOptional<AlarmDataType> alarmdatatype;
-    SpineOptional<AlarmDataElementsType> alarmdataelementstype;
-    SpineOptional<AlarmListDataType> alarmlistdatatype;
-    SpineOptional<AlarmListDataSelectorsType> alarmlistdataselectorstype;
-    SpineOptional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype;
-    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype;
-    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype;
-    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype;
-    SpineOptional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype;
-    SpineOptional<SpecificationVersionDataElementsType> specificationversiondataelementstype;
-    SpineOptional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype;
-    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> nodemanagementdetaileddiscoverydeviceinformationelementstype;
-    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationElementsType> nodemanagementdetaileddiscoveryentityinformationelementstype;
-    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> nodemanagementdetaileddiscoveryfeatureinformationelementstype;
-    SpineOptional<NodeManagementDetailedDiscoveryDataElementsType> nodemanagementdetaileddiscoverydataelementstype;
-    SpineOptional<NodeManagementDetailedDiscoveryDataSelectorsType> nodemanagementdetaileddiscoverydataselectorstype;
-    SpineOptional<BindingManagementEntryDataType> bindingmanagemententrydatatype;
-    SpineOptional<NodeManagementBindingDataType> nodemanagementbindingdatatype;
-    SpineOptional<BindingManagementEntryDataElementsType> bindingmanagemententrydataelementstype;
-    SpineOptional<NodeManagementBindingDataElementsType> nodemanagementbindingdataelementstype;
-    SpineOptional<BindingManagementEntryListDataSelectorsType> bindingmanagemententrylistdataselectorstype;
-    SpineOptional<NodeManagementBindingDataSelectorsType> nodemanagementbindingdataselectorstype;
-    SpineOptional<BindingManagementRequestCallType> bindingmanagementrequestcalltype;
-    SpineOptional<NodeManagementBindingRequestCallType> nodemanagementbindingrequestcalltype;
-    SpineOptional<BindingManagementRequestCallElementsType> bindingmanagementrequestcallelementstype;
-    SpineOptional<NodeManagementBindingRequestCallElementsType> nodemanagementbindingrequestcallelementstype;
-    SpineOptional<BindingManagementDeleteCallType> bindingmanagementdeletecalltype;
-    SpineOptional<NodeManagementBindingDeleteCallType> nodemanagementbindingdeletecalltype;
-    SpineOptional<BindingManagementDeleteCallElementsType> bindingmanagementdeletecallelementstype;
-    SpineOptional<NodeManagementBindingDeleteCallElementsType> nodemanagementbindingdeletecallelementstype;
-    SpineOptional<SubscriptionManagementEntryDataType> subscriptionmanagemententrydatatype;
-    SpineOptional<NodeManagementSubscriptionDataType> nodemanagementsubscriptiondatatype;
-    SpineOptional<SubscriptionManagementEntryDataElementsType> subscriptionmanagemententrydataelementstype;
-    SpineOptional<NodeManagementSubscriptionDataElementsType> nodemanagementsubscriptiondataelementstype;
-    SpineOptional<SubscriptionManagementEntryListDataSelectorsType> subscriptionmanagemententrylistdataselectorstype;
-    SpineOptional<NodeManagementSubscriptionDataSelectorsType> nodemanagementsubscriptiondataselectorstype;
-    SpineOptional<SubscriptionManagementRequestCallType> subscriptionmanagementrequestcalltype;
-    SpineOptional<NodeManagementSubscriptionRequestCallType> nodemanagementsubscriptionrequestcalltype;
-    SpineOptional<SubscriptionManagementRequestCallElementsType> subscriptionmanagementrequestcallelementstype;
-    SpineOptional<NodeManagementSubscriptionRequestCallElementsType> nodemanagementsubscriptionrequestcallelementstype;
-    SpineOptional<SubscriptionManagementDeleteCallType> subscriptionmanagementdeletecalltype;
-    SpineOptional<NodeManagementSubscriptionDeleteCallType> nodemanagementsubscriptiondeletecalltype;
-    SpineOptional<SubscriptionManagementDeleteCallElementsType> subscriptionmanagementdeletecallelementstype;
-    SpineOptional<NodeManagementSubscriptionDeleteCallElementsType> nodemanagementsubscriptiondeletecallelementstype;
-    SpineOptional<NodeManagementDestinationDataType> nodemanagementdestinationdatatype;
-    SpineOptional<NodeManagementDestinationDataElementsType> nodemanagementdestinationdataelementstype;
-    SpineOptional<NodeManagementDestinationListDataType> nodemanagementdestinationlistdatatype;
-    SpineOptional<NodeManagementDestinationListDataSelectorsType> nodemanagementdestinationlistdataselectorstype;
-    SpineOptional<UseCaseSupportType> usecasesupporttype;
-    SpineOptional<UseCaseInformationDataType> usecaseinformationdatatype;
-    SpineOptional<NodeManagementUseCaseDataType> nodemanagementusecasedatatype;
-    SpineOptional<UseCaseSupportElementsType> usecasesupportelementstype;
-    SpineOptional<UseCaseInformationDataElementsType> usecaseinformationdataelementstype;
-    SpineOptional<NodeManagementUseCaseDataElementsType> nodemanagementusecasedataelementstype;
-    SpineOptional<UseCaseSupportSelectorsType> usecasesupportselectorstype;
-    SpineOptional<UseCaseInformationListDataSelectorsType> usecaseinformationlistdataselectorstype;
-    SpineOptional<NodeManagementUseCaseDataSelectorsType> nodemanagementusecasedataselectorstype;
-    SpineOptional<BindingManagementEntryListDataType> bindingmanagemententrylistdatatype;
-    SpineOptional<SubscriptionManagementEntryListDataType> subscriptionmanagemententrylistdatatype;
-    SpineOptional<UseCaseInformationListDataType> usecaseinformationlistdatatype;
-    SpineOptional<SpecificationVersionListDataType> specificationversionlistdatatype;
-    SpineOptional<SpecificationVersionListDataSelectorsType> specificationversionlistdataselectorstype;
-    SpineOptional<TaskManagementDirectControlRelatedType> taskmanagementdirectcontrolrelatedtype;
-    SpineOptional<TaskManagementDirectControlRelatedElementsType> taskmanagementdirectcontrolrelatedelementstype;
-    SpineOptional<TaskManagementHvacRelatedType> taskmanagementhvacrelatedtype;
-    SpineOptional<TaskManagementHvacRelatedElementsType> taskmanagementhvacrelatedelementstype;
-    SpineOptional<TaskManagementLoadControlReleatedType> taskmanagementloadcontrolreleatedtype;
-    SpineOptional<TaskManagementLoadControlReleatedElementsType> taskmanagementloadcontrolreleatedelementstype;
-    SpineOptional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype;
-    SpineOptional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype;
-    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype;
-    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype;
-    SpineOptional<TaskManagementJobDataType> taskmanagementjobdatatype;
-    SpineOptional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype;
-    SpineOptional<TaskManagementJobListDataType> taskmanagementjoblistdatatype;
-    SpineOptional<TaskManagementJobListDataSelectorsType> taskmanagementjoblistdataselectorstype;
-    SpineOptional<TaskManagementJobRelationDataType> taskmanagementjobrelationdatatype;
-    SpineOptional<TaskManagementJobRelationDataElementsType> taskmanagementjobrelationdataelementstype;
-    SpineOptional<TaskManagementJobRelationListDataType> taskmanagementjobrelationlistdatatype;
-    SpineOptional<TaskManagementJobRelationListDataSelectorsType> taskmanagementjobrelationlistdataselectorstype;
-    SpineOptional<TaskManagementJobDescriptionDataType> taskmanagementjobdescriptiondatatype;
-    SpineOptional<TaskManagementJobDescriptionDataElementsType> taskmanagementjobdescriptiondataelementstype;
-    SpineOptional<TaskManagementJobDescriptionListDataType> taskmanagementjobdescriptionlistdatatype;
-    SpineOptional<TaskManagementJobDescriptionListDataSelectorsType> taskmanagementjobdescriptionlistdataselectorstype;
-    SpineOptional<TaskManagementOverviewDataType> taskmanagementoverviewdatatype;
-    SpineOptional<TaskManagementOverviewDataElementsType> taskmanagementoverviewdataelementstype;
-    SpineOptional<HvacSystemFunctionDataType> hvacsystemfunctiondatatype;
-    SpineOptional<HvacSystemFunctionDataElementsType> hvacsystemfunctiondataelementstype;
-    SpineOptional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype;
-    SpineOptional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype;
-    SpineOptional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype;
-    SpineOptional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype;
-    SpineOptional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype;
-    SpineOptional<HvacSystemFunctionOperationModeRelationListDataSelectorsType> hvacsystemfunctionoperationmoderelationlistdataselectorstype;
-    SpineOptional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype;
-    SpineOptional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype;
-    SpineOptional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype;
-    SpineOptional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype;
-    SpineOptional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype;
-    SpineOptional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype;
-    SpineOptional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype;
-    SpineOptional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType> hvacsystemfunctionpowersequencerelationlistdataselectorstype;
-    SpineOptional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype;
-    SpineOptional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype;
-    SpineOptional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype;
-    SpineOptional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype;
-    SpineOptional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype;
-    SpineOptional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype;
-    SpineOptional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype;
-    SpineOptional<HvacOperationModeDescriptionListDataSelectorsType> hvacoperationmodedescriptionlistdataselectorstype;
-    SpineOptional<HvacOverrunDataType> hvacoverrundatatype;
-    SpineOptional<HvacOverrunDataElementsType> hvacoverrundataelementstype;
-    SpineOptional<HvacOverrunListDataType> hvacoverrunlistdatatype;
-    SpineOptional<HvacOverrunListDataSelectorsType> hvacoverrunlistdataselectorstype;
-    SpineOptional<HvacOverrunDescriptionDataType> hvacoverrundescriptiondatatype;
-    SpineOptional<HvacOverrunDescriptionDataElementsType> hvacoverrundescriptiondataelementstype;
-    SpineOptional<HvacOverrunDescriptionListDataType> hvacoverrundescriptionlistdatatype;
-    SpineOptional<HvacOverrunDescriptionListDataSelectorsType> hvacoverrundescriptionlistdataselectorstype;
-    SpineOptional<LoadControlNodeDataType> loadcontrolnodedatatype;
-    SpineOptional<LoadControlNodeDataElementsType> loadcontrolnodedataelementstype;
-    SpineOptional<LoadControlEventDataType> loadcontroleventdatatype;
-    SpineOptional<LoadControlEventDataElementsType> loadcontroleventdataelementstype;
-    SpineOptional<LoadControlEventListDataType> loadcontroleventlistdatatype;
-    SpineOptional<LoadControlEventListDataSelectorsType> loadcontroleventlistdataselectorstype;
-    SpineOptional<LoadControlStateDataType> loadcontrolstatedatatype;
-    SpineOptional<LoadControlStateDataElementsType> loadcontrolstatedataelementstype;
-    SpineOptional<LoadControlStateListDataType> loadcontrolstatelistdatatype;
-    SpineOptional<LoadControlStateListDataSelectorsType> loadcontrolstatelistdataselectorstype;
-    SpineOptional<LoadControlLimitDataType> loadcontrollimitdatatype;
-    SpineOptional<LoadControlLimitDataElementsType> loadcontrollimitdataelementstype;
-    SpineOptional<LoadControlLimitListDataType> loadcontrollimitlistdatatype;
-    SpineOptional<LoadControlLimitListDataSelectorsType> loadcontrollimitlistdataselectorstype;
-    SpineOptional<LoadControlLimitConstraintsDataType> loadcontrollimitconstraintsdatatype;
-    SpineOptional<LoadControlLimitConstraintsDataElementsType> loadcontrollimitconstraintsdataelementstype;
-    SpineOptional<LoadControlLimitConstraintsListDataType> loadcontrollimitconstraintslistdatatype;
-    SpineOptional<LoadControlLimitConstraintsListDataSelectorsType> loadcontrollimitconstraintslistdataselectorstype;
-    SpineOptional<LoadControlLimitDescriptionDataType> loadcontrollimitdescriptiondatatype;
-    SpineOptional<LoadControlLimitDescriptionDataElementsType> loadcontrollimitdescriptiondataelementstype;
-    SpineOptional<LoadControlLimitDescriptionListDataType> loadcontrollimitdescriptionlistdatatype;
-    SpineOptional<LoadControlLimitDescriptionListDataSelectorsType> loadcontrollimitdescriptionlistdataselectorstype;
-    SpineOptional<DeviceClassificationManufacturerDataType> deviceclassificationmanufacturerdatatype;
-    SpineOptional<DeviceClassificationManufacturerDataElementsType> deviceclassificationmanufacturerdataelementstype;
-    SpineOptional<DeviceClassificationUserDataType> deviceclassificationuserdatatype;
-    SpineOptional<DeviceClassificationUserDataElementsType> deviceclassificationuserdataelementstype;
-    SpineOptional<ActuatorLevelDataType> actuatorleveldatatype;
-    SpineOptional<ActuatorLevelDataElementsType> actuatorleveldataelementstype;
-    SpineOptional<ActuatorLevelDescriptionDataType> actuatorleveldescriptiondatatype;
-    SpineOptional<ActuatorLevelDescriptionDataElementsType> actuatorleveldescriptiondataelementstype;
-    SpineOptional<TimeSeriesSlotType> timeseriesslottype;
-    SpineOptional<TimeSeriesSlotElementsType> timeseriesslotelementstype;
-    SpineOptional<TimeSeriesDataType> timeseriesdatatype;
-    SpineOptional<TimeSeriesDataElementsType> timeseriesdataelementstype;
-    SpineOptional<TimeSeriesListDataType> timeserieslistdatatype;
-    SpineOptional<TimeSeriesListDataSelectorsType> timeserieslistdataselectorstype;
-    SpineOptional<TimeSeriesDescriptionDataType> timeseriesdescriptiondatatype;
-    SpineOptional<TimeSeriesDescriptionDataElementsType> timeseriesdescriptiondataelementstype;
-    SpineOptional<TimeSeriesDescriptionListDataType> timeseriesdescriptionlistdatatype;
-    SpineOptional<TimeSeriesDescriptionListDataSelectorsType> timeseriesdescriptionlistdataselectorstype;
-    SpineOptional<TimeSeriesConstraintsDataType> timeseriesconstraintsdatatype;
-    SpineOptional<TimeSeriesConstraintsDataElementsType> timeseriesconstraintsdataelementstype;
-    SpineOptional<TimeSeriesConstraintsListDataType> timeseriesconstraintslistdatatype;
-    SpineOptional<TimeSeriesConstraintsListDataSelectorsType> timeseriesconstraintslistdataselectorstype;
-    SpineOptional<SmartEnergyManagementPsAlternativesRelationType> smartenergymanagementpsalternativesrelationtype;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListType> smartenergymanagementpspowertimeslotvaluelisttype;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotType> smartenergymanagementpspowertimeslottype;
-    SpineOptional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype;
-    SpineOptional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype;
-    SpineOptional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype;
-    SpineOptional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype;
-    SpineOptional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype;
-    SpineOptional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype;
-    SpineOptional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype;
-    SpineOptional<SmartEnergyManagementPsDataElementsType> smartenergymanagementpsdataelementstype;
-    SpineOptional<SmartEnergyManagementPsDataSelectorsType> smartenergymanagementpsdataselectorstype;
-    SpineOptional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype;
-    SpineOptional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype;
-    SpineOptional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype;
-    SpineOptional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype;
-    SpineOptional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype;
-    SpineOptional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype;
-    SpineOptional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType> smartenergymanagementpspricecalculationrequestcallelementstype;
-    SpineOptional<MessagingDataType> messagingdatatype;
-    SpineOptional<MessagingDataElementsType> messagingdataelementstype;
-    SpineOptional<MessagingListDataType> messaginglistdatatype;
-    SpineOptional<MessagingListDataSelectorsType> messaginglistdataselectorstype;
-    SpineOptional<TariffOverallConstraintsDataType> tariffoverallconstraintsdatatype;
-    SpineOptional<TariffOverallConstraintsDataElementsType> tariffoverallconstraintsdataelementstype;
-    SpineOptional<TariffDataType> tariffdatatype;
-    SpineOptional<TariffDataElementsType> tariffdataelementstype;
-    SpineOptional<TariffListDataType> tarifflistdatatype;
-    SpineOptional<TariffListDataSelectorsType> tarifflistdataselectorstype;
-    SpineOptional<TariffTierRelationDataType> tarifftierrelationdatatype;
-    SpineOptional<TariffTierRelationDataElementsType> tarifftierrelationdataelementstype;
-    SpineOptional<TariffTierRelationListDataType> tarifftierrelationlistdatatype;
-    SpineOptional<TariffTierRelationListDataSelectorsType> tarifftierrelationlistdataselectorstype;
-    SpineOptional<TariffBoundaryRelationDataType> tariffboundaryrelationdatatype;
-    SpineOptional<TariffBoundaryRelationDataElementsType> tariffboundaryrelationdataelementstype;
-    SpineOptional<TariffBoundaryRelationListDataType> tariffboundaryrelationlistdatatype;
-    SpineOptional<TariffBoundaryRelationListDataSelectorsType> tariffboundaryrelationlistdataselectorstype;
-    SpineOptional<TariffDescriptionDataType> tariffdescriptiondatatype;
-    SpineOptional<TariffDescriptionDataElementsType> tariffdescriptiondataelementstype;
-    SpineOptional<TariffDescriptionListDataType> tariffdescriptionlistdatatype;
-    SpineOptional<TariffDescriptionListDataSelectorsType> tariffdescriptionlistdataselectorstype;
-    SpineOptional<TierBoundaryDataType> tierboundarydatatype;
-    SpineOptional<TierBoundaryDataElementsType> tierboundarydataelementstype;
-    SpineOptional<TierBoundaryListDataType> tierboundarylistdatatype;
-    SpineOptional<TierBoundaryListDataSelectorsType> tierboundarylistdataselectorstype;
-    SpineOptional<TierBoundaryDescriptionDataType> tierboundarydescriptiondatatype;
-    SpineOptional<TierBoundaryDescriptionDataElementsType> tierboundarydescriptiondataelementstype;
-    SpineOptional<TierBoundaryDescriptionListDataType> tierboundarydescriptionlistdatatype;
-    SpineOptional<TierBoundaryDescriptionListDataSelectorsType> tierboundarydescriptionlistdataselectorstype;
-    SpineOptional<CommodityDataType> commoditydatatype;
-    SpineOptional<CommodityDataElementsType> commoditydataelementstype;
-    SpineOptional<CommodityListDataType> commoditylistdatatype;
-    SpineOptional<CommodityListDataSelectorsType> commoditylistdataselectorstype;
-    SpineOptional<TierDataType> tierdatatype;
-    SpineOptional<TierDataElementsType> tierdataelementstype;
-    SpineOptional<TierListDataType> tierlistdatatype;
-    SpineOptional<TierListDataSelectorsType> tierlistdataselectorstype;
-    SpineOptional<TierIncentiveRelationDataType> tierincentiverelationdatatype;
-    SpineOptional<TierIncentiveRelationDataElementsType> tierincentiverelationdataelementstype;
-    SpineOptional<TierIncentiveRelationListDataType> tierincentiverelationlistdatatype;
-    SpineOptional<TierIncentiveRelationListDataSelectorsType> tierincentiverelationlistdataselectorstype;
-    SpineOptional<TierDescriptionDataType> tierdescriptiondatatype;
-    SpineOptional<TierDescriptionDataElementsType> tierdescriptiondataelementstype;
-    SpineOptional<TierDescriptionListDataType> tierdescriptionlistdatatype;
-    SpineOptional<TierDescriptionListDataSelectorsType> tierdescriptionlistdataselectorstype;
-    SpineOptional<IncentiveDataType> incentivedatatype;
-    SpineOptional<IncentiveDataElementsType> incentivedataelementstype;
-    SpineOptional<IncentiveListDataType> incentivelistdatatype;
-    SpineOptional<IncentiveListDataSelectorsType> incentivelistdataselectorstype;
-    SpineOptional<IncentiveDescriptionDataType> incentivedescriptiondatatype;
-    SpineOptional<IncentiveDescriptionDataElementsType> incentivedescriptiondataelementstype;
-    SpineOptional<IncentiveDescriptionListDataType> incentivedescriptionlistdatatype;
-    SpineOptional<IncentiveDescriptionListDataSelectorsType> incentivedescriptionlistdataselectorstype;
-    SpineOptional<StateInformationDataType> stateinformationdatatype;
-    SpineOptional<StateInformationDataElementsType> stateinformationdataelementstype;
-    SpineOptional<StateInformationListDataType> stateinformationlistdatatype;
-    SpineOptional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype;
-    SpineOptional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype;
-    SpineOptional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype;
-    SpineOptional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype;
-    SpineOptional<ElectricalConnectionParameterDescriptionListDataSelectorsType> electricalconnectionparameterdescriptionlistdataselectorstype;
-    SpineOptional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype;
-    SpineOptional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype;
-    SpineOptional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype;
-    SpineOptional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype;
-    SpineOptional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype;
-    SpineOptional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype;
-    SpineOptional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype;
-    SpineOptional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype;
-    SpineOptional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype;
-    SpineOptional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype;
-    SpineOptional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype;
-    SpineOptional<ElectricalConnectionStateListDataSelectorsType> electricalconnectionstatelistdataselectorstype;
-    SpineOptional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype;
-    SpineOptional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype;
-    SpineOptional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype;
-    SpineOptional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype;
-    SpineOptional<TimeInformationDataType> timeinformationdatatype;
-    SpineOptional<TimeInformationDataElementsType> timeinformationdataelementstype;
-    SpineOptional<TimeDistributorDataType> timedistributordatatype;
-    SpineOptional<TimeDistributorDataElementsType> timedistributordataelementstype;
-    SpineOptional<TimePrecisionDataType> timeprecisiondatatype;
-    SpineOptional<TimePrecisionDataElementsType> timeprecisiondataelementstype;
-    SpineOptional<TimeDistributorEnquiryCallType> timedistributorenquirycalltype;
-    SpineOptional<TimeDistributorEnquiryCallElementsType> timedistributorenquirycallelementstype;
-    SpineOptional<DeviceDiagnosisStateDataType> devicediagnosisstatedatatype;
-    SpineOptional<DeviceDiagnosisStateDataElementsType> devicediagnosisstatedataelementstype;
-    SpineOptional<DeviceDiagnosisHeartbeatDataType> devicediagnosisheartbeatdatatype;
-    SpineOptional<DeviceDiagnosisHeartbeatDataElementsType> devicediagnosisheartbeatdataelementstype;
-    SpineOptional<DeviceDiagnosisServiceDataType> devicediagnosisservicedatatype;
-    SpineOptional<DeviceDiagnosisServiceDataElementsType> devicediagnosisservicedataelementstype;
-    SpineOptional<DeviceConfigurationKeyValueValueType> deviceconfigurationkeyvaluevaluetype;
-    SpineOptional<DeviceConfigurationKeyValueValueElementsType> deviceconfigurationkeyvaluevalueelementstype;
-    SpineOptional<DeviceConfigurationKeyValueDataType> deviceconfigurationkeyvaluedatatype;
-    SpineOptional<DeviceConfigurationKeyValueDataElementsType> deviceconfigurationkeyvaluedataelementstype;
-    SpineOptional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype;
-    SpineOptional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype;
-    SpineOptional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype;
-    SpineOptional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype;
-    SpineOptional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype;
-    SpineOptional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
-    SpineOptional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype;
-    SpineOptional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype;
-    SpineOptional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype;
-    SpineOptional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype;
-    SpineOptional<HeaderType> headertype;
-    SpineOptional<CmdControlType> cmdcontroltype;
-    SpineOptional<DataTunnelingHeaderType> datatunnelingheadertype;
-    SpineOptional<DataTunnelingHeaderElementsType> datatunnelingheaderelementstype;
-    SpineOptional<DataTunnelingCallType> datatunnelingcalltype;
-    SpineOptional<DataTunnelingCallElementsType> datatunnelingcallelementstype;
-    SpineOptional<IncentiveTableTierType> incentivetabletiertype;
-    SpineOptional<IncentiveTableIncentiveSlotType> incentivetableincentiveslottype;
-    SpineOptional<IncentiveTableType> incentivetabletype;
-    SpineOptional<IncentiveTableDataType> incentivetabledatatype;
-    SpineOptional<IncentiveTableTierElementsType> incentivetabletierelementstype;
-    SpineOptional<IncentiveTableIncentiveSlotElementsType> incentivetableincentiveslotelementstype;
-    SpineOptional<IncentiveTableElementsType> incentivetableelementstype;
-    SpineOptional<IncentiveTableDataElementsType> incentivetabledataelementstype;
-    SpineOptional<IncentiveTableDataSelectorsType> incentivetabledataselectorstype;
-    SpineOptional<IncentiveTableDescriptionTierType> incentivetabledescriptiontiertype;
-    SpineOptional<IncentiveTableDescriptionType> incentivetabledescriptiontype;
-    SpineOptional<IncentiveTableDescriptionDataType> incentivetabledescriptiondatatype;
-    SpineOptional<IncentiveTableDescriptionTierElementsType> incentivetabledescriptiontierelementstype;
-    SpineOptional<IncentiveTableDescriptionElementsType> incentivetabledescriptionelementstype;
-    SpineOptional<IncentiveTableDescriptionDataElementsType> incentivetabledescriptiondataelementstype;
-    SpineOptional<IncentiveTableDescriptionDataSelectorsType> incentivetabledescriptiondataselectorstype;
-    SpineOptional<IncentiveTableConstraintsType> incentivetableconstraintstype;
-    SpineOptional<IncentiveTableConstraintsDataType> incentivetableconstraintsdatatype;
-    SpineOptional<IncentiveTableConstraintsElementsType> incentivetableconstraintselementstype;
-    SpineOptional<IncentiveTableConstraintsDataElementsType> incentivetableconstraintsdataelementstype;
-    SpineOptional<IncentiveTableConstraintsDataSelectorsType> incentivetableconstraintsdataselectorstype;
+    SpineOptional<EnumExtendType> enumextendtype{};
+    SpineOptional<DirectControlActivityStateType> directcontrolactivitystatetype{};
+    SpineOptional<LabelType> labeltype{};
+    SpineOptional<DescriptionType> descriptiontype{};
+    SpineOptional<SpecificationVersionType> specificationversiontype{};
+    SpineOptional<AbsoluteOrRelativeTimeType> absoluteorrelativetimetype{};
+    SpineOptional<RecurringIntervalType> recurringintervaltype{};
+    SpineOptional<DayOfMonthType> dayofmonthtype{};
+    SpineOptional<CalendarWeekType> calendarweektype{};
+    SpineOptional<OccurrenceType> occurrencetype{};
+    SpineOptional<NumberType> numbertype{};
+    SpineOptional<ScaleType> scaletype{};
+    SpineOptional<MaxResponseDelayType> maxresponsedelaytype{};
+    SpineOptional<CommodityTypeType> commoditytypetype{};
+    SpineOptional<EnergyDirectionType> energydirectiontype{};
+    SpineOptional<EnergyModeType> energymodetype{};
+    SpineOptional<UnitOfMeasurementType> unitofmeasurementtype{};
+    SpineOptional<CurrencyType> currencytype{};
+    SpineOptional<AddressDeviceType> addressdevicetype{};
+    SpineOptional<AddressEntityType> addressentitytype{};
+    SpineOptional<AddressFeatureType> addressfeaturetype{};
+    SpineOptional<ScopeTypeType> scopetypetype{};
+    SpineOptional<FeatureGroupType> featuregrouptype{};
+    SpineOptional<DeviceTypeType> devicetypetype{};
+    SpineOptional<EntityTypeType> entitytypetype{};
+    SpineOptional<FeatureTypeType> featuretypetype{};
+    SpineOptional<FeatureSpecificUsageEnumType> featurespecificusageenumtype{};
+    SpineOptional<FeatureSpecificUsageType> featurespecificusagetype{};
+    SpineOptional<FunctionType> functiontype{};
+    SpineOptional<AlternativesIdType> alternativesidtype{};
+    SpineOptional<PowerSequenceIdType> powersequenceidtype{};
+    SpineOptional<PowerTimeSlotNumberType> powertimeslotnumbertype{};
+    SpineOptional<PowerTimeSlotValueTypeType> powertimeslotvaluetypetype{};
+    SpineOptional<PowerSequenceScopeType> powersequencescopetype{};
+    SpineOptional<PowerSequenceStateType> powersequencestatetype{};
+    SpineOptional<MeasurementIdType> measurementidtype{};
+    SpineOptional<MeasurementTypeType> measurementtypetype{};
+    SpineOptional<MeasurementValueTypeType> measurementvaluetypetype{};
+    SpineOptional<MeasurementValueSourceType> measurementvaluesourcetype{};
+    SpineOptional<MeasurementValueTendencyType> measurementvaluetendencytype{};
+    SpineOptional<MeasurementValueStateType> measurementvaluestatetype{};
+    SpineOptional<ThresholdIdType> thresholdidtype{};
+    SpineOptional<ThresholdTypeType> thresholdtypetype{};
+    SpineOptional<BillIdType> billidtype{};
+    SpineOptional<BillTypeType> billtypetype{};
+    SpineOptional<BillPositionIdType> billpositionidtype{};
+    SpineOptional<BillPositionCountType> billpositioncounttype{};
+    SpineOptional<BillPositionTypeType> billpositiontypetype{};
+    SpineOptional<BillValueIdType> billvalueidtype{};
+    SpineOptional<BillCostIdType> billcostidtype{};
+    SpineOptional<BillCostTypeType> billcosttypetype{};
+    SpineOptional<IdentificationIdType> identificationidtype{};
+    SpineOptional<IdentificationTypeType> identificationtypetype{};
+    SpineOptional<IdentificationValueType> identificationvaluetype{};
+    SpineOptional<SessionIdType> sessionidtype{};
+    SpineOptional<SetpointIdType> setpointidtype{};
+    SpineOptional<SetpointTypeType> setpointtypetype{};
+    SpineOptional<TimeTableIdType> timetableidtype{};
+    SpineOptional<TimeSlotIdType> timeslotidtype{};
+    SpineOptional<TimeSlotCountType> timeslotcounttype{};
+    SpineOptional<TimeSlotTimeModeType> timeslottimemodetype{};
+    SpineOptional<SensingStateType> sensingstatetype{};
+    SpineOptional<SensingTypeType> sensingtypetype{};
+    SpineOptional<ErrorNumberType> errornumbertype{};
+    SpineOptional<ActuatorSwitchFctType> actuatorswitchfcttype{};
+    SpineOptional<NetworkManagementNativeSetupType> networkmanagementnativesetuptype{};
+    SpineOptional<NetworkManagementScanSetupType> networkmanagementscansetuptype{};
+    SpineOptional<NetworkManagementSetupType> networkmanagementsetuptype{};
+    SpineOptional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype{};
+    SpineOptional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype{};
+    SpineOptional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype{};
+    SpineOptional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype{};
+    SpineOptional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype{};
+    SpineOptional<ConditionIdType> conditionidtype{};
+    SpineOptional<SupplyConditionEventTypeType> supplyconditioneventtypetype{};
+    SpineOptional<SupplyConditionOriginatorType> supplyconditionoriginatortype{};
+    SpineOptional<GridConditionType> gridconditiontype{};
+    SpineOptional<AlarmIdType> alarmidtype{};
+    SpineOptional<AlarmTypeType> alarmtypetype{};
+    SpineOptional<BindingIdType> bindingidtype{};
+    SpineOptional<SubscriptionIdType> subscriptionidtype{};
+    SpineOptional<UseCaseActorEnumType> usecaseactorenumtype{};
+    SpineOptional<UseCaseActorType> usecaseactortype{};
+    SpineOptional<UseCaseNameEnumType> usecasenameenumtype{};
+    SpineOptional<UseCaseNameType> usecasenametype{};
+    SpineOptional<UseCaseScenarioSupportType> usecasescenariosupporttype{};
+    SpineOptional<SpecificationVersionDataType> specificationversiondatatype{};
+    SpineOptional<TaskManagementJobIdType> taskmanagementjobidtype{};
+    SpineOptional<TaskManagementJobStateType> taskmanagementjobstatetype{};
+    SpineOptional<TaskManagementJobSourceType> taskmanagementjobsourcetype{};
+    SpineOptional<HvacSystemFunctionIdType> hvacsystemfunctionidtype{};
+    SpineOptional<HvacSystemFunctionTypeType> hvacsystemfunctiontypetype{};
+    SpineOptional<HvacOperationModeIdType> hvacoperationmodeidtype{};
+    SpineOptional<HvacOperationModeTypeType> hvacoperationmodetypetype{};
+    SpineOptional<HvacOverrunIdType> hvacoverrunidtype{};
+    SpineOptional<HvacOverrunTypeType> hvacoverruntypetype{};
+    SpineOptional<HvacOverrunStatusType> hvacoverrunstatustype{};
+    SpineOptional<LoadControlEventIdType> loadcontroleventidtype{};
+    SpineOptional<LoadControlEventActionType> loadcontroleventactiontype{};
+    SpineOptional<LoadControlEventStateType> loadcontroleventstatetype{};
+    SpineOptional<LoadControlLimitIdType> loadcontrollimitidtype{};
+    SpineOptional<LoadControlLimitTypeType> loadcontrollimittypetype{};
+    SpineOptional<LoadControlCategoryType> loadcontrolcategorytype{};
+    SpineOptional<DeviceClassificationStringType> deviceclassificationstringtype{};
+    SpineOptional<PowerSourceType> powersourcetype{};
+    SpineOptional<ActuatorLevelFctType> actuatorlevelfcttype{};
+    SpineOptional<TimeSeriesIdType> timeseriesidtype{};
+    SpineOptional<TimeSeriesSlotIdType> timeseriesslotidtype{};
+    SpineOptional<TimeSeriesSlotCountType> timeseriesslotcounttype{};
+    SpineOptional<TimeSeriesTypeType> timeseriestypetype{};
+    SpineOptional<MessagingNumberType> messagingnumbertype{};
+    SpineOptional<MessagingTypeType> messagingtypetype{};
+    SpineOptional<MessagingDataTextType> messagingdatatexttype{};
+    SpineOptional<TariffIdType> tariffidtype{};
+    SpineOptional<TariffCountType> tariffcounttype{};
+    SpineOptional<TierBoundaryIdType> tierboundaryidtype{};
+    SpineOptional<TierBoundaryCountType> tierboundarycounttype{};
+    SpineOptional<TierBoundaryTypeType> tierboundarytypetype{};
+    SpineOptional<CommodityIdType> commodityidtype{};
+    SpineOptional<TierIdType> tieridtype{};
+    SpineOptional<TierCountType> tiercounttype{};
+    SpineOptional<TierTypeType> tiertypetype{};
+    SpineOptional<IncentiveIdType> incentiveidtype{};
+    SpineOptional<IncentiveCountType> incentivecounttype{};
+    SpineOptional<IncentiveTypeType> incentivetypetype{};
+    SpineOptional<IncentivePriorityType> incentiveprioritytype{};
+    SpineOptional<IncentiveValueTypeType> incentivevaluetypetype{};
+    SpineOptional<stateInformationIdType> stateinformationidtype{};
+    SpineOptional<StateInformationType> stateinformationtype{};
+    SpineOptional<StateInformationCategoryType> stateinformationcategorytype{};
+    SpineOptional<ElectricalConnectionIdType> electricalconnectionidtype{};
+    SpineOptional<ElectricalConnectionParameterIdType> electricalconnectionparameteridtype{};
+    SpineOptional<ElectricalConnectionMeasurandVariantType> electricalconnectionmeasurandvarianttype{};
+    SpineOptional<ElectricalConnectionVoltageTypeType> electricalconnectionvoltagetypetype{};
+    SpineOptional<ElectricalConnectionAcMeasurementTypeType> electricalconnectionacmeasurementtypetype{};
+    SpineOptional<ElectricalConnectionPhaseNameType> electricalconnectionphasenametype{};
+    SpineOptional<ElectricalConnectionCharacteristicIdType> electricalconnectioncharacteristicidtype{};
+    SpineOptional<ElectricalConnectionCharacteristicContextType> electricalconnectioncharacteristiccontexttype{};
+    SpineOptional<ElectricalConnectionCharacteristicTypeType> electricalconnectioncharacteristictypetype{};
+    SpineOptional<VendorStateCodeType> vendorstatecodetype{};
+    SpineOptional<LastErrorCodeType> lasterrorcodetype{};
+    SpineOptional<DeviceDiagnosisOperatingStateType> devicediagnosisoperatingstatetype{};
+    SpineOptional<PowerSupplyConditionType> powersupplyconditiontype{};
+    SpineOptional<DeviceConfigurationKeyIdType> deviceconfigurationkeyidtype{};
+    SpineOptional<DeviceConfigurationKeyValueStringType> deviceconfigurationkeyvaluestringtype{};
+    SpineOptional<DeviceConfigurationKeyNameType> deviceconfigurationkeynametype{};
+    SpineOptional<MsgCounterType> msgcountertype{};
+    SpineOptional<FilterIdType> filteridtype{};
+    SpineOptional<PurposeIdType> purposeidtype{};
+    SpineOptional<ChannelIdType> channelidtype{};
+    SpineOptional<DirectControlActivityStateEnumType> directcontrolactivitystateenumtype{};
+    SpineOptional<RecurringIntervalEnumType> recurringintervalenumtype{};
+    SpineOptional<MonthType> monthtype{};
+    SpineOptional<DayOfWeekType> dayofweektype{};
+    SpineOptional<OccurrenceEnumType> occurrenceenumtype{};
+    SpineOptional<CommodityTypeEnumType> commoditytypeenumtype{};
+    SpineOptional<EnergyDirectionEnumType> energydirectionenumtype{};
+    SpineOptional<EnergyModeEnumType> energymodeenumtype{};
+    SpineOptional<UnitOfMeasurementEnumType> unitofmeasurementenumtype{};
+    SpineOptional<CurrencyEnumType> currencyenumtype{};
+    SpineOptional<ScopeTypeEnumType> scopetypeenumtype{};
+    SpineOptional<RoleType> roletype{};
+    SpineOptional<DeviceTypeEnumType> devicetypeenumtype{};
+    SpineOptional<EntityTypeEnumType> entitytypeenumtype{};
+    SpineOptional<FeatureTypeEnumType> featuretypeenumtype{};
+    SpineOptional<FeatureDirectControlSpecificUsageEnumType> featuredirectcontrolspecificusageenumtype{};
+    SpineOptional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype{};
+    SpineOptional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype{};
+    SpineOptional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype{};
+    SpineOptional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype{};
+    SpineOptional<FunctionEnumType> functionenumtype{};
+    SpineOptional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype{};
+    SpineOptional<PowerSequenceScopeEnumType> powersequencescopeenumtype{};
+    SpineOptional<PowerSequenceStateEnumType> powersequencestateenumtype{};
+    SpineOptional<MeasurementTypeEnumType> measurementtypeenumtype{};
+    SpineOptional<MeasurementValueTypeEnumType> measurementvaluetypeenumtype{};
+    SpineOptional<MeasurementValueSourceEnumType> measurementvaluesourceenumtype{};
+    SpineOptional<MeasurementValueTendencyEnumType> measurementvaluetendencyenumtype{};
+    SpineOptional<MeasurementValueStateEnumType> measurementvaluestateenumtype{};
+    SpineOptional<ThresholdTypeEnumType> thresholdtypeenumtype{};
+    SpineOptional<BillTypeEnumType> billtypeenumtype{};
+    SpineOptional<BillPositionTypeEnumType> billpositiontypeenumtype{};
+    SpineOptional<BillCostTypeEnumType> billcosttypeenumtype{};
+    SpineOptional<IdentificationTypeEnumType> identificationtypeenumtype{};
+    SpineOptional<SetpointTypeEnumType> setpointtypeenumtype{};
+    SpineOptional<TimeSlotTimeModeEnumType> timeslottimemodeenumtype{};
+    SpineOptional<SensingStateEnumType> sensingstateenumtype{};
+    SpineOptional<SensingTypeEnumType> sensingtypeenumtype{};
+    SpineOptional<ActuatorSwitchFctEnumType> actuatorswitchfctenumtype{};
+    SpineOptional<NetworkManagementFeatureSetType> networkmanagementfeaturesettype{};
+    SpineOptional<NetworkManagementProcessStateStateType> networkmanagementprocessstatestatetype{};
+    SpineOptional<NetworkManagementStateChangeType> networkmanagementstatechangetype{};
+    SpineOptional<SupplyConditionEventTypeEnumType> supplyconditioneventtypeenumtype{};
+    SpineOptional<SupplyConditionOriginatorEnumType> supplyconditionoriginatorenumtype{};
+    SpineOptional<GridConditionEnumType> gridconditionenumtype{};
+    SpineOptional<AlarmTypeEnumType> alarmtypeenumtype{};
+    SpineOptional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype{};
+    SpineOptional<LoadControlEventStateEnumType> loadcontroleventstateenumtype{};
+    SpineOptional<TaskManagementJobSourceEnumType> taskmanagementjobsourceenumtype{};
+    SpineOptional<HvacSystemFunctionTypeEnumType> hvacsystemfunctiontypeenumtype{};
+    SpineOptional<HvacOperationModeTypeEnumType> hvacoperationmodetypeenumtype{};
+    SpineOptional<HvacOverrunTypeEnumType> hvacoverruntypeenumtype{};
+    SpineOptional<LoadControlEventActionEnumType> loadcontroleventactionenumtype{};
+    SpineOptional<LoadControlLimitTypeEnumType> loadcontrollimittypeenumtype{};
+    SpineOptional<LoadControlCategoryEnumType> loadcontrolcategoryenumtype{};
+    SpineOptional<PowerSourceEnumType> powersourceenumtype{};
+    SpineOptional<ActuatorLevelFctEnumType> actuatorlevelfctenumtype{};
+    SpineOptional<TimeSeriesTypeEnumType> timeseriestypeenumtype{};
+    SpineOptional<MessagingTypeEnumType> messagingtypeenumtype{};
+    SpineOptional<TierBoundaryTypeEnumType> tierboundarytypeenumtype{};
+    SpineOptional<TierTypeEnumType> tiertypeenumtype{};
+    SpineOptional<IncentiveTypeEnumType> incentivetypeenumtype{};
+    SpineOptional<IncentiveValueTypeEnumType> incentivevaluetypeenumtype{};
+    SpineOptional<StateInformationFunctionalityEnumType> stateinformationfunctionalityenumtype{};
+    SpineOptional<StateInformationFailureEnumType> stateinformationfailureenumtype{};
+    SpineOptional<StateInformationCategoryEnumType> stateinformationcategoryenumtype{};
+    SpineOptional<ElectricalConnectionMeasurandVariantEnumType> electricalconnectionmeasurandvariantenumtype{};
+    SpineOptional<ElectricalConnectionVoltageTypeEnumType> electricalconnectionvoltagetypeenumtype{};
+    SpineOptional<ElectricalConnectionAcMeasurementTypeEnumType> electricalconnectionacmeasurementtypeenumtype{};
+    SpineOptional<ElectricalConnectionPhaseNameEnumType> electricalconnectionphasenameenumtype{};
+    SpineOptional<ElectricalConnectionConnectionPointType> electricalconnectionconnectionpointtype{};
+    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> electricalconnectioncharacteristiccontextenumtype{};
+    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> electricalconnectioncharacteristictypeenumtype{};
+    SpineOptional<DeviceDiagnosisOperatingStateEnumType> devicediagnosisoperatingstateenumtype{};
+    SpineOptional<PowerSupplyConditionEnumType> powersupplyconditionenumtype{};
+    SpineOptional<DeviceConfigurationKeyNameEnumType> deviceconfigurationkeynameenumtype{};
+    SpineOptional<DeviceConfigurationKeyValueTypeType> deviceconfigurationkeyvaluetypetype{};
+    SpineOptional<CmdClassifierType> cmdclassifiertype{};
+    SpineOptional<ScaledNumberType> scalednumbertype{};
+    SpineOptional<DirectControlActivityDataType> directcontrolactivitydatatype{};
+    SpineOptional<ElementTagType> elementtagtype{};
+    SpineOptional<ScaledNumberElementsType> scalednumberelementstype{};
+    SpineOptional<DirectControlActivityDataElementsType> directcontrolactivitydataelementstype{};
+    SpineOptional<DirectControlActivityListDataType> directcontrolactivitylistdatatype{};
+    SpineOptional<TimestampIntervalType> timestampintervaltype{};
+    SpineOptional<DirectControlActivityListDataSelectorsType> directcontrolactivitylistdataselectorstype{};
+    SpineOptional<DirectControlDescriptionDataType> directcontroldescriptiondatatype{};
+    SpineOptional<DirectControlDescriptionDataElementsType> directcontroldescriptiondataelementstype{};
+    SpineOptional<TimePeriodType> timeperiodtype{};
+    SpineOptional<TimePeriodElementsType> timeperiodelementstype{};
+    SpineOptional<DaysOfWeekType> daysofweektype{};
+    SpineOptional<AbsoluteOrRecurringTimeType> absoluteorrecurringtimetype{};
+    SpineOptional<AbsoluteOrRecurringTimeElementsType> absoluteorrecurringtimeelementstype{};
+    SpineOptional<RecurrenceInformationType> recurrenceinformationtype{};
+    SpineOptional<RecurrenceInformationElementsType> recurrenceinformationelementstype{};
+    SpineOptional<ScaledNumberRangeType> scalednumberrangetype{};
+    SpineOptional<ScaledNumberRangeElementsType> scalednumberrangeelementstype{};
+    SpineOptional<ScaledNumberSetType> scalednumbersettype{};
+    SpineOptional<ScaledNumberSetElementsType> scalednumbersetelementstype{};
+    SpineOptional<DeviceAddressType> deviceaddresstype{};
+    SpineOptional<DeviceAddressElementsType> deviceaddresselementstype{};
+    SpineOptional<EntityAddressType> entityaddresstype{};
+    SpineOptional<EntityAddressElementsType> entityaddresselementstype{};
+    SpineOptional<FeatureAddressType> featureaddresstype{};
+    SpineOptional<FeatureAddressElementsType> featureaddresselementstype{};
+    SpineOptional<PossibleOperationsClassifierType> possibleoperationsclassifiertype{};
+    SpineOptional<PossibleOperationsReadType> possibleoperationsreadtype{};
+    SpineOptional<PossibleOperationsWriteType> possibleoperationswritetype{};
+    SpineOptional<PossibleOperationsType> possibleoperationstype{};
+    SpineOptional<PossibleOperationsElementsType> possibleoperationselementstype{};
+    SpineOptional<FunctionPropertyType> functionpropertytype{};
+    SpineOptional<FunctionPropertyElementsType> functionpropertyelementstype{};
+    SpineOptional<PowerTimeSlotScheduleDataType> powertimeslotscheduledatatype{};
+    SpineOptional<PowerTimeSlotScheduleDataElementsType> powertimeslotscheduledataelementstype{};
+    SpineOptional<PowerTimeSlotScheduleListDataType> powertimeslotschedulelistdatatype{};
+    SpineOptional<PowerTimeSlotScheduleListDataSelectorsType> powertimeslotschedulelistdataselectorstype{};
+    SpineOptional<PowerTimeSlotValueDataType> powertimeslotvaluedatatype{};
+    SpineOptional<PowerTimeSlotValueDataElementsType> powertimeslotvaluedataelementstype{};
+    SpineOptional<PowerTimeSlotValueListDataType> powertimeslotvaluelistdatatype{};
+    SpineOptional<PowerTimeSlotValueListDataSelectorsType> powertimeslotvaluelistdataselectorstype{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype{};
+    SpineOptional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype{};
+    SpineOptional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype{};
+    SpineOptional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype{};
+    SpineOptional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype{};
+    SpineOptional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype{};
+    SpineOptional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype{};
+    SpineOptional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype{};
+    SpineOptional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype{};
+    SpineOptional<PowerSequenceDescriptionListDataSelectorsType> powersequencedescriptionlistdataselectorstype{};
+    SpineOptional<PowerSequenceStateDataType> powersequencestatedatatype{};
+    SpineOptional<PowerSequenceStateDataElementsType> powersequencestatedataelementstype{};
+    SpineOptional<PowerSequenceStateListDataType> powersequencestatelistdatatype{};
+    SpineOptional<PowerSequenceStateListDataSelectorsType> powersequencestatelistdataselectorstype{};
+    SpineOptional<PowerSequenceScheduleDataType> powersequencescheduledatatype{};
+    SpineOptional<PowerSequenceScheduleDataElementsType> powersequencescheduledataelementstype{};
+    SpineOptional<PowerSequenceScheduleListDataType> powersequenceschedulelistdatatype{};
+    SpineOptional<PowerSequenceScheduleListDataSelectorsType> powersequenceschedulelistdataselectorstype{};
+    SpineOptional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype{};
+    SpineOptional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype{};
+    SpineOptional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype{};
+    SpineOptional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype{};
+    SpineOptional<PowerSequencePriceDataType> powersequencepricedatatype{};
+    SpineOptional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype{};
+    SpineOptional<PowerSequencePriceListDataType> powersequencepricelistdatatype{};
+    SpineOptional<PowerSequencePriceListDataSelectorsType> powersequencepricelistdataselectorstype{};
+    SpineOptional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype{};
+    SpineOptional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype{};
+    SpineOptional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype{};
+    SpineOptional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype{};
+    SpineOptional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype{};
+    SpineOptional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype{};
+    SpineOptional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype{};
+    SpineOptional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype{};
+    SpineOptional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype{};
+    SpineOptional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype{};
+    SpineOptional<MeasurementDataType> measurementdatatype{};
+    SpineOptional<MeasurementDataElementsType> measurementdataelementstype{};
+    SpineOptional<MeasurementListDataType> measurementlistdatatype{};
+    SpineOptional<MeasurementListDataSelectorsType> measurementlistdataselectorstype{};
+    SpineOptional<MeasurementSeriesDataType> measurementseriesdatatype{};
+    SpineOptional<MeasurementSeriesDataElementsType> measurementseriesdataelementstype{};
+    SpineOptional<MeasurementSeriesListDataType> measurementserieslistdatatype{};
+    SpineOptional<MeasurementSeriesListDataSelectorsType> measurementserieslistdataselectorstype{};
+    SpineOptional<MeasurementConstraintsDataType> measurementconstraintsdatatype{};
+    SpineOptional<MeasurementConstraintsDataElementsType> measurementconstraintsdataelementstype{};
+    SpineOptional<MeasurementConstraintsListDataType> measurementconstraintslistdatatype{};
+    SpineOptional<MeasurementConstraintsListDataSelectorsType> measurementconstraintslistdataselectorstype{};
+    SpineOptional<MeasurementDescriptionDataType> measurementdescriptiondatatype{};
+    SpineOptional<MeasurementDescriptionDataElementsType> measurementdescriptiondataelementstype{};
+    SpineOptional<MeasurementDescriptionListDataType> measurementdescriptionlistdatatype{};
+    SpineOptional<MeasurementDescriptionListDataSelectorsType> measurementdescriptionlistdataselectorstype{};
+    SpineOptional<MeasurementThresholdRelationDataType> measurementthresholdrelationdatatype{};
+    SpineOptional<MeasurementThresholdRelationDataElementsType> measurementthresholdrelationdataelementstype{};
+    SpineOptional<MeasurementThresholdRelationListDataType> measurementthresholdrelationlistdatatype{};
+    SpineOptional<MeasurementThresholdRelationListDataSelectorsType> measurementthresholdrelationlistdataselectorstype{};
+    SpineOptional<ThresholdDataType> thresholddatatype{};
+    SpineOptional<ThresholdDataElementsType> thresholddataelementstype{};
+    SpineOptional<ThresholdListDataType> thresholdlistdatatype{};
+    SpineOptional<ThresholdListDataSelectorsType> thresholdlistdataselectorstype{};
+    SpineOptional<ThresholdConstraintsDataType> thresholdconstraintsdatatype{};
+    SpineOptional<ThresholdConstraintsDataElementsType> thresholdconstraintsdataelementstype{};
+    SpineOptional<ThresholdConstraintsListDataType> thresholdconstraintslistdatatype{};
+    SpineOptional<ThresholdConstraintsListDataSelectorsType> thresholdconstraintslistdataselectorstype{};
+    SpineOptional<ThresholdDescriptionDataType> thresholddescriptiondatatype{};
+    SpineOptional<ThresholdDescriptionDataElementsType> thresholddescriptiondataelementstype{};
+    SpineOptional<ThresholdDescriptionListDataType> thresholddescriptionlistdatatype{};
+    SpineOptional<ThresholdDescriptionListDataSelectorsType> thresholddescriptionlistdataselectorstype{};
+    SpineOptional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype{};
+    SpineOptional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype{};
+    SpineOptional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype{};
+    SpineOptional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype{};
+    SpineOptional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype{};
+    SpineOptional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype{};
+    SpineOptional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype{};
+    SpineOptional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype{};
+    SpineOptional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype{};
+    SpineOptional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype{};
+    SpineOptional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype{};
+    SpineOptional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype{};
+    SpineOptional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype{};
+    SpineOptional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype{};
+    SpineOptional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype{};
+    SpineOptional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype{};
+    SpineOptional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype{};
+    SpineOptional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype{};
+    SpineOptional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype{};
+    SpineOptional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype{};
+    SpineOptional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype{};
+    SpineOptional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype{};
+    SpineOptional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype{};
+    SpineOptional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype{};
+    SpineOptional<BillValueType> billvaluetype{};
+    SpineOptional<BillValueElementsType> billvalueelementstype{};
+    SpineOptional<BillCostType> billcosttype{};
+    SpineOptional<BillCostElementsType> billcostelementstype{};
+    SpineOptional<BillPositionType> billpositiontype{};
+    SpineOptional<BillPositionElementsType> billpositionelementstype{};
+    SpineOptional<BillDataType> billdatatype{};
+    SpineOptional<BillDataElementsType> billdataelementstype{};
+    SpineOptional<BillListDataType> billlistdatatype{};
+    SpineOptional<BillListDataSelectorsType> billlistdataselectorstype{};
+    SpineOptional<BillConstraintsDataType> billconstraintsdatatype{};
+    SpineOptional<BillConstraintsDataElementsType> billconstraintsdataelementstype{};
+    SpineOptional<BillConstraintsListDataType> billconstraintslistdatatype{};
+    SpineOptional<BillConstraintsListDataSelectorsType> billconstraintslistdataselectorstype{};
+    SpineOptional<BillDescriptionDataType> billdescriptiondatatype{};
+    SpineOptional<BillDescriptionDataElementsType> billdescriptiondataelementstype{};
+    SpineOptional<BillDescriptionListDataType> billdescriptionlistdatatype{};
+    SpineOptional<BillDescriptionListDataSelectorsType> billdescriptionlistdataselectorstype{};
+    SpineOptional<IdentificationDataType> identificationdatatype{};
+    SpineOptional<IdentificationDataElementsType> identificationdataelementstype{};
+    SpineOptional<IdentificationListDataType> identificationlistdatatype{};
+    SpineOptional<IdentificationListDataSelectorsType> identificationlistdataselectorstype{};
+    SpineOptional<SessionIdentificationDataType> sessionidentificationdatatype{};
+    SpineOptional<SessionIdentificationDataElementsType> sessionidentificationdataelementstype{};
+    SpineOptional<SessionIdentificationListDataType> sessionidentificationlistdatatype{};
+    SpineOptional<SessionIdentificationListDataSelectorsType> sessionidentificationlistdataselectorstype{};
+    SpineOptional<SessionMeasurementRelationDataType> sessionmeasurementrelationdatatype{};
+    SpineOptional<SessionMeasurementRelationDataElementsType> sessionmeasurementrelationdataelementstype{};
+    SpineOptional<SessionMeasurementRelationListDataType> sessionmeasurementrelationlistdatatype{};
+    SpineOptional<SessionMeasurementRelationListDataSelectorsType> sessionmeasurementrelationlistdataselectorstype{};
+    SpineOptional<SetpointDataType> setpointdatatype{};
+    SpineOptional<SetpointDataElementsType> setpointdataelementstype{};
+    SpineOptional<SetpointListDataType> setpointlistdatatype{};
+    SpineOptional<SetpointListDataSelectorsType> setpointlistdataselectorstype{};
+    SpineOptional<SetpointConstraintsDataType> setpointconstraintsdatatype{};
+    SpineOptional<SetpointConstraintsDataElementsType> setpointconstraintsdataelementstype{};
+    SpineOptional<SetpointConstraintsListDataType> setpointconstraintslistdatatype{};
+    SpineOptional<SetpointConstraintsListDataSelectorsType> setpointconstraintslistdataselectorstype{};
+    SpineOptional<SetpointDescriptionDataType> setpointdescriptiondatatype{};
+    SpineOptional<SetpointDescriptionDataElementsType> setpointdescriptiondataelementstype{};
+    SpineOptional<SetpointDescriptionListDataType> setpointdescriptionlistdatatype{};
+    SpineOptional<SetpointDescriptionListDataSelectorsType> setpointdescriptionlistdataselectorstype{};
+    SpineOptional<TimeTableDataType> timetabledatatype{};
+    SpineOptional<TimeTableDataElementsType> timetabledataelementstype{};
+    SpineOptional<TimeTableListDataType> timetablelistdatatype{};
+    SpineOptional<TimeTableListDataSelectorsType> timetablelistdataselectorstype{};
+    SpineOptional<TimeTableConstraintsDataType> timetableconstraintsdatatype{};
+    SpineOptional<TimeTableConstraintsDataElementsType> timetableconstraintsdataelementstype{};
+    SpineOptional<TimeTableConstraintsListDataType> timetableconstraintslistdatatype{};
+    SpineOptional<TimeTableConstraintsListDataSelectorsType> timetableconstraintslistdataselectorstype{};
+    SpineOptional<TimeTableDescriptionDataType> timetabledescriptiondatatype{};
+    SpineOptional<TimeTableDescriptionDataElementsType> timetabledescriptiondataelementstype{};
+    SpineOptional<TimeTableDescriptionListDataType> timetabledescriptionlistdatatype{};
+    SpineOptional<TimeTableDescriptionListDataSelectorsType> timetabledescriptionlistdataselectorstype{};
+    SpineOptional<SensingDataType> sensingdatatype{};
+    SpineOptional<SensingDataElementsType> sensingdataelementstype{};
+    SpineOptional<SensingListDataType> sensinglistdatatype{};
+    SpineOptional<SensingListDataSelectorsType> sensinglistdataselectorstype{};
+    SpineOptional<SensingDescriptionDataType> sensingdescriptiondatatype{};
+    SpineOptional<SensingDescriptionDataElementsType> sensingdescriptiondataelementstype{};
+    SpineOptional<ResultDataType> resultdatatype{};
+    SpineOptional<ActuatorSwitchDataType> actuatorswitchdatatype{};
+    SpineOptional<ActuatorSwitchDataElementsType> actuatorswitchdataelementstype{};
+    SpineOptional<ActuatorSwitchDescriptionDataType> actuatorswitchdescriptiondatatype{};
+    SpineOptional<ActuatorSwitchDescriptionDataElementsType> actuatorswitchdescriptiondataelementstype{};
+    SpineOptional<NetworkManagementAddNodeCallType> networkmanagementaddnodecalltype{};
+    SpineOptional<NetworkManagementAddNodeCallElementsType> networkmanagementaddnodecallelementstype{};
+    SpineOptional<NetworkManagementRemoveNodeCallType> networkmanagementremovenodecalltype{};
+    SpineOptional<NetworkManagementRemoveNodeCallElementsType> networkmanagementremovenodecallelementstype{};
+    SpineOptional<NetworkManagementModifyNodeCallType> networkmanagementmodifynodecalltype{};
+    SpineOptional<NetworkManagementModifyNodeCallElementsType> networkmanagementmodifynodecallelementstype{};
+    SpineOptional<NetworkManagementScanNetworkCallType> networkmanagementscannetworkcalltype{};
+    SpineOptional<NetworkManagementScanNetworkCallElementsType> networkmanagementscannetworkcallelementstype{};
+    SpineOptional<NetworkManagementDiscoverCallType> networkmanagementdiscovercalltype{};
+    SpineOptional<NetworkManagementDiscoverCallElementsType> networkmanagementdiscovercallelementstype{};
+    SpineOptional<NetworkManagementAbortCallType> networkmanagementabortcalltype{};
+    SpineOptional<NetworkManagementAbortCallElementsType> networkmanagementabortcallelementstype{};
+    SpineOptional<NetworkManagementProcessStateDataType> networkmanagementprocessstatedatatype{};
+    SpineOptional<NetworkManagementProcessStateDataElementsType> networkmanagementprocessstatedataelementstype{};
+    SpineOptional<NetworkManagementJoiningModeDataType> networkmanagementjoiningmodedatatype{};
+    SpineOptional<NetworkManagementJoiningModeDataElementsType> networkmanagementjoiningmodedataelementstype{};
+    SpineOptional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype{};
+    SpineOptional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype{};
+    SpineOptional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype{};
+    SpineOptional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype{};
+    SpineOptional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype{};
+    SpineOptional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype{};
+    SpineOptional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype{};
+    SpineOptional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype{};
+    SpineOptional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype{};
+    SpineOptional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype{};
+    SpineOptional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype{};
+    SpineOptional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype{};
+    SpineOptional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype{};
+    SpineOptional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype{};
+    SpineOptional<SupplyConditionDataType> supplyconditiondatatype{};
+    SpineOptional<SupplyConditionDataElementsType> supplyconditiondataelementstype{};
+    SpineOptional<SupplyConditionListDataType> supplyconditionlistdatatype{};
+    SpineOptional<SupplyConditionListDataSelectorsType> supplyconditionlistdataselectorstype{};
+    SpineOptional<SupplyConditionDescriptionDataType> supplyconditiondescriptiondatatype{};
+    SpineOptional<SupplyConditionDescriptionDataElementsType> supplyconditiondescriptiondataelementstype{};
+    SpineOptional<SupplyConditionDescriptionListDataType> supplyconditiondescriptionlistdatatype{};
+    SpineOptional<SupplyConditionDescriptionListDataSelectorsType> supplyconditiondescriptionlistdataselectorstype{};
+    SpineOptional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype{};
+    SpineOptional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype{};
+    SpineOptional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype{};
+    SpineOptional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype{};
+    SpineOptional<AlarmDataType> alarmdatatype{};
+    SpineOptional<AlarmDataElementsType> alarmdataelementstype{};
+    SpineOptional<AlarmListDataType> alarmlistdatatype{};
+    SpineOptional<AlarmListDataSelectorsType> alarmlistdataselectorstype{};
+    SpineOptional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype{};
+    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype{};
+    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype{};
+    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype{};
+    SpineOptional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype{};
+    SpineOptional<SpecificationVersionDataElementsType> specificationversiondataelementstype{};
+    SpineOptional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype{};
+    SpineOptional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> nodemanagementdetaileddiscoverydeviceinformationelementstype{};
+    SpineOptional<NodeManagementDetailedDiscoveryEntityInformationElementsType> nodemanagementdetaileddiscoveryentityinformationelementstype{};
+    SpineOptional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> nodemanagementdetaileddiscoveryfeatureinformationelementstype{};
+    SpineOptional<NodeManagementDetailedDiscoveryDataElementsType> nodemanagementdetaileddiscoverydataelementstype{};
+    SpineOptional<NodeManagementDetailedDiscoveryDataSelectorsType> nodemanagementdetaileddiscoverydataselectorstype{};
+    SpineOptional<BindingManagementEntryDataType> bindingmanagemententrydatatype{};
+    SpineOptional<NodeManagementBindingDataType> nodemanagementbindingdatatype{};
+    SpineOptional<BindingManagementEntryDataElementsType> bindingmanagemententrydataelementstype{};
+    SpineOptional<NodeManagementBindingDataElementsType> nodemanagementbindingdataelementstype{};
+    SpineOptional<BindingManagementEntryListDataSelectorsType> bindingmanagemententrylistdataselectorstype{};
+    SpineOptional<NodeManagementBindingDataSelectorsType> nodemanagementbindingdataselectorstype{};
+    SpineOptional<BindingManagementRequestCallType> bindingmanagementrequestcalltype{};
+    SpineOptional<NodeManagementBindingRequestCallType> nodemanagementbindingrequestcalltype{};
+    SpineOptional<BindingManagementRequestCallElementsType> bindingmanagementrequestcallelementstype{};
+    SpineOptional<NodeManagementBindingRequestCallElementsType> nodemanagementbindingrequestcallelementstype{};
+    SpineOptional<BindingManagementDeleteCallType> bindingmanagementdeletecalltype{};
+    SpineOptional<NodeManagementBindingDeleteCallType> nodemanagementbindingdeletecalltype{};
+    SpineOptional<BindingManagementDeleteCallElementsType> bindingmanagementdeletecallelementstype{};
+    SpineOptional<NodeManagementBindingDeleteCallElementsType> nodemanagementbindingdeletecallelementstype{};
+    SpineOptional<SubscriptionManagementEntryDataType> subscriptionmanagemententrydatatype{};
+    SpineOptional<NodeManagementSubscriptionDataType> nodemanagementsubscriptiondatatype{};
+    SpineOptional<SubscriptionManagementEntryDataElementsType> subscriptionmanagemententrydataelementstype{};
+    SpineOptional<NodeManagementSubscriptionDataElementsType> nodemanagementsubscriptiondataelementstype{};
+    SpineOptional<SubscriptionManagementEntryListDataSelectorsType> subscriptionmanagemententrylistdataselectorstype{};
+    SpineOptional<NodeManagementSubscriptionDataSelectorsType> nodemanagementsubscriptiondataselectorstype{};
+    SpineOptional<SubscriptionManagementRequestCallType> subscriptionmanagementrequestcalltype{};
+    SpineOptional<NodeManagementSubscriptionRequestCallType> nodemanagementsubscriptionrequestcalltype{};
+    SpineOptional<SubscriptionManagementRequestCallElementsType> subscriptionmanagementrequestcallelementstype{};
+    SpineOptional<NodeManagementSubscriptionRequestCallElementsType> nodemanagementsubscriptionrequestcallelementstype{};
+    SpineOptional<SubscriptionManagementDeleteCallType> subscriptionmanagementdeletecalltype{};
+    SpineOptional<NodeManagementSubscriptionDeleteCallType> nodemanagementsubscriptiondeletecalltype{};
+    SpineOptional<SubscriptionManagementDeleteCallElementsType> subscriptionmanagementdeletecallelementstype{};
+    SpineOptional<NodeManagementSubscriptionDeleteCallElementsType> nodemanagementsubscriptiondeletecallelementstype{};
+    SpineOptional<NodeManagementDestinationDataType> nodemanagementdestinationdatatype{};
+    SpineOptional<NodeManagementDestinationDataElementsType> nodemanagementdestinationdataelementstype{};
+    SpineOptional<NodeManagementDestinationListDataType> nodemanagementdestinationlistdatatype{};
+    SpineOptional<NodeManagementDestinationListDataSelectorsType> nodemanagementdestinationlistdataselectorstype{};
+    SpineOptional<UseCaseSupportType> usecasesupporttype{};
+    SpineOptional<UseCaseInformationDataType> usecaseinformationdatatype{};
+    SpineOptional<NodeManagementUseCaseDataType> nodemanagementusecasedatatype{};
+    SpineOptional<UseCaseSupportElementsType> usecasesupportelementstype{};
+    SpineOptional<UseCaseInformationDataElementsType> usecaseinformationdataelementstype{};
+    SpineOptional<NodeManagementUseCaseDataElementsType> nodemanagementusecasedataelementstype{};
+    SpineOptional<UseCaseSupportSelectorsType> usecasesupportselectorstype{};
+    SpineOptional<UseCaseInformationListDataSelectorsType> usecaseinformationlistdataselectorstype{};
+    SpineOptional<NodeManagementUseCaseDataSelectorsType> nodemanagementusecasedataselectorstype{};
+    SpineOptional<BindingManagementEntryListDataType> bindingmanagemententrylistdatatype{};
+    SpineOptional<SubscriptionManagementEntryListDataType> subscriptionmanagemententrylistdatatype{};
+    SpineOptional<UseCaseInformationListDataType> usecaseinformationlistdatatype{};
+    SpineOptional<SpecificationVersionListDataType> specificationversionlistdatatype{};
+    SpineOptional<SpecificationVersionListDataSelectorsType> specificationversionlistdataselectorstype{};
+    SpineOptional<TaskManagementDirectControlRelatedType> taskmanagementdirectcontrolrelatedtype{};
+    SpineOptional<TaskManagementDirectControlRelatedElementsType> taskmanagementdirectcontrolrelatedelementstype{};
+    SpineOptional<TaskManagementHvacRelatedType> taskmanagementhvacrelatedtype{};
+    SpineOptional<TaskManagementHvacRelatedElementsType> taskmanagementhvacrelatedelementstype{};
+    SpineOptional<TaskManagementLoadControlReleatedType> taskmanagementloadcontrolreleatedtype{};
+    SpineOptional<TaskManagementLoadControlReleatedElementsType> taskmanagementloadcontrolreleatedelementstype{};
+    SpineOptional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype{};
+    SpineOptional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype{};
+    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype{};
+    SpineOptional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype{};
+    SpineOptional<TaskManagementJobDataType> taskmanagementjobdatatype{};
+    SpineOptional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype{};
+    SpineOptional<TaskManagementJobListDataType> taskmanagementjoblistdatatype{};
+    SpineOptional<TaskManagementJobListDataSelectorsType> taskmanagementjoblistdataselectorstype{};
+    SpineOptional<TaskManagementJobRelationDataType> taskmanagementjobrelationdatatype{};
+    SpineOptional<TaskManagementJobRelationDataElementsType> taskmanagementjobrelationdataelementstype{};
+    SpineOptional<TaskManagementJobRelationListDataType> taskmanagementjobrelationlistdatatype{};
+    SpineOptional<TaskManagementJobRelationListDataSelectorsType> taskmanagementjobrelationlistdataselectorstype{};
+    SpineOptional<TaskManagementJobDescriptionDataType> taskmanagementjobdescriptiondatatype{};
+    SpineOptional<TaskManagementJobDescriptionDataElementsType> taskmanagementjobdescriptiondataelementstype{};
+    SpineOptional<TaskManagementJobDescriptionListDataType> taskmanagementjobdescriptionlistdatatype{};
+    SpineOptional<TaskManagementJobDescriptionListDataSelectorsType> taskmanagementjobdescriptionlistdataselectorstype{};
+    SpineOptional<TaskManagementOverviewDataType> taskmanagementoverviewdatatype{};
+    SpineOptional<TaskManagementOverviewDataElementsType> taskmanagementoverviewdataelementstype{};
+    SpineOptional<HvacSystemFunctionDataType> hvacsystemfunctiondatatype{};
+    SpineOptional<HvacSystemFunctionDataElementsType> hvacsystemfunctiondataelementstype{};
+    SpineOptional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype{};
+    SpineOptional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype{};
+    SpineOptional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype{};
+    SpineOptional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype{};
+    SpineOptional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype{};
+    SpineOptional<HvacSystemFunctionOperationModeRelationListDataSelectorsType> hvacsystemfunctionoperationmoderelationlistdataselectorstype{};
+    SpineOptional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype{};
+    SpineOptional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype{};
+    SpineOptional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype{};
+    SpineOptional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype{};
+    SpineOptional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype{};
+    SpineOptional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype{};
+    SpineOptional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype{};
+    SpineOptional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType> hvacsystemfunctionpowersequencerelationlistdataselectorstype{};
+    SpineOptional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype{};
+    SpineOptional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype{};
+    SpineOptional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype{};
+    SpineOptional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype{};
+    SpineOptional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype{};
+    SpineOptional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype{};
+    SpineOptional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype{};
+    SpineOptional<HvacOperationModeDescriptionListDataSelectorsType> hvacoperationmodedescriptionlistdataselectorstype{};
+    SpineOptional<HvacOverrunDataType> hvacoverrundatatype{};
+    SpineOptional<HvacOverrunDataElementsType> hvacoverrundataelementstype{};
+    SpineOptional<HvacOverrunListDataType> hvacoverrunlistdatatype{};
+    SpineOptional<HvacOverrunListDataSelectorsType> hvacoverrunlistdataselectorstype{};
+    SpineOptional<HvacOverrunDescriptionDataType> hvacoverrundescriptiondatatype{};
+    SpineOptional<HvacOverrunDescriptionDataElementsType> hvacoverrundescriptiondataelementstype{};
+    SpineOptional<HvacOverrunDescriptionListDataType> hvacoverrundescriptionlistdatatype{};
+    SpineOptional<HvacOverrunDescriptionListDataSelectorsType> hvacoverrundescriptionlistdataselectorstype{};
+    SpineOptional<LoadControlNodeDataType> loadcontrolnodedatatype{};
+    SpineOptional<LoadControlNodeDataElementsType> loadcontrolnodedataelementstype{};
+    SpineOptional<LoadControlEventDataType> loadcontroleventdatatype{};
+    SpineOptional<LoadControlEventDataElementsType> loadcontroleventdataelementstype{};
+    SpineOptional<LoadControlEventListDataType> loadcontroleventlistdatatype{};
+    SpineOptional<LoadControlEventListDataSelectorsType> loadcontroleventlistdataselectorstype{};
+    SpineOptional<LoadControlStateDataType> loadcontrolstatedatatype{};
+    SpineOptional<LoadControlStateDataElementsType> loadcontrolstatedataelementstype{};
+    SpineOptional<LoadControlStateListDataType> loadcontrolstatelistdatatype{};
+    SpineOptional<LoadControlStateListDataSelectorsType> loadcontrolstatelistdataselectorstype{};
+    SpineOptional<LoadControlLimitDataType> loadcontrollimitdatatype{};
+    SpineOptional<LoadControlLimitDataElementsType> loadcontrollimitdataelementstype{};
+    SpineOptional<LoadControlLimitListDataType> loadcontrollimitlistdatatype{};
+    SpineOptional<LoadControlLimitListDataSelectorsType> loadcontrollimitlistdataselectorstype{};
+    SpineOptional<LoadControlLimitConstraintsDataType> loadcontrollimitconstraintsdatatype{};
+    SpineOptional<LoadControlLimitConstraintsDataElementsType> loadcontrollimitconstraintsdataelementstype{};
+    SpineOptional<LoadControlLimitConstraintsListDataType> loadcontrollimitconstraintslistdatatype{};
+    SpineOptional<LoadControlLimitConstraintsListDataSelectorsType> loadcontrollimitconstraintslistdataselectorstype{};
+    SpineOptional<LoadControlLimitDescriptionDataType> loadcontrollimitdescriptiondatatype{};
+    SpineOptional<LoadControlLimitDescriptionDataElementsType> loadcontrollimitdescriptiondataelementstype{};
+    SpineOptional<LoadControlLimitDescriptionListDataType> loadcontrollimitdescriptionlistdatatype{};
+    SpineOptional<LoadControlLimitDescriptionListDataSelectorsType> loadcontrollimitdescriptionlistdataselectorstype{};
+    SpineOptional<DeviceClassificationManufacturerDataType> deviceclassificationmanufacturerdatatype{};
+    SpineOptional<DeviceClassificationManufacturerDataElementsType> deviceclassificationmanufacturerdataelementstype{};
+    SpineOptional<DeviceClassificationUserDataType> deviceclassificationuserdatatype{};
+    SpineOptional<DeviceClassificationUserDataElementsType> deviceclassificationuserdataelementstype{};
+    SpineOptional<ActuatorLevelDataType> actuatorleveldatatype{};
+    SpineOptional<ActuatorLevelDataElementsType> actuatorleveldataelementstype{};
+    SpineOptional<ActuatorLevelDescriptionDataType> actuatorleveldescriptiondatatype{};
+    SpineOptional<ActuatorLevelDescriptionDataElementsType> actuatorleveldescriptiondataelementstype{};
+    SpineOptional<TimeSeriesSlotType> timeseriesslottype{};
+    SpineOptional<TimeSeriesSlotElementsType> timeseriesslotelementstype{};
+    SpineOptional<TimeSeriesDataType> timeseriesdatatype{};
+    SpineOptional<TimeSeriesDataElementsType> timeseriesdataelementstype{};
+    SpineOptional<TimeSeriesListDataType> timeserieslistdatatype{};
+    SpineOptional<TimeSeriesListDataSelectorsType> timeserieslistdataselectorstype{};
+    SpineOptional<TimeSeriesDescriptionDataType> timeseriesdescriptiondatatype{};
+    SpineOptional<TimeSeriesDescriptionDataElementsType> timeseriesdescriptiondataelementstype{};
+    SpineOptional<TimeSeriesDescriptionListDataType> timeseriesdescriptionlistdatatype{};
+    SpineOptional<TimeSeriesDescriptionListDataSelectorsType> timeseriesdescriptionlistdataselectorstype{};
+    SpineOptional<TimeSeriesConstraintsDataType> timeseriesconstraintsdatatype{};
+    SpineOptional<TimeSeriesConstraintsDataElementsType> timeseriesconstraintsdataelementstype{};
+    SpineOptional<TimeSeriesConstraintsListDataType> timeseriesconstraintslistdatatype{};
+    SpineOptional<TimeSeriesConstraintsListDataSelectorsType> timeseriesconstraintslistdataselectorstype{};
+    SpineOptional<SmartEnergyManagementPsAlternativesRelationType> smartenergymanagementpsalternativesrelationtype{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListType> smartenergymanagementpspowertimeslotvaluelisttype{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotType> smartenergymanagementpspowertimeslottype{};
+    SpineOptional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype{};
+    SpineOptional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype{};
+    SpineOptional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype{};
+    SpineOptional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype{};
+    SpineOptional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype{};
+    SpineOptional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype{};
+    SpineOptional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype{};
+    SpineOptional<SmartEnergyManagementPsDataElementsType> smartenergymanagementpsdataelementstype{};
+    SpineOptional<SmartEnergyManagementPsDataSelectorsType> smartenergymanagementpsdataselectorstype{};
+    SpineOptional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype{};
+    SpineOptional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype{};
+    SpineOptional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype{};
+    SpineOptional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype{};
+    SpineOptional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype{};
+    SpineOptional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype{};
+    SpineOptional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType> smartenergymanagementpspricecalculationrequestcallelementstype{};
+    SpineOptional<MessagingDataType> messagingdatatype{};
+    SpineOptional<MessagingDataElementsType> messagingdataelementstype{};
+    SpineOptional<MessagingListDataType> messaginglistdatatype{};
+    SpineOptional<MessagingListDataSelectorsType> messaginglistdataselectorstype{};
+    SpineOptional<TariffOverallConstraintsDataType> tariffoverallconstraintsdatatype{};
+    SpineOptional<TariffOverallConstraintsDataElementsType> tariffoverallconstraintsdataelementstype{};
+    SpineOptional<TariffDataType> tariffdatatype{};
+    SpineOptional<TariffDataElementsType> tariffdataelementstype{};
+    SpineOptional<TariffListDataType> tarifflistdatatype{};
+    SpineOptional<TariffListDataSelectorsType> tarifflistdataselectorstype{};
+    SpineOptional<TariffTierRelationDataType> tarifftierrelationdatatype{};
+    SpineOptional<TariffTierRelationDataElementsType> tarifftierrelationdataelementstype{};
+    SpineOptional<TariffTierRelationListDataType> tarifftierrelationlistdatatype{};
+    SpineOptional<TariffTierRelationListDataSelectorsType> tarifftierrelationlistdataselectorstype{};
+    SpineOptional<TariffBoundaryRelationDataType> tariffboundaryrelationdatatype{};
+    SpineOptional<TariffBoundaryRelationDataElementsType> tariffboundaryrelationdataelementstype{};
+    SpineOptional<TariffBoundaryRelationListDataType> tariffboundaryrelationlistdatatype{};
+    SpineOptional<TariffBoundaryRelationListDataSelectorsType> tariffboundaryrelationlistdataselectorstype{};
+    SpineOptional<TariffDescriptionDataType> tariffdescriptiondatatype{};
+    SpineOptional<TariffDescriptionDataElementsType> tariffdescriptiondataelementstype{};
+    SpineOptional<TariffDescriptionListDataType> tariffdescriptionlistdatatype{};
+    SpineOptional<TariffDescriptionListDataSelectorsType> tariffdescriptionlistdataselectorstype{};
+    SpineOptional<TierBoundaryDataType> tierboundarydatatype{};
+    SpineOptional<TierBoundaryDataElementsType> tierboundarydataelementstype{};
+    SpineOptional<TierBoundaryListDataType> tierboundarylistdatatype{};
+    SpineOptional<TierBoundaryListDataSelectorsType> tierboundarylistdataselectorstype{};
+    SpineOptional<TierBoundaryDescriptionDataType> tierboundarydescriptiondatatype{};
+    SpineOptional<TierBoundaryDescriptionDataElementsType> tierboundarydescriptiondataelementstype{};
+    SpineOptional<TierBoundaryDescriptionListDataType> tierboundarydescriptionlistdatatype{};
+    SpineOptional<TierBoundaryDescriptionListDataSelectorsType> tierboundarydescriptionlistdataselectorstype{};
+    SpineOptional<CommodityDataType> commoditydatatype{};
+    SpineOptional<CommodityDataElementsType> commoditydataelementstype{};
+    SpineOptional<CommodityListDataType> commoditylistdatatype{};
+    SpineOptional<CommodityListDataSelectorsType> commoditylistdataselectorstype{};
+    SpineOptional<TierDataType> tierdatatype{};
+    SpineOptional<TierDataElementsType> tierdataelementstype{};
+    SpineOptional<TierListDataType> tierlistdatatype{};
+    SpineOptional<TierListDataSelectorsType> tierlistdataselectorstype{};
+    SpineOptional<TierIncentiveRelationDataType> tierincentiverelationdatatype{};
+    SpineOptional<TierIncentiveRelationDataElementsType> tierincentiverelationdataelementstype{};
+    SpineOptional<TierIncentiveRelationListDataType> tierincentiverelationlistdatatype{};
+    SpineOptional<TierIncentiveRelationListDataSelectorsType> tierincentiverelationlistdataselectorstype{};
+    SpineOptional<TierDescriptionDataType> tierdescriptiondatatype{};
+    SpineOptional<TierDescriptionDataElementsType> tierdescriptiondataelementstype{};
+    SpineOptional<TierDescriptionListDataType> tierdescriptionlistdatatype{};
+    SpineOptional<TierDescriptionListDataSelectorsType> tierdescriptionlistdataselectorstype{};
+    SpineOptional<IncentiveDataType> incentivedatatype{};
+    SpineOptional<IncentiveDataElementsType> incentivedataelementstype{};
+    SpineOptional<IncentiveListDataType> incentivelistdatatype{};
+    SpineOptional<IncentiveListDataSelectorsType> incentivelistdataselectorstype{};
+    SpineOptional<IncentiveDescriptionDataType> incentivedescriptiondatatype{};
+    SpineOptional<IncentiveDescriptionDataElementsType> incentivedescriptiondataelementstype{};
+    SpineOptional<IncentiveDescriptionListDataType> incentivedescriptionlistdatatype{};
+    SpineOptional<IncentiveDescriptionListDataSelectorsType> incentivedescriptionlistdataselectorstype{};
+    SpineOptional<StateInformationDataType> stateinformationdatatype{};
+    SpineOptional<StateInformationDataElementsType> stateinformationdataelementstype{};
+    SpineOptional<StateInformationListDataType> stateinformationlistdatatype{};
+    SpineOptional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype{};
+    SpineOptional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype{};
+    SpineOptional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype{};
+    SpineOptional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype{};
+    SpineOptional<ElectricalConnectionParameterDescriptionListDataSelectorsType> electricalconnectionparameterdescriptionlistdataselectorstype{};
+    SpineOptional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype{};
+    SpineOptional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype{};
+    SpineOptional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype{};
+    SpineOptional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype{};
+    SpineOptional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype{};
+    SpineOptional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype{};
+    SpineOptional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype{};
+    SpineOptional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype{};
+    SpineOptional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype{};
+    SpineOptional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype{};
+    SpineOptional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype{};
+    SpineOptional<ElectricalConnectionStateListDataSelectorsType> electricalconnectionstatelistdataselectorstype{};
+    SpineOptional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype{};
+    SpineOptional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype{};
+    SpineOptional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype{};
+    SpineOptional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype{};
+    SpineOptional<TimeInformationDataType> timeinformationdatatype{};
+    SpineOptional<TimeInformationDataElementsType> timeinformationdataelementstype{};
+    SpineOptional<TimeDistributorDataType> timedistributordatatype{};
+    SpineOptional<TimeDistributorDataElementsType> timedistributordataelementstype{};
+    SpineOptional<TimePrecisionDataType> timeprecisiondatatype{};
+    SpineOptional<TimePrecisionDataElementsType> timeprecisiondataelementstype{};
+    SpineOptional<TimeDistributorEnquiryCallType> timedistributorenquirycalltype{};
+    SpineOptional<TimeDistributorEnquiryCallElementsType> timedistributorenquirycallelementstype{};
+    SpineOptional<DeviceDiagnosisStateDataType> devicediagnosisstatedatatype{};
+    SpineOptional<DeviceDiagnosisStateDataElementsType> devicediagnosisstatedataelementstype{};
+    SpineOptional<DeviceDiagnosisHeartbeatDataType> devicediagnosisheartbeatdatatype{};
+    SpineOptional<DeviceDiagnosisHeartbeatDataElementsType> devicediagnosisheartbeatdataelementstype{};
+    SpineOptional<DeviceDiagnosisServiceDataType> devicediagnosisservicedatatype{};
+    SpineOptional<DeviceDiagnosisServiceDataElementsType> devicediagnosisservicedataelementstype{};
+    SpineOptional<DeviceConfigurationKeyValueValueType> deviceconfigurationkeyvaluevaluetype{};
+    SpineOptional<DeviceConfigurationKeyValueValueElementsType> deviceconfigurationkeyvaluevalueelementstype{};
+    SpineOptional<DeviceConfigurationKeyValueDataType> deviceconfigurationkeyvaluedatatype{};
+    SpineOptional<DeviceConfigurationKeyValueDataElementsType> deviceconfigurationkeyvaluedataelementstype{};
+    SpineOptional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype{};
+    SpineOptional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype{};
+    SpineOptional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype{};
+    SpineOptional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype{};
+    SpineOptional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype{};
+    SpineOptional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype{};
+    SpineOptional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype{};
+    SpineOptional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype{};
+    SpineOptional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype{};
+    SpineOptional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype{};
+    SpineOptional<HeaderType> headertype{};
+    SpineOptional<CmdControlType> cmdcontroltype{};
+    SpineOptional<DataTunnelingHeaderType> datatunnelingheadertype{};
+    SpineOptional<DataTunnelingHeaderElementsType> datatunnelingheaderelementstype{};
+    SpineOptional<DataTunnelingCallType> datatunnelingcalltype{};
+    SpineOptional<DataTunnelingCallElementsType> datatunnelingcallelementstype{};
+    SpineOptional<IncentiveTableTierType> incentivetabletiertype{};
+    SpineOptional<IncentiveTableIncentiveSlotType> incentivetableincentiveslottype{};
+    SpineOptional<IncentiveTableType> incentivetabletype{};
+    SpineOptional<IncentiveTableDataType> incentivetabledatatype{};
+    SpineOptional<IncentiveTableTierElementsType> incentivetabletierelementstype{};
+    SpineOptional<IncentiveTableIncentiveSlotElementsType> incentivetableincentiveslotelementstype{};
+    SpineOptional<IncentiveTableElementsType> incentivetableelementstype{};
+    SpineOptional<IncentiveTableDataElementsType> incentivetabledataelementstype{};
+    SpineOptional<IncentiveTableDataSelectorsType> incentivetabledataselectorstype{};
+    SpineOptional<IncentiveTableDescriptionTierType> incentivetabledescriptiontiertype{};
+    SpineOptional<IncentiveTableDescriptionType> incentivetabledescriptiontype{};
+    SpineOptional<IncentiveTableDescriptionDataType> incentivetabledescriptiondatatype{};
+    SpineOptional<IncentiveTableDescriptionTierElementsType> incentivetabledescriptiontierelementstype{};
+    SpineOptional<IncentiveTableDescriptionElementsType> incentivetabledescriptionelementstype{};
+    SpineOptional<IncentiveTableDescriptionDataElementsType> incentivetabledescriptiondataelementstype{};
+    SpineOptional<IncentiveTableDescriptionDataSelectorsType> incentivetabledescriptiondataselectorstype{};
+    SpineOptional<IncentiveTableConstraintsType> incentivetableconstraintstype{};
+    SpineOptional<IncentiveTableConstraintsDataType> incentivetableconstraintsdatatype{};
+    SpineOptional<IncentiveTableConstraintsElementsType> incentivetableconstraintselementstype{};
+    SpineOptional<IncentiveTableConstraintsDataElementsType> incentivetableconstraintsdataelementstype{};
+    SpineOptional<IncentiveTableConstraintsDataSelectorsType> incentivetableconstraintsdataselectorstype{};
 
     enum class Function
     {

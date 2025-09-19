@@ -543,6 +543,7 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
         }
     }
     bill_list_data.billData->push_back(billData);
+
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
     //eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, eebus.data_handler.get());
