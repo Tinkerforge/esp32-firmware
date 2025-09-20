@@ -58,7 +58,7 @@ void Certs::pre_setup()
 
     add = ConfigRoot{Config::Object({
         {"id", Config::Uint(0, 0, MAX_CERT_ID)},
-        {"name", Config::Str("", 0, 32)},
+        {"name", Config::Str("", 0, MAX_CERT_NAME)},
         {"cert", Config::Str("", 0, OPTIONS_CERTS_MAX_CERT_SIZE())}
     }), [](Config &cfg, ConfigSource source) -> String {
         const auto &cert = cfg.get("cert")->asString();
