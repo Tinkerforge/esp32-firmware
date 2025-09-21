@@ -63,18 +63,23 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
             return;
         }
 
-        // No need to initialize the array because either all values are written or it is rejected entirely.
-        float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
-        if (em_common.get_energy_meter_detailed_values(all_values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+
+        const MeterValueID *ids = nullptr;
+        size_t id_count = 0;
+        rs485_helper_get_value_ids(all_data.energy_meter_type, &ids, &id_count);
+        if (ids == nullptr || id_count == 0) {
             return;
+        }
+
+        // No need to initialize the array because either all values are written or it is rejected entirely.
+        float *all_values = new_array_psram_or_dram<float>(id_count);
+        if (em_common.get_energy_meter_detailed_values(all_values) != id_count) {
+            delete_array_psram_or_dram(all_values);
+            return;
+        }
 
         meter_type = all_data.energy_meter_type;
         state->get("type")->updateUint(meter_type);
-
-        MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
-        size_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
-        rs485_helper_parse_values(meter_type, all_values, &id_count, ids, value_packing_cache);
-        value_count = id_count;
         meters.declare_value_ids(slot, ids, id_count);
 
         value_index_power       = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
@@ -82,10 +87,11 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
         value_index_currents[1] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL2ImExSum);
         value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
 
-        update_all_values(all_values);
+        update_all_values(all_values, id_count);
+        delete_array_psram_or_dram(all_values);
 
-        task_scheduler.scheduleWithFixedDelay([this](){
-            update_all_values(nullptr);
+        task_scheduler.scheduleWithFixedDelay([this, id_count](){
+            update_all_values(nullptr, id_count);
         }, 990_ms, 990_ms);
 
         return;
@@ -99,20 +105,22 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
     meters.finish_update(slot);
 }
 
-void MeterEM::update_all_values(float *values)
+void MeterEM::update_all_values(float *values, size_t values_count)
 {
     // No need to initialize the array because either all values are written or it is rejected entirely.
-    float local_values[METER_ALL_VALUES_RESETTABLE_COUNT];
+    float *local_values = new_array_psram_or_dram<float>(values_count);
 
     if (!values) {
         values = local_values;
-        if (em_common.get_energy_meter_detailed_values(values) != METER_ALL_VALUES_RESETTABLE_COUNT)
+        if (em_common.get_energy_meter_detailed_values(values) != values_count) {
+            delete_array_psram_or_dram(local_values);
             return;
+        }
     }
 
-    rs485_helper_pack_all_values(values, value_count, value_packing_cache);
-
     meters.update_all_values(slot, values);
+
+    delete_array_psram_or_dram(local_values);
 }
 
 bool MeterEM::reset()

@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-10-25.      *
+ * This file was automatically generated on 2025-09-21.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -359,7 +359,7 @@ int tf_warp_energy_manager_v2_get_energy_meter_values(TF_WARPEnergyManagerV2 *wa
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]) {
+int tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level(TF_WARPEnergyManagerV2 *warp_energy_manager_v2, uint16_t *ret_values_length, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]) {
     if (warp_energy_manager_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -391,9 +391,10 @@ int tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level(TF_WARP
 
     if (_result & TF_TICK_PACKET_RECEIVED) {
         TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(warp_energy_manager_v2->tfp);
-        if (_error_code != 0 || _length != 62) {
+        if (_error_code != 0 || _length != 64) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
+            if (ret_values_length != NULL) { *ret_values_length = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
             if (ret_values_chunk_offset != NULL) { *ret_values_chunk_offset = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
             if (ret_values_chunk_data != NULL) { for (_i = 0; _i < 15; ++_i) ret_values_chunk_data[_i] = tf_packet_buffer_read_float(_recv_buf);} else { tf_packet_buffer_remove(_recv_buf, 60); }
         }
@@ -409,7 +410,7 @@ int tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level(TF_WARP
 
     _result = tf_tfp_finish_send(warp_energy_manager_v2->tfp, _result, _deadline);
 
-    if (_error_code == 0 && _length != 62) {
+    if (_error_code == 0 && _length != 64) {
         return TF_E_WRONG_RESPONSE_LENGTH;
     }
 
@@ -2668,14 +2669,10 @@ int tf_warp_energy_manager_v2_get_identity(TF_WARPEnergyManagerV2 *warp_energy_m
 
 static int tf_warp_energy_manager_v2_get_energy_meter_detailed_values_ll_wrapper(void *device, void *wrapper_data, uint32_t *ret_stream_length, uint32_t *ret_chunk_offset, void *chunk_data) {
     (void)wrapper_data;
-    uint16_t values_length = 88;
+    uint16_t values_length = 0;
     uint16_t values_chunk_offset = 0;
     float *values_chunk_data = (float *) chunk_data;
-    int ret = tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level((TF_WARPEnergyManagerV2 *)device, &values_chunk_offset, values_chunk_data);
-
-    if (values_chunk_offset == (1 << 16) - 1) { // maximum chunk offset -> stream has no data
-        return TF_E_INTERNAL_STREAM_HAS_NO_DATA;
-    }
+    int ret = tf_warp_energy_manager_v2_get_energy_meter_detailed_values_low_level((TF_WARPEnergyManagerV2 *)device, &values_length, &values_chunk_offset, values_chunk_data);
 
     *ret_stream_length = (uint32_t)values_length;
     *ret_chunk_offset = (uint32_t)values_chunk_offset;

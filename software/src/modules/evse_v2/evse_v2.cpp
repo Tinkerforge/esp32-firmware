@@ -615,7 +615,7 @@ void EVSEV2::get_debug_line(StringBuilder *sb)
         return;
     }
 
-    float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
+    float all_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
     uint16_t all_values_len = 0;
     rc = tf_evse_v2_get_all_energy_meter_values(&device, all_values, &all_values_len);
 

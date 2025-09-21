@@ -54,12 +54,16 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
 {
     this->meter_in_use = supported_meters[supported_meter_idx];
 
+    const MeterValueID *ids = nullptr;
+    size_t id_count = 0;
+    rs485_helper_get_value_ids(meter_type, &ids, &id_count);
+    if (ids == nullptr || id_count == 0) {
+        return;
+    }
+
     this->meter_type = this->meter_in_use->meter_type;
     state->get("type")->updateUint(meter_type);
 
-    MeterValueID ids[METER_ALL_VALUES_RESETTABLE_COUNT];
-    size_t id_count = METER_ALL_VALUES_RESETTABLE_COUNT;
-    rs485_helper_get_value_ids(meter_type, ids, &id_count);
     meters.declare_value_ids(slot, ids, id_count);
 
     value_index_power      = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);

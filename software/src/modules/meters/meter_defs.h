@@ -20,27 +20,31 @@
 #pragma once
 
 #define METER_VALUES_LEGACY_COUNT 3
-
-#define METER_ALL_VALUES_COUNT 85
 #define METER_ALL_VALUES_LEGACY_COUNT 85
-#define METER_ALL_VALUES_RESETTABLE_COUNT 88
+
+// TODO: This could be calculated at compile time from arrays in rs485_helpers.cpp.
+//       Currently we need to update this by hand if we add support for a meter that
+//       has more values then the SDM630 (which is unlikely to happen).
+#define METER_ALL_VALUES_MAX_COUNT 85
+#define METER_ALL_VALUES_RESETTABLE_MAX_COUNT 88
 
 #define METER_TYPE_NONE 0
 
 // Supported by modbus_meter module
 #define METER_TYPE_SDM72DM 1
 
-// Supported by modbus_meter or evse_v2 module
+// Supported by modbus_meter or evse_v2 module or energy_manager module
 #define METER_TYPE_SDM630 2
 #define METER_TYPE_SDM72DMV2 3
 
-// Supported by energy_manager module
-#define METER_TYPE_SDM72CTM 4
+// Supported by evse_v2 module or energy_manager module
+// #define METER_TYPE_SDM72CTM 4 (not implemented)
 #define METER_TYPE_SDM630MCTV2 5
-
-// Supported by evse_v2 module
 #define METER_TYPE_DSZ15DZMOD 6
 #define METER_TYPE_DEM4A 7
+#define METER_TYPE_DMED341MID7ER 8
+#define METER_TYPE_DSZ16DZE 9
+#define METER_TYPE_WM3M4C 10
 
 // Supported by mqtt_meter module
 #define METER_TYPE_CUSTOM_BASIC 200

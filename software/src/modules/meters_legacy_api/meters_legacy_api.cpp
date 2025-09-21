@@ -31,6 +31,102 @@
 
 #include "gcc_warnings.h"
 
+const MeterValueID legacy_all_ids[METER_ALL_VALUES_RESETTABLE_MAX_COUNT] = {
+    MeterValueID::VoltageL1N,
+    MeterValueID::VoltageL2N,
+    MeterValueID::VoltageL3N,
+    MeterValueID::CurrentL1ImExSum,
+    MeterValueID::CurrentL2ImExSum,
+    MeterValueID::CurrentL3ImExSum,
+    MeterValueID::PowerActiveL1ImExDiff,
+    MeterValueID::PowerActiveL2ImExDiff,
+    MeterValueID::PowerActiveL3ImExDiff,
+    MeterValueID::PowerApparentL1ImExSum,
+    MeterValueID::PowerApparentL2ImExSum,
+    MeterValueID::PowerApparentL3ImExSum,
+    MeterValueID::PowerReactiveL1IndCapDiff,
+    MeterValueID::PowerReactiveL2IndCapDiff,
+    MeterValueID::PowerReactiveL3IndCapDiff,
+    MeterValueID::PowerFactorL1Directional,
+    MeterValueID::PowerFactorL2Directional,
+    MeterValueID::PowerFactorL3Directional,
+    MeterValueID::PhaseAngleL1,
+    MeterValueID::PhaseAngleL2,
+    MeterValueID::PhaseAngleL3,
+    MeterValueID::VoltageLNAvg,
+    MeterValueID::CurrentLAvgImExSum,
+    MeterValueID::CurrentLSumImExSum,
+    MeterValueID::PowerActiveLSumImExDiff,
+    MeterValueID::PowerApparentLSumImExSum,
+    MeterValueID::PowerReactiveLSumIndCapDiff,
+    MeterValueID::PowerFactorLSumDirectional,
+    MeterValueID::PhaseAngleLSum,
+    MeterValueID::FrequencyLAvg,
+    MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::EnergyActiveLSumExport,
+    MeterValueID::EnergyReactiveLSumInductive,
+    MeterValueID::EnergyReactiveLSumCapacitive,
+    MeterValueID::EnergyApparentLSumImExSum,
+    MeterValueID::ElectricCharge,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::VoltageL1L2,
+    MeterValueID::VoltageL2L3,
+    MeterValueID::VoltageL3L1,
+    MeterValueID::VoltageLLAvg,
+    MeterValueID::CurrentNImExSum,
+    MeterValueID::VoltageTHDL1N,
+    MeterValueID::VoltageTHDL2N,
+    MeterValueID::VoltageTHDL3N,
+    MeterValueID::CurrentTHDL1,
+    MeterValueID::CurrentTHDL2,
+    MeterValueID::CurrentTHDL3,
+    MeterValueID::VoltageTHDLNAvg,
+    MeterValueID::CurrentTHDLAvg,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::NotSupported,
+    MeterValueID::VoltageTHDL1L2,
+    MeterValueID::VoltageTHDL2L3,
+    MeterValueID::VoltageTHDL3L1,
+    MeterValueID::VoltageTHDLLAvg,
+    MeterValueID::EnergyActiveLSumImExSum,
+    MeterValueID::EnergyReactiveLSumIndCapSum,
+    MeterValueID::EnergyActiveL1Import,
+    MeterValueID::EnergyActiveL2Import,
+    MeterValueID::EnergyActiveL3Import,
+    MeterValueID::EnergyActiveL1Export,
+    MeterValueID::EnergyActiveL2Export,
+    MeterValueID::EnergyActiveL3Export,
+    MeterValueID::EnergyActiveL1ImExSum,
+    MeterValueID::EnergyActiveL2ImExSum,
+    MeterValueID::EnergyActiveL3ImExSum,
+    MeterValueID::EnergyReactiveL1Inductive,
+    MeterValueID::EnergyReactiveL2Inductive,
+    MeterValueID::EnergyReactiveL3Inductive,
+    MeterValueID::EnergyReactiveL1Capacitive,
+    MeterValueID::EnergyReactiveL2Capacitive,
+    MeterValueID::EnergyReactiveL3Capacitive,
+    MeterValueID::EnergyReactiveL1IndCapSum,
+    MeterValueID::EnergyReactiveL2IndCapSum,
+    MeterValueID::EnergyReactiveL3IndCapSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
+    MeterValueID::EnergyActiveLSumImportResettable,
+    MeterValueID::EnergyActiveLSumExportResettable,
+};
+
+const uint32_t legacy_630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
+const uint32_t legacy_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
+const uint32_t legacy_72_all_value_indices[7]    = {24,30,31,65,85,86,87};
+
+
 static const MeterValueID legacy_values_ids[3] = {
     MeterValueID::PowerActiveLSumImExDiff,
     MeterValueID::EnergyActiveLSumImExSumResettable,
@@ -333,7 +429,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }
 
-    fill_index_array(value_indices_legacy_all_values_to_linked_meter, rs485_helper_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
+    fill_index_array(value_indices_legacy_all_values_to_linked_meter, legacy_all_ids, METER_ALL_VALUES_LEGACY_COUNT, meter_value_ids, linked_meter_value_count);
 
     // Get power index
     fill_index_array(value_indices_legacy_values_to_linked_meter, legacy_values_ids, 1, meter_value_ids, linked_meter_value_count);
@@ -394,9 +490,9 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         }
     }
 
-    can_be_sdm72   = indices_match_meter_indices(all_values_present, rs485_helper_72_all_value_indices,   ARRAY_SIZE(rs485_helper_72_all_value_indices));
-    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, rs485_helper_72v2_all_value_indices, ARRAY_SIZE(rs485_helper_72v2_all_value_indices));
-    can_be_sdm630  = indices_match_meter_indices(all_values_present, rs485_helper_630_all_value_indices,  ARRAY_SIZE(rs485_helper_630_all_value_indices));
+    can_be_sdm72   = indices_match_meter_indices(all_values_present, legacy_72_all_value_indices,   ARRAY_SIZE(legacy_72_all_value_indices));
+    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, legacy_72v2_all_value_indices, ARRAY_SIZE(legacy_72v2_all_value_indices));
+    can_be_sdm630  = indices_match_meter_indices(all_values_present, legacy_630_all_value_indices,  ARRAY_SIZE(legacy_630_all_value_indices));
 
     uint32_t can_be_count = can_be_sdm72 + can_be_sdm72v2 + can_be_sdm630;
     uint32_t meter_type = METER_TYPE_NONE;

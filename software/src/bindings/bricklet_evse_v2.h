@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2025-09-02.      *
+ * This file was automatically generated on 2025-09-21.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -699,6 +699,11 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_WM3M4C 10
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_INPUT_UNCONFIGURED 0
 
 /**
@@ -1066,7 +1071,7 @@ int tf_evse_v2_get_energy_meter_values(TF_EVSEV2 *evse_v2, float *ret_power, flo
  *
  * TBD
  */
-int tf_evse_v2_get_all_energy_meter_values_low_level(TF_EVSEV2 *evse_v2, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
+int tf_evse_v2_get_all_energy_meter_values_low_level(TF_EVSEV2 *evse_v2, uint16_t *ret_values_length, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
 
 /**
  * \ingroup TF_EVSEV2

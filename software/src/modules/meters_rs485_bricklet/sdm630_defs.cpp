@@ -26,8 +26,16 @@ static const RegRead sdm630_slow[] {
     //{1, 88},  // Full register set, including unused demand registers.
     //{101, 8},
     //{201, 70},
-    {1, 84},
-    {201, 52},
+    {1, 48},
+    {53, 2},
+    {57, 2},
+    {61, 4},
+    {67, 2},
+    {71, 14},
+    {201, 8},
+    {225, 2},
+    {235, 12},
+    {249, 4},
     {335, 48}
 };
 
@@ -37,7 +45,7 @@ static const RegRead sdm630_fast[]{
 };
 
 static const uint16_t sdm630_registers_to_read[] = {
-	1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,47,49,53,57,61,63,67,71,73,75,77,79,81,83,85,87,101,103,105,107,201,203,205,207,225,235,237,239,241,243,245,249,251,259,261,263,265,267,269,335,337,339,341,343,345,347,349,351,353,355,357,359,361,363,365,367,369,371,373,375,377,379,381
+    1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,47,49,53,57,61,63,67,71,73,75,77,79,81,83,201,203,205,207,225,235,237,239,241,243,245,249,251,335,337,339,341,343,345,347,349,351,353,355,357,359,361,363,365,367,369,371,373,375,377,379,381
 };
 
 enum FastValues {
@@ -72,14 +80,14 @@ static void sdm630_slow_read_done(const uint16_t *all_regs, uint32_t meter_slot,
         api.restorePersistentConfig(meters.get_path(meter_slot, Meters::PathType::Base) + "sdm630_reset", reset);
     }
 
-    float all_values[METER_ALL_VALUES_RESETTABLE_COUNT];
-    convert_to_float(all_regs, all_values, sdm630_registers_to_read, ARRAY_SIZE(sdm630_registers_to_read));
-    all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 3] = all_values[METER_ALL_VALUES_TOTAL_KWH_SUM] - reset->get("energy_total")->asFloat();
-    all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 2] = all_values[METER_ALL_VALUES_TOTAL_IMPORT_KWH] - reset->get("energy_import")->asFloat();
-    all_values[METER_ALL_VALUES_RESETTABLE_COUNT - 1] = all_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH] - reset->get("energy_export")->asFloat();
+    const size_t all_regs_count = ARRAY_SIZE(sdm630_registers_to_read) + 3; // +3 for resettable values
 
-    size_t values = METER_ALL_VALUES_RESETTABLE_COUNT;
-    rs485_helper_pack_all_values(METER_TYPE_SDM630, all_values, &values);
+    float all_values[all_regs_count]; // +3 for resettable values
+    convert_to_float(all_regs, all_values, sdm630_registers_to_read, ARRAY_SIZE(sdm630_registers_to_read));
+    all_values[all_regs_count - 3] = all_values[METER_ALL_VALUES_TOTAL_KWH_SUM] - reset->get("energy_total")->asFloat();
+    all_values[all_regs_count - 2] = all_values[METER_ALL_VALUES_TOTAL_IMPORT_KWH] - reset->get("energy_import")->asFloat();
+    all_values[all_regs_count - 1] = all_values[METER_ALL_VALUES_TOTAL_EXPORT_KWH] - reset->get("energy_export")->asFloat();
+
     meters.update_all_values(meter_slot, all_values);
 }
 

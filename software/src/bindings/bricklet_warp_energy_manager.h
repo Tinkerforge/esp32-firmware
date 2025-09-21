@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-10-25.      *
+ * This file was automatically generated on 2025-09-21.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -353,6 +353,21 @@ typedef struct TF_WARPEnergyManager {
  * \ingroup TF_WARPEnergyManager
  */
 #define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_DEM4A 7
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_DMED341MID7ER 8
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_DSZ16DZE 9
+
+/**
+ * \ingroup TF_WARPEnergyManager
+ */
+#define TF_WARP_ENERGY_MANAGER_ENERGY_METER_TYPE_WM3M4C 10
 
 /**
  * \ingroup TF_WARPEnergyManager
@@ -737,7 +752,7 @@ int tf_warp_energy_manager_get_energy_meter_values(TF_WARPEnergyManager *warp_en
  *
  * TBD
  */
-int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEnergyManager *warp_energy_manager, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
+int tf_warp_energy_manager_get_energy_meter_detailed_values_low_level(TF_WARPEnergyManager *warp_energy_manager, uint16_t *ret_values_length, uint16_t *ret_values_chunk_offset, float ret_values_chunk_data[15]);
 
 /**
  * \ingroup TF_WARPEnergyManager
