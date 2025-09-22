@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
@@ -574,7 +576,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
         let enable = cfg.enable;
 
-        // Remove PDF send configurations for removed users from charge tracker
+//#if MODULE_CHARGE_TRACKER_AVAILABLE
         if (this.state.removeUsers.length > 0) {
             const chargeTrackerConfig = {...API.get("charge_tracker/config")};
             const filteredRemoteUploadConfigs = chargeTrackerConfig.remote_upload_configs.filter(
@@ -586,6 +588,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
             }
         }
+//#endif
 
         for (const id of this.state.removeUsers) {
             API.call("remote_access/remove_user", {
@@ -611,12 +614,14 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     }
 
     override async sendReset(topic: "remote_access/config") {
+//#if MODULE_CHARGE_TRACKER_AVAILABLE
         // Remove all PDF send configurations from charge tracker since all remote access users will be removed
         const chargeTrackerConfig = {...API.get("charge_tracker/config")};
         if (chargeTrackerConfig.remote_upload_configs.length > 0) {
             chargeTrackerConfig.remote_upload_configs = [];
             API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
         }
+//#endif
 
         for (const user of this.state.users) {
             API.call("remote_access/remove_user", {

@@ -139,6 +139,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   csv_flavor: 'excel',
                   start_date: new Date(NaN),
                   end_date: new Date(NaN),
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
                   remote_upload_configs: [],
                   new_remote_upload_config: {
                     user_filter: -2,
@@ -148,6 +149,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     user_id: 0,
                     csv_delimiter: CSVFlavor.Excel,
                   },
+//#endif
               });
 
         util.addApiEventListener('users/config', () => {
@@ -165,6 +167,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             this.setState({last_charges: API.get('charge_tracker/last_charges')});
         });
 
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
         util.addApiEventListener('charge_tracker/config', () => {
             let config = API.get('charge_tracker/config');
             this.setState({
@@ -172,6 +175,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 remote_upload_configs: config.remote_upload_configs,
             });
         });
+//#endif
 
         util.addApiEventListener('charge_tracker/pdf_letterhead_config', () => {
             let pdf_letterhead_config = API.get('charge_tracker/pdf_letterhead_config');
@@ -186,6 +190,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                       .reverse();
     }
 
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
     getRemoteUploadConfigTableRows(): TableRow[] {
         const remote_upload_configs = this.state.remote_upload_configs;
         const users_config = API.get('users/config');
@@ -374,6 +379,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             </FormRow>
         </>;
     }
+//#endif
 
     to_csv_line(vals: string[], flavor: 'excel' | 'rfc4180') {
         let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');

@@ -911,6 +911,80 @@ void ChargeTracker::register_urls()
         return request.endChunkedResponse();
     });
 
+    server.on_HTTPThread("/charge_tracker/csv", HTTP_PUT, [this](WebServerRequest request) {
+        logger.printfln("Beginning CSV generation. Please ignore timeout errors (rc -1 etc.) until it is done.");
+        #define USER_FILTER_ALL_USERS -2
+        #define USER_FILTER_DELETED_USERS -1
+        int user_filter = USER_FILTER_ALL_USERS;
+        uint32_t start_timestamp_min = 0;
+        uint32_t end_timestamp_min = 0;
+        uint32_t current_timestamp_min = rtc.timestamp_minutes();
+        bool english = false;
+        int csv_delimiter = (int)CSVFlavor::Excel;
+
+        {
+            StaticJsonDocument<192> doc;
+            auto buf = heap_alloc_array<char>(1024);
+
+            if (request.contentLength() > 1024) {
+                return request.send_plain(413);
+            }
+
+            auto received = request.receive(buf.get(), 1024);
+
+            if (received < 0) {
+                return request.send_plain(500, "Failed to receive request payload");
+            }
+
+            DeserializationError error = deserializeJson(doc, buf.get(), received);
+
+            if (error) {
+                char error_string[64];
+                StringWriter sw(error_string, ARRAY_SIZE(error_string));
+                sw.puts("Failed to deserialize string: ");
+                sw.puts(error.c_str());
+                return request.send_plain(400, sw);
+            }
+
+            if (!bool(doc["api_not_final_acked"])) {
+                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
+            }
+
+            user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
+            start_timestamp_min = doc["start_timestamp_min"] | 0l;
+            end_timestamp_min = doc["end_timestamp_min"] | 0l;
+            english = doc["english"] | false;
+            csv_delimiter = doc["csv_delimiter"] | (int)CSVFlavor::Excel;
+
+            if (current_timestamp_min == 0) {
+                current_timestamp_min = doc["current_timestamp_min"] | 0l;
+            }
+        }
+
+        CSVGenerationParams csv_params;
+        csv_params.user_filter = user_filter;
+        csv_params.start_timestamp_min = start_timestamp_min;
+        csv_params.end_timestamp_min = end_timestamp_min;
+        csv_params.english = english;
+        csv_params.flavor = (CSVFlavor)csv_delimiter;
+        task_scheduler.await([this, &csv_params]() {
+            csv_params.electricity_price = this->config.get("electricity_price")->asUint();
+            return 0;
+        });
+
+        const auto callback = [this, &request](const char* buffer, size_t len) -> bool {
+            return request.sendChunk(buffer, len) == (int)len;
+        };
+
+        request.beginChunkedResponse(200, "text/csv");
+        CSVChargeLogGenerator csv_generator;
+        if (!csv_generator.generateCSV(csv_params, callback)) {
+            logger.printfln("Failed to generate CSV for endpoint");
+            return request.send_plain(500, "Failed to generate CSV");
+        }
+        return request.endChunkedResponse();
+    });
+
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -1000,6 +1074,7 @@ void ChargeTracker::register_urls()
 #endif
 }
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
 static void handle_upload_retry(SendChargeLogArgs &upload_args)
 {
     upload_args.upload_retry_count++;
@@ -1016,7 +1091,6 @@ static void handle_upload_retry(SendChargeLogArgs &upload_args)
 
 static void check_remote_client_status(SendChargeLogArgs &upload_args)
 {
-#if MODULE_REMOTE_ACCESS_AVAILABLE()
     if (!upload_args.remote_client) {
         logger.printfln("Charge-log generation and remote upload completed. Client was destroyed.");
         task_scheduler.cancel(*upload_args.task_id);
@@ -1048,7 +1122,6 @@ static void check_remote_client_status(SendChargeLogArgs &upload_args)
         upload_args.remote_client->close_chunked_request();
         task_scheduler.cancel(*upload_args.task_id);
     }
-#endif
 }
 
 static String build_filename(const time_t start, const time_t end, FileType file_type, bool english) {
@@ -1219,6 +1292,7 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
         check_remote_client_status(upload_args);
     }, 1_s, 1_s);
 }
+#endif
 
 void ChargeTracker::generate_pdf(
     std::function<int(const void *buffer, size_t len, bool last_data)> &&callback,

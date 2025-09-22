@@ -24,6 +24,7 @@
 #include "../web_server/web_server.h"
 #include "async_https_client.h"
 #include "csv_charge_log.h"
+#include "module_available.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define MAX_RETRY_COUNT 10
@@ -53,7 +54,10 @@ public:
 
     void readNRecords(File *f, size_t records_to_read);
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE
     void send_file(SendChargeLogArgs &&args);
+    bool send_in_progress = false;
+#endif
 
     ConfigRoot last_charges;
     ConfigRoot current_charge;
@@ -64,8 +68,6 @@ public:
 
     std::mutex records_mutex;
     std::mutex pdf_mutex;
-
-    bool send_in_progress = false;
 
 private:
     bool repair_last(float);
@@ -96,3 +98,5 @@ struct SendChargeLogArgs {
         remote_client = other.remote_client;
     };
 };
+
+#include "module_available_end.h"
