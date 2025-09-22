@@ -37,4 +37,5 @@ jobs:
             ~/.cache/pip
             ~/.platformio
             ./software/.pio
+          # FIXME: this doesn't work: "Failed to save: Unable to reserve cache with key XYZ, another job may be creating this cache."
           key: ${{ matrix.os }}
