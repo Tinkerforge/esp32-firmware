@@ -1159,8 +1159,9 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
     bool english;
     FileType file_type = FileType::PDF;
     CSVFlavor csv_delimiter = CSVFlavor::Excel;
+    String filename;
 
-    auto ret = task_scheduler.await([this, &charger_uuid, &password, &user_uuid, &url, &cert_id,
+    auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
             &letterhead, &letterhead_lines, &user_filter, &english, &upload_args, &file_type, &csv_delimiter]()
     {
         Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args.user_idx);
@@ -1171,6 +1172,7 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
         english = charge_log_send->get("english")->asBool();
         file_type = charge_log_send->get("file_type")->asEnum<FileType>();
         csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
+        filename = build_filename(((time_t)upload_args.last_month_start_min) * 60, ((time_t)upload_args.last_month_end_min) * 60, file_type, english);
 
         const int user_id = charge_log_send->get("user_id")->asInt();
         charger_uuid = remote_access.config.get("uuid")->asString();
@@ -1217,7 +1219,6 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
         return;
     };
 
-    const String filename = build_filename(((time_t)upload_args.last_month_start_min) * 60, ((time_t)upload_args.last_month_end_min) * 60, file_type, english);
     String json_header = "{";
     json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
     json_header += "\"password\":\"" + password + "\",";
