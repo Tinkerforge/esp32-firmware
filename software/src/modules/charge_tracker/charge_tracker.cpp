@@ -1006,12 +1006,14 @@ void ChargeTracker::register_urls()
             last_month_start.tm_mday = 1;
             if (last_month_start.tm_mon == 0) {
                 last_month_start.tm_mon = 11;
+                last_month_start.tm_year--;
             } else {
                 last_month_start.tm_mon--;
             }
             last_month_start.tm_hour = 0;
             last_month_start.tm_min = 0;
             last_month_start.tm_sec = 0;
+            last_month_start.tm_isdst = -1;
 
 
             tm last_month_end = now;
@@ -1019,6 +1021,7 @@ void ChargeTracker::register_urls()
             last_month_end.tm_hour = 0;
             last_month_end.tm_min = 0;
             last_month_end.tm_sec = 0;
+            last_month_end.tm_isdst = -1;
 
             time_t last_month_start_tv = mktime(&last_month_start);
             time_t last_month_end_tv = mktime(&last_month_end) - 1;
