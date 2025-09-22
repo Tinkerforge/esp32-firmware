@@ -1123,6 +1123,8 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
 
     upload_args.remote_client = std::make_unique<AsyncHTTPSClient>();
     upload_args.remote_client->set_header("Content-Type", "application/json");
+    const char *language = english ? "en" : "de";
+    upload_args.remote_client->set_header("X-Lang", language);
 
     if (upload_args.remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
         handle_upload_retry(upload_args);
