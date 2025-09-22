@@ -54,7 +54,7 @@ public:
 
     void readNRecords(File *f, size_t records_to_read);
 
-#if MODULE_REMOTE_ACCESS_AVAILABLE
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(SendChargeLogArgs &&args);
     bool send_in_progress = false;
 #endif
