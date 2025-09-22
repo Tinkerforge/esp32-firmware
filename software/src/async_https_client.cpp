@@ -351,7 +351,7 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
         // http_config.skip_cert_common_name_check = true;
 #else
         logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        clear()
+        clear();
         return -1;
 #endif
     }
