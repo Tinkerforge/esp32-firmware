@@ -10,9 +10,6 @@ jobs:
       matrix:
         environment: [warp4, warp3, warp2, warp, energy_manager_v2, energy_manager, eltako, smart_energy_broker, esp32_ethernet, esp32]
         os: [ubuntu-latest, macos-latest, windows-latest]
-    concurrency:
-      group: ${{ matrix.os }}
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
