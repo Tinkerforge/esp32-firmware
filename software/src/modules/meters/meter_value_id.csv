@@ -472,3 +472,4 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 471,Energy,PV9,,Export,Resettable,kWh,3,DC energy (feed),PV9; since last reset,Energie (Einspeisung),PV9; DC; seit letztem Zurücksetzen,,,,,,
 472,Energy,PV Sum,,Export,*Absolute,kWh,3,DC energy (feed),Σ PV; since manufacturing,Energie (Einspeisung),Σ PV; DC; seit Herstellung,,,,,,
 473,Energy,PV Sum,,Export,Resettable,kWh,3,DC energy (feed),Σ PV; since last reset,Energie (Einspeisung),Σ PV; DC; seit letztem Zurücksetzen,,,,,,
+474,Run Time,,,,,s,0,Run time,since manufacturing,Laufzeit,seit Herstellung,,,,,,

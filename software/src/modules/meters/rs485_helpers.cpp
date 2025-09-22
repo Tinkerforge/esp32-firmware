@@ -365,6 +365,8 @@ const MeterValueID rs485_helper_wm3m4c_ids[] = {
     MeterValueID::CurrentTHDL2,
     MeterValueID::CurrentTHDL3,
     // TBD: Some values will be added here once the complete register map of WM3M4C is better understood
+    MeterValueID::Temperature,
+    MeterValueID::RunTime,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
     MeterValueID::EnergyActiveLSumImExSumResettable,
