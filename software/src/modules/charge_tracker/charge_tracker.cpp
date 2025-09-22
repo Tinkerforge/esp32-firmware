@@ -22,6 +22,7 @@
 #include <memory>
 #include <LittleFS.h>
 #include <format>
+#include <stdlib_noniso.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -1158,6 +1159,39 @@ static String build_filename(const time_t start, const time_t end, FileType file
     return String(filename.c_str());
 }
 
+static esp_err_t format_and_send_chunk(AsyncHTTPSClient *remote_client, bool &first, const uint8_t *buffer, size_t len)
+{
+    if (len == 0) {
+        return ESP_OK;
+    }
+
+    StringBuilder sb(len * 4); // ',' + worst-case uint8_t length = 4
+
+    for (size_t i = 0; i < len; i++) {
+        sb.putc(',');
+        char *ptr = sb.getRemainingPtr();
+        utoa(buffer[i], ptr, 10);
+        sb.setLength(sb.getLength() + strlen(ptr));
+    }
+
+    const char *chunk_start = sb.getPtr();
+    size_t chunk_length = sb.getLength();
+
+    if (first) {
+        // Skip first comma.
+        chunk_start++;
+        chunk_length--;
+        first = false;
+    }
+
+    const int sent = remote_client->send_chunk(chunk_start, chunk_length);
+    if (sent != static_cast<int>(chunk_length)) {
+        logger.printfln("Failed to send chunk to remote access server");
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+
 // since this function can block for a long time, it must not be called from the main thread
 void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
@@ -1244,24 +1278,10 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
     bool first = true;
 
     if (file_type == FileType::PDF) {
-        auto pdf_stream_cb = [&remote_client = upload_args.remote_client, &first](const void *buffer, size_t len, bool last_data) -> int {
-            const uint8_t *buffer_u8 = static_cast<const uint8_t *>(buffer);
-            String chunk;
-            for (size_t i = 0; i < len; ++i) {
-                if (!first || i > 0) chunk += ",";
-                chunk += String(buffer_u8[i]);
-            }
-            if (len > 0) first = false;
-            int sent = remote_client->send_chunk(chunk.c_str(), chunk.length());
-            if (!chunk.isEmpty() && sent != chunk.length()) {
-                logger.printfln("Failed to send PDF chunk to remote access server");
-                return -1;
-            }
-            return ESP_OK;
-        };
-
         this->generate_pdf(
-            pdf_stream_cb,
+            [&remote_client = upload_args.remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
+                return format_and_send_chunk(remote_client.get(), first, static_cast<const uint8_t *>(buffer), len);
+            },
             user_filter,
             upload_args.last_month_start_min,
             upload_args.last_month_end_min,
@@ -1277,27 +1297,15 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
         csv_params.flavor = csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
-            return 0;
         });
 
         auto csv_stream_cb = [&remote_client = upload_args.remote_client, &first](const char* buffer, size_t len) -> bool {
-            String chunk;
-            for (size_t i = 0; i < len; ++i) {
-                if (!first || i > 0) chunk += ",";
-                chunk += String((uint8_t)buffer[i]);
-            }
-            if (len > 0) first = false;
-
-            int sent = remote_client->send_chunk(chunk.c_str(), chunk.length());
-            if (!chunk.isEmpty() && sent != chunk.length()) {
-                logger.printfln("Failed to send CSV chunk to remote access server");
-                return false;
-            }
-            return true;
+            auto err = format_and_send_chunk(remote_client.get(), first, reinterpret_cast<const uint8_t *>(buffer), len);
+            return err == ESP_OK;
         };
 
         CSVChargeLogGenerator csv_generator;
-        if (!csv_generator.generateCSV(csv_params, csv_stream_cb)) {
+        if (!csv_generator.generateCSV(csv_params, std::move(csv_stream_cb))) {
             logger.printfln("Failed to generate CSV for remote upload");
         }
     }
