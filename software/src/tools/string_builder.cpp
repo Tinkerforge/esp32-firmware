@@ -146,6 +146,11 @@ size_t StringWriter::printf(const char *fmt, ...)
 
 StringBuilder::StringBuilder() : StringWriter(empty, 1) {}
 
+StringBuilder::StringBuilder(size_t initial_capacity) : StringWriter(empty, 1)
+{
+    setCapacity(initial_capacity);
+}
+
 StringBuilder::~StringBuilder()
 {
     setCapacity(0);

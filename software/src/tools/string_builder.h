@@ -62,6 +62,7 @@ class StringBuilder : public StringWriter
 {
 public:
     StringBuilder();
+    StringBuilder(size_t initial_capacity);
     virtual ~StringBuilder();
 
     bool setCapacity(size_t capacity);
