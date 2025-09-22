@@ -988,6 +988,10 @@ void ChargeTracker::register_urls()
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
+            if (this->send_in_progress) {
+                return;
+            }
+
             timeval tv;
             bool is_synced = rtc.clock_synced(&tv);
             if (!is_synced) {
@@ -997,10 +1001,23 @@ void ChargeTracker::register_urls()
             tm now;
             localtime_r(&tv.tv_sec, &now);
 
-            tm last_send;
-            uint32_t last_send_minutes = config.get("last_upload_timestamp_min")->asUint();
-            time_t last_send_time = last_send_minutes * 60;
-            localtime_r(&last_send_time, &last_send);
+            // Don't send charge logs on the 1st of each month, in case there's still a charge in progress.
+            if (now.tm_mday < 2) {
+                return;
+            }
+
+            const uint32_t last_send_minutes = config.get("last_upload_timestamp_min")->asUint();
+
+            // Already sent for this month?
+            if (last_send_minutes != 0) {
+                const time_t last_send_time = static_cast<time_t>(last_send_minutes) * 60;
+                tm last_send;
+                localtime_r(&last_send_time, &last_send);
+
+                if (last_send.tm_year == now.tm_year && last_send.tm_mon == now.tm_mon) {
+                    return;
+                }
+            }
 
             tm last_month_start = now;
             last_month_start.tm_mday = 1;
@@ -1023,30 +1040,27 @@ void ChargeTracker::register_urls()
             last_month_end.tm_sec = 0;
             last_month_end.tm_isdst = -1;
 
-            time_t last_month_start_tv = mktime(&last_month_start);
-            time_t last_month_end_tv = mktime(&last_month_end) - 1;
+            const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
+            const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
 
-            if (!send_in_progress && now.tm_mday >= 2 &&
-                (last_send_minutes == 0
-                    || last_send.tm_year != now.tm_year
-                    || last_send.tm_mon != now.tm_mon))
-            {
-                send_in_progress = true;
-                for (int i = 0; i < config.get("remote_upload_configs")->count(); ++i) {
-                    auto task_id = std::make_shared<uint64_t>(0);
-                    auto upload_request = new SendChargeLogArgs;
-                    upload_request->last_month_start_min = last_month_start_tv / 60;
-                    upload_request->last_month_end_min = last_month_end_tv / 60;
-                    upload_request->user_idx = i;
-                    upload_request->task_id = task_id;
-                    server.runInHTTPThread([](void *arg) {
-                        auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-                        std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-                        charge_tracker.send_file(std::move(*upload_request_ptr));
-                    }, upload_request);
-                }
+            send_in_progress = true;
+            for (int i = 0; i < config.get("remote_upload_configs")->count(); ++i) {
+                auto task_id = std::make_shared<uint64_t>(0);
+                auto upload_request = new SendChargeLogArgs;
+                upload_request->last_month_start_min = last_month_start_min;
+                upload_request->last_month_end_min   = last_month_end_min;
+                upload_request->user_idx = i;
+                upload_request->task_id = task_id;
+                server.runInHTTPThread([](void *arg) {
+                    auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
+                    std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
+                    charge_tracker.send_file(std::move(*upload_request_ptr));
+                }, upload_request);
             }
-        }, 10_s, 10_s);
+        }, 1_min, 4_h);
+        // Delay one minute so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
+        // Check only once every four hours, to avoid a stampede event at midnight on the 2nd of a month.
+        // Protocols will thus be uploaded between midnight and 4:00 on the 2nd of a month.
     }
 
     api.addCommand("charge_tracker/reset_last_send", Config::Null(), {}, [this](String &errmsg) {
