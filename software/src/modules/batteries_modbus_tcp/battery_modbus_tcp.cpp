@@ -37,13 +37,19 @@ struct Execution {
     BatteryModbusTCP::ExecuteCallback callback = nullptr;
 };
 
-BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config)
+BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config, bool load_repeat_interval)
 {
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
     size_t register_blocks_count         = register_blocks_config->count();
     TableSpec *table                     = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
 
-    table->repeat_interval       = config->get("repeat_interval")->asUint16();
+    if (load_repeat_interval) {
+        table->repeat_interval = config->get("repeat_interval")->asUint16();
+    }
+    else {
+        table->repeat_interval = 0;
+    }
+
     table->register_blocks       = static_cast<RegisterBlockSpec *>(malloc(sizeof(RegisterBlockSpec) * register_blocks_count));
     table->register_blocks_count = register_blocks_count;
 
