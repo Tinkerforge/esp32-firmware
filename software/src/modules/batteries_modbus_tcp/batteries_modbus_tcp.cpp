@@ -81,9 +81,9 @@ void BatteriesModbusTCP::pre_setup()
     });
 
     table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
+        {"device_address", Config::Uint8(1)},
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
         {"permit_grid_charge", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -93,7 +93,6 @@ void BatteriesModbusTCP::pre_setup()
             )},
         })},
         {"revoke_grid_charge_override", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -103,7 +102,6 @@ void BatteriesModbusTCP::pre_setup()
             )},
         })},
         {"forbid_discharge", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -113,7 +111,6 @@ void BatteriesModbusTCP::pre_setup()
             )},
         })},
         {"revoke_discharge_override", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -123,7 +120,6 @@ void BatteriesModbusTCP::pre_setup()
             )},
         })},
         {"forbid_charge", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -133,7 +129,6 @@ void BatteriesModbusTCP::pre_setup()
             )},
         })},
         {"revoke_charge_override", Config::Object({
-            {"device_address", Config::Uint8(1)},
             {"repeat_interval", Config::Uint16(60)},
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
@@ -172,27 +167,27 @@ void BatteriesModbusTCP::pre_setup()
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
-        {"device_address", Config::Uint8(1)},
+        {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(1)},
+        {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(1)},
+        {"device_address", Config::Uint8(DefaultDeviceAddress::AlphaESSHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::HaileiHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(1)},
+        {"device_address", Config::Uint8(DefaultDeviceAddress::HaileiHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::SungrowHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(1)},
+        {"device_address", Config::Uint8(DefaultDeviceAddress::SungrowHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
     })});
 
@@ -227,7 +222,8 @@ void BatteriesModbusTCP::register_urls()
             return;
 
         case BatteryModbusTCPTableID::Custom:
-            table_to_free = BatteryModbusTCP::load_table(table_config, &device_address);
+            device_address = table_config->get("device_address")->asUint8();
+            table_to_free = BatteryModbusTCP::load_table(table_config);
             table = table_to_free;
             break;
 
