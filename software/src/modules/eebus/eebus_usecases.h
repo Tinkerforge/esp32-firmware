@@ -42,8 +42,11 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_USECASES_ACTIVE 3
 
 // Configuration related to the LPC usecases
+// Comment out if subscription functionalities shall be disabled
+// TODO: Subscriptions are currently broken, so do not reenable or it will crash at startup
+#define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS false
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger
-#define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 3600
+#define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
 
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
@@ -115,6 +118,7 @@ protected:
 class NodeManagementEntity final : public EebusEntity
 {
 public:
+    NodeManagementEntity();
     void set_usecaseManager(EEBusUseCases *usecases);
 
     /**
@@ -167,7 +171,7 @@ public:
      * @param function_name Name of the function that is informing the subscribers.
      * @return The number of subscribers that have been informed. 0 if no subscribers have been found.
      */
-    template<typename T>
+    template <typename T>
     size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
 
 private:
@@ -350,7 +354,7 @@ private:
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
     LPCState lpc_state;
-    uint64_t state_change_timeout;
+    uint64_t state_change_timeout = 0;
     bool switch_state(LPCState state);
     bool init_state();
     bool unlimited_controlled_state();
@@ -412,7 +416,7 @@ public:
      * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
-    template<typename T>
+    template <typename T>
     size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
 
     /**
@@ -428,11 +432,14 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
-    NodeManagementEntity node_management{};
+    unique_ptr_any<NodeManagementEntity> node_management;
     EvseEntity charging_summary{};
     ControllableSystemEntity limitation_of_power_consumption{};
 
-    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption};
+    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {node_management.get(), &charging_summary, &limitation_of_power_consumption};
+
+private:
+    bool initialized = false;
 };
 
 namespace EEBUS_USECASE_HELPERS
