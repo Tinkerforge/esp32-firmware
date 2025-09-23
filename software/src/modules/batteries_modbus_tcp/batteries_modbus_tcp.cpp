@@ -223,7 +223,7 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::Custom:
             device_address = table_config->get("device_address")->asUint8();
-            table_to_free = BatteryModbusTCP::load_table(table_config);
+            table_to_free = BatteryModbusTCP::load_table(table_config, false);
             table = table_to_free;
             break;
 

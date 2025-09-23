@@ -45,7 +45,7 @@ public:
         size_t register_blocks_count;
     };
 
-    static TableSpec *load_table(const Config *config);
+    static TableSpec *load_table(const Config *config, bool load_repeat_interval = true);
     static void free_table(TableSpec *table);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
