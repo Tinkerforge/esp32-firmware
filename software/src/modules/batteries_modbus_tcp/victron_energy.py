@@ -1,9 +1,15 @@
+table_prototypes = [
+    ('Victron Energy GX', ['device_address']),
+]
+
+default_device_addresses = [
+    ('Victron Energy GX', 100),
+]
+
 specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Permit Grid Charge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -20,8 +26,6 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Grid Charge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -38,8 +42,6 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Forbid Discharge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -63,8 +65,6 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Discharge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -88,8 +88,6 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Forbid Charge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -113,8 +111,6 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'action': 'Revoke Charge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 100,
         'repeat_interval': 60,
         'register_blocks': [
             {
