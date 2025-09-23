@@ -33,7 +33,11 @@ jobs:
         working-directory: ./software
         run: pio run -e ${{ matrix.environment }} -t clean && pio run -e ${{ matrix.environment }}
       - name: 'Deleting Caches: ${{ matrix.os }}-'
+        if: matrix.environment == 'warp4'
         run: gh cache delete ${{ matrix.os }}- --succeed-on-no-caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
       - uses: actions/cache/save@v4
         if: matrix.environment == 'warp4'
         with:
