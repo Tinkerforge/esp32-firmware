@@ -644,12 +644,14 @@ static void decision_preprocess(StageContext &sc) {
 
     // Clear all decisions of chargers without vehicle attached
     for (int i = 0; i < sc.charger_count; ++i) {
+        // All current decisions are re-decided every time.
+        set_charger_decision(sc, i, CurrentDecision::None());
+
         const auto *state = &sc.charger_state[i];
         if (!state->is_charging && !state->wants_to_charge && !state->wants_to_charge_low_priority) {
             set_charger_decision(sc, i, ZeroPhaseDecision::None());
             set_charger_decision(sc, i, OnePhaseDecision::None());
             set_charger_decision(sc, i, ThreePhaseDecision::None());
-            set_charger_decision(sc, i, CurrentDecision::None());
             continue;
         }
 
@@ -1763,13 +1765,12 @@ struct MinWithDecision {
         if (current <= new_current)
             return;
 
-        set_charger_decision(sc, charger_idx, std::move(decision));
+        desc = std::move(decision);
         current = new_current;
     }
 
     int current;
-    StageContext &sc;
-    int charger_idx;
+    CurrentDecision desc;
 };
 
 // Stage 7: Allocate fair current to chargers with at least one allocated phase
@@ -1798,7 +1799,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto min_ = MinWithDecision{32000, sc, sc.idx_array[i]};
+        auto min_ = MinWithDecision{32000};
 
         // Limit to fair PV current (or guaranteed PV current if this is more)
         if (state->observe_pv_limit) {
@@ -1833,6 +1834,8 @@ static void stage_7(StageContext &sc) {
         // TODO disambiguate between Requested and PhaseLimit here
         min_(current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg), CurrentDecision::Requested());
 
+        if (min_.current > 0)
+            set_charger_decision(sc, sc.idx_array[i], std::move(min_.desc));
 
         auto current = allocated_current + min_.current;
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
