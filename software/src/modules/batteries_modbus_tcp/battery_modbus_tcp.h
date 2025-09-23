@@ -45,7 +45,7 @@ public:
         size_t register_blocks_count;
     };
 
-    static TableSpec *load_table(const Config *config, uint8_t *device_address_ptr);
+    static TableSpec *load_table(const Config *config);
     static void free_table(TableSpec *table);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
@@ -74,5 +74,5 @@ private:
 
     BatteryModbusTCPTableID table_id;
     const TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-    uint8_t device_addresses[6] = {0, 0, 0, 0, 0, 0};
+    uint8_t device_address;
 };
