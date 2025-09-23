@@ -617,6 +617,15 @@ void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
     history_meter_energy_export[0] = data_v1.history_meter_energy_export;
 }
 
+// Don't inline this helper so that the hexdump array is only on the stack when in use.
+[[gnu::noinline]]
+static void hexdump_persistent_data_v2(const PersistentDataV2 &data_v2)
+{
+    char data_v2_hexdump[sizeof(data_v2) * 2 + 1];
+    hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
+    logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
+}
+
 bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 {
     logger.printfln("Loading persistent data v2");
@@ -627,8 +636,6 @@ bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
     PersistentDataV2 zero_v2;
     memset(&zero_v2, 0, sizeof(zero_v2));
 
-    char data_v2_hexdump[sizeof(data_v2) * 2 + 1];
-
     if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
         logger.printfln("Persistent data v2 all zero, first boot?");
         return false; // try loading persistent data v3
@@ -636,15 +643,13 @@ bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 
     if (internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v2), sizeof(data_v2) / sizeof(uint16_t)) != 0) {
         logger.printfln("Checksum mismatch for persistent data v2");
-        hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
+        // This checksum mismatch is rather common, so don't dump data here.
         return false; // try loading persistent data v3
     }
 
     if (data_v2.version != 2) {
         logger.printfln("Unexpected version %u for persistent data v2", data_v2.version);
-        hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
+        hexdump_persistent_data_v2(data_v2);
         return false; // try loading persistent data v3
     }
 
@@ -654,6 +659,15 @@ bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
     }
 
     return true; // skip loading persistent data v3
+}
+
+// Don't inline this helper so that the hexdump array is only on the stack when in use.
+[[gnu::noinline]]
+static void hexdump_persistent_data_v3(const PersistentDataV3 &data_v3, uint32_t start_slot)
+{
+    char data_v3_hexdump[sizeof(data_v3) * 2 + 1];
+    hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
+    logger.printfln_plain("Persistent data v3 start slot %lu: %s", start_slot, data_v3_hexdump);
 }
 
 void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot)
@@ -666,8 +680,6 @@ void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot
     PersistentDataV3 zero_v3;
     memset(&zero_v3, 0, sizeof(zero_v3));
 
-    char data_v3_hexdump[sizeof(data_v3) * 2 + 1];
-
     if (memcmp(&data_v3, &zero_v3, sizeof(data_v3)) == 0) {
         logger.printfln("Persistent data v3 for start slot %lu all zero, first boot?", start_slot);
         return;
@@ -675,15 +687,13 @@ void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot
 
     if (internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v3), sizeof(data_v3) / sizeof(uint16_t)) != 0) {
         logger.printfln("Checksum mismatch for persistent data v3 for start slot %lu", start_slot);
-        hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v3 start slot %lu: %s", start_slot, data_v3_hexdump);
+        hexdump_persistent_data_v3(data_v3, start_slot);
         return;
     }
 
     if (data_v3.version != 3) {
         logger.printfln("Unexpected version %u for persistent data v3 for start slot %lu", data_v3.version, start_slot);
-        hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v3 start slot %lu: %s", start_slot, data_v3_hexdump);
+        hexdump_persistent_data_v3(data_v3, start_slot);
         return;
     }
 
