@@ -233,7 +233,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
         }
     }
     if (headers.size() > 0) {
-        for (std::pair<String, String> header : headers) {
+        for (const std::pair<String, String> &header : headers) {
             if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
                 error_abort(AsyncHTTPSClientError::HTTPClientSetHeaderFailed);
                 return;
@@ -380,7 +380,7 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
         }
     }
     if (headers.size() > 0) {
-        for (std::pair<String, String> header : headers) {
+        for (const std::pair<String, String> &header : headers) {
             if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
                 logger.printfln("Failed to set header: %s: %s", header.first.c_str(), header.second.c_str());
                 clear();
@@ -413,10 +413,8 @@ int AsyncHTTPSClient::read_response_status() {
         return -1;
     }
 
-    int ret = esp_http_client_fetch_headers(http_client);
-    ret = ~ret;
-    ret += 1;
-    if (ret == ESP_ERR_HTTP_EAGAIN) {
+    int64_t ret = esp_http_client_fetch_headers(http_client);
+    if (ret == -ESP_ERR_HTTP_EAGAIN) {
         return ESP_ERR_HTTP_EAGAIN;
     } else if (ret == ESP_FAIL) {
         return esp_http_client_get_errno(http_client);
