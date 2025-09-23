@@ -116,6 +116,10 @@ for module in modules:
 specs_h = []
 specs_cpp = []
 
+specs_h.append('namespace DefaultDeviceAddress {')
+specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
+specs_h.append('}')
+
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
@@ -304,9 +308,6 @@ h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
 h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
 h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'
 h += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes);\n\n'
-h += 'namespace DefaultDeviceAddress {\n\n'
-h += f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};\n\n'
-h += '}\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.h', h)

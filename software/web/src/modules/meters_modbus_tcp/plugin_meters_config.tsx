@@ -1068,16 +1068,6 @@ export function init() {
                 else if (util.hasValue(config[1].table)
                       && config[1].table[0] == MeterModbusTCPTableID.Custom) {
                     edit_children.push(
-                        <FormRow label={__("meters_modbus_tcp.content.location")}>
-                            <InputSelect
-                                required
-                                items={get_meter_location_items()}
-                                placeholder={__("select")}
-                                value={config[1].location.toString()}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
-                                }} />
-                        </FormRow>,
                         <FormRow label={__("meters_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
@@ -1086,6 +1076,16 @@ export function init() {
                                 value={config[1].table[1].device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
+                                }} />
+                        </FormRow>,
+                        <FormRow label={__("meters_modbus_tcp.content.location")}>
+                            <InputSelect
+                                required
+                                items={get_meter_location_items()}
+                                placeholder={__("select")}
+                                value={config[1].location.toString()}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {location: parseInt(v)}));
                                 }} />
                         </FormRow>,
                         <FormRow label={__("meters_modbus_tcp.content.register_address_mode")}>
