@@ -983,7 +983,6 @@ void ChargeTracker::register_urls()
         csv_params.flavor = (CSVFlavor)csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
-            return 0;
         });
 
         const auto callback = [this, &request](const char* buffer, size_t len) -> bool {
@@ -1213,12 +1212,11 @@ void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
         if (charger_uuid.isEmpty() || password.isEmpty() || user_uuid.isEmpty()) {
             logger.printfln("Missing remote access credentials: charger_uuid=%s, password=%s, user_uuid=%s",
                             charger_uuid.c_str(), password.c_str(), user_uuid.c_str());
-            return -1;
+            return;
         }
 
         url = "https://" + remote_access.config.get("relay_host")->asString() + "/api/send_chargelog_to_user";
         cert_id = remote_access.config.get("cert_id")->asInt();
-        return 0;
     });
     if (ret != TaskScheduler::AwaitResult::Done) {
         return;
