@@ -37,10 +37,8 @@ struct Execution {
     BatteryModbusTCP::ExecuteCallback callback = nullptr;
 };
 
-BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config, uint8_t *device_address_ptr)
+BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_table(const Config *config)
 {
-    *device_address_ptr = config->get("device_address")->asUint8();
-
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
     size_t register_blocks_count         = register_blocks_config->count();
     TableSpec *table                     = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
@@ -112,16 +110,6 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
 
     free(const_cast<RegisterBlockSpec *>(table->register_blocks));
     free(table);
-}
-
-static void get_device_addresses(const Config *config, uint8_t device_addresses[6])
-{
-    device_addresses[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = config->get("permit_grid_charge"         )->get("device_address")->asUint8();
-    device_addresses[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = config->get("revoke_grid_charge_override")->get("device_address")->asUint8();
-    device_addresses[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = config->get("forbid_discharge"           )->get("device_address")->asUint8();
-    device_addresses[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = config->get("revoke_discharge_override"  )->get("device_address")->asUint8();
-    device_addresses[static_cast<size_t>(BatteryAction::ForbidCharge)]             = config->get("forbid_charge"              )->get("device_address")->asUint8();
-    device_addresses[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = config->get("revoke_charge_override"     )->get("device_address")->asUint8();
 }
 
 static void execute_finish(Execution *execution, const char *error)
@@ -297,38 +285,40 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         return;
 
     case BatteryModbusTCPTableID::Custom:
+        device_address = table_config->get("device_address")->asUint8();
+
         // FIXME: leaking this, because as of right now battery instances don't get destroyed
-        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = load_table(static_cast<const Config *>(table_config->get("permit_grid_charge")),          &device_addresses[static_cast<uint32_t>(BatteryAction::PermitGridCharge)]);
-        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = load_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")), &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeGridChargeOverride)]);
-        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = load_table(static_cast<const Config *>(table_config->get("forbid_discharge")),            &device_addresses[static_cast<uint32_t>(BatteryAction::ForbidDischarge)]);
-        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = load_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")),   &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeDischargeOverride)]);
-        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = load_table(static_cast<const Config *>(table_config->get("forbid_charge")),               &device_addresses[static_cast<uint32_t>(BatteryAction::ForbidCharge)]);
-        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = load_table(static_cast<const Config *>(table_config->get("revoke_charge_override")),      &device_addresses[static_cast<uint32_t>(BatteryAction::RevokeChargeOverride)]);
+        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = load_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
+        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = load_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
+        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = load_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
+        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = load_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
+        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = load_table(static_cast<const Config *>(table_config->get("forbid_charge")));
+        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = load_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
         break;
 
     case BatteryModbusTCPTableID::VictronEnergyGX:
+        device_address = table_config->get("device_address")->asUint8();
         get_victron_energy_gx_tables(tables);
-        get_device_addresses(table_config, device_addresses);
         break;
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:
+        device_address = table_config->get("device_address")->asUint8();
         get_deye_hybrid_inverter_tables(tables);
-        get_device_addresses(table_config, device_addresses);
         break;
 
     case BatteryModbusTCPTableID::AlphaESSHybridInverter:
+        device_address = table_config->get("device_address")->asUint8();
         get_alpha_ess_hybrid_inverter_tables(tables);
-        get_device_addresses(table_config, device_addresses);
         break;
 
     case BatteryModbusTCPTableID::HaileiHybridInverter:
+        device_address = table_config->get("device_address")->asUint8();
         get_hailei_hybrid_inverter_tables(tables);
-        get_device_addresses(table_config, device_addresses);
         break;
 
     case BatteryModbusTCPTableID::SungrowHybridInverter:
+        device_address = table_config->get("device_address")->asUint8();
         get_sungrow_hybrid_inverter_tables(tables);
-        get_device_addresses(table_config, device_addresses);
         break;
 
     default:
@@ -391,7 +381,7 @@ void BatteryModbusTCP::start_action(BatteryAction action, std::function<void(boo
         return;
     }
 
-    execute(static_cast<TFModbusTCPSharedClient *>(connected_client), device_addresses[static_cast<size_t>(action)], table, [this, callback](const char *error) {
+    execute(static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, table, [this, callback](const char *error) {
         if (error != nullptr) {
             logger.printfln_battery("%s", error);
         }
