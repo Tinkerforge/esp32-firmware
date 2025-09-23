@@ -62,8 +62,6 @@ private:
     uint32_t meter_type = METER_TYPE_NONE;
     uint32_t value_index_power       = UINT32_MAX;
     uint32_t value_index_currents[3] = {UINT32_MAX, UINT32_MAX, UINT32_MAX};
-    uint8_t value_packing_cache[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
-    size_t value_count = 0;
 
     bool meter_change_warning_printed = false;
 };

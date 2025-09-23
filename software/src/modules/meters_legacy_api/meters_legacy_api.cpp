@@ -31,7 +31,7 @@
 
 #include "gcc_warnings.h"
 
-const MeterValueID legacy_all_ids[METER_ALL_VALUES_RESETTABLE_MAX_COUNT] = {
+static const MeterValueID legacy_all_ids[METER_ALL_VALUES_RESETTABLE_MAX_COUNT] = {
     MeterValueID::VoltageL1N,
     MeterValueID::VoltageL2N,
     MeterValueID::VoltageL3N,
@@ -122,10 +122,9 @@ const MeterValueID legacy_all_ids[METER_ALL_VALUES_RESETTABLE_MAX_COUNT] = {
     MeterValueID::EnergyActiveLSumExportResettable,
 };
 
-const uint32_t legacy_630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
-const uint32_t legacy_72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
-const uint32_t legacy_72_all_value_indices[7]    = {24,30,31,65,85,86,87};
-
+static const uint8_t legacy_sdm630_all_value_indices[76]  = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,42,43,44,45,46,47,48,49,50,51,52,53,54,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87};
+static const uint8_t legacy_sdm72v2_all_value_indices[38] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,21,22,23,24,25,26,27,29,30,31,42,43,44,45,46,65,66,85,86,87};
+static const uint8_t legacy_sdm72_all_value_indices[7]    = {24,30,31,65,85,86,87};
 
 static const MeterValueID legacy_values_ids[3] = {
     MeterValueID::PowerActiveLSumImExDiff,
@@ -386,16 +385,17 @@ static bool is_values_value(MeterValueID value_id)
     return false;
 }
 
-static bool indices_match_meter_indices(const bool all_values_present[], const uint32_t all_value_indices[], uint32_t all_value_indices_length)
+static bool indices_match_meter_indices(const bool all_values_present[], const uint8_t all_value_indices[], size_t all_value_indices_length)
 {
     bool values_present[METER_ALL_VALUES_LEGACY_COUNT] = {false};
-    for (uint32_t i = 0; i < all_value_indices_length; i++) {
-        uint32_t index = all_value_indices[i];
-        if (index < ARRAY_SIZE(values_present))
+    for (size_t i = 0; i < all_value_indices_length; i++) {
+        const uint8_t index = all_value_indices[i];
+        if (index < ARRAY_SIZE(values_present)) {
             values_present[index] = true;
+        }
     }
 
-    for (uint32_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
+    for (size_t i = 0; i < METER_ALL_VALUES_LEGACY_COUNT; i++) {
         if (values_present[i] != all_values_present[i]) {
             return false;
         }
@@ -490,9 +490,9 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         }
     }
 
-    can_be_sdm72   = indices_match_meter_indices(all_values_present, legacy_72_all_value_indices,   ARRAY_SIZE(legacy_72_all_value_indices));
-    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, legacy_72v2_all_value_indices, ARRAY_SIZE(legacy_72v2_all_value_indices));
-    can_be_sdm630  = indices_match_meter_indices(all_values_present, legacy_630_all_value_indices,  ARRAY_SIZE(legacy_630_all_value_indices));
+    can_be_sdm72   = indices_match_meter_indices(all_values_present, legacy_sdm72_all_value_indices,   ARRAY_SIZE(legacy_sdm72_all_value_indices));
+    can_be_sdm72v2 = indices_match_meter_indices(all_values_present, legacy_sdm72v2_all_value_indices, ARRAY_SIZE(legacy_sdm72v2_all_value_indices));
+    can_be_sdm630  = indices_match_meter_indices(all_values_present, legacy_sdm630_all_value_indices,  ARRAY_SIZE(legacy_sdm630_all_value_indices));
 
     uint32_t can_be_count = can_be_sdm72 + can_be_sdm72v2 + can_be_sdm630;
     uint32_t meter_type = METER_TYPE_NONE;

@@ -27,7 +27,6 @@
 #include "module_dependencies.h"
 #include "options.h"
 #include "bindings/hal_common.h"
-#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 #include "modules/meters_rs485_bricklet/meter_defs.h"
 
@@ -35,7 +34,204 @@
 
 extern TF_HAL hal;
 
-static const uint8_t addr2values[MODBUS_METER_SIMULATOR_REGISTER_COUNT] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,255,22,23,255,24,255,25,255,26,27,255,28,255,29,30,31,32,33,34,35,36,37,255,255,255,255,255,255,38,39,40,41,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,42,43,44,45,255,255,255,255,255,255,255,255,46,255,255,255,255,47,48,49,50,51,52,255,53,54,255,255,255,55,56,57,58,59,60,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,255,85,255,86,87};
+static constexpr MeterValueID sdm_register_map_meter_values[MODBUS_METER_SIMULATOR_REGISTER_COUNT] = {
+    MeterValueID::VoltageL1N,                        // 30001
+    MeterValueID::VoltageL2N,                        // 30003
+    MeterValueID::VoltageL3N,                        // 30005
+    MeterValueID::CurrentL1ImExSum,                  // 30007
+    MeterValueID::CurrentL2ImExSum,                  // 30009
+    MeterValueID::CurrentL3ImExSum,                  // 30011
+    MeterValueID::PowerActiveL1ImExDiff,             // 30013
+    MeterValueID::PowerActiveL2ImExDiff,             // 30015
+    MeterValueID::PowerActiveL3ImExDiff,             // 30017
+    MeterValueID::PowerApparentL1ImExSum,            // 30019
+    MeterValueID::PowerApparentL2ImExSum,            // 30021
+    MeterValueID::PowerApparentL3ImExSum,            // 30023
+    MeterValueID::PowerReactiveL1IndCapDiff,         // 30025
+    MeterValueID::PowerReactiveL2IndCapDiff,         // 30027
+    MeterValueID::PowerReactiveL3IndCapDiff,         // 30029
+    MeterValueID::PowerFactorL1Directional,          // 30031
+    MeterValueID::PowerFactorL2Directional,          // 30033
+    MeterValueID::PowerFactorL3Directional,          // 30035
+    MeterValueID::PhaseAngleL1,                      // 30037
+    MeterValueID::PhaseAngleL2,                      // 30039
+    MeterValueID::PhaseAngleL3,                      // 30041
+    MeterValueID::VoltageLNAvg,                      // 30043
+    MeterValueID::NotSupported,                      // 30045
+    MeterValueID::CurrentLAvgImExSum,                // 30047
+    MeterValueID::CurrentLSumImExSum,                // 30049
+    MeterValueID::NotSupported,                      // 30051
+    MeterValueID::PowerActiveLSumImExDiff,           // 30053
+    MeterValueID::NotSupported,                      // 30055
+    MeterValueID::PowerApparentLSumImExSum,          // 30057
+    MeterValueID::NotSupported,                      // 30059
+    MeterValueID::PowerReactiveLSumIndCapDiff,       // 30061
+    MeterValueID::PowerFactorLSumDirectional,        // 30063
+    MeterValueID::NotSupported,                      // 30065
+    MeterValueID::PhaseAngleLSum,                    // 30067
+    MeterValueID::NotSupported,                      // 30069
+    MeterValueID::FrequencyLAvg,                     // 30071
+    MeterValueID::EnergyActiveLSumImport,            // 30073
+    MeterValueID::EnergyActiveLSumExport,            // 30075
+    MeterValueID::EnergyReactiveLSumInductive,       // 30077
+    MeterValueID::EnergyReactiveLSumCapacitive,      // 30079
+    MeterValueID::EnergyApparentLSumImExSum,         // 30081
+    MeterValueID::ElectricCharge,                    // 30083
+    MeterValueID::NotSupported,                      // 30085
+    MeterValueID::NotSupported,                      // 30087
+    MeterValueID::NotSupported,                      // 30089
+    MeterValueID::NotSupported,                      // 30091
+    MeterValueID::NotSupported,                      // 30093
+    MeterValueID::NotSupported,                      // 30095
+    MeterValueID::NotSupported,                      // 30097
+    MeterValueID::NotSupported,                      // 30099
+    MeterValueID::NotSupported,                      // 30101
+    MeterValueID::NotSupported,                      // 30103
+    MeterValueID::NotSupported,                      // 30105
+    MeterValueID::NotSupported,                      // 30107
+    MeterValueID::NotSupported,                      // 30109
+    MeterValueID::NotSupported,                      // 30111
+    MeterValueID::NotSupported,                      // 30113
+    MeterValueID::NotSupported,                      // 30115
+    MeterValueID::NotSupported,                      // 30117
+    MeterValueID::NotSupported,                      // 30119
+    MeterValueID::NotSupported,                      // 30121
+    MeterValueID::NotSupported,                      // 30123
+    MeterValueID::NotSupported,                      // 30125
+    MeterValueID::NotSupported,                      // 30127
+    MeterValueID::NotSupported,                      // 30129
+    MeterValueID::NotSupported,                      // 30131
+    MeterValueID::NotSupported,                      // 30133
+    MeterValueID::NotSupported,                      // 30135
+    MeterValueID::NotSupported,                      // 30137
+    MeterValueID::NotSupported,                      // 30139
+    MeterValueID::NotSupported,                      // 30141
+    MeterValueID::NotSupported,                      // 30143
+    MeterValueID::NotSupported,                      // 30145
+    MeterValueID::NotSupported,                      // 30147
+    MeterValueID::NotSupported,                      // 30149
+    MeterValueID::NotSupported,                      // 30151
+    MeterValueID::NotSupported,                      // 30153
+    MeterValueID::NotSupported,                      // 30155
+    MeterValueID::NotSupported,                      // 30157
+    MeterValueID::NotSupported,                      // 30159
+    MeterValueID::NotSupported,                      // 30161
+    MeterValueID::NotSupported,                      // 30163
+    MeterValueID::NotSupported,                      // 30165
+    MeterValueID::NotSupported,                      // 30167
+    MeterValueID::NotSupported,                      // 30169
+    MeterValueID::NotSupported,                      // 30171
+    MeterValueID::NotSupported,                      // 30173
+    MeterValueID::NotSupported,                      // 30175
+    MeterValueID::NotSupported,                      // 30177
+    MeterValueID::NotSupported,                      // 30179
+    MeterValueID::NotSupported,                      // 30181
+    MeterValueID::NotSupported,                      // 30183
+    MeterValueID::NotSupported,                      // 30185
+    MeterValueID::NotSupported,                      // 30187
+    MeterValueID::NotSupported,                      // 30189
+    MeterValueID::NotSupported,                      // 30191
+    MeterValueID::NotSupported,                      // 30193
+    MeterValueID::NotSupported,                      // 30195
+    MeterValueID::NotSupported,                      // 30197
+    MeterValueID::NotSupported,                      // 30199
+    MeterValueID::VoltageL1L2,                       // 30201
+    MeterValueID::VoltageL2L3,                       // 30203
+    MeterValueID::VoltageL3L1,                       // 30205
+    MeterValueID::VoltageLLAvg,                      // 30207
+    MeterValueID::NotSupported,                      // 30209
+    MeterValueID::NotSupported,                      // 30211
+    MeterValueID::NotSupported,                      // 30213
+    MeterValueID::NotSupported,                      // 30215
+    MeterValueID::NotSupported,                      // 30217
+    MeterValueID::NotSupported,                      // 30219
+    MeterValueID::NotSupported,                      // 30221
+    MeterValueID::NotSupported,                      // 30223
+    MeterValueID::CurrentNImExSum,                   // 30225
+    MeterValueID::NotSupported,                      // 30227
+    MeterValueID::NotSupported,                      // 30229
+    MeterValueID::NotSupported,                      // 30231
+    MeterValueID::NotSupported,                      // 30233
+    MeterValueID::VoltageTHDL1N,                     // 30235
+    MeterValueID::VoltageTHDL2N,                     // 30237
+    MeterValueID::VoltageTHDL3N,                     // 30239
+    MeterValueID::CurrentTHDL1,                      // 30241
+    MeterValueID::CurrentTHDL2,                      // 30243
+    MeterValueID::CurrentTHDL3,                      // 30245
+    MeterValueID::NotSupported,                      // 30247
+    MeterValueID::VoltageTHDLNAvg,                   // 30249
+    MeterValueID::CurrentTHDLAvg,                    // 30251
+    MeterValueID::NotSupported,                      // 30253
+    MeterValueID::NotSupported,                      // 30255
+    MeterValueID::NotSupported,                      // 30257
+    MeterValueID::NotSupported,                      // 30259
+    MeterValueID::NotSupported,                      // 30261
+    MeterValueID::NotSupported,                      // 30263
+    MeterValueID::NotSupported,                      // 30265
+    MeterValueID::NotSupported,                      // 30267
+    MeterValueID::NotSupported,                      // 30269
+    MeterValueID::NotSupported,                      // 30271
+    MeterValueID::NotSupported,                      // 30273
+    MeterValueID::NotSupported,                      // 30275
+    MeterValueID::NotSupported,                      // 30277
+    MeterValueID::NotSupported,                      // 30279
+    MeterValueID::NotSupported,                      // 30281
+    MeterValueID::NotSupported,                      // 30283
+    MeterValueID::NotSupported,                      // 30285
+    MeterValueID::NotSupported,                      // 30287
+    MeterValueID::NotSupported,                      // 30289
+    MeterValueID::NotSupported,                      // 30291
+    MeterValueID::NotSupported,                      // 30293
+    MeterValueID::NotSupported,                      // 30295
+    MeterValueID::NotSupported,                      // 30297
+    MeterValueID::NotSupported,                      // 30299
+    MeterValueID::NotSupported,                      // 30301
+    MeterValueID::NotSupported,                      // 30303
+    MeterValueID::NotSupported,                      // 30305
+    MeterValueID::NotSupported,                      // 30307
+    MeterValueID::NotSupported,                      // 30309
+    MeterValueID::NotSupported,                      // 30311
+    MeterValueID::NotSupported,                      // 30313
+    MeterValueID::NotSupported,                      // 30315
+    MeterValueID::NotSupported,                      // 30317
+    MeterValueID::NotSupported,                      // 30319
+    MeterValueID::NotSupported,                      // 30321
+    MeterValueID::NotSupported,                      // 30323
+    MeterValueID::NotSupported,                      // 30325
+    MeterValueID::NotSupported,                      // 30327
+    MeterValueID::NotSupported,                      // 30329
+    MeterValueID::NotSupported,                      // 30331
+    MeterValueID::NotSupported,                      // 30333
+    MeterValueID::VoltageTHDL1L2,                    // 30335
+    MeterValueID::VoltageTHDL2L3,                    // 30337
+    MeterValueID::VoltageTHDL3L1,                    // 30339
+    MeterValueID::VoltageTHDLLAvg,                   // 30341
+    MeterValueID::EnergyActiveLSumImExSum,           // 30343
+    MeterValueID::EnergyReactiveLSumIndCapSum,       // 30345
+    MeterValueID::EnergyActiveL1Import,              // 30347
+    MeterValueID::EnergyActiveL2Import,              // 30349
+    MeterValueID::EnergyActiveL3Import,              // 30351
+    MeterValueID::EnergyActiveL1Export,              // 30353
+    MeterValueID::EnergyActiveL2Export,              // 30355
+    MeterValueID::EnergyActiveL3Export,              // 30357
+    MeterValueID::EnergyActiveL1ImExSum,             // 30359
+    MeterValueID::EnergyActiveL2ImExSum,             // 30361
+    MeterValueID::EnergyActiveL3ImExSum,             // 30363
+    MeterValueID::EnergyReactiveL1Inductive,         // 30365
+    MeterValueID::EnergyReactiveL2Inductive,         // 30367
+    MeterValueID::EnergyReactiveL3Inductive,         // 30369
+    MeterValueID::EnergyReactiveL1Capacitive,        // 30371
+    MeterValueID::EnergyReactiveL2Capacitive,        // 30373
+    MeterValueID::EnergyReactiveL3Capacitive,        // 30375
+    MeterValueID::EnergyReactiveL1IndCapSum,         // 30377
+    MeterValueID::EnergyReactiveL2IndCapSum,         // 30379
+    MeterValueID::EnergyReactiveL3IndCapSum,         // 30381
+    MeterValueID::NotSupported,                      // 30383
+    MeterValueID::EnergyActiveLSumImExSumResettable, // 30385
+    MeterValueID::NotSupported,                      // 30387
+    MeterValueID::EnergyActiveLSumImportResettable,  // 30389
+    MeterValueID::EnergyActiveLSumExportResettable,  // 30391
+};
 
 static const uint16_t supported_meter_ids[] = {
     0,      // None
@@ -207,17 +403,7 @@ EventResult ModbusMeterSimulator::on_value_ids_change(const Config *value_ids)
         return EventResult::OK;
     }
 
-    uint32_t index_cache_compact[ARRAY_SIZE(rs485_helper_all_ids)];
-    meters.fill_index_cache(source_meter_slot, ARRAY_SIZE(rs485_helper_all_ids), rs485_helper_all_ids, index_cache_compact);
-
-    for (size_t i = 0; i < MODBUS_METER_SIMULATOR_REGISTER_COUNT; i++) {
-        uint32_t compact_index = addr2values[i];
-        if (compact_index >= ARRAY_SIZE(index_cache_compact)) {
-            value_index_cache[i] = UINT32_MAX;
-        } else {
-            value_index_cache[i] = index_cache_compact[compact_index];
-        }
-    }
+    meters.fill_index_cache(source_meter_slot, std::size(sdm_register_map_meter_values), sdm_register_map_meter_values, value_index_cache);
 
     return EventResult::Deregister;
 }

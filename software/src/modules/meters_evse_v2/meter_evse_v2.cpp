@@ -68,10 +68,10 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
             return;
         }
 
+        // Place max count array on the stack. The stack is large enough so that any unused space at the end doesn't matter.
         // No need to initialize the array because either all values are written or it is rejected entirely.
-        float *all_values = new_array_psram_or_dram<float>(id_count);
+        float all_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
         if (evse_v2.get_all_energy_meter_values(all_values) != id_count) {
-            delete_array_psram_or_dram(all_values);
             return;
         }
 
@@ -86,7 +86,6 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
         value_index_currents[2] = meters_find_id_index(ids, id_count, MeterValueID::CurrentL3ImExSum);
 
         update_all_values(all_values, id_count);
-        delete_array_psram_or_dram(all_values);
 
         task_scheduler.scheduleWithFixedDelay([this, id_count](){
             update_all_values(nullptr, id_count);
@@ -112,19 +111,18 @@ void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
 
 void MeterEVSEV2::update_all_values(float *values, size_t values_count)
 {
+    // Place max count array on the stack. The stack is large enough so that any unused space at the end doesn't matter.
     // No need to initialize the array because either all values are written or it is rejected entirely.
-    float *local_values = new_array_psram_or_dram<float>(values_count);
+    float local_values[METER_ALL_VALUES_RESETTABLE_MAX_COUNT];
 
     if (!values) {
         values = local_values;
         if (evse_v2.get_all_energy_meter_values(values) != values_count) {
-            delete_array_psram_or_dram(local_values);
             return;
         }
     }
 
     meters.update_all_values(slot, values);
-    delete_array_psram_or_dram(local_values);
 }
 
 bool MeterEVSEV2::reset()
