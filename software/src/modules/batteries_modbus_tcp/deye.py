@@ -1,9 +1,15 @@
+table_prototypes = [
+    ('Deye Hybrid Inverter', ['device_address']),
+]
+
+default_device_addresses = [
+    ('Deye Hybrid Inverter', 1),
+]
+
 specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Permit Grid Charge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -50,8 +56,6 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Revoke Grid Charge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -72,8 +76,6 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Forbid Discharge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -89,8 +91,6 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Revoke Discharge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -106,8 +106,6 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Forbid Charge',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -123,8 +121,6 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'action': 'Revoke Charge Override',
-        'table_prototype': ['device_address'],
-        'default_device_address': 1,
         'repeat_interval': 60,
         'register_blocks': [
             {
