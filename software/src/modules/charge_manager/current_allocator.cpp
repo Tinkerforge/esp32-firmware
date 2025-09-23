@@ -1698,6 +1698,8 @@ static void stage_6(StageContext &sc) {
             continue;
         }
 
+        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::Minimum());
+
         sc.current_allocation[sc.idx_array[i]] = cost.max_phase();
         trace("6: %d: %d@%dp", sc.idx_array[i], sc.current_allocation[sc.idx_array[i]], allocated_phases);
         apply_cost(cost, sc.limits);
