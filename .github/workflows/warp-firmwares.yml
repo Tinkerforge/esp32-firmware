@@ -31,11 +31,10 @@ jobs:
         working-directory: ./software
         run: pio run -e ${{ matrix.environment }} -t clean && pio run -e ${{ matrix.environment }}
       - uses: actions/cache/save@v4
-        if: always()
+        if: matrix.environment == 'warp4'
         with:
           path: |
             ~/.cache/pip
             ~/.platformio
             ./software/.pio
-          # FIXME: this doesn't work: "Failed to save: Unable to reserve cache with key XYZ, another job may be creating this cache."
           key: ${{ matrix.os }}
