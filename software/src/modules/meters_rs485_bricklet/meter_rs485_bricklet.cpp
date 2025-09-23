@@ -56,7 +56,7 @@ void MeterRS485Bricklet::changeMeterType(size_t supported_meter_idx)
 
     const MeterValueID *ids = nullptr;
     size_t id_count = 0;
-    rs485_helper_get_value_ids(meter_type, &ids, &id_count);
+    rs485_helper_get_value_ids(this->meter_in_use->meter_type, &ids, &id_count);
     if (ids == nullptr || id_count == 0) {
         return;
     }
