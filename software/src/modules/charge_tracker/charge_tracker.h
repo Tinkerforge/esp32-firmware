@@ -55,7 +55,8 @@ public:
     void readNRecords(File *f, size_t records_to_read);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    void send_file(SendChargeLogArgs &&args);
+    void send_file(SendChargeLogArgs &args);
+    void upload_charge_logs();
     bool send_in_progress = false;
 #endif
 
@@ -87,7 +88,8 @@ struct SendChargeLogArgs {
     std::shared_ptr<uint64_t> task_id = nullptr;
     std::shared_ptr<AsyncHTTPSClient> remote_client = nullptr;
 
-    SendChargeLogArgs(){};
+    SendChargeLogArgs(int user_idx_, uint32_t last_month_start_min_, uint32_t last_month_end_min_, std::shared_ptr<uint64_t> &&task_id_) : user_idx(user_idx_), last_month_start_min(last_month_start_min_), last_month_end_min(last_month_end_min_), task_id(std::move(task_id_)) {}
+
     SendChargeLogArgs(const SendChargeLogArgs &other) {
         user_idx = other.user_idx;
         last_month_start_min = other.last_month_start_min;

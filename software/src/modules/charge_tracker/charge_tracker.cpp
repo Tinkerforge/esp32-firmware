@@ -19,6 +19,7 @@
 
 #include "charge_tracker.h"
 
+#include <esp_task.h>
 #include <memory>
 #include <LittleFS.h>
 #include <format>
@@ -34,6 +35,20 @@
 #include "csv_flavor.enum.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+
+    // pdPASS expands to an old-style cast that is also useless
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+
+static constexpr BaseType_t pdPASS_safe = pdPASS;
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
 
 static bool repair_logic(Charge *);
@@ -1020,44 +1035,7 @@ void ChargeTracker::register_urls()
                 }
             }
 
-            tm last_month_start = now;
-            last_month_start.tm_mday = 1;
-            if (last_month_start.tm_mon == 0) {
-                last_month_start.tm_mon = 11;
-                last_month_start.tm_year--;
-            } else {
-                last_month_start.tm_mon--;
-            }
-            last_month_start.tm_hour = 0;
-            last_month_start.tm_min = 0;
-            last_month_start.tm_sec = 0;
-            last_month_start.tm_isdst = -1;
-
-
-            tm last_month_end = now;
-            last_month_end.tm_mday = 1;
-            last_month_end.tm_hour = 0;
-            last_month_end.tm_min = 0;
-            last_month_end.tm_sec = 0;
-            last_month_end.tm_isdst = -1;
-
-            const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
-            const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
-
-            send_in_progress = true;
-            for (int i = 0; i < config.get("remote_upload_configs")->count(); ++i) {
-                auto task_id = std::make_shared<uint64_t>(0);
-                auto upload_request = new SendChargeLogArgs;
-                upload_request->last_month_start_min = last_month_start_min;
-                upload_request->last_month_end_min   = last_month_end_min;
-                upload_request->user_idx = i;
-                upload_request->task_id = task_id;
-                server.runInHTTPThread([](void *arg) {
-                    auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-                    std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-                    charge_tracker.send_file(std::move(*upload_request_ptr));
-                }, upload_request);
-            }
+            this->upload_charge_logs();
         }, 1_min, 4_h);
         // Delay one minute so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
         // Check only once every four hours, to avoid a stampede event at midnight on the 2nd of a month.
@@ -1128,15 +1106,16 @@ static void check_remote_client_status(SendChargeLogArgs &upload_args)
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
         handle_upload_retry(upload_args);
-        task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
-            auto upload_request = new SendChargeLogArgs(upload_args);
+        // TODO fixme
+        //task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
+        //    auto upload_request = new SendChargeLogArgs(upload_args);
 
-            server.runInHTTPThread([](void *arg) {
-                auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-                std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-                charge_tracker.send_file(std::move(*upload_request_ptr));
-            }, upload_request);
-        }, upload_args.next_retry_delay);
+        //    server.runInHTTPThread([](void *arg) {
+        //        auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
+        //        std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
+        //        charge_tracker.send_file(std::move(*upload_request_ptr));
+        //    }, upload_request);
+        //}, upload_args.next_retry_delay);
         upload_args.remote_client->close_chunked_request();
         task_scheduler.cancel(*upload_args.task_id);
     }
@@ -1193,7 +1172,7 @@ static esp_err_t format_and_send_chunk(AsyncHTTPSClient *remote_client, bool &fi
 }
 
 // since this function can block for a long time, it must not be called from the main thread
-void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
+void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
 
     String charger_uuid;
@@ -1254,15 +1233,16 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
 
     if (upload_args.remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
         handle_upload_retry(upload_args);
-        task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
-            auto upload_request = new SendChargeLogArgs(upload_args);
+        // TODO fixme
+        //task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
+        //    auto upload_request = new SendChargeLogArgs(upload_args);
 
-            server.runInHTTPThread([](void *arg) {
-                auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-                std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-                charge_tracker.send_file(std::move(*upload_request_ptr));
-            }, upload_request);
-        }, upload_args.next_retry_delay);
+        //    server.runInHTTPThread([](void *arg) {
+        //        auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
+        //        std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
+        //        charge_tracker.send_file(std::move(*upload_request_ptr));
+        //    }, upload_request);
+        //}, upload_args.next_retry_delay);
         logger.printfln("Failed to send charge-log");
         return;
     };
@@ -1317,6 +1297,67 @@ void ChargeTracker::send_file(SendChargeLogArgs &&upload_args) {
     *upload_args.task_id = task_scheduler.scheduleWithFixedDelay([upload_args = std::move(upload_args)]() mutable {
         check_remote_client_status(upload_args);
     }, 1_s, 1_s);
+}
+
+static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
+
+static void upload_charge_logs_task(void *arg)
+{
+    const uint32_t remote_upload_config_count = reinterpret_cast<uint32_t>(arg);
+
+    const time_t t_now = time(nullptr);
+
+    tm last_month_start;
+    localtime_r(&t_now, &last_month_start);
+
+    tm last_month_end;
+    last_month_end = last_month_start;
+
+    last_month_start.tm_mday = 1;
+    if (last_month_start.tm_mon == 0) {
+        last_month_start.tm_mon = 11;
+        last_month_start.tm_year--;
+    } else {
+        last_month_start.tm_mon--;
+    }
+    last_month_start.tm_hour = 0;
+    last_month_start.tm_min = 0;
+    last_month_start.tm_sec = 0;
+    last_month_start.tm_isdst = -1;
+
+    last_month_end.tm_mday = 1;
+    last_month_end.tm_hour = 0;
+    last_month_end.tm_min = 0;
+    last_month_end.tm_sec = 0;
+    last_month_end.tm_isdst = -1;
+
+    const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
+    const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
+
+    for (int user_idx = 0; user_idx < remote_upload_config_count; user_idx++) {
+        SendChargeLogArgs upload_request{user_idx, last_month_start_min, last_month_end_min, std::make_shared<uint64_t>(0)};
+
+        charge_tracker.send_file(upload_request);
+    }
+
+    charge_tracker.send_in_progress = false;
+
+    vTaskDelete(NULL); // exit RTOS task
+}
+
+void ChargeTracker::upload_charge_logs()
+{
+    send_in_progress = true;
+
+    const uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
+    void *arg = reinterpret_cast<void *>(remote_upload_config_count);
+
+    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, arg, 1, nullptr, 0);
+
+    if (ret != pdPASS_safe) {
+        logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+        send_in_progress = false;
+    }
 }
 #endif
 
