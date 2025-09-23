@@ -18,6 +18,7 @@ jobs:
             ~/.cache/pip
             ~/.platformio
             ./software/.pio
+            ./software/packages
           key: ${{ matrix.os }}
       - uses: actions/setup-python@v5
         with:
@@ -37,4 +38,5 @@ jobs:
             ~/.cache/pip
             ~/.platformio
             ./software/.pio
+            ./software/packages
           key: ${{ matrix.os }}
