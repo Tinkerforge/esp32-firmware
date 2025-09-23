@@ -856,19 +856,18 @@ void ChargeTracker::register_urls()
         int letterhead_lines = 0;
 
         {
-            StaticJsonDocument<192> doc;
-            auto buf = heap_alloc_array<char>(1024);
-
             if (request.contentLength() > 1024) {
                 return request.send_plain(413);
             }
 
+            auto buf = heap_alloc_array<char>(1024);
             auto received = request.receive(buf.get(), 1024);
 
             if (received < 0) {
                 return request.send_plain(500, "Failed to receive request payload");
             }
 
+            StaticJsonDocument<192> doc;
             DeserializationError error = deserializeJson(doc, buf.get(), received);
 
             if (error) {
@@ -939,19 +938,18 @@ void ChargeTracker::register_urls()
         int csv_delimiter = (int)CSVFlavor::Excel;
 
         {
-            StaticJsonDocument<192> doc;
-            auto buf = heap_alloc_array<char>(1024);
-
             if (request.contentLength() > 1024) {
                 return request.send_plain(413);
             }
 
+            auto buf = heap_alloc_array<char>(1024);
             auto received = request.receive(buf.get(), 1024);
 
             if (received < 0) {
                 return request.send_plain(500, "Failed to receive request payload");
             }
 
+            StaticJsonDocument<192> doc;
             DeserializationError error = deserializeJson(doc, buf.get(), received);
 
             if (error) {
