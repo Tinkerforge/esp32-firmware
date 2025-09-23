@@ -19,7 +19,8 @@ jobs:
             ~/.platformio
             ./software/.pio
             ./software/packages
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ github.run_id }}
+          restore-keys: ${{ matrix.os }}-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -31,6 +32,8 @@ jobs:
       - name: 'Build Firmware: ${{ matrix.environment }}'
         working-directory: ./software
         run: pio run -e ${{ matrix.environment }} -t clean && pio run -e ${{ matrix.environment }}
+      - name: 'Deleting Caches: ${{ matrix.os }}-'
+        run: gh cache delete ${{ matrix.os }}- --succeed-on-no-caches
       - uses: actions/cache/save@v4
         if: matrix.environment == 'warp4'
         with:
@@ -39,4 +42,4 @@ jobs:
             ~/.platformio
             ./software/.pio
             ./software/packages
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ github.run_id }}
