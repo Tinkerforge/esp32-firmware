@@ -200,7 +200,10 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
         }
 
         http_config.cert_pem = (const char *)cert.get();
-        // http_config.skip_cert_common_name_check = true;
+#ifdef DEBUG_FS_ENABLE
+        http_config.skip_cert_common_name_check = true;
+        logger.printfln("WARNING: Skipping certificate common name check");
+#endif
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -348,7 +351,12 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
         }
 
         http_config.cert_pem = (const char *)cert.get();
-        // http_config.skip_cert_common_name_check = true;
+
+#ifdef DEBUG_FS_ENABLE
+        http_config.skip_cert_common_name_check = true;
+        logger.printfln("WARNING: Skipping certificate common name check");
+#endif
+
 #else
         logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
         clear();
