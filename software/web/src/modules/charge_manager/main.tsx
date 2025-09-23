@@ -241,6 +241,8 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
     switch (dc[0]) {
         case CurrentDecisionTag.None:
             return "None";
+        case CurrentDecisionTag.Minimum:
+            return "Minimum current";
         case CurrentDecisionTag.EnableNotCharging:
             return "Enable current; vehicle not charging";
         case CurrentDecisionTag.PhaseLimit:

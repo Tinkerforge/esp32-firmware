@@ -6,6 +6,7 @@ from software.util import *
 
 spec = Union("Current Decision", 4, variants=[
     Variant('None'),
+    Variant('Minimum'),
     Variant('Enable Not Charging'),
     Variant('Phase Limit', [
         Member('Unknown Rotation', Types.Bool)
