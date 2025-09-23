@@ -390,7 +390,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
 template <typename T>
 size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
 {
-    if (subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
+    if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
         return 0;
     }
     size_t sent_count = 0;
@@ -406,6 +406,11 @@ size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityT
     return sent_count;
 };
 
+NodeManagementEntity::NodeManagementEntity()
+{
+    subscription_data.subscriptionEntry.emplace();
+}
+
 void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interface)
 {
     usecase_interface = new_usecase_interface;
@@ -414,7 +419,10 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
 
 EvseEntity::EvseEntity()
 {
-    update_billing_data(1, 0_s, 0_s, 0, 0, 100, 100, 0, 0);
+    task_scheduler.scheduleOnce([this]() {
+                                    update_billing_data(1, 0_s, 0_s, 0, 0, 100, 100, 0, 0);
+                                },
+                                1_s);
 }
 
 UseCaseInformationDataType EvseEntity::get_usecase_information()
@@ -538,18 +546,18 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
 
     billData.position->push_back(grid_position);
     billData.position->push_back(self_produced_position);
-
+    /*
     for (int i = 0; i < bill_list_data.billData->size(); i++) {
         if (bill_list_data.billData->at(i).billId == id) {
             bill_list_data.billData->at(i) = billData;
             return;
         }
-    }
+    }*/
     bill_list_data.billData->push_back(billData);
 
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
-    eebus.usecases->node_management.inform_subscribers(this->entity_address, this->bill_feature_address, bill_list_data, "billListData");
+    eebus.usecases->inform_subscribers(this->entity_address, this->bill_feature_address, bill_list_data, "billListData");
 }
 
 
@@ -892,7 +900,6 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
     eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_description_list, "loadControlLimitDescriptionListData");
     eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_list, "loadControlLimitListData");
 
-
     return limit_accepted;
 }
 
@@ -914,7 +921,7 @@ CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &hea
         feature_address.feature = loadControl_feature_address;
         feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
 
-        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
+        if (eebus.usecases->node_management->check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
             LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitdatatype.get();
             if (!update_lpc(load_control_limit_data.isLimitActive.get(), load_control_limit_data.value->number.get() * 10 * *(load_control_limit_data.value->scale), load_control_limit_data.timePeriod->endTime.has_value() ? std::stoull(load_control_limit_data.timePeriod->endTime.get()) : 0)) {
                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
@@ -944,7 +951,7 @@ CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderTy
     }
     if (header.cmdClassifier == CmdClassifierType::write && data->deviceconfigurationkeyvaluelistdatatype.has_value() && data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
         // We only accept writes from nodes we are bound to and we only do full writes
-        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
+        if (eebus.usecases->node_management->check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
             device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
@@ -1162,14 +1169,14 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses have to be unique
-    node_management = NodeManagementEntity();
-    node_management.set_usecaseManager(this);
-    node_management.set_entity_address({0});
+    node_management = make_unique_psram<NodeManagementEntity>();
+    node_management->set_usecaseManager(this);
+    node_management->set_entity_address({0});
     charging_summary = EvseEntity();
     charging_summary.set_entity_address({1});
     limitation_of_power_consumption = ControllableSystemEntity();
     limitation_of_power_consumption.set_entity_address({2});
-
+    initialized = true; // set to true, otherwise subscriptions will not work
 }
 
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
@@ -1219,7 +1226,14 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 template <typename T>
 size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
 {
-    return node_management.inform_subscribers(entity, feature, data, function_name);
+
+    if (initialized && EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
+        return node_management->inform_subscribers(entity, feature, data, function_name);
+    if constexpr (EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
+        eebus.trace_fmtln("Attempted to inform subscribers while Usecases were not yet initialized");
+    else
+        eebus.trace_fmtln("Attempted to inform subscribers about a change in %s while subscriptions are disabled", function_name.c_str());
+    return 0;
 }
 
 bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
