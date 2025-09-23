@@ -184,6 +184,7 @@ bool update_from_client_packet(
         target.last_phase_switch = -cfg->global_hysteresis;
         target.time_in_state_c = 0_us;
         target.last_plug_in = 0_us;
+        target.last_switch_on = 0_us;
     }
 
     target.charger_state = v1->charger_state;
@@ -916,7 +917,9 @@ static void stage_2(StageContext &sc) {
         // This charger could be switched to 3p.
         if (sc.phase_allocation[sc.idx_array[i]] == 0)
             sc.phase_allocation[sc.idx_array[i]] = activate_3p ? 3 : 1;
-        auto wc_end = state->just_plugged_in_timestamp + sc.cfg->plug_in_time;
+
+        auto wc_start = state->last_switch_on == 0_us ? sc.now : state->last_switch_on;
+        auto wc_end = wc_start + sc.cfg->plug_in_time;
 
         if (activate_3p)
             set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesWelcomeChargeUntil(wc_end));
