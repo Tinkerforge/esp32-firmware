@@ -58,5 +58,8 @@ private:
     uint32_t value_index_cache[MODBUS_METER_SIMULATOR_REGISTER_COUNT];
 
     uint16_t meter_id = 0;
+    bool have_source_values = false;
     float system_type = 3.0f;
+
+    uint8_t unsupported_input_register_cache[65536 / 8];
 };

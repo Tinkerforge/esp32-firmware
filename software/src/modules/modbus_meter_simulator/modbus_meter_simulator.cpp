@@ -27,8 +27,7 @@
 #include "module_dependencies.h"
 #include "options.h"
 #include "bindings/hal_common.h"
-#include "tools.h"
-#include "modules/meters_rs485_bricklet/meter_defs.h"
+#include "modules/meters/meter_defs.h"
 
 #include "gcc_warnings.h"
 
@@ -255,6 +254,19 @@ static void convert_float_to_regs(uint16_t *regs, float floatval)
     regs[0] = value.regs[1];
 }
 
+static float convert_regs_to_float(const uint16_t *regs)
+{
+    union {
+        float f;
+        uint16_t regs[2];
+    } value;
+
+    value.regs[1] = regs[0];
+    value.regs[0] = regs[1];
+
+    return value.f;
+}
+
 void ModbusMeterSimulator::pre_setup()
 {
     config = Config::Object({
@@ -268,7 +280,7 @@ void ModbusMeterSimulator::setup()
     api.restorePersistentConfig("modbus_meter_simulator/config", &config);
 
     uint32_t meter_type = config.get("meter_type")->asUint();
-    if (meter_type < ARRAY_SIZE(supported_meter_ids)) {
+    if (meter_type < std::size(supported_meter_ids)) {
         meter_id = supported_meter_ids[meter_type];
     }
 
@@ -280,9 +292,11 @@ void ModbusMeterSimulator::setup()
 
     source_meter_slot = config.get("source_meter_slot")->asUint();
 
-    for (size_t i = 0; i < ARRAY_SIZE(value_index_cache); i++) {
+    for (size_t i = 0; i < std::size(value_index_cache); i++) {
         value_index_cache[i] = UINT32_MAX;
     }
+
+    memset(unsupported_input_register_cache, 0, sizeof(unsupported_input_register_cache));
 
     setupRS485();
     if (!initialized)
@@ -405,6 +419,8 @@ EventResult ModbusMeterSimulator::on_value_ids_change(const Config *value_ids)
 
     meters.fill_index_cache(source_meter_slot, std::size(sdm_register_map_meter_values), sdm_register_map_meter_values, value_index_cache);
 
+    have_source_values = true;
+
     return EventResult::Deregister;
 }
 
@@ -414,7 +430,7 @@ uint32_t ModbusMeterSimulator::register_address2cached_index(uint32_t register_a
         return UINT32_MAX;
 
     uint32_t index = (register_address - 1) / 2;
-    if (index >= ARRAY_SIZE(value_index_cache))
+    if (index >= std::size(value_index_cache))
         return UINT32_MAX;
 
     return value_index_cache[index];
@@ -422,12 +438,10 @@ uint32_t ModbusMeterSimulator::register_address2cached_index(uint32_t register_a
 
 void ModbusMeterSimulator::modbus_slave_write_multiple_registers_request_handler(uint8_t request_id, uint32_t starting_address, uint16_t *registers, uint16_t registers_length)
 {
-    if ((starting_address == 15 || starting_address == 25) || registers_length == 2) {
+    if ((starting_address == 15 || starting_address == 25) && registers_length == 2) {
         logger.printfln("Tried to set password (ignored)");
     } else if (starting_address == 11 && registers_length == 2) {
-        uint16_t indices[1] = {1};
-        float float_val = NAN;
-        convert_to_float(registers, &float_val, indices, 1);
+        const float float_val = convert_regs_to_float(registers);
         logger.printfln("Setting system type to %f", static_cast<double>(float_val));
         system_type = float_val;
     } else {
@@ -460,7 +474,7 @@ void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uin
 {
     uint16_t regs[125];
 
-    if (count > ARRAY_SIZE(regs)) {
+    if (count > std::size(regs)) {
         logger.printfln("Received unexpected read_input_registers request to address %lu with length %hu", starting_address, count);
         return;
     }
@@ -483,6 +497,17 @@ void ModbusMeterSimulator::modbus_slave_read_input_registers_request_handler(uin
         int rc = tf_rs485_modbus_slave_answer_read_input_registers_request(&bricklet, request_id, regs, count);
         if (rc != TF_E_OK) {
             logger.printfln("Answering read input registers request failed with code %i", rc);
+        }
+    } else if (have_source_values) {
+        const uint32_t mask_byte_position = starting_address / 8;
+        const uint8_t mask = static_cast<uint8_t>(1UL << (starting_address % 8));
+
+        uint8_t mask_byte = unsupported_input_register_cache[mask_byte_position];
+
+        if ((mask_byte & mask) == 0) {
+            logger.printfln("No data for read input registers request %hu @ %lu", count, starting_address);
+            mask_byte |= mask;
+            unsupported_input_register_cache[mask_byte_position] = mask_byte;
         }
     }
 }
