@@ -403,6 +403,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
 }
 
 interface ExecutorProps {
+    label?: string;
     host: string;
     port: number;
     table_id: number;
@@ -481,7 +482,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
 
     render() {
         return <>
-            <FormRow label="">
+            <FormRow label={util.hasValue(this.props.label) ? this.props.label : ""}>
                 <Button
                     variant="primary"
                     className="form-control"
@@ -838,27 +839,27 @@ export function init() {
                         </FormRow>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.PermitGridCharge} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.PermitGridCharge} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidDischarge} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidDischarge} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} />
                         </CollapsedSection>,
                     );
                 }

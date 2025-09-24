@@ -30,6 +30,7 @@ let x = {
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
             "repeat_interval_muted": "0 deaktivert Wiederholung",
+            "action": "Aktion",
             "permit_grid_charge": "Laden vom Netz erlauben",
             "revoke_grid_charge_override": "Erlaubnis zum Laden vom Netz zurücknehmen",
             "forbid_discharge": "Entladen verbieten",
