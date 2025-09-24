@@ -4,7 +4,7 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("Current Decision", 4, variants=[
+spec = Union("Current Decision", 4, require_stable_api=False, variants=[
     Variant('None'),
     Variant('Minimum'),
     Variant('Enable Not Charging'),

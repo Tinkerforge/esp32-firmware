@@ -4,7 +4,7 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("One Phase Decision", 20, variants=[
+spec = Union("One Phase Decision", 20, require_stable_api=False, variants=[
     Variant('None'),
     Variant('Yes Switched To Fixed 1p'),
     Variant('Yes Normal'),

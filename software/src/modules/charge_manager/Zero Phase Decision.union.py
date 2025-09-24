@@ -4,7 +4,7 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("Zero Phase Decision", 20, variants=[
+spec = Union("Zero Phase Decision", 20, require_stable_api=False, variants=[
     Variant('None'),
     Variant('Yes Charge Mode Off'),
     Variant('Yes Waiting For Rotation', [
