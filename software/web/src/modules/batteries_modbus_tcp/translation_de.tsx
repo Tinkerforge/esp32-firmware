@@ -10,7 +10,7 @@ let x = {
             "battery_class": "Modbus/TCP",
             "export_basename_suffix": "-Modbus-TCP",
             "execute": "Ausführen",
-            "execute_response": "Antwort",
+            "execute_result": "Ergebnis",
             "execute_waiting": "Warte...",
             "execute_done": "Fertig",
             "execute_error_prefix": "Fehler: ",
