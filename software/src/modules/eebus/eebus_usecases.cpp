@@ -222,7 +222,13 @@ bool NodeManagementEntity::read_detailed_discovery_data(HeaderType &header, Spin
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
 
     for (EebusEntity *uc : usecase_interface->entity_list) {
-        node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
+        if (!uc->isActive()) {
+            continue;
+        }
+        for (NodeManagementDetailedDiscoveryEntityInformationType dt : uc->get_detailed_discovery_entity_information()) {
+            node_management_detailed_data.entityInformation->push_back(dt);
+
+        }
         auto features = uc->get_detailed_discovery_feature_information();
         node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
     }
@@ -312,7 +318,7 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
     return CmdClassifierType::reply;
 }
 
-NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
     entity.description->entityAddress->entity = entity_address;
@@ -321,7 +327,7 @@ NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_d
     entity.description->label = "Node Management"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
-    return entity;
+    return {entity};
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagementEntity::get_detailed_discovery_feature_information() const
@@ -441,7 +447,6 @@ UseCaseInformationDataType EvseEntity::get_usecase_information()
     FeatureAddressType evcs_usecase_feature_address;
     evcs_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     evcs_usecase_feature_address.entity = entity_address;
-    evcs_usecase_feature_address.feature = 1;
     evcs_usecase.address = evcs_usecase_feature_address;
     return evcs_usecase;
 }
@@ -455,7 +460,7 @@ CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHa
     return CmdClassifierType::EnumUndefined;
 }
 
-NodeManagementDetailedDiscoveryEntityInformationType EvseEntity::get_detailed_discovery_entity_information() const
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvseEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
@@ -464,7 +469,7 @@ NodeManagementDetailedDiscoveryEntityInformationType EvseEntity::get_detailed_di
     entity.description->label = "Charging Summary"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
-    return entity;
+    return {entity};
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::get_detailed_discovery_feature_information() const
@@ -602,6 +607,144 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
     return CmdClassifierType::EnumUndefined;
 }
 
+EvEntity::EvEntity()
+{
+    entity_active = false; // Disable entity until an EV is connected
+}
+
+UseCaseInformationDataType EvEntity::get_usecase_information()
+{
+    UseCaseInformationDataType evcc_usecase;
+    evcc_usecase.actor = "EV";
+
+    UseCaseSupportType evcc_usecase_support;
+    evcc_usecase_support.useCaseName = "evCommissioningAndConfiguration";
+    evcc_usecase_support.useCaseVersion = "1.0.1";
+    evcc_usecase_support.useCaseAvailable = true;
+    evcc_usecase_support.scenarioSupport->insert(evcc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
+
+    evcc_usecase_support.useCaseDocumentSubRevision = "release";
+    evcc_usecase.useCaseSupport->push_back(evcc_usecase_support);
+
+    FeatureAddressType evcc_usecase_feature_address;
+    evcc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    evcc_usecase_feature_address.entity = entity_address;
+    evcc_usecase.address = evcc_usecase_feature_address;
+    return evcc_usecase;
+}
+
+CmdClassifierType EvEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+
+    return CmdClassifierType::EnumUndefined;
+}
+
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvEntity::get_detailed_discovery_entity_information() const
+{
+
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EV;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "Controllable System"; // The label of the entity. This is optional but recommended.
+
+    // We focus on returning the mandatory fields.
+    return {entity};
+}
+
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get_detailed_discovery_feature_information() const
+{
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+
+    // See EEBUS UC TS LimitationOfPowerConsum ption v1.0.0.pdf 3.2.2.2.1
+
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
+    device_configuration_feature.description->featureAddress->entity = entity_address;
+    device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
+    device_configuration_feature.description->role = RoleType::server;
+
+    // deviceConfigurationKeyValueDescriptionListData
+    FunctionPropertyType device_configuration_description{};
+    device_configuration_description.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
+    device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
+    device_configuration_feature.description->supportedFunction->push_back(device_configuration_description);
+
+    // deviceConfigurationKeyValueListData
+    FunctionPropertyType device_configuration_values{};
+    device_configuration_values.function = FunctionEnumType::deviceConfigurationKeyValueListData;
+    device_configuration_values.possibleOperations->read = PossibleOperationsReadType{};
+
+    device_configuration_feature.description->supportedFunction->push_back(device_configuration_values);
+    features.push_back(device_configuration_feature);
+
+    // The following functions are needed by the Identification Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
+    identification_feature.description->featureAddress->entity = entity_address;
+    identification_feature.description->featureAddress->feature = feature_address_identification;
+    identification_feature.description->featureType = FeatureTypeEnumType::Identification;
+    identification_feature.description->role = RoleType::server;
+
+    //identificationListData
+    FunctionPropertyType identificationListData{};
+    identificationListData.function = FunctionEnumType::identificationListData;
+    identificationListData.possibleOperations->read = PossibleOperationsReadType{};
+
+    identification_feature.description->supportedFunction->push_back(identificationListData);
+    features.push_back(identification_feature);
+
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
+    device_classification_feature.description->featureAddress->entity = entity_address;
+    device_classification_feature.description->featureAddress->feature = feature_address_device_diagnosis;
+    device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    device_classification_feature.description->role = RoleType::server;
+
+    //deviceClassificationManufacturerData
+    FunctionPropertyType deviceClassificationManufacturerData{};
+    deviceClassificationManufacturerData.function = FunctionEnumType::deviceClassificationManufacturerData;
+    deviceClassificationManufacturerData.possibleOperations->read = PossibleOperationsReadType{};
+    device_classification_feature.description->supportedFunction->push_back(deviceClassificationManufacturerData);
+    features.push_back(device_classification_feature);
+
+    // The following functions are needed by the ElectricalConnection Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
+    electricalConnectionFeature.description->featureAddress->entity = entity_address;
+    electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
+    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
+    electricalConnectionFeature.description->role = RoleType::server;
+
+    //electricalConnectionCharacteristicsListData
+    FunctionPropertyType electricalConnectionParameterDescriptionData{};
+    electricalConnectionParameterDescriptionData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
+    electricalConnectionParameterDescriptionData.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionData);
+
+    //electricalConnectionPermittedValueSetListData
+    FunctionPropertyType electricalConnectionPermittedValueListData{};
+    electricalConnectionPermittedValueListData.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
+    electricalConnectionPermittedValueListData.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
+    features.push_back(electricalConnectionFeature);
+
+    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
+    deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
+    device_configuration_feature.description->featureAddress->feature = feature_address_device_diagnosis;
+    deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    deviceDiagnosisFeature.description->role = RoleType::server;
+
+    // deviceDiagnosisStateData
+    FunctionPropertyType deviceDiagnosisState{};
+    deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
+    deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
+    deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
+    features.push_back(deviceDiagnosisFeature);
+
+    return features;
+}
+
+
 ControllableSystemEntity::ControllableSystemEntity()
 {
     // Initialize DeviceConfiguration feature
@@ -653,7 +796,6 @@ UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
     FeatureAddressType lpc_usecase_feature_address;
     lpc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     lpc_usecase_feature_address.entity = entity_address;
-    lpc_usecase_feature_address.feature = 1;
     lpc_usecase.address = lpc_usecase_feature_address;
     return lpc_usecase;
 }
@@ -676,7 +818,7 @@ CmdClassifierType ControllableSystemEntity::handle_message(HeaderType &header, S
     return CmdClassifierType::EnumUndefined;
 }
 
-NodeManagementDetailedDiscoveryEntityInformationType ControllableSystemEntity::get_detailed_discovery_entity_information() const
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> ControllableSystemEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
@@ -685,7 +827,7 @@ NodeManagementDetailedDiscoveryEntityInformationType ControllableSystemEntity::g
     entity.description->label = "Controllable System"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
-    return entity;
+    return {entity};
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableSystemEntity::get_detailed_discovery_feature_information() const
@@ -1166,6 +1308,7 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
         switch_state(LPCState::Failsafe);
 }
 
+
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses have to be unique
@@ -1176,6 +1319,8 @@ EEBusUseCases::EEBusUseCases()
     charging_summary.set_entity_address({1});
     limitation_of_power_consumption = ControllableSystemEntity();
     limitation_of_power_consumption.set_entity_address({2});
+    ev_commissioning_and_configuration = EvEntity();
+    ev_commissioning_and_configuration.set_entity_address({1, 1}); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
     initialized = true; // set to true, otherwise subscriptions will not work
 }
 
