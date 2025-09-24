@@ -13,23 +13,23 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'EMS Mode Selection = Forced',
+                'description': 'EMS mode selection',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13050,
                 'values': [
-                    2,
+                    2,  # forced
                 ],
             },
             {
-                'description': 'Charge/Discharge Command = Charge',
+                'description': 'Charge/discharge command',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13051,
                 'values': [
-                    0xAA,
+                    0xAA,  # charge
                 ],
             },
             {
-                'description': 'Charge/Discharge Power = 1000W',
+                'description': 'Charge/discharge power [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13052,
                 'values': [
@@ -44,23 +44,23 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'EMS Mode Selection = Self',
+                'description': 'EMS mode selection',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13050,
                 'values': [
-                    0,
+                    0,  # self
                 ],
             },
             {
-                'description': 'Charge/Discharge Command = Stop',
+                'description': 'Charge/discharge command',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13051,
                 'values': [
-                    0xCC,
+                    0xCC,  # stop
                 ],
             },
             {
-                'description': 'Charge/Discharge Power = 0W',
+                'description': 'Charge/discharge power [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13052,
                 'values': [
@@ -75,7 +75,7 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Max discharge power = 1',
+                'description': 'Maximum discharge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
@@ -90,7 +90,7 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Max discharge power = 1500',
+                'description': 'Maximum discharge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
@@ -105,7 +105,7 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Max charge power = 1',
+                'description': 'Maximum charge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,
                 'values': [
@@ -120,7 +120,7 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Max charge power = 3000',
+                'description': 'Maximum charge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,
                 'values': [
