@@ -30,6 +30,7 @@ let x = {
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "repeat_interval": "Repeat interval",
             "repeat_interval_muted": "0 disables repeat",
+            "action": "Action",
             "permit_grid_charge": "Permit grid charge",
             "revoke_grid_charge_override": "Revoke grid charge permission",
             "forbid_discharge": "Forbid discharge",
