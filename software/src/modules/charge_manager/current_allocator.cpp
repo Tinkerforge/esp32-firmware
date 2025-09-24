@@ -1139,7 +1139,7 @@ static void stage_3(StageContext &sc) {
 
             trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
 
-            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(sc.limits->min_expiration_ts[p], wnd_min[p] - sc.limits->raw[p], p));
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(wnd_min[p] - sc.limits->raw[p], p));
 
             // We don't have to recalculate the window but instead can just change the minimum.
             // The window minimum does not have dependencies between chargers.
@@ -1205,7 +1205,7 @@ static void stage_3(StageContext &sc) {
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
 
-        set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(sc.limits->min_expiration_ts[0], wnd_min.pv - sc.limits->max_pv, 0));
+        set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPVExcessOverload(wnd_min.pv - sc.limits->max_pv));
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.

@@ -14,9 +14,11 @@ spec = Union("Zero Phase Decision", 20, require_stable_api=False, variants=[
     Variant('Yes Rotated For B1'),
     Variant('Yes Rotated For Higher Prio'),
     Variant('Yes Phase Overload', [
-        Member('Timestamp', Types.Uptime),
         Member('Overload mA', Types.S32),
         Member('Phase', Types.U8)
+    ]),
+    Variant('Yes PV Excess Overload', [
+        Member('Overload mA', Types.S32),
     ]),
     Variant('No Cloud Filter Blocks Until', [
         Member('Timestamp', Types.Uptime),
