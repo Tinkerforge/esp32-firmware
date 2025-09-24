@@ -161,26 +161,28 @@ function phase_to_string(phase: number) {
     return 'L' + phase;
 }
 
-function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
+function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
     switch (d0[0]) {
         case ZeroPhaseDecisionTag.None:
-            return "None";
+            return "None"
         case ZeroPhaseDecisionTag.YesChargeModeOff:
-            return "Charge Mode Off";
+            return __("charge_manager.script.zpd_yes_charge_mode_off");
         case ZeroPhaseDecisionTag.YesWaitingForRotation:
-            return with_timespan((timespan) => "Waiting for next rotation (" + timespan + ")", d0[1]);
+            return with_timespan(__("charge_manager.script.zpd_yes_waiting_for_rotation"), d0[1]);
         case ZeroPhaseDecisionTag.YesNotActive:
-            return "Vehicle not active";
+            return __("charge_manager.script.zpd_yes_not_active");
         case ZeroPhaseDecisionTag.YesRotatedForB1:
-            return "Rotated for waiting charger";
+            return __("charge_manager.script.zpd_yes_rotated_for_b1");
         case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
-            return "Rotated for charger of higher priority";
+            return __("charge_manager.script.zpd_yes_rotated_for_higher_prio");
         case ZeroPhaseDecisionTag.YesPhaseOverload:
-            return with_timespan((timespan) => "Phase overload: " + d0[1][1] + " mA on phase " + phase_to_string(d0[1][2]) + ": " + timespan, d0[1][0]);
+            return __("charge_manager.script.zpd_yes_phase_overload")(phase_to_string(d0[1][0]), d0[1][1]);
+        case ZeroPhaseDecisionTag.YesPVExcessOverload:
+            return __("charge_manager.script.zpd_yes_pv_excess_overload")(d0[1]);
         case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
-            return with_timespan((timespan) => "PV excess overload, but cloud filter prevents shutdown for " + timespan + " because of max seen PV excess of " + d0[1][1] + " mA", d0[1][0]);
+            return with_timespan(ts => __("charge_manager.script.zpd_no_cloud_filter_blocks_until")(ts, d0[1][1]), d0[1][0]);
         case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
-            return with_timespan((timespan) => "PV excess overload, but hysteresis prevents shutdown for " + timespan, d0[1]);
+            return with_timespan(__("charge_manager.script.zpd_no_hysteresis_blocks_until"), d0[1]);
     }
 }
 
@@ -189,23 +191,23 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
         case OnePhaseDecisionTag.None:
             return "None";
         case OnePhaseDecisionTag.YesWelcomeChargeUntil:
-            return with_timespan((timespan) => "Yes: Welcome charge for " + timespan, d1[1]);
+            return with_timespan(__("charge_manager.script.opd_yes_welcome_charge_until"), d1[1]);
         case OnePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d1[1][3])} too low: required ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, d1[1][0]);
+            return with_timespan(ts => __("charge_manager.script.opd_no_phase_minimum")(ts, phase_to_string(d1[1][3]), d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoPhaseImprovement:
-            return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, d1[1][0]);
+            return  with_timespan(ts => __("charge_manager.script.opd_no_phase_improvement")(ts, phase_to_string(d1[1][3]), d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoForced3pUntil:
-            return with_timespan((timespan) => "No: Force to 3p charge for " + timespan, d1[1]);
+            return with_timespan(__("charge_manager.script.opd_no_force_3p_until"), d1[1]);
         case OnePhaseDecisionTag.NoFixed3p:
-            return "No: Charger is supplied with three phases and does not support phase switch";
+            return __("charge_manager.script.opd_no_fixed_3p");
         case OnePhaseDecisionTag.YesWakingUp:
-            return "Yes: Waking up vehicle";
+            return __("charge_manager.script.opd_yes_waking_up");
         case OnePhaseDecisionTag.YesNormal:
-            return "Yes";
+            return __("charge_manager.script.opd_yes");
         case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
-            return with_timespan((timespan) => "No: Hysteresis blocks for " + timespan, d1[1]);
+            return with_timespan(__("charge_manager.script.opd_no_hysteresis_blocks_until"), d1[1]);
         case OnePhaseDecisionTag.YesSwitchedToFixed1p:
-            return "Yes: Charger detected vehicle charging on single phase only";
+            return __("charge_manager.script.opd_yes_switched_to_fixed_1p");
     }
 }
 
@@ -214,47 +216,46 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
         case ThreePhaseDecisionTag.None:
             return "None";
         case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
-            return with_timespan((timespan) => "Yes: Welcome charge for " + timespan, d3[1]);
+            return with_timespan(__("charge_manager.script.tpd_yes_welcome_charge_until"), d3[1]);
         case ThreePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d3[1][3])} too low: required ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_minimum")(ts, phase_to_string(d3[1][3]), d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoPhaseImprovement:
-            return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_improvement")(ts, phase_to_string(d3[1][3]), d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoForced1pUntil:
-            return with_timespan((timespan) => "No: Force to 1p charge for " + timespan, d3[1]);
+            return with_timespan(__("charge_manager.script.tpd_no_force_1p_until"), d3[1]);
         case ThreePhaseDecisionTag.NoFixed1p:
-            return "No: Charger is supplied with one phase and does not support phase switch";
+            return __("charge_manager.script.tpd_no_fixed_1p")
         case ThreePhaseDecisionTag.YesUnknownRotSwitchable:
-            return "Yes: Charger is switchable and phase rotation is not known. Preferring three phase charging ";
+            return __("charge_manager.script.tpd_yes_unknown_rot_switchable");
         case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
-            return with_timespan((timespan) => "No: Hysteresis blocks for " + timespan, d3[1]);
+            return with_timespan(__("charge_manager.script.tpd_no_hysteresis_blocks_until"), d3[1]);
         case ThreePhaseDecisionTag.YesWakingUp:
-            return "Yes: Waking up vehicle";
+            return __("charge_manager.script.tpd_yes_waking_up");
         case ThreePhaseDecisionTag.YesNormal:
-            return "Yes";
+            return __("charge_manager.script.tpd_yes");
         case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
-            return "Yes: Charger detected vehicle charging on three phases";
+            return __("charge_manager.script.tpd_yes_switched_to_fixed_3p");
     }
 }
-
 
 function current_desc_to_text(dc: CurrentDecision): ComponentChild {
     switch (dc[0]) {
         case CurrentDecisionTag.None:
             return "None";
         case CurrentDecisionTag.Minimum:
-            return "Minimum current";
+            return __("charge_manager.script.cd_minimum");
         case CurrentDecisionTag.EnableNotCharging:
-            return "Enable current; vehicle not charging";
+            return __("charge_manager.script.cd_enable_not_charging");
         case CurrentDecisionTag.PhaseLimit:
-            return "Phase limit";
+            return __("charge_manager.script.cd_phase_limit");
         case CurrentDecisionTag.Requested:
-            return "Requested by vehicle";
+            return __("charge_manager.script.cd_requested");
         case CurrentDecisionTag.Fair:
-            return "Fair current";
+            return __("charge_manager.script.cd_fair");
         case CurrentDecisionTag.GuaranteedPV:
-            return "Guaranteed PV current";
+            return __("charge_manager.script.cd_guaranteed_pv");
         case CurrentDecisionTag.LeftOver:
-            return "Left over current";
+            return __("charge_manager.script.cd_left_over");
     }
 }
 
