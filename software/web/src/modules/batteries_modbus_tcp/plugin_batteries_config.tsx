@@ -412,6 +412,7 @@ interface ExecutorProps {
 }
 
 interface ExecutorState {
+    table_id: number;
     waiting: boolean;
     cookie: number;
     result: string;
@@ -422,6 +423,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
         super(props);
 
         this.state = {
+            table_id: null,
             waiting: false,
             cookie: null,
             result: "",
@@ -447,7 +449,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
     async execute() {
         let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
-        this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+        this.setState({table_id: this.props.table_id, waiting: true, cookie: cookie, result: ""}, async () => {
             let result = "<unknown>";
             let table = [this.props.table_id, {device_address: this.props.device_address}];
 
@@ -488,7 +490,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 </Button>
             </FormRow>
 
-            {this.state.waiting || this.state.result.length > 0 ?
+            {this.props.table_id === this.state.table_id && (this.state.waiting || this.state.result.length > 0) ?
                 <FormRow label={__("batteries_modbus_tcp.content.execute_response")}>
                     <InputText value={this.state.waiting ? __("batteries_modbus_tcp.content.execute_waiting") : this.state.result} />
                 </FormRow>
