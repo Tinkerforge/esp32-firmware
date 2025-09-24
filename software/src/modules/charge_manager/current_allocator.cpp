@@ -2025,6 +2025,8 @@ static void stage_9(StageContext &sc) {
         if (phase_alloc == 0)
             continue;
 
+        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::EnableNotCharging());
+
         apply_cost(enable_cost, sc.limits);
 
         sc.phase_allocation[sc.idx_array[i]] = phase_alloc;
