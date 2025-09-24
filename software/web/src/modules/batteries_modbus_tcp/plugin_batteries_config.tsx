@@ -492,7 +492,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
             </FormRow>
 
             {this.props.table_id === this.state.table_id && (this.state.waiting || this.state.result.length > 0) ?
-                <FormRow label={__("batteries_modbus_tcp.content.execute_response")}>
+                <FormRow label={__("batteries_modbus_tcp.content.execute_result")}>
                     <InputText value={this.state.waiting ? __("batteries_modbus_tcp.content.execute_waiting") : this.state.result} />
                 </FormRow>
                 : undefined}
