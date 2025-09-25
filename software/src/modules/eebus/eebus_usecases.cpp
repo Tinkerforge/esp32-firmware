@@ -635,7 +635,44 @@ UseCaseInformationDataType EvEntity::get_usecase_information()
 
 CmdClassifierType EvEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
+            response["deviceConfigurationKeyValueDescriptionData"] = device_config_description;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
+            response["deviceConfigurationKeyValueListData"] = device_config_list;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::identificationListData) {
+            response["identificationListData"] = identification_data;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
+            response["deviceClassificationManufacturerData"] = device_manufacturer_data;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
+            response["electricalConnectionParameterDescriptionListData"] = electrical_connection_description;
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData) {
+            response["electricalConnectionPermittedValueSetListData"] = electrical_connection_permitted_values;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
+            response["deviceDiagnosisStateData"] = device_diagnosis_state;
+            return CmdClassifierType::reply;
+        }
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
+                                                 "Command not supported on this entity");
+        return CmdClassifierType::reply;
+    } else if (header.cmdClassifier == CmdClassifierType::write || header.cmdClassifier == CmdClassifierType::call) {
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
+                                                 "Only Reads supported on this entity");
+        return CmdClassifierType::reply;
+    }
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -654,9 +691,11 @@ std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvEntity::get_
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get_detailed_discovery_feature_information() const
 {
+
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
 
-    // See EEBUS UC TS LimitationOfPowerConsum ption v1.0.0.pdf 3.2.2.2.1
+    if (!ev_connected)
+        return features;
 
     // The following functions are needed by the DeviceDiagnosis Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
@@ -742,6 +781,140 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
     features.push_back(deviceDiagnosisFeature);
 
     return features;
+}
+
+void EvEntity::ev_connected_state(bool connected)
+{
+    entity_active = ev_connected = connected;
+    update_api();
+    // TODO: Somehow inform subscribers of the nodemgmt entity
+}
+
+void EvEntity::update_device_config(const String &communication_standard, bool asymmetric_supported)
+{
+    // As defined in EEBUS_UC_TS_EVCommissioningAndConfiguration_v1.0.1.pdf 3.2.1.2.2.2.
+    if (communication_standard != "iso15118-2ed1" && communication_standard != "iso15118-2ed2" && communication_standard != "iec61851") {
+        eebus.trace_fmtln(R"(Usecase EVCC: Invalid communication standard for EV entity device configuration: %s, should be "iso15118-2ed1","iso15118-2ed1" or "iec61851".)", communication_standard.c_str());
+        // We continue on regardless and let the peer deal with incorrect values
+    }
+    device_config_description.deviceConfigurationKeyValueDescriptionData->clear();
+    device_config_list.deviceConfigurationKeyValueData->clear();
+
+    DeviceConfigurationKeyValueDescriptionDataType comm_standard_description{};
+    DeviceConfigurationKeyValueDataType comm_standard_value{};
+    comm_standard_description.keyId = 1;
+    comm_standard_description.keyName = DeviceConfigurationKeyNameEnumType::communicationsStandard;
+    comm_standard_description.valueType = DeviceConfigurationKeyValueTypeType::string;
+    comm_standard_value.keyId = 1;
+    comm_standard_value.value->string = communication_standard.c_str();
+    device_config_description.deviceConfigurationKeyValueDescriptionData->push_back(comm_standard_description);
+    device_config_list.deviceConfigurationKeyValueData->push_back(comm_standard_value);
+
+    DeviceConfigurationKeyValueDescriptionDataType asymmetric_description{};
+    DeviceConfigurationKeyValueDataType asymmetric_value{};
+    asymmetric_description.keyId = 2;
+    asymmetric_description.keyName = DeviceConfigurationKeyNameEnumType::asymmetricChargingSupported;
+    asymmetric_description.valueType = DeviceConfigurationKeyValueTypeType::boolean;
+    asymmetric_value.keyId = 2;
+    asymmetric_value.value->boolean = asymmetric_supported;
+    device_config_description.deviceConfigurationKeyValueDescriptionData->push_back(asymmetric_description);
+    device_config_list.deviceConfigurationKeyValueData->push_back(asymmetric_value);
+    // TODO: Notify subscribers
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, device_config_description, "deviceConfigurationKeyValueDescriptionData");
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, device_config_list, "deviceConfigurationKeyValueListData");
+
+    update_api();
+}
+
+void EvEntity::update_identification(String mac_address, IdentificationTypeEnumType mac_type)
+{
+    identification_data.identificationData->clear();
+
+    IdentificationDataType identification_data_entry{};
+    identification_data_entry.identificationId = 1;
+    identification_data_entry.identificationType = mac_type;
+    identification_data_entry.identificationValue = mac_address.c_str();
+    identification_data.identificationData->push_back(identification_data_entry);
+    eebus.usecases->inform_subscribers(entity_address, feature_address_identification, identification_data, "identificationListData");
+    update_api();
+}
+
+void EvEntity::update_manufacturer(String name, String code, String serial, String software_vers, String hardware_vers, String vendor_name, String vendor_code, String brand_name, String manufacturer, String manufacturer_description)
+{
+    device_manufacturer_data = DeviceClassificationManufacturerDataType{};
+    if (name.length() > 0)
+        device_manufacturer_data.deviceName = name.c_str();
+    if (code.length() > 0)
+        device_manufacturer_data.deviceCode = code.c_str();
+    if (serial.length() > 0)
+        device_manufacturer_data.serialNumber = serial.c_str();
+    if (software_vers.length() > 0)
+        device_manufacturer_data.softwareRevision = software_vers.c_str();
+    if (hardware_vers.length() > 0)
+        device_manufacturer_data.hardwareRevision = hardware_vers.c_str();
+    if (vendor_name.length() > 0)
+        device_manufacturer_data.vendorName = vendor_name.c_str();
+    if (vendor_code.length() > 0)
+        device_manufacturer_data.vendorCode = vendor_code.c_str();
+    if (brand_name.length() > 0)
+        device_manufacturer_data.brandName = brand_name.c_str();
+    if (manufacturer.length() > 0)
+        device_manufacturer_data.manufacturerLabel = manufacturer.c_str();
+    if (manufacturer_description.length() > 0)
+        device_manufacturer_data.manufacturerDescription = manufacturer_description.c_str();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_classification, device_manufacturer_data, "deviceClassificationManufacturerData");
+    update_api();
+}
+
+void EvEntity::update_electrical_connection(int min_power, int max_power, int standby_power)
+{
+    electrical_connection_description.electricalConnectionParameterDescriptionData->clear();
+    electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->clear();
+
+    ElectricalConnectionParameterDescriptionDataType power_description{};
+    power_description.parameterId = 1;
+    power_description.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::neutral; // Not sure but the spec has no value here, maybe its what we are capable of measuring?
+    power_description.scopeType = ScopeTypeEnumType::acPowerTotal;
+    electrical_connection_description.electricalConnectionParameterDescriptionData->push_back(power_description);
+
+    ElectricalConnectionPermittedValueSetDataType permitted_values{};
+    permitted_values.electricalConnectionId = 1;
+    permitted_values.parameterId = 1;
+    ScaledNumberSetType minmax_power_value_set{};
+    ScaledNumberRangeType power_value_range{};
+    power_value_range.min->number = min_power;
+    power_value_range.max->number = max_power;
+    minmax_power_value_set.range->push_back(power_value_range);
+    permitted_values.permittedValueSet->push_back(minmax_power_value_set);
+
+    ScaledNumberSetType standby_power_value_set{};
+    ScaledNumberType standby_value_range{};
+    standby_value_range.number = standby_power;
+    standby_power_value_set.value->push_back(standby_value_range);
+    permitted_values.permittedValueSet->push_back(standby_power_value_set);
+    electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->push_back(permitted_values);
+
+    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_description, "electricalConnectionParameterDescriptionListData");
+    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_permitted_values, "electricalConnectionPermittedValueSetListData");
+
+    update_api();
+}
+
+void EvEntity::update_operating_state(bool standby)
+{
+    if (standby) {
+        device_diagnosis_state.operatingState = DeviceDiagnosisOperatingStateEnumType::standby;
+    } else {
+        device_diagnosis_state.operatingState = DeviceDiagnosisOperatingStateEnumType::normalOperation;
+    }
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_diagnosis, device_diagnosis_state, "deviceDiagnosisStateData");
+    update_api();
+}
+
+
+void EvEntity::update_api()
+{
+    // TODO: Call API update functions
 }
 
 
