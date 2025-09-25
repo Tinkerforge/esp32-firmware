@@ -125,14 +125,16 @@ specs_h.append('}')
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
         spec_name = util.FlavoredName(spec['name'].format(variant=variant_spec)).get()
-        spec_virtual_meter_group = None
-        spec_virtual_meter_name = None
 
         if 'virtual_meter' in spec:
-            spec_virtual_meter_group = util.FlavoredName(spec['virtual_meter'][0].format(variant=variant_spec)).get()
-            spec_virtual_meter_member = util.FlavoredName(spec['virtual_meter'][1]).get()
+            virtual_meter_group = util.FlavoredName(spec['virtual_meter'][0].format(variant=variant_spec)).get()
 
-            virtual_meters.setdefault(spec_virtual_meter_group, []).append((spec_virtual_meter_member, spec_name))
+            if spec['virtual_meter'][1] != None:
+                virtual_meter_member = util.FlavoredName(spec['virtual_meter'][1]).get()
+            else:
+                virtual_meter_member = None
+
+            virtual_meters.setdefault(virtual_meter_group, []).append((virtual_meter_member, spec_name, spec['default_location']))
 
         if spec['values'] == None:
             continue
@@ -227,13 +229,9 @@ for spec in specs:
                          f'    {f32_negative_max_as_nan},\n'
                           '};')
 
-specs_ts.append('export function get_virtual_meter_items(table_id: number) {\n'
-                '    let virtual_meter_items: [string, string][] = [];\n\n'
-                '    switch (table_id) {\r')
-
 for group, value in virtual_meters.items():
-    specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
-                     '        virtual_meter_items = [\r')
+    if len(value) == 1 and value[0][0] == None:
+        continue
 
     specs_h.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter);')
 
@@ -244,21 +242,16 @@ for group, value in virtual_meters.items():
                      f'        logger.printfln_meter("No {group.space} Virtual Meter selected");\n'
                       '        return nullptr;')
 
-    for member_spec_name in value:
-        member, spec_name = member_spec_name
+    for member_spec_name_default_location in value:
+        member, spec_name, _ = member_spec_name_default_location
 
         if member.space.endswith(' Unused'):
             specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
                              f'        logger.printfln_meter("Invalid {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
                               '        return nullptr;')
         else:
-            specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
             specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
                              f'        return &{spec_name.under}_table;')
-
-    specs_ts.append('        ];\n'
-                    '\n'
-                    '        break;')
 
     specs_cpp.append(f'    default:\n'
                      f'        logger.printfln_meter("Unknown {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
@@ -266,15 +259,63 @@ for group, value in virtual_meters.items():
                       '    }\n'
                       '}')
 
+specs_ts.append('export function get_virtual_meter_items(table_id: number) {\n'
+                '    let virtual_meter_items: [string, string][] = [];\n\n'
+                '    switch (table_id) {\r')
+
+for group, value in virtual_meters.items():
+    if len(value) == 1 and value[0][0] == None:
+        continue
+
+    specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+                     '        virtual_meter_items = [\r')
+
+    for member_spec_name_default_location in value:
+        member, _, _ = member_spec_name_default_location
+
+        if not member.space.endswith(' Unused'):
+            specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
+
+    specs_ts.append('        ];\n'
+                    '\n'
+                    '        break;')
+
 specs_ts[-1] += '\r'
 specs_ts.append('    }\n\n'
                 '    return virtual_meter_items;\n'
                 '}')
 
+specs_ts.append('export function get_default_location(table_id: number, virtual_meter: number) {\n'
+                '    switch (table_id) {\r')
+
+for group, value in virtual_meters.items():
+    if len(value) > 1 or value[0][0] != None:
+        specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+                         '        switch (virtual_meter) {\r')
+
+        for member_spec_name_default_location in value:
+            member, _, default_location = member_spec_name_default_location
+
+            if not member.space.endswith(' Unused'):
+                specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{default_location};\r')
+
+        specs_ts.append('        }\n'
+                        '\n'
+                        '        return MeterLocation.Unknown;')
+    else:
+        specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+                        f'        return MeterLocation.{value[0][2]};')
+
+specs_ts[-1] += '\r'
+specs_ts.append('    }\n\n'
+                '    return undefined;\n'
+                '}')
+
 ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { __ } from "../../ts/translation";\n'
 ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
-ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group in virtual_meters]) + '\n\n'
+ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n\n'
+ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
