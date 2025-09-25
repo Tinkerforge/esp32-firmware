@@ -265,7 +265,7 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
 }
 
 bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t last_record,
-                                              std::function<bool(const uint8_t* record_data, size_t record_size)> record_callback) {
+                                              std::function<esp_err_t(const uint8_t* record_data, size_t record_size)> record_callback) {
 
     std::unique_ptr<uint8_t[]> buffer = heap_alloc_array<uint8_t>(BUFFER_SIZE);
     if (buffer == nullptr) {
@@ -294,10 +294,12 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
             size_t bytes_read = file.read(buffer.get(), record_size);
 
             if (bytes_read != record_size) {
+                logger.printfln("Failed to read complete charge record from file %s", filename.c_str());
                 break;
             }
 
-            if (!record_callback(buffer.get(), record_size)) {
+            if (record_callback(buffer.get(), record_size) != ESP_OK) {
+                logger.printfln("Record callback requested to stop reading further records.");
                 file.close();
                 return false;
             }
@@ -398,6 +400,8 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             } else {
                 accumulated_data.clear();
             }
+
+            vTaskDelay(1); // Reset watchdog timer
 
             return callback_result;
         });

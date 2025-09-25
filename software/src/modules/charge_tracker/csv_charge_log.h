@@ -75,7 +75,7 @@ private:
     String getUserName(uint8_t user_id);
 
     bool readChargeRecords(uint32_t first_record, uint32_t last_record,
-                          std::function<bool(const uint8_t* record_data, size_t record_size)> record_callback);
+                          std::function<esp_err_t(const uint8_t* record_data, size_t record_size)> record_callback);
 
     String generateCSVHeader(const CSVGenerationParams& params);
 
