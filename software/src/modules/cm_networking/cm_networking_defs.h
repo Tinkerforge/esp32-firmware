@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "modules/charge_manager/cas_error.enum.h"
+
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
 #else
@@ -40,11 +42,6 @@
 #define CM_STATE_VERSION_MIN 1
 
 #define CM_PACKET_MAGIC 34127
-
-#define CM_NETWORKING_ERROR_NO_ERROR 0
-#define CM_NETWORKING_ERROR_UNREACHABLE 1
-#define CM_NETWORKING_ERROR_INVALID_HEADER 2
-#define CM_NETWORKING_ERROR_NOT_MANAGED 3
 
 struct cm_packet_header {
     uint16_t magic;

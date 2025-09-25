@@ -28,6 +28,7 @@
 #include "tools.h"
 #include "tools/net.h"
 #include "modules/meters/meter_defs.h"
+#include "modules/charge_manager/cas_error.enum.h"
 
 int CMNetworking::create_socket(uint16_t port, bool blocking)
 {
@@ -198,7 +199,7 @@ static void manager_task(void *arg)
 void CMNetworking::register_manager(const char *const *const hosts,
                                     size_t device_count,
                                     const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &manager_callback,
-                                    const std::function<void(uint8_t, uint8_t)> &manager_error_callback)
+                                    const std::function<void(uint8_t, CASError)> &manager_error_callback)
 {
     const size_t sz = offsetof(struct manager_data_t, managed_devices) + sizeof(manager_data->managed_devices[0]) * device_count;
     manager_data = static_cast<decltype(manager_data)>(malloc(sz));
@@ -355,7 +356,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 len,
                                 validation_error.c_str());
                 if (manager_error_callback) {
-                    manager_error_callback(charger_idx, CM_NETWORKING_ERROR_INVALID_HEADER);
+                    manager_error_callback(charger_idx, CASError::InvalidHeader);
                 }
                 return;
             }
@@ -382,7 +383,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                     charge_manager.get_charger_name(charger_idx),
                     source_str);
                 if (manager_error_callback) {
-                    manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
+                    manager_error_callback(charger_idx, CASError::NotManaged);
                 }
                 return;
             }
