@@ -585,6 +585,21 @@ static constexpr ThreePhaseDecisionTag to_clear_pre_3p[] = {
     ThreePhaseDecisionTag::NoFixed1p
 };
 
+static constexpr ZeroPhaseDecisionTag yes_0p[] = {
+    ZeroPhaseDecisionTag::YesChargeModeOff,
+    ZeroPhaseDecisionTag::YesWaitingForRotation,
+    ZeroPhaseDecisionTag::YesNotActive,
+    ZeroPhaseDecisionTag::YesRotatedForB1,
+    ZeroPhaseDecisionTag::YesRotatedForHigherPrio,
+    ZeroPhaseDecisionTag::YesPhaseOverload,
+    ZeroPhaseDecisionTag::YesPVExcessOverload,
+};
+
+static constexpr ZeroPhaseDecisionTag no_0p[] = {
+    ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil,
+    ZeroPhaseDecisionTag::NoHysteresisBlocksUntil,
+};
+
 static constexpr OnePhaseDecisionTag yes_1p[] = {
     OnePhaseDecisionTag::YesSwitchedToFixed1p,
     OnePhaseDecisionTag::YesNormal,
@@ -616,6 +631,7 @@ static constexpr ThreePhaseDecisionTag no_3p[] = {
     ThreePhaseDecisionTag::NoHysteresisBlockedUntil,
 };
 
+static_assert(ARRAY_SIZE(yes_0p) + ARRAY_SIZE(no_0p) + 1/*None*/ == ZERO_PHASE_DECISION_TAG_COUNT);
 static_assert(ARRAY_SIZE(yes_1p) + ARRAY_SIZE(no_1p) + 1/*None*/ == ONE_PHASE_DECISION_TAG_COUNT);
 static_assert(ARRAY_SIZE(yes_3p) + ARRAY_SIZE(no_3p) + 1/*None*/ == THREE_PHASE_DECISION_TAG_COUNT);
 
@@ -633,8 +649,10 @@ static consteval bool is_consecutive_in_enum(T* block, size_t len) {
 
 static_assert(is_consecutive_in_enum(to_clear_pre_1p, ARRAY_SIZE(to_clear_pre_1p)));
 static_assert(is_consecutive_in_enum(to_clear_pre_3p, ARRAY_SIZE(to_clear_pre_3p)));
+static_assert(is_consecutive_in_enum(yes_0p, ARRAY_SIZE(yes_0p)));
 static_assert(is_consecutive_in_enum(yes_1p, ARRAY_SIZE(yes_1p)));
 static_assert(is_consecutive_in_enum(yes_3p, ARRAY_SIZE(yes_3p)));
+static_assert(is_consecutive_in_enum(no_0p, ARRAY_SIZE(no_0p)));
 static_assert(is_consecutive_in_enum(no_1p, ARRAY_SIZE(no_1p)));
 static_assert(is_consecutive_in_enum(no_3p, ARRAY_SIZE(no_3p)));
 
@@ -679,6 +697,9 @@ static void decision_preprocess(StageContext &sc) {
 }
 
 static void decision_postprocess(StageContext &sc) {
+    const auto yes_0p_start = yes_0p[0];
+    const auto yes_0p_end   = yes_0p[ARRAY_SIZE(yes_0p) - 1];
+
     const auto yes_1p_start = yes_1p[0];
     const auto yes_1p_end   = yes_1p[ARRAY_SIZE(yes_1p) - 1];
 
@@ -692,9 +713,11 @@ static void decision_postprocess(StageContext &sc) {
     const auto no_3p_end   = no_3p[ARRAY_SIZE(no_3p) - 1];*/
 
     for (int i = 0; i < sc.charger_count; ++i) {
+        const auto tag_0p = sc.charger_decisions[i].zero.tag;
         const auto tag_1p = sc.charger_decisions[i].one.tag;
         const auto tag_3p = sc.charger_decisions[i].three.tag;
 
+        bool desc_0_yes = tag_0p >= yes_0p_start && tag_0p <= yes_0p_end;
         bool desc_1_yes = tag_1p >= yes_1p_start && tag_1p <= yes_1p_end;
         bool desc_3_yes = tag_3p >= yes_3p_start && tag_3p <= yes_3p_end;
 
@@ -708,6 +731,11 @@ static void decision_postprocess(StageContext &sc) {
         // Clear 1p decision vice-versa if 0 or 3 phases are allocated.
         if ((allocd == 0 || allocd == 3) && desc_1_yes) {
             set_charger_decision(sc, i, OnePhaseDecision::None());
+        }
+
+        // Clear 0p decision vice-versa if 1 or 3 phases are allocated.
+        if ((allocd == 1 || allocd == 3) && desc_0_yes) {
+            set_charger_decision(sc, i, ZeroPhaseDecision::None());
         }
 
         // TODO: is this necessary?
