@@ -32,7 +32,6 @@
 
 #define EVENT_LOG_PREFIX "csv_charge_log"
 #define MAX_ACCUMULATED 2048
-#define BUFFER_SIZE 4096
 
 const char* CSVTranslations::getHeaderStart(bool english) {
     return english ? "Start time" : "Startzeit";
@@ -265,14 +264,9 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
 }
 
 bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t last_record,
-                                              std::function<esp_err_t(const uint8_t* record_data, size_t record_size)> record_callback) {
+                                              std::function<esp_err_t(const uint8_t* record_data, size_t record_size, bool last)> record_callback) {
 
-    std::unique_ptr<uint8_t[]> buffer = heap_alloc_array<uint8_t>(BUFFER_SIZE);
-    if (buffer == nullptr) {
-        logger.printfln("Failed to allocate memory for reading charge records");
-        return false;
-    }
-
+    uint8_t buffer[sizeof(Charge)];
     for (uint32_t file_idx = first_record; file_idx <= last_record; file_idx++) {
         String filename = chargeRecordFilename(file_idx);
 
@@ -291,14 +285,15 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
         size_t complete_records = file_size / record_size;
 
         for (size_t i = 0; i < complete_records; i++) {
-            size_t bytes_read = file.read(buffer.get(), record_size);
+            size_t bytes_read = file.read(buffer, record_size);
 
             if (bytes_read != record_size) {
                 logger.printfln("Failed to read complete charge record from file %s", filename.c_str());
                 break;
             }
 
-            if (record_callback(buffer.get(), record_size) != ESP_OK) {
+            bool last = i == (complete_records - 1);
+            if (record_callback(buffer, record_size, last) != ESP_OK) {
                 logger.printfln("Record callback requested to stop reading further records.");
                 file.close();
                 return false;
@@ -342,18 +337,19 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     }
 
     String accumulated_data;
+    accumulated_data.reserve(MAX_ACCUMULATED);
 
     readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
-        [&](const uint8_t* record_data, size_t record_size) -> bool {
+        [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
             if (record->cs.timestamp_minutes < params.start_timestamp_min ||
                 record->cs.timestamp_minutes > params.end_timestamp_min) {
-                return true;
+                return ESP_OK;
             }
 
             if (isUserFiltered(record->cs.user_id, params.user_filter)) {
-                return true;
+                return ESP_OK;
             }
 
             float energy_charged = NAN;
@@ -393,6 +389,10 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             }
 
             accumulated_data += csv_line;
+
+            if (accumulated_data.length() < MAX_ACCUMULATED && !last) {
+                return ESP_OK; // Continue accumulating
+            }
 
             int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
             if (callback_result != ESP_OK) {
