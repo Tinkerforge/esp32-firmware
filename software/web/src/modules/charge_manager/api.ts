@@ -4,9 +4,12 @@ import { OnePhaseDecision } from "./one_phase_decision.union";
 import { ThreePhaseDecision } from "./three_phase_decision.union";
 import { CurrentDecision } from "./current_decision.union";
 
+import { CASState } from "./cas_state.enum";
+import { CASError } from "./cas_error.enum";
+
 type ChargerState = {
-    s: number,
-    e: number,
+    s: CASState,
+    e: CASError,
     ac: number,
     ap: number,
     sc: number,

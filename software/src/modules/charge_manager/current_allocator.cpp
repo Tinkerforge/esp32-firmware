@@ -33,6 +33,8 @@
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
 
+#include "cas_error.enum.h"
+
 //#include "gcc_warnings.h"
 
 #define LOCAL_LOG_FULL(indent, fmt, ...) \
@@ -51,27 +53,27 @@ static constexpr micros_t TIMEOUT = 32_s;
 
 #define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
 
-static uint8_t get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t car_stopped_charging, uint16_t target_allocated_current)
+static CASState get_charge_state(uint8_t charger_state, uint16_t supported_current, uint32_t car_stopped_charging, uint16_t target_allocated_current)
 {
     if (charger_state == 0) // not connected
-        return 0;
+        return CASState::NoVehicle;
     if (charger_state == 3) // charging
-        return 4;
+        return CASState::Charging;
     if (charger_state == 4) // error
-        return 5;
+        return CASState::Error;
     if (charger_state == 1 && supported_current == 0) // connected but blocked, supported current == 0 means another slot blocks
-        return 1;
+        return CASState::UserBlocked;
     if (charger_state == 1 && supported_current != 0) { // blocked by charge management (as supported current != 0)
         if (car_stopped_charging == 0)
-            return 2; // Not charged this session
+            return CASState::ManagerBlocked; // Not charged this session
         else
-            return 6; // Charged at least once
+            return CASState::Charged; // Charged at least once
     }
     if (charger_state == 2)
-        return 3; // Waiting for the car to start charging
+        return CASState::CarBlocked; // Waiting for the car to start charging
 
     logger.printfln("Unknown state! cs %u sc %u ct %lu tac %u", charger_state, supported_current, car_stopped_charging, target_allocated_current);
-    return 5;
+    return CASState::Error;
 }
 
 bool update_from_client_packet(
@@ -101,8 +103,8 @@ bool update_from_client_packet(
             get_charger_name(client_id), hosts[client_id],
             v1->evse_uptime);
         if (now < (target.last_update + 10_s)) {
-            target_alloc.state = 5;
-            target_alloc.error = CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE;
+            target_alloc.state = CASState::Error;
+            target_alloc.error = CASError::EVSEUnreachable;
         }
 
         return false;
@@ -229,14 +231,14 @@ bool update_from_client_packet(
     }
 
     if (v1->error_state != 0) {
-        target_alloc.error = CHARGE_MANAGER_CLIENT_ERROR_START + static_cast<uint32_t>(v1->error_state);
+        target_alloc.error = static_cast<CASError>(static_cast<uint8_t>(CASError::ClientErrorOK) + v1->error_state);
     }
 
-    if (target_alloc.error < 128 || target_alloc.error == CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE) {
-        target_alloc.error = 0;
+    if (target_alloc.error < CASError::ClientErrorOK || target_alloc.error == CASError::EVSEUnreachable) {
+        target_alloc.error = CASError::OK;
     }
 
-    if (target_alloc.error == 0 || target_alloc.error >= CHARGE_MANAGER_CLIENT_ERROR_START)
+    if (target_alloc.error == CASError::OK || target_alloc.error >= CASError::ClientErrorOK)
         target_alloc.state = get_charge_state(v1->charger_state,
                                               v1->supported_current,
                                               v1->car_stopped_charging,
@@ -2110,12 +2112,12 @@ int allocate_current(
             auto &charger_alloc = charger_allocation_state[i];
 
             auto charger_error = charger_alloc.error;
-            if (charger_error != CM_NETWORKING_ERROR_NO_ERROR &&
-                charger_error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE &&
-                charger_error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE &&
-                charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
+            if (charger_error != CASError::OK &&
+                charger_error != CASError::ChargerUnreachable &&
+                charger_error != CASError::EVSENonreactive &&
+                charger_error < CASError::ClientErrorOK) {
                 unreachable_evse_found = true;
-                LOCAL_LOG("%s (%s) reports error %u.", get_charger_name(i), hosts[i], charger_error);
+                LOCAL_LOG("%s (%s) reports error %u.", get_charger_name(i), hosts[i], static_cast<uint8_t>(charger_error));
 
                 print_local_log = !ca_state->last_print_local_log_was_error;
                 ca_state->last_print_local_log_was_error = true;
@@ -2133,20 +2135,20 @@ int allocate_current(
                     // it will shut down after 30 seconds.
                     charger.off = true;
 
-                    if (charger_alloc.error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE)
+                    if (charger_alloc.error != CASError::ChargerUnreachable)
                         LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
 
-                    bool state_was_not_five = charger_alloc.state != 5;
-                    charger_alloc.state = 5;
-                    if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                        charger_alloc.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
+                    bool state_was_not_error = charger_alloc.state != CASState::Error;
+                    charger_alloc.state = CASState::Error;
+                    if (state_was_not_error || charger_error < CASError::ClientErrorOK) {
+                        charger_alloc.error = CASError::ChargerUnreachable;
 
                         print_local_log = !ca_state->last_print_local_log_was_error;
                         ca_state->last_print_local_log_was_error = true;
                     }
                 }
-            } else if (charger_alloc.error == CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE) {
-                charger_alloc.error = CM_NETWORKING_ERROR_NO_ERROR;
+            } else if (charger_alloc.error == CASError::ChargerUnreachable) {
+                charger_alloc.error = CASError::OK;
                 LOCAL_LOG("EVSE of %s (%s) reachable again.", get_charger_name(i), hosts[i]);
             }
 
@@ -2167,21 +2169,21 @@ int allocate_current(
                           charger.allowed_current,
                           charger.phases);
 
-                bool state_was_not_five = charger_alloc.state != 5;
-                charger_alloc.state = 5;
-                if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                    charger_alloc.error = CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE;
+                bool state_was_not_error = charger_alloc.state != CASState::Error;
+                charger_alloc.state = CASState::Error;
+                if (state_was_not_error || charger_error < CASError::ClientErrorOK) {
+                    charger_alloc.error = CASError::EVSENonreactive;
                     print_local_log = !ca_state->last_print_local_log_was_error;
                     ca_state->last_print_local_log_was_error = true;
                 }
-            } else if (charger_alloc.error == CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE) {
-                charger_alloc.error = CM_NETWORKING_ERROR_NO_ERROR;
+            } else if (charger_alloc.error == CASError::EVSENonreactive) {
+                charger_alloc.error = CASError::OK;
             }
 
             // Block firmware update if charger has a vehicle connected.
             // TODO: Don't block energy manager firmware updates if a charger can't be reached or is in an error state.
             // Only block if state is in [1.4] or 6
-            if (charger_alloc.state != 0)
+            if (charger_alloc.state != CASState::NoVehicle)
                 vehicle_connected = true;
         }
 
@@ -2344,7 +2346,7 @@ int allocate_current(
                       hosts[i]);
 
                 print_local_log = true;
-                if (charger_alloc.error != CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE)
+                if (charger_alloc.error != CASError::EVSENonreactive)
                     charger_alloc.last_sent_config = sc.now;
             }
         }

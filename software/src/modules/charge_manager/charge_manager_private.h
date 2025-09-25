@@ -10,10 +10,8 @@
 
 #define DISTRIBUTION_LOG_LEN 2048
 
-#define CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE 128
-#define CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE 129
-#define CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE 130
-#define CHARGE_MANAGER_CLIENT_ERROR_START 192
+#include "cas_state.enum.h"
+#include "cas_error.enum.h"
 
 #include "zero_phase_decision.union.h"
 #include "one_phase_decision.union.h"
@@ -173,9 +171,7 @@ struct ChargerAllocationState {
     // last CP disconnect request sent to charger: false - automatic/don't care, true - disconnect
     bool cp_disconnect;
 
-    // 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed
-    uint8_t error;
+    CASError error;
 
-    // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-    uint8_t state;
+    CASState state;
 };

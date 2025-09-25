@@ -152,8 +152,8 @@ void ChargeManager::pre_setup()
     });
 
     state_chargers_prototype = Config::Object({
-        {"s",  Config::Uint(0, 0, 6)},  // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
-        {"e",  Config::Uint8(0)},       // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed, >= 192 client errors
+        {"s",  Config::Enum(CASState::NoVehicle)},  // "state"
+        {"e",  Config::Enum(CASError::OK)}, // "error"
         {"ac", Config::Uint16(0)},      // "allocated_current" - last current limit send to the charger
         {"ap", Config::Uint(0, 0, 3)},  // "allocated_phases" - last phase limit send to the charger
         {"sc", Config::Uint16(0)},      // "supported_current" - maximum current supported by the charger
@@ -316,10 +316,10 @@ void ChargeManager::start_manager_task()
                     charger_state[client_id].charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
                 update_charger_state_config(client_id);
             }
-    }, [this](uint8_t client_id, uint8_t error){
+    }, [this](uint8_t client_id, CASError error){
         //TODO bounds check
         auto &target_alloc = this->charger_allocation_state[client_id];
-        target_alloc.state = 5;
+        target_alloc.state = CASState::Error;
         target_alloc.error = error;
         //TODO: should we call update_charger_state_config(client_id); here? This is currently missing but smells weird.
     });
@@ -846,8 +846,8 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     auto &charger_alloc = charger_allocation_state[idx];
     auto *charger_cfg = (Config *)this->state.get("chargers")->get(idx);
     auto *ll_charger_cfg = (Config *)this->low_level_state.get("chargers")->get(idx);
-    charger_cfg->get("s")->updateUint(charger_alloc.state);
-    charger_cfg->get("e")->updateUint(charger_alloc.error);
+    charger_cfg->get("s")->updateEnum(charger_alloc.state);
+    charger_cfg->get("e")->updateEnum(charger_alloc.error);
     charger_cfg->get("ac")->updateUint(charger_alloc.allocated_current);
     charger_cfg->get("ap")->updateUint(charger_alloc.allocated_phases);
     charger_cfg->get("sc")->updateUint(charger.supported_current);

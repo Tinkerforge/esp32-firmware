@@ -1,0 +1,12 @@
+OK
+// Unreachable = 1 // Never used?
+InvalidHeader = 2
+NotManaged
+ChargerUnreachable = 128
+EVSEUnreachable
+EVSENonreactive
+ClientErrorOK = 192 // 192 - 255 are reserved for client errors, i.e. values of evse/state["error"]. Specify all known so that translation completeness is enforced.
+ClientErrorSwitch = 194
+ClientErrorDCFault = 195
+ClientErrorContactor = 196
+ClientErrorCommunication = 197
