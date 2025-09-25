@@ -391,134 +391,34 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 
     async downloadChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
-        const [usernames, display_names] = await getAllUsernames()
-            .catch(err => {
-                util.add_alert("download-usernames", "danger", () => __("charge_tracker.script.download_usernames_failed"), err);
-                return [null, null] as string[][];
-            });
+        // Use new /charge_tracker/csv endpoint
+        const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
+        let start = start_date ?? new Date();
+        let end = end_date ?? new Date();
+        end.setHours(23, 59, 59, 999);
 
-        if (usernames == null || display_names == null)
-            return;
+        const payload = {
+            api_not_final_acked: true,
+            english: get_active_language().value != 'de',
+            start_timestamp_min: Math.floor(start.getTime() / 1000 / 60),
+            end_timestamp_min: Math.floor(end.getTime() / 1000 / 60),
+            user_filter: user_filter,
+            csv_delimiter: csvFlavorEnum,
+        };
 
-        await util.download('/charge_tracker/charge_log')
-            .then(blob => blob.arrayBuffer())
-            .then(buffer => {
-                let line = [
-                    __("charge_tracker.script.csv_header_start"),
-                    __("charge_tracker.script.csv_header_display_name"),
-                    __("charge_tracker.script.csv_header_energy"),
-                    __("charge_tracker.script.csv_header_duration"),
-                    "",
-                    __("charge_tracker.script.csv_header_meter_start"),
-                    __("charge_tracker.script.csv_header_meter_end"),
-                    __("charge_tracker.script.csv_header_username"),
-                    typeof price == 'number' && price > 0 ? __("charge_tracker.script.csv_header_price") + util.toLocaleFixed(price / 100, 2) + "ct/kWh" : "",
-                ];
-
-                let result = "";
-                if (flavor == 'excel')
-                    result += "sep=;\r\n";
-
-                let header = this.to_csv_line(line, flavor);
-                result += header;
-                let users_config = API.get('users/config');
-
-                let start = start_date.getTime() / 1000 / 60;
-
-                end_date.setHours(23, 59, 59, 999);
-                let end = end_date.getTime() / 1000 / 60;
-
-                let known_users = API.get('users/config').users.filter(u => u.id != 0).map(u => u.id);
-
-                let user_filtered = (x: number) => {
-                    switch(user_filter) {
-                        case -2:
-                            return false;
-                        case -1:
-                            return known_users.indexOf(x) < 0;
-                        default:
-                            return x != user_filter;
-                    }
-                };
-
-                if (start <= end) {
-                    for(let i = 0; i < buffer.byteLength; i += 16) {
-                        let view = new DataView(buffer, i, 16);
-
-                        let timestamp_minutes = view.getUint32(0, true);
-                        let meter_start = view.getFloat32(4, true);
-                        let user_id = view.getUint8(8);
-                        let charge_duration = view.getUint32(9, true) & 0x00FFFFFF;
-                        let meter_end = view.getFloat32(12, true);
-
-                        if (timestamp_minutes != 0 && timestamp_minutes < start) {
-                            // We know when this charge started and it was before the requested start date.
-                            // This means that all charges before and including this one can't be relevant.
-                            result = header;
-                            continue;
-                        }
-
-                        if (timestamp_minutes != 0 && timestamp_minutes > end)
-                            // This charge started after the requested end date. We are done searching.
-                            break;
-
-                        if (user_filtered(user_id))
-                            continue;
-
-                        let filtered = users_config.users.filter(x => x.id == user_id);
-
-                        let display_name = "";
-                        let username = "";
-                        if (user_id == 0) {
-                            if (filtered[0].display_name == "Anonymous")
-                                display_name = __("charge_tracker.script.unknown_user");
-                            else
-                                display_name = filtered[0].display_name;
-                            username = __("charge_tracker.script.unknown_user");
-                        }
-                        else if (filtered.length == 1) {
-                            display_name = filtered[0].display_name
-                            username = filtered[0].username
-                        }
-                        else {
-                            display_name = display_names[user_id];
-                            username = usernames[user_id];
-                        }
-
-                        let charged = (Number.isNaN(meter_start) || Number.isNaN(meter_end) || meter_end < meter_start) ? NaN : (meter_end - meter_start);
-                        let charged_string;
-                        let charged_price = typeof price == 'number' ? charged / 100 * price / 100 : 0;
-                        let charged_price_string;
-                        if (Number.isNaN(charged) || charged < 0) {
-                            charged_string = 'N/A';
-                            charged_price_string = 'N/A';
-                        } else {
-                            charged_string = util.toLocaleFixed(charged, 3);
-                            charged_price_string = util.toLocaleFixed(charged_price, 2);
-                        }
-
-                        let line = [
-                            util.timestamp_min_to_date(timestamp_minutes, __("charge_tracker.script.unknown_charge_start")),
-                            display_name,
-                            charged_string,
-                            charge_duration.toString(),
-                            "",
-                            Number.isNaN(meter_start) ? 'N/A' : util.toLocaleFixed(meter_start, 3),
-                            Number.isNaN(meter_end) ? 'N/A' : util.toLocaleFixed(meter_end, 3),
-                            username,
-                            price > 0 ? charged_price_string : ""
-                        ];
-
-                        result += this.to_csv_line(line, flavor);
-                    }
-                }
-
-                if (flavor == 'excel')
-                    util.downloadToTimestampedFile(util.win1252Encode(result), __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=windows-1252; header=present");
-                else
-                    util.downloadToTimestampedFile(result, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
-            })
-            .catch(err => util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err));
+        try {
+            const now = Date.now();
+            const csv = await API.call("charge_tracker/csv", payload, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
+            if (flavor === 'excel') {
+                const csvString = new TextDecoder().decode(await csv.bytes());
+                util.downloadToTimestampedFile(util.win1252Encode(csvString), __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=windows-1252; header=present");
+            } else {
+                util.downloadToTimestampedFile(csv, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
+            }
+            const duration = Date.now() - now;
+        } catch (err) {
+            util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err);
+        }
     }
 
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {
@@ -642,6 +542,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 end.setHours(23, 59);
 
                                 try {
+                                    const now = Date.now();
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
                                         english: get_active_language().value != 'de',
@@ -651,6 +552,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
+                                    const duration = Date.now() - now;
                                 } finally {
                                     this.setState({show_spinner: false});
                                 }

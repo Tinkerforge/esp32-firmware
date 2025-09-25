@@ -31,6 +31,15 @@ export interface config {
 //#endif
 }
 
+export interface csv {
+    api_not_final_acked: boolean;
+    english: boolean;
+    start_timestamp_min?: number;
+    end_timestamp_min?: number;
+    user_filter?: number;
+    csv_delimiter?: number;
+}
+
 export interface pdf_letterhead_config {
     letterhead: string;
 }
