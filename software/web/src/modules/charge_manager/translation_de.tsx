@@ -3,6 +3,8 @@ import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
+import { CASState } from "modules/charge_manager/cas_state.enum";
+import { CASError } from "modules/charge_manager/cas_error.enum";
 let x = {
     "charge_manager": {
         "status": {
@@ -199,30 +201,37 @@ let x = {
             }/*NF*/
         },
         "script": {
-            "charge_state_0": "Kein Fahrzeug angeschlossen",
-            "charge_state_1": "Warte auf lokale Freigabe",
-            "charge_state_2": "Warte auf Manager-Freigabe",
-            "charge_state_3": "Laden freigegeben",
-            "charge_state_4": "Lädt",
-            "charge_state_5": "Fehler",
-            "charge_state_6": "Laden abgeschlossen",
+            "charge_state": /*SFN*/(s: CASState) => {
+                switch (s) {
+                    case CASState.NoVehicle: return "Kein Fahrzeug angeschlossen";
+                    case CASState.UserBlocked: return "Warte auf lokale Freigabe";
+                    case CASState.ManagerBlocked: return "Warte auf Manager-Freigabe";
+                    case CASState.CarBlocked: return "Laden freigegeben";
+                    case CASState.Charging: return "Lädt";
+                    case CASState.Error: return "Fehler";
+                    case CASState.Charged: return "Laden abgeschlossen";
+                }
+            }/*NF*/,
+
+            "charge_error": /*SFN*/(e: CASError) => {
+                switch (e) {
+                    case CASError.OK: return "OK";
+                    case CASError.InvalidHeader: return "Paketheader ungültig oder Firmware inkompatibel";
+                    case CASError.NotManaged: return "Fremdsteuerung deaktiviert";
+                    case CASError.ChargerUnreachable: return "Wallbox nicht erreichbar";
+                    case CASError.EVSEUnreachable: return "Ladecontroller nicht erreichbar";
+                    case CASError.EVSENonreactive: return "Ladecontroller reagiert nicht";
+
+                    case CASError.ClientErrorOK: return "OK";
+                    case CASError.ClientErrorSwitch: return "Schalterfehler";
+                    case CASError.ClientErrorDCFault: return "DC-Fehlerstromschutzfehler";
+                    case CASError.ClientErrorContactor: return "Schütz-/PE-fehler";
+                    case CASError.ClientErrorCommunication: return "Fahrzeug-Kommunikationsfehler";
+                }
+            }/*NF*/,
 
             "charge_error_type_management": "Managementfehler",
             "charge_error_type_client": "Wallbox-Fehler",
-
-            "charge_error_0": "OK",
-            "charge_error_1": "Kommunikationsfehler",
-            "charge_error_2": "Paketheader ungültig oder Firmware inkompatibel",
-            "charge_error_3": "Fremdsteuerung deaktiviert",
-            "charge_error_128": "Wallbox nicht erreichbar",
-            "charge_error_129": "Ladecontroller nicht erreichbar",
-            "charge_error_130": "Ladecontroller reagiert nicht",
-
-            "charge_error_192": "OK",
-            "charge_error_194": "Schalterfehler",
-            "charge_error_195": "DC-Fehlerstromschutzfehler",
-            "charge_error_196": "Schützfehler",
-            "charge_error_197": "Fahrzeug-Kommunikationsfehler",
 
             "charge_state_blocked_by_other_box": "Blockiert",
             "charge_state_blocked_by_other_box_details": "Fehler bei anderer Wallbox",

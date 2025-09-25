@@ -44,6 +44,8 @@ import { ThreePhaseDecision } from "./three_phase_decision.union";
 import { ThreePhaseDecisionTag } from "./three_phase_decision_tag.enum";
 import { CurrentDecision } from "./current_decision.union";
 import { CurrentDecisionTag } from "./current_decision_tag.enum";
+import { CASState } from "./cas_state.enum";
+import { CASError } from "./cas_error.enum";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -336,13 +338,13 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             if (last_update >= 10)
                 c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
 
-            if (c.s != 5) {
+            if (c.s != CASState.Error) {
                 if (state.state.state == 2) {
                     c_body_classes = "bg-warning bg-disabled";
                     c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
                     c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
                 } else {
-                    c_state = translate_unchecked(`charge_manager.script.charge_state_${c.s}`);
+                    c_state = __("charge_manager.script.charge_state")(c.s);
                     let cur = c.ac / 1000.0;
                     let p = c.ap;
                     let kw = util.toLocaleFixed(cur * p * 230 / 1000.0, 3);
@@ -351,13 +353,13 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 }
             }
             else {
-                if (c.e < 192)
+                if (c.e < CASError.ClientErrorOK)
                     c_state = __("charge_manager.script.charge_error_type_management");
                 else
                     c_state = __("charge_manager.script.charge_error_type_client");
 
                 c_body_classes = "bg-danger text-white bg-disabled";
-                c_info = translate_unchecked(`charge_manager.script.charge_error_${c.e}`);
+                c_info = __("charge_manager.script.charge_error")(c.e);
             }
 
             let charger_config = state.config.chargers[i];
