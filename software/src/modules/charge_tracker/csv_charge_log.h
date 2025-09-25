@@ -19,19 +19,12 @@
 
 #pragma once
 
-#define CHARGE_RECORD_FOLDER "/charge-records"
-
 #include "config.h"
 #include "chunked_response.h"
 #include <functional>
-#include <vector>
 #include <Arduino.h>
 #include "csv_flavor.enum.h"
-
-String chargeRecordFilename(uint32_t i);
-
-#define USER_FILTER_ALL_USERS -2
-#define USER_FILTER_DELETED_USERS -1
+#include "charge_tracker_defs.h"
 
 struct CSVGenerationParams {
     CSVFlavor flavor;
@@ -52,17 +45,14 @@ struct CSVGenerationParams {
 
 class CSVChargeLogGenerator {
 public:
-    CSVChargeLogGenerator();
-    ~CSVChargeLogGenerator();
-
     /**
      * @brief Generate CSV data and stream it through the callback function
      * @param params Generation parameters (format, filters, etc.)
      * @param callback Function called with generated CSV data chunks
      * @return true if generation was successful, false on error
      */
-    bool generateCSV(const CSVGenerationParams& params,
-                     std::function<bool(const char* data, size_t length)> callback);
+    void generateCSV(const CSVGenerationParams& params,
+                     std::function<int(const char* data, size_t length)> callback);
 
     /**
      * @brief Simplified CSV generation that returns complete CSV as String
@@ -74,7 +64,7 @@ public:
 
 private:
     String escapeCSVField(const String& field);
-    String formatCSVLine(const std::vector<String>& fields, CSVFlavor flavor);
+    String formatCSVLine(const String (&fields)[9], CSVFlavor flavor);
     String formatTimestamp(uint32_t timestamp_min, bool english);
     String formatDuration(uint32_t duration_seconds);
     String formatEnergy(float energy_kwh);
@@ -90,29 +80,6 @@ private:
     String generateCSVHeader(const CSVGenerationParams& params);
 
     String convertToWindows1252(const String& utf8_string);
-
-    std::unique_ptr<char[]> buffer = nullptr;
-};
-
-
-struct [[gnu::packed]] ChargeStart {
-    uint32_t timestamp_minutes = 0;
-    float meter_start = 0.0f;
-    uint8_t user_id = 0;
-};
-
-static_assert(sizeof(ChargeStart) == 9, "Unexpected size of ChargeStart");
-
-struct [[gnu::packed]] ChargeEnd {
-    uint32_t charge_duration : 24;
-    float meter_end = 0.0f;
-};
-
-static_assert(sizeof(ChargeEnd) == 7, "Unexpected size of ChargeEnd");
-
-struct [[gnu::packed]] Charge {
-    ChargeStart cs;
-    ChargeEnd ce;
 };
 
 /**

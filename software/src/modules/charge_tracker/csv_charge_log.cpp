@@ -34,14 +34,6 @@
 #define MAX_ACCUMULATED 2048
 #define BUFFER_SIZE 4096
 
-String chargeRecordFilename(uint32_t i)
-{
-    char buf[64];
-    StringWriter sw(buf, sizeof(buf));
-    sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
-    return String(buf, sw.getLength());
-}
-
 const char* CSVTranslations::getHeaderStart(bool english) {
     return english ? "Start time" : "Startzeit";
 }
@@ -86,13 +78,6 @@ const char* CSVTranslations::getUnknownChargeStart(bool english) {
     return english ? "Unknown" : "Unbekannt";
 }
 
-CSVChargeLogGenerator::CSVChargeLogGenerator() {
-    buffer = heap_alloc_array<char>(BUFFER_SIZE);
-}
-
-CSVChargeLogGenerator::~CSVChargeLogGenerator() {
-}
-
 String CSVChargeLogGenerator::escapeCSVField(const String& field) {
     String escaped = "\"";
 
@@ -109,12 +94,13 @@ String CSVChargeLogGenerator::escapeCSVField(const String& field) {
     return escaped;
 }
 
-String CSVChargeLogGenerator::formatCSVLine(const std::vector<String>& fields, CSVFlavor flavor) {
+String CSVChargeLogGenerator::formatCSVLine(const String (&fields)[9], CSVFlavor flavor) {
     String line;
+    line.reserve(256);
     const char* separator = (flavor == CSVFlavor::Excel) ? ";" : ",";
     const char* line_ending = (flavor == CSVFlavor::Excel) ? "\r\n" : "\n";
 
-    for (size_t i = 0; i < fields.size(); i++) {
+    for (size_t i = 0; i < 9; i++) {
         if (i > 0) {
             line += separator;
         }
@@ -214,25 +200,25 @@ String CSVChargeLogGenerator::getUserName(uint8_t user_id) {
 }
 
 String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& params) {
-    std::vector<String> headers;
+    String headers[9];
 
-    headers.push_back(CSVTranslations::getHeaderStart(params.english));
-    headers.push_back(CSVTranslations::getHeaderDisplayName(params.english));
-    headers.push_back(CSVTranslations::getHeaderEnergy(params.english));
-    headers.push_back(CSVTranslations::getHeaderDuration(params.english));
-    headers.push_back("");
-    headers.push_back(CSVTranslations::getHeaderMeterStart(params.english));
-    headers.push_back(CSVTranslations::getHeaderMeterEnd(params.english));
-    headers.push_back(CSVTranslations::getHeaderUsername(params.english));
+    headers[0] = CSVTranslations::getHeaderStart(params.english);
+    headers[1] = CSVTranslations::getHeaderDisplayName(params.english);
+    headers[2] = CSVTranslations::getHeaderEnergy(params.english);
+    headers[3] = CSVTranslations::getHeaderDuration(params.english);
+    headers[4] = "";
+    headers[5] = CSVTranslations::getHeaderMeterStart(params.english);
+    headers[6] = CSVTranslations::getHeaderMeterEnd(params.english);
+    headers[7] = CSVTranslations::getHeaderUsername(params.english);
 
     if (params.electricity_price > 0) {
         char price_header[64];
         float price_per_kwh = params.electricity_price / 10000.0f;
         snprintf(price_header, sizeof(price_header), "%s %.2f ct/kWh",
                 CSVTranslations::getHeaderPrice(params.english), price_per_kwh * 100);
-        headers.push_back(String(price_header));
+        headers[8] = String(price_header);
     } else {
-        headers.push_back("");
+        headers[8] = "";
     }
 
     return formatCSVLine(headers, params.flavor);
@@ -280,7 +266,10 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
 
 bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t last_record,
                                               std::function<bool(const uint8_t* record_data, size_t record_size)> record_callback) {
+
+    std::unique_ptr<uint8_t[]> buffer = heap_alloc_array<uint8_t>(BUFFER_SIZE);
     if (buffer == nullptr) {
+        logger.printfln("Failed to allocate memory for reading charge records");
         return false;
     }
 
@@ -302,13 +291,13 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
         size_t complete_records = file_size / record_size;
 
         for (size_t i = 0; i < complete_records; i++) {
-            size_t bytes_read = file.read(reinterpret_cast<uint8_t*>(buffer.get()), record_size);
+            size_t bytes_read = file.read(buffer.get(), record_size);
 
             if (bytes_read != record_size) {
                 break;
             }
 
-            if (!record_callback(reinterpret_cast<const uint8_t*>(buffer.get()), record_size)) {
+            if (!record_callback(buffer.get(), record_size)) {
                 file.close();
                 return false;
             }
@@ -320,12 +309,8 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
     return true;
 }
 
-bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
-                                        std::function<bool(const char* data, size_t length)> callback) {
-    if (buffer == nullptr) {
-        return false;
-    }
-
+void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
+                                        std::function<esp_err_t(const char* data, size_t length)> callback) {
     std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
 
     String header_line;
@@ -339,13 +324,24 @@ bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     String final_header = (params.flavor == CSVFlavor::Excel) ?
                          convertToWindows1252(header_line) : header_line;
 
-    if (!callback(final_header.c_str(), final_header.length())) {
-        return false;
+    int header_result = callback(final_header.c_str(), final_header.length());
+    if (header_result != ESP_OK) {
+        logger.printfln("Failed to send CSV header. Cancelling CSV generation.");
+        return;
+    }
+
+    display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
+    if (!display_name_cache) {
+        logger.printfln("Failed to generate PDF: No memory");
+        return;
+    }
+    for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
+        display_name_cache[i].length = UINT32_MAX;
     }
 
     String accumulated_data;
 
-    bool success = readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
+    readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
         [&](const uint8_t* record_data, size_t record_size) -> bool {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
@@ -370,20 +366,22 @@ bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                 price_euros = energy_charged * price_per_kwh;
             }
 
-            std::vector<String> fields;
-            fields.push_back(formatTimestamp(record->cs.timestamp_minutes, params.english));
-            fields.push_back(getUserDisplayName(record->cs.user_id));
-            fields.push_back(formatEnergy(energy_charged));
-            fields.push_back(formatDuration(record->ce.charge_duration));
-            fields.push_back("");
-            fields.push_back(formatEnergy(record->cs.meter_start));
-            fields.push_back(formatEnergy(record->ce.meter_end));
-            fields.push_back(getUserName(record->cs.user_id));
+            String fields[9];
+            char display_name[33] = {};
+            get_display_name(record->cs.user_id, display_name, display_name_cache);
+            fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.english);
+            fields[1] = display_name;
+            fields[2] = formatEnergy(energy_charged);
+            fields[3] = formatDuration(record->ce.charge_duration);
+            fields[4] = "";
+            fields[5] = formatEnergy(record->cs.meter_start);
+            fields[6] = formatEnergy(record->ce.meter_end);
+            fields[7] = display_name;
 
             if (params.electricity_price > 0) {
-                fields.push_back(formatPrice(price_euros));
+                fields[8] = formatPrice(price_euros);
             } else {
-                fields.push_back("");
+                fields[8] = "";
             }
 
             String csv_line = formatCSVLine(fields, params.flavor);
@@ -394,30 +392,30 @@ bool CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
 
             accumulated_data += csv_line;
 
-            if (accumulated_data.length() >= MAX_ACCUMULATED) {
-                if (!callback(accumulated_data.c_str(), accumulated_data.length())) {
-                    return false;
-                }
+            int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
+            if (callback_result != ESP_OK) {
+                logger.printfln("Failed to send CSV data chunk.");
+            } else {
                 accumulated_data.clear();
             }
 
-            return true;
+            return callback_result;
         });
 
-    if (success && accumulated_data.length() > 0) {
-        success = callback(accumulated_data.c_str(), accumulated_data.length());
+    int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
+    if (callback_result < 0) {
+        logger.printfln("Failed to send final CSV data chunk.");
     }
-
-    return success;
+    free(display_name_cache);
 }
 
 String CSVChargeLogGenerator::generateCSVString(const CSVGenerationParams& params) {
     String result;
 
-    bool success = generateCSV(params, [&result](const char* data, size_t length) -> bool {
+    generateCSV(params, [&result](const char* data, size_t length) -> int {
         result += String(data, length);
-        return true;
+        return static_cast<int>(length);
     });
 
-    return success ? result : String();
+    return result;
 }

@@ -33,6 +33,7 @@
 #include "csv_charge_log.h"
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
+#include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
 
@@ -57,6 +58,13 @@ static bool repair_logic(Charge *);
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
 
 static_assert(CHARGE_RECORD_SIZE == 16, "Unexpected size of ChargeStart + ChargeEnd");
+static_assert(DISPLAY_NAME_LENGTH == 32, "Unexpected display name length");
+
+#define MAX_CONFIGURED_CHARGELOG_USERS 5
+// We currently use an uint8_t to provide the size of the configured users array to the upload task.
+static_assert(MAX_CONFIGURED_CHARGELOG_USERS <= 255, "MAX_CONFIGURED_CHARGELOG_USERS must be <= 255");
+
+#define MAX_UPLOAD_RETRIES 5
 
 // 30 files with 256 records each: 7680 records @ ~ max. 10 records per day = ~ 2 years and one month of records.
 // Also update frontend when changing this!
@@ -85,6 +93,15 @@ static int read_letterhead_lines(char *letterhead) {
     }
     return letterhead_lines;
 }
+
+String chargeRecordFilename(uint32_t i)
+{
+    char buf[64];
+    StringWriter sw(buf, sizeof(buf));
+    sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
+    return String(buf, sw.getLength());
+}
+
 
 void ChargeTracker::pre_setup()
 {
@@ -117,7 +134,7 @@ void ChargeTracker::pre_setup()
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     charge_log_send_prototype = Config::Object({
-        {"user_id", Config::Int8(-1)},
+        {"user_id", Config::Int(-1, -2, 255)},
         {"file_type", Config::Enum(FileType::PDF)},
         {"english", Config::Bool(false)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
@@ -132,7 +149,7 @@ void ChargeTracker::pre_setup()
         {"remote_upload_configs", Config::Array(
             {},
             &charge_log_send_prototype,
-            0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>()
+            0, MAX_CONFIGURED_CHARGELOG_USERS, Config::type_id<Config::ConfObject>()
         )},
         {"last_upload_timestamp_min", Config::Uint32(0)},
 #endif
@@ -578,13 +595,7 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-static_assert(DISPLAY_NAME_LENGTH == 32, "Unexpected display name length");
-struct display_name_entry {
-    uint32_t length;
-    uint32_t name[DISPLAY_NAME_LENGTH / sizeof(uint32_t)];
-};
-
-static size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache)
+size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache)
 {
     if (display_name_cache[user_id].length > DISPLAY_NAME_LENGTH) {
         size_t length = 0;
@@ -964,14 +975,14 @@ void ChargeTracker::register_urls()
                 return request.send_plain(400, "Please acknowledge that this API is subject to change!");
             }
 
-            user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
-            start_timestamp_min = doc["start_timestamp_min"] | 0l;
-            end_timestamp_min = doc["end_timestamp_min"] | 0l;
-            english = doc["english"] | false;
-            csv_delimiter = doc["csv_delimiter"] | (int)CSVFlavor::Excel;
+            user_filter = doc["user_filter"];
+            start_timestamp_min = doc["start_timestamp_min"];
+            end_timestamp_min = doc["end_timestamp_min"];
+            english = doc["english"];
+            csv_delimiter = doc["csv_delimiter"];
 
             if (current_timestamp_min == 0) {
-                current_timestamp_min = doc["current_timestamp_min"] | 0l;
+                current_timestamp_min = doc["current_timestamp_min"];
             }
         }
 
@@ -985,16 +996,16 @@ void ChargeTracker::register_urls()
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
 
-        const auto callback = [this, &request](const char* buffer, size_t len) -> bool {
-            return request.sendChunk(buffer, len) == (int)len;
+        const auto callback = [this, &request](const char* buffer, size_t len) -> int {
+            if (request.sendChunk(buffer, len) == ESP_OK) {
+                return len;
+            }
+            return -1;
         };
 
         request.beginChunkedResponse(200, "text/csv");
         CSVChargeLogGenerator csv_generator;
-        if (!csv_generator.generateCSV(csv_params, callback)) {
-            logger.printfln("Failed to generate CSV for endpoint");
-            return request.send_plain(500, "Failed to generate CSV");
-        }
+        csv_generator.generateCSV(csv_params, callback);
         return request.endChunkedResponse();
     });
 
@@ -1032,7 +1043,7 @@ void ChargeTracker::register_urls()
                 }
             }
 
-            this->upload_charge_logs();
+            this->upload_charge_logs(0);
         }, 1_min, 4_h);
         // Delay one minute so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
         // Check only once every four hours, to avoid a stampede event at midnight on the 2nd of a month.
@@ -1068,54 +1079,48 @@ void ChargeTracker::register_urls()
 }
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-static void handle_upload_retry(SendChargeLogArgs &upload_args)
+static void handle_upload_retry(std::unique_ptr<SendChargeLogArgs> upload_args)
 {
-    upload_args.upload_retry_count++;
-    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_args.upload_retry_count - 1));
+    upload_args->upload_retry_count++;
+    if (upload_args->upload_retry_count >= MAX_UPLOAD_RETRIES) {
+        logger.printfln("Charge-log upload failed. Maximum number of retries reached. Giving up.");
+        charge_tracker.send_in_progress = false;
+        return;
+    }
+    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_args->upload_retry_count - 1));
     if (delay_minutes > 480) {
         delay_minutes = 480;
     }
 
-    upload_args.next_retry_delay = millis_t(delay_minutes * 60 * 1000);
+    upload_args->next_retry_delay = millis_t(delay_minutes * 60 * 1000);
+    uint32_t upload_retry_count = upload_args->upload_retry_count;
+    task_scheduler.scheduleOnce([upload_retry_count]() mutable {
+        charge_tracker.upload_charge_logs(upload_retry_count);
+    }, upload_args->next_retry_delay);
 
     logger.printfln("Charge-log upload failed. Retry %lu in %lu minutes",
-                    upload_args.upload_retry_count, delay_minutes);
+                    upload_retry_count, delay_minutes);
 }
 
-static void check_remote_client_status(SendChargeLogArgs &upload_args)
+static void check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload_args)
 {
-    if (!upload_args.remote_client) {
-        logger.printfln("Charge-log generation and remote upload completed. Client was destroyed.");
-        task_scheduler.cancel(*upload_args.task_id);
-        return;
-    }
-
-    int status = upload_args.remote_client->read_response_status();
+    int status = upload_args->remote_client->read_response_status();
     if (status == ESP_ERR_HTTP_EAGAIN) {
+        // The parent task holds the pointer to upload_args and turns it into a unique_ptr again.
+        upload_args.release();
         return;
     } else if (status == 200) {
         charge_tracker.config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
         API::writeConfig("charge_tracker/config", &charge_tracker.config);
         logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
-        upload_args.remote_client->close_chunked_request();
         charge_tracker.send_in_progress = false;
-        task_scheduler.cancel(*upload_args.task_id);
+        upload_args->remote_client->close_chunked_request();
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
-        handle_upload_retry(upload_args);
-        // TODO fixme
-        //task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
-        //    auto upload_request = new SendChargeLogArgs(upload_args);
-
-        //    server.runInHTTPThread([](void *arg) {
-        //        auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-        //        std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-        //        charge_tracker.send_file(std::move(*upload_request_ptr));
-        //    }, upload_request);
-        //}, upload_args.next_retry_delay);
-        upload_args.remote_client->close_chunked_request();
-        task_scheduler.cancel(*upload_args.task_id);
+        upload_args->remote_client->close_chunked_request();
+        handle_upload_retry(std::move(upload_args));
     }
+    task_scheduler.cancel(task_scheduler.currentTaskId());
 }
 
 static String build_filename(const time_t start, const time_t end, FileType file_type, bool english) {
@@ -1135,7 +1140,7 @@ static String build_filename(const time_t start, const time_t end, FileType file
     return String(filename.c_str());
 }
 
-static esp_err_t format_and_send_chunk(AsyncHTTPSClient *remote_client, bool &first, const uint8_t *buffer, size_t len)
+static esp_err_t format_and_send_chunk(AsyncHTTPSClient &remote_client, bool &first, const uint8_t *buffer, size_t len)
 {
     if (len == 0) {
         return ESP_OK;
@@ -1160,7 +1165,7 @@ static esp_err_t format_and_send_chunk(AsyncHTTPSClient *remote_client, bool &fi
         first = false;
     }
 
-    const int sent = remote_client->send_chunk(chunk_start, chunk_length);
+    const int sent = remote_client.send_chunk(chunk_start, chunk_length);
     if (sent != static_cast<int>(chunk_length)) {
         logger.printfln("Failed to send chunk to remote access server");
         return ESP_FAIL;
@@ -1169,7 +1174,7 @@ static esp_err_t format_and_send_chunk(AsyncHTTPSClient *remote_client, bool &fi
 }
 
 // since this function can block for a long time, it must not be called from the main thread
-void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
+void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
 
     String charger_uuid;
@@ -1185,10 +1190,12 @@ void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
     CSVFlavor csv_delimiter = CSVFlavor::Excel;
     String filename;
 
+    auto &upload_args_ref = *upload_args;
+
     auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &letterhead_lines, &user_filter, &english, &upload_args, &file_type, &csv_delimiter]()
+            &letterhead, &letterhead_lines, &user_filter, &english, &upload_args_ref, &file_type, &csv_delimiter]()
     {
-        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args.user_idx);
+        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args_ref.user_idx);
         letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         strncpy(letterhead.get(), charge_log_send->get("letterhead")->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
         letterhead_lines = read_letterhead_lines(letterhead.get());
@@ -1196,7 +1203,7 @@ void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
         english = charge_log_send->get("english")->asBool();
         file_type = charge_log_send->get("file_type")->asEnum<FileType>();
         csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
-        filename = build_filename(((time_t)upload_args.last_month_start_min) * 60, ((time_t)upload_args.last_month_end_min) * 60, file_type, english);
+        filename = build_filename(((time_t)upload_args_ref.last_month_start_min) * 60, ((time_t)upload_args_ref.last_month_end_min) * 60, file_type, english);
 
         const int user_id = charge_log_send->get("user_id")->asInt();
         charger_uuid = remote_access.config.get("uuid")->asString();
@@ -1209,39 +1216,30 @@ void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
                 }
             }
         }
-        if (charger_uuid.isEmpty() || password.isEmpty() || user_uuid.isEmpty()) {
-            logger.printfln("Missing remote access credentials: charger_uuid=%s, password=%s, user_uuid=%s",
-                            charger_uuid.c_str(), password.c_str(), user_uuid.c_str());
-            return;
-        }
 
         url = "https://" + remote_access.config.get("relay_host")->asString() + "/api/send_chargelog_to_user";
         cert_id = remote_access.config.get("cert_id")->asInt();
     });
+
     if (ret != TaskScheduler::AwaitResult::Done) {
         return;
     }
 
-    upload_args.remote_client = std::make_unique<AsyncHTTPSClient>();
-    upload_args.remote_client->set_header("Content-Type", "application/json");
+    if (charger_uuid.isEmpty() || password.isEmpty() || user_uuid.isEmpty()) {
+        logger.printfln("Missing remote access credentials.");
+        return;
+    }
+
+    upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
+    upload_args->remote_client->set_header("Content-Type", "application/json");
     const char *language = english ? "en" : "de";
-    upload_args.remote_client->set_header("X-Lang", language);
+    upload_args->remote_client->set_header("X-Lang", language);
 
-    if (upload_args.remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
-        handle_upload_retry(upload_args);
-        // TODO fixme
-        //task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
-        //    auto upload_request = new SendChargeLogArgs(upload_args);
-
-        //    server.runInHTTPThread([](void *arg) {
-        //        auto request_ptr = static_cast<SendChargeLogArgs *>(arg);
-        //        std::unique_ptr<SendChargeLogArgs> upload_request_ptr(request_ptr);
-        //        charge_tracker.send_file(std::move(*upload_request_ptr));
-        //    }, upload_request);
-        //}, upload_args.next_retry_delay);
+    if (upload_args->remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
+        handle_upload_retry(std::move(upload_args));
         logger.printfln("Failed to send charge-log");
         return;
-    };
+    }
 
     String json_header = "{";
     json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
@@ -1249,49 +1247,49 @@ void ChargeTracker::send_file(SendChargeLogArgs &upload_args) {
     json_header += "\"user_uuid\":\"" + user_uuid + "\",";
     json_header += "\"filename\":\"" + filename + "\",";
     json_header += "\"chargelog\":[";
-    upload_args.remote_client->send_chunk(json_header.c_str(), json_header.length());
+    upload_args->remote_client->send_chunk(json_header.c_str(), json_header.length());
 
     bool first = true;
 
+    uint32_t start = millis();
+
     if (file_type == FileType::PDF) {
         this->generate_pdf(
-            [&remote_client = upload_args.remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
-                return format_and_send_chunk(remote_client.get(), first, static_cast<const uint8_t *>(buffer), len);
+            [&remote_client = *upload_args->remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
+                return format_and_send_chunk(remote_client, first, static_cast<const uint8_t *>(buffer), len);
             },
             user_filter,
-            upload_args.last_month_start_min,
-            upload_args.last_month_end_min,
+            upload_args->last_month_start_min,
+            upload_args->last_month_end_min,
             rtc.timestamp_minutes(),
             english, letterhead.get(), letterhead_lines, nullptr);
 
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = user_filter;
-        csv_params.start_timestamp_min = upload_args.last_month_start_min;
-        csv_params.end_timestamp_min = upload_args.last_month_end_min;
+        csv_params.start_timestamp_min = upload_args->last_month_start_min;
+        csv_params.end_timestamp_min = upload_args->last_month_end_min;
         csv_params.english = english;
         csv_params.flavor = csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
 
-        auto csv_stream_cb = [&remote_client = upload_args.remote_client, &first](const char* buffer, size_t len) -> bool {
-            auto err = format_and_send_chunk(remote_client.get(), first, reinterpret_cast<const uint8_t *>(buffer), len);
-            return err == ESP_OK;
+        auto csv_stream_cb = [&remote_client = *upload_args->remote_client, &first](const char* buffer, size_t len) -> esp_err_t {
+            auto err = format_and_send_chunk(remote_client, first, reinterpret_cast<const uint8_t *>(buffer), len);
+            return err;
         };
 
         CSVChargeLogGenerator csv_generator;
-        if (!csv_generator.generateCSV(csv_params, std::move(csv_stream_cb))) {
-            logger.printfln("Failed to generate CSV for remote upload");
-        }
+        csv_generator.generateCSV(csv_params, std::move(csv_stream_cb));
     }
 
     String json_footer = "]}";
-    upload_args.remote_client->send_chunk(json_footer.c_str(), json_footer.length());
-    upload_args.remote_client->finish_chunked_request();
+    upload_args->remote_client->send_chunk(json_footer.c_str(), json_footer.length());
+    upload_args->remote_client->finish_chunked_request();
 
-    *upload_args.task_id = task_scheduler.scheduleWithFixedDelay([upload_args = std::move(upload_args)]() mutable {
-        check_remote_client_status(upload_args);
+    task_scheduler.scheduleWithFixedDelay([upload_args = upload_args.release()]() mutable {
+        check_remote_client_status(std::unique_ptr<SendChargeLogArgs>{upload_args});
     }, 1_s, 1_s);
 }
 
@@ -1299,7 +1297,9 @@ static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
 
 static void upload_charge_logs_task(void *arg)
 {
-    const uint32_t remote_upload_config_count = reinterpret_cast<uint32_t>(arg);
+    const uint8_t *task_args = reinterpret_cast<const uint8_t *>(arg);
+    const uint32_t remote_upload_config_count = task_args[0];
+    const uint8_t retry_count = task_args[1];
 
     const time_t t_now = time(nullptr);
 
@@ -1330,10 +1330,16 @@ static void upload_charge_logs_task(void *arg)
     const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
     const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
 
-    for (int user_idx = 0; user_idx < remote_upload_config_count; user_idx++) {
-        SendChargeLogArgs upload_request{user_idx, last_month_start_min, last_month_end_min, std::make_shared<uint64_t>(0)};
+        for (int user_idx = 0; user_idx < remote_upload_config_count; user_idx++) {
+        auto upload_request = std::make_unique<SendChargeLogArgs>();
+        upload_request->user_idx = user_idx;
+        upload_request->last_month_start_min = last_month_start_min;
+        upload_request->last_month_end_min = last_month_end_min
+        upload_request->upload_retry_count = retry_count;
+        upload_request->next_retry_delay = millis_t{0};
+        upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
-        charge_tracker.send_file(upload_request);
+        charge_tracker.send_file(std::move(upload_request));
     }
 
     charge_tracker.send_in_progress = false;
@@ -1341,14 +1347,21 @@ static void upload_charge_logs_task(void *arg)
     vTaskDelete(NULL); // exit RTOS task
 }
 
-void ChargeTracker::upload_charge_logs()
+void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
 {
     send_in_progress = true;
 
-    const uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
-    void *arg = reinterpret_cast<void *>(remote_upload_config_count);
+    uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
-    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, arg, 1, nullptr, 0);
+    // 0 - remote upload config count
+    // 1 - retry count
+    uint8_t task_args[4] = {};
+    task_args[0] = static_cast<uint8_t>(remote_upload_config_count);
+    task_args[1] = retry_count;
+
+    void *task_params = reinterpret_cast<void *>(task_args);
+
+    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_params, 1, nullptr, 0);
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));

@@ -25,6 +25,7 @@
 #include "async_https_client.h"
 #include "csv_charge_log.h"
 #include "module_available.h"
+#include "charge_tracker_defs.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define MAX_RETRY_COUNT 10
@@ -55,8 +56,8 @@ public:
     void readNRecords(File *f, size_t records_to_read);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    void send_file(SendChargeLogArgs &args);
-    void upload_charge_logs();
+    void send_file(std::unique_ptr<SendChargeLogArgs> args);
+    void upload_charge_logs(const uint8_t retry_count);
     bool send_in_progress = false;
 #endif
 
@@ -85,20 +86,7 @@ struct SendChargeLogArgs {
     uint32_t last_month_end_min = 0;
     uint32_t upload_retry_count = 0;
     millis_t next_retry_delay = millis_t(0);
-    std::shared_ptr<uint64_t> task_id = nullptr;
-    std::shared_ptr<AsyncHTTPSClient> remote_client = nullptr;
-
-    SendChargeLogArgs(int user_idx_, uint32_t last_month_start_min_, uint32_t last_month_end_min_, std::shared_ptr<uint64_t> &&task_id_) : user_idx(user_idx_), last_month_start_min(last_month_start_min_), last_month_end_min(last_month_end_min_), task_id(std::move(task_id_)) {}
-
-    SendChargeLogArgs(const SendChargeLogArgs &other) {
-        user_idx = other.user_idx;
-        last_month_start_min = other.last_month_start_min;
-        last_month_end_min = other.last_month_end_min;
-        upload_retry_count = other.upload_retry_count;
-        next_retry_delay = other.next_retry_delay;
-        task_id = other.task_id;
-        remote_client = other.remote_client;
-    };
+    std::unique_ptr<AsyncHTTPSClient> remote_client;
 };
 
 #include "module_available_end.h"
