@@ -48,7 +48,7 @@ public:
     void register_manager(const char *const *const hosts,
                           size_t device_count,
                           const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &manager_callback,
-                          const std::function<void(uint8_t, uint8_t)> &manager_error_callback);
+                          const std::function<void(uint8_t, CASError)> &manager_error_callback);
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, uint8_t charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
 

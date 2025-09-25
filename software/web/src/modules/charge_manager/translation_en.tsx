@@ -3,6 +3,8 @@ import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
+import { CASState } from "modules/charge_manager/cas_state.enum";
+import { CASError } from "modules/charge_manager/cas_error.enum";
 let x = {
     "charge_manager": {
         "status": {
@@ -223,30 +225,36 @@ let x = {
 
         },
         "script": {
-            "charge_state_0": "No vehicle connected",
-            "charge_state_1": "Waiting for local release",
-            "charge_state_2": "Waiting for manager release",
-            "charge_state_3": "Charging cleared",
-            "charge_state_4": "Charging",
-            "charge_state_5": "Error",
-            "charge_state_6": "Charging done",
+            "charge_state": /*SFN*/(s: CASState) => {
+                switch (s) {
+                    case CASState.NoVehicle: return "No vehicle connected";
+                    case CASState.UserBlocked: return "Waiting for local release";
+                    case CASState.ManagerBlocked: return "Waiting for manager release";
+                    case CASState.CarBlocked: return "Charging cleared";
+                    case CASState.Charging: return "Charging";
+                    case CASState.Error: return "Error";
+                    case CASState.Charged: return "Charging done";
+                }
+            }/*NF*/,
+
+            "charge_error": /*SFN*/(e: CASError) => {
+                switch (e) {
+                    case CASError.OK: return "OK";
+                    case CASError.InvalidHeader: return "Packet header invalid or firmware incompatible";
+                    case CASError.NotManaged: return "Charge management disabled";
+                    case CASError.ChargerUnreachable: return "Charger unreachable";
+                    case CASError.EVSEUnreachable: return "Charge controller unreachable";
+                    case CASError.EVSENonreactive: return "Charge controller does not react";
+                    case CASError.ClientErrorOK: return "OK";
+                    case CASError.ClientErrorSwitch: return "Switch error";
+                    case CASError.ClientErrorDCFault: return "DC fault protector error";
+                    case CASError.ClientErrorContactor: return "Contactor error";
+                    case CASError.ClientErrorCommunication: return "Vehicle communication error";
+                }
+            }/*NF*/,
 
             "charge_error_type_management": "Management error",
             "charge_error_type_client": "Charger error",
-
-            "charge_error_0": "OK",
-            "charge_error_1": "Communication error",
-            "charge_error_2": "Packet header invalid or firmware incompatible",
-            "charge_error_3": "Charge management disabled",
-            "charge_error_128": "Charger unreachable",
-            "charge_error_129": "Charge controller unreachable",
-            "charge_error_130": "Charge controller does not react",
-
-            "charge_error_192": "OK",
-            "charge_error_194": "Switch error",
-            "charge_error_195": "DC fault protector error",
-            "charge_error_196": "Contactor error",
-            "charge_error_197": "Vehicle communication error",
 
             "charge_state_blocked_by_other_box": "Blocked",
             "charge_state_blocked_by_other_box_details": "Error with another charger",
