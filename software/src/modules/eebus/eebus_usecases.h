@@ -262,6 +262,7 @@ class EvEntity final : public EebusEntity
 {
 public:
     EvEntity();
+
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::EvCommissioningAndConfiguration;
@@ -285,7 +286,57 @@ public:
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
+    /**
+     * Inform the usecases a EV has been connected or disconnected. This will inform the subscribers of the NodeManagement entity about the change.
+     * @param connected If a EV is connected or not.
+     */
+    void ev_connected_state(bool connected);
+    /**
+     * Update the device configuration. As required by Scenario 2 and 3 of the EVCC Usecase. This will inform all subscribers of the new configuration.
+     * @param communication_standard The communication standard. Should only be "iso15118-2ed1","iso15118-2ed1" or "iec61851". Will log a tracelog if another value is given.
+     * @param asymmetric_supported If asymmetric charging is supported or not.
+     */
+    void update_device_config(const String &communication_standard, bool asymmetric_supported = false);
+
+    /**
+     * Update the identification of the EV. As required by scenarion 4 of the Usecase. This will inform all subscribers of the new identification.
+     * @param mac_address Mac address of the ev. Should be in the format given as mac_type.
+     * @param mac_type Either eui48 or eui64. Default is eui64.
+     */
+    void update_identification(String mac_address, IdentificationTypeEnumType mac_type = IdentificationTypeEnumType::eui64);
+
+    /**
+     * Updates the manufacturer data of the EV. As required by scenario 5 of the Usecase. This will inform all subscribers of the new manufacturer data. Entries with a length of <1 will not be added.
+     * @param name Device name. Recommended to be set.
+     * @param code Device code. Recommended to be set.
+     * @param serial Serial Number of the device. Optional.
+     * @param software_vers Software revision of the device. Optional.
+     * @param hardware_vers Hardware revision of the device. Optional.
+     * @param vendor_name Vendor Name. Recommended to be set.
+     * @param vendor_code Vendor code. Recommended to be set.
+     * @param brand_name Brand name. Recommended to be set.
+     * @param manufacturer Manufacturer Label. Recommended to be set.
+     * @param manufacturer_description Manufacturer Description. Optional.
+     */
+    void update_manufacturer(String name = "", String code = "", String serial = "", String software_vers = "", String hardware_vers = "", String vendor_name = "", String vendor_code = "", String brand_name = "", String manufacturer = "", String manufacturer_description = "");
+
+    /**
+     * The Electrical Connection feature as required by Scenario 6 of the Usecase. This will inform all subscribers of the new electrical connection data.
+     * @param min_power In Watts. Minimum power at which the EV can still charge. Default is 0W.
+     * @param max_power In Watts. Maximum power at which the EV can charge. Default is EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION.
+     * @param standby_power In Watts. If the EV has a standby mode and how much power it is capable of consuming in it.
+     */
+    void update_electrical_connection(int min_power = 0, int max_power = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, int standby_power = 0);
+
+    /**
+     * Update the DeviceDiagnosis state. As required by Scenario 7 of the Usecase. This will inform all subscribers of the new device diagnosis state.
+     * @param standby If the device is in standby mode or not.
+     */
+    void update_operating_state(bool standby);
+
+
 private:
+    void update_api();
     bool ev_connected = false;
 
     // These can be freely assigned but need to be unique within the entity.
@@ -295,6 +346,19 @@ private:
     int feature_address_electrical_connection = 104;
     int feature_address_device_diagnosis = 105;
 
+    // Server Data
+    //DeviceDiagnosis
+    DeviceConfigurationKeyValueDescriptionListDataType device_config_description{};
+    DeviceConfigurationKeyValueListDataType device_config_list{};
+    //Identification
+    IdentificationListDataType identification_data{};
+    //DeviceClassification
+    DeviceClassificationManufacturerDataType device_manufacturer_data{};
+    //ElectricalConnection
+    ElectricalConnectionParameterDescriptionListDataType electrical_connection_description{};
+    ElectricalConnectionPermittedValueSetListDataType electrical_connection_permitted_values{};
+    //DeviceDiagnosis
+    DeviceDiagnosisStateDataType device_diagnosis_state{};
 
 };
 
