@@ -22,6 +22,7 @@ import { h, Fragment, VNode } from "preact";
 import { signal, Signal } from "@preact/signals-core";
 import { toLocaleFixed } from "./util";
 import * as options from "../options";
+{{{additional_imports}}}
 
 {{{translation}}}
 

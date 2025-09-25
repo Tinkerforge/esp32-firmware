@@ -383,7 +383,10 @@ TSX_ADDITIONAL_HEADER_LINES = [
     'import { __, removeUnicodeHacks } from "./src/ts/translation";',
     'import * as options from "../../options";',
     'import * as options from "./src/options";',
+    re.compile(r'import \{ [^\s\}]+ \} from "modules/[^"]+\.enum";\n'),
 ]
+
+additional_imports = set()
 
 TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)
 
@@ -438,7 +441,12 @@ def collect_translation(path, override=False):
             content = f.read()
             if is_tsx:
                 for x in TSX_ADDITIONAL_HEADER_LINES:
-                    content = content.replace(x + "\n", "", 1)
+                    if isinstance(x, re.Pattern):
+                        global additional_imports
+                        additional_imports.update(x.findall(content))
+                        content = x.sub("", content)
+                    else:
+                        content = content.replace(x + "\n", "", 1)
                 content = content.replace(TSX_HEADER, "", 1)
                 content = re.sub(TSX_LINE_COMMENT_PATTERN, "", content)
                 content = re.sub(TSX_FUNCTION_PATTERN, tsx_to_json, content)
@@ -1734,7 +1742,9 @@ def main():
 
     translation_str += '} as const\n'
 
+    global additional_imports
     tfutil.specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
+        '{{{additional_imports}}}': "".join(additional_imports),
         '{{{translation}}}': translation_str,
     })
 
