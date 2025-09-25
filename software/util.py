@@ -428,7 +428,8 @@ def generate_enum(source_file_name: str,
                   enum_name: NameFlavors,
                   underlying_type: str,
                   values: list[EnumValue],
-                  comment: str | None):
+                  comment: str | None,
+                  require_stable_api: bool):
     mod_path = os.path.join('src', 'modules', backend_module.under)
 
     enum_values = [f'    {v.name.camel} = {v.number},{v.comment}\n' for v in values]
@@ -438,19 +439,20 @@ def generate_enum(source_file_name: str,
 
     enum_raw_values = {e.name.space: e.number for e in values}
 
-    try:
-        with open(os.path.join(mod_path, source_file_name + '.previous'), 'r', encoding='utf-8') as f:
-            enum_previous_raw_values = json.loads(f.read())
-    except FileNotFoundError:
-        enum_previous_raw_values = None
+    if require_stable_api:
+        try:
+            with open(os.path.join(mod_path, source_file_name + '.previous'), 'r', encoding='utf-8') as f:
+                enum_previous_raw_values = json.loads(f.read())
+        except FileNotFoundError:
+            enum_previous_raw_values = None
 
-    if enum_previous_raw_values != None:
-        for value_name, value_number in enum_raw_values.items():
-            if value_name in enum_previous_raw_values and enum_previous_raw_values[value_name] != value_number:
-                print(f'Error: Invalid change to value "{value_name}" in enum file "{source_file_name}" in backend {mod_path}')
-                sys.exit(1)
+        if enum_previous_raw_values != None:
+            for value_name, value_number in enum_raw_values.items():
+                if value_name in enum_previous_raw_values and enum_previous_raw_values[value_name] != value_number:
+                    print(f'Error: Invalid change to value "{value_name}" in enum file "{source_file_name}" in backend {mod_path}')
+                    sys.exit(1)
 
-    tfutil.write_file_if_different(os.path.join(mod_path, source_file_name + '.previous'), json.dumps(enum_raw_values))
+        tfutil.write_file_if_different(os.path.join(mod_path, source_file_name + '.previous'), json.dumps(enum_raw_values))
 
     enum_header = ""
     enum_header += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
@@ -611,6 +613,7 @@ class Union:
 
     expected_size: int
     variants: list[Variant]
+    require_stable_api: bool
 
     def __post_init__(self, _name_str):
         self.name = FlavoredName(_name_str).get()
@@ -693,7 +696,8 @@ export type {self.name.camel} =
             FlavoredName(self.name.space + " Tag").get(),
             'uint8_t',
             [EnumValue(v.name, i, '') for i, v in enumerate(self.variants)],
-            None)
+            None,
+            self.require_stable_api)
 
         # Generate backend union definition and implementation
         with tfutil.ChangedDirectory(os.path.join('src', 'modules', module_name.under)):

@@ -1806,7 +1806,7 @@ def main():
 
                         enum_values.append(util.EnumValue(value_name, value_number, value_comment))
 
-                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments))
+                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments), require_stable_api=True)
 
     # Generate unions
     for backend_module in backend_modules:
