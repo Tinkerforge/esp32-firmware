@@ -1,4 +1,5 @@
 import sys
+import collections
 import tinkerforge_util as tfutil
 import sungrow
 import solarmax
@@ -58,7 +59,7 @@ table_typenames = []
 table_news = []
 default_device_addresses = []
 specs = []
-virtual_meters = {}
+virtual_meters = collections.OrderedDict()
 
 for module in modules:
     for table_prototype in module.table_prototypes:
@@ -113,6 +114,7 @@ for module in modules:
     default_device_addresses += module.default_device_addresses
     specs += module.specs
 
+specs_ts = []
 specs_h = []
 specs_cpp = []
 
@@ -225,7 +227,14 @@ for spec in specs:
                          f'    {f32_negative_max_as_nan},\n'
                           '};')
 
+specs_ts.append('export function get_virtual_meter_items(table_id: number) {\n'
+                '    let virtual_meter_items: [string, string][] = [];\n\n'
+                '    switch (table_id) {\r')
+
 for group, value in virtual_meters.items():
+    specs_ts.append(f'    case MeterModbusTCPTableID.{group.camel}:\n'
+                     '        virtual_meter_items = [\r')
+
     specs_h.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter);')
 
     specs_cpp.append(f'const MeterModbusTCP::TableSpec *get_{group.under}_table(uint32_t slot, {group.camel}VirtualMeter virtual_meter)\n'
@@ -243,8 +252,13 @@ for group, value in virtual_meters.items():
                              f'        logger.printfln_meter("Invalid {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
                               '        return nullptr;')
         else:
+            specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
             specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
                              f'        return &{spec_name.under}_table;')
+
+    specs_ts.append('        ];\n'
+                    '\n'
+                    '        break;')
 
     specs_cpp.append(f'    default:\n'
                      f'        logger.printfln_meter("Unknown {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
@@ -252,8 +266,15 @@ for group, value in virtual_meters.items():
                       '    }\n'
                       '}')
 
+specs_ts[-1] += '\r'
+specs_ts.append('    }\n\n'
+                '    return virtual_meter_items;\n'
+                '}')
+
 ts  = '// WARNING: This file is generated.\n\n'
-ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n'
+ts += 'import { __ } from "../../ts/translation";\n'
+ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
+ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group in virtual_meters]) + '\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
@@ -296,7 +317,8 @@ ts += '\n'.join(table_news) + '\n'
 ts += '    default:\n'
 ts += '        return [MeterModbusTCPTableID.None, null];\n'
 ts += '    }\n'
-ts += '}\n'
+ts += '}\n\n'
+ts += '\n\n'.join(specs_ts).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
 

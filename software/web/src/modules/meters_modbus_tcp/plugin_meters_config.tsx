@@ -29,7 +29,7 @@ import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";
-import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config } from "./meter_modbus_tcp_specs";
+import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config, get_virtual_meter_items } from "./meter_modbus_tcp_specs";
 import { ModbusRegisterType } from "../modbus_tcp_client/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { ModbusValueType } from "../modbus_tcp_client/modbus_value_type.enum";
@@ -430,19 +430,11 @@ export function init() {
                             </FormRow>);
                     }
 
-                    let virtual_meter_items: [string, string][] = [];
+                    let virtual_meter_items: [string, string][] = get_virtual_meter_items(config[1].table[0]);
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
-                        virtual_meter_items = [
-                            [SungrowHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SungrowHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SungrowHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [SungrowHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [SungrowHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SungrowHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -456,13 +448,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter) {
-                        virtual_meter_items = [
-                            [SungrowStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SungrowStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SungrowStringInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [SungrowStringInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SungrowStringInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -475,12 +460,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage) {
-                        virtual_meter_items = [
-                            [SolarmaxMaxStorageVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SolarmaxMaxStorageVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SolarmaxMaxStorageVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SolarmaxMaxStorageVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -492,13 +471,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
-                        virtual_meter_items = [
-                            [VictronEnergyGXVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [VictronEnergyGXVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [VictronEnergyGXVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [VictronEnergyGXVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case VictronEnergyGXVirtualMeter.Grid: return MeterLocation.Grid;
@@ -511,14 +483,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
-                        virtual_meter_items = [
-                            [DeyeHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [DeyeHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [DeyeHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [DeyeHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [DeyeHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case DeyeHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -532,13 +496,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter) {
-                        virtual_meter_items = [
-                            [AlphaESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [AlphaESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [AlphaESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [AlphaESSHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case AlphaESSHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -551,16 +508,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter) {
-                        virtual_meter_items = [
-                            [GoodweHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [GoodweHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [GoodweHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [GoodweHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [GoodweHybridInverterVirtualMeter.BackupLoad.toString(), __("meters_modbus_tcp.content.virtual_meter_backup_load")],
-                            [GoodweHybridInverterVirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
-                            [GoodweHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case GoodweHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -576,13 +523,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter) {
-                        virtual_meter_items = [
-                            [SolaxHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SolaxHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SolaxHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [SolaxHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SolaxHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -595,10 +535,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus) {
-                        virtual_meter_items = [
-                            [FroniusGEN24PlusVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case FroniusGEN24PlusVirtualMeter.Battery: return MeterLocation.Battery;
@@ -608,13 +544,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter) {
-                        virtual_meter_items = [
-                            [HaileiHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [HaileiHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [HaileiHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [HaileiHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case HaileiHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -627,14 +556,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3HybridInverter) {
-                        virtual_meter_items = [
-                            [FoxESSH3HybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [FoxESSH3HybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [FoxESSH3HybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [FoxESSH3HybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [FoxESSH3HybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case FoxESSH3HybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -647,25 +568,7 @@ export function init() {
                             return MeterLocation.Unknown;
                         }
                     }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM270) {
-                        virtual_meter_items = [
-                            [CarloGavazziEM270VirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
-                            [CarloGavazziEM270VirtualMeter.CurrentTransformer1.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_1")],
-                            [CarloGavazziEM270VirtualMeter.CurrentTransformer2.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_2")],
-                        ];
-                    }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM280) {
-                        virtual_meter_items = [
-                            [CarloGavazziEM280VirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
-                            [CarloGavazziEM280VirtualMeter.CurrentTransformer1.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_1")],
-                            [CarloGavazziEM280VirtualMeter.CurrentTransformer2.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_2")],
-                        ];
-                    }
                     else if (config[1].table[0] == MeterModbusTCPTableID.Solaredge) {
-                        virtual_meter_items = [
-                            [SolaredgeVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SolaredgeVirtualMeter.Battery: return MeterLocation.Battery;
@@ -678,11 +581,6 @@ export function init() {
                         default_location = MeterLocation.Load;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode) {
-                        virtual_meter_items = [
-                            [SAXPowerHomeBasicModeVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SAXPowerHomeBasicModeVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SAXPowerHomeBasicModeVirtualMeter.Grid: return MeterLocation.Grid;
@@ -693,11 +591,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode) {
-                        virtual_meter_items = [
-                            [SAXPowerHomeExtendedModeVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SAXPowerHomeExtendedModeVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SAXPowerHomeExtendedModeVirtualMeter.Grid: return MeterLocation.Grid;
@@ -708,14 +601,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.E3DC) {
-                        virtual_meter_items = [
-                            [E3DCVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [E3DCVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [E3DCVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [E3DCVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                            [E3DCVirtualMeter.AdditionalGeneration.toString(), __("meters_modbus_tcp.content.virtual_meter_additional_generation")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case E3DCVirtualMeter.Grid: return MeterLocation.Grid;
@@ -729,13 +614,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000) {
-                        virtual_meter_items = [
-                            [HuaweiSUN2000VirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [HuaweiSUN2000VirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [HuaweiSUN2000VirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [HuaweiSUN2000VirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case HuaweiSUN2000VirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -748,12 +626,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle) {
-                        virtual_meter_items = [
-                            [HuaweiSUN2000SmartDongleVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [HuaweiSUN2000SmartDongleVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [HuaweiSUN2000SmartDongleVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case HuaweiSUN2000SmartDongleVirtualMeter.Grid: return MeterLocation.Grid;
@@ -765,15 +637,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA) {
-                        virtual_meter_items = [
-                            [HuaweiEMMAVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [HuaweiEMMAVirtualMeter.GridInternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid_internal_sensor")],
-                            [HuaweiEMMAVirtualMeter.GridExternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid_external_sensor")],
-                            [HuaweiEMMAVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [HuaweiEMMAVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [HuaweiEMMAVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case HuaweiEMMAVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -788,12 +651,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter) {
-                        virtual_meter_items = [
-                            [SolaxStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [SolaxStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [SolaxStringInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SolaxStringInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -805,14 +662,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter) {
-                        virtual_meter_items = [
-                            [FoxESSH3SmartHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [FoxESSH3SmartHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [FoxESSH3SmartHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [FoxESSH3SmartHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [FoxESSH3SmartHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case FoxESSH3SmartHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -826,14 +675,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter) {
-                        virtual_meter_items = [
-                            [FoxESSH3ProHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [FoxESSH3ProHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [FoxESSH3ProHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [FoxESSH3ProHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [FoxESSH3ProHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case FoxESSH3ProHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
@@ -847,10 +688,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter) {
-                        virtual_meter_items = [
-                            [SMAHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case SMAHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
@@ -860,11 +697,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VARTAElement) {
-                        virtual_meter_items = [
-                            [VARTAElementVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [VARTAElementVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case VARTAElementVirtualMeter.Grid: return MeterLocation.Grid;
@@ -875,11 +707,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VARTAFlex) {
-                        virtual_meter_items = [
-                            [VARTAFlexVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [VARTAFlexVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case VARTAFlexVirtualMeter.Grid: return MeterLocation.Grid;
@@ -890,14 +717,6 @@ export function init() {
                         }
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter) {
-                        virtual_meter_items = [
-                            [ChisageESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [ChisageESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
-                            [ChisageESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
-                            [ChisageESSHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [ChisageESSHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
-                        ];
-
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case ChisageESSHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
