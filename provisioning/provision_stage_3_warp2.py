@@ -876,17 +876,16 @@ class Stage3:
         self.verify_evse_not_crashed()
 
         # step 01: test phase separation
-        print('Connecting power to L1 and L2')
-
-        self.connect_warp_power(['L1', 'L2'])
         self.change_cp_pe_state('C')
-
-        time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
-
+        time.sleep(EVSE_SETTLE_DURATION)
         if not self.check_iec_state('C'):
             fatal_error('Wallbox not in IEC state C')
 
-        time.sleep(VOLTAGE_SETTLE_DURATION)
+        print('Connecting power to L1 and L2')
+
+        self.connect_warp_power(['L1', 'L2'])
+
+        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
 
         voltages = self.read_voltage_monitors()
 
