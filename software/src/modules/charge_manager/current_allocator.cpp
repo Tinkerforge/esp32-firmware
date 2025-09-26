@@ -962,18 +962,39 @@ static void stage_2(StageContext &sc) {
     }
 }
 
+
+enum class CurrentCapacityLimit : uint8_t {
+    SupportedByCharger,
+    FastRampUp,
+    RequestedByVehicle,
+    LimitedByPhase,
+    Guaranteed
+};
+
 // Use the supported current in case the last allocation was able to fulfill the requested current.
 // In that case we want a fast ramp-up until we know the new limit of the charger (or don't have any current left)
-static int get_requested_current(const StageContext &sc, const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases) {
+static int get_requested_current(const StageContext &sc, const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases, CurrentCapacityLimit *out_limit = nullptr) {
     int reqd = state->requested_current;
+
+    if (out_limit != nullptr)
+        if (state->requested_current < state->supported_current)
+            *out_limit = CurrentCapacityLimit::RequestedByVehicle;
+        else
+            *out_limit = CurrentCapacityLimit::SupportedByCharger;
 
     if (!sc.elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold})) {
         reqd = state->supported_current;
+        if (out_limit != nullptr)
+            *out_limit = CurrentCapacityLimit::FastRampUp;
     }
 
     if (get_highest_charge_mode_bit(state) == ChargeMode::Min && ((state->charge_mode & ChargeMode::PV) == 0)) {
         auto guaranteed_current = state->guaranteed_pv_current / allocated_phases;
-        reqd = std::min(guaranteed_current, reqd);
+        if (guaranteed_current < reqd) {
+            reqd = guaranteed_current;
+            if (out_limit != nullptr)
+                *out_limit = CurrentCapacityLimit::Guaranteed;
+        }
     }
     return reqd;
 }
@@ -1739,20 +1760,28 @@ static void stage_6(StageContext &sc) {
 }
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
-static int current_capacity(const StageContext &sc, const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg) {
-    auto requested_current = get_requested_current(sc, state, cfg, allocated_phases);
+static int current_capacity(const StageContext &sc, const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg, CurrentCapacityLimit *out_limit = nullptr) {
+    auto requested_current = get_requested_current(sc, state, cfg, allocated_phases, out_limit);
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
     auto capacity = std::max(requested_current - allocated_current, 0);
 
+    int min_phase = 32000;
+
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
-        return std::min(capacity, limits->raw.min_phase());
+        min_phase = limits->raw.min_phase();
     }
 
     for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
         auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
-        capacity = std::min(capacity, limits->raw[phase]);
+        min_phase = std::min(min_phase, limits->raw[phase]);
+    }
+
+    if (min_phase < capacity) {
+        capacity = min_phase;
+        if (out_limit != nullptr)
+            *out_limit = CurrentCapacityLimit::LimitedByPhase;
     }
 
     return allocated_phases * capacity;
@@ -1843,7 +1872,7 @@ static void stage_7(StageContext &sc) {
         }
 
         // Limit to minimum fair phase current
-        if (state->phase_rotation == PhaseRotation::Unknown) {
+        if (state->phase_rotation == PhaseRotation::Unknown /*TODO only if 1p?*/) {
             min_(fair.min_phase(), CurrentDecision::Fair(true));
         } else {
             for (size_t p = 0; p < allocated_phases; ++p) {
@@ -1861,11 +1890,33 @@ static void stage_7(StageContext &sc) {
             min_(enable_current, CurrentDecision::EnableNotCharging());
         }
 
-        // TODO disambiguate between Requested and PhaseLimit here
-        min_(current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg), CurrentDecision::Requested());
+        CurrentCapacityLimit cclimit;
 
-        if (min_.current > 0)
-            set_charger_decision(sc, sc.idx_array[i], std::move(min_.desc));
+        // TODO disambiguate between Requested and PhaseLimit here
+        min_(current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg, &cclimit), CurrentDecision::Requested());
+
+        if (min_.current > 0) {
+            if (min_.desc.tag == CurrentDecisionTag::Requested) {
+                switch (cclimit) {
+                    case CurrentCapacityLimit::SupportedByCharger:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::SupportedByCharger());
+                        break;
+                    case CurrentCapacityLimit::FastRampUp:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::FastRampUp());
+                        break;
+                    case CurrentCapacityLimit::RequestedByVehicle:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::Requested());
+                        break;
+                    case CurrentCapacityLimit::LimitedByPhase:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::PhaseLimit(state->phase_rotation == PhaseRotation::Unknown /*TODO only if 1p?*/));
+                        break;
+                    case CurrentCapacityLimit::Guaranteed:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::GuaranteedPV());
+                        break;
+                }
+            } else
+                set_charger_decision(sc, sc.idx_array[i], std::move(min_.desc));
+        }
 
         auto current = allocated_current + min_.current;
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);

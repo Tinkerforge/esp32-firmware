@@ -16,6 +16,8 @@ spec = Union("Current Decision", 4, require_stable_api=False, variants=[
         Member('Unknown Rotation', Types.Bool)
     ]),
     Variant('Guaranteed PV'),
+    Variant('Fast Ramp Up'),
+    Variant('Supported By Charger'),
     Variant('Left Over', [
         Member('Unknown Rotation', Types.Bool)
     ]),
