@@ -69,10 +69,10 @@ export interface usecases {
         communication_standard: string;
         asymmetric_charging_supported: boolean;
         mac_address: string;
-        manufacturer_info: string;
         minimum_power: number;
         maximum_power: number;
         standby_power: number;
+        standby_mode: number;
     }
 }
 

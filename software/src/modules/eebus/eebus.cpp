@@ -171,10 +171,10 @@ void EEBus::pre_setup()
                  {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
                  {"asymmetric_charging_supported", Config::Bool(false)},
                  {"mac_address", Config::Str("", 0, 64)},
-                 {"manufacturer_info", Config::Str("", 0, 256)},
                  {"minimum_power", Config::Uint16(0)},
                  {"maximum_power", Config::Uint16(0)},
                  {"standby_power", Config::Uint16(0)},
+                 {"standby_mode", Config::Bool(false)}
              })}
         }
         );
