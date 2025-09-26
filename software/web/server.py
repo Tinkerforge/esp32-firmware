@@ -69,7 +69,7 @@ def index():
         return f.read()
 
 
-@app.route('/<path:path>', methods=['GET', 'PUT'])
+@app.route('/<path:path>', methods=['GET', 'PUT', 'POST'])
 def forward_html(path):
     try:
         with urlopen(Request(f'http://{host}/{path}', data=request.data, method=request.method)) as f:
