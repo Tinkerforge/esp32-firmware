@@ -536,6 +536,7 @@ static void clear_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseD
     d = ZeroPhaseDecision::None();
 }
 
+[[gnu::unused]]
 static void clear_charger_decision(StageContext &sc, int charger_idx, OnePhaseDecisionTag tag) {
     auto &d = sc.charger_decisions[charger_idx].one;
     if (d.tag != tag)
@@ -544,6 +545,7 @@ static void clear_charger_decision(StageContext &sc, int charger_idx, OnePhaseDe
     d = OnePhaseDecision::None();
 }
 
+[[gnu::unused]]
 static void clear_charger_decision(StageContext &sc, int charger_idx, ThreePhaseDecisionTag tag) {
     auto &d = sc.charger_decisions[charger_idx].three;
     if (d.tag != tag)
@@ -552,6 +554,7 @@ static void clear_charger_decision(StageContext &sc, int charger_idx, ThreePhase
     d = ThreePhaseDecision::None();
 }
 
+[[gnu::unused]]
 static void clear_charger_decision(StageContext &sc, int charger_idx, CurrentDecisionTag tag) {
     auto &d = sc.charger_decisions[charger_idx].current;
     if (d.tag != tag)
@@ -976,11 +979,12 @@ enum class CurrentCapacityLimit : uint8_t {
 static int get_requested_current(const StageContext &sc, const ChargerState *state, const CurrentAllocatorConfig *cfg, uint8_t allocated_phases, CurrentCapacityLimit *out_limit = nullptr) {
     int reqd = state->requested_current;
 
-    if (out_limit != nullptr)
+    if (out_limit != nullptr) {
         if (state->requested_current < state->supported_current)
             *out_limit = CurrentCapacityLimit::RequestedByVehicle;
         else
             *out_limit = CurrentCapacityLimit::SupportedByCharger;
+    }
 
     if (!sc.elapsed(state->use_supported_current + seconds_t{cfg->requested_current_threshold})) {
         reqd = state->supported_current;
@@ -1858,7 +1862,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto min_ = MinWithDecision{32000};
+        auto min_ = MinWithDecision{32000, CurrentDecision::SupportedByCharger()};
 
         // Limit to fair PV current (or guaranteed PV current if this is more)
         if (state->observe_pv_limit) {
