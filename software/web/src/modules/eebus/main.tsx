@@ -451,10 +451,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <td>{state.usecases.ev_commissioning_and_configuration.mac_address}</td>
                                             </tr>
                                             <tr>
-                                                <td>Manufacturer Info</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.manufacturer_info}</td>
-                                            </tr>
-                                            <tr>
                                                 <td>Minimum Power Consumption (reported by Vehicle)</td>
                                                 <td>{state.usecases.ev_commissioning_and_configuration.minimum_power}</td>
                                             </tr>
@@ -465,6 +461,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             <tr>
                                                 <td>Standby Power Consumption (reported by Vehicle)</td>
                                                 <td>{state.usecases.ev_commissioning_and_configuration.standby_power}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Standby Mode Active</td>
+                                                <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}</td>
                                             </tr>
                                         </>
                                     )}
