@@ -298,6 +298,8 @@ let x = {
             "cd_requested": "Durch Fahrzeug angefordert",
             "cd_fair": "Fairer Strom",
             "cd_guaranteed_pv": "Garantierte PV-Leistung",
+            "cd_fast_ramp_up": "TODO fast ramp-up",
+            "cd_supported_by_charger": "Maximalleistung der Wallbox",
             "cd_left_over": "Reststrom",
 
             "next_rotation_at": /*SFN*/ (timespan: string) => "Nächste Rotation in " + timespan /*NF*/,

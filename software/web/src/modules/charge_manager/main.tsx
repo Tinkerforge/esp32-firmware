@@ -256,6 +256,10 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
             return __("charge_manager.script.cd_fair");
         case CurrentDecisionTag.GuaranteedPV:
             return __("charge_manager.script.cd_guaranteed_pv");
+        case CurrentDecisionTag.FastRampUp:
+            return __("charge_manager.script.cd_fast_ramp_up");
+        case CurrentDecisionTag.SupportedByCharger:
+            return __("charge_manager.script.cd_supported_by_charger");
         case CurrentDecisionTag.LeftOver:
             return __("charge_manager.script.cd_left_over");
     }
