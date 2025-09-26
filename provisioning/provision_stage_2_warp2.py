@@ -279,6 +279,17 @@ def get_evse_uptime():
     global evse
     return retry_wrapper(lambda: evse.get_low_level_state().uptime, "get EVSE uptime")
 
+def get_meter_voltages():
+    global evse
+    meter_values = retry_wrapper(lambda: evse.get_all_energy_meter_values(), "get EVSE energy meter values")
+    # The EVSE firmware will always return the LX-N voltages as the first three values if they are available
+    # All meters that we support currently (and probably will in the future) support measuring phase voltages
+    # The old (non-dynamic) variant of this function also returns the voltages first
+    # -> This will work
+    if len(meter_values) >= 3:
+        return meter_values[:3]
+    return None
+
 def reset_evse():
     global evse
     return retry_wrapper(lambda: evse.reset(), "reset EVSE")
@@ -383,7 +394,8 @@ def led_wrap():
                     switch_phases_function=switch_phases,
                     get_evse_uptime_function=get_evse_uptime,
                     reset_evse_function=reset_evse,
-                    get_cp_pwm_function=get_cp_pwm)
+                    get_cp_pwm_function=get_cp_pwm,
+                    get_meter_voltages_function=get_meter_voltages)
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))

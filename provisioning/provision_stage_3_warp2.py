@@ -99,7 +99,8 @@ class Stage3:
                  switch_phases_function,
                  get_evse_uptime_function,
                  reset_evse_function,
-                 get_cp_pwm_function):
+                 get_cp_pwm_function,
+                 get_meter_voltages_function):
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
@@ -108,6 +109,7 @@ class Stage3:
         self.get_evse_uptime_function = lambda: get_evse_uptime_function() / 1000.0
         self.reset_evse_function = reset_evse_function
         self.get_cp_pwm_function = get_cp_pwm_function
+        self.get_meter_voltages_function = get_meter_voltages_function
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -798,16 +800,29 @@ class Stage3:
 
     def verify_voltages(self, phases: list[typing.Literal['L1', 'L2', 'L3']]):
         voltages = self.read_voltage_monitors()
-
         print('Reading voltages as {0}'.format(voltages))
+
+        meter_voltages = self.get_meter_voltages_function()
+
+        if meter_voltages is None:
+            # Set meter voltages to voltages if there's no energy meter connected
+            # (i.e. this is not a Pro): voltages are checked first.
+            meter_voltages = voltages
+        else:
+            print('Energy meter measured voltages as {0}'.format(meter_voltages))
 
         for i in range(3):
             name = ['L1', 'L2', 'L3'][i]
             expect_on = name in phases
             if expect_on and voltages[i] < VOLTAGE_ON_THRESHOLD:
                 fatal_error(f'Missing voltage on {name}')
-            if not expect_on and voltages[i] > VOLTAGE_OFF_THRESHOLD:
+            elif not expect_on and voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Unexpected voltage on {name}')
+
+            if expect_on and meter_voltages[i] < VOLTAGE_ON_THRESHOLD:
+                fatal_error(f'Energy meter measured missing voltage on {name}')
+            elif not expect_on and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
+                fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
     # requires power_on
     def test_wallbox(self, has_phase_switch):
@@ -1181,7 +1196,8 @@ def main():
                     switch_phases_function=lambda x: None,
                     get_evse_uptime_function=lambda: None,
                     reset_evse_function=lambda: None,
-                    get_cp_pwm_function=lambda: 1000)
+                    get_cp_pwm_function=lambda: 1000,
+                    get_meter_voltages_function=lambda: None)
 
     stage3.setup()
 
