@@ -10,6 +10,7 @@ import threading
 import time
 import traceback
 import tkinter as tk
+import typing
 
 import cv2 # sudo pip3 install openvc-python
 
@@ -795,6 +796,19 @@ class Stage3:
         self.change_cp_pe_state('C')
         time.sleep(PHASE_SWITCH_SETTLE_DURATION)
 
+    def verify_voltages(self, phases: list[typing.Literal['L1', 'L2', 'L3']]):
+        voltages = self.read_voltage_monitors()
+
+        print('Reading voltages as {0}'.format(voltages))
+
+        for i in range(3):
+            name = ['L1', 'L2', 'L3'][i]
+            expect_on = name in phases
+            if expect_on and voltages[i] < VOLTAGE_ON_THRESHOLD:
+                fatal_error(f'Missing voltage on {name}')
+            if not expect_on and voltages[i] > VOLTAGE_OFF_THRESHOLD:
+                fatal_error(f'Unexpected voltage on {name}')
+
     # requires power_on
     def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
@@ -845,17 +859,10 @@ class Stage3:
 
             time.sleep(VOLTAGE_SETTLE_DURATION)
 
-            voltages = self.read_voltage_monitors()
-
-            print('Reading voltages as {0}'.format(voltages))
-
-            for i, phase in enumerate(['L1', 'L2', 'L3']):
-                if state == 'C':
-                    if voltages[i] < VOLTAGE_ON_THRESHOLD:
-                        fatal_error('Missing voltage on {0}'.format(phase))
-                else:
-                    if voltages[i] > VOLTAGE_OFF_THRESHOLD:
-                        fatal_error('Unexpected voltage on {0}'.format(phase))
+            if state == 'C':
+                self.verify_voltages(['L1', 'L2', 'L3'])
+            else:
+                self.verify_voltages([])
 
             self.verify_evse_not_crashed()
 
@@ -881,114 +888,23 @@ class Stage3:
         if not self.check_iec_state('C'):
             fatal_error('Wallbox not in IEC state C')
 
-        print('Connecting power to L1 and L2')
-
-        self.connect_warp_power(['L1', 'L2'])
-
-        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
-
-        voltages = self.read_voltage_monitors()
-
-        print('Reading voltages as {0}'.format(voltages))
-
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
-
-        if voltages[1] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L2')
-
-        if voltages[2] > VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Unexpected voltage on L3')
-
-        print('Connecting power to L1')
-
-        self.connect_warp_power(['L1'])
-
-        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
-
-        voltages = self.read_voltage_monitors()
-
-        print('Reading voltages as {0}'.format(voltages))
-
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
-
-        if voltages[1] > VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Unexpected voltage on L2')
-
-        if voltages[2] > VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Unexpected voltage on L3')
-
-        print('Connecting power to L1 and L3')
-
-        self.connect_warp_power(['L1', 'L3'])
-
-        time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
-
-        voltages = self.read_voltage_monitors()
-
-        print('Reading voltages as {0}'.format(voltages))
-
-        if voltages[0] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L1')
-
-        if voltages[1] > VOLTAGE_OFF_THRESHOLD:
-            fatal_error('Unexpected voltage on L2')
-
-        if voltages[2] < VOLTAGE_ON_THRESHOLD:
-            fatal_error('Missing voltage on L3')
-
-        print('Connecting power to L1, L2 and L3')
-
-        self.connect_warp_power(['L1', 'L2', 'L3'])
+        for phases in [['L1', 'L2'],
+                       ['L1'],
+                       ['L1', 'L3'],
+                       ['L1', 'L2', 'L3']]:
+            print('Connecting power to', ', '.join(phases))
+            self.connect_warp_power(phases)
+            time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+            self.verify_voltages(phases)
 
         if has_phase_switch:
-            time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
-
-            voltages = self.read_voltage_monitors()
-
-            print('Reading voltages as {0}'.format(voltages))
-
-            if voltages[0] < VOLTAGE_ON_THRESHOLD:
-                fatal_error('Missing voltage on L1')
-
-            if voltages[1] < VOLTAGE_OFF_THRESHOLD:
-                fatal_error('Missing voltage on L2')
-
-            if voltages[2] < VOLTAGE_ON_THRESHOLD:
-                fatal_error('Missing voltage on L3')
-
             print('Testing phase switch')
 
             self.switch_phases(1)
-
-            voltages = self.read_voltage_monitors()
-
-            print('Reading voltages as {0}'.format(voltages))
-
-            if voltages[0] < VOLTAGE_ON_THRESHOLD:
-                fatal_error('Missing voltage on L1')
-
-            if voltages[1] > VOLTAGE_OFF_THRESHOLD:
-                fatal_error('Unexpected voltage on L2')
-
-            if voltages[2] > VOLTAGE_ON_THRESHOLD:
-                fatal_error('Unexpected voltage on L3')
+            self.verify_voltages(['L1'])
 
             self.switch_phases(3)
-
-            voltages = self.read_voltage_monitors()
-
-            print('Reading voltages as {0}'.format(voltages))
-
-            if voltages[0] < VOLTAGE_ON_THRESHOLD:
-                fatal_error('Missing voltage on L1')
-
-            if voltages[1] < VOLTAGE_OFF_THRESHOLD:
-                fatal_error('Missing voltage on L2')
-
-            if voltages[2] < VOLTAGE_ON_THRESHOLD:
-                fatal_error('Missing voltage on L3')
+            self.verify_voltages(['L1', 'L2', 'L3'])
 
         self.connect_voltage_monitors(False)
         time.sleep(RELAY_SETTLE_DURATION)
