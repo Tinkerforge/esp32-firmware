@@ -321,6 +321,8 @@ let x = {
             "cd_requested": "TODO_TRANSLATE! Durch Fahrzeug angefordert",
             "cd_fair": "TODO_TRANSLATE! Fairer Strom",
             "cd_guaranteed_pv": "TODO_TRANSLATE! Garantierte PV-Leistung",
+            "cd_fast_ramp_up": "TODO_TRANSLATE! TODO fast ramp-up",
+            "cd_supported_by_charger": "TODO_TRANSLATE! Maximalleistung der Wallbox",
             "cd_left_over": "TODO_TRANSLATE! Reststrom",
 
             "next_rotation_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Nächste Rotation in " + timespan /*NF*/,
