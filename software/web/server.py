@@ -36,7 +36,7 @@ def ws_thread_fn(q: queue.Queue):
 
         while True:
             try:
-                to_send = q.get(timeout=0.1)
+                to_send = q.get_nowait()
                 if to_send is None:
                     return
                 ws.send(to_send)
