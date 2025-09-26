@@ -401,7 +401,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     </tr>
                                     <tr>
                                         <td>Limit Active</td>
-                                        <td>{state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.active") : __("eebus.content.inactive")}</td>
+                                        <td>{state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}</td>
                                     </tr>
                                     <tr>
                                         <td>Current Limit (W)</td>
@@ -415,6 +415,59 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         <td>Failsafe Limit Duration (s)</td>
                                         <td>{state.usecases.power_consumption_limitation.failsafe_limit_duration_s} s</td>
                                     </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ev Commissioning and Configuration</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td>EV Connected</td>
+                                        <td>
+                                            {state.usecases.ev_commissioning_and_configuration.ev_connected
+                                                ? __("eebus.content.yes")
+                                                : __("eebus.content.no")}
+                                        </td>
+                                    </tr>
+                                    {state.usecases.ev_commissioning_and_configuration.ev_connected && (
+                                        <>
+                                            <tr>
+                                                <td>Communication Standard</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.communication_standard}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Asymmetric Charging supported</td>
+                                                <td>
+                                                    {state.usecases.ev_commissioning_and_configuration.asymmetric_charging_supported
+                                                        ? __("eebus.content.yes")
+                                                        : __("eebus.content.no")}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Vehicle MAC Address</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.mac_address}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Manufacturer Info</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.manufacturer_info}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Minimum Power Consumption (reported by Vehicle)</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.minimum_power}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Maximum Power Consumption (reported by Vehicle)</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.maximum_power}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Standby Power Consumption (reported by Vehicle)</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.standby_power}</td>
+                                            </tr>
+                                        </>
+                                    )}
                                     </tbody>
                                 </table>
                             </td>
