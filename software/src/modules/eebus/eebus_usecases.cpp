@@ -610,6 +610,21 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
 EvEntity::EvEntity()
 {
     entity_active = false; // Disable entity until an EV is connected
+#ifdef EEBUS_DEV_TEST_ENABLE
+    task_scheduler.scheduleOnce([this]() {
+                                    logger.printfln("EEBUS Usecase test enabled. Updating API");
+                                    ev_connected_state(true);
+                                    update_device_config("iso15118-2ed1", true);
+                                    update_identification("FF:FF:FF:FF:FF");
+                                    update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
+                                    update_electrical_connection(0, 3600, 800);
+                                    update_operating_state(true);
+                                    logger.printfln("EEBUS Usecase test enabled. Done Updating API");
+
+                                },
+                                40_s);
+#endif
+
 }
 
 UseCaseInformationDataType EvEntity::get_usecase_information()
@@ -914,7 +929,34 @@ void EvEntity::update_operating_state(bool standby)
 
 void EvEntity::update_api()
 {
-    // TODO: Call API update functions
+    auto api_entry = eebus.eebus_usecase_state.get("ev_commissioning_and_configuration");
+    api_entry->get("ev_connected")->updateBool(ev_connected);
+    if (ev_connected) {
+        if (!device_config_list.deviceConfigurationKeyValueData->empty() && device_config_list.deviceConfigurationKeyValueData->at(0).value->string.has_value()) {
+            api_entry->get("communication_standard")->updateString(device_config_list.deviceConfigurationKeyValueData->at(0).value->string.get().c_str());
+        }
+        if (device_config_list.deviceConfigurationKeyValueData->size() > 1) {
+            api_entry->get("asymmetric_charging_supported")->updateBool(device_config_list.deviceConfigurationKeyValueData->at(1).value->boolean.get());
+        }
+        if (!identification_data.identificationData->empty() && identification_data.identificationData->at(0).identificationValue.has_value()) {
+            api_entry->get("mac_address")->updateString(identification_data.identificationData->at(0).identificationValue.get().c_str());
+        }
+        if (!electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->empty() &&
+            !electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(0).permittedValueSet->empty() &&
+            !electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(0).permittedValueSet->at(0).range->empty()) {
+            api_entry->get("minimum_power")->updateUint(electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(0).permittedValueSet->at(0).range->at(0).min->number.get());
+            api_entry->get("maximum_power")->updateUint(electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(0).permittedValueSet->at(0).range->at(0).max->number.get());
+        }
+        if (electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->size() > 1 &&
+            !electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(1).permittedValueSet->empty() &&
+            !electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(1).permittedValueSet->at(0).value->empty()) {
+            api_entry->get("standby_power")->updateUint(electrical_connection_permitted_values.electricalConnectionPermittedValueSetData->at(1).permittedValueSet->at(0).value->at(0).number.get());
+        }
+        if (device_diagnosis_state.operatingState.has_value()) {
+            api_entry->get("standby_mode")->updateBool(static_cast<int>(device_diagnosis_state.operatingState.get()));
+        }
+    }
+
 }
 
 
