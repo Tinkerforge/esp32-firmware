@@ -1862,7 +1862,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto min_ = MinWithDecision{32000, CurrentDecision::SupportedByCharger()};
+        auto min_ = MinWithDecision{32000 - allocated_current, CurrentDecision::SupportedByCharger()};
 
         // Limit to fair PV current (or guaranteed PV current if this is more)
         if (state->observe_pv_limit) {
