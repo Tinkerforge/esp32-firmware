@@ -68,8 +68,8 @@ let x = {
                 "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected."
             },
             "show_usecase_details": "Show EEBUS Details",
-            "active": "Active",
-            "inactive": "Inactive"
+            "yes": "Yes",
+            "no": "No"
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
