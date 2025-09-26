@@ -165,6 +165,16 @@ void EEBus::pre_setup()
                  {"failsafe_limit_power_w", Config::Uint16(0)}, // The limit which may have been set by the energy guard
                  {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
                  {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
+             })},
+            {"ev_commissioning_and_configuration", Config::Object({
+                 {"ev_connected", Config::Bool(false)},
+                 {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
+                 {"asymmetric_charging_supported", Config::Bool(false)},
+                 {"mac_address", Config::Str("", 0, 64)},
+                 {"manufacturer_info", Config::Str("", 0, 256)},
+                 {"minimum_power", Config::Uint16(0)},
+                 {"maximum_power", Config::Uint16(0)},
+                 {"standby_power", Config::Uint16(0)},
              })}
         }
         );

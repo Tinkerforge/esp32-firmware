@@ -64,6 +64,16 @@ export interface usecases {
         failsafe_limit_duration_s: number;
         constraints_power_maximum: number;
     };
+    ev_commissioning_and_configuration: {
+        ev_connected: boolean;
+        communication_standard: string;
+        asymmetric_charging_supported: boolean;
+        mac_address: string;
+        manufacturer_info: string;
+        minimum_power: number;
+        maximum_power: number;
+        standby_power: number;
+    }
 }
 
 export interface scan {
