@@ -108,10 +108,6 @@ private:
         bool subscribed;
     };
 
-    struct MqttState {
-        micros_t last_send;
-    };
-
     struct MqttMessage {
         String topic;
         String payload;
@@ -119,7 +115,7 @@ private:
     };
 
     std::vector<MqttCommand> commands;
-    std::vector<MqttState, IRAMAlloc<MqttState>> states;
+    micros_t *state_last_send;
 
     size_t backend_idx;
 

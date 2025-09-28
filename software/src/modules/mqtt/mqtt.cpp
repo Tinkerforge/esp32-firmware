@@ -208,7 +208,6 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 
 void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
 {
-    this->states.push_back({0_us});
 }
 
 void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
@@ -239,15 +238,15 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
 
 bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {
-    auto &state = this->states[stateIdx];
+    auto &last_send = this->state_last_send[stateIdx];
 
-    if (!deadline_elapsed(state.last_send + this->send_interval))
+    if (!deadline_elapsed(last_send + this->send_interval))
         return false;
 
     bool success = this->publish_with_prefix(path, payload);
 
     if (success) {
-        state.last_send = now_us();
+        last_send = now_us();
     }
 
     return success;
@@ -794,6 +793,8 @@ void Mqtt::register_events()
     if (client == nullptr || !config.get("enable_mqtt")->asBool()) {
         return;
     }
+
+    this->state_last_send = perm_new_array<micros_t>(api.states.size(), IRAM);
 
     // Start MQTT client here to make sure all handlers are already registered.
     network.on_network_connected([this](const Config *connected) {
