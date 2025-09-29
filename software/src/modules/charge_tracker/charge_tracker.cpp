@@ -1251,8 +1251,6 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
 
     bool first = true;
 
-    uint32_t start = millis();
-
     if (file_type == FileType::PDF) {
         this->generate_pdf(
             [&remote_client = *upload_args->remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
