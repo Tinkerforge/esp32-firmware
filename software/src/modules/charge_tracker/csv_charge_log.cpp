@@ -77,37 +77,39 @@ const char* CSVTranslations::getUnknownChargeStart(Language language) {
     return (language == Language::English) ? "Unknown" : "Unbekannt";
 }
 
-String CSVChargeLogGenerator::escapeCSVField(const String& field) {
-    String escaped = "\"";
+void CSVChargeLogGenerator::escapeCSVField(const String& field, StringWriter &output) {
+    output.putc('"');
 
-    for (size_t i = 0; i < field.length(); i++) {
-        char c = field.charAt(i);
+    const size_t length = field.length();
+
+    for (size_t i = 0; i < length; i++) {
+        const char c = field[i];
+
         if (c == '"') {
-            escaped += "\"\"";
+            output.puts("\"\"");
         } else {
-            escaped += c;
+            output.putc(c);
         }
     }
 
-    escaped += "\"";
-    return escaped;
+    output.putc('"');
 }
 
 String CSVChargeLogGenerator::formatCSVLine(const String (&fields)[9], CSVFlavor flavor) {
-    String line;
-    line.reserve(256);
-    const char* separator = (flavor == CSVFlavor::Excel) ? ";" : ",";
-    const char* line_ending = (flavor == CSVFlavor::Excel) ? "\r\n" : "\n";
+    char buf[256];
+    StringWriter line(buf, std::size(buf));
+
+    const char separator = (flavor == CSVFlavor::Excel) ? ';' : ',';
 
     for (size_t i = 0; i < 9; i++) {
-        if (i > 0) {
-            line += separator;
-        }
-        line += escapeCSVField(fields[i]);
+        escapeCSVField(fields[i], line);
+        line.putc(separator);
     }
 
-    line += line_ending;
-    return line;
+    line.setLength(line.getLength() - 1); // Remove trailing separator.
+    line.puts(flavor == CSVFlavor::Excel ? "\r\n" : "\n");
+
+    return String(line.getPtr(), line.getLength());
 }
 
 String CSVChargeLogGenerator::formatTimestamp(uint32_t timestamp_min, Language language) {
@@ -205,7 +207,7 @@ String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& param
     headers[1] = CSVTranslations::getHeaderDisplayName(params.language);
     headers[2] = CSVTranslations::getHeaderEnergy(params.language);
     headers[3] = CSVTranslations::getHeaderDuration(params.language);
-    headers[4] = "";
+    //headers[4] already blank
     headers[5] = CSVTranslations::getHeaderMeterStart(params.language);
     headers[6] = CSVTranslations::getHeaderMeterEnd(params.language);
     headers[7] = CSVTranslations::getHeaderUsername(params.language);
@@ -217,7 +219,7 @@ String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& param
                 CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
         headers[8] = String(price_header);
     } else {
-        headers[8] = "";
+        //headers[8] already blank
     }
 
     return formatCSVLine(headers, params.flavor);
@@ -301,6 +303,8 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
         }
 
         file.close();
+
+        vTaskDelay(1); // After every file, give other tasks a chance to run and reset their watchdogs.
     }
 
     return true;
@@ -329,7 +333,7 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
 
     display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
     if (!display_name_cache) {
-        logger.printfln("Failed to generate PDF: No memory");
+        logger.printfln("Failed to generate CSV: No memory");
         return;
     }
     for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
@@ -365,13 +369,13 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             }
 
             String fields[9];
-            char display_name[33] = {};
+            char display_name[33];
             get_display_name(record->cs.user_id, display_name, display_name_cache);
             fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
             fields[1] = display_name;
             fields[2] = formatEnergy(energy_charged);
             fields[3] = formatDuration(record->ce.charge_duration);
-            fields[4] = "";
+            //fields[4] already blank
             fields[5] = formatEnergy(record->cs.meter_start);
             fields[6] = formatEnergy(record->ce.meter_end);
             fields[7] = display_name;
@@ -379,7 +383,7 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             if (params.electricity_price > 0) {
                 fields[8] = formatPrice(price_euros);
             } else {
-                fields[8] = "";
+                //fields[8] already blank
             }
 
             String csv_line = formatCSVLine(fields, params.flavor);
@@ -401,15 +405,17 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                 accumulated_data.clear();
             }
 
-            vTaskDelay(1); // Reset watchdog timer
-
             return callback_result;
         });
 
-    int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
-    if (callback_result < 0) {
-        logger.printfln("Failed to send final CSV data chunk.");
+    // This might not be necessary if accumulated_data is cleared on error as well.
+    if (accumulated_data.length() > 0) {
+        int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
+        if (callback_result < 0) {
+            logger.printfln("Failed to send final CSV data chunk.");
+        }
     }
+
     free(display_name_cache);
 }
 
@@ -417,7 +423,7 @@ String CSVChargeLogGenerator::generateCSVString(const CSVGenerationParams& param
     String result;
 
     generateCSV(params, [&result](const char* data, size_t length) -> int {
-        result += String(data, length);
+        result.concat(data, length);
         return static_cast<int>(length);
     });
 

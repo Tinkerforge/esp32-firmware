@@ -26,6 +26,7 @@
 #include "csv_flavor.enum.h"
 #include "charge_tracker_defs.h"
 #include "../system/language.enum.h"
+#include "tools/string_builder.h"
 
 struct CSVGenerationParams {
     CSVFlavor flavor;
@@ -64,7 +65,7 @@ public:
     String generateCSVString(const CSVGenerationParams& params);
 
 private:
-    String escapeCSVField(const String& field);
+    void escapeCSVField(const String& field, StringWriter &output);
     String formatCSVLine(const String (&fields)[9], CSVFlavor flavor);
     String formatTimestamp(uint32_t timestamp_min, Language language);
     String formatDuration(uint32_t duration_seconds);
