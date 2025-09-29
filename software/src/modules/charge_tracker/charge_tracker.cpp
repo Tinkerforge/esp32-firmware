@@ -1334,7 +1334,7 @@ static void upload_charge_logs_task(void *arg)
         auto upload_request = std::make_unique<SendChargeLogArgs>();
         upload_request->user_idx = user_idx;
         upload_request->last_month_start_min = last_month_start_min;
-        upload_request->last_month_end_min = last_month_end_min
+        upload_request->last_month_end_min = last_month_end_min;
         upload_request->upload_retry_count = retry_count;
         upload_request->next_retry_delay = millis_t{0};
         upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
