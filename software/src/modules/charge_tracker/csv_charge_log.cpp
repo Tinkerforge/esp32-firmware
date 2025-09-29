@@ -50,11 +50,11 @@ const char* CSVTranslations::getHeaderDuration(Language language) {
 }
 
 const char* CSVTranslations::getHeaderMeterStart(Language language) {
-    return (language == Language::English) ? "Meter reading start" : "Zähler­stand Start";
+    return (language == Language::English) ? "Meter reading start" : "Zählerstand Start";
 }
 
 const char* CSVTranslations::getHeaderMeterEnd(Language language) {
-    return (language == Language::English) ? "Meter reading end" : "Zähler­stand Ende";
+    return (language == Language::English) ? "Meter reading end" : "Zählerstand Ende";
 }
 
 const char* CSVTranslations::getHeaderUsername(Language language) {
@@ -260,7 +260,7 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
             result += '?'; // Replace with placeholder
         }
     }
-    return utf8_string;
+    return result;
 }
 
 bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t last_record,
