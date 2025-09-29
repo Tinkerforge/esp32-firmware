@@ -192,9 +192,9 @@ const MeterValueID rs485_helper_dsz15dzmod_ids[] = {
     MeterValueID::PowerReactiveLSumIndCapDiff,
     MeterValueID::PhaseAngleLSum,
     MeterValueID::EnergyActiveLSumImExSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID rs485_helper_dsz16dze_ids[] = {
@@ -231,9 +231,9 @@ const MeterValueID rs485_helper_dsz16dze_ids[] = {
     MeterValueID::PhaseAngleL2,
     MeterValueID::PhaseAngleL3,
     MeterValueID::PhaseAngleLSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID rs485_helper_dem4a_ids[] = {
@@ -272,9 +272,9 @@ const MeterValueID rs485_helper_dem4a_ids[] = {
     MeterValueID::VoltageLLAvg,
     MeterValueID::CurrentNImExSum,
     MeterValueID::EnergyActiveLSumImExSum,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID rs485_helper_dmed341mid7er_ids[] = {
@@ -318,9 +318,9 @@ const MeterValueID rs485_helper_dmed341mid7er_ids[] = {
     MeterValueID::EnergyActiveL3Export,
     MeterValueID::EnergyReactiveL3Inductive,
     MeterValueID::EnergyReactiveL3Capacitive,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 const MeterValueID rs485_helper_wm3m4c_ids[] = {
@@ -367,9 +367,9 @@ const MeterValueID rs485_helper_wm3m4c_ids[] = {
     // TBD: Some values will be added here once the complete register map of WM3M4C is better understood
     MeterValueID::Temperature,
     MeterValueID::RunTime,
+    MeterValueID::EnergyActiveLSumImExSumResettable,
     MeterValueID::EnergyActiveLSumImportResettable,
     MeterValueID::EnergyActiveLSumExportResettable,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
 };
 
 void rs485_helper_get_value_ids(uint32_t meter_type, const MeterValueID **value_ids, size_t *value_ids_len)
