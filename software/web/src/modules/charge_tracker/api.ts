@@ -3,8 +3,8 @@
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
 import { FileType } from "./file_type.enum";
 import { CSVFlavor } from "./csv_flavor.enum";
-import { Language } from "../system/language.enum";
 //#endif
+import { Language } from "../system/language.enum";
 
 interface Charge {
     timestamp_minutes: number;
