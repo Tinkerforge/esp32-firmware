@@ -3,6 +3,7 @@
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
 import { FileType } from "./file_type.enum";
 import { CSVFlavor } from "./csv_flavor.enum";
+import { Language } from "../system/language.enum";
 //#endif
 
 interface Charge {
@@ -16,7 +17,7 @@ interface Charge {
 interface remote_upload_config {
     user_filter: number;
     file_type: FileType;
-    english: boolean;
+    language: Language;
     letterhead: string;
     user_id: number;
     csv_delimiter: CSVFlavor;
@@ -33,7 +34,7 @@ export interface config {
 
 export interface csv {
     api_not_final_acked: boolean;
-    english: boolean;
+    language: Language;
     start_timestamp_min?: number;
     end_timestamp_min?: number;
     user_filter?: number;
@@ -95,7 +96,7 @@ export interface remove_all_charges {
 
 export interface pdf {
     api_not_final_acked: boolean;
-    english: boolean;
+    language: Language;
     start_timestamp_min?: number;
     end_timestamp_min?: number;
     user_filter?: number;

@@ -33,48 +33,48 @@
 #define EVENT_LOG_PREFIX "csv_charge_log"
 #define MAX_ACCUMULATED 2048
 
-const char* CSVTranslations::getHeaderStart(bool english) {
-    return english ? "Start time" : "Startzeit";
+const char* CSVTranslations::getHeaderStart(Language language) {
+    return (language == Language::English) ? "Start time" : "Startzeit";
 }
 
-const char* CSVTranslations::getHeaderDisplayName(bool english) {
-    return english ? "Display name" : "Anzeigename";
+const char* CSVTranslations::getHeaderDisplayName(Language language) {
+    return (language == Language::English) ? "Display name" : "Anzeigename";
 }
 
-const char* CSVTranslations::getHeaderEnergy(bool english) {
-    return english ? "Charged energy in kWh" : "Geladene Energie in kWh";
+const char* CSVTranslations::getHeaderEnergy(Language language) {
+    return (language == Language::English) ? "Charged energy in kWh" : "Geladene Energie in kWh";
 }
 
-const char* CSVTranslations::getHeaderDuration(bool english) {
-    return english ? "Charge duration in s" : "Ladedauer in s";
+const char* CSVTranslations::getHeaderDuration(Language language) {
+    return (language == Language::English) ? "Charge duration in s" : "Ladedauer in s";
 }
 
-const char* CSVTranslations::getHeaderMeterStart(bool english) {
-    return english ? "Meter reading start" : "Zähler­stand Start";
+const char* CSVTranslations::getHeaderMeterStart(Language language) {
+    return (language == Language::English) ? "Meter reading start" : "Zähler­stand Start";
 }
 
-const char* CSVTranslations::getHeaderMeterEnd(bool english) {
-    return english ? "Meter reading end" : "Zähler­stand Ende";
+const char* CSVTranslations::getHeaderMeterEnd(Language language) {
+    return (language == Language::English) ? "Meter reading end" : "Zähler­stand Ende";
 }
 
-const char* CSVTranslations::getHeaderUsername(bool english) {
-    return english ? "Username" : "Benutzername";
+const char* CSVTranslations::getHeaderUsername(Language language) {
+    return (language == Language::English) ? "Username" : "Benutzername";
 }
 
-const char* CSVTranslations::getHeaderPrice(bool english) {
-    return english ? "Charging costs in € Working price " : "Ladekosten in €; Arbeitspreis ";
+const char* CSVTranslations::getHeaderPrice(Language language) {
+    return (language == Language::English) ? "Charging costs in € Working price " : "Ladekosten in €; Arbeitspreis ";
 }
 
-const char* CSVTranslations::getUnknownUser(bool english) {
-    return english ? "Unknown User" : "Unbekannter Benutzer";
+const char* CSVTranslations::getUnknownUser(Language language) {
+    return (language == Language::English) ? "Unknown User" : "Unbekannter Benutzer";
 }
 
-const char* CSVTranslations::getDeletedUser(bool english) {
-    return english ? "Deleted User" : "Gelöschter Benutzer";
+const char* CSVTranslations::getDeletedUser(Language language) {
+    return (language == Language::English) ? "Deleted User" : "Gelöschter Benutzer";
 }
 
-const char* CSVTranslations::getUnknownChargeStart(bool english) {
-    return english ? "Unknown" : "Unbekannt";
+const char* CSVTranslations::getUnknownChargeStart(Language language) {
+    return (language == Language::English) ? "Unknown" : "Unbekannt";
 }
 
 String CSVChargeLogGenerator::escapeCSVField(const String& field) {
@@ -110,9 +110,9 @@ String CSVChargeLogGenerator::formatCSVLine(const String (&fields)[9], CSVFlavor
     return line;
 }
 
-String CSVChargeLogGenerator::formatTimestamp(uint32_t timestamp_min, bool english) {
+String CSVChargeLogGenerator::formatTimestamp(uint32_t timestamp_min, Language language) {
     if (timestamp_min == 0) {
-        return CSVTranslations::getUnknownChargeStart(english);
+        return CSVTranslations::getUnknownChargeStart(language);
     }
 
     time_t timestamp = ((int64_t)timestamp_min) * 60;
@@ -120,7 +120,7 @@ String CSVChargeLogGenerator::formatTimestamp(uint32_t timestamp_min, bool engli
     localtime_r(&timestamp, &t);
 
     char buf[128];
-    if (english) {
+    if (language == Language::English) {
         snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
                 t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
     } else {
@@ -168,29 +168,29 @@ bool CSVChargeLogGenerator::isUserFiltered(uint8_t user_id, int user_filter) {
     }
 }
 
-String CSVChargeLogGenerator::getUserDisplayName(uint8_t user_id) {
+String CSVChargeLogGenerator::getUserDisplayName(uint8_t user_id, Language language) {
     char display_name_buf[33] = {0};
 
     size_t name_len = users.get_display_name(user_id, display_name_buf);
 
     if (name_len == 0 || (user_id == 0 && strcmp(display_name_buf, "Anonymous") == 0)) {
-        return CSVTranslations::getUnknownUser(false);
+        return CSVTranslations::getUnknownUser(language);
     }
 
     if (!charge_tracker.is_user_tracked(user_id)) {
-        return CSVTranslations::getDeletedUser(false);
+        return CSVTranslations::getDeletedUser(language);
     }
 
     return String(display_name_buf, name_len);
 }
 
-String CSVChargeLogGenerator::getUserName(uint8_t user_id) {
+String CSVChargeLogGenerator::getUserName(uint8_t user_id, Language language) {
     if (user_id == 0) {
-        return CSVTranslations::getUnknownUser(false);
+        return CSVTranslations::getUnknownUser(language);
     }
 
     if (!charge_tracker.is_user_tracked(user_id)) {
-        return CSVTranslations::getDeletedUser(false);
+        return CSVTranslations::getDeletedUser(language);
     }
 
     char username_buf[16];
@@ -201,20 +201,20 @@ String CSVChargeLogGenerator::getUserName(uint8_t user_id) {
 String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& params) {
     String headers[9];
 
-    headers[0] = CSVTranslations::getHeaderStart(params.english);
-    headers[1] = CSVTranslations::getHeaderDisplayName(params.english);
-    headers[2] = CSVTranslations::getHeaderEnergy(params.english);
-    headers[3] = CSVTranslations::getHeaderDuration(params.english);
+    headers[0] = CSVTranslations::getHeaderStart(params.language);
+    headers[1] = CSVTranslations::getHeaderDisplayName(params.language);
+    headers[2] = CSVTranslations::getHeaderEnergy(params.language);
+    headers[3] = CSVTranslations::getHeaderDuration(params.language);
     headers[4] = "";
-    headers[5] = CSVTranslations::getHeaderMeterStart(params.english);
-    headers[6] = CSVTranslations::getHeaderMeterEnd(params.english);
-    headers[7] = CSVTranslations::getHeaderUsername(params.english);
+    headers[5] = CSVTranslations::getHeaderMeterStart(params.language);
+    headers[6] = CSVTranslations::getHeaderMeterEnd(params.language);
+    headers[7] = CSVTranslations::getHeaderUsername(params.language);
 
     if (params.electricity_price > 0) {
         char price_header[64];
         float price_per_kwh = params.electricity_price / 10000.0f;
         snprintf(price_header, sizeof(price_header), "%s %.2f ct/kWh",
-                CSVTranslations::getHeaderPrice(params.english), price_per_kwh * 100);
+                CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
         headers[8] = String(price_header);
     } else {
         headers[8] = "";
@@ -367,7 +367,7 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             String fields[9];
             char display_name[33] = {};
             get_display_name(record->cs.user_id, display_name, display_name_cache);
-            fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.english);
+            fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
             fields[1] = display_name;
             fields[2] = formatEnergy(energy_charged);
             fields[3] = formatDuration(record->ce.charge_duration);

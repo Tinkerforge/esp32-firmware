@@ -33,6 +33,7 @@
 #include "csv_charge_log.h"
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
+#include "../system/language.enum.h"
 #include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
@@ -136,7 +137,7 @@ void ChargeTracker::pre_setup()
     charge_log_send_prototype = Config::Object({
         {"user_id", Config::Int(-1, -2, 255)},
         {"file_type", Config::Enum(FileType::PDF)},
-        {"english", Config::Bool(false)},
+        {"language", Config::Enum(Language::German)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
         {"user_filter", Config::Int8(0)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
@@ -576,10 +577,10 @@ bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t u
     return false;
 }
 
-static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp_min, bool english)
+static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp_min, Language language)
 {
-    const char * const unknown = english ? "unknown" : "unbekannt";
-    size_t unknown_len =  english ? ARRAY_SIZE("unknown") : ARRAY_SIZE("unbekannt");
+    const char * const unknown = (language == Language::English) ? "unknown" : "unbekannt";
+    size_t unknown_len =  (language == Language::English) ? ARRAY_SIZE("unknown") : ARRAY_SIZE("unbekannt");
 
     if (timestamp_min == 0) {
         memcpy(buf, unknown, unknown_len);
@@ -589,7 +590,7 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     struct tm t;
     localtime_r(&timestamp, &t);
 
-    if (english)
+    if (language == Language::English)
         return sprintf_u(buf, "%4.4i-%2.2i-%2.2i %2.2i:%2.2i", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
 
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
@@ -628,9 +629,9 @@ size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *disp
     return display_name_cache[user_id].length;
 }
 
-static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, bool english, uint32_t electricity_price, display_name_entry *display_name_cache)
+static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, Language language, uint32_t electricity_price, display_name_entry *display_name_cache)
 {
-    buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, english);
+    buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, language);
 
     size_t name_len = get_display_name(cs.user_id, buf, display_name_cache);
     buf += 1 + name_len;
@@ -642,7 +643,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
         float charged = ce.meter_end - cs.meter_start;
         if (charged <= 999.999f) {
             int written = sprintf_u(buf, "%.3f", charged);
-            if (!english)
+            if (language == Language::German)
                 for (int i = 0; i < written; ++i)
                     if (buf[i] == '.')
                         buf[i] = ',';
@@ -670,7 +671,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
         buf += ARRAY_SIZE("N/A");
     } else {
         int written = sprintf_u(buf, "%.3f", cs.meter_start);
-        if (!english)
+        if (language == Language::German)
             for (int i = 0; i < written; ++i)
                 if (buf[i] == '.')
                     buf[i] = ',';
@@ -690,7 +691,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, b
             memcpy(buf, ">=10000", ARRAY_SIZE(">=10000"));
             buf += ARRAY_SIZE(">=10000");
         } else {
-            buf += 1 + sprintf_u(buf, "%ld%c%02ld", cost / 100, english ? '.' : ',', cost % 100);
+            buf += 1 + sprintf_u(buf, "%ld%c%02ld", cost / 100, (language == Language::English) ? '.' : ',', cost % 100);
         }
     }
     return buf;
@@ -861,7 +862,7 @@ void ChargeTracker::register_urls()
         uint32_t end_timestamp_min = 0;
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
 
-        bool english = false;
+        Language language = Language::German;
         auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         auto letterhead = letterhead_buf.get();
         int letterhead_lines = 0;
@@ -893,13 +894,14 @@ void ChargeTracker::register_urls()
                 return request.send_plain(400, "Please acknowledge that this API is subject to change!");
             }
 
-            user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
-            start_timestamp_min = doc["start_timestamp_min"] | 0l;
-            end_timestamp_min = doc["end_timestamp_min"] | 0l;
-            english = doc["english"] | false;
+            user_filter = doc["user_filter"];
+            start_timestamp_min = doc["start_timestamp_min"];
+            end_timestamp_min = doc["end_timestamp_min"];
+            uint8_t language_val = doc["language"];
+            language = static_cast<Language>(language_val);
 
             if (current_timestamp_min == 0) {
-                current_timestamp_min = doc["current_timestamp_min"] | 0l;
+                current_timestamp_min = doc["current_timestamp_min"];
             }
 
             bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
@@ -933,7 +935,7 @@ void ChargeTracker::register_urls()
         };
 
         request.beginChunkedResponse(200, "application/pdf");
-        this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, english, letterhead, letterhead_lines, &request);
+        this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
         return request.endChunkedResponse();
     });
 
@@ -945,7 +947,7 @@ void ChargeTracker::register_urls()
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
-        bool english = false;
+        Language language = Language::German;
         int csv_delimiter = (int)CSVFlavor::Excel;
 
         {
@@ -978,7 +980,8 @@ void ChargeTracker::register_urls()
             user_filter = doc["user_filter"];
             start_timestamp_min = doc["start_timestamp_min"];
             end_timestamp_min = doc["end_timestamp_min"];
-            english = doc["english"];
+            uint8_t language_val = doc["language"];
+            language = static_cast<Language>(language_val);
             csv_delimiter = doc["csv_delimiter"];
 
             if (current_timestamp_min == 0) {
@@ -990,22 +993,19 @@ void ChargeTracker::register_urls()
         csv_params.user_filter = user_filter;
         csv_params.start_timestamp_min = start_timestamp_min;
         csv_params.end_timestamp_min = end_timestamp_min;
-        csv_params.english = english;
+        csv_params.language = language;
         csv_params.flavor = (CSVFlavor)csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
 
         const auto callback = [this, &request](const char* buffer, size_t len) -> int {
-            if (request.sendChunk(buffer, len) == ESP_OK) {
-                return len;
-            }
-            return -1;
+            return request.sendChunk(buffer, len);
         };
 
         request.beginChunkedResponse(200, "text/csv");
         CSVChargeLogGenerator csv_generator;
-        csv_generator.generateCSV(csv_params, callback);
+        csv_generator.generateCSV(csv_params, std::move(callback));
         return request.endChunkedResponse();
     });
 
@@ -1123,7 +1123,7 @@ static void check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload
     task_scheduler.cancel(task_scheduler.currentTaskId());
 }
 
-static String build_filename(const time_t start, const time_t end, FileType file_type, bool english) {
+static String build_filename(const time_t start, const time_t end, FileType file_type, Language language) {
     struct tm start_tm;
     struct tm end_tm;
     localtime_r(&start, &start_tm);
@@ -1133,7 +1133,7 @@ static String build_filename(const time_t start, const time_t end, FileType file
     const String &uid = device_name.name.get("uid")->asString();
     const std::string start_date = std::format("{:04}-{:02}-{:02}", start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday);
     const std::string end_date = std::format("{:04}-{:02}-{:02}", end_tm.tm_year + 1900, end_tm.tm_mon + 1, end_tm.tm_mday);
-    const String intermediate = english ? "Chargelog" : "Ladelog";
+    const String intermediate = (language == Language::English) ? "Chargelog" : "Ladelog";
     const std::string extension = file_type == FileType::PDF ? "pdf" : "csv";
     std::string filename = std::format("{}-{}-{}-{}-{}.{}", type.c_str(), uid.c_str(), intermediate.c_str(), start_date, end_date, extension);
 
@@ -1185,7 +1185,7 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     std::unique_ptr<char[]> letterhead;
     int letterhead_lines;
     int user_filter;
-    bool english;
+    Language language;
     FileType file_type = FileType::PDF;
     CSVFlavor csv_delimiter = CSVFlavor::Excel;
     String filename;
@@ -1193,17 +1193,17 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     auto &upload_args_ref = *upload_args;
 
     auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &letterhead_lines, &user_filter, &english, &upload_args_ref, &file_type, &csv_delimiter]()
+            &letterhead, &letterhead_lines, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter]()
     {
         Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args_ref.user_idx);
         letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         strncpy(letterhead.get(), charge_log_send->get("letterhead")->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
         letterhead_lines = read_letterhead_lines(letterhead.get());
         user_filter = charge_log_send->get("user_filter")->asInt();
-        english = charge_log_send->get("english")->asBool();
+        language = charge_log_send->get("language")->asEnum<Language>();
         file_type = charge_log_send->get("file_type")->asEnum<FileType>();
         csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
-        filename = build_filename(((time_t)upload_args_ref.last_month_start_min) * 60, ((time_t)upload_args_ref.last_month_end_min) * 60, file_type, english);
+        filename = build_filename(((time_t)upload_args_ref.last_month_start_min) * 60, ((time_t)upload_args_ref.last_month_end_min) * 60, file_type, language);
 
         const int user_id = charge_log_send->get("user_id")->asInt();
         charger_uuid = remote_access.config.get("uuid")->asString();
@@ -1232,8 +1232,8 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
 
     upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
     upload_args->remote_client->set_header("Content-Type", "application/json");
-    const char *language = english ? "en" : "de";
-    upload_args->remote_client->set_header("X-Lang", language);
+    const char *lang_header = (language == Language::English) ? "en" : "de";
+    upload_args->remote_client->set_header("X-Lang", lang_header);
 
     if (upload_args->remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
         handle_upload_retry(std::move(upload_args));
@@ -1262,14 +1262,14 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
             upload_args->last_month_start_min,
             upload_args->last_month_end_min,
             rtc.timestamp_minutes(),
-            english, letterhead.get(), letterhead_lines, nullptr);
+            language, letterhead.get(), letterhead_lines, nullptr);
 
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = user_filter;
         csv_params.start_timestamp_min = upload_args->last_month_start_min;
         csv_params.end_timestamp_min = upload_args->last_month_end_min;
-        csv_params.english = english;
+        csv_params.language = language;
         csv_params.flavor = csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
@@ -1376,7 +1376,7 @@ void ChargeTracker::generate_pdf(
     uint32_t start_timestamp_min,
     uint32_t end_timestamp_min,
     uint32_t current_timestamp_min,
-    bool english,
+    Language language,
     const char *letterhead,
     int letterhead_lines,
     WebServerRequest *request
@@ -1472,32 +1472,32 @@ search_done:
         display_name_cache[i].length = UINT32_MAX;
     }
     char *stats_head = stats_buf;
-    stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
-    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
-    stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, english);
-    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
+    stats_head += 1 + sprintf_u(stats_head, "%s: %s", (language == Language::English) ? "Charger" : "Wallbox", dev_name.c_str());
+    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported on" : "Exportiert am");
+    stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, language);
+    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported users" : "Exportierte Benutzer");
     if (user_filter == -2)
-        stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
+        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "all users" : "Alle Benutzer");
     else if (user_filter == -1)
-        stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
+        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "deleted users" : "Gelöschte Benutzer");
     else
         stats_head += get_display_name(user_filter, stats_head, display_name_cache);
     ++stats_head;
-    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
+    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported period" : "Exportierter Zeitraum");
     if (start_timestamp_min == 0)
-        stats_head += sprintf_u(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
+        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "record start" : "Aufzeichnungsbeginn");
     else
-        stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, english);
-    stats_head += sprintf_u(stats_head, "%s", english ? " to " : " bis ");
+        stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, language);
+    stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? " to " : " bis ");
     if (end_timestamp_min == 0)
-        stats_head += sprintf_u(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
+        stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
     else
-        stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
+        stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, language);
     ++stats_head;
-    stats_head += sprintf_u(stats_head, "%s: ", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
+    stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
     if (charged_sum <= 999999999.999f) {
         int written = sprintf_u(stats_head, "%.3f kWh", charged_sum);
-        if (!english)
+        if (language == Language::German)
             for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
                     stats_head[i] = ',';
@@ -1509,11 +1509,11 @@ search_done:
     }
     if (electricity_price != 0) {
         int written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
-                        english ? "Total cost" : "Gesamtkosten",
+                        (language == Language::English) ? "Total cost" : "Gesamtkosten",
                         charged_cost_sum / 100, charged_cost_sum % 100,
                         electricity_price / 100.0f,
-                        seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
-        if (!english)
+                        seen_charges_without_meter ? ((language == Language::English) ? " Incomplete!" : " Unvollständig!") : "");
+        if (language == Language::German)
             for (int i = 0; i < written; ++i)
                 if (stats_head[i] == '.')
                     stats_head[i] = ',';
@@ -1549,10 +1549,10 @@ search_done:
     if (!any_charges_tracked)
         charge_records = 1;
     init_pdf_generator(callback,
-                       english ? "WARP Charge Log" : "WARP Ladelog",
+                       (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
                        stats_buf, (electricity_price == 0) ? 5 : 6,
                        letterhead, letterhead_lines,
-                       english ? table_header_en : table_header_de,
+                       (language == Language::English) ? table_header_en : table_header_de,
                        charge_records,
                        [this,
                         user_filter,
@@ -1565,7 +1565,7 @@ search_done:
                         &current_file,
                         &current_charge,
                         electricity_price,
-                        english,
+                        language,
                         configured_users,
                         &display_name_cache,
                         any_charges_tracked]
@@ -1594,7 +1594,7 @@ search_done:
                 bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
                 if (!include_user)
                     continue;
-                table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price, display_name_cache);
+                table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
                 ++lines_generated;
             }
             if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {

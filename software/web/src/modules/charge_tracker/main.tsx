@@ -30,7 +30,6 @@ import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
 import { Button, Collapse, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
-import { getAllUsernames } from "../users/main";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
@@ -42,6 +41,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 import { Switch } from "ts/components/switch";
 import { CSVFlavor } from "./csv_flavor.enum";
+import { Language } from "../system/language.enum";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -65,7 +65,7 @@ interface S {
     new_remote_upload_config: {
         user_filter: number;
         file_type: number;
-        english: boolean;
+        language: Language;
         letterhead: string;
         user_id: number;
         csv_delimiter: CSVFlavor;
@@ -144,7 +144,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   new_remote_upload_config: {
                     user_filter: -2,
                     file_type: 0,
-                    english: false,
+                    language: Language.German,
                     letterhead: "",
                     user_id: 0,
                     csv_delimiter: CSVFlavor.Excel,
@@ -215,7 +215,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         new_remote_upload_config: {
                             user_filter: send_config.user_filter,
                             file_type: send_config.file_type,
-                            english: send_config.english,
+                            language: send_config.language,
                             letterhead: send_config.letterhead,
                             user_id: send_config.user_id,
                             csv_delimiter: send_config.csv_delimiter,
@@ -260,7 +260,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             new_remote_upload_config: {
                 user_filter: -2,
                 file_type: 0,
-                english: false,
+                language: Language.German,
                 letterhead: "",
                 user_id: 0,
                 csv_delimiter: CSVFlavor.Excel,
@@ -334,11 +334,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             </Collapse>
             <FormRow label={__("charge_tracker.content.english_label")}>
                 <Switch
-                    checked={this.state.new_remote_upload_config.english}
+                    checked={this.state.new_remote_upload_config.language === Language.English}
                     onClick={() => this.setState({
                         new_remote_upload_config: {
                             ...this.state.new_remote_upload_config,
-                            english: !this.state.new_remote_upload_config.english
+                            language: this.state.new_remote_upload_config.language === Language.English ? Language.German : Language.English
                         }
                     })}
                 />
@@ -397,9 +397,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         let end = end_date ?? new Date();
         end.setHours(23, 59, 59, 999);
 
+        const language = get_active_language().value != 'de' ? Language.English : Language.German;
         const payload = {
             api_not_final_acked: true,
-            english: get_active_language().value != 'de',
+            language: language,
             start_timestamp_min: Math.floor(start.getTime() / 1000 / 60),
             end_timestamp_min: Math.floor(end.getTime() / 1000 / 60),
             user_filter: user_filter,
@@ -543,9 +544,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                                 try {
                                     const now = Date.now();
+                                    const language = get_active_language().value != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
-                                        english: get_active_language().value != 'de',
+                                        language: language,
                                         start_timestamp_min: start.getTime() / 1000 / 60,
                                         end_timestamp_min: end.getTime() / 1000 / 60,
                                         user_filter: parseInt(state.user_filter),

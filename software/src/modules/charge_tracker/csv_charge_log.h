@@ -25,6 +25,7 @@
 #include <Arduino.h>
 #include "csv_flavor.enum.h"
 #include "charge_tracker_defs.h"
+#include "../system/language.enum.h"
 
 struct CSVGenerationParams {
     CSVFlavor flavor;
@@ -32,7 +33,7 @@ struct CSVGenerationParams {
     uint32_t start_timestamp_min;
     uint32_t end_timestamp_min;
     uint32_t electricity_price;
-    bool english;
+    Language language;
 
     CSVGenerationParams() :
         flavor(CSVFlavor::Excel),
@@ -40,7 +41,7 @@ struct CSVGenerationParams {
         start_timestamp_min(0),
         end_timestamp_min(UINT32_MAX),
         electricity_price(0),
-        english(false) {}
+        language(Language::German) {}
 };
 
 class CSVChargeLogGenerator {
@@ -65,14 +66,14 @@ public:
 private:
     String escapeCSVField(const String& field);
     String formatCSVLine(const String (&fields)[9], CSVFlavor flavor);
-    String formatTimestamp(uint32_t timestamp_min, bool english);
+    String formatTimestamp(uint32_t timestamp_min, Language language);
     String formatDuration(uint32_t duration_seconds);
     String formatEnergy(float energy_kwh);
     String formatPrice(float price_euros);
 
     bool isUserFiltered(uint8_t user_id, int user_filter);
-    String getUserDisplayName(uint8_t user_id);
-    String getUserName(uint8_t user_id);
+    String getUserDisplayName(uint8_t user_id, Language language);
+    String getUserName(uint8_t user_id, Language language);
 
     bool readChargeRecords(uint32_t first_record, uint32_t last_record,
                           std::function<esp_err_t(const uint8_t* record_data, size_t record_size, bool last)> record_callback);
@@ -89,15 +90,15 @@ private:
  * This should ideally be integrated with the main translation system.
  */
 struct CSVTranslations {
-    static const char* getHeaderStart(bool english);
-    static const char* getHeaderDisplayName(bool english);
-    static const char* getHeaderEnergy(bool english);
-    static const char* getHeaderDuration(bool english);
-    static const char* getHeaderMeterStart(bool english);
-    static const char* getHeaderMeterEnd(bool english);
-    static const char* getHeaderUsername(bool english);
-    static const char* getHeaderPrice(bool english);
-    static const char* getUnknownUser(bool english);
-    static const char* getDeletedUser(bool english);
-    static const char* getUnknownChargeStart(bool english);
+    static const char* getHeaderStart(Language language);
+    static const char* getHeaderDisplayName(Language language);
+    static const char* getHeaderEnergy(Language language);
+    static const char* getHeaderDuration(Language language);
+    static const char* getHeaderMeterStart(Language language);
+    static const char* getHeaderMeterEnd(Language language);
+    static const char* getHeaderUsername(Language language);
+    static const char* getHeaderPrice(Language language);
+    static const char* getUnknownUser(Language language);
+    static const char* getDeletedUser(Language language);
+    static const char* getUnknownChargeStart(Language language);
 };
