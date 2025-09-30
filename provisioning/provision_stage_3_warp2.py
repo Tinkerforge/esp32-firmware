@@ -798,30 +798,34 @@ class Stage3:
         self.change_cp_pe_state('C')
         time.sleep(PHASE_SWITCH_SETTLE_DURATION)
 
-    def verify_voltages(self, phases: list[typing.Literal['L1', 'L2', 'L3']]):
+    def verify_voltages(self, p_type2: list[typing.Literal['L1', 'L2', 'L3']], p_meter: list[typing.Literal['L1', 'L2', 'L3']] | None = None):
         voltages = self.read_voltage_monitors()
-        print('Reading voltages as {0}'.format(voltages))
+        print('Reading voltages as {0}'.format(voltages), ' expecting ', p_type2)
 
         meter_voltages = self.get_meter_voltages_function()
+
+        if p_meter is None:
+            p_meter = p_type2
 
         if meter_voltages is None:
             # Set meter voltages to voltages if there's no energy meter connected
             # (i.e. this is not a Pro): voltages are checked first.
             meter_voltages = voltages
         else:
-            print('Energy meter measured voltages as {0}'.format(meter_voltages))
+            print('Energy meter measured voltages as {0}'.format(meter_voltages), ' expecting ', p_meter)
 
         for i in range(3):
             name = ['L1', 'L2', 'L3'][i]
-            expect_on = name in phases
+            expect_on = name in p_type2
+            expect_on_meter = name in p_meter
             if expect_on and voltages[i] < VOLTAGE_ON_THRESHOLD:
                 fatal_error(f'Missing voltage on {name}')
             elif not expect_on and voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Unexpected voltage on {name}')
 
-            if expect_on and meter_voltages[i] < VOLTAGE_ON_THRESHOLD:
+            if expect_on_meter and meter_voltages[i] < VOLTAGE_ON_THRESHOLD:
                 fatal_error(f'Energy meter measured missing voltage on {name}')
-            elif not expect_on and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
+            elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
     # requires power_on
@@ -877,7 +881,7 @@ class Stage3:
             if state == 'C':
                 self.verify_voltages(['L1', 'L2', 'L3'])
             else:
-                self.verify_voltages([])
+                self.verify_voltages(p_type2=[], p_meter=['L1', 'L2', 'L3'])
 
             self.verify_evse_not_crashed()
 
@@ -916,7 +920,7 @@ class Stage3:
             print('Testing phase switch')
 
             self.switch_phases(1)
-            self.verify_voltages(['L1'])
+            self.verify_voltages(p_type2=['L1'], p_meter=['L1', 'L2', 'L3'])
 
             self.switch_phases(3)
             self.verify_voltages(['L1', 'L2', 'L3'])
