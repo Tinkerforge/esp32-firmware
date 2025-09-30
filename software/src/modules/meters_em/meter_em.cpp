@@ -53,16 +53,12 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 
     if (meter_type != all_data.energy_meter_type) {
         if (meter_type != METER_TYPE_NONE) {
-            // Don't print warning if this is a not-none -> none transition.
-            // This happens if the EVSE restarts without the ESP also restarting.
-            // The meter will be detected again in a few seconds.
-            if (!meter_change_warning_printed && all_data.energy_meter_type != METER_TYPE_NONE) {
+            if (!meter_change_warning_printed) {
                 logger.printfln_meter("Meter change detected. This is not supported");
                 meter_change_warning_printed = true;
             }
             return;
         }
-
 
         const MeterValueID *ids = nullptr;
         size_t id_count = 0;
@@ -80,6 +76,7 @@ void MeterEM::update_from_em_all_data(const EMAllDataCommon &all_data)
 
         meter_type = all_data.energy_meter_type;
         state->get("type")->updateUint(meter_type);
+
         meters.declare_value_ids(slot, ids, id_count);
 
         value_index_power       = meters_find_id_index(ids, id_count, MeterValueID::PowerActiveLSumImExDiff);
