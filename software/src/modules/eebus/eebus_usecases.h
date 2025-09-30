@@ -334,9 +334,8 @@ public:
      */
     void update_operating_state(bool standby);
 
-
 private:
-    void update_api();
+    void update_api() const;
     bool ev_connected = false;
 
     // These can be freely assigned but need to be unique within the entity.
@@ -348,17 +347,35 @@ private:
 
     // Server Data
     //DeviceDiagnosis
-    DeviceConfigurationKeyValueDescriptionListDataType device_config_description{};
-    DeviceConfigurationKeyValueListDataType device_config_list{};
+    String communication_standard = "";
+    bool asymmetric_supported = false;
+    DeviceConfigurationKeyValueDescriptionListDataType generate_device_config_description() const;
+    DeviceConfigurationKeyValueListDataType generate_device_config_list() const;
     //Identification
-    IdentificationListDataType identification_data{};
+    IdentificationTypeEnumType mac_type = IdentificationTypeEnumType::eui64;
+    String mac_address = "";
+    IdentificationListDataType generate_identification_description() const;
     //DeviceClassification
-    DeviceClassificationManufacturerDataType device_manufacturer_data{};
+    String manufacturer_name = "";
+    String manufacturer_code = "";
+    String ev_serial_number = "";
+    String ev_sofware_version = "";
+    String ev_hardware_version = "";
+    String vendor_name = "";
+    String vendor_code = "";
+    String brand_name = "";
+    String manufacturer_label = "";
+    String manufacturer_description = "";
+    DeviceClassificationManufacturerDataType generate_manufacturer_description() const;
     //ElectricalConnection
-    ElectricalConnectionParameterDescriptionListDataType electrical_connection_description{};
-    ElectricalConnectionPermittedValueSetListDataType electrical_connection_permitted_values{};
+    uint32_t min_power_draw = 0;
+    uint32_t max_power_draw = 0;
+    uint32_t standby_power = 0;
+    ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_description() const;
+    ElectricalConnectionPermittedValueSetListDataType generate_electrical_connection_values() const;
     //DeviceDiagnosis
-    DeviceDiagnosisStateDataType device_diagnosis_state{};
+    bool standby_mode = false;
+    DeviceDiagnosisStateDataType generate_state() const;
 
 };
 
