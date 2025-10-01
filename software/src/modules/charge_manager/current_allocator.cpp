@@ -1897,7 +1897,7 @@ static void stage_7(StageContext &sc) {
         CurrentCapacityLimit cclimit;
 
         // TODO disambiguate between Requested and PhaseLimit here
-        min_(current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg, &cclimit), CurrentDecision::Requested());
+        min_(current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg, &cclimit) / allocated_phases, CurrentDecision::Requested());
 
         if (min_.current > 0) {
             if (min_.desc.tag == CurrentDecisionTag::Requested) {
@@ -1971,7 +1971,7 @@ static void stage_8(StageContext &sc) {
                             state->observe_pv_limit
                                 ? std::max(state->guaranteed_pv_current / allocated_phases - allocated_current, sc.limits->raw.pv / allocated_phases)
                                 : 32000),
-                        current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg));
+                        current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg) / allocated_phases);
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
