@@ -261,7 +261,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                                 util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), () => message);
                             }
                         }}
-                        progress_override={this.state.install_origin == InstallOrigin.FlashFirmware ? this.state.install_progress / 100 : undefined}
+                        progress_override={(this.state.install_origin == InstallOrigin.FlashFirmware && this.state.install_state == InstallState.InProgress) ? this.state.install_progress / 100 : undefined}
                     />
                 </FormRow>
 
