@@ -425,7 +425,7 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
 
 EvseEntity::EvseEntity()
 {
-
+    update_api();
 #ifdef EEBUS_DEV_TEST_ENABLE
     task_scheduler.scheduleOnce([this]() {
                                     logger.printfln("EEBUS Usecase test enabled. Updating EvseEntity");
@@ -515,7 +515,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
 
 void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
 {
-
+    // TODO: if there are more than 8 positions, we should remove the oldest one
     BillDataType billData{};
     billData.billId = id;
     billData.billType = BillTypeEnumType::chargingSummary;
@@ -557,18 +557,19 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
 
     billData.position->push_back(grid_position);
     billData.position->push_back(self_produced_position);
-    /*
+
     for (int i = 0; i < bill_list_data.billData->size(); i++) {
         if (bill_list_data.billData->at(i).billId == id) {
             bill_list_data.billData->at(i) = billData;
             return;
         }
-    }*/
+    }
     bill_list_data.billData->push_back(billData);
 
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
     eebus.usecases->inform_subscribers(this->entity_address, this->bill_feature_address, bill_list_data, "billListData");
+    update_api();
 }
 
 
@@ -613,6 +614,21 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
     return CmdClassifierType::EnumUndefined;
 }
 
+void EvseEntity::update_api() const
+{
+    auto api_entry = eebus.eebus_usecase_state.get("charging_summary");
+    api_entry->removeAll();
+    int i = 0;
+    for (BillDataType bill_entry : bill_list_data.billData.get()) {
+        api_entry->add();
+        auto api_bill_entry = api_entry->get(i++);
+        api_bill_entry->get("id")->updateUint(bill_entry.billId.get());
+        api_bill_entry->get("charged_kwh")->updateFloat(bill_entry.total->value->at(0).value->number.get() / 1000.0);
+        api_bill_entry->get("cost")->updateFloat(bill_entry.total->cost->at(0).cost->number.get() / 100.0);
+        //TODO: Add the rest of the fields
+    }
+}
+
 EvEntity::EvEntity()
 {
     entity_active = false; // Disable entity until an EV is connected
@@ -621,7 +637,7 @@ EvEntity::EvEntity()
                                     logger.printfln("EEBUS Usecase test enabled. Updating EvEntity");
                                     ev_connected_state(true);
                                     update_device_config("iso15118-2ed1", true);
-                                    update_identification("FF:FF:FF:FF:FF");
+                                    update_identification("12:34:56:78:9a:bc");
                                     update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
                                     update_electrical_connection(0, 3600, 800);
                                     update_operating_state(true);
@@ -820,7 +836,6 @@ void EvEntity::update_device_config(const String &comm_standard, bool asym_suppo
         // We continue on regardless and let the peer deal with incorrect values
     }
 
-    // TODO: Notify subscribers
     eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_device_config_description(), "deviceConfigurationKeyValueDescriptionData");
     eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_device_config_list(), "deviceConfigurationKeyValueListData");
 
@@ -878,7 +893,6 @@ void EvEntity::update_api() const
     auto api_entry = eebus.eebus_usecase_state.get("ev_commissioning_and_configuration");
     api_entry->get("ev_connected")->updateBool(ev_connected);
     if (ev_connected) {
-        // TODO: Restructure so the actual values used are from the class, not from the structs
         api_entry->get("communication_standard")->updateString(communication_standard);
         api_entry->get("asymmetric_charging_supported")->updateBool(asymmetric_supported);
         api_entry->get("mac_address")->updateString(mac_address);
