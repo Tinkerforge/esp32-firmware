@@ -35,13 +35,15 @@ public:
 
     virtual ~StringWriter() {}
 
-    size_t getCapacity() const { return capacity; }
+    inline size_t getCapacity() const { return capacity; }
     void setLength(size_t new_length);
-    size_t getLength() const { return length; }
-    void clear() { setLength(0); }
-    size_t getRemainingLength() const { return capacity - length; }
-    char *getPtr() const { return buffer; }
-    char *getRemainingPtr() const { return buffer + length; }
+    inline size_t getLength() const { return length; }
+    inline void clear() { setLength(0); }
+    inline size_t getRemainingLength() const { return capacity - length; }
+    inline char *getPtr() const { return buffer; }
+    inline char *getRemainingPtr() const { return buffer + length; }
+    inline String toString() const { return String(buffer, length); }
+
     size_t puts(const char *string, size_t string_len);
     inline size_t puts(const char *string) { return puts(string, strlen(string)); }
     inline size_t puts(const String &string) { return puts(string.c_str(), string.length()); }
