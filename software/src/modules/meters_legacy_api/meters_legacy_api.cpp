@@ -26,7 +26,6 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "options.h"
-#include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"
