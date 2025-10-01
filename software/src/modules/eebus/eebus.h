@@ -93,7 +93,7 @@ public:
      */
     int get_state_connection_id_by_ski(const String &ski);
 
-    size_t trace_buffer_index;
+    size_t trace_buffer_index{};
 
     void trace_strln(const char *str, const size_t length);
     void trace_jsonln(JsonVariantConst data);

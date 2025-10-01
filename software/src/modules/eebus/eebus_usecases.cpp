@@ -625,7 +625,14 @@ void EvseEntity::update_api() const
         api_bill_entry->get("id")->updateUint(bill_entry.billId.get());
         api_bill_entry->get("charged_kwh")->updateFloat(bill_entry.total->value->at(0).value->number.get() / 1000.0);
         api_bill_entry->get("cost")->updateFloat(bill_entry.total->cost->at(0).cost->number.get() / 100.0);
-        //TODO: Add the rest of the fields
+        api_bill_entry->get("start_time")->updateUint(stoi(bill_entry.total->timePeriod->startTime.get())); // TODO: What is this time type anyway?
+        api_bill_entry->get("duration")->updateUint(stoi(bill_entry.total->timePeriod->endTime.get()) - stoi(bill_entry.total->timePeriod->startTime.get()));
+        uint16_t self_produced_energy_percent = (bill_entry.position->at(1).value->at(0).value->number.get() / api_bill_entry->get("charged_kwh")->asUint16()) * 100;
+        uint16_t percent_self_produced_cost = (bill_entry.position->at(1).cost->at(0).cost->number.get() / api_bill_entry->get("charged_kwh")->asUint16()) * 100;;
+
+        api_bill_entry->get("percent_self_produced_energy")->updateUint(self_produced_energy_percent);
+        api_bill_entry->get("percent_self_produced_cost")->updateUint(percent_self_produced_cost);
+
     }
 }
 
