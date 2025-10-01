@@ -22,7 +22,6 @@
 #include <esp_task.h>
 #include <memory>
 #include <LittleFS.h>
-#include <format>
 #include <stdlib_noniso.h>
 
 #include "event_log_prefix.h"
@@ -1129,15 +1128,18 @@ static String build_filename(const time_t start, const time_t end, FileType file
     localtime_r(&start, &start_tm);
     localtime_r(&end, &end_tm);
 
-    const String &type = device_name.name.get("type")->asString();
-    const String &uid = device_name.name.get("uid")->asString();
-    const std::string start_date = std::format("{:04}-{:02}-{:02}", start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday);
-    const std::string end_date = std::format("{:04}-{:02}-{:02}", end_tm.tm_year + 1900, end_tm.tm_mon + 1, end_tm.tm_mday);
-    const String intermediate = (language == Language::English) ? "Chargelog" : "Ladelog";
-    const std::string extension = file_type == FileType::PDF ? "pdf" : "csv";
-    std::string filename = std::format("{}-{}-{}-{}-{}.{}", type.c_str(), uid.c_str(), intermediate.c_str(), start_date, end_date, extension);
+    char buf[128];
+    StringWriter fname(buf, std::size(buf));
 
-    return String(filename.c_str());
+    fname.printf("%s-%s_%s_%04i-%02i-%02i_%04i-%02i-%02i.%s",
+                 device_name.name.get("type")->asUnsafeCStr(),
+                 device_name.name.get("uid" )->asUnsafeCStr(),
+                 language == Language::English ? "Charge_log" : "Ladelog",
+                 start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday,
+                 end_tm.tm_year   + 1900, end_tm.tm_mon   + 1, end_tm.tm_mday,
+                 file_type == FileType::PDF ? "pdf" : "csv");
+
+    return fname.toString();
 }
 
 static esp_err_t format_and_send_chunk(AsyncHTTPSClient &remote_client, bool &first, const uint8_t *buffer, size_t len)
