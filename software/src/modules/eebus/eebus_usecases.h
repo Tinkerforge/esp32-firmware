@@ -256,6 +256,8 @@ private:
      * @return
      */
     CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+    void update_api() const;
 };
 
 class EvEntity final : public EebusEntity
