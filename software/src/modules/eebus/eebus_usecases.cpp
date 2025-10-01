@@ -429,8 +429,8 @@ EvseEntity::EvseEntity()
 #ifdef EEBUS_DEV_TEST_ENABLE
     task_scheduler.scheduleOnce([this]() {
                                     logger.printfln("EEBUS Usecase test enabled. Updating EvseEntity");
-                                    update_billing_data(1, 299921_s, 3242662_s, 245233, 1242, 100, 100, 0, 0);
-                                    update_billing_data(2, 5622123_s, 5655611_s, 23677, 1242, 100, 100, 0, 0);
+                                    update_billing_data(1, 299921_s, 3242662_s, 245233, 1242, 75, 90, 25, 10);
+                                    update_billing_data(2, 5622123_s, 5655611_s, 23677, 1242, 50, 100, 50, 0);
 
                                 },
                                 30_s);
@@ -623,12 +623,18 @@ void EvseEntity::update_api() const
         api_entry->add();
         auto api_bill_entry = api_entry->get(i++);
         api_bill_entry->get("id")->updateUint(bill_entry.billId.get());
-        api_bill_entry->get("charged_kwh")->updateFloat(bill_entry.total->value->at(0).value->number.get() / 1000.0);
+        uint32_t charged_kwh = bill_entry.total->value->at(0).value->number.get();
+        api_bill_entry->get("charged_kwh")->updateFloat(charged_kwh / 1000.0);
         api_bill_entry->get("cost")->updateFloat(bill_entry.total->cost->at(0).cost->number.get() / 100.0);
         api_bill_entry->get("start_time")->updateUint(stoi(bill_entry.total->timePeriod->startTime.get())); // TODO: What is this time type anyway?
         api_bill_entry->get("duration")->updateUint(stoi(bill_entry.total->timePeriod->endTime.get()) - stoi(bill_entry.total->timePeriod->startTime.get()));
-        uint16_t self_produced_energy_percent = (bill_entry.position->at(1).value->at(0).value->number.get() / api_bill_entry->get("charged_kwh")->asUint16()) * 100;
-        uint16_t percent_self_produced_cost = (bill_entry.position->at(1).cost->at(0).cost->number.get() / api_bill_entry->get("charged_kwh")->asUint16()) * 100;;
+
+        uint16_t self_produced_energy_percent = 0;
+        uint16_t percent_self_produced_cost = 0;
+        if (bill_entry.position->size() > 1 && !bill_entry.position->at(0).value->empty() && !bill_entry.position->at(0).cost->empty()) {
+            self_produced_energy_percent = (bill_entry.position->at(0).value->at(0).value->number.get() / charged_kwh) * 100;
+            percent_self_produced_cost = (bill_entry.position->at(0).cost->at(0).cost->number.get() / charged_kwh) * 100;
+        }
 
         api_bill_entry->get("percent_self_produced_energy")->updateUint(self_produced_energy_percent);
         api_bill_entry->get("percent_self_produced_cost")->updateUint(percent_self_produced_cost);
@@ -739,90 +745,95 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
 
     if (!ev_connected)
         return features;
+    {
+        // The following functions are needed by the DeviceDiagnosis Feature Type
+        NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
+        device_configuration_feature.description->featureAddress->entity = entity_address;
+        device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+        device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
+        device_configuration_feature.description->role = RoleType::server;
 
-    // The following functions are needed by the DeviceDiagnosis Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
-    device_configuration_feature.description->featureAddress->entity = entity_address;
-    device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
-    device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
-    device_configuration_feature.description->role = RoleType::server;
+        // deviceConfigurationKeyValueDescriptionListData
+        FunctionPropertyType device_configuration_description{};
+        device_configuration_description.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
+        device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
+        device_configuration_feature.description->supportedFunction->push_back(device_configuration_description);
 
-    // deviceConfigurationKeyValueDescriptionListData
-    FunctionPropertyType device_configuration_description{};
-    device_configuration_description.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
-    device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
-    device_configuration_feature.description->supportedFunction->push_back(device_configuration_description);
+        // deviceConfigurationKeyValueListData
+        FunctionPropertyType device_configuration_values{};
+        device_configuration_values.function = FunctionEnumType::deviceConfigurationKeyValueListData;
+        device_configuration_values.possibleOperations->read = PossibleOperationsReadType{};
 
-    // deviceConfigurationKeyValueListData
-    FunctionPropertyType device_configuration_values{};
-    device_configuration_values.function = FunctionEnumType::deviceConfigurationKeyValueListData;
-    device_configuration_values.possibleOperations->read = PossibleOperationsReadType{};
+        device_configuration_feature.description->supportedFunction->push_back(device_configuration_values);
+        features.push_back(device_configuration_feature);
+    }
+    {
+        // The following functions are needed by the Identification Feature Type
+        NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
+        identification_feature.description->featureAddress->entity = entity_address;
+        identification_feature.description->featureAddress->feature = feature_address_identification;
+        identification_feature.description->featureType = FeatureTypeEnumType::Identification;
+        identification_feature.description->role = RoleType::server;
 
-    device_configuration_feature.description->supportedFunction->push_back(device_configuration_values);
-    features.push_back(device_configuration_feature);
+        //identificationListData
+        FunctionPropertyType identificationListData{};
+        identificationListData.function = FunctionEnumType::identificationListData;
+        identificationListData.possibleOperations->read = PossibleOperationsReadType{};
 
-    // The following functions are needed by the Identification Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
-    identification_feature.description->featureAddress->entity = entity_address;
-    identification_feature.description->featureAddress->feature = feature_address_identification;
-    identification_feature.description->featureType = FeatureTypeEnumType::Identification;
-    identification_feature.description->role = RoleType::server;
+        identification_feature.description->supportedFunction->push_back(identificationListData);
+        features.push_back(identification_feature);
+    }
+    {
+        // The following functions are needed by the DeviceDiagnosis Feature Type
+        NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
+        device_classification_feature.description->featureAddress->entity = entity_address;
+        device_classification_feature.description->featureAddress->feature = feature_address_device_classification;
+        device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceClassification;
+        device_classification_feature.description->role = RoleType::server;
 
-    //identificationListData
-    FunctionPropertyType identificationListData{};
-    identificationListData.function = FunctionEnumType::identificationListData;
-    identificationListData.possibleOperations->read = PossibleOperationsReadType{};
+        //deviceClassificationManufacturerData
+        FunctionPropertyType deviceClassificationManufacturerData{};
+        deviceClassificationManufacturerData.function = FunctionEnumType::deviceClassificationManufacturerData;
+        deviceClassificationManufacturerData.possibleOperations->read = PossibleOperationsReadType{};
+        device_classification_feature.description->supportedFunction->push_back(deviceClassificationManufacturerData);
+        features.push_back(device_classification_feature);
+    }
+    {
+        // The following functions are needed by the ElectricalConnection Feature Type
+        NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
+        electricalConnectionFeature.description->featureAddress->entity = entity_address;
+        electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
+        electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
+        electricalConnectionFeature.description->role = RoleType::server;
 
-    identification_feature.description->supportedFunction->push_back(identificationListData);
-    features.push_back(identification_feature);
+        //electricalConnectionCharacteristicsListData
+        FunctionPropertyType electricalConnectionParameterDescriptionData{};
+        electricalConnectionParameterDescriptionData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
+        electricalConnectionParameterDescriptionData.possibleOperations->read = PossibleOperationsReadType{};
+        electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionData);
 
-    // The following functions are needed by the DeviceDiagnosis Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
-    device_classification_feature.description->featureAddress->entity = entity_address;
-    device_classification_feature.description->featureAddress->feature = feature_address_device_diagnosis;
-    device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    device_classification_feature.description->role = RoleType::server;
+        //electricalConnectionPermittedValueSetListData
+        FunctionPropertyType electricalConnectionPermittedValueListData{};
+        electricalConnectionPermittedValueListData.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
+        electricalConnectionPermittedValueListData.possibleOperations->read = PossibleOperationsReadType{};
+        electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
+        features.push_back(electricalConnectionFeature);
+    }
+    {
+        // *TODO: This feature crashes EVCC and spine-go in general for some reason.
+        NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
+        deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
+        deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
+        deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::Generic;
+        deviceDiagnosisFeature.description->role = RoleType::server;
 
-    //deviceClassificationManufacturerData
-    FunctionPropertyType deviceClassificationManufacturerData{};
-    deviceClassificationManufacturerData.function = FunctionEnumType::deviceClassificationManufacturerData;
-    deviceClassificationManufacturerData.possibleOperations->read = PossibleOperationsReadType{};
-    device_classification_feature.description->supportedFunction->push_back(deviceClassificationManufacturerData);
-    features.push_back(device_classification_feature);
-
-    // The following functions are needed by the ElectricalConnection Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
-    electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
-    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
-    electricalConnectionFeature.description->role = RoleType::server;
-
-    //electricalConnectionCharacteristicsListData
-    FunctionPropertyType electricalConnectionParameterDescriptionData{};
-    electricalConnectionParameterDescriptionData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
-    electricalConnectionParameterDescriptionData.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionData);
-
-    //electricalConnectionPermittedValueSetListData
-    FunctionPropertyType electricalConnectionPermittedValueListData{};
-    electricalConnectionPermittedValueListData.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
-    electricalConnectionPermittedValueListData.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
-    features.push_back(electricalConnectionFeature);
-
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
-    deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-    device_configuration_feature.description->featureAddress->feature = feature_address_device_diagnosis;
-    deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    deviceDiagnosisFeature.description->role = RoleType::server;
-
-    // deviceDiagnosisStateData
-    FunctionPropertyType deviceDiagnosisState{};
-    deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
-    deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
-    deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
-    features.push_back(deviceDiagnosisFeature);
-
+        // deviceDiagnosisStateData
+        FunctionPropertyType deviceDiagnosisState{};
+        deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
+        deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
+        deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
+        features.push_back(deviceDiagnosisFeature);
+    }
     return features;
 }
 
@@ -1356,7 +1367,7 @@ CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &hea
         feature_address.feature = loadControl_feature_address;
         feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
 
-        if (eebus.usecases->node_management->check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
+        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
             LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitdatatype.get();
             if (!update_lpc(load_control_limit_data.isLimitActive.get(), load_control_limit_data.value->number.get() * 10 * *(load_control_limit_data.value->scale), load_control_limit_data.timePeriod->endTime.has_value() ? std::stoull(load_control_limit_data.timePeriod->endTime.get()) : 0)) {
                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
@@ -1386,7 +1397,7 @@ CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderTy
     }
     if (header.cmdClassifier == CmdClassifierType::write && data->deviceconfigurationkeyvaluelistdatatype.has_value() && data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
         // We only accept writes from nodes we are bound to and we only do full writes
-        if (eebus.usecases->node_management->check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
+        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
             device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
@@ -1605,9 +1616,8 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses have to be unique
-    node_management = make_unique_psram<NodeManagementEntity>();
-    node_management->set_usecaseManager(this);
-    node_management->set_entity_address({0});
+    node_management.set_usecaseManager(this);
+    node_management.set_entity_address({0});
     //charging_summary = EvseEntity();
     charging_summary.set_entity_address({1});
     //limitation_of_power_consumption = ControllableSystemEntity();
@@ -1666,7 +1676,7 @@ size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &e
 {
 
     if (initialized && EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
-        return node_management->inform_subscribers(entity, feature, data, function_name);
+        return node_management.inform_subscribers(entity, feature, data, function_name);
     if constexpr (EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
         eebus.trace_fmtln("Attempted to inform subscribers while Usecases were not yet initialized");
     else
