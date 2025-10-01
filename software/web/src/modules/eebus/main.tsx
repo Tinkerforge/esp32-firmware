@@ -375,8 +375,30 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 <table class="table table-bordered table-sm mb-0">
                                     <tbody>
                                     <tr>
-                                        <td>Number of Charge Processes</td>
-                                        <td>{state.usecases.charging_summary.length}</td>
+                                        <td colSpan={2}>
+                                            <CollapsedSection heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
+                                                <table class="table table-bordered table-sm mb-0">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Charged Kwh</th>
+                                                        <th>Cost</th>
+                                                        <th>Percentage Self Produced Energy</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {state.usecases.charging_summary.map((item, idx) => (
+                                                        <tr key={idx}>
+                                                            <td>{item.id}</td>
+                                                            <td>{item.charged_kwh}</td>
+                                                            <td>{item.cost}</td>
+                                                            <td>{item.percent_self_produced_energy}</td>
+                                                        </tr>
+                                                    ))}
+                                                    </tbody>
+                                                </table>
+                                            </CollapsedSection>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
