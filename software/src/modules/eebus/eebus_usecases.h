@@ -83,10 +83,7 @@ public:
         return entity_address == address;
     }
 
-    String get_entity_name()
-    {
-        return entity_name;
-    }
+    virtual String get_entity_name() const = 0;
 
     [[nodiscard]] bool isActive() const
     {
@@ -114,7 +111,7 @@ public:
 
 protected:
     std::vector<int> entity_address{}; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
-    String entity_name = "undefined namew";
+
     bool entity_active = true; // If the entity is active or not. Inactive entities do not respond to messages or their entity and feature information should not be called.
 };
 
@@ -180,6 +177,11 @@ public:
     template <typename T>
     size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
 
+    String get_entity_name() const override
+    {
+        return "NodeManagement";
+    };
+
 private:
     EEBusUseCases *usecase_interface{};
 
@@ -189,6 +191,8 @@ private:
     bool read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
     CmdClassifierType handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+
 };
 
 /**
@@ -243,6 +247,11 @@ public:
      * @param self_produced_cost_percent The cost of the self produced energy used for charging in Euro cents
      */
     void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
+
+    String get_entity_name() const override
+    {
+        return "EvseEntity";
+    };
 
 private:
     int bill_feature_address = 1;
@@ -335,6 +344,11 @@ public:
      * @param standby If the device is in standby mode or not.
      */
     void update_operating_state(bool standby);
+
+    String get_entity_name() const override
+    {
+        return "EvEntity";
+    };
 
 private:
     void update_api() const;
@@ -445,6 +459,11 @@ public:
      * @param power_consumption_contract_max_w
      */
     void update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w);
+
+    String get_entity_name() const override
+    {
+        return "ControllableSystemEntity";
+    };
 
 private:
     /**
@@ -563,12 +582,12 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
-    unique_ptr_any<NodeManagementEntity> node_management;
+    NodeManagementEntity node_management{};
     EvseEntity charging_summary{};
     ControllableSystemEntity limitation_of_power_consumption{};
     EvEntity ev_commissioning_and_configuration{};
 
-    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {node_management.get(), &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration};
+    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration};
 
 private:
     bool initialized = false;
