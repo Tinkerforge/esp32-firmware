@@ -1185,7 +1185,6 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     String url;
     int cert_id;
     std::unique_ptr<char[]> letterhead;
-    int letterhead_lines;
     int user_filter;
     Language language;
     FileType file_type = FileType::PDF;
@@ -1195,32 +1194,47 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     auto &upload_args_ref = *upload_args;
 
     auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &letterhead_lines, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter]()
+            &letterhead, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter]()
     {
         Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args_ref.user_idx);
-        letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
-        strncpy(letterhead.get(), charge_log_send->get("letterhead")->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
-        letterhead_lines = read_letterhead_lines(letterhead.get());
+
         user_filter = charge_log_send->get("user_filter")->asInt();
         language = charge_log_send->get("language")->asEnum<Language>();
         file_type = charge_log_send->get("file_type")->asEnum<FileType>();
         csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
         filename = build_filename(((time_t)upload_args_ref.last_month_start_min) * 60, ((time_t)upload_args_ref.last_month_end_min) * 60, file_type, language);
 
+        if (file_type == FileType::PDF) {
+            const String &letterhead_string = charge_log_send->get("letterhead")->asString();
+            const size_t letterhead_terminated_length = letterhead_string.length() + 1;
+
+            letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+            strncpy(letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+        }
+
         const int user_id = charge_log_send->get("user_id")->asInt();
-        charger_uuid = remote_access.config.get("uuid")->asString();
-        password = remote_access.config.get("password")->asString();
-        if (remote_access.config.get("users")->count() > 0) {
-            for (const auto &user : remote_access.config.get("users")) {
-                if (user.get("id")->asUint() == user_id) {
-                    user_uuid = user.get("uuid")->asString();
-                    break;
-                }
+
+        const Config *remote_access_config = api.getState("remote_access/config");
+
+        charger_uuid = remote_access_config->get("uuid")->asString();
+        password = remote_access_config->get("password")->asString();
+        cert_id = remote_access_config->get("cert_id")->asInt();
+
+        for (const auto &user : remote_access_config->get("users")) {
+            if (user.get("id")->asUint() == user_id) {
+                user_uuid = user.get("uuid")->asString();
+                break;
             }
         }
 
-        url = "https://" + remote_access.config.get("relay_host")->asString() + "/api/send_chargelog_to_user";
-        cert_id = remote_access.config.get("cert_id")->asInt();
+        char buf[128];
+        StringWriter sw_url(buf, std::size(buf));
+
+        sw_url.printf("https://%s:%hu/api/send_chargelog_to_user",
+                      remote_access_config->get("relay_host")->asUnsafeCStr(),
+                      remote_access_config->get("relay_port")->asUint16());
+
+        url = sw_url.toString();
     });
 
     if (ret != TaskScheduler::AwaitResult::Done) {
@@ -1243,17 +1257,28 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
         return;
     }
 
-    String json_header = "{";
-    json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
-    json_header += "\"password\":\"" + password + "\",";
-    json_header += "\"user_uuid\":\"" + user_uuid + "\",";
-    json_header += "\"filename\":\"" + filename + "\",";
-    json_header += "\"chargelog\":[";
-    upload_args->remote_client->send_chunk(json_header.c_str(), json_header.length());
+    {
+        StringBuilder json_header(400);
+
+        json_header.printf("{"
+                           "\"charger_uuid\":\"%s\","
+                           "\"password\":\"%s\","
+                           "\"user_uuid\":\"%s\","
+                           "\"filename\":\"%s\","
+                           "\"chargelog\":[",
+                           charger_uuid.c_str(),
+                           password.c_str(),
+                           user_uuid.c_str(),
+                           filename.c_str());
+
+        upload_args->remote_client->send_chunk(json_header.getPtr(), json_header.getLength());
+    }
 
     bool first = true;
 
     if (file_type == FileType::PDF) {
+        const int letterhead_lines = read_letterhead_lines(letterhead.get());
+
         this->generate_pdf(
             [&remote_client = *upload_args->remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
                 return format_and_send_chunk(remote_client, first, static_cast<const uint8_t *>(buffer), len);
@@ -1284,8 +1309,7 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
         csv_generator.generateCSV(csv_params, std::move(csv_stream_cb));
     }
 
-    String json_footer = "]}";
-    upload_args->remote_client->send_chunk(json_footer.c_str(), json_footer.length());
+    upload_args->remote_client->send_chunk("]}", 2); // JSON footer
     upload_args->remote_client->finish_chunked_request();
 
     task_scheduler.scheduleWithFixedDelay([upload_args = upload_args.release()]() mutable {

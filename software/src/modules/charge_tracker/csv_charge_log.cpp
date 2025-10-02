@@ -62,7 +62,7 @@ const char* CSVTranslations::getHeaderUsername(Language language) {
 }
 
 const char* CSVTranslations::getHeaderPrice(Language language) {
-    return (language == Language::English) ? "Charging costs in € Working price " : "Ladekosten in €; Arbeitspreis ";
+    return (language == Language::English) ? "Charging costs in € Working price" : "Ladekosten in €; Arbeitspreis";
 }
 
 const char* CSVTranslations::getUnknownUser(Language language) {
