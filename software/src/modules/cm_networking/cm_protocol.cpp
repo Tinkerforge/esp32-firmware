@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <lwip/sockets.h>
 #include <cstring>
+#include <cmath>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -651,14 +652,28 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         auto meter_all_values = api.getState("meter/all_values");
         for (size_t i = 0; i < 3; i++) {
             state_pkt.v1.line_voltages[i]      = meter_all_values->get(i + METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1)->asFloat();
-            state_pkt.v1.line_currents[i]      = meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A            )->asFloat();
             state_pkt.v1.line_power_factors[i] = meter_all_values->get(i + METER_ALL_VALUES_POWER_FACTOR_L1         )->asFloat();
+
+            float line_current                 = meter_all_values->get(i + METER_ALL_VALUES_CURRENT_L1_A            )->asFloat();
+
+            // Older firmware versions reported exactly zero current when they had to meter available, which would cause the charge manager to assign up to maximum current.
+            // In order not to assign maximum current to vehicles drawing no current, transfer zero current as -1mA, which won't triggering the missing meter check.
+            // The charge manager performs an integer comparison on the scaled milliampere value, so that must be replicated here.
+            // This check is NAN-safe on Xtensa and amd64 because they will convert NAN to 2147483647 or -2147483648 respectively. Note that GCC will cast NaN to 0 if it can do so during compilation.
+            // Use -0.001 because that is the most readable negative number closest to zero that will not be truncated to zero by the cast. Its binary representation is slightly further from zero than -0.001.
+            if (static_cast<int32_t>(line_current * 1000.0f) == 0) {
+                line_current = -0.001f;
+            }
+
+            state_pkt.v1.line_currents[i] = line_current;
+
+            static_assert(CM_STATE_VERSION_MIN <= 3, "The above workaround was introduced while the CM state version was 3. It can be removed once v4 is required.");
         }
     } else {
         for (int i = 0; i < 3; i++) {
-            state_pkt.v1.line_voltages[i]      = 0;
-            state_pkt.v1.line_currents[i]      = 0;
-            state_pkt.v1.line_power_factors[i] = 0;
+            state_pkt.v1.line_voltages[i]      = NAN;
+            state_pkt.v1.line_currents[i]      = NAN;
+            state_pkt.v1.line_power_factors[i] = NAN;
         }
     }
 
@@ -668,9 +683,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         state_pkt.v1.energy_rel = meter_values->get("energy_rel")->asFloat();
         state_pkt.v1.energy_abs = meter_values->get("energy_abs")->asFloat();
     } else {
-        state_pkt.v1.power_total = 0;
-        state_pkt.v1.energy_rel = 0;
-        state_pkt.v1.energy_abs = 0;
+        state_pkt.v1.power_total = NAN;
+        state_pkt.v1.energy_rel  = NAN;
+        state_pkt.v1.energy_abs  = NAN;
     }
 
     state_pkt.v2.time_since_state_change = time_since_state_change;
