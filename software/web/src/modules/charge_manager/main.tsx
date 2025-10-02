@@ -22,13 +22,14 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Component, ComponentChild, Fragment } from "preact";
+import { useState } from "preact/hooks";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { CheckCircle, Circle, Server, Sliders } from "react-feather";
+import { CheckCircle, ChevronRight, Circle, Server, Sliders } from "react-feather";
 //#if MODULE_ECO_AVAILABLE
 import { EcoChart } from "modules/eco/main";
 //#endif
@@ -265,37 +266,296 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
     }
 }
 
-function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): ComponentChild {
-    let descs = [<>Off: {zero_phase_desc_to_text(x.d0)}</>,
-                 <>1p: {one_phase_desc_to_text(x.d1)}</>,
-                 <>3p: {three_phase_desc_to_text(x.d3)}</>,
-                 <>Current: {current_desc_to_text(x.dc)}</>]
+function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): [ComponentChild[], ComponentChild] {
+     //if (x.s == CASState.NoVehicle)
+        //return ["", ""];
+
+    // Creates a sparse array
+    let descs = Array(4);
+
+    if (x.dc[0] != CurrentDecisionTag.None)
+        descs[3] = <div>Current: {current_desc_to_text(x.dc)}</div>;
+
+    let details = [<div>Off: {zero_phase_desc_to_text(x.d0)}</div>,
+                   <div>1p: {one_phase_desc_to_text(x.d1)}</div>,
+                   <div>3p: {three_phase_desc_to_text(x.d3)}</div>,
+                   <div>Current: {current_desc_to_text(x.dc)}</div>]
 
     switch (x.ap) {
         case 0:
-            descs[0] = <strong>{descs[0]}</strong>;
+            switch (x.d0[0]) {
+                case ZeroPhaseDecisionTag.None:
+                case ZeroPhaseDecisionTag.YesChargeModeOff:
+                case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
+                case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
+                case ZeroPhaseDecisionTag.YesNotActive:
+                    // Hide
+                    break;
+
+                case ZeroPhaseDecisionTag.YesRotatedForB1:
+                case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
+                case ZeroPhaseDecisionTag.YesPhaseOverload:
+                case ZeroPhaseDecisionTag.YesPVExcessOverload:
+                case ZeroPhaseDecisionTag.YesWaitingForRotation:
+                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    break;
+            }
+            switch (x.d1[0]) {
+                case OnePhaseDecisionTag.None:
+                case OnePhaseDecisionTag.YesSwitchedToFixed1p:
+                case OnePhaseDecisionTag.YesNormal:
+                case OnePhaseDecisionTag.YesWelcomeChargeUntil:
+                case OnePhaseDecisionTag.YesWakingUp:
+                case OnePhaseDecisionTag.NoFixed3p:
+                    // Hide
+                    break;
+
+                case OnePhaseDecisionTag.NoPhaseMinimum:
+                case OnePhaseDecisionTag.NoPhaseImprovement:
+                case OnePhaseDecisionTag.NoForced3pUntil:
+                case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    break;
+            }
+            switch (x.d3[0]) {
+                case ThreePhaseDecisionTag.None:
+                case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
+                case ThreePhaseDecisionTag.YesNormal:
+                case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
+                case ThreePhaseDecisionTag.YesWakingUp:
+                case ThreePhaseDecisionTag.NoFixed1p:
+                    // Hide
+                    break;
+
+                case ThreePhaseDecisionTag.NoPhaseMinimum:
+                case ThreePhaseDecisionTag.NoPhaseImprovement:
+                case ThreePhaseDecisionTag.NoForced1pUntil:
+                case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
+                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    break;
+            }
             break;
         case 1:
-            descs[1] = <strong>{descs[1]}</strong>;
-            descs[3] = <strong>{descs[3]}</strong>;
-            break
-        case 3:
-            descs[2] = <strong>{descs[2]}</strong>;
-            descs[3] = <strong>{descs[3]}</strong>;
+            switch (x.d0[0]) {
+                case ZeroPhaseDecisionTag.None:
+                case ZeroPhaseDecisionTag.YesChargeModeOff:
+                case ZeroPhaseDecisionTag.YesNotActive:
+                case ZeroPhaseDecisionTag.YesRotatedForB1:
+                case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
+                case ZeroPhaseDecisionTag.YesPhaseOverload:
+                case ZeroPhaseDecisionTag.YesPVExcessOverload:
+                case ZeroPhaseDecisionTag.YesWaitingForRotation:
+                    // Hide
+                    break;
+
+
+                case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
+                case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
+                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    break;
+            }
+            switch (x.d1[0]) {
+                case OnePhaseDecisionTag.None:
+                case OnePhaseDecisionTag.NoFixed3p:
+                case OnePhaseDecisionTag.NoPhaseMinimum:
+                case OnePhaseDecisionTag.NoPhaseImprovement:
+                case OnePhaseDecisionTag.NoForced3pUntil:
+                case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+                    // Hide
+                    break;
+
+                case OnePhaseDecisionTag.YesSwitchedToFixed1p:
+                case OnePhaseDecisionTag.YesNormal:
+                case OnePhaseDecisionTag.YesWelcomeChargeUntil:
+                case OnePhaseDecisionTag.YesWakingUp:
+                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    break;
+            }
+            switch (x.d3[0]) {
+                case ThreePhaseDecisionTag.None:
+                case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
+                case ThreePhaseDecisionTag.YesNormal:
+                case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
+                case ThreePhaseDecisionTag.YesWakingUp:
+                case ThreePhaseDecisionTag.NoFixed1p:
+                    // Hide
+                    break;
+
+                case ThreePhaseDecisionTag.NoPhaseMinimum:
+                case ThreePhaseDecisionTag.NoPhaseImprovement:
+                case ThreePhaseDecisionTag.NoForced1pUntil:
+                case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
+                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    break;
+            }
             break;
-        default:
+        case 3:
+            switch (x.d0[0]) {
+                case ZeroPhaseDecisionTag.None:
+                case ZeroPhaseDecisionTag.YesChargeModeOff:
+                case ZeroPhaseDecisionTag.YesNotActive:
+                case ZeroPhaseDecisionTag.YesRotatedForB1:
+                case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
+                case ZeroPhaseDecisionTag.YesPhaseOverload:
+                case ZeroPhaseDecisionTag.YesPVExcessOverload:
+                case ZeroPhaseDecisionTag.YesWaitingForRotation:
+                    // Hide
+                    break;
+
+
+                case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
+                case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
+                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    break;
+            }
+            switch (x.d1[0]) {
+                case OnePhaseDecisionTag.None:
+                case OnePhaseDecisionTag.NoFixed3p:
+                case OnePhaseDecisionTag.YesSwitchedToFixed1p:
+                case OnePhaseDecisionTag.YesNormal:
+                case OnePhaseDecisionTag.YesWelcomeChargeUntil:
+                case OnePhaseDecisionTag.YesWakingUp:
+                    // Hide
+                    break;
+
+                case OnePhaseDecisionTag.NoPhaseMinimum:
+                case OnePhaseDecisionTag.NoPhaseImprovement:
+                case OnePhaseDecisionTag.NoForced3pUntil:
+                case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    break;
+            }
+            switch (x.d3[0]) {
+                case ThreePhaseDecisionTag.None:
+                case ThreePhaseDecisionTag.NoPhaseMinimum:
+                case ThreePhaseDecisionTag.NoPhaseImprovement:
+                case ThreePhaseDecisionTag.NoForced1pUntil:
+                case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
+                case ThreePhaseDecisionTag.NoFixed1p:
+                    // Hide
+                    break;
+
+                case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
+                case ThreePhaseDecisionTag.YesNormal:
+                case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
+                case ThreePhaseDecisionTag.YesWakingUp:
+                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    break;
+            }
             break;
     }
 
-
-    return <>
-        <div>{descs[0]}</div>
-        <div>{descs[1]}</div>
-        <div>{descs[2]}</div>
-        <div>{descs[3]}</div>
-    </>
+    // De-sparse array
+    descs = descs.filter(d => d !== undefined);
+    return [descs, details];
 }
 
+function CMStatusCharger(props: {
+        show_eco_chart: boolean,
+        uptime: number,
+        charge_manager_state: number,
+        default_mode: ConfigChargeMode,
+        charger_count: number,
+        charger_index: number,
+        charge_mode: ConfigChargeMode,
+        charger_state: API.getType['charge_manager/state']['chargers'][0],
+        charger_config: API.getType['charge_manager/config']['chargers'][0]
+    }) {
+    const [showDetails, setShowDetails] = useState(false);
+
+    let c_state = "";
+    let c_info = "";
+    let c_body_classes = "";
+
+    const c = props.charger_state
+
+    let last_update = Math.floor((props.uptime - c.lu) / 1000);
+
+    let cur = c.ac / 1000.0;
+    let p = c.ap;
+    let kw = util.toLocaleFixed(cur * p * 230 / 1000.0, 3);
+
+    let c_status_text = `${util.toLocaleFixed(cur, 3)} A @ ${p}p = ${kw} kW ${__("charge_manager.script.ampere_allocated")}`;
+
+    if (last_update >= 10)
+        c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
+
+    if (c.s != CASState.Error) {
+        if (props.charge_manager_state == 2) {
+            c_body_classes = "bg-warning bg-disabled";
+            c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
+            c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
+        } else {
+            c_state = __("charge_manager.script.charge_state")(c.s);
+        }
+    }
+    else {
+        if (c.e < CASError.ClientErrorOK)
+            c_state = __("charge_manager.script.charge_error_type_management");
+        else
+            c_state = __("charge_manager.script.charge_error_type_client");
+
+        c_body_classes = "bg-danger text-white bg-disabled";
+        c_info = __("charge_manager.script.charge_error")(c.e);
+    }
+
+    let charger_config = props.charger_config;
+    const name_link = (API.is_dirty("charge_manager/config") || !charger_config || util.remoteAccessMode) ? c.n :
+                        <a target="_blank" rel="noopener noreferrer" href={(charger_config.host == '127.0.0.1' || charger_config.host == 'localhost') ? '/' : "http://" + charger_config.host}>{c.n}</a>
+
+    let [desc, details] = alloc_decision_to_text(c)
+    if (c_info != "")
+        desc = [c_info];
+
+    return  <div class={"card " + (props.charger_index + 1 == props.charger_count ? "mb-0" : "")}>
+                <div class="card-header">
+                    <div class="row align-items-center mx-n1">
+                        <div class="col px-1"><h5 class="m-0">{name_link}</h5></div>
+                        <div class="col-auto px-1">
+                            <InputSelect
+                                items={API.get("charge_manager/supported_charge_modes")
+                                    .map(x => [x.toString(), __("charge_manager.status.mode_by_index")(x, props.default_mode)])
+                                }
+                                value={props.charge_mode.toString()}
+                                onValue={x => API.call_with_path("charge_manager/charge_modes", props.charger_index, parseInt(x))}
+                                />
+                        </div>
+                    </div>
+                </div>
+                <div class={"card-body " + c_body_classes}>
+                    <h5 class={"card-title my-0"}><Button
+                        className="mr-2"
+                        size="sm"
+                        onClick={() => setShowDetails(!showDetails)}>
+                        <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                    </Button>{c_state}</h5>
+                    <Collapse in={!showDetails}>
+                        <div>
+                            <div class={"card-text"} style={desc.length > 0 ? "margin-top: 0.75rem;" : ""}>
+                                {desc}
+                            </div>
+                        </div>
+                    </Collapse>
+                    <Collapse in={showDetails}>
+                        <div>
+                            <div class={"card-text"} style="margin-top: 0.75rem;">
+                                {details}
+                            </div>
+                        </div>
+                    </Collapse>
+{/*#if MODULE_ECO_AVAILABLE*/}
+                    <Collapse in={props.show_eco_chart}>
+                        <div><div class="mt-3">
+                            <EcoChart charger_id={props.charger_index} />
+                        </div></div>
+                    </Collapse>
+{/*#endif*/}
+                </div>
+                <div class="card-footer">
+                    <span>{c_status_text}</span>
+                </div>
+            </div>
+}
 
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
     constructor() {
@@ -329,77 +589,21 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
 //#endif
         const default_mode = API.get("power_manager/config").default_mode;
-        const charge_modes = API.get("charge_manager/charge_modes")
+        const charge_modes = API.get("charge_manager/charge_modes");
+        const uptime = API.get("info/keep_alive").uptime;
 
-        let cards = state.state.chargers.map((c, i) => {
-            let c_state = "";
-            let c_info = "";
-            let c_body_classes = "";
-
-            let last_update = Math.floor((state.uptime - c.lu) / 1000);
-            let c_status_text = `${util.toLocaleFixed(c.sc / 1000.0, 3)} A @ ${((c.sp & 4) != 0) ? "3p/1" : c.sp}p ${__("charge_manager.script.ampere_supported")}`;
-
-            if (last_update >= 10)
-                c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));
-
-            if (c.s != CASState.Error) {
-                if (state.state.state == 2) {
-                    c_body_classes = "bg-warning bg-disabled";
-                    c_state = __("charge_manager.script.charge_state_blocked_by_other_box");
-                    c_info = __("charge_manager.script.charge_state_blocked_by_other_box_details");
-                } else {
-                    c_state = __("charge_manager.script.charge_state")(c.s);
-                    let cur = c.ac / 1000.0;
-                    let p = c.ap;
-                    let kw = util.toLocaleFixed(cur * p * 230 / 1000.0, 3);
-
-                    c_info = `${util.toLocaleFixed(cur, 3)} A @ ${p}p = ${kw} kW ${__("charge_manager.script.ampere_allocated")}`
-                }
-            }
-            else {
-                if (c.e < CASError.ClientErrorOK)
-                    c_state = __("charge_manager.script.charge_error_type_management");
-                else
-                    c_state = __("charge_manager.script.charge_error_type_client");
-
-                c_body_classes = "bg-danger text-white bg-disabled";
-                c_info = __("charge_manager.script.charge_error")(c.e);
-            }
-
-            let charger_config = state.config.chargers[i];
-            const name_link = (API.is_dirty("charge_manager/config") || !charger_config || util.remoteAccessMode) ? c.n :
-                                <a target="_blank" rel="noopener noreferrer" href={(charger_config.host == '127.0.0.1' || charger_config.host == 'localhost') ? '/' : "http://" + charger_config.host}>{c.n}</a>
-
-            return  <div class={"card " + (i + 1 == state.config.chargers.length ? "mb-0" : "")}>
-                        <h5 class="card-header">
-                            {name_link}
-                            <InputSelect
-                                items={API.get("charge_manager/supported_charge_modes")
-                                       .map(x => [x.toString(), __("charge_manager.status.mode_by_index")(x, default_mode)])
-                                }
-                                value={charge_modes[i].toString()}
-                                onValue={x => API.call_with_path("charge_manager/charge_modes", i, parseInt(x))}
-                                />
-                        </h5>
-                        <div class={"card-body " + c_body_classes}>
-                            <h5 class="card-title">{c_state}</h5>
-                            <span class="card-text">{c_info}</span>
-                            <div class="card-text">
-                                {alloc_decision_to_text(c)}
-                            </div>
-{/*#if MODULE_ECO_AVAILABLE*/}
-                            <Collapse in={show_eco_chart}>
-                                <div><div class="mt-3">
-                                    <EcoChart charger_id={i} />
-                                </div></div>
-                            </Collapse>
-{/*#endif*/}
-                        </div>
-                        <div class="card-footer">
-                            <span>{c_status_text}</span>
-                        </div>
-                    </div>
-        });
+        let cards = state.state.chargers.map((c, i) =>
+            <CMStatusCharger
+                show_eco_chart={show_eco_chart}
+                uptime={uptime}
+                charge_manager_state={state.state.state}
+                default_mode={default_mode}
+                charger_count={state.config.chargers.length}
+                charger_index={i}
+                charge_mode={charge_modes[i]}
+                charger_state={c}
+                charger_config={state.config.chargers[i]}
+            />);
 
         let controls_only_self = false && (state.config.chargers.length == 1
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
