@@ -198,6 +198,8 @@ bool update_from_client_packet(
         int max_phase_current = -1;
 
         for (int i = 0; i < 3; i++) {
+            // If this client's energy meter does not support measuring line currents,
+            // they are sent as nan.
             if (isnan(v1->line_currents[i])) {
                 // Don't trust the line currents if one is missing.
                 max_phase_current = 32000;
@@ -206,14 +208,18 @@ bool update_from_client_packet(
 
             max_phase_current = std::max(max_phase_current, (int)(v1->line_currents[i] * 1000.0f));
         }
-        // The CM protocol sends 0 instead of nan.
+        // Clients send 0 instead of nan if they have no energy meter connected.
+        // We could fix this, but for compatibility with older client firmwares,
+        // 0 has to be handled separately.
+        // This assumes that a charging vehicle will draw enough current
+        // for the meter to measure != 0 mA.
         if (max_phase_current == 0)
             max_phase_current = 32000;
 
         max_phase_current += cfg->requested_current_margin;
 
         max_phase_current = std::max(6000, std::min(32000, max_phase_current));
-        requested_current = std::min(requested_current, (uint16_t)max_phase_current);
+        requested_current = std::min(v1->supported_current, (uint16_t)max_phase_current);
     }
     if (abs((int)target.requested_current - (int)requested_current) > 1500) {
         trace("RECV %d: requested %u -> %u mA (measured %.3fA %.3fA %.3fA)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
