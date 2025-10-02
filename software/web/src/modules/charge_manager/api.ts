@@ -8,14 +8,23 @@ import { CASState } from "./cas_state.enum";
 import { CASError } from "./cas_error.enum";
 
 type ChargerState = {
+    /** state */
     s: CASState,
+    /** error */
     e: CASError,
+    /** allocated_current */
     ac: number,
+    /** allocated_phases */
     ap: number,
+    /** supported_current */
     sc: number,
+    /** supported_phases */
     sp: number,
+    /** last_update */
     lu: number,
+    /** name */
     n: string,
+    /** uid */
     u: number,
     d0: ZeroPhaseDecision,
     d1: OnePhaseDecision,
@@ -73,12 +82,23 @@ export interface scan {
 }
 
 interface ChargerLowLevelState {
+    /** bits
+        0 cp_disc_supported
+        1 cp_disc_state
+        2 phase_switch_supported
+        3 phases (2) */
     b: number
+    /** requested_current */
     rc: number
+    /** allocated_energy */
     ae: number
+    /** last_switch_on */
     ls: number
+    /** just_plugged_in_timestamp */
     lp: number
+    /** last_wakeup */
     lw: number
+    /** use_supported_current */
     ip: number
 }
 
