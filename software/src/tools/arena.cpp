@@ -1,4 +1,4 @@
-#include "linear_allocator.h"
+#include "arena.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +11,7 @@
 
 #include "gcc_warnings.h"
 
-LinearAllocator::LinearAllocator(aligned_alloc_fn_t *aligned_alloc_function,
+Arena::Arena(aligned_alloc_fn_t *aligned_alloc_function,
                                  size_t minimum_alignment,
                                  size_t initial_capacity,
                                  size_t block_capacity_)
@@ -22,11 +22,11 @@ LinearAllocator::LinearAllocator(aligned_alloc_fn_t *aligned_alloc_function,
       head(nullptr)
 {}
 
-static LinearAllocator::BlockHeader *adopt_memory(void *mem, size_t size)
+static Arena::BlockHeader *adopt_memory(void *mem, size_t size)
 {
-    auto *result = static_cast<LinearAllocator::BlockHeader *>(mem);
+    auto *result = static_cast<Arena::BlockHeader *>(mem);
     result->next = nullptr;
-    result->capacity = size - sizeof(LinearAllocator::BlockHeader);
+    result->capacity = size - sizeof(Arena::BlockHeader);
     result->used = 0;
     // + 1 block header points to the memory behind the header
     result->memory = reinterpret_cast<uint8_t *>(result + 1);
@@ -34,13 +34,13 @@ static LinearAllocator::BlockHeader *adopt_memory(void *mem, size_t size)
     return result;
 }
 
-bool LinearAllocator::setup(std::initializer_list<std::pair<void *, size_t>> preallocated_blocks)
+bool Arena::setup(std::initializer_list<std::pair<void *, size_t>> preallocated_blocks)
 {
     size_t preallocd = 0;
 
     BlockHeader **ptr = &this->head;
     for (const auto &b : preallocated_blocks) {
-        if (b.second < sizeof(LinearAllocator::BlockHeader))
+        if (b.second < sizeof(Arena::BlockHeader))
             continue;
 
         *ptr = adopt_memory(b.first, b.second);
@@ -62,7 +62,7 @@ bool LinearAllocator::setup(std::initializer_list<std::pair<void *, size_t>> pre
     return true;
 }
 
-LinearAllocator::BlockHeader *LinearAllocator::alloc_next_block(size_t capacity)
+Arena::BlockHeader *Arena::alloc_next_block(size_t capacity)
 {
     // BlockHeader has alignas(MAX_ALIGNMENT)
     // -> it is padded to MAX_ALIGNMENT
@@ -87,7 +87,7 @@ static size_t get_padding(size_t offset, size_t alignment)
     return padding;
 }
 
-void *LinearAllocator::aligned_alloc(size_t align, size_t size)
+void *Arena::aligned_alloc(size_t align, size_t size)
 {
     align = std::max(align, min_alignment);
 
@@ -225,7 +225,7 @@ void *LinearAllocator::aligned_alloc(size_t align, size_t size)
     return start;
 }
 
-void *LinearAllocator::alloc(size_t size)
+void *Arena::alloc(size_t size)
 {
     // Have to check size == 0 here to prevent undefined left shift.
     if (size == 0) {
@@ -238,7 +238,7 @@ void *LinearAllocator::alloc(size_t size)
 }
 
 #ifdef DEBUG_FS_ENABLE
-bool LinearAllocator::check_integrity() const
+bool Arena::check_integrity() const
 {
     size_t allocs_seen = 0;
     size_t padding_seen = 0;
@@ -274,7 +274,7 @@ bool LinearAllocator::check_integrity() const
             }
 
             // Check padding
-            uint8_t pad[LinearAllocator::MAX_ALIGNMENT];
+            uint8_t pad[Arena::MAX_ALIGNMENT];
             memcpy(pad, block->memory + offset, padding);
             uint8_t *pad_ptr = pad;
 
@@ -313,7 +313,7 @@ bool LinearAllocator::check_integrity() const
 }
 #endif
 
-void LinearAllocator::print_statistics() {
+void Arena::print_statistics() {
     logger.printfln("allocs %zu padding overhead %zu blocks %zu", allocs, padding_overhead, allocated_blocks);
     BlockHeader *ptr = this->head;
     size_t i = 0;

@@ -26,7 +26,7 @@
 #include <vector>
 //#include <stdio.h>
 
-#include "linear_allocator.h"
+#include "arena.h"
 
 void tools_malloc_pre_setup();
 
@@ -56,7 +56,7 @@ void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, R
 template<typename T, class... Args>
 [[gnu::malloc]]
 T *perm_new(RAM r, Args&&... args) {
-    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+    static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_alloc_aligned(alignof(T), sizeof(T), r);
     if (mem == nullptr)
@@ -70,7 +70,7 @@ T *perm_new(RAM r, Args&&... args) {
 template<typename T, class... Args>
 [[gnu::malloc]]
 T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
-    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+    static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T), r1, r2, r3);
     if (mem == nullptr)
@@ -84,7 +84,7 @@ T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
 template<typename T, class... Args>
 [[gnu::malloc]]
 T *perm_new_array(size_t count, RAM r) {
-    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+    static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_alloc_aligned(alignof(T), sizeof(T) * count, r);
     if (mem == nullptr)
@@ -98,7 +98,7 @@ T *perm_new_array(size_t count, RAM r) {
 template<typename T, class... Args>
 [[gnu::malloc]]
 T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
-    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+    static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T) * count, r1, r2, r3);
     if (mem == nullptr)

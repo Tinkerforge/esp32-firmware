@@ -9,7 +9,7 @@
 
 //#include "gcc_warnings.h"
 
-struct LinearAllocator {
+struct Arena {
     /*
     alloc(5, 1);
     alloc(8, 8);
@@ -56,18 +56,18 @@ struct LinearAllocator {
     // block_capacity_ is the size of blocks allocated when all previous blocks are full.
     //     Note that larger allocations (block_capacity_ < size <= MAX_ALLOC) will be allocated
     //     as a separate block, so this is where smaller allocs are stored.
-    LinearAllocator(aligned_alloc_fn_t *aligned_alloc_function,
+    Arena(aligned_alloc_fn_t *aligned_alloc_function,
                     size_t minimum_alignment,
                     size_t initial_capacity,
                     size_t block_capacity_);
 
     bool setup(std::initializer_list<std::pair<void *, size_t>> preallocated_blocks);
 
-    // Don't copy or move the allocator.
-    LinearAllocator(const LinearAllocator&) = delete;
-    LinearAllocator &operator=(const LinearAllocator&) = delete;
-    LinearAllocator(LinearAllocator&&) = delete;
-    LinearAllocator &operator=(LinearAllocator&&) = delete;
+    // Don't copy or move the arena.
+    Arena(const Arena&) = delete;
+    Arena &operator=(const Arena&) = delete;
+    Arena(Arena&&) = delete;
+    Arena &operator=(Arena&&) = delete;
 
     void *aligned_alloc(size_t alignment, size_t size);
     void *alloc(size_t size);

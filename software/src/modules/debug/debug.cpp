@@ -480,19 +480,19 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
 }
 #endif
 
-extern LinearAllocator dram_lin_alloc;
-extern LinearAllocator iram_lin_alloc;
+extern Arena dram_arena;
+extern Arena iram_arena;
 #if defined(BOARD_HAS_PSRAM)
-extern LinearAllocator psram_lin_alloc;
+extern Arena psram_arena;
 #endif
 
 void Debug::register_urls()
 {
     task_scheduler.scheduleOnce([](){
-        dram_lin_alloc.print_statistics();
-        iram_lin_alloc.print_statistics();
+        dram_arena.print_statistics();
+        iram_arena.print_statistics();
 #if defined(BOARD_HAS_PSRAM)
-        psram_lin_alloc.print_statistics();
+        psram_arena.print_statistics();
 #endif
     }, 10_s);
 
