@@ -309,7 +309,9 @@ void Meters::setup()
         bool update_history = current_history_slot != last_history_slot;
         int32_t live_samples[OPTIONS_METERS_MAX_SLOTS()];
         int32_t history_samples[OPTIONS_METERS_MAX_SLOTS()];
+#if MODULE_WS_AVAILABLE()
         bool valid_samples[OPTIONS_METERS_MAX_SLOTS()];
+#endif
         StringBuilder sb;
 
         for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
@@ -317,10 +319,12 @@ void Meters::setup()
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
                 meter_slot.power_history.tick(now, update_history, &live_samples[slot], &history_samples[slot]);
+#if MODULE_WS_AVAILABLE()
                 valid_samples[slot] = true;
             }
             else {
                 valid_samples[slot] = false;
+#endif
             }
         }
 
