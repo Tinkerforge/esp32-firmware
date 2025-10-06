@@ -189,6 +189,9 @@ void BatteriesModbusTCP::pre_setup()
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::SungrowHybridInverter, Config::Object({
         {"device_address", Config::Uint8(DefaultDeviceAddress::SungrowHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+        {"grid_charge_power", Config::Uint16(1000)},
+        {"max_discharge_power", Config::Uint16(1500)},
+        {"max_charge_power", Config::Uint16(3000)},
     })});
 
     execute_config = ConfigRoot{Config::Object({
@@ -213,8 +216,7 @@ void BatteriesModbusTCP::register_urls()
         Config *table_config = static_cast<Config *>(execute_config.get("table")->get());
         uint8_t device_address;
         BatteryAction action;
-        const BatteryModbusTCP::TableSpec *table;
-        BatteryModbusTCP::TableSpec *table_to_free = nullptr;
+        BatteryModbusTCP::TableSpec *table;
 
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
@@ -223,14 +225,13 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::Custom:
             device_address = table_config->get("device_address")->asUint8();
-            table_to_free = BatteryModbusTCP::load_table(table_config, false);
-            table = table_to_free;
+            table = BatteryModbusTCP::load_custom_table(table_config, false);
             break;
 
         case BatteryModbusTCPTableID::VictronEnergyGX:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = get_victron_energy_gx_table(action);
+            table = load_victron_energy_gx_table(action);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Victron Energy GX action: %u", static_cast<uint8_t>(action));
@@ -242,7 +243,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::DeyeHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = get_deye_hybrid_inverter_table(action);
+            table = load_deye_hybrid_inverter_table(action);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Deye Hybrid Inverter action: %u", static_cast<uint8_t>(action));
@@ -254,7 +255,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::AlphaESSHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = get_alpha_ess_hybrid_inverter_table(action);
+            table = load_alpha_ess_hybrid_inverter_table(action);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Alpha ESS Hybrid Inverter action: %u", static_cast<uint8_t>(action));
@@ -266,7 +267,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::HaileiHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = get_hailei_hybrid_inverter_table(action);
+            table = load_hailei_hybrid_inverter_table(action);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Hailei Hybrid Inverter action: %u", static_cast<uint8_t>(action));
@@ -278,7 +279,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::SungrowHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = get_sungrow_hybrid_inverter_table(action);
+            table = load_sungrow_hybrid_inverter_table(action, table_config);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Sungrow Hybrid Inverter action: %u", static_cast<uint8_t>(action));
@@ -307,19 +308,19 @@ void BatteriesModbusTCP::register_urls()
         };
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [cookie, host, port, device_address, table, table_to_free](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [cookie, host, port, device_address, table](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char error[256] = "";
 
                 GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, host.c_str(), port, error, sizeof(error));
                 report_errorf(cookie, "%s", error);
-                BatteryModbusTCP::free_table(table_to_free);
+                BatteryModbusTCP::free_table(table);
                 return;
             }
 
             TFModbusTCPSharedClient *client = static_cast<TFModbusTCPSharedClient *>(shared_client);
 
-            BatteryModbusTCP::execute(client, device_address, table, [cookie, client, table_to_free](const char *error) {
+            BatteryModbusTCP::execute(client, device_address, table, [cookie, client, table](const char *error) {
                 if (error == nullptr) {
                     report_success(cookie);
                 }
@@ -331,7 +332,7 @@ void BatteriesModbusTCP::register_urls()
                     modbus_tcp_client.get_pool()->release(client);
                 });
 
-                BatteryModbusTCP::free_table(table_to_free);
+                BatteryModbusTCP::free_table(table);
             });
         },
         [](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
