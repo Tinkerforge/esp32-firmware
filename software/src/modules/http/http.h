@@ -22,6 +22,7 @@
 #include "module.h"
 #include "config.h"
 #include "modules/api/api.h"
+#include "modules/web_server/web_server.h"
 #include "tools.h"
 #include "module_available.h"
 

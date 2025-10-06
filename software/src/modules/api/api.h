@@ -21,14 +21,12 @@
 
 #include <WString.h>
 #include <functional>
-#include <initializer_list>
 #include <vector>
 
 #include "module.h"
 #include "config.h"
 #include "chunked_response.h"
 #include "tools/allocator.h"
-#include "modules/web_server/web_server.h"
 
 // Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct StateRegistration {
