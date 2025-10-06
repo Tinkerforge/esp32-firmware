@@ -154,6 +154,9 @@ String API::getLittleFSConfigPath(const String &path, bool tmp) {
 
 void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
 {
+    if (boot_stage != BootStage::REGISTER_URLS)
+        esp_system_abort("Registering APIs is only allowed in register_urls!");
+
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<std::result_of<decltype(&CommandRegistration::get_path_len)(CommandRegistration)>::type>::max()) {
@@ -215,6 +218,9 @@ void API::addCommand(const String &path, ConfigRoot *config, const std::vector<c
 
 void API::addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
 {
+    if (boot_stage != BootStage::REGISTER_URLS)
+        esp_system_abort("Registering APIs is only allowed in register_urls!");
+
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_path_len)(StateRegistration)>::type>::max()) {
@@ -300,6 +306,9 @@ void API::addState(const String &path, ConfigRoot *config, const std::vector<con
 
 bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report)
 {
+    if (boot_stage != BootStage::REGISTER_URLS)
+        esp_system_abort("Registering APIs is only allowed in register_urls!");
+
     if (path.length() > 63) {
         logger.printfln("The maximum allowed config path length is 63 bytes. Got %u bytes instead.", path.length());
         return false;
@@ -382,6 +391,9 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
 
 void API::addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
 {
+    if (boot_stage != BootStage::REGISTER_URLS)
+        esp_system_abort("Registering APIs is only allowed in register_urls!");
+
     size_t path_len = strlen(path);
 
     if (path_len > std::numeric_limits<decltype(ResponseRegistration::path_len)>::max()) {
