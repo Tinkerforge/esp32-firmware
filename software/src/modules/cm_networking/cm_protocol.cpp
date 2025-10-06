@@ -30,6 +30,15 @@
 #include "tools/net.h"
 #include "modules/meters/meter_defs.h"
 
+static const char *get_charger_name(uint8_t idx)
+{
+#if MODULE_CHARGE_MANAGER_AVAILABLE()
+    return charge_manager->get_charger_name(idx);
+#else
+    return "<unknown-charger>";
+#endif
+}
+
 int CMNetworking::create_socket(uint16_t port, bool blocking)
 {
     int sock;
@@ -349,7 +358,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("Received state packet from %s (%s) (%i bytes) failed validation: %s",
-                                charge_manager.get_charger_name(charger_idx),
+                                get_charger_name(charger_idx),
                                 source_str,
                                 len,
                                 validation_error.c_str());
@@ -364,7 +373,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("Received stale (out of order?) state packet from %s (%s). Last seen seq_num is %u, Received seq_num is %u",
-                                charge_manager.get_charger_name(charger_idx),
+                                get_charger_name(charger_idx),
                                 source_str,
                                 last_seen_seq_num[charger_idx],
                                 state_pkt.header.seq_num);
@@ -378,8 +387,9 @@ void CMNetworking::register_manager(const char *const *const hosts,
                 tf_ip4addr_ntoa(&source_addr, source_str, sizeof(source_str));
 
                 logger.printfln("%s (%s) reports managed is not activated!",
-                    charge_manager.get_charger_name(charger_idx),
-                    source_str);
+                                get_charger_name(charger_idx),
+                                source_str);
+
                 if (manager_error_callback) {
                     manager_error_callback(charger_idx, CM_NETWORKING_ERROR_NOT_MANAGED);
                 }
