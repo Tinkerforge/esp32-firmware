@@ -22,6 +22,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include <span>
+#include <vector>
 //#include <stdio.h>
 
 #include "linear_allocator.h"
@@ -108,6 +110,23 @@ T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
 }
 
 char *perm_strdup(const char *c);
+
+template<typename T>
+std::span<T> make_permanent(std::vector<T> &&src, RAM r) {
+    auto size = src.size();
+    if (size == 0)
+        return std::span<T>{};
+
+    // Have to use alloc + placement new here:
+    // T can have const members that can't be set after allocating them with new.
+    auto *dst = static_cast<T *>(perm_alloc_aligned(alignof(T), sizeof(T) * size, r));
+    for (size_t i = 0; i < size; ++i)
+        new(dst + i) T{std::move(src[i])};
+
+    src.clear();
+    src.shrink_to_fit();
+    return {dst, size};
+}
 
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);

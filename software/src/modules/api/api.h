@@ -22,6 +22,7 @@
 #include <WString.h>
 #include <functional>
 #include <vector>
+#include <span>
 
 #include "module.h"
 #include "config.h"
@@ -117,6 +118,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
     String callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
@@ -155,9 +157,9 @@ public:
 
     size_t registerBackend(IAPIBackend *backend);
 
-    std::vector<StateRegistration, IRAMAlloc<StateRegistration>> states;
-    std::vector<CommandRegistration, IRAMAlloc<CommandRegistration>> commands;
-    std::vector<ResponseRegistration> responses;
+    std::span<StateRegistration> states;
+    std::span<CommandRegistration> commands;
+    std::span<ResponseRegistration> responses;
 
     // There are currently only 4 implementors of IAPIBackend:
     // event, http, mqtt and ws
@@ -205,4 +207,11 @@ private:
 
     Config features_prototype;
     Config modified_prototype;
+
+    struct RegistrationCollector {
+        std::vector<StateRegistration> states;
+        std::vector<CommandRegistration> commands;
+        std::vector<ResponseRegistration> responses;
+    };
+    RegistrationCollector *reg_collector;
 };
