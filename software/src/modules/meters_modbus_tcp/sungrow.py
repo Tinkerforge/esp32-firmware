@@ -263,7 +263,7 @@ specs = [
             {
                 'name': 'Grid Frequency [0.1 Hz]',
                 'value_id': 'FrequencyLAvg',
-                'start_address': 5036,
+                'start_number': 5036,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
