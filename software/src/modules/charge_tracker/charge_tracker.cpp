@@ -1097,16 +1097,19 @@ static void handle_upload_retry(std::unique_ptr<SendChargeLogArgs> upload_args)
                     upload_retry_count, delay_minutes);
 }
 
-static void check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload_args)
+static esp_err_t check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload_args)
 {
     int status = upload_args->remote_client->read_response_status();
     if (status == ESP_ERR_HTTP_EAGAIN) {
         // The parent task holds the pointer to upload_args and turns it into a unique_ptr again.
         upload_args.release();
-        return;
+        return ESP_OK;
     } else if (status == 200) {
-        charge_tracker.config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
-        API::writeConfig("charge_tracker/config", &charge_tracker.config);
+        task_scheduler.await([]() {
+            charge_tracker.config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+            API::writeConfig("charge_tracker/config", &charge_tracker.config);
+        });
+
         logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
         charge_tracker.send_in_progress = false;
         upload_args->remote_client->close_chunked_request();
@@ -1115,7 +1118,7 @@ static void check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload
         upload_args->remote_client->close_chunked_request();
         handle_upload_retry(std::move(upload_args));
     }
-    task_scheduler.cancel(task_scheduler.currentTaskId());
+    return ESP_OK;
 }
 
 static String build_filename(const time_t start, const time_t end, FileType file_type, Language language) {
@@ -1307,18 +1310,25 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     upload_args->remote_client->send_chunk("]}", 2); // JSON footer
     upload_args->remote_client->finish_chunked_request();
 
-    task_scheduler.scheduleWithFixedDelay([upload_args = upload_args.release()]() mutable {
-        check_remote_client_status(std::unique_ptr<SendChargeLogArgs>{upload_args});
-    }, 1_s, 1_s);
+    SendChargeLogArgs *upload_args_ptr = upload_args.release();
+
+    while (check_remote_client_status(std::unique_ptr<SendChargeLogArgs>{upload_args_ptr}) == ESP_ERR_HTTP_EAGAIN) {
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
 }
 
 static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
 
 static void upload_charge_logs_task(void *arg)
 {
+#if MODULE_WATCHDOG_AVAILABLE()
+    const int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
+#endif
+
     const uint8_t *task_args = reinterpret_cast<const uint8_t *>(arg);
     const uint32_t remote_upload_config_count = task_args[0];
     const uint8_t retry_count = task_args[1];
+    const uint8_t specific_config_index = task_args[2];
 
     const time_t t_now = time(nullptr);
 
@@ -1349,20 +1359,40 @@ static void upload_charge_logs_task(void *arg)
     const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
     const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
 
+    // If specific_config_index is 255 (0xFF), upload for all configs, otherwise upload for specific config
+    if (specific_config_index == 255) {
         for (int user_idx = 0; user_idx < remote_upload_config_count; user_idx++) {
+            auto upload_request = std::make_unique<SendChargeLogArgs>();
+            upload_request->user_idx = user_idx;
+            upload_request->last_month_start_min = 0;
+            upload_request->last_month_end_min = t_now / 60;
+            upload_request->upload_retry_count = retry_count;
+            upload_request->next_retry_delay = millis_t{0};
+            upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
+
+            charge_tracker.send_file(std::move(upload_request));
+#if MODULE_WATCHDOG_AVAILABLE()
+            watchdog.reset(wd_handle);
+#endif
+        }
+    } else {
+        // Upload for specific config only
         auto upload_request = std::make_unique<SendChargeLogArgs>();
-        upload_request->user_idx = user_idx;
-        upload_request->last_month_start_min = last_month_start_min;
-        upload_request->last_month_end_min = last_month_end_min;
+        upload_request->user_idx = specific_config_index;
+        upload_request->last_month_start_min = 0;
+        upload_request->last_month_end_min = t_now / 60;
         upload_request->upload_retry_count = retry_count;
         upload_request->next_retry_delay = millis_t{0};
         upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
         charge_tracker.send_file(std::move(upload_request));
+        watchdog.reset(wd_handle);
     }
 
     charge_tracker.send_in_progress = false;
-
+#if MODULE_WATCHDOG_AVAILABLE()
+    watchdog.remove(wd_handle);
+#endif
     vTaskDelete(NULL); // exit RTOS task
 }
 
@@ -1374,9 +1404,45 @@ void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
 
     // 0 - remote upload config count
     // 1 - retry count
+    // 2 - specific user index (-1 for all users)
     uint8_t task_args[4] = {};
     task_args[0] = static_cast<uint8_t>(remote_upload_config_count);
     task_args[1] = retry_count;
+    task_args[2] = 255; // -1 for all users
+
+    void *task_params = reinterpret_cast<void *>(task_args);
+
+    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_params, 1, nullptr, 0);
+
+    if (ret != pdPASS_safe) {
+        logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+        send_in_progress = false;
+    }
+}
+
+void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, const uint8_t retry_count)
+{
+    uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
+
+    if (config_index >= remote_upload_config_count) {
+        logger.printfln("Invalid config index %u. Only %lu configurations available.", config_index, remote_upload_config_count);
+        return;
+    }
+
+    if (send_in_progress) {
+        logger.printfln("Another upload is already in progress");
+        return;
+    }
+
+    send_in_progress = true;
+
+    // 0 - remote upload config count (set to 1 since we're only uploading one)
+    // 1 - retry count
+    // 2 - specific user index
+    uint8_t task_args[4] = {};
+    task_args[0] = 1; // Only one config to upload
+    task_args[1] = retry_count;
+    task_args[2] = config_index;
 
     void *task_params = reinterpret_cast<void *>(task_args);
 

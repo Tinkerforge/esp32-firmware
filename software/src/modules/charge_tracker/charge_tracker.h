@@ -57,7 +57,8 @@ public:
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<SendChargeLogArgs> args);
-    void upload_charge_logs(const uint8_t retry_count);
+    void upload_charge_logs(const uint8_t retry_count = 0);
+    void upload_charge_log_for_config(const uint8_t config_index, const uint8_t retry_count = 0);
     bool send_in_progress = false;
 #endif
 
