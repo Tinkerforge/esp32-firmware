@@ -1,5 +1,25 @@
 table_prototypes = [
-    ('Sungrow Hybrid Inverter', ['device_address']),
+    ('Sungrow Hybrid Inverter', [
+        'device_address',
+        {
+            'action': 'Permit Grid Charge',
+            'name': 'grid_charge_power',
+            'type': 'Uint16',
+            'default': 1000,  # W
+        },
+        {
+            'action': 'Revoke Discharge Override',
+            'name': 'max_discharge_power',
+            'type': 'Uint16',
+            'default': 1500,  # 0.01 kW
+        },
+        {
+            'action': 'Revoke Charge Override',
+            'name': 'max_charge_power',
+            'type': 'Uint16',
+            'default': 3000,  # 0.01 kW
+        },
+    ]),
 ]
 
 default_device_addresses = [
@@ -33,8 +53,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13052,
                 'values': [
-                    1000,
+                    None,
                 ],
+                'mapping': 'values[0] = grid_charge_power;',
             },
         ],
     },
@@ -94,8 +115,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    1500,
+                    None,
                 ],
+                'mapping': 'values[0] = max_discharge_power;',
             },
         ],
     },
@@ -124,8 +146,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,
                 'values': [
-                    3000,
+                    None,
                 ],
+                'mapping': 'values[0] = max_charge_power;',
             },
         ],
     },
