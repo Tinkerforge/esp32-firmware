@@ -41,11 +41,11 @@ extern uint32_t _iram_start;
 // 0x400c2000 - 0x40bfffff flash text
 extern uint32_t _text_start;
 
-inline bool string_is_in_rodata(const char *str)
+inline bool address_is_in_rodata(const void *ptr)
 {
     // Everything in rodata has lower addresses than all other memories.
     // Checking against the upper address is enough.
-    return str < reinterpret_cast<char *>(&_rodata_end);
+    return ptr < reinterpret_cast<const void *>(&_rodata_end);
 }
 
 void check_memory_assumptions();

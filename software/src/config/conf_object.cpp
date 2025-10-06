@@ -56,7 +56,7 @@ Config *Config::ConfObject::get(const char *needle, size_t needle_len)
     const auto size = schema->length;
     const auto keys = schema->keys;
 
-    if (string_is_in_rodata(needle)) {
+    if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].val == needle) { // Address comparison, not string comparison
                 return &slot->values[i];
@@ -89,7 +89,7 @@ Config *Config::ConfObject::get_or_null(const char *needle, size_t needle_len)
     const auto size = schema->length;
     const auto keys = schema->keys;
 
-    if (string_is_in_rodata(needle)) {
+    if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].val == needle) { // Address comparison, not string comparison
                 return &slot->values[i];
@@ -122,7 +122,7 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
     const auto size = schema->length;
     const auto keys = schema->keys;
 
-    if (string_is_in_rodata(needle)) {
+    if (address_is_in_rodata(needle)) {
         for (size_t i = 0; i < size; ++i) {
             if (keys[i].val == needle) { // Address comparison, not string comparison
                 return &slot->values[i];
@@ -161,7 +161,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     for (size_t i = 0; i < len; ++i) {
         const char *key = val[i].first;
 
-        if (!string_is_in_rodata(key))
+        if (!address_is_in_rodata(key))
             esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
 
         for (size_t j = i + 1; j < len; ++j) {

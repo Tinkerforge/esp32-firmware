@@ -181,7 +181,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
-            if (!string_is_in_rodata(k))
+            if (!address_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -252,7 +252,7 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
     {
         int i = 0;
         for(const char *k : keys_to_censor){
-            if (!string_is_in_rodata(k))
+            if (!address_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -264,14 +264,14 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
     {
         int i = 0;
         for(const char *k : keys_to_censor){
-            if (!string_is_in_rodata(k))
+            if (!address_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc_debug[i] = k;
             ++i;
         }
         for(const char *k : keys_to_censor_in_debug_report){
-            if (!string_is_in_rodata(k))
+            if (!address_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc_debug[i] = k;
@@ -413,7 +413,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
-            if (!string_is_in_rodata(k))
+            if (!address_is_in_rodata(k))
                 esp_system_abort("Key to censor not in flash! Please pass a string literal!");
 
             ktc[i] = k;
@@ -907,7 +907,7 @@ String API::callCommand(const char *path, const Config::ConfUpdate &payload)
     CommandRegistration *reg = nullptr;
 
     // If the called path is in rodata, try a quick address check first.
-    if (string_is_in_rodata(path)) {
+    if (address_is_in_rodata(path)) {
         for (CommandRegistration &chk_reg : commands) {
             if (chk_reg.path == path) { // Address comparison
                 reg = &chk_reg;
@@ -948,7 +948,7 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
     }
 
     // If the requested path is in rodata, try a quick address check first.
-    if (string_is_in_rodata(path)) {
+    if (address_is_in_rodata(path)) {
         for (const auto &reg : states) {
             if (path == reg.path) { // Address check
                 return reg.config;
