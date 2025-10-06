@@ -33,7 +33,7 @@
 static const char *get_charger_name(uint8_t idx)
 {
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
-    return charge_manager->get_charger_name(idx);
+    return charge_manager.get_charger_name(idx);
 #else
     return "<unknown-charger>";
 #endif
