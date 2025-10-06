@@ -296,11 +296,11 @@ void CMNetworking::register_manager(const char *const *const hosts,
         task_data->xStack,
         &task_data->xTaskBuffer);
 
-    #if MODULE_DEBUG_AVAILABLE()
-        debug.register_task(xTask, sizeof(task_data->xStack));
-    #else
-        (void)xTask;
-    #endif
+#if MODULE_DEBUG_AVAILABLE()
+    debug.register_task(xTask, sizeof(task_data->xStack));
+#else
+    (void)xTask;
+#endif
 
     task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback, manager_queue](){
         static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
