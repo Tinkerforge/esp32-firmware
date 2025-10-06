@@ -156,8 +156,8 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 {
     const size_t len = val.size();
 
-    // No need to use leak_aligned_prefer here: 4 + n * 8 always has 4 as smallest power of two
-    // -> leak_prefer will use 4 byte alignment.
+    // No need to use perm_aligned_alloc_prefer here: 4 + n * 8 always has 4 as smallest power of two
+    // -> perm_alloc_prefer will use 4 byte alignment.
     static_assert(sizeof(ConfObjectSchema) % 8 == 4);
     static_assert(sizeof(ConfObjectSchema::Key) % 8 == 0);
     auto schema = static_cast<ConfObjectSchema *>(perm_alloc_prefer(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), IRAM, PSRAM, DRAM));
