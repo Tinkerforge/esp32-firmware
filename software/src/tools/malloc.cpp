@@ -59,7 +59,7 @@ void tools_malloc_pre_setup() {
 #endif
 }
 
-void *perm_alloc_aligned(size_t alignment, size_t size, RAM r) {
+void *perm_aligned_alloc(size_t alignment, size_t size, RAM r) {
     switch (r) {
         case DRAM:
             return dram_arena.aligned_alloc(alignment, size);
@@ -89,26 +89,26 @@ static size_t align(size_t size) {
 }
 
 void *perm_alloc(size_t size, RAM r) {
-    return perm_alloc_aligned(align(size), size, r);
+    return perm_aligned_alloc(align(size), size, r);
 }
 
-void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3) {
-    void *result = perm_alloc_aligned(alignment, size, r1);
+void *perm_aligned_alloc_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3) {
+    void *result = perm_aligned_alloc(alignment, size, r1);
     if (result == nullptr)
-        result = perm_alloc_aligned(alignment, size, r2);
+        result = perm_aligned_alloc(alignment, size, r2);
     if (result == nullptr)
-        result = perm_alloc_aligned(alignment, size, r3);
+        result = perm_aligned_alloc(alignment, size, r3);
 
     return result;
 }
 
 void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
-    return perm_alloc_aligned_prefer(align(size), size, r1, r2, r3);
+    return perm_aligned_alloc_prefer(align(size), size, r1, r2, r3);
 }
 
 char *perm_strdup(const char *c) {
     auto len = strlen(c) + 1;
-    auto *dst = perm_alloc_aligned(1, len, DRAM);
+    auto *dst = perm_aligned_alloc(1, len, DRAM);
     if (dst == nullptr)
         return nullptr;
     memcpy(dst, c, len);

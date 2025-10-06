@@ -45,20 +45,20 @@ enum RAM {
 void *perm_alloc(size_t size, RAM r);
 
 [[gnu::malloc, gnu::alloc_align(1)]]
-void *perm_alloc_aligned(size_t alignment, size_t size, RAM r);
+void *perm_aligned_alloc(size_t alignment, size_t size, RAM r);
 
 [[gnu::malloc]]
 void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
 
 [[gnu::malloc, gnu::alloc_align(1)]]
-void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
+void *perm_aligned_alloc_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
 
 template<typename T, class... Args>
 [[gnu::malloc]]
 T *perm_new(RAM r, Args&&... args) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
-    void *mem = perm_alloc_aligned(alignof(T), sizeof(T), r);
+    void *mem = perm_aligned_alloc(alignof(T), sizeof(T), r);
     if (mem == nullptr)
         return nullptr;
 
@@ -72,7 +72,7 @@ template<typename T, class... Args>
 T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
-    void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T), r1, r2, r3);
+    void *mem = perm_aligned_alloc_prefer(alignof(T), sizeof(T), r1, r2, r3);
     if (mem == nullptr)
         return nullptr;
 
@@ -86,7 +86,7 @@ template<typename T, class... Args>
 T *perm_new_array(size_t count, RAM r) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
-    void *mem = perm_alloc_aligned(alignof(T), sizeof(T) * count, r);
+    void *mem = perm_aligned_alloc(alignof(T), sizeof(T) * count, r);
     if (mem == nullptr)
         return nullptr;
 
@@ -100,7 +100,7 @@ template<typename T, class... Args>
 T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
-    void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T) * count, r1, r2, r3);
+    void *mem = perm_aligned_alloc_prefer(alignof(T), sizeof(T) * count, r1, r2, r3);
     if (mem == nullptr)
         return nullptr;
 
@@ -119,7 +119,7 @@ std::span<T> make_permanent(std::vector<T> &&src, RAM r) {
 
     // Have to use alloc + placement new here:
     // T can have const members that can't be set after allocating them with new.
-    auto *dst = static_cast<T *>(perm_alloc_aligned(alignof(T), sizeof(T) * size, r));
+    auto *dst = static_cast<T *>(perm_aligned_alloc(alignof(T), sizeof(T) * size, r));
     for (size_t i = 0; i < size; ++i)
         new(dst + i) T{std::move(src[i])};
 
