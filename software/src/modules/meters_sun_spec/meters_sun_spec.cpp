@@ -218,6 +218,7 @@ void MetersSunSpec::loop()
             scan_printfln("Scan finished");
             scan_flush_log();
 
+#if MODULE_WS_AVAILABLE()
             char buf[128];
             TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -229,6 +230,7 @@ void MetersSunSpec::loop()
             if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_done")) {
                 break; // need to report the scan as done before doing something else
             }
+#endif
 
             free(scan->read_error_message);
             delete_psram_or_dram(scan);
@@ -242,6 +244,7 @@ void MetersSunSpec::loop()
             scan->state = ScanState::Disconnect;
         }
         else {
+#if MODULE_WS_AVAILABLE()
             char buf[128];
             TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -254,6 +257,7 @@ void MetersSunSpec::loop()
             if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_progress")) {
                 break; // need to report scan progress before doing something else
             }
+#endif
 
             ++scan->device_address;
             scan->base_address_index = 0;
@@ -668,6 +672,7 @@ void MetersSunSpec::loop()
                 break;
             }
 
+#if MODULE_WS_AVAILABLE()
             char buf[512];
             TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -685,6 +690,7 @@ void MetersSunSpec::loop()
             if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_result")) {
                 break; // need to report the scan result before doing something else
             }
+#endif
 
             scan->read_address += scan->block_length; // skip block
             scan->state = ScanState::ReadModelID;
@@ -698,6 +704,7 @@ void MetersSunSpec::loop()
                 break;
             }
 
+#if MODULE_WS_AVAILABLE()
             char buf[64];
             TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -709,6 +716,7 @@ void MetersSunSpec::loop()
             if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_error")) {
                 break; // need to report the scan error before doing something else
             }
+#endif
 
             scan->state = scan->error_state;
         }
@@ -778,6 +786,7 @@ void MetersSunSpec::scan_flush_log()
         return;
     }
 
+#if MODULE_WS_AVAILABLE()
     char buf[1024];
     TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -786,11 +795,14 @@ void MetersSunSpec::scan_flush_log()
     json.addMemberString("message", scan->printfln_buffer);
     json.endObject();
     json.end();
+#endif
 
     scan->printfln_buffer_used = 0;
     scan->printfln_last_flush = now_us();
 
+#if MODULE_WS_AVAILABLE()
     ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_log"); // FIXME: error handling
+#endif
 }
 
 void MetersSunSpec::scan_printfln(const char *fmt, ...)
