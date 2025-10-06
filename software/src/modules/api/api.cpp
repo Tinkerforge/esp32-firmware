@@ -144,6 +144,14 @@ void API::setup()
         }
     }, 250_ms, 250_ms);
 
+    reg_collector = new RegistrationCollector;
+    reg_collector->states.reserve(300);
+    reg_collector->commands.reserve(200);
+    reg_collector->responses.reserve(4);
+    this->states = std::span{reg_collector->states.data(), reg_collector->states.size()};
+    this->commands = std::span{reg_collector->commands.data(), reg_collector->commands.size()};
+    this->responses = std::span{reg_collector->responses.data(), reg_collector->responses.size()};
+
     initialized = true;
 }
 
@@ -192,13 +200,14 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
                           | (is_action & 0xFF) <<  8;
 
 
-    commands.push_back({
+    reg_collector->commands.push_back({
         path,
         ktc,
         config,
         std::move(callback),
         command_data
     });
+    this->commands = std::span{reg_collector->commands.data(), reg_collector->commands.size()};
 
     const size_t commands_size = commands.size();
     const size_t commandIdx    = commands_size - 1;
@@ -280,13 +289,14 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
                         | (ktc_debug_size & 0xFF) <<  8
                         | (low_latency    & 0xFF) <<  0;
 
-    states.push_back({
+    reg_collector->states.push_back({
         path,
         ktc,
         ktc_debug,
         config,
         state_data
     });
+    this->states = std::span{reg_collector->states.data(), reg_collector->states.size()};
 
     const size_t states_size = states.size();
     const size_t stateIdx    = states_size - 1;
@@ -423,7 +433,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
         }
     }
 
-    responses.push_back({
+    reg_collector->responses.push_back({
         path,
         ktc,
         config,
@@ -431,6 +441,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
         static_cast<uint8_t>(path_len),
         static_cast<uint8_t>(ktc_size)
     });
+    this->responses = std::span{reg_collector->responses.data(), reg_collector->responses.size()};
 
     const size_t responses_size = responses.size();
     const size_t responseIdx    = responses_size - 1;
@@ -806,6 +817,15 @@ void API::register_urls()
 
     this->addState("info/features", &features);
     this->addState("info/version", &version);
+}
+
+void API::register_events() {
+    this->states = make_permanent(std::move(reg_collector->states), IRAM);
+    this->commands = make_permanent(std::move(reg_collector->commands), IRAM);
+    this->responses = make_permanent(std::move(reg_collector->responses), DRAM);
+
+    delete reg_collector;
+    reg_collector = nullptr;
 }
 
 size_t API::registerBackend(IAPIBackend *backend)
