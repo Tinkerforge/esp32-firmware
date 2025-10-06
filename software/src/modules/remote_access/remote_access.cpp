@@ -256,47 +256,41 @@ void RemoteAccess::handle_response_chunk(const AsyncHTTPSClientEvent *event)
 
 // Percent-encode a query string while preserving '=' between keys and values and '&' between pairs.
 // Encodes any byte not in [A-Za-z0-9-_.~=&] using %HH uppercase hex.
-static String url_encode_query(const char *query)
+static void url_encode_query(const StringWriter *query, StringWriter &out)
 {
     if (query == nullptr) {
-        return String();
+        return;
     }
-    const char *hex = "0123456789ABCDEF";
-    String out;
-    // Reserve a bit more than input length (worst-case 3x); cap to avoid huge reserves
-    size_t in_len = strlen(query);
-    size_t reserve_len = in_len * 3;
-    if (reserve_len > 1024) reserve_len = 1024; // soft cap to avoid large allocations
-    out.reserve(static_cast<unsigned int>(reserve_len));
-    for (size_t i = 0; i < in_len; ++i) {
-        unsigned char c = static_cast<unsigned char>(query[i]);
+
+    const size_t query_len = query->getLength();
+    const char *query_chars = query->getPtr();
+
+    for (size_t i = 0; i < query_len; ++i) {
+        const char c = query_chars[i];
+
         if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '=' || c == '&') {
-            out += static_cast<char>(c);
+            out.putc(c);
         } else {
-            out += '%';
-            out += hex[(c >> 4) & 0xF];
-            out += hex[c & 0xF];
+            out.printf("%%%02hhX", c);
         }
     }
-    return out;
 }
 
-static String construct_relay_url(const Config& config, const char* endpoint, const char* query_params) {
-    char url[256];
+static String construct_relay_url(const Config& config, const char* endpoint, const StringWriter *query_params = nullptr) {
+    char url_buffer[256];
+    StringWriter url(url_buffer, sizeof(url_buffer));
+
+    url.printf("https://%s:%lu%s",
+               config.get("relay_host")->asUnsafeCStr(),
+               config.get("relay_port")->asUint(),
+               endpoint);
+
     if (query_params) {
-        String encoded = url_encode_query(query_params);
-        snprintf(url, sizeof(url), "https://%s:%lu%s?%s",
-                config.get("relay_host")->asEphemeralCStr(),
-                config.get("relay_port")->asUint(),
-                endpoint,
-                encoded.c_str());
-    } else {
-        snprintf(url, sizeof(url), "https://%s:%lu%s",
-                config.get("relay_host")->asEphemeralCStr(),
-                config.get("relay_port")->asUint(),
-                endpoint);
+        url.putc('?');
+        url_encode_query(query_params, url);
     }
-    return String(url);
+
+    return url.toString();
 }
 
 void RemoteAccess::register_urls()
@@ -680,9 +674,9 @@ void RemoteAccess::register_urls()
         if (uuid != "null" && token != "null") {
             serializer.addMemberString("user_id", uuid.c_str());
             serializer.addMemberString("token", token.c_str());
-            url = construct_relay_url(registration_config, "/api/add_with_token", nullptr);
+            url = construct_relay_url(registration_config, "/api/add_with_token");
         } else {
-            url = construct_relay_url(registration_config, "/api/charger/add", nullptr);
+            url = construct_relay_url(registration_config, "/api/charger/add");
         }
 
         serializer.endObject();
@@ -699,7 +693,6 @@ void RemoteAccess::register_urls()
         {
             int i = 0;
             for (const auto key : doc["keys"].as<JsonArray>()) {
-                WgKey k = {key["charger_private"], key["psk"], key["web_public"]};
                 key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
                 ++i;
                 // Ignore rest of keys if there were sent more than we support.
@@ -712,7 +705,7 @@ void RemoteAccess::register_urls()
 
         uint8_t public_key[50];
         mbedtls_base64_encode(public_key, sizeof(public_key), &olen, pk, crypto_box_PUBLICKEYBYTES);
-        auto next_stage = [this, key_cache, public_key, olen](const Config &cfg) {
+        auto next_stage = [this, key_cache = std::move(key_cache), public_key, olen](const Config &cfg) mutable {
             const String pub_key(reinterpret_cast<const char *>(public_key), olen);
             this->parse_registration(cfg, key_cache, pub_key);
         };
@@ -934,12 +927,11 @@ void RemoteAccess::register_urls()
         serializer.endObject();
         uint32_t size = serializer.end();
 
-        String url = construct_relay_url(config, "/api/allow_user", nullptr);
+        const String url = construct_relay_url(config, "/api/allow_user");
 
         std::queue<WgKey> key_cache;
         int a = 0;
         for (const auto key : doc["wg_keys"].as<JsonArray>()) {
-            WgKey k = {key["charger_private"], key["psk"], key["web_public"]};
             key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
             ++a;
             // Ignore rest of keys if there were sent more than we support.
@@ -956,7 +948,7 @@ void RemoteAccess::register_urls()
         }
 
         https_client->set_header("Content-Type", "application/json");
-        auto next_stage = [this, key_cache, pub_key, next_user_id, email](const Config &/*cfg*/) {
+        auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), next_user_id, email = std::move(email)](const Config &/*cfg*/) mutable {
             this->parse_add_user(key_cache, pub_key, email, next_user_id);
         };
 
@@ -1031,7 +1023,7 @@ void RemoteAccess::register_urls()
             }
             https_client->set_header("Content-Type", "application/json");
 
-            String url = construct_relay_url(config, "/api/selfdestruct", nullptr);
+            const String url = construct_relay_url(config, "/api/selfdestruct");
             run_request_with_next_stage(url, HTTP_METHOD_DELETE, json, json_size, config, [this](const Config &/*cfg*/) {
                 this->request_cleanup();
             });
@@ -1190,7 +1182,7 @@ void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8
     }
 }
 
-void RemoteAccess::run_request_with_next_stage(const String url,
+void RemoteAccess::run_request_with_next_stage(const String &url,
                                                esp_http_client_method_t method,
                                                const char *body,
                                                size_t body_size,
@@ -1289,8 +1281,14 @@ void RemoteAccess::run_request_with_next_stage(const String url,
 void RemoteAccess::get_login_salt(const Config &user_config)
 {
     update_registration_state(RegistrationState::InProgress);
-    String query = String("email=") + user_config.get("email")->asEphemeralCStr();
-    String url = construct_relay_url(user_config, "/api/auth/get_login_salt", query.c_str());
+
+    char query_buffer[72];
+    StringWriter query(query_buffer, sizeof(query_buffer));
+
+    query.puts("email=");
+    query.puts(user_config.get("email")->asString());
+
+    const String url = construct_relay_url(user_config, "/api/auth/get_login_salt", &query);
 
     https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, user_config, [this](const Config &/*cfg*/) {
@@ -1330,7 +1328,7 @@ void RemoteAccess::parse_login_salt()
 void RemoteAccess::login(const Config &user_config, const String &login_key)
 {
     update_registration_state(RegistrationState::InProgress);
-    String url = construct_relay_url(user_config, "/api/auth/login", nullptr);
+    const String url = construct_relay_url(user_config, "/api/auth/login");
 
     String body;
     DynamicJsonDocument doc(512);
@@ -1358,7 +1356,7 @@ void RemoteAccess::login(const Config &user_config, const String &login_key)
 void RemoteAccess::get_secret(const Config &user_config)
 {
     update_registration_state(RegistrationState::InProgress);
-    String url = construct_relay_url(user_config, "/api/user/get_secret", nullptr);
+    const String url = construct_relay_url(user_config, "/api/user/get_secret");
 
     run_request_with_next_stage(url, HTTP_METHOD_GET, nullptr, 0, user_config, [this](const Config &/*cfg*/) {
         this->parse_secret();
@@ -1430,7 +1428,7 @@ void RemoteAccess::parse_secret()
     update_registration_state(RegistrationState::Success, String(reinterpret_cast<char *>(encoded_secret_salt)));
 }
 
-void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> keys, const String &public_key)
+void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKey> &keys, const String &public_key)
 {
     StaticJsonDocument<256> resp_doc;
     DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
@@ -1476,7 +1474,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     this->request_cleanup();
 }
 
-void RemoteAccess::parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint8_t next_user_id)
+void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pub_key, const String &email, uint8_t next_user_id)
 {
     for (uint8_t i = 0; !key_cache.empty() && i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++, key_cache.pop()) {
         const WgKey &key = key_cache.front();
@@ -1497,7 +1495,7 @@ void RemoteAccess::resolve_management()
         return;
     }
 
-    String url = construct_relay_url(config, "/api/management", nullptr);
+    const String url = construct_relay_url(config, "/api/management");
 
     const String &uuid = config.get("uuid")->asString();
     const String &name = api.getState("info/display_name")->get("display_name")->asString();
