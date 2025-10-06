@@ -33,6 +33,7 @@ import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputFloat } from "../../ts/components/input_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
@@ -410,6 +411,7 @@ interface ExecutorProps {
     device_address: number;
     register_blocks?: RegisterBlock[];
     action?: number;
+    extra_values?: {[key: string]: number};
 }
 
 interface ExecutorState {
@@ -460,6 +462,12 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
 
             if (util.hasValue(this.props.action)) {
                 (table[1] as any)["action"] = this.props.action;
+            }
+
+            if (util.hasValue(this.props.extra_values)) {
+                for (let key in this.props.extra_values) {
+                    (table[1] as any)[key] = this.props.extra_values[key];
+                }
             }
 
             try {
@@ -729,11 +737,32 @@ export function init() {
                             return null;
                         }
 
+                        if (typeof new_config[1].table[1].grid_charge_power != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config grid charge power is not a number");
+                            return null;
+                        }
+
+                        if (typeof new_config[1].table[1].max_discharge_power != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config max discharge power is not a number");
+                            return null;
+                        }
+
+                        if (typeof new_config[1].table[1].max_charge_power != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config max charge power is not a number");
+                            return null;
+                        }
+
                         table = [BatteryModbusTCPTableID.SungrowHybridInverter, {
                             device_address: new_config[1].table[1].device_address,
+                            grid_charge_power: new_config[1].table[1].grid_charge_power,
+                            max_discharge_power: new_config[1].table[1].max_discharge_power,
+                            max_charge_power: new_config[1].table[1].max_charge_power,
                         }];
 
-                        if (!util.hasValue(table[1].device_address)) {
+                        if (!util.hasValue(table[1].device_address)
+                         || !util.hasValue(table[1].grid_charge_power)
+                         || !util.hasValue(table[1].max_discharge_power)
+                         || !util.hasValue(table[1].max_charge_power)) {
                             return null;
                         }
 
@@ -826,6 +855,16 @@ export function init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter)) {
+                    let extra_values = undefined;
+
+                    if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
+                        extra_values = {
+                            grid_charge_power: config[1].table[1].grid_charge_power,
+                            max_discharge_power: config[1].table[1].max_discharge_power,
+                            max_charge_power: config[1].table[1].max_charge_power,
+                        };
+                    }
+
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
                             <InputNumber
@@ -839,27 +878,66 @@ export function init() {
                         </FormRow>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.PermitGridCharge} />
+                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.charge_power")}>
+                                    <InputFloat
+                                        required
+                                        digits={3}
+                                        min={0}
+                                        max={65535}
+                                        unit="kW"
+                                        value={config[1].table[1].grid_charge_power}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
+                                        }} />
+                                </FormRow> : undefined}
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.PermitGridCharge} extra_values={extra_values} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} extra_values={extra_values} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidDischarge} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidDischarge} extra_values={extra_values} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} />
+                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
+                                    <InputFloat
+                                        required
+                                        digits={2}
+                                        min={1}
+                                        max={65535}
+                                        unit="kW"
+                                        value={config[1].table[1].max_discharge_power}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
+                                        }} />
+                                </FormRow> : undefined}
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} extra_values={extra_values} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} />
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} extra_values={extra_values} />
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} />
+                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                                    <InputFloat
+                                        required
+                                        digits={2}
+                                        min={1}
+                                        max={65535}
+                                        unit="kW"
+                                        value={config[1].table[1].max_charge_power}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                        }} />
+                                </FormRow> : undefined}
+                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} extra_values={extra_values} />
                         </CollapsedSection>,
                     );
                 }
