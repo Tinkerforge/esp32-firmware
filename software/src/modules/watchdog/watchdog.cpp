@@ -178,6 +178,17 @@ void Watchdog::reset(int handle)
     regs[handle].last_reset = now_us();
 }
 
+void Watchdog::remove(int handle)
+{
+    std::lock_guard<std::mutex> l{regs_mutex};
+    if (handle >= WATCHDOG_MAX_REGS || handle < 0) {
+        return;
+    }
+
+    // Mark the registration as unused
+    regs[handle].timeout = 0_us;
+}
+
 static size_t parse_intr_status_reg(char *buf, size_t buflen, const char *name, uint32_t addr, uint32_t intr_flag_ignore_mask)
 {
     uint32_t reg = *reinterpret_cast<uint32_t *>(addr) & ~intr_flag_ignore_mask;
