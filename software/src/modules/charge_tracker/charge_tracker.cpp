@@ -1011,7 +1011,8 @@ void ChargeTracker::register_urls()
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            if (this->send_in_progress) {
+            // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
+            if (this->send_in_progress || this->currentlyCharging()) {
                 return;
             }
 
@@ -1023,11 +1024,6 @@ void ChargeTracker::register_urls()
 
             tm now;
             localtime_r(&tv.tv_sec, &now);
-
-            // Don't send charge logs on the 1st of each month, in case there's still a charge in progress.
-            if (now.tm_mday < 2) {
-                return;
-            }
 
             const uint32_t last_send_minutes = config.get("last_upload_timestamp_min")->asUint();
 
@@ -1288,7 +1284,6 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
             upload_args->last_month_end_min,
             rtc.timestamp_minutes(),
             language, letterhead.get(), letterhead_lines, nullptr);
-
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = user_filter;
