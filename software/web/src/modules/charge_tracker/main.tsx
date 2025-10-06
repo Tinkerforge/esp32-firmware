@@ -385,16 +385,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    to_csv_line(vals: string[], flavor: 'excel' | 'rfc4180') {
-        let line = vals.map(entry => '"' + entry.replace(/\"/, '""') + '"');
-
-        if (flavor == 'excel')
-            return line.join(";") + "\r\n";
-
-        return line.join(",") + "\n";
-    }
-
-    async downloadChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
+    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
         // Use new /charge_tracker/csv endpoint
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
         let start = start_date ?? new Date();
@@ -598,7 +589,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                     end = new Date(Date.now());
 
                                 try {
-                                    await this.downloadChargeLog(state.csv_flavor, parseInt(state.user_filter), start ,end, state.electricity_price);
+                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start ,end, state.electricity_price);
                                 } finally {
                                     this.setState({show_spinner: false});
                                 }
