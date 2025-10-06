@@ -69,7 +69,9 @@ let x = {
 
             "user_filter_label": "User Filter",
             "file_type_label": "File Type",
-            "english_label": "English",
+            "language_label": "Language",
+            "language_german": "German",
+            "language_english": "English",
             "letterhead_label": "Letterhead",
             "target_user": "Remote access user",
             "target_user_placeholder": "Select user",

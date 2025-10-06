@@ -69,7 +69,9 @@ let x = {
 
             "user_filter_label": "Benutzerfilter",
             "file_type_label": "Dateityp",
-            "english_label": "Englisch",
+            "language_label": "Sprache",
+            "language_german": "Deutsch",
+            "language_english": "Englisch",
             "letterhead_label": "Briefkopf",
             "target_user": "Fernzugriffsbenutzer",
             "target_user_placeholder": "Benutzer auswählen",

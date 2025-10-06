@@ -332,15 +332,19 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </FormRow>
                 </div>
             </Collapse>
-            <FormRow label={__("charge_tracker.content.english_label")}>
-                <Switch
-                    checked={this.state.new_remote_upload_config.language === Language.English}
-                    onClick={() => this.setState({
+            <FormRow label={__("charge_tracker.content.language_label")}> 
+                <InputSelect
+                    value={this.state.new_remote_upload_config.language.toString()}
+                    onValue={v => this.setState({
                         new_remote_upload_config: {
                             ...this.state.new_remote_upload_config,
-                            language: this.state.new_remote_upload_config.language === Language.English ? Language.German : Language.English
+                            language: parseInt(v) as Language
                         }
                     })}
+                    items={[
+                        [Language.German.toString(), __("charge_tracker.content.language_german")],
+                        [Language.English.toString(), __("charge_tracker.content.language_english")]
+                    ]}
                 />
             </FormRow>
             <Collapse in={this.state.new_remote_upload_config.file_type === 0}>
