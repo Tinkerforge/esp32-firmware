@@ -216,13 +216,21 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
 
         case 1000: REQUIRE(evse); val.u = cache->evse_state->get("iec61851_state")->asUint(); break;
         case 1002: REQUIRE(evse); val.u = cache->evse_state->get("charger_state")->asUint(); break;
+        case 1004:
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-                   // We want to return UINT32_MAX if nobody is charging right now.
-                   // If nobody is charging, the user_id is -1 which is UINT32_MAX when casted to uint32_t.
-        case 1004: val.u = (uint32_t) cache->current_charge->get("user_id")->asInt(); break;
-                    // timestamp_minutes is 0 if nobody is charging or if there was no time sync when the charge started.
-        case 1006: val.u = cache->current_charge->get("timestamp_minutes")->asUint(); break;
+            // We want to return UINT32_MAX if nobody is charging right now.
+            // If nobody is charging, the user_id is -1 which is UINT32_MAX when casted to uint32_t.
+            val.u = (uint32_t)cache->current_charge->get("user_id")->asInt();
+#endif
+            break;
+        case 1006:
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+            // timestamp_minutes is 0 if nobody is charging or if there was no time sync when the charge started.
+            val.u = cache->current_charge->get("timestamp_minutes")->asUint();
+#endif
+            break;
         case 1008: REQUIRE(evse); {
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
                 uint32_t now = cache->evse_ll_state->get("uptime")->asUint();
                 uint32_t start = cache->current_charge->get("evse_uptime_start")->asUint();
                 if (start == 0)
@@ -231,11 +239,11 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
                     val.u = now - start;
                 else
                     val.u = UINT32_MAX - start + now + 1;
+#endif
             }
             break;
-#endif
         case 1010: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint(); break;
-        //1012... handled below
+        // 1012... handled below
 
         case 1100: REQUIRE(evse); val.u = cache->evse_button_state->get("button_press_time")->asUint(); break;
         case 1102: REQUIRE(evse); val.u = cache->evse_button_state->get("button_release_time")->asUint(); break;
@@ -244,25 +252,33 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
         case 2002: REQUIRE(meter); val.f = cache->meter_values->get("power")->asFloat(); break;
         case 2004: REQUIRE(meter); val.f = ctx->energy_abs.is_some() ? ctx->energy_abs.unwrap() : ctx->energy_abs.insert(cache->meter_values->get("energy_abs")->asFloat()); break;
         case 2006: REQUIRE(meter); val.f = cache->meter_values->get("energy_rel")->asFloat(); break;
-#if MODULE_CHARGE_TRACKER_AVAILABLE()
         case 2008: REQUIRE(meter); {
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
                 if (cache->current_charge->get("user_id")->asInt() == -1) {
                     val.f = 0;
                     break;
                 }
                 auto en_abs = ctx->energy_abs.is_some() ? ctx->energy_abs.unwrap() : ctx->energy_abs.insert(cache->meter_values->get("energy_abs")->asFloat());
                 val.f = en_abs - cache->current_charge->get("meter_start")->asFloat();
+#endif
             }
             break;
+        // 2100... handled below
+
+        case 3100:
+#if MODULE_POWER_MANAGER_AVAILABLE()
+            val.u = power_manager.get_phases();
 #endif
-        //2100... handled below
+            break;
+        case 3102:
+#if MODULE_POWER_MANAGER_AVAILABLE()
+            REQUIRE(phase_switch); val.u = cache->power_manager_state->get("external_control")->asUint();
+#endif
+            break;
 
-        case 3100: val.u = power_manager.get_phases(); break;
-        case 3102: REQUIRE(phase_switch); val.u = cache->power_manager_state->get("external_control")->asUint(); break;
-
-#if MODULE_NFC_AVAILABLE()
-        //4000... handled below
+        // 4000... handled below
         case 4010: REQUIRE(nfc); {
+#if MODULE_NFC_AVAILABLE()
                 fillTagCache(ctx->tag);
                 val.u = ctx->tag.unwrap().last_seen;
                 // We want to support both 1 and 2 and '1' and '2' as injection types inject_tag_start/_stop.
@@ -272,9 +288,13 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
                 // and then inject the same tag by writing the same data to holding registers 4000 - 4013.
                 if (val.u != 0 && val.u < 0x70)
                     val.u += 0x70;
-            } break;
-        case 4012: REQUIRE(nfc); fillTagCache(ctx->tag); val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag_type); break;
 #endif
+            } break;
+        case 4012: REQUIRE(nfc);
+#if MODULE_NFC_AVAILABLE()
+            fillTagCache(ctx->tag); val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag_type);
+#endif
+            break;
 
         default: report_illegal_data_address = true; break;
     }
@@ -283,6 +303,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
     if (reg >= 1012 && reg < 1012 + 2 * CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE) {
         report_illegal_data_address = false;
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
         if (cache->has_feature_evse) {
             size_t slot_idx = (reg - 1012) / 2;
             if (slot_idx < cache->evse_slots->count()) {
@@ -292,18 +313,22 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
                 val.u = 0xFFFFFFFF;
             }
         }
-    } else if (reg >= 2100 && reg < 2100 + 2 * 85) {
+#endif
+    }
+    else if (reg >= 2100 && reg < 2100 + 2 * 85) {
         report_illegal_data_address = false;
 
+#if MODULE_EVSE_COMMON_AVAILABLE()
         if (cache->has_feature_meter_all_values) {
             auto value_idx = (reg - 2100) / 2;
             val.f = cache->meter_all_values->get(value_idx)->asFloat();
         }
+#endif
     }
-#if MODULE_NFC_AVAILABLE()
     else if (reg >= 4000 && reg < 4000 + NFC_TAG_ID_LENGTH) {
         report_illegal_data_address = false;
 
+#if MODULE_NFC_AVAILABLE()
         if (cache->has_feature_nfc) {
             fillTagCache(ctx->tag);
             auto value_idx = (reg - 4000) * 2;
@@ -311,8 +336,8 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
             // the ID is already in network order, but this function should return values in host order.
             val.u = swapBytes(val.u);
         }
-    }
 #endif
+    }
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -373,17 +398,29 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
         case 0: val.u = 0; break;
 
         case 1000: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
                 val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+#endif
             } break;
         case 1002: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP);
                 val.u = slot->get("active")->asBool() ? slot->get("max_current")->asUint() : 0xFFFFFFFF;
+#endif
             } break;
-                    // We want to return UINT32_MAX if the EVSE controls the LED.
-                    // (uint32_t)(-1) is UINT32_MAX.
-        case 1004: REQUIRE(evse); val.u = (uint32_t)cache->evse_indicator_led->get("indication")->asInt(); break;
-        case 1006: REQUIRE(evse); val.u = cache->evse_indicator_led->get("duration")->asUint(); break;
+
+        case 1004: REQUIRE(evse);
+#if MODULE_EVSE_LED_AVAILABLE()
+            // We want to return UINT32_MAX if the EVSE controls the LED. (uint32_t)(-1) is UINT32_MAX.
+            val.u = (uint32_t)cache->evse_indicator_led->get("indication")->asInt();
+#endif
+            break;
+        case 1006: REQUIRE(evse);
+#if MODULE_EVSE_LED_AVAILABLE()
+            val.u = cache->evse_indicator_led->get("duration")->asUint();
+#endif
+            break;
 
         case 2000: REQUIRE(meter); val.u = 0; break;
 
@@ -392,10 +429,10 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
         default: report_illegal_data_address = true;
     }
 
-#if MODULE_NFC_AVAILABLE()
     if (reg >= 4000 && reg < 4014) {
         report_illegal_data_address = false;
 
+#if MODULE_NFC_AVAILABLE()
         if (cache->has_feature_nfc) {;
             // The NFC ID is already in network order but will be swapped.
             for(size_t i = 0; i < 4; ++i) {
@@ -404,8 +441,8 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
             val.u = swapBytes(val.u);
         }
         logger.printfln_debug("READ %u %.*s", reg, 4, val.chars);
-    }
 #endif
+    }
 
     if (this->send_illegal_data_address && report_illegal_data_address)
         return {};
@@ -527,16 +564,22 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpCoils(uint16_t start_address, uint16_
 
         switch (i + start_address) {
             case 1000: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                     auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
                     result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
+#endif
                 } break;
             case 1001: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                     auto slot = cache->evse_slots->get(CHARGING_SLOT_AUTOSTART_BUTTON);
                     result = !slot->get("active")->asBool() || slot->get("max_current")->asUint() > 0;
+#endif
                 } break;
             case 1100: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                     if (cache->evse_gp_output != nullptr)
                         result = cache->evse_gp_output->get("gp_output")->asUint() > 0;
+#endif
                 } break;
 
             default: if (this->send_illegal_data_address) {
@@ -565,27 +608,36 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_
 
     int i = 0;
     while (i < data_count) {
+#if MODULE_EVSE_COMMON_AVAILABLE()
         size_t byte_idx = i / 8;
         size_t bit_idx = i % 8;
-
         bool coil = data_values[byte_idx] & (1 << bit_idx);
+#endif
 
         switch (i + start_address) {
-            case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
+            case 1000: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_enabled(coil);
+#endif
+                break;
             case 1001: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                     String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging");
                     if (!err.isEmpty()) {
                         logger.printfln("Failed to %s charging: %s", coil ? "start" : "stop", err.c_str());
                     }
+#endif
                 } break;
 
             case 1100: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                     String err = api.callCommand("evse/gp_output_update", Config::ConfUpdateObject{{
                         {"gp_output", coil ? 1 : 0}
                     }});
                     if (!err.isEmpty()) {
                         logger.printfln("Failed to update GP output: %s", err.c_str());
                     }
+#endif
                 } break;
 
             default: if (this->send_illegal_data_address) {
@@ -652,8 +704,17 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
         switch (reg) {
             case 0: if (val.u == 0x012EB007) trigger_reboot("Modbus TCP"); break;
 
-            case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(val.u > 0); break;
-            case 1002: REQUIRE(evse); evse_common.set_modbus_current(val.u); break;
+            case 1000: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_enabled(val.u > 0);
+#endif
+                break;
+            case 1002: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_current(val.u);
+#endif
+                break;
+
             case 1004: REQUIRE(evse); {
                     // Only accept evse led write if both indication and duration are written in one request.
                     // i was already incremented above, so we only need 2 more bytes.
@@ -708,10 +769,10 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
             default: report_illegal_data_address = true;
         }
 
-#if MODULE_NFC_AVAILABLE()
         if (reg >= 4000 && reg < 4014) {
             report_illegal_data_address = false;
 
+#if MODULE_NFC_AVAILABLE()
             if (cache->has_feature_nfc) {
                 // The NFC ID was already in network order but was swapped above.
                 val.u = swapBytes(val.u);
@@ -755,8 +816,8 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
                     memset(cache->nfc_tag_injection_buffer, 0, sizeof(cache->nfc_tag_injection_buffer));
                 }
             }
-        }
 #endif
+        }
     }
 
     if (this->send_illegal_data_address && report_illegal_data_address) {
@@ -782,7 +843,12 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
         uint16_t val = swapBytes(data_values[i]);
 
         switch (reg) {
-            case 5004: REQUIRE(evse); evse_common.set_modbus_current(val); break;
+            case 5004: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_current(val);
+#endif
+                break;
+
             case 5010: REQUIRE(evse); {
                     String err = api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                         {"energy_wh", (uint32_t)(val * 10)}
@@ -792,8 +858,15 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
                     }
                 }
                 break;
+
             case 5012: break; // We can't unlock the connector.
-            case 5014: REQUIRE(evse); evse_common.set_modbus_enabled(val > 0); break;
+
+            case 5014: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_enabled(val > 0);
+#endif
+                break;
+
             case 5016: break; // We don't support the failsafe.
             case 5018: break; // We don't support the failsafe.
             case 5020: break; // We don't support the failsafe.
@@ -833,11 +906,23 @@ TFModbusTCPExceptionCode ModbusTCP::setBenderHoldingRegisters(uint16_t start_add
     int i = 0;
     while (i < data_count) {
         uint16_t reg = i + start_address;
+#if MODULE_EVSE_COMMON_AVAILABLE()
         uint16_t val = swapBytes(data_values[i]);
+#endif
 
         switch (reg) {
-            case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
-            case 1000: REQUIRE(evse); evse_common.set_modbus_current(val * 1000); break;
+            case 124: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_enabled(val == 0);
+#endif
+                break;
+
+            case 1000: REQUIRE(evse);
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                evse_common.set_modbus_current(val * 1000);
+#endif
+                break;
+
             default: if (this->send_illegal_data_address) {
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
@@ -889,6 +974,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
 
     switch (reg) {
         case 1000: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
@@ -901,8 +987,10 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
                 else
                     // 0 is start-up, 1 to 3 are IEC states A to C
                     val.u = iec_state + 1;
+#endif
             } break;
         case 1004: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto iec_state = cache->evse_state->get("iec61851_state")->asUint();
 
                 if (iec_state == 1)
@@ -914,6 +1002,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
                 else
                     // Cable is connected to the charging station and locked (not to the electric vehicle).
                     val.u = 3;
+#endif
             } break;
         case 1006: break; // error code
         case 1008: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000); break;
@@ -931,9 +1020,11 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
 
         case 1100: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint(); break;
         case 1110: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto incoming = cache->evse_slots->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint();
                 auto outgoing = cache->evse_slots->get(CHARGING_SLOT_OUTGOING_CABLE)->get("max_current")->asUint();
                 val.u = min(incoming, outgoing);
+#endif
             } break;
 
         case 1500: REQUIRE(nfc); {
@@ -944,18 +1035,22 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
                     val.u  = export_tag_id_as_uint32(tag_id);
                 }
             } break;
+        case 1502: REQUIRE(meter); {
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-        case 1502:  REQUIRE(meter); {
                 if (cache->current_charge->get("user_id")->asInt() == -1) {
                     val.f = 0;
                     break;
                 }
                 auto en_abs = cache->meter_values->get("energy_abs")->asFloat(); // No need to cache: 1036 and 1502 can't be read in the same request.
                 val.u = (uint32_t)((en_abs - cache->current_charge->get("meter_start")->asFloat()) * 1000 * 10); // 0.1 Wh
-            } break;
 #endif
+            } break;
         case 1550: val.u = cache->has_feature_phase_switch ? 3 : 0; break;
-        case 1552: val.u = power_manager.get_phases(); break;
+        case 1552:
+#if MODULE_POWER_MANAGER_AVAILABLE()
+            val.u = power_manager.get_phases();
+#endif
+            break;
         case 1600: break; // failsafe
         case 1602: break; // failsafe
 
@@ -1020,6 +1115,7 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
         case 120: val.u = 0x302E3134; break; // protocol version 0.14
         case 122: REQUIRE(evse); val.regs.lower = cache->evse_state->get("iec61851_state")->asUint() + 1; val.regs.upper = cache->evse_state->get("iec61851_state")->asUint() + 10; break;//vehicle state hex
         case 124: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto slot = cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP_ENABLE);
                 if (!slot->get("active")->asBool()) {
                     val.regs.lower = 0;
@@ -1027,11 +1123,14 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
                 }
 
                 val.regs.lower =  slot->get("max_current")->asUint() >= 6000 ? 0 : 1; // 0 operative, 1 inoperative.
+#endif
             } break;
         case 132: REQUIRE(evse); {
+#if MODULE_EVSE_COMMON_AVAILABLE()
                 auto incoming = cache->evse_slots->get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint();
                 auto outgoing = cache->evse_slots->get(CHARGING_SLOT_OUTGOING_CABLE)->get("max_current")->asUint();
                 val.regs.upper = min(incoming, outgoing) / 1000;
+#endif
             } break;
         case 140: val.regs.upper = 0xEBEE; break;
 
@@ -1044,18 +1143,16 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
         case 212: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L1_A)->asFloat() * 1000); break;
         case 214: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L2_A)->asFloat() * 1000); break;
         case 216: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_CURRENT_L3_A)->asFloat() * 1000); break;
-
         case 218: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_TOTAL_IMPORT_KWH)->asFloat() * 1000); break;
         case 220: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_TOTAL_SYSTEM_POWER_W)->asFloat()); break;
-
         case 222: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L1)->asFloat()); break;
         case 224: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L2)->asFloat()); break;
         case 226: REQUIRE(meter_all_values); val.u = (uint32_t)(cache->meter_all_values->get(METER_ALL_VALUES_LINE_TO_NEUTRAL_VOLTS_L3)->asFloat()); break;
 
         case 706: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint() / 1000; break;
-#if MODULE_CHARGE_TRACKER_AVAILABLE()
         case 709:
         case 718: REQUIRE(evse); {
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
                 uint32_t now = cache->evse_ll_state->get("uptime")->asUint();
                 uint32_t start = cache->current_charge->get("evse_uptime_start")->asUint();
                 if (start == 0)
@@ -1064,18 +1161,21 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
                     val.u = now - start;
                 else
                     val.u = UINT32_MAX - start + now + 1;
+#endif
             } break;
         case 705:
         case 716: REQUIRE(meter); {
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
                 if (cache->current_charge->get("user_id")->asInt() == -1) {
                     val.u = 0;
                     break;
                 }
                 auto en_abs = cache->meter_values->get("energy_abs")->asFloat();
                 val.u = (en_abs - cache->current_charge->get("meter_start")->asFloat()) * 1000;
+#endif
             }
             break;
-#endif
+
         default: break;
     }
 
@@ -1240,7 +1340,11 @@ bool ModbusTCP::check_read_only(TFModbusTCPExceptionCode *result)
 {
     *result = TFModbusTCPExceptionCode::Success;
 
-    bool read_only = !cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    bool read_only = !cache->has_feature_evse
+#if MODULE_EVSE_COMMON_AVAILABLE()
+                  || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()
+#endif
+                     ;
 
     if (!read_only) {
         return false;
