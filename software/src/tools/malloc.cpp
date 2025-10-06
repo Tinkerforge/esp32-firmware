@@ -23,23 +23,23 @@
 
 #include <esp_heap_caps.h>
 
-#include "linear_allocator.h"
+#include "arena.h"
 
-LinearAllocator dram_lin_alloc{
+Arena dram_arena{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);},
     1, 8192, 1024};
 
-LinearAllocator iram_lin_alloc{
+Arena iram_arena{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_IRAM);},
     4, 8192, 1024};
 #if defined(BOARD_HAS_PSRAM)
-LinearAllocator psram_lin_alloc{
+Arena psram_arena{
     [](size_t alignment, size_t size){return heap_caps_aligned_alloc(alignment, size, MALLOC_CAP_SPIRAM);},
     1, 8192, 8192};
 #endif
 
 void tools_malloc_pre_setup() {
-    dram_lin_alloc.setup({
+    dram_arena.setup({
 #if defined(MANUALLY_RESERVED_6432B_AT_0x3FFAE6E0_DRAM)
         {reinterpret_cast<void *>(0x3FFAE6E0),  6432},
 #endif
@@ -48,27 +48,27 @@ void tools_malloc_pre_setup() {
 #endif
     });
 
-    iram_lin_alloc.setup({
+    iram_arena.setup({
 #if defined(MANUALLY_RESERVED_8192B_AT_0x4009E000_IRAM)
         {reinterpret_cast<void *>(0x4009E000),  8192},
 #endif
     });
 
 #if defined(BOARD_HAS_PSRAM)
-    psram_lin_alloc.setup({});
+    psram_arena.setup({});
 #endif
 }
 
 void *perm_alloc_aligned(size_t alignment, size_t size, RAM r) {
     switch (r) {
         case DRAM:
-            return dram_lin_alloc.aligned_alloc(alignment, size);
+            return dram_arena.aligned_alloc(alignment, size);
         case IRAM:
-            return iram_lin_alloc.aligned_alloc(alignment, size);
+            return iram_arena.aligned_alloc(alignment, size);
 
         case PSRAM:
 #if defined(BOARD_HAS_PSRAM)
-            return psram_lin_alloc.aligned_alloc(alignment, size);
+            return psram_arena.aligned_alloc(alignment, size);
 #else
         break;
 #endif
