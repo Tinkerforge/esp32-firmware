@@ -63,6 +63,7 @@ static bool is_module_loop_overridden(const IModule *imodule) {
 
 // declared and initialized by board module
 extern TF_HAL hal;
+
 // initialized by board module
 uint32_t local_uid_num = 0;
 char local_uid_str[32] = {0};
@@ -70,7 +71,6 @@ char passphrase[20] = {0};
 int8_t blue_led_pin = -1;
 int8_t green_led_pin = -1;
 int8_t button_pin = -1;
-// filled by board module
 
 ConfigRoot modules;
 
