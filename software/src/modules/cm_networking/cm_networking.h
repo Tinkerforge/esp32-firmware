@@ -52,7 +52,7 @@ public:
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, uint8_t charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
 
-    void register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &manager_update_received_cb);
+    void register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, uint8_t *, size_t)> &manager_update_received_cb);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,
@@ -66,7 +66,7 @@ public:
                             bool cp_disconnected_state,
                             int8_t phases,
                             bool can_switch_phases_now,
-                            uint8_t requested_charge_mode);
+                            ConfigChargeMode requested_charge_mode);
 
     void notify_charger_unresponsive(uint8_t charger_idx);
 

@@ -386,7 +386,7 @@ void EvseCommon::send_cm_client_update() {
         backend->get_control_pilot_disconnect(),
         phases,
         backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
-        deadline_elapsed(request_charge_mode_until) ? (uint8_t)ConfigChargeMode::Default : this->request_charge_mode.get("mode")->asUint8()
+        deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->request_charge_mode.get("mode")->asEnum<ConfigChargeMode>()
     );
 #endif
 }
@@ -394,7 +394,7 @@ void EvseCommon::send_cm_client_update() {
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, uint8_t charge_mode, uint8_t *supported_charge_mode, size_t supported_charge_mode_len) {
+    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode charge_mode, uint8_t *supported_charge_mode, size_t supported_charge_mode_len) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -415,7 +415,7 @@ void EvseCommon::register_urls()
         next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
 
         if (!deadline_elapsed(request_charge_mode_until) // We are currently requesting a charge mode change
-        && charge_mode == this->request_charge_mode.get("mode")->asUint8()) { // The manager accepted our request
+        && charge_mode == this->request_charge_mode.get("mode")->asEnum<ConfigChargeMode>()) { // The manager accepted our request
             request_charge_mode_until = 0_us; // Stop requesting a charge mode change
         }
 

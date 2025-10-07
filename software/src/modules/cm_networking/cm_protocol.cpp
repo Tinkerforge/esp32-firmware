@@ -493,7 +493,7 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     return true;
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &manager_update_received_cb)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, uint8_t *, size_t)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -561,7 +561,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             if (!this->manager_addr_valid) {
                 // Block charging
                 if (manager_update_received_cb) {
-                    manager_update_received_cb(0, false, 0, 1, nullptr, 0);
+                    manager_update_received_cb(0, false, 0, ConfigChargeMode::Off, nullptr, 0);
                 }
 
                 return;
@@ -577,7 +577,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
                 } else {
                     // Block charging
                     if (manager_update_received_cb) {
-                        manager_update_received_cb(0, false, 0, 1, nullptr, 0);
+                        manager_update_received_cb(0, false, 0, ConfigChargeMode::Off, nullptr, 0);
                     }
 
                     return;
@@ -591,7 +591,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             manager_update_received_cb(command_pkt.v1.allocated_current,
                             CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
-                            command_pkt.header.version >= 3 ? command_pkt.v3.charge_mode : 0, nullptr, 0);
+                            command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Fast, nullptr, 0);
         } else {
             this->send_command_packet(0, &command_pkt);
         }
@@ -612,7 +612,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       bool cp_disconnected_state,
                                       int8_t phases,
                                       bool can_switch_phases_now,
-                                      uint8_t requested_charge_mode)
+                                      ConfigChargeMode requested_charge_mode)
 {
     static uint16_t next_seq_num = 0;
 
@@ -712,7 +712,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v3.phases = phases;
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
 
-    state_pkt.v4.requested_charge_mode = requested_charge_mode;
+    state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
 
     return send_state_packet(&state_pkt);
 }

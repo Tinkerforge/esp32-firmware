@@ -27,6 +27,10 @@
 #include "tools.h"
 #include "module_available.h"
 
+#if MODULE_CM_NETWORKING_AVAILABLE()
+#include "modules/cm_networking/cm_networking_defs.h"
+#endif
+
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
 #endif
@@ -222,7 +226,10 @@ private:
     ConfigRoot automation_current_update;
     ConfigRoot request_charge_mode;
     micros_t request_charge_mode_until = 0_us;
-    uint8_t last_assigned_charge_mode = 0;
+
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    ConfigChargeMode last_assigned_charge_mode = ConfigChargeMode::Default;
+#endif
 
     // Stored on ESP
     ConfigRoot meter_config;
