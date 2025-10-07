@@ -736,12 +736,15 @@ void ChargeManager::register_urls()
 
 #ifdef DEBUG_FS_ENABLE
     api.addCommand("charge_manager/debug_limits_update", &debug_limits_update, {}, [this](String &/*errmsg*/) {
+        auto expiration = now_us() + 240_s;
         for(size_t i = 0; i < 4; ++i) {
             this->limits.raw[i] = debug_limits_update.get("raw")->get(i)->asInt();
             this->limits.min[i] = debug_limits_update.get("min")->get(i)->asInt();
             this->limits.spread[i] = debug_limits_update.get("spread")->get(i)->asInt();
+            this->limits.min_expiration_ts[i] = expiration;
         }
         this->limits.max_pv = debug_limits_update.get("max_pv")->asInt();
+        this->limits.max_pv_expiration_ts = expiration;
     }, false);
 #endif
 
