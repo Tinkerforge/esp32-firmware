@@ -746,95 +746,89 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
     if (!ev_connected)
         return features;
 
-    {
-        // This should be at the bottom but its not filled properly for some reason if it is there
-        NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
-        deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-        deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
-        deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-        deviceDiagnosisFeature.description->role = RoleType::server;
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
+    device_configuration_feature.description->featureAddress->entity = entity_address;
+    device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
+    device_configuration_feature.description->role = RoleType::server;
 
-        // deviceDiagnosisStateData
-        FunctionPropertyType deviceDiagnosisState{};
-        deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
-        deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
-        deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
-        features.push_back(deviceDiagnosisFeature);
-    }
-    {
-        // The following functions are needed by the DeviceDiagnosis Feature Type
-        NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
-        device_configuration_feature.description->featureAddress->entity = entity_address;
-        device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
-        device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
-        device_configuration_feature.description->role = RoleType::server;
+    // deviceConfigurationKeyValueDescriptionListData
+    FunctionPropertyType device_configuration_description{};
+    device_configuration_description.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
+    device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
+    device_configuration_feature.description->supportedFunction->push_back(device_configuration_description);
 
-        // deviceConfigurationKeyValueDescriptionListData
-        FunctionPropertyType device_configuration_description{};
-        device_configuration_description.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
-        device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
-        device_configuration_feature.description->supportedFunction->push_back(device_configuration_description);
+    // deviceConfigurationKeyValueListData
+    FunctionPropertyType device_configuration_values{};
+    device_configuration_values.function = FunctionEnumType::deviceConfigurationKeyValueListData;
+    device_configuration_values.possibleOperations->read = PossibleOperationsReadType{};
 
-        // deviceConfigurationKeyValueListData
-        FunctionPropertyType device_configuration_values{};
-        device_configuration_values.function = FunctionEnumType::deviceConfigurationKeyValueListData;
-        device_configuration_values.possibleOperations->read = PossibleOperationsReadType{};
+    device_configuration_feature.description->supportedFunction->push_back(device_configuration_values);
+    features.push_back(device_configuration_feature);
 
-        device_configuration_feature.description->supportedFunction->push_back(device_configuration_values);
-        features.push_back(device_configuration_feature);
-    }
-    {
-        // The following functions are needed by the Identification Feature Type
-        NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
-        identification_feature.description->featureAddress->entity = entity_address;
-        identification_feature.description->featureAddress->feature = feature_address_identification;
-        identification_feature.description->featureType = FeatureTypeEnumType::Identification;
-        identification_feature.description->role = RoleType::server;
+    // The following functions are needed by the Identification Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
+    identification_feature.description->featureAddress->entity = entity_address;
+    identification_feature.description->featureAddress->feature = feature_address_identification;
+    identification_feature.description->featureType = FeatureTypeEnumType::Identification;
+    identification_feature.description->role = RoleType::server;
 
-        //identificationListData
-        FunctionPropertyType identificationListData{};
-        identificationListData.function = FunctionEnumType::identificationListData;
-        identificationListData.possibleOperations->read = PossibleOperationsReadType{};
+    //identificationListData
+    FunctionPropertyType identificationListData{};
+    identificationListData.function = FunctionEnumType::identificationListData;
+    identificationListData.possibleOperations->read = PossibleOperationsReadType{};
 
-        identification_feature.description->supportedFunction->push_back(identificationListData);
-        features.push_back(identification_feature);
-    }
-    {
-        // The following functions are needed by the DeviceDiagnosis Feature Type
-        NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
-        device_classification_feature.description->featureAddress->entity = entity_address;
-        device_classification_feature.description->featureAddress->feature = feature_address_device_classification;
-        device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceClassification;
-        device_classification_feature.description->role = RoleType::server;
+    identification_feature.description->supportedFunction->push_back(identificationListData);
+    features.push_back(identification_feature);
 
-        //deviceClassificationManufacturerData
-        FunctionPropertyType deviceClassificationManufacturerData{};
-        deviceClassificationManufacturerData.function = FunctionEnumType::deviceClassificationManufacturerData;
-        deviceClassificationManufacturerData.possibleOperations->read = PossibleOperationsReadType{};
-        device_classification_feature.description->supportedFunction->push_back(deviceClassificationManufacturerData);
-        features.push_back(device_classification_feature);
-    }
-    {
-        // The following functions are needed by the ElectricalConnection Feature Type
-        NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
-        electricalConnectionFeature.description->featureAddress->entity = entity_address;
-        electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
-        electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
-        electricalConnectionFeature.description->role = RoleType::server;
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
+    device_classification_feature.description->featureAddress->entity = entity_address;
+    device_classification_feature.description->featureAddress->feature = feature_address_device_classification;
+    device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceClassification;
+    device_classification_feature.description->role = RoleType::server;
 
-        //electricalConnectionCharacteristicsListData
-        FunctionPropertyType electricalConnectionParameterDescriptionData{};
-        electricalConnectionParameterDescriptionData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
-        electricalConnectionParameterDescriptionData.possibleOperations->read = PossibleOperationsReadType{};
-        electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionData);
+    //deviceClassificationManufacturerData
+    FunctionPropertyType deviceClassificationManufacturerData{};
+    deviceClassificationManufacturerData.function = FunctionEnumType::deviceClassificationManufacturerData;
+    deviceClassificationManufacturerData.possibleOperations->read = PossibleOperationsReadType{};
+    device_classification_feature.description->supportedFunction->push_back(deviceClassificationManufacturerData);
+    features.push_back(device_classification_feature);
 
-        //electricalConnectionPermittedValueSetListData
-        FunctionPropertyType electricalConnectionPermittedValueListData{};
-        electricalConnectionPermittedValueListData.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
-        electricalConnectionPermittedValueListData.possibleOperations->read = PossibleOperationsReadType{};
-        electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
-        features.push_back(electricalConnectionFeature);
-    }
+    // The following functions are needed by the ElectricalConnection Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
+    electricalConnectionFeature.description->featureAddress->entity = entity_address;
+    electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
+    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
+    electricalConnectionFeature.description->role = RoleType::server;
+
+    //electricalConnectionCharacteristicsListData
+    FunctionPropertyType electricalConnectionParameterDescriptionData{};
+    electricalConnectionParameterDescriptionData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
+    electricalConnectionParameterDescriptionData.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionData);
+
+    //electricalConnectionPermittedValueSetListData
+    FunctionPropertyType electricalConnectionPermittedValueListData{};
+    electricalConnectionPermittedValueListData.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
+    electricalConnectionPermittedValueListData.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
+    features.push_back(electricalConnectionFeature);
+
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
+    deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
+    deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
+    deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    deviceDiagnosisFeature.description->role = RoleType::server;
+
+    // deviceDiagnosisStateData
+    FunctionPropertyType deviceDiagnosisState{};
+    deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
+    deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
+    deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
+    features.push_back(deviceDiagnosisFeature);
 
     return features;
 }

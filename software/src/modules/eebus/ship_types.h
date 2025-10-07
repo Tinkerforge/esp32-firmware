@@ -27,7 +27,7 @@
 #include "ship_connection.h"
 
 
-#define SHIP_TYPES_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
+#define SHIP_TYPES_MAX_JSON_SIZE 16384 // TODO: What is a sane value here? 16k is minimum otherwise it already causes problems with nodemanagement
 
 
 namespace SHIP_TYPES
