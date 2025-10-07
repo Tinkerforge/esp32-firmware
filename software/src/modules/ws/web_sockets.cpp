@@ -654,7 +654,7 @@ void WebSockets::updateDebugState()
 void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd_, const char *supported_subprotocol)
 {
     if (address_is_in_rodata(uri)) {
-        this->handler_uri = const_cast<char *>(uri);
+        this->handler_uri = uri;
     } else {
         this->handler_uri = strdup(uri);
     }
@@ -747,7 +747,7 @@ void WebSockets::stop() {
     this->httpd = nullptr;
 
     if (!address_is_in_rodata(this->handler_uri)) {
-        free(this->handler_uri);
+        free(const_cast<char *>(this->handler_uri));
         this->handler_uri = nullptr;
     }
 }

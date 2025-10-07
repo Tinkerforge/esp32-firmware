@@ -115,7 +115,7 @@ public:
 
     ConfigRoot state;
 
-    char *handler_uri;
+    const char *handler_uri;
     uint64_t task_ids[4];
     WebServerHandler *state_handler = nullptr;
 
