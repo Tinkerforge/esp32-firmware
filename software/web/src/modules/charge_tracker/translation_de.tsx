@@ -78,7 +78,7 @@ let x = {
             "charge_log_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
-            "next_sent": "Nächster Versand",
+            "next_send": "Nächster Versand",
             "never": "Nie",
             "upload_last_month": "Letzten Monat hochladen"
         },
