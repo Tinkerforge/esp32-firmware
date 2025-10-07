@@ -1,4 +1,4 @@
-import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 import { ZeroPhaseDecision } from "./zero_phase_decision.union";
 import { OnePhaseDecision } from "./one_phase_decision.union";
 import { ThreePhaseDecision } from "./three_phase_decision.union";
