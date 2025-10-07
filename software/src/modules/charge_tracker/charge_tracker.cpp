@@ -1192,7 +1192,7 @@ static esp_err_t check_remote_client_status(std::unique_ptr<SendChargeLogArgs> u
     if (status == ESP_ERR_HTTP_EAGAIN) {
         // The parent task holds the pointer to upload_args and turns it into a unique_ptr again.
         upload_args.release();
-        return ESP_OK;
+        return ESP_ERR_HTTP_EAGAIN;
     } else if (status == 200) {
         task_scheduler.await([&upload_args]() {
             charge_tracker.config.get("remote_upload_configs")->get(upload_args->user_idx)->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
