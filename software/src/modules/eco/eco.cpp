@@ -88,6 +88,7 @@ void Eco::pre_setup()
 void Eco::setup()
 {
     api.restorePersistentConfig("eco/config", &config);
+    api.restorePersistentConfig("eco/charge_plan", &charge_plan);
 
     const size_t controlled_chargers = charge_manager.get_charger_count();
 
@@ -119,6 +120,7 @@ void Eco::register_urls()
 
     api.addState("eco/charge_plan", &charge_plan);
     api.addCommand("eco/charge_plan_update", &charge_plan, {}, [this](String &/*errmsg*/) {
+        api.writeConfig("eco/charge_plan", &charge_plan);
         state.get("last_save")->updateUint(rtc.timestamp_minutes());
         update();
     }, false);

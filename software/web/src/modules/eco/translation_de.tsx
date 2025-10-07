@@ -7,7 +7,7 @@ let x = {
             "daily": "Täglich",
             "departure": "Abfahrt",
             "amount": "Ladedauer",
-            "enable_charge_plan": "Ladeplan aktivieren",
+            "enable_charge_plan": "Ladeplan speichern und aktivieren",
             "disable_charge_plan": "Ladeplan deaktivieren"
         },
         "navbar": {
