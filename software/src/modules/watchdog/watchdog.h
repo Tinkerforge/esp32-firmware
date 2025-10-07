@@ -35,5 +35,4 @@ public:
     bool remove(int &handle);
 
     void reset(int handle);
-    void remove(int handle);
 };
