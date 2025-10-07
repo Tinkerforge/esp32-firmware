@@ -47,12 +47,12 @@ public:
 
     void register_manager(const char *const *const hosts,
                           size_t device_count,
-                          const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &manager_callback,
-                          const std::function<void(uint8_t, CASError)> &manager_error_callback);
+                          const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &client_update_received_cb,
+                          const std::function<void(uint8_t, CASError)> &client_error_cb);
 
     bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, uint8_t charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
 
-    void register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &client_callback);
+    void register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &manager_update_received_cb);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,
