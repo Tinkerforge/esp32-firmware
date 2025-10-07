@@ -39,7 +39,6 @@ import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
-import { Switch } from "ts/components/switch";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
 
@@ -188,6 +187,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 const date = new Date(last_upload_timestamp_min * 60 * 1000);
                 date.setDate(1);
                 date.setMonth(date.getMonth() + 1);
+                date.setHours(0, 0, 0, 0);
                 next_upload_timestamp_min = Math.floor(date.getTime() / 1000 / 60);
             }
 
@@ -260,6 +260,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         }
                     });
                 },
+                editTitle: __("charge_tracker.content.charge_log_send_edit_modal_title"),
                 onEditGetChildren: () => this.onAddRemoteUploadConfigGetChildren(),
                 onRemoveClick: async () => {
                     const newState = this.state.remote_upload_configs.filter((_, i) => i !== index);

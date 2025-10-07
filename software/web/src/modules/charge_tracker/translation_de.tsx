@@ -77,6 +77,7 @@ let x = {
             "target_user_placeholder": "Benutzer auswählen",
             "charge_log_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
+            "charge_log_send_edit_modal_title": "E-Mail-Versandkonfiguration bearbeiten",
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "next_send": "Nächster Versand",
             "never": "Nie",
