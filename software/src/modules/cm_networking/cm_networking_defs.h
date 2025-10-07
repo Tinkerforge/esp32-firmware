@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "modules/charge_manager/cas_error.enum.h"
+#include "client_error.enum.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
