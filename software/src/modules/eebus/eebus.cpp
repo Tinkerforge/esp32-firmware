@@ -148,6 +148,8 @@ void EEBus::pre_setup()
 
     // Currently eebus state and eebus config are one config. Maybe split them?
     eebus_usecase_state = Config::Object({
+            {"commands_received", Config::Uint16(0)},
+            {"commands_sent", Config::Uint16(0)},
             {"charging_summary", Config::Array({
                                                    // Read/Write
                                                    // Usecase EV Charging summary

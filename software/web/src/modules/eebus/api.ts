@@ -55,6 +55,8 @@ export interface state {
 }
 
 export interface usecases {
+    commands_received: number;
+    commands_sent: number;
     charging_summary: ChargeProcesses[];
     power_consumption_limitation: {
         usecase_state: number;

@@ -370,34 +370,20 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         </thead>
                         <tbody>
                         <tr>
-                            <td>Charging Summary</td>
+                            <td>General EEBUS State</td>
                             <td>
                                 <table class="table table-bordered table-sm mb-0">
                                     <tbody>
                                     <tr>
-                                        <td colSpan={2}>
-                                            <CollapsedSection heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
-                                                <table class="table table-bordered table-sm mb-0">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>ID</th>
-                                                        <th>Charged Kwh</th>
-                                                        <th>Cost</th>
-                                                        <th>Percentage Self Produced Energy</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {state.usecases.charging_summary.map((item, idx) => (
-                                                        <tr key={idx}>
-                                                            <td>{item.id}</td>
-                                                            <td>{item.charged_kwh}</td>
-                                                            <td>{item.cost}</td>
-                                                            <td>{item.percent_self_produced_energy}</td>
-                                                        </tr>
-                                                    ))}
-                                                    </tbody>
-                                                </table>
-                                            </CollapsedSection>
+                                        <td>Commands Received</td>
+                                        <td>
+                                            {state.usecases.commands_received}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Responses/Commands sent</td>
+                                        <td>
+                                            {state.usecases.commands_sent}
                                         </td>
                                     </tr>
                                     </tbody>
@@ -474,15 +460,15 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </tr>
                                             <tr>
                                                 <td>Minimum Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.minimum_power}</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.minimum_power} W</td>
                                             </tr>
                                             <tr>
                                                 <td>Maximum Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.maximum_power}</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.maximum_power} W</td>
                                             </tr>
                                             <tr>
                                                 <td>Standby Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.standby_power}</td>
+                                                <td>{state.usecases.ev_commissioning_and_configuration.standby_power} W</td>
                                             </tr>
                                             <tr>
                                                 <td>Standby Mode Active</td>
@@ -492,6 +478,42 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </tr>
                                         </>
                                     )}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Charging Summary</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td colSpan={2}>
+                                            <CollapsedSection
+                                                heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
+                                                <table class="table table-bordered table-sm mb-0">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Charged Kwh</th>
+                                                        <th>Cost</th>
+                                                        <th>Percentage Self Produced Energy</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {state.usecases.charging_summary.map((item, idx) => (
+                                                        <tr key={idx}>
+                                                            <td>{item.id}</td>
+                                                            <td>{item.charged_kwh}</td>
+                                                            <td>{item.cost}</td>
+                                                            <td>{item.percent_self_produced_energy}</td>
+                                                        </tr>
+                                                    ))}
+                                                    </tbody>
+                                                </table>
+                                            </CollapsedSection>
+                                        </td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </td>
