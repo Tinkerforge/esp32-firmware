@@ -1157,7 +1157,7 @@ static void report_errorf(uint32_t cookie, const char *fmt, ...)
 #endif
 }
 
-static void handle_upload_retry(std::unique_ptr<SendChargeLogArgs> upload_args)
+static void handle_upload_retry(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
     if (upload_args->upload_retry_count == -1) {
         // No retries left, report error
@@ -1186,7 +1186,7 @@ static void handle_upload_retry(std::unique_ptr<SendChargeLogArgs> upload_args)
                     upload_retry_count, delay_minutes);
 }
 
-static esp_err_t check_remote_client_status(std::unique_ptr<SendChargeLogArgs> upload_args)
+static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
     int status = upload_args->remote_client->read_response_status();
     if (status == ESP_ERR_HTTP_EAGAIN) {
@@ -1264,7 +1264,7 @@ static esp_err_t format_and_send_chunk(AsyncHTTPSClient &remote_client, bool &fi
 }
 
 // since this function can block for a long time, it must not be called from the main thread
-void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
+void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
 
     String charger_uuid;
@@ -1399,9 +1399,9 @@ void ChargeTracker::send_file(std::unique_ptr<SendChargeLogArgs> upload_args) {
     upload_args->remote_client->send_chunk("]}", 2); // JSON footer
     upload_args->remote_client->finish_chunked_request();
 
-    SendChargeLogArgs *upload_args_ptr = upload_args.release();
+    RemoteUploadRequest *upload_args_ptr = upload_args.release();
 
-    while (check_remote_client_status(std::unique_ptr<SendChargeLogArgs>{upload_args_ptr}) == ESP_ERR_HTTP_EAGAIN) {
+    while (check_remote_client_status(std::unique_ptr<RemoteUploadRequest>{upload_args_ptr}) == ESP_ERR_HTTP_EAGAIN) {
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
@@ -1414,7 +1414,7 @@ static void upload_charge_logs_task(void *arg)
     int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
 #endif
 
-    std::unique_ptr<UploadChargeLogArgs> upload_args{static_cast<UploadChargeLogArgs *>(arg)};
+    std::unique_ptr<UploadTaskParams> upload_args{static_cast<UploadTaskParams *>(arg)};
 
     const time_t t_now = time(nullptr);
 
@@ -1457,7 +1457,7 @@ static void upload_charge_logs_task(void *arg)
                 continue;
             }
 
-            auto upload_request = std::make_unique<SendChargeLogArgs>();
+            auto upload_request = std::make_unique<RemoteUploadRequest>();
             upload_request->user_idx = user_idx;
             upload_request->last_month_start_min = last_month_start_min;
             upload_request->last_month_end_min = last_month_end_min;
@@ -1472,7 +1472,7 @@ static void upload_charge_logs_task(void *arg)
         }
     } else {
         // Upload for specific config only
-        auto upload_request = std::make_unique<SendChargeLogArgs>();
+        auto upload_request = std::make_unique<RemoteUploadRequest>();
         upload_request->user_idx = upload_args->config_index;
         upload_request->last_month_start_min = last_month_start_min;
         upload_request->last_month_end_min = last_month_end_min;
@@ -1498,7 +1498,7 @@ void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
 
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
-    UploadChargeLogArgs *args = new UploadChargeLogArgs;
+    UploadTaskParams *args = new UploadTaskParams;
     args->config_count = remote_upload_config_count;
     args->retry_count = retry_count;
     args->config_index = -1; // -1 for all users
@@ -1522,7 +1522,7 @@ void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, uin
 
     send_in_progress = true;
 
-    UploadChargeLogArgs *task_args = new UploadChargeLogArgs;
+    UploadTaskParams *task_args = new UploadTaskParams;
     task_args->config_count= remote_upload_config_count;
     task_args->cookie = cookie;
     task_args->config_index = config_index; // specific config index

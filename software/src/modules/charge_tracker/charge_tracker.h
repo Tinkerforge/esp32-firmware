@@ -30,7 +30,7 @@
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define MAX_RETRY_COUNT 10
 #define BASE_RETRY_DELAY_MINUTES 5
-struct SendChargeLogArgs;
+struct RemoteUploadRequest;
 
 class ChargeTracker final : public IModule
 {
@@ -56,7 +56,7 @@ public:
     void readNRecords(File *f, size_t records_to_read);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    void send_file(std::unique_ptr<SendChargeLogArgs> args);
+    void send_file(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs(const uint8_t retry_count = 0);
     void upload_charge_log_for_config(const uint8_t config_index, const uint32_t cookies);
     bool send_in_progress = false;
@@ -82,7 +82,7 @@ private:
 };
 
 /**
- * Arguments for asynchronous charge log upload operations to remote servers.
+ * Request parameters for asynchronous charge log upload operations to remote servers.
  *
  * This struct encapsulates all parameters needed for uploading charge logs to a remote
  * server via HTTPS. It supports retry logic with exponential backoff and manages the
@@ -92,7 +92,7 @@ private:
  * The struct is typically passed as a unique_ptr
  *
  */
-struct SendChargeLogArgs {
+struct RemoteUploadRequest {
     /** Index of the remote upload configuration to use (0-based) */
     int user_idx = 0;
 
@@ -115,7 +115,7 @@ struct SendChargeLogArgs {
     std::unique_ptr<AsyncHTTPSClient> remote_client;
 };
 
-struct UploadChargeLogArgs {
+struct UploadTaskParams {
     int8_t config_index;
     uint8_t retry_count;
     uint8_t config_count;
