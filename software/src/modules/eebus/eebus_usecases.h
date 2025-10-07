@@ -44,7 +44,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 // Configuration related to the LPC usecases
 // Comment out if subscription functionalities shall be disabled
 // TODO: Subscriptions are currently broken, so do not reenable or it will crash at startup
-#define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS false
+#define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
 
@@ -365,12 +365,12 @@ private:
     //DeviceDiagnosis
     String communication_standard = "";
     bool asymmetric_supported = false;
-    DeviceConfigurationKeyValueDescriptionListDataType generate_device_config_description() const;
-    DeviceConfigurationKeyValueListDataType generate_device_config_list() const;
+    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType generate_device_config_description() const;
+    [[nodiscard]] DeviceConfigurationKeyValueListDataType generate_device_config_list() const;
     //Identification
     IdentificationTypeEnumType mac_type = IdentificationTypeEnumType::eui64;
     String mac_address = "";
-    IdentificationListDataType generate_identification_description() const;
+    [[nodiscard]] IdentificationListDataType generate_identification_description() const;
     //DeviceClassification
     String manufacturer_name = "";
     String manufacturer_code = "";
@@ -382,16 +382,16 @@ private:
     String brand_name = "";
     String manufacturer_label = "";
     String manufacturer_description = "";
-    DeviceClassificationManufacturerDataType generate_manufacturer_description() const;
+    [[nodiscard]] DeviceClassificationManufacturerDataType generate_manufacturer_description() const;
     //ElectricalConnection
     uint32_t min_power_draw = 0;
     uint32_t max_power_draw = 0;
     uint32_t standby_power = 0;
-    ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_description() const;
-    ElectricalConnectionPermittedValueSetListDataType generate_electrical_connection_values() const;
+    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_description() const;
+    [[nodiscard]] ElectricalConnectionPermittedValueSetListDataType generate_electrical_connection_values() const;
     //DeviceDiagnosis
     bool standby_mode = false;
-    DeviceDiagnosisStateDataType generate_state() const;
+    [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
 
 };
 
@@ -567,7 +567,7 @@ public:
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
     template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, String function_name);
 
     /**
      * Send a message to a spine destination.
