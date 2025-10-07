@@ -254,7 +254,7 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                  "Subscription request was successful");
-        return CmdClassifierType::EnumUndefined;
+        return CmdClassifierType::result;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
         response["nodeManagementSubscriptionData"] = subscription_data;
@@ -1712,7 +1712,7 @@ void build_result_data(JsonObject &response, ResultErrorNumber error_number, con
     ResultDataType result{};
     result.description = description;
     result.errorNumber = static_cast<uint8_t>(error_number);
-    response["result"] = result;
+    response["resultData"] = result;
 }
 
 std::string iso_duration_to_string(seconds_t duration)
