@@ -208,8 +208,8 @@ static void manager_task(void *arg)
 
 void CMNetworking::register_manager(const char *const *const hosts,
                                     size_t device_count,
-                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &manager_callback,
-                                    const std::function<void(uint8_t, CASError)> &manager_error_callback)
+                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &client_update_received_cb,
+                                    const std::function<void(uint8_t, CASError)> &client_error_cb)
 {
     const size_t sz = offsetof(struct manager_data_t, managed_devices) + sizeof(manager_data->managed_devices[0]) * device_count;
     manager_data = static_cast<decltype(manager_data)>(malloc(sz));
@@ -305,7 +305,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
     (void)xTask;
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this, manager_callback, manager_error_callback, manager_queue](){
+    task_scheduler.scheduleWithFixedDelay([this, client_update_received_cb, client_error_cb, manager_queue](){
         static uint16_t last_seen_seq_num[MAX_CONTROLLED_CHARGERS];
         static bool initialized = false;
         if (!initialized) {
@@ -365,8 +365,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 source_str,
                                 len,
                                 validation_error.c_str());
-                if (manager_error_callback) {
-                    manager_error_callback(charger_idx, CASError::InvalidHeader);
+                if (client_error_cb) {
+                    client_error_cb(charger_idx, CASError::InvalidHeader);
                 }
                 return;
             }
@@ -393,8 +393,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
                                 get_charger_name(charger_idx),
                                 source_str);
 
-                if (manager_error_callback) {
-                    manager_error_callback(charger_idx, CASError::NotManaged);
+                if (client_error_cb) {
+                    client_error_cb(charger_idx, CASError::NotManaged);
                 }
                 return;
             }
@@ -403,8 +403,8 @@ void CMNetworking::register_manager(const char *const *const hosts,
             em_phase_switcher.filter_state_packet(charger_idx, &state_pkt);
 #endif
 
-            if (manager_callback) {
-                manager_callback(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr);
+            if (client_update_received_cb) {
+                client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr);
             } else {
                 this->send_state_packet(&state_pkt);
             }
@@ -493,7 +493,7 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     return true;
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &client_callback)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -502,7 +502,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
     memset(&manager_addr, 0, sizeof(manager_addr));
 
-    task_scheduler.scheduleWithFixedDelay([this, client_callback](){
+    task_scheduler.scheduleWithFixedDelay([this, manager_update_received_cb](){
         static uint16_t last_seen_seq_num = 255;
         static micros_t last_successful_recv = now_us();
 
@@ -560,8 +560,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
             if (!this->manager_addr_valid) {
                 // Block charging
-                if (client_callback) {
-                    client_callback(0, false, 0, 1, nullptr, 0);
+                if (manager_update_received_cb) {
+                    manager_update_received_cb(0, false, 0, 1, nullptr, 0);
                 }
 
                 return;
@@ -576,8 +576,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
                     this->manager_addr_valid = true;
                 } else {
                     // Block charging
-                    if (client_callback) {
-                        client_callback(0, false, 0, 1, nullptr, 0);
+                    if (manager_update_received_cb) {
+                        manager_update_received_cb(0, false, 0, 1, nullptr, 0);
                     }
 
                     return;
@@ -587,8 +587,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
 
         last_successful_recv = now_us();
 
-        if (client_callback) {
-            client_callback(command_pkt.v1.allocated_current,
+        if (manager_update_received_cb) {
+            manager_update_received_cb(command_pkt.v1.allocated_current,
                             CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
                             command_pkt.header.version >= 3 ? command_pkt.v3.charge_mode : 0, nullptr, 0);
