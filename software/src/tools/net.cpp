@@ -38,7 +38,7 @@ IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t
         }
 
         const struct sockaddr_in6 *addr6 = reinterpret_cast<struct sockaddr_in6 *>(addr);
-        const uint8_t *addr6_bytes = addr6->sin6_addr.un.u8_addr;
+        const uint8_t *addr6_bytes = addr6->sin6_addr.s6_addr;
 
         // Handle IPv4-mapped IPv6 addresses
         if (memcmp(addr6_bytes, ipv4_mapped_prefix, sizeof(ipv4_mapped_prefix)) == 0) {
