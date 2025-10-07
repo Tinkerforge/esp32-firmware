@@ -1,0 +1,4 @@
+OK
+// Unreachable = 1 // Never used?
+InvalidHeader = 2
+NotManaged
