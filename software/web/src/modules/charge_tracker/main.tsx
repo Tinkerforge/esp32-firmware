@@ -507,6 +507,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </FormRow>
                 </ConfigForm>
 
+                {sendEmailComponent}
+
                 <FormSeparator heading={__("charge_tracker.content.download")}/>
 
                 <FormRow label={__("charge_tracker.content.user_filter")} label_muted={__("charge_tracker.content.user_filter_muted")}>
@@ -642,8 +644,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         </FormRow>
                     </div>
                 </Collapse>
-
-                {sendEmailComponent}
 
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
