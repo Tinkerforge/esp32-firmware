@@ -1428,8 +1428,8 @@ static void upload_charge_logs_task(void *arg)
         for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
             auto upload_request = std::make_unique<SendChargeLogArgs>();
             upload_request->user_idx = user_idx;
-            upload_request->last_month_start_min = 0;
-            upload_request->last_month_end_min = t_now / 60;
+            upload_request->last_month_start_min = last_month_start_min;
+            upload_request->last_month_end_min = last_month_end_min;
             upload_request->upload_retry_count = upload_args->retry_count;
             upload_request->next_retry_delay = millis_t{0};
             upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
@@ -1443,8 +1443,8 @@ static void upload_charge_logs_task(void *arg)
         // Upload for specific config only
         auto upload_request = std::make_unique<SendChargeLogArgs>();
         upload_request->user_idx = upload_args->config_index;
-        upload_request->last_month_start_min = 0;
-        upload_request->last_month_end_min = t_now / 60;
+        upload_request->last_month_start_min = last_month_start_min;
+        upload_request->last_month_end_min = last_month_end_min;
         upload_request->upload_retry_count = -1;
         upload_request->next_retry_delay = millis_t{0};
         upload_request->cookie = upload_args->cookie;
