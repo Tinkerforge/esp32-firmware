@@ -846,10 +846,22 @@ static void stage_1(StageContext &sc) {
             seconds_t now = seconds_t{tv.tv_sec};
             seconds_t midnight = seconds_t{get_localtime_midnight_in_utc(tv.tv_sec)};
 
-            auto offset_after_interval = (now - midnight) % interval;
-            sc.ca_state->next_rotation -= offset_after_interval;
+            auto offset_after_interval_start = (now - midnight) % interval;
 
-            if (offset_after_interval >= (2_us * sc.cfg->allocation_interval))
+            // next_rotation is already in the next interval.
+            // Subtract the offset_after_interval_start to be aligned to interval start.
+            sc.ca_state->next_rotation -= offset_after_interval_start;
+
+            // Add one second to be sure the rotation always happens
+            // after the eco module had the chance to determine this slot as cheap.
+            sc.ca_state->next_rotation += 1_s;
+
+            // If the offset_after_interval_start is more than
+            // twice the allocation interval (i.e. >= 20 seconds)
+            // the last rotation was not clock aligned.
+            // Add another interval in this case to make sure
+            // we don't immediately rotate after restarting the manager.
+            if (offset_after_interval_start >= (2_us * sc.cfg->allocation_interval))
                 sc.ca_state->next_rotation += interval;
         }
     }
