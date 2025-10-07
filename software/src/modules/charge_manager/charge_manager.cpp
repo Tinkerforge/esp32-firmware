@@ -35,6 +35,7 @@
 #include "one_phase_decision.union.h"
 #include "three_phase_decision.union.h"
 #include "current_decision.union.h"
+#include "modules/cm_networking/client_error.enum.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
@@ -316,11 +317,20 @@ void ChargeManager::start_manager_task()
                     charger_state[client_id].charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
                 update_charger_state_config(client_id);
             }
-    }, [this](uint8_t client_id, CASError error){
+    }, [this](uint8_t client_id, ClientError error){
+        static_assert(std::is_same_v<std::underlying_type_t<ClientError>, std::underlying_type_t<CASError>>);
+        static_assert(ClientError::_min == ClientError::OK);
+        static_assert(ClientError::_max == ClientError::NotManaged);
+        static_assert(to_underlying(ClientError::_max) - to_underlying(ClientError::_min) == 3);
+        static_assert(to_underlying(ClientError::OK) == to_underlying(CASError::OK));
+        static_assert(to_underlying(ClientError::InvalidHeader) == to_underlying(CASError::InvalidHeader));
+        static_assert(to_underlying(ClientError::NotManaged) == to_underlying(CASError::NotManaged));
+
         //TODO bounds check
         auto &target_alloc = this->charger_allocation_state[client_id];
         target_alloc.state = CASState::Error;
-        target_alloc.error = error;
+
+        target_alloc.error = (CASError) error;
         //TODO: should we call update_charger_state_config(client_id); here? This is currently missing but smells weird.
     });
 
