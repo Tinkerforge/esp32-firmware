@@ -32,7 +32,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#include "modules/charge_manager/config_charge_mode.enum.h"
+#include "modules/cm_networking/config_charge_mode.enum.h"
 
 #define PM_TASK_DELAY_MS                    500
 

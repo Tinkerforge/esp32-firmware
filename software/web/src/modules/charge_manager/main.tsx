@@ -34,7 +34,7 @@ import { EcoChart } from "modules/eco/main";
 //#endif
 import { ButtonGroup, Button, Collapse } from "react-bootstrap";
 
-import { ConfigChargeMode } from "./config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 import { InputSelect } from "ts/components/input_select";
 import { ZeroPhaseDecisionTag } from "./zero_phase_decision_tag.enum";
 import { ZeroPhaseDecision } from "./zero_phase_decision.union";

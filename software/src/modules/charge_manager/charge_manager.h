@@ -28,7 +28,7 @@
 #endif
 
 #include "current_limits.h"
-#include "config_charge_mode.enum.h"
+#include "modules/cm_networking/config_charge_mode.enum.h"
 
 struct CurrentAllocatorConfig;
 struct CurrentAllocatorState;
