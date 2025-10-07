@@ -102,3 +102,13 @@ export interface pdf {
     user_filter?: number;
     letterhead?: string;
 }
+
+export interface upload_charge_log_for_config {
+    config_index: number;
+    cookie: number;
+}
+
+export interface upload_result {
+    cookie: number;
+    error: string;
+}

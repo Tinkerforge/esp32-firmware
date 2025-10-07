@@ -1009,6 +1009,46 @@ void ChargeTracker::register_urls()
     });
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
+
+    server.on("/charge_tracker/upload_charge_log_for_config", HTTP_PUT, [this](WebServerRequest request) {
+        if (this->send_in_progress) {
+            return request.send_plain(429, "Another upload is already in progress");
+        }
+
+        if (request.contentLength() > 64) {
+            return request.send_plain(413);
+        }
+
+        char buf[64] = {};
+        int received = request.receive(buf, 64);
+
+        if (received < 0) {
+            return request.send_plain(500, "Failed to receive request payload");
+        }
+
+        StaticJsonDocument<64> doc;
+        DeserializationError error = deserializeJson(doc, buf, received);
+
+        if (error) {
+            return request.send_plain(400, "Failed to deserialize JSON");
+        }
+
+        if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
+            return request.send_plain(400, "Missing config_index parameter");
+        }
+
+        uint8_t config_index = doc["config_index"];
+        uint32_t cookie = doc["cookie"];
+        uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
+
+        if (config_index >= remote_upload_config_count) {
+            return request.send_plain(400, "Invalid config_index");
+        }
+
+        this->upload_charge_log_for_config(config_index, cookie);
+        return request.send_plain(200, "Charge-log upload for specific config started");
+    });
+
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
@@ -1074,8 +1114,35 @@ void ChargeTracker::register_urls()
 }
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
+
+[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
+static void report_errorf(uint32_t cookie, const char *fmt, ...)
+{
+    va_list args;
+    char buf[256];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    va_start(args, fmt);
+    json.addMemberStringVF("error", fmt, args);
+    va_end(args);
+    json.endObject();
+    json.end();
+
+#if MODULE_WS_AVAILABLE()
+    ws.pushRawStateUpdate(buf, "charge_tracker/upload_result");
+#endif
+}
+
 static void handle_upload_retry(std::unique_ptr<SendChargeLogArgs> upload_args)
 {
+    if (upload_args->upload_retry_count == -1) {
+        // No retries left, report error
+        report_errorf(upload_args->cookie, "Charge-log upload failed. Look at the event log for details.");
+        return;
+    }
+
     upload_args->upload_retry_count++;
     if (upload_args->upload_retry_count >= MAX_UPLOAD_RETRIES) {
         logger.printfln("Charge-log upload failed. Maximum number of retries reached. Giving up.");
@@ -1322,13 +1389,10 @@ static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
 static void upload_charge_logs_task(void *arg)
 {
 #if MODULE_WATCHDOG_AVAILABLE()
-    const int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
+    int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
 #endif
 
-    const uint8_t *task_args = reinterpret_cast<const uint8_t *>(arg);
-    const uint32_t remote_upload_config_count = task_args[0];
-    const uint8_t retry_count = task_args[1];
-    const uint8_t specific_config_index = task_args[2];
+    std::unique_ptr<UploadChargeLogArgs> upload_args{static_cast<UploadChargeLogArgs *>(arg)};
 
     const time_t t_now = time(nullptr);
 
@@ -1359,14 +1423,14 @@ static void upload_charge_logs_task(void *arg)
     const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
     const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
 
-    // If specific_config_index is 255 (0xFF), upload for all configs, otherwise upload for specific config
-    if (specific_config_index == 255) {
-        for (int user_idx = 0; user_idx < remote_upload_config_count; user_idx++) {
+    // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
+    if (upload_args->config_index == -1) {
+        for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
             auto upload_request = std::make_unique<SendChargeLogArgs>();
             upload_request->user_idx = user_idx;
             upload_request->last_month_start_min = 0;
             upload_request->last_month_end_min = t_now / 60;
-            upload_request->upload_retry_count = retry_count;
+            upload_request->upload_retry_count = upload_args->retry_count;
             upload_request->next_retry_delay = millis_t{0};
             upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
@@ -1378,11 +1442,12 @@ static void upload_charge_logs_task(void *arg)
     } else {
         // Upload for specific config only
         auto upload_request = std::make_unique<SendChargeLogArgs>();
-        upload_request->user_idx = specific_config_index;
+        upload_request->user_idx = upload_args->config_index;
         upload_request->last_month_start_min = 0;
         upload_request->last_month_end_min = t_now / 60;
-        upload_request->upload_retry_count = retry_count;
+        upload_request->upload_retry_count = -1;
         upload_request->next_retry_delay = millis_t{0};
+        upload_request->cookie = upload_args->cookie;
         upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
         charge_tracker.send_file(std::move(upload_request));
@@ -1402,17 +1467,12 @@ void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
 
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
-    // 0 - remote upload config count
-    // 1 - retry count
-    // 2 - specific user index (-1 for all users)
-    uint8_t task_args[4] = {};
-    task_args[0] = static_cast<uint8_t>(remote_upload_config_count);
-    task_args[1] = retry_count;
-    task_args[2] = 255; // -1 for all users
+    UploadChargeLogArgs *args = new UploadChargeLogArgs;
+    args->config_count = remote_upload_config_count;
+    args->retry_count = retry_count;
+    args->config_index = -1; // -1 for all users
 
-    void *task_params = reinterpret_cast<void *>(task_args);
-
-    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_params, 1, nullptr, 0);
+    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
@@ -1420,7 +1480,7 @@ void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
     }
 }
 
-void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, const uint8_t retry_count)
+void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, uint32_t cookie)
 {
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
@@ -1429,24 +1489,14 @@ void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, con
         return;
     }
 
-    if (send_in_progress) {
-        logger.printfln("Another upload is already in progress");
-        return;
-    }
-
     send_in_progress = true;
 
-    // 0 - remote upload config count (set to 1 since we're only uploading one)
-    // 1 - retry count
-    // 2 - specific user index
-    uint8_t task_args[4] = {};
-    task_args[0] = 1; // Only one config to upload
-    task_args[1] = retry_count;
-    task_args[2] = config_index;
+    UploadChargeLogArgs *task_args = new UploadChargeLogArgs;
+    task_args->config_count= remote_upload_config_count;
+    task_args->cookie = cookie;
+    task_args->config_index = config_index; // specific config index
 
-    void *task_params = reinterpret_cast<void *>(task_args);
-
-    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_params, 1, nullptr, 0);
+    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));

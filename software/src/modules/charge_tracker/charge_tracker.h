@@ -58,7 +58,7 @@ public:
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<SendChargeLogArgs> args);
     void upload_charge_logs(const uint8_t retry_count = 0);
-    void upload_charge_log_for_config(const uint8_t config_index, const uint8_t retry_count = 0);
+    void upload_charge_log_for_config(const uint8_t config_index, const uint32_t cookies);
     bool send_in_progress = false;
 #endif
 
@@ -81,13 +81,45 @@ private:
     Config charge_log_send_prototype;
 };
 
+/**
+ * Arguments for asynchronous charge log upload operations to remote servers.
+ *
+ * This struct encapsulates all parameters needed for uploading charge logs to a remote
+ * server via HTTPS. It supports retry logic with exponential backoff and manages the
+ * complete lifecycle of an upload operation, including time range filtering and HTTP
+ * client management.
+ *
+ * The struct is typically passed as a unique_ptr
+ *
+ */
 struct SendChargeLogArgs {
+    /** Index of the remote upload configuration to use (0-based) */
     int user_idx = 0;
+
+    /** Start of the time range to upload, in minutes since Unix epoch */
     uint32_t last_month_start_min = 0;
+
+    /** End of the time range to upload, in minutes since Unix epoch */
     uint32_t last_month_end_min = 0;
-    uint32_t upload_retry_count = 0;
+
+    /** Current retry attempt count (0 = first attempt, incremented on each retry, -1 = no retries) */
+    int8_t upload_retry_count = 0;
+
+    /** Delay before next retry attempt (used for exponential backoff scheduling) */
     millis_t next_retry_delay = millis_t(0);
+
+    /** Cookie to correlate upload attempts with web interface events */
+    uint32_t cookie = 0;
+
+    /** HTTP client instance for performing the upload request */
     std::unique_ptr<AsyncHTTPSClient> remote_client;
+};
+
+struct UploadChargeLogArgs {
+    int8_t config_index;
+    uint8_t retry_count;
+    uint8_t config_count;
+    uint32_t cookie;
 };
 
 #include "module_available_end.h"

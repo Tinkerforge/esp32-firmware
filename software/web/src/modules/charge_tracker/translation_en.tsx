@@ -79,7 +79,8 @@ let x = {
             "charge_log_send_add_modal_title": "Add charge log send configuration",
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "last_sent": "Last sent",
-            "never": "Never"
+            "never": "Never",
+            "upload_last_month": "Upload last month"
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",
@@ -107,6 +108,9 @@ let x = {
             "remove_init": "Removing tracked charges and rebooting...",
             "download_charge_log_failed": "Failed to download tracked charges",
             "download_usernames_failed": "Failed to download the usernames used in tracked charges",
+            "upload_start_failed": "Failed to start upload",
+            "upload_charge_log_success": "Charge log uploaded successfully",
+            "upload_charge_log_failed": "Failed to upload charge log",
 
             "save_failed": "Failed to save the charge manager settings.",
             "reboot_content_changed": "charge tracker settings"

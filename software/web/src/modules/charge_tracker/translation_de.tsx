@@ -79,7 +79,8 @@ let x = {
             "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "last_sent": "Letzter Versand",
-            "never": "Nie"
+            "never": "Nie",
+            "upload_last_month": "Letzten Monat hochladen"
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",
@@ -107,6 +108,9 @@ let x = {
             "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
             "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen",
+            "upload_start_failed": "Upload-Start fehlgeschlagen",
+            "upload_charge_log_success": "Ladelog erfolgreich hochgeladen",
+            "upload_charge_log_failed": "Ladelog hochladen fehlgeschlagen",
 
             "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Ladetracker-Einstellungen"

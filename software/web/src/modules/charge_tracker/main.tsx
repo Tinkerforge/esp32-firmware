@@ -175,6 +175,16 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 remote_upload_configs: config.remote_upload_configs,
             });
         });
+
+        util.addApiEventListener('charge_tracker/upload_result', () => {
+            let upload_result = API.get('charge_tracker/upload_result');
+            util.add_alert(
+                "charge-log-upload-" + upload_result.cookie,
+                upload_result.error === "" ? "success" : "danger",
+                () => upload_result.error === "" ? __("charge_tracker.script.upload_charge_log_success") : __("charge_tracker.script.upload_charge_log_failed"),
+                () => upload_result.error
+            );
+        });
 //#endif
 
         util.addApiEventListener('charge_tracker/pdf_letterhead_config', () => {
@@ -208,7 +218,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 columnValues: [
                     user_filter_str,
                     file_type_str,
-                    target_user_str
+                    target_user_str,
+                    <Button size="sm" onClick={async () => {
+                        const cookie = Math.floor(Math.random() * 0xFFFFFFFF);
+                        console.log("Starting upload for remote upload config", index, "with cookie", cookie);
+                        API.call("charge_tracker/upload_charge_log_for_config", {config_index: index, cookie}, () => __("charge_tracker.script.upload_start_failed"));
+                    }}>{__("charge_tracker.content.upload_last_month")}</Button>
                 ],
                 onEditShow: async () => {
                     this.setState({
@@ -332,7 +347,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </FormRow>
                 </div>
             </Collapse>
-            <FormRow label={__("charge_tracker.content.language_label")}> 
+            <FormRow label={__("charge_tracker.content.language_label")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.language.toString()}
                     onValue={v => this.setState({
@@ -440,7 +455,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         columnNames={[
                             __("charge_tracker.content.user_filter"),
                             __("charge_tracker.content.file_type"),
-                            __("charge_tracker.content.target_user")
+                            __("charge_tracker.content.target_user"),
+                            ""
                         ]}
                         rows={this.getRemoteUploadConfigTableRows()}
                         addEnabled={state.remote_upload_configs.length < options.REMOTE_ACCESS_MAX_USERS}
