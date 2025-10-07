@@ -22,6 +22,7 @@
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "ship_types.h"
 #include "tools.h"
 #include <chrono>
 #include <regex>
@@ -405,7 +406,7 @@ size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityT
     dst[function_name] = data;
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
-            EEBusUseCases::send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
+            usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
             sent_count++;
         }
     }
@@ -1604,7 +1605,7 @@ void ControllableSystemEntity::handle_heartbeat_timeout()
     if (heartbeat_received)
         return;
     eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
-    if (lpc_state != LPCState::Failsafe)
+    if (lpc_state != LPCState::Failsafe && lpc_state != LPCState::UnlimitedAutonomous)
         switch_state(LPCState::Failsafe);
 }
 
@@ -1629,7 +1630,9 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
     //response.clear();
     //connection->ship_connection->outgoing_json_doc.clear();
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{8182};
+    eebus_commands_received++;
+    eebus.eebus_usecase_state.get("commands_received")->updateUint(eebus_commands_received);
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_TYPES_MAX_JSON_SIZE};
     JsonObject responseObj = response_doc.to<JsonObject>();
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
     String entity_name = "Unknown";
@@ -1657,6 +1660,8 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
             eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response));
         }
+        eebus_responses_sent++;
+        eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
         connection->send_datagram(response_doc, send_response, *header.addressSource, *header.addressDestination, false);
     } else {
         if (header.ackRequest.has_value() && header.ackRequest.get()) {
@@ -1682,6 +1687,8 @@ size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &e
 
 bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
 {
+    eebus_responses_sent++;
+    eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
     if (sender.feature.isNull() || sender.entity.isNull()) {
         eebus.trace_fmtln("Usecases: Cannot send spine message, sender entity or feature is null");
         return false;
