@@ -236,3 +236,9 @@ private:
     size_t used = 0;
     T val[capacity_];
 };
+
+// This is a C++23 feature
+template<class Enum>
+constexpr std::underlying_type_t<Enum> to_underlying( Enum e ) noexcept {
+    return static_cast<std::underlying_type_t<Enum>>(e);
+}
