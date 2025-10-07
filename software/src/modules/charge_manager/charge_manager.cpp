@@ -622,9 +622,15 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 
 void ChargeManager::register_urls()
 {
+#if MODULE_POWER_MANAGER_AVAILABLE()
     // PowerManager::setup() runs after ChargeManager::setup()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
     this->pm_default_charge_mode = power_manager.get_default_charge_mode();
+#else
+    this->guaranteed_pv_current = 0;
+    this->pm_default_charge_mode = ConfigChargeMode::Fast
+#endif
+
     this->charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
     auto default_mode = translate_charge_mode(this->pm_default_charge_mode);
