@@ -745,6 +745,22 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
 
     if (!ev_connected)
         return features;
+
+    {
+        // This should be at the bottom but its not filled properly for some reason if it is there
+        NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
+        deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
+        deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
+        deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+        deviceDiagnosisFeature.description->role = RoleType::server;
+
+        // deviceDiagnosisStateData
+        FunctionPropertyType deviceDiagnosisState{};
+        deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
+        deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
+        deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
+        features.push_back(deviceDiagnosisFeature);
+    }
     {
         // The following functions are needed by the DeviceDiagnosis Feature Type
         NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
@@ -819,21 +835,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
         electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueListData);
         features.push_back(electricalConnectionFeature);
     }
-    {
-        // *TODO: This feature crashes EVCC and spine-go in general for some reason.
-        NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
-        deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-        deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
-        deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::Generic;
-        deviceDiagnosisFeature.description->role = RoleType::server;
 
-        // deviceDiagnosisStateData
-        FunctionPropertyType deviceDiagnosisState{};
-        deviceDiagnosisState.function = FunctionEnumType::deviceDiagnosisStateData;
-        deviceDiagnosisState.possibleOperations->read = PossibleOperationsReadType{};
-        deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisState);
-        features.push_back(deviceDiagnosisFeature);
-    }
     return features;
 }
 
