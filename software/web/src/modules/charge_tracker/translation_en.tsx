@@ -78,7 +78,7 @@ let x = {
             "charge_log_send_config": "Charge log send configuration",
             "charge_log_send_add_modal_title": "Add charge log send configuration",
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
-            "last_sent": "Last sent",
+            "next_send": "Next send",
             "never": "Never",
             "upload_last_month": "Upload last month"
         },

@@ -21,6 +21,7 @@ interface remote_upload_config {
     letterhead: string;
     user_id: number;
     csv_delimiter: CSVFlavor;
+    last_upload_timestamp_min: number;
 }
 //#endif
 
@@ -28,7 +29,6 @@ export interface config {
     electricity_price: number;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
     remote_upload_configs: remote_upload_config[];
-    last_upload_timestamp_min: number
 //#endif
 }
 

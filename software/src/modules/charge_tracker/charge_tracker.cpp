@@ -102,6 +102,28 @@ String chargeRecordFilename(uint32_t i)
     return String(buf, sw.getLength());
 }
 
+static bool wants_send(uint32_t current_time_min, uint32_t last_send_time_min)
+{
+    if (last_send_time_min == 0) {
+        return true;
+    }
+
+    time_t last_send_time = static_cast<time_t>(last_send_time_min) * 60;
+    tm last_send;
+    localtime_r(&last_send_time, &last_send);
+
+    time_t current_time = static_cast<time_t>(current_time_min) * 60;
+    tm current;
+    localtime_r(&current_time, &current);
+
+    // Only send once per month
+    if (last_send.tm_year == current.tm_year && last_send.tm_mon == current.tm_mon) {
+        return false;
+    }
+
+    return true;
+}
+
 
 void ChargeTracker::pre_setup()
 {
@@ -140,6 +162,7 @@ void ChargeTracker::pre_setup()
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
         {"user_filter", Config::Int8(0)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
+        {"last_upload_timestamp_min", Config::Uint32(0)}
     });
 #endif
 
@@ -151,7 +174,6 @@ void ChargeTracker::pre_setup()
             &charge_log_send_prototype,
             0, MAX_CONFIGURED_CHARGELOG_USERS, Config::type_id<Config::ConfObject>()
         )},
-        {"last_upload_timestamp_min", Config::Uint32(0)},
 #endif
     });
 
@@ -1065,17 +1087,17 @@ void ChargeTracker::register_urls()
             tm now;
             localtime_r(&tv.tv_sec, &now);
 
-            const uint32_t last_send_minutes = config.get("last_upload_timestamp_min")->asUint();
+            uint32_t earliest_send = 0;
+            for (const Config &cfg : config.get("remote_upload_configs")) {
+                const uint32_t last_send_minutes = cfg.get("last_upload_timestamp_min")->asUint();
+                if (earliest_send < last_send_minutes) {
+                    earliest_send = last_send_minutes;
+                }
+            }
 
             // Already sent for this month?
-            if (last_send_minutes != 0) {
-                const time_t last_send_time = static_cast<time_t>(last_send_minutes) * 60;
-                tm last_send;
-                localtime_r(&last_send_time, &last_send);
-
-                if (last_send.tm_year == now.tm_year && last_send.tm_mon == now.tm_mon) {
-                    return;
-                }
+            if (!wants_send(tv.tv_sec / 60, earliest_send)) {
+                return;
             }
 
             this->upload_charge_logs(0);
@@ -1172,8 +1194,8 @@ static esp_err_t check_remote_client_status(std::unique_ptr<SendChargeLogArgs> u
         upload_args.release();
         return ESP_OK;
     } else if (status == 200) {
-        task_scheduler.await([]() {
-            charge_tracker.config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+        task_scheduler.await([&upload_args]() {
+            charge_tracker.config.get("remote_upload_configs")->get(upload_args->user_idx)->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
             API::writeConfig("charge_tracker/config", &charge_tracker.config);
         });
 
@@ -1426,6 +1448,15 @@ static void upload_charge_logs_task(void *arg)
     // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
     if (upload_args->config_index == -1) {
         for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
+            uint32_t last_upload;
+            task_scheduler.await([&last_upload, user_idx]() {
+                last_upload = charge_tracker.config.get("remote_upload_configs")->get(user_idx)->get("last_upload_timestamp_min")->asUint();
+            });
+
+            if (!wants_send(t_now / 60, last_upload)) {
+                continue;
+            }
+
             auto upload_request = std::make_unique<SendChargeLogArgs>();
             upload_request->user_idx = user_idx;
             upload_request->last_month_start_min = last_month_start_min;

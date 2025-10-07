@@ -62,6 +62,7 @@ interface S {
     csv_flavor: "excel" | "rfc4180";
     show_spinner: boolean;
     last_charges: Readonly<Charge[]>;
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
     new_remote_upload_config: {
         user_filter: number;
         file_type: number;
@@ -69,7 +70,10 @@ interface S {
         letterhead: string;
         user_id: number;
         csv_delimiter: CSVFlavor;
+        last_upload_timestamp_min: number;
     };
+    next_upload_timestamp_min: number;
+//#endif
 }
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];
@@ -148,7 +152,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     letterhead: "",
                     user_id: 0,
                     csv_delimiter: CSVFlavor.Excel,
+                    last_upload_timestamp_min: 0,
                   },
+                  next_upload_timestamp_min: 0,
 //#endif
               });
 
@@ -170,9 +176,25 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         util.addApiEventListener('charge_tracker/config', () => {
             let config = API.get('charge_tracker/config');
+            let last_upload_timestamp_min = 0;
+            for (const cfg of config.remote_upload_configs) {
+                if (last_upload_timestamp_min < cfg.last_upload_timestamp_min) {
+                    last_upload_timestamp_min = cfg.last_upload_timestamp_min;
+                }
+            }
+
+            let next_upload_timestamp_min = 0;
+            if (last_upload_timestamp_min != 0) {
+                const date = new Date(last_upload_timestamp_min * 60 * 1000);
+                date.setDate(1);
+                date.setMonth(date.getMonth() + 1);
+                next_upload_timestamp_min = Math.floor(date.getTime() / 1000 / 60);
+            }
+
             this.setState({
                 electricity_price: config.electricity_price,
                 remote_upload_configs: config.remote_upload_configs,
+                next_upload_timestamp_min,
             });
         });
 
@@ -234,6 +256,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             letterhead: send_config.letterhead,
                             user_id: send_config.user_id,
                             csv_delimiter: send_config.csv_delimiter,
+                            last_upload_timestamp_min: send_config.last_upload_timestamp_min,
                         }
                     });
                 },
@@ -279,6 +302,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 letterhead: "",
                 user_id: 0,
                 csv_delimiter: CSVFlavor.Excel,
+                last_upload_timestamp_min: Math.floor(Date.now() / 1000 / 60),
             }
         });
     }
@@ -467,8 +491,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         onAddSubmit={() => this.onAddRemoteUploadConfigSubmit()}
                     />
                 </FormRow>
-                <FormRow label={__("charge_tracker.content.last_sent")}>
-                    <InputText value={state.last_upload_timestamp_min == 0 ? __("charge_tracker.content.never") : util.timestamp_min_to_date(state.last_upload_timestamp_min)}/>
+                <FormRow label={__("charge_tracker.content.next_sent")}>
+                    <InputText value={state.next_upload_timestamp_min == 0 ? __("charge_tracker.content.never") : util.timestamp_min_to_date(state.next_upload_timestamp_min)}/>
                 </FormRow>
             </>
 //#endif
