@@ -577,7 +577,7 @@ public:
      * @param cmd_classifier The command classifier of the message.
      * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
      */
-    static bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+    bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
@@ -591,6 +591,8 @@ public:
 
 private:
     bool initialized = false;
+    uint16_t eebus_commands_received = 0;
+    uint16_t eebus_responses_sent = 0;
 };
 
 namespace EEBUS_USECASE_HELPERS
