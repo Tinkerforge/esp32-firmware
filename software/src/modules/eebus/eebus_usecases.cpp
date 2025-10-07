@@ -26,6 +26,7 @@
 #include "tools.h"
 #include <chrono>
 #include <regex>
+#include <utility>
 
 
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -850,35 +851,38 @@ void EvEntity::update_device_config(const String &comm_standard, bool asym_suppo
         eebus.trace_fmtln(R"(Usecase EVCC: Invalid communication standard for EV entity device configuration: %s, should be "iso15118-2ed1","iso15118-2ed1" or "iec61851".)", communication_standard.c_str());
         // We continue on regardless and let the peer deal with incorrect values
     }
-
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_device_config_description(), "deviceConfigurationKeyValueDescriptionData");
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_device_config_list(), "deviceConfigurationKeyValueListData");
+    auto generate_dev_desc = generate_device_config_description();
+    auto generate_dev_list = generate_device_config_list();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_dev_list, "deviceConfigurationKeyValueListData");
 
     update_api();
 }
 
 void EvEntity::update_identification(String mac, IdentificationTypeEnumType type)
 {
-    mac_address = mac;
+    mac_address = std::move(mac);
     mac_type = type;
-    eebus.usecases->inform_subscribers(entity_address, feature_address_identification, generate_identification_description(), "identificationListData");
+    auto identification_desc = generate_identification_description();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_identification, identification_desc, "identificationListData");
     update_api();
 }
 
 void EvEntity::update_manufacturer(String name, String code, String serial, String software_vers, String hardware_vers, String vendor_n, String vendor_c, String brand, String manufacturer, String manufacturer_description_text)
 {
-    manufacturer_name = name;
-    manufacturer_code = code;
-    ev_serial_number = serial;
-    ev_sofware_version = software_vers;
-    ev_hardware_version = hardware_vers;
-    vendor_name = vendor_n;
-    vendor_code = vendor_c;
-    manufacturer_label = manufacturer;
-    brand_name = brand;
-    manufacturer_description = manufacturer_description_text;
+    manufacturer_name = std::move(name);
+    manufacturer_code = std::move(code);
+    ev_serial_number = std::move(serial);
+    ev_sofware_version = std::move(software_vers);
+    ev_hardware_version = std::move(hardware_vers);
+    vendor_name = std::move(vendor_n);
+    vendor_code = std::move(vendor_c);
+    manufacturer_label = std::move(manufacturer);
+    brand_name = std::move(brand);
+    manufacturer_description = std::move(manufacturer_description_text);
 
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_classification, generate_manufacturer_description(), "deviceClassificationManufacturerData");
+    auto manufacturer_desc = generate_manufacturer_description();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_classification, manufacturer_desc, "deviceClassificationManufacturerData");
     update_api();
 }
 
@@ -887,9 +891,10 @@ void EvEntity::update_electrical_connection(int min_power, int max_power, int st
     min_power_draw = min_power;
     max_power_draw = max_power;
     standby_power = stby_power;
-
-    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, generate_electrical_connection_description(), "electricalConnectionParameterDescriptionListData");
-    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, generate_electrical_connection_values(), "electricalConnectionPermittedValueSetListData");
+    auto electrical_connection_desc = generate_electrical_connection_description();
+    auto electrical_connection_values = generate_electrical_connection_values();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_desc, "electricalConnectionParameterDescriptionListData");
+    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_values, "electricalConnectionPermittedValueSetListData");
 
     update_api();
 }
@@ -897,8 +902,8 @@ void EvEntity::update_electrical_connection(int min_power, int max_power, int st
 void EvEntity::update_operating_state(bool standby)
 {
     standby_mode = standby;
-
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_diagnosis, generate_state(), "deviceDiagnosisStateData");
+    auto state = generate_state();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_diagnosis, state, "deviceDiagnosisStateData");
     update_api();
 }
 
@@ -1048,33 +1053,36 @@ DeviceDiagnosisStateDataType EvEntity::generate_state() const
 
 ControllableSystemEntity::ControllableSystemEntity()
 {
-    // Initialize DeviceConfiguration feature
-    update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
+    task_scheduler.scheduleOnce([this]() {
+        // Initialize DeviceConfiguration feature
+        update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
 
-    // Initialize DeviceDiagnosis feature
-    task_scheduler.scheduleWithFixedDelay([this]() {
-                                              DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-                                              outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                                              outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-                                              outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
+        // Initialize DeviceDiagnosis feature
+        task_scheduler.scheduleWithFixedDelay([this]() {
+                                                  DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+                                                  outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+                                                  outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
+                                                  outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
 
-                                              eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
-                                              eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
-                                                  heartbeatCounter++;
-                                              }
-                                              if (!heartbeat_received) {
-                                                  handle_heartbeat_timeout();
-                                              }
-                                              heartbeat_received = false;
-                                          },
-                                          120_s,
-                                          60_s);
-    // Initialize ElectricalConnection feature
-    update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
-    update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
-    lpc_state = LPCState::Init;
-    switch_state(LPCState::Init);
+                                                  eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
+                                                  eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+                                                  if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
+                                                      heartbeatCounter++;
+                                                  }
+                                                  if (!heartbeat_received) {
+                                                      handle_heartbeat_timeout();
+                                                  }
+                                                  heartbeat_received = false;
+                                              },
+                                              120_s,
+                                              60_s);
+        // Initialize ElectricalConnection feature
+        update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
+        update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
+        lpc_state = LPCState::Init;
+        switch_state(LPCState::Init);
+    }, 1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
+
 
 }
 
@@ -1332,14 +1340,6 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
         switch_state(LPCState::UnlimitedControlled);
     }
 
-    // TODO: Fix subscriptions
-    //eebus.data_handler->loadcontrollimitdescriptionlistdatatype = load_control_limit_description_list;
-    //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitDescriptionListData;
-    //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
-
-    //eebus.data_handler->loadcontrollimitlistdatatype = load_control_limit_list;
-    //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::loadControlLimitListData;
-    //eebus.usecases->node_management.inform_subscribers(entity_address, loadControl_feature_address, eebus.data_handler.get());
     eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_description_list, "loadControlLimitDescriptionListData");
     eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_list, "loadControlLimitListData");
 
@@ -1673,9 +1673,8 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 }
 
 template <typename T>
-size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
+size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, String function_name)
 {
-
     if (initialized && EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
         return node_management.inform_subscribers(entity, feature, data, function_name);
     if constexpr (EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
