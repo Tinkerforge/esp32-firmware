@@ -27,7 +27,7 @@
 
 bool Config::ConfTuple::slotEmpty(const Slot *slot)
 {
-    return slot->values == nullptr;
+    return slot->length == std::numeric_limits<size_t>::max();
 }
 
 void Config::ConfTuple::slotDebugHook(const Slot *slot) {
@@ -83,8 +83,10 @@ Config::ConfTuple::ConfTuple(std::initializer_list<Config> tup) : idx(nextSlot<C
     auto *slot = this->getSlot();
     const size_t len = tup.size();
 
-    if (len == 0)
-        esp_system_abort("Constructing ConfTuples of length 0 is not allowed (yet?)");
+    if (len == 0) {
+        slot->length = 0;
+        return;
+    }
 
     Config *vals = new Config[len];
     slot->values.reset(vals);
@@ -101,8 +103,10 @@ Config::ConfTuple::ConfTuple(size_t length, Config &&cfg) : idx(nextSlot<Config:
 {
     auto *slot = this->getSlot();
 
-    if (length == 0)
-        esp_system_abort("Constructing ConfTuples of length 0 is not allowed (yet?)");
+    if (length == 0) {
+        slot->length = 0;
+        return;
+    }
 
     Config *vals = new Config[length];
     slot->values.reset(vals);
@@ -117,11 +121,6 @@ Config::ConfTuple::ConfTuple(size_t length, Config &&cfg) : idx(nextSlot<Config:
 
 Config::ConfTuple::ConfTuple(const ConfTuple &cpy) : idx(nextSlot<Config::ConfTuple>())
 {
-    // We have to mark this slot as in use here:
-    // This array could contain a nested array that will be copied over
-    // The inner array's copy constructor then takes the first free slot, i.e.
-    // ours if we don't mark it as in use first.
-
     const size_t len = cpy.getSlot()->length;
     Config *cpy_vals = cpy.getSlot()->values.get();
 
@@ -142,7 +141,7 @@ Config::ConfTuple::~ConfTuple()
         return;
 
     auto *slot = this->getSlot();
-    slot->length = 0;
+    slot->length = std::numeric_limits<size_t>::max();;
     slot->values = nullptr;
 
     notify_free_slot<Config::ConfTuple>(idx);

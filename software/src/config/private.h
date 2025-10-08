@@ -95,5 +95,5 @@ struct ConfUint53Slot {
 
 struct ConfTupleSlot {
     std::unique_ptr<Config[]> values;
-    size_t length;
+    size_t length = std::numeric_limits<size_t>::max();
 };
