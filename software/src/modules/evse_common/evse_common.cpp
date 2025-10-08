@@ -25,7 +25,13 @@
 #include "module_dependencies.h"
 #include "tools/fs.h"
 
+#if MODULE_CM_NETWORKING_AVAILABLE()
+#include "modules/cm_networking/cm_networking_defs.h"
+#endif
+
 extern uint32_t local_uid_num;
+
+static constexpr auto CHARGE_MODE_REQUEST_TIMEOUT = 10_s;
 
 EvseCommon::EvseCommon()
 {
@@ -158,9 +164,11 @@ void EvseCommon::pre_setup()
 #endif
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    request_charge_mode = Config::Object({
+    charge_mode = Config::Object({
         {"mode", Config::Uint8(0)}
     });
+
+    supported_charge_modes = Config::Tuple({});
 #endif
 }
 
@@ -386,7 +394,7 @@ void EvseCommon::send_cm_client_update() {
         backend->get_control_pilot_disconnect(),
         phases,
         backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
-        deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->request_charge_mode.get("mode")->asEnum<ConfigChargeMode>()
+        deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->charge_mode.get("mode")->asEnum<ConfigChargeMode>()
     );
 #endif
 }
@@ -394,7 +402,7 @@ void EvseCommon::send_cm_client_update() {
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode charge_mode, uint8_t *supported_charge_mode, size_t supported_charge_mode_len) {
+    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -414,12 +422,29 @@ void EvseCommon::register_urls()
         // we still have to send client updates.
         next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
 
-        if (!deadline_elapsed(request_charge_mode_until) // We are currently requesting a charge mode change
-        && charge_mode == this->request_charge_mode.get("mode")->asEnum<ConfigChargeMode>()) { // The manager accepted our request
-            request_charge_mode_until = 0_us; // Stop requesting a charge mode change
+        if (deadline_elapsed(request_charge_mode_until)) {
+            // We are currently not requesting a charge mode change.
+            // Accept any manager change except if the manager sets "Default", i.e. no change
+            // The manager sets "Default" if it was restarted and forgot what this chargers mode was set to.
+            if (mode != ConfigChargeMode::Default)
+                this->charge_mode.get("mode")->updateEnum(mode);
+            else
+                // If the manager forgot our mode, start sending it as if we are requesting a change.
+                request_charge_mode_until = now_us() + CHARGE_MODE_REQUEST_TIMEOUT;
+        } else if(mode == this->charge_mode.get("mode")->asEnum<ConfigChargeMode>()) {
+            // We are currently requesting a charge mode change.
+            // The manager accepted our request.
+            // -> Stop requesting a charge mode change.
+            request_charge_mode_until = 0_us;
         }
 
-        this->last_assigned_charge_mode = charge_mode;
+        if (this->supported_charge_modes.count() != supported_mode_len) {
+            this->supported_charge_modes.replace(supported_mode_len, Config::Enum(ConfigChargeMode::Default));
+        }
+
+        for (size_t i = 0; i < supported_mode_len; ++i) {
+            this->supported_charge_modes.get(i)->updateEnum(supported_modes[i]);
+        }
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -430,9 +455,12 @@ void EvseCommon::register_urls()
         next_cm_send_deadline = now_us() + 2500_ms;
     }, 100_ms, 100_ms);
 
-    api.addCommand("evse/request_charge_mode", &request_charge_mode, {}, [this](String &/*errmsg*/) {
-        this->request_charge_mode_until = now_us() + 10_s;
+    api.addState("evse/charge_mode", &charge_mode);
+    api.addCommand("evse/charge_mode_update", &charge_mode, {}, [this](String &/*errmsg*/) {
+        this->request_charge_mode_until = now_us() + CHARGE_MODE_REQUEST_TIMEOUT;
     }, false);
+
+    api.addState("evse/supported_charge_modes", &supported_charge_modes);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(last_current_update + 30_s))

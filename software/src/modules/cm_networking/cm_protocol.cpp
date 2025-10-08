@@ -434,7 +434,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 #endif
 }
 
-bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, uint8_t charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask)
+bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, ConfigChargeMode charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask)
 {
     static uint16_t next_seq_num = 1;
 
@@ -450,7 +450,7 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
     command_pkt.v2.allocated_phases = allocated_phases;
 
-    command_pkt.v3.charge_mode = charge_mode;
+    command_pkt.v3.charge_mode = to_underlying(charge_mode);
     for (size_t i = 0; i < supported_charge_mode_bitmask.size(); ++i)
         command_pkt.v3.supported_charge_modes[i] = supported_charge_mode_bitmask[i];
 
@@ -493,7 +493,7 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     return true;
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, uint8_t *, size_t)> &manager_update_received_cb)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -588,10 +588,23 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
         last_successful_recv = now_us();
 
         if (manager_update_received_cb) {
+            ConfigChargeMode supported_charge_modes[ARRAY_SIZE(command_pkt.v3.supported_charge_modes) * 8];
+            size_t supported_charge_mode_length = 0;
+
+            if (command_pkt.header.version >= 3) {
+                for (int i = 0; i < CM_COMMAND_V3_MAX_CONFIG_CHARGE_MODE; ++i) {
+                    if ((command_pkt.v3.supported_charge_modes[i / 8] & (1 << (i % 8))) != 0) {
+                        supported_charge_modes[supported_charge_mode_length] = static_cast<ConfigChargeMode>(i);
+                        ++supported_charge_mode_length;
+                    }
+                }
+            }
+
             manager_update_received_cb(command_pkt.v1.allocated_current,
                             CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
-                            command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Fast, nullptr, 0);
+                            command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Default,
+                            supported_charge_modes, supported_charge_mode_length);
         } else {
             this->send_command_packet(0, &command_pkt);
         }

@@ -77,7 +77,7 @@ struct cm_command_v2 {
 struct cm_command_v3 {
     uint8_t charge_mode;
     // This layout allows us to add more supported charge modes with cm_command_v4 if necessary
-    uint8_t supported_charge_modes[2]; // Bitmask of ConfigChargeModes
+    uint8_t supported_charge_modes[2]; // Bitmask of ConfigChargeModes. Currently there are 9 ConfigChargeModes; if this packet is a v3 packet, the upper 7 bits must be send as 0 and not be interpreted!
     uint8_t _padding;
 };
 
@@ -93,6 +93,8 @@ static_assert(offsetof(cm_command_v1, _padding) == offsetof(cm_command_v2, alloc
 
 #define CM_COMMAND_V3_LENGTH (sizeof(cm_command_v3))
 static_assert(CM_COMMAND_V3_LENGTH == 4, "Unexpected CM_COMMAND_V3_LENGTH");
+static_assert(to_underlying(ConfigChargeMode::_max) == 9);
+#define CM_COMMAND_V3_MAX_CONFIG_CHARGE_MODE 9
 
 struct cm_command_packet {
     cm_packet_header header;
