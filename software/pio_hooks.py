@@ -1454,6 +1454,7 @@ def main():
 
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
+        mod_tfpp_path = os.path.join('web', 'src_tfpp', 'modules', frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, "prepare.py")):
             util.log('Preparing frontend module:', frontend_module.space)
@@ -1469,8 +1470,8 @@ def main():
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
 
-        if os.path.exists(os.path.join(mod_path, 'api.ts')):
-            with open(os.path.join(mod_path, 'api.ts'), 'r', encoding='utf-8') as f:
+        if os.path.exists(os.path.join(mod_tfpp_path, 'api.ts')):
+            with open(os.path.join(mod_tfpp_path, 'api.ts'), 'r', encoding='utf-8') as f:
                 content = f.readlines()
 
             api_path = frontend_module.under + "/"
