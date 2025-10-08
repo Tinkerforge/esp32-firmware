@@ -731,7 +731,7 @@ void WebSockets::stop() {
         this->keepAliveCloseDead(keep_alive_fds[i]);
     }
 
-    if (state_handler != nullptr) {
+    if (state_handler != nullptr && boot_stage != BootStage::PRE_REBOOT) {
         logger.printfln("Stopping a WebSockets instance that has the state path set is not supported yet! This will leak memory!");
     }
 
