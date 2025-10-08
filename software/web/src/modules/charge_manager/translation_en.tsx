@@ -14,36 +14,7 @@ let x = {
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current",
-            "mode": "Charging mode",
-            "mode_fast": "Fast",
-            "mode_off": "Off",
-            "mode_pv": "PV",
-            "mode_min_pv": "Min + PV",
-            "mode_default": "Default mode",
-            "mode_min": "Min",
-            "mode_eco": "Eco",
-            "mode_eco_pv": "Eco + PV",
-            "mode_eco_min": "Eco + Min",
-            "mode_eco_min_pv": "Eco + Min + PV",
-            "mode_by_index": /*SFN*/ (mode: number, default_mode?: number) => {
-                const modes = [
-                    __("charge_manager.status.mode_fast"),
-                    __("charge_manager.status.mode_off"),
-                    __("charge_manager.status.mode_pv"),
-                    __("charge_manager.status.mode_min_pv"),
-                    __("charge_manager.status.mode_default"),
-                    __("charge_manager.status.mode_min"),
-                    __("charge_manager.status.mode_eco"),
-                    __("charge_manager.status.mode_eco_pv"),
-                    __("charge_manager.status.mode_eco_min"),
-                    __("charge_manager.status.mode_eco_min_pv"),
-                ];
-
-                if (mode == 4 && default_mode !== undefined) {
-                    return modes[mode] + " (" + modes[default_mode] + ")";
-                }
-                return modes[mode];
-            }/*NF*/
+            "mode": "Charging mode"
         },
         "navbar": {
             "charge_manager_settings": "Charge Management",
