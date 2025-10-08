@@ -29,7 +29,7 @@ from collections import namedtuple
 import tinkerforge_util as tfutil
 import util
 from hyphenations import hyphenations, allowed_missing
-from web.tfpp import tfpp
+from web.tfpp import tfpp_lines, tfpp_paths
 
 FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
 FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')
@@ -618,7 +618,7 @@ def preprocess_web(frontend_modules_under):
 
                 if src_path.suffix in ['.ts', '.tsx']:
                     try:
-                        tfpp(src_path, src_tfpp_path)
+                        tfpp_paths(src_path, src_tfpp_path)
                     except Exception as e:
                         print(f'Error: {e}', file=sys.stderr)
                         exit(42)
@@ -1443,6 +1443,20 @@ def main():
     post_scss_paths = []
     translation = collect_translation('web')
 
+    all_frontend_modules_upper = []
+    for existing_frontend_module in os.listdir(os.path.join('web', 'src', 'modules')):
+        if not os.path.isdir(os.path.join('web', 'src', 'modules', existing_frontend_module)):
+            continue
+
+        all_frontend_modules_upper.append(existing_frontend_module.upper())
+
+    for frontend_module in frontend_modules:
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
+        info_path = os.path.join(mod_path, 'module.ini')
+        file_path_prefix = os.path.join(mod_path, 'module_')
+
+        generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper)
+
     # API
     api_imports = []
     api_config_map_entries = []
@@ -1470,8 +1484,10 @@ def main():
             main_ts_entries.append(frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'api.ts')):
-            with open(os.path.join(mod_path, 'api.ts'), 'r', encoding='utf-8') as f:
-                content = f.readlines()
+            api_path = os.path.join(mod_path, 'api.ts')
+
+            with open(api_path, 'r', encoding='utf-8') as f:
+                content = tfpp_lines(api_path, f.readlines())
 
             api_path = frontend_module.under + "/"
 
@@ -1515,20 +1531,6 @@ def main():
 
     check_translation(translation)
     translation = hyphenate_translation(translation)
-
-    all_frontend_modules_upper = []
-    for existing_frontend_module in os.listdir(os.path.join('web', 'src', 'modules')):
-        if not os.path.isdir(os.path.join('web', 'src', 'modules', existing_frontend_module)):
-            continue
-
-        all_frontend_modules_upper.append(existing_frontend_module.upper())
-
-    for frontend_module in frontend_modules:
-        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
-        info_path = os.path.join(mod_path, 'module.ini')
-        file_path_prefix = os.path.join(mod_path, 'module_')
-
-        generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper)
 
     global missing_hyphenations
     if len(missing_hyphenations) > 0:
