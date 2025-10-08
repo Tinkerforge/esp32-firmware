@@ -23,6 +23,24 @@ interface remote_upload_config {
     csv_delimiter: CSVFlavor;
     last_upload_timestamp_min: number;
 }
+
+export interface send_charge_log {
+    api_not_final_acked: boolean;
+    config_index: number;
+    cookie: number;
+    user_filter: number;
+    start_timestamp_min: number;
+    end_timestamp_min: number;
+    file_type: FileType;
+    language: Language;
+    csv_delimiter: CSVFlavor;
+    letterhead?: string;
+}
+
+export interface upload_result {
+    cookie: number;
+    error: string;
+}
 //#endif
 
 export interface config {
@@ -101,22 +119,4 @@ export interface pdf {
     end_timestamp_min?: number;
     user_filter?: number;
     letterhead?: string;
-}
-
-export interface send_charge_log {
-    api_not_final_acked: boolean;
-    config_index: number;
-    cookie: number;
-    user_filter: number;
-    start_timestamp_min: number;
-    end_timestamp_min: number;
-    file_type: FileType;
-    language: Language;
-    csv_delimiter: CSVFlavor;
-    letterhead?: string;
-}
-
-export interface upload_result {
-    cookie: number;
-    error: string;
 }
