@@ -28,7 +28,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
-import { Button, Collapse, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Button, Collapse, ListGroup, ListGroupItem, Spinner, Dropdown } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -235,11 +235,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     user_filter_str,
                     file_type_str,
                     target_user_str,
-                    <Button size="sm" onClick={async () => {
-                        const cookie = Math.floor(Math.random() * 0xFFFFFFFF);
-                        console.log("Starting upload for remote upload config", index, "with cookie", cookie);
-                        API.call("charge_tracker/upload_charge_log_for_config", {config_index: index, cookie}, () => __("charge_tracker.script.upload_start_failed"));
-                    }}>{__("charge_tracker.content.upload_last_month")}</Button>
                 ],
                 onEditShow: async () => {
                     this.setState({
@@ -474,6 +469,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         dap_enabled = API.get('day_ahead_prices/config').enable;
 //#endif
         let sendEmailComponent = <></>;
+        let sendEmailDropdown = <></>;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         sendEmailComponent = <>
                 <FormSeparator heading={__("charge_tracker.content.charge_log_email_send_config")}/>
@@ -483,7 +479,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             __("charge_tracker.content.user_filter"),
                             __("charge_tracker.content.file_type"),
                             __("charge_tracker.content.target_user"),
-                            ""
                         ]}
                         rows={this.getRemoteUploadConfigTableRows()}
                         addEnabled={state.remote_upload_configs.length < options.REMOTE_ACCESS_MAX_USERS}
@@ -498,6 +493,52 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     <InputText value={state.next_upload_timestamp_min == 0 ? __("charge_tracker.content.never") : util.timestamp_min_to_date(state.next_upload_timestamp_min)}/>
                 </FormRow>
             </>
+
+        const onDropdownClick = async (config_index: number) => {
+            try {
+                let start = state.start_date ?? new Date(0);
+                if (isNaN(start.getTime()))
+                    start = new Date(0);
+
+                let end = state.end_date ?? new Date(Date.now());
+                if (isNaN(end.getTime()))
+                    end = new Date(Date.now());
+
+                end.setHours(23, 59, 59, 999);
+
+                const language = get_active_language().value != 'de' ? Language.English : Language.German;
+
+                await API.call("charge_tracker/send_charge_log", {
+                    api_not_final_acked: true,
+                    language: language,
+                    start_timestamp_min: Math.floor(start.getTime() / 1000 / 60),
+                    end_timestamp_min: Math.floor(end.getTime() / 1000 / 60),
+                    user_filter: parseInt(state.user_filter),
+                    file_type: parseInt(state.file_type),
+                    letterhead: state.pdf_letterhead,
+                    csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
+                    cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                    config_index
+                }, () => __("charge_tracker.script.upload_charge_log_failed"));
+
+                util.add_alert("charge-log-upload", "success", () => __("charge_tracker.script.upload_charge_log_success"), () => "");
+            } catch (err) {
+                util.add_alert("charge-log-upload", "danger", () => __("charge_tracker.script.upload_charge_log_failed"), err);
+            }
+        };
+        const remoteAccessConfig = API.get('remote_access/config');
+        const sendEmailDropdownItems = state.remote_upload_configs.map((cfg, index) => {
+            return <Dropdown.Item onClick={() => onDropdownClick(index)}>{remoteAccessConfig.users.find(user => user.id === cfg.user_id)?.email}</Dropdown.Item>
+        });
+        sendEmailDropdown = state.remote_upload_configs.length > 0 ? <Dropdown>
+            <Dropdown.Toggle id="dropdown-basic">
+                {__("charge_tracker.content.charge_log_email_send_to_user")}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+                {sendEmailDropdownItems}
+            </Dropdown.Menu>
+        </Dropdown>
+    : <></>;
 //#endif
 
         return (
@@ -566,44 +607,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                     this.setState({pdf_letterhead: state.pdf_letterhead});
                             }} cols={30} rows={6}/>
                         </FormRow>
-
-                        <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                            <Button variant="primary" className="form-control" onClick={async () => {
-                                this.setState({show_spinner: true});
-
-                                let start = state.start_date ?? new Date(0);
-                                // Start and end dates are "invalid date" if the user clicks the input's clear button.
-                                if (isNaN(start.getTime()))
-                                    start = new Date(0);
-
-                                let end = state.end_date ?? new Date(Date.now());
-                                if (isNaN(end.getTime()))
-                                    end = new Date(Date.now());
-
-                                end.setHours(23, 59);
-
-                                try {
-                                    const now = Date.now();
-                                    const language = get_active_language().value != 'de' ? Language.English : Language.German;
-                                    let pdf = await API.call("charge_tracker/pdf", {
-                                        api_not_final_acked: true,
-                                        language: language,
-                                        start_timestamp_min: start.getTime() / 1000 / 60,
-                                        end_timestamp_min: end.getTime() / 1000 / 60,
-                                        user_filter: parseInt(state.user_filter),
-                                        letterhead: state.pdf_letterhead,
-                                    }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-                                    util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
-                                    const duration = Date.now() - now;
-                                } finally {
-                                    this.setState({show_spinner: false});
-                                }
-                            }}>
-                                <span class="mr-2">{__("charge_tracker.content.download_btn_pdf")}</span>
-                                <Download/>
-                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
-                            </Button>
-                        </FormRow>
                     </div>
                 </Collapse>
 
@@ -619,34 +622,55 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 ]}
                             />
                         </FormRow>
-
-                        <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                            <Button variant="primary" className="form-control" onClick={async () => {
-                                this.setState({show_spinner: true});
-
-                                let start = state.start_date ?? new Date(0);
-                                // Start and end dates are "invalid date" if the user clicks the input's clear button.
-                                if (isNaN(start.getTime()))
-                                    start = new Date(0);
-
-                                let end = state.end_date ?? new Date(Date.now());
-                                if (isNaN(end.getTime()))
-                                    end = new Date(Date.now());
-
-                                try {
-                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start ,end, state.electricity_price);
-                                } finally {
-                                    this.setState({show_spinner: false});
-                                }
-                            }}>
-                                <span class="mr-2">{__("charge_tracker.content.download_btn")}</span>
-                                <Download/>
-                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
-                            </Button>
-                        </FormRow>
                     </div>
                 </Collapse>
 
+                <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} onClick={async () => {
+                            this.setState({show_spinner: true});
+
+                            let start = state.start_date ?? new Date(0);
+                            // Start and end dates are "invalid date" if the user clicks the input's clear button.
+                            if (isNaN(start.getTime()))
+                                start = new Date(0);
+
+                            let end = state.end_date ?? new Date(Date.now());
+                            if (isNaN(end.getTime()))
+                                end = new Date(Date.now());
+
+                            try {
+                                if (state.file_type === "0") {
+                                    // Download PDF
+                                    end.setHours(23, 59);
+                                    const now = Date.now();
+                                    const language = get_active_language().value != 'de' ? Language.English : Language.German;
+                                    let pdf = await API.call("charge_tracker/pdf", {
+                                        api_not_final_acked: true,
+                                        language: language,
+                                        start_timestamp_min: start.getTime() / 1000 / 60,
+                                        end_timestamp_min: end.getTime() / 1000 / 60,
+                                        user_filter: parseInt(state.user_filter),
+                                        letterhead: state.pdf_letterhead,
+                                    }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
+                                    util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
+                                } else {
+                                    // Download CSV
+                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start, end, state.electricity_price);
+                                }
+                            } finally {
+                                this.setState({show_spinner: false});
+                            }
+                        }}>
+                            <span class="mr-2">
+                                {state.file_type === "0" ? __("charge_tracker.content.download_btn_pdf") : __("charge_tracker.content.download_btn")}
+                            </span>
+                            <Download/>
+                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                        </Button>
+                        {sendEmailDropdown}
+                    </div>
+                </FormRow>
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
                 <FormRow label={__("charge_tracker.content.tracked_charges")} label_muted={__("charge_tracker.content.tracked_charges_muted")}>

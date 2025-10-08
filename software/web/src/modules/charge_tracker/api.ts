@@ -103,9 +103,17 @@ export interface pdf {
     letterhead?: string;
 }
 
-export interface upload_charge_log_for_config {
+export interface send_charge_log {
+    api_not_final_acked: boolean;
     config_index: number;
     cookie: number;
+    user_filter: number;
+    start_timestamp_min: number;
+    end_timestamp_min: number;
+    file_type: FileType;
+    language: Language;
+    csv_delimiter: CSVFlavor;
+    letterhead?: string;
 }
 
 export interface upload_result {

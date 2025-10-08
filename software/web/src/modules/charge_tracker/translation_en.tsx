@@ -78,6 +78,7 @@ let x = {
             "charge_log_email_send_config": "Email send configuration",
             "charge_log_email_send_add_modal_title": "Add email send configuration",
             "charge_log_email_send_edit_modal_title": "Edit email send configuration",
+            "charge_log_email_send_to_user": "Send charge log via email",
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "next_send": "Next send",
             "never": "Never",
@@ -109,12 +110,12 @@ let x = {
             "remove_init": "Removing tracked charges and rebooting...",
             "download_charge_log_failed": "Failed to download tracked charges",
             "download_usernames_failed": "Failed to download the usernames used in tracked charges",
-            "upload_start_failed": "Failed to start upload",
-            "upload_charge_log_success": "Charge log uploaded successfully",
-            "upload_charge_log_failed": "Failed to upload charge log",
+            "upload_start_failed": "Failed to start email sending of charge-log",
+            "upload_charge_log_success": "Charge-log sending started successfully",
+            "upload_charge_log_failed": "Failed to send charge-log",
 
-            "save_failed": "Failed to save the charge manager settings.",
-            "reboot_content_changed": "charge tracker settings"
+            "save_failed": "Failed to save the charge tracker settings.",
+            "reboot_content_changed": "Charge tracker settings"
         }
     }
 }

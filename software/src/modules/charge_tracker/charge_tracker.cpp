@@ -1054,42 +1054,96 @@ void ChargeTracker::register_urls()
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 
-    server.on("/charge_tracker/upload_charge_log_for_config", HTTP_PUT, [this](WebServerRequest request) {
+    server.on("/charge_tracker/send_charge_log", HTTP_PUT, [this](WebServerRequest request) {
         if (this->send_in_progress) {
             return request.send_plain(429, "Another upload is already in progress");
         }
 
-        if (request.contentLength() > 64) {
-            return request.send_plain(413);
+        int user_filter = -2;
+        uint32_t start_timestamp_min = 0;
+        uint32_t end_timestamp_min = 0;
+        Language language = Language::German;
+        FileType file_type = FileType::PDF;
+        int csv_delimiter = (int)CSVFlavor::Excel;
+        uint8_t config_index = 0;
+        uint32_t cookie = 0;
+
+        auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
+        auto letterhead = letterhead_buf.get();
+        {
+            if (request.contentLength() > 1024) {
+                return request.send_plain(413);
+            }
+
+            auto buf = heap_alloc_array<char>(1024);
+            auto received = request.receive(buf.get(), 1024);
+
+            if (received < 0) {
+                return request.send_plain(500, "Failed to receive request payload");
+            }
+
+            StaticJsonDocument<192> doc;
+            DeserializationError error = deserializeJson(doc, buf.get(), received);
+
+            if (error) {
+                char error_string[64];
+                StringWriter sw(error_string, ARRAY_SIZE(error_string));
+                sw.puts("Failed to deserialize string: ");
+                sw.puts(error.c_str());
+                return request.send_plain(400, sw);
+            }
+
+            if (!bool(doc["api_not_final_acked"])) {
+                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
+            }
+
+            user_filter = doc["user_filter"];
+            start_timestamp_min = doc["start_timestamp_min"];
+            end_timestamp_min = doc["end_timestamp_min"];
+            uint8_t language_val = doc["language"];
+            language = static_cast<Language>(language_val);
+            uint8_t file_type_val = doc["file_type"];
+            file_type = static_cast<FileType>(file_type_val);
+            csv_delimiter = doc["csv_delimiter"];
+            config_index = doc["config_index"];
+            cookie = doc["cookie"];
+
+            if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
+                return request.send_plain(400, "Missing config_index or cookie parameter");
+            }
+
+            // Handle letterhead for PDF file type
+            bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
+
+            if (letterhead_passed) {
+                if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
+                    return request.send_plain(400, "Letterhead is too long!");
+                }
+
+                strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
+            }
+
+            task_scheduler.await([this, letterhead, letterhead_passed](){
+                auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
+                if (!letterhead_passed) {
+                    strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
+                    return;
+                }
+
+                if (saved_letterhead->asString() != letterhead) {
+                    saved_letterhead->updateString(letterhead);
+                    API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
+                }
+            });
         }
 
-        char buf[64] = {};
-        int received = request.receive(buf, 64);
-
-        if (received < 0) {
-            return request.send_plain(500, "Failed to receive request payload");
-        }
-
-        StaticJsonDocument<64> doc;
-        DeserializationError error = deserializeJson(doc, buf, received);
-
-        if (error) {
-            return request.send_plain(400, "Failed to deserialize JSON");
-        }
-
-        if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
-            return request.send_plain(400, "Missing config_index parameter");
-        }
-
-        uint8_t config_index = doc["config_index"];
-        uint32_t cookie = doc["cookie"];
         uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
         if (config_index >= remote_upload_config_count) {
             return request.send_plain(400, "Invalid config_index");
         }
 
-        this->upload_charge_log_for_config(config_index, cookie);
+        this->start_charge_log_upload_for_config(config_index, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, static_cast<CSVFlavor>(csv_delimiter), std::move(letterhead_buf));
         return request.send_plain(200, "Charge-log upload for specific config started");
     });
 
@@ -1181,30 +1235,30 @@ static void report_errorf(uint32_t cookie, const char *fmt, ...)
 
 static void handle_upload_retry(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
-    if (upload_args->upload_retry_count == -1) {
+    if (upload_args->retry_count == -1) {
         // No retries left, report error
         report_errorf(upload_args->cookie, "Charge-log upload failed. Look at the event log for details.");
         return;
     }
 
-    upload_args->upload_retry_count++;
-    if (upload_args->upload_retry_count >= MAX_UPLOAD_RETRIES) {
+    upload_args->retry_count++;
+    if (upload_args->retry_count >= MAX_UPLOAD_RETRIES) {
         logger.printfln("Charge-log upload failed. Maximum number of retries reached. Giving up.");
         charge_tracker.send_in_progress = false;
         return;
     }
-    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_args->upload_retry_count - 1));
+    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_args->retry_count - 1));
     if (delay_minutes > 480) {
         delay_minutes = 480;
     }
 
     upload_args->next_retry_delay = millis_t(delay_minutes * 60 * 1000);
-    uint32_t upload_retry_count = upload_args->upload_retry_count;
+    int8_t upload_retry_count = upload_args->retry_count;
     task_scheduler.scheduleOnce([upload_retry_count]() mutable {
         charge_tracker.upload_charge_logs(upload_retry_count);
     }, upload_args->next_retry_delay);
 
-    logger.printfln("Charge-log upload failed. Retry %lu in %lu minutes",
+    logger.printfln("Charge-log upload failed. Retry %d in %lu minutes",
                     upload_retry_count, delay_minutes);
 }
 
@@ -1217,7 +1271,7 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
         return ESP_ERR_HTTP_EAGAIN;
     } else if (status == 200) {
         task_scheduler.await([&upload_args]() {
-            charge_tracker.config.get("remote_upload_configs")->get(upload_args->user_idx)->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+            charge_tracker.config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args->config_index))->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
             API::writeConfig("charge_tracker/config", &charge_tracker.config);
         });
 
@@ -1319,20 +1373,37 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
             &letterhead, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter]()
     {
-        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(upload_args_ref.user_idx);
+        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args_ref.config_index));
 
-        user_filter = charge_log_send->get("user_filter")->asInt();
-        language = charge_log_send->get("language")->asEnum<Language>();
-        file_type = charge_log_send->get("file_type")->asEnum<FileType>();
-        csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
-        filename = build_filename(((time_t)upload_args_ref.last_month_start_min) * 60, ((time_t)upload_args_ref.last_month_end_min) * 60, file_type, language);
+        // Only use struct values when formats are not overwritten (specific config request), otherwise read from config
+        if (upload_args_ref.use_format_overrides) {
+            language = upload_args_ref.language;
+            file_type = upload_args_ref.file_type;
+            csv_delimiter = upload_args_ref.csv_delimiter;
+            user_filter = upload_args_ref.user_filter;
+        } else {
+            language = charge_log_send->get("language")->asEnum<Language>();
+            file_type = charge_log_send->get("file_type")->asEnum<FileType>();
+            csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
+            user_filter = charge_log_send->get("user_filter")->asInt();
+        }
+        filename = build_filename(((time_t)upload_args_ref.start_timestamp_min) * 60, ((time_t)upload_args_ref.end_timestamp_min) * 60, file_type, language);
 
         if (file_type == FileType::PDF) {
-            const String &letterhead_string = charge_log_send->get("letterhead")->asString();
-            const size_t letterhead_terminated_length = letterhead_string.length() + 1;
+            // Use letterhead from upload_args if provided, otherwise use config
+            if (upload_args_ref.use_format_overrides && upload_args_ref.letterhead) {
 
-            letterhead = heap_alloc_array<char>(letterhead_terminated_length);
-            strncpy(letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+                //Deep copy in case sending fails and we need to retry
+                const size_t letterhead_terminated_length = strlen(upload_args_ref.letterhead.get()) + 1;
+                letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+                strncpy(letterhead.get(), upload_args_ref.letterhead.get(), letterhead_terminated_length);
+            } else {
+                const String &letterhead_string = charge_log_send->get("letterhead")->asString();
+                const size_t letterhead_terminated_length = letterhead_string.length() + 1;
+
+                letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+                strncpy(letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+            }
         }
 
         const int user_id = charge_log_send->get("user_id")->asInt();
@@ -1407,15 +1478,15 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                 return format_and_send_chunk(remote_client, first, static_cast<const uint8_t *>(buffer), len);
             },
             user_filter,
-            upload_args->last_month_start_min,
-            upload_args->last_month_end_min,
+            upload_args->start_timestamp_min,
+            upload_args->end_timestamp_min,
             rtc.timestamp_minutes(),
             language, letterhead.get(), letterhead_lines, nullptr);
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = user_filter;
-        csv_params.start_timestamp_min = upload_args->last_month_start_min;
-        csv_params.end_timestamp_min = upload_args->last_month_end_min;
+        csv_params.start_timestamp_min = upload_args->start_timestamp_min;
+        csv_params.end_timestamp_min = upload_args->end_timestamp_min;
         csv_params.language = language;
         csv_params.flavor = csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
@@ -1449,7 +1520,7 @@ static void upload_charge_logs_task(void *arg)
     int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
 #endif
 
-    std::unique_ptr<UploadTaskParams> upload_args{static_cast<UploadTaskParams *>(arg)};
+    std::unique_ptr<RemoteUploadRequest> upload_args{static_cast<RemoteUploadRequest *>(arg)};
 
     const time_t t_now = time(nullptr);
 
@@ -1477,8 +1548,15 @@ static void upload_charge_logs_task(void *arg)
     last_month_end.tm_sec = 0;
     last_month_end.tm_isdst = -1;
 
-    const uint32_t last_month_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
-    const uint32_t last_month_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
+    // Use provided time range if specified, otherwise calculate last month
+    uint32_t actual_start_min, actual_end_min;
+    if (upload_args->start_timestamp_min != 0 || upload_args->end_timestamp_min != 0) {
+        actual_start_min = upload_args->start_timestamp_min;
+        actual_end_min = upload_args->end_timestamp_min;
+    } else {
+        actual_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
+        actual_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
+    }
 
     // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
     if (upload_args->config_index == -1) {
@@ -1493,11 +1571,12 @@ static void upload_charge_logs_task(void *arg)
             }
 
             auto upload_request = std::make_unique<RemoteUploadRequest>();
-            upload_request->user_idx = user_idx;
-            upload_request->last_month_start_min = last_month_start_min;
-            upload_request->last_month_end_min = last_month_end_min;
-            upload_request->upload_retry_count = upload_args->retry_count;
+            upload_request->config_index = user_idx;
+            upload_request->start_timestamp_min = actual_start_min;
+            upload_request->end_timestamp_min = actual_end_min;
+            upload_request->retry_count = upload_args->retry_count;
             upload_request->next_retry_delay = millis_t{0};
+            upload_request->user_filter = upload_args->user_filter;
             upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
             charge_tracker.send_file(std::move(upload_request));
@@ -1507,17 +1586,16 @@ static void upload_charge_logs_task(void *arg)
         }
     } else {
         // Upload for specific config only
-        auto upload_request = std::make_unique<RemoteUploadRequest>();
-        upload_request->user_idx = upload_args->config_index;
-        upload_request->last_month_start_min = last_month_start_min;
-        upload_request->last_month_end_min = last_month_end_min;
-        upload_request->upload_retry_count = -1;
-        upload_request->next_retry_delay = millis_t{0};
-        upload_request->cookie = upload_args->cookie;
-        upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
+        upload_args->start_timestamp_min = actual_start_min;
+        upload_args->end_timestamp_min = actual_end_min;
+        upload_args->retry_count = -1;  // Use -1 as "no retries" indicator
+        upload_args->next_retry_delay = millis_t{0};
+        upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
 
-        charge_tracker.send_file(std::move(upload_request));
+        charge_tracker.send_file(std::move(upload_args));
+#if MODULE_WATCHDOG_AVAILABLE()
         watchdog.reset(wd_handle);
+#endif
     }
 
     charge_tracker.send_in_progress = false;
@@ -1527,16 +1605,19 @@ static void upload_charge_logs_task(void *arg)
     vTaskDelete(NULL); // exit RTOS task
 }
 
-void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
+void ChargeTracker::upload_charge_logs(const int8_t retry_count)
 {
     send_in_progress = true;
 
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
-    UploadTaskParams *args = new UploadTaskParams;
+    RemoteUploadRequest *args = new RemoteUploadRequest;
     args->config_count = remote_upload_config_count;
     args->retry_count = retry_count;
     args->config_index = -1; // -1 for all users
+    args->user_filter = -3; // Use config default
+    args->start_timestamp_min = 0; // Use default last month calculation
+    args->end_timestamp_min = 0;
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
 
@@ -1546,7 +1627,7 @@ void ChargeTracker::upload_charge_logs(const uint8_t retry_count)
     }
 }
 
-void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, uint32_t cookie)
+void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_index, uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead)
 {
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
@@ -1557,10 +1638,18 @@ void ChargeTracker::upload_charge_log_for_config(const uint8_t config_index, uin
 
     send_in_progress = true;
 
-    UploadTaskParams *task_args = new UploadTaskParams;
-    task_args->config_count= remote_upload_config_count;
+    RemoteUploadRequest *task_args = new RemoteUploadRequest;
+    task_args->config_count = remote_upload_config_count;
     task_args->cookie = cookie;
     task_args->config_index = config_index; // specific config index
+    task_args->user_filter = user_filter;
+    task_args->start_timestamp_min = start_timestamp_min;
+    task_args->end_timestamp_min = end_timestamp_min;
+    task_args->language = language;
+    task_args->file_type = file_type;
+    task_args->csv_delimiter = csv_delimiter;
+    task_args->use_format_overrides = true; // Specific config request (config_index != -1)
+    task_args->letterhead = std::move(letterhead);
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
 

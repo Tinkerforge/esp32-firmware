@@ -26,6 +26,9 @@
 #include "csv_charge_log.h"
 #include "module_available.h"
 #include "charge_tracker_defs.h"
+#include "file_type.enum.h"
+#include "../system/language.enum.h"
+#include "csv_flavor.enum.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define MAX_RETRY_COUNT 10
@@ -57,8 +60,8 @@ public:
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
-    void upload_charge_logs(const uint8_t retry_count = 0);
-    void upload_charge_log_for_config(const uint8_t config_index, const uint32_t cookies);
+    void upload_charge_logs(const int8_t retry_count = 0);
+    void start_charge_log_upload_for_config(const uint8_t config_index, const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr);
     bool send_in_progress = false;
 #endif
 
@@ -89,37 +92,50 @@ private:
  * complete lifecycle of an upload operation, including time range filtering and HTTP
  * client management.
  *
- * The struct is typically passed as a unique_ptr
- *
+ * The struct is typically passed as a unique_ptr.
  */
 struct RemoteUploadRequest {
-    /** Index of the remote upload configuration to use (0-based) */
-    int user_idx = 0;
-
-    /** Start of the time range to upload, in minutes since Unix epoch */
-    uint32_t last_month_start_min = 0;
-
-    /** End of the time range to upload, in minutes since Unix epoch */
-    uint32_t last_month_end_min = 0;
+    /** Index of the remote upload configuration to use (0-based, -1 = all configs) */
+    int8_t config_index = 0;
 
     /** Current retry attempt count (0 = first attempt, incremented on each retry, -1 = no retries) */
-    int8_t upload_retry_count = 0;
+    int8_t retry_count = -1;
 
-    /** Delay before next retry attempt (used for exponential backoff scheduling) */
-    millis_t next_retry_delay = millis_t(0);
+    /** Total number of configurations available */
+    uint8_t config_count = 0;
 
     /** Cookie to correlate upload attempts with web interface events */
     uint32_t cookie = 0;
 
-    /** HTTP client instance for performing the upload request */
-    std::unique_ptr<AsyncHTTPSClient> remote_client;
-};
+    /** User filter override (-2 = unknown user -1 = all users, 0+ = specific user) */
+    int user_filter = -2;
 
-struct UploadTaskParams {
-    int8_t config_index;
-    uint8_t retry_count;
-    uint8_t config_count;
-    uint32_t cookie;
+    /** Start of the time range to upload, in minutes since Unix epoch */
+    uint32_t start_timestamp_min = 0;
+
+    /** End of the time range to upload, in minutes since Unix epoch */
+    uint32_t end_timestamp_min = 0;
+
+    /** Delay before next retry attempt (used for exponential backoff scheduling) */
+    millis_t next_retry_delay = millis_t(0);
+
+    /** Language to use for the upload request */
+    Language language = Language::German;
+
+    /** File type to generate and upload */
+    FileType file_type = FileType::PDF;
+
+    /** CSV delimiter flavor to use if file_type is CSV */
+    CSVFlavor csv_delimiter = CSVFlavor::Excel;
+
+    /** Whether to use format overrides from the struct (true) or read from config (false) */
+    bool use_format_overrides = false;
+
+    /** Letterhead for PDF generation */
+    std::unique_ptr<char[]> letterhead = nullptr;
+
+    /** HTTP client instance for performing the upload request */
+    std::unique_ptr<AsyncHTTPSClient> remote_client = nullptr;
 };
 
 #include "module_available_end.h"
