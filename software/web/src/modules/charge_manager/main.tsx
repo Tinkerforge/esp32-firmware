@@ -33,9 +33,10 @@ import { CheckCircle, ChevronRight, Circle, Server, Sliders } from "react-feathe
 //#if MODULE_ECO_AVAILABLE
 import { EcoChart } from "modules/eco/main";
 //#endif
-import { ButtonGroup, Button, Collapse } from "react-bootstrap";
+import { Button, Collapse } from "react-bootstrap";
 
 import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { ChargeModeButtons } from "modules/cm_networking/charge_mode_buttons";
 import { InputSelect } from "ts/components/input_select";
 import { ZeroPhaseDecisionTag } from "./zero_phase_decision_tag.enum";
 import { ZeroPhaseDecision } from "./zero_phase_decision.union";
@@ -57,10 +58,6 @@ export function ChargeManagerSettingsNavbar() {
 
 export function ChargeManagerChargersNavbar() {
     return <NavbarItem name="charge_manager_chargers" module="charge_manager" title={__("charge_manager.navbar.charge_manager_chargers")} symbol={<Server {...{style: "transform: rotate(180deg);"} as any} />} />;
-}
-
-function change_charge_mode(mode: number) {
-    API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"));
 }
 
 export function get_allowed_charge_modes(params: {with_default: boolean, pv_enabled_override?: boolean, add_pv_if_disabled?: boolean}) {
@@ -90,56 +87,6 @@ export function get_allowed_charge_modes(params: {with_default: boolean, pv_enab
         allowed_modes.push(ConfigChargeMode.Default);
 
     return allowed_modes;
-}
-
-function ChargeModeButton(props: {current_mode: ConfigChargeMode, disabled?: boolean, mode: ConfigChargeMode, name: string}) {
-    const selected = props.current_mode == props.mode;
-    const disabled = props.disabled;
-    return <Button
-        style="display: flex;align-items: center;justify-content: center;"
-        className="m-1 rounded-left rounded-right"
-        variant={selected ? "success" : (disabled ? "secondary" : "primary")}
-        disabled={disabled || selected}
-        onClick={() => change_charge_mode(props.mode)}>
-        {selected ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
-    </Button>
-}
-
-export function ChargeModeButtons() {
-    if (!util.render_allowed() || !API.get('charge_manager/config').enable_charge_manager)
-        return <StatusSection name="charge_manager_charge_mode_buttons"></StatusSection>
-
-    const mode = API.get('power_manager/charge_mode').mode;
-    const pv_enabled = API.get('power_manager/config').excess_charging_enable;
-    const eco_enabled = API.get_unchecked('eco/config')?.enable ?? false;
-
-    const buttons = [
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Fast} name={__("charge_manager.status.mode_fast")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Off} name={__("charge_manager.status.mode_off")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.PV} name={__("charge_manager.status.mode_pv")} disabled={!pv_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.MinPV} name={__("charge_manager.status.mode_min_pv")} disabled={!pv_enabled}/>,
-        null, //<ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Default} name={}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Min} name={__("charge_manager.status.mode_min")}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.Eco} name={__("charge_manager.status.mode_eco")} disabled={!eco_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoPV} name={__("charge_manager.status.mode_eco_pv")} disabled={!eco_enabled || !pv_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMin} name={__("charge_manager.status.mode_eco_min")} disabled={!eco_enabled}/>,
-        <ChargeModeButton current_mode={mode} mode={ConfigChargeMode.EcoMinPV} name={__("charge_manager.status.mode_eco_min_pv")} disabled={!eco_enabled || !pv_enabled}/>,
-    ];
-    let button_indices: ConfigChargeMode[] = get_allowed_charge_modes({with_default: false, add_pv_if_disabled: true});
-
-    // Add another button if another charge mode was selected via the API.
-    if (mode >= ConfigChargeMode._min && mode <= ConfigChargeMode._max && button_indices.indexOf(mode) < 0)
-        button_indices.push(mode);
-
-    let used_buttons = button_indices.map(i => buttons[i]);
-
-    return <StatusSection name="charge_manager_charge_mode_buttons">
-        <FormRow label={__("charge_manager.status.mode")}>
-            <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
-                {used_buttons}
-            </ButtonGroup>
-        </FormRow>
-    </StatusSection>
 }
 
 interface ChargeManagerStatusState {
@@ -514,7 +461,7 @@ function CMStatusCharger(props: {
                         <div class="col-auto px-1">
                             <InputSelect
                                 items={API.get("charge_manager/supported_charge_modes")
-                                    .map(x => [x.toString(), __("charge_manager.status.mode_by_index")(x, props.default_mode)])
+                                    .map(x => [x.toString(), __("cm_networking.status.mode_by_index")(x, props.default_mode)])
                                 }
                                 value={props.charge_mode.toString()}
                                 onValue={x => API.call_with_path("charge_manager/charge_modes", props.charger_index, parseInt(x))}
@@ -610,6 +557,14 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         let row_count = Math.ceil(cards.length / 2);
 
         return <StatusSection name="charge_manager">
+            <FormRow label={__("charge_manager.status.mode")}>
+                <ChargeModeButtons
+                    mode={API.get("power_manager/charge_mode").mode}
+                    supportedModes={API.get("charge_manager/supported_charge_modes")}
+                    setMode={mode => API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
+                />
+            </FormRow>
+
             {controls_only_self && API.get_unchecked("power_manager/config")?.enabled ? null :
                 <FormRow label={__("charge_manager.status.charge_manager")}>
                     <IndicatorGroup
