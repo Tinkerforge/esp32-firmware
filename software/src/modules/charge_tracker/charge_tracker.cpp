@@ -598,28 +598,6 @@ bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t u
     return false;
 }
 
-static const char* get_month_name(int month, Language language)
-{
-    // month should be 1-12 (January = 1, December = 12)
-    if (month < 1 || month > 12) {
-        return (language == Language::English) ? "Invalid" : "Ungültig";
-    }
-
-    if (language == Language::English) {
-        static const char* english_months[] = {
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        };
-        return english_months[month - 1];
-    } else {
-        static const char* german_months[] = {
-            "Januar", "Februar", "März", "April", "Mai", "Juni",
-            "Juli", "August", "September", "Oktober", "November", "Dezember"
-        };
-        return german_months[month - 1];
-    }
-}
-
 static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp_min, Language language)
 {
     const char * const unknown = (language == Language::English) ? "unknown" : "unbekannt";
@@ -1295,26 +1273,13 @@ static String build_filename(const time_t start, const time_t end, FileType file
     char buf[128];
     StringWriter fname(buf, std::size(buf));
 
-    const String &display_name = device_name.display_name.get("display_name")->asString();
-    const String &name = device_name.name.get("name")->asString();
-    const char *month = get_month_name(start_tm.tm_mon + 1, language);
-
-    if (name == display_name) {
-        fname.printf("%s_%s_%04i-%s.%s",
-                     name.c_str(),
-                     language == Language::English ? "Charge_log" : "Ladelog",
-                     start_tm.tm_year + 1900,
-                     month,
-                     file_type == FileType::PDF ? "pdf" : "csv");
-    } else {
-        fname.printf("%s(%s)_%s_%04i-%s.%s",
-                     display_name.c_str(),
-                     name.c_str(),
-                     language == Language::English ? "Charge_log" : "Ladelog",
-                     start_tm.tm_year + 1900,
-                     month,
-                     file_type == FileType::PDF ? "pdf" : "csv");
-    }
+    fname.printf("%s-%s_%s_%04i-%02i-%02i_%04i-%02i-%02i.%s",
+                 device_name.name.get("type")->asUnsafeCStr(),
+                 device_name.name.get("uid" )->asUnsafeCStr(),
+                 language == Language::English ? "Charge_log" : "Ladelog",
+                 start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday,
+                 end_tm.tm_year   + 1900, end_tm.tm_mon   + 1, end_tm.tm_mday,
+                 file_type == FileType::PDF ? "pdf" : "csv");
 
     return fname.toString();
 }
