@@ -521,6 +521,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         }
                     });
                 }}>
+            <Alert variant="warning"> {__("modbus_tcp_debug.content.expert_warning")}</Alert>
 {/*#if MODULE_METERS_AVAILABLE*/}
             <FormRow label={__("modbus_tcp_debug.content.meter")}>
                 <InputSelect
