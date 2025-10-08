@@ -82,7 +82,7 @@ function get_pm_charge_mode_switch_table_children(action: PMChargeModeSwitchAuto
 function get_pm_charge_mode_switch_edit_children(action: PMChargeModeSwitchAutomationAction, on_action: (action: AutomationAction) => void) {
     const default_mode = API.get("power_manager/config").default_mode;
     const allowed_modes = get_allowed_charge_modes({with_default: true});
-    const modes = allowed_modes.map(i => [i.toString(), __("charge_manager.status.mode_by_index")(i, default_mode)] as [string, string]);
+    const modes = allowed_modes.map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i, default_mode)] as [string, string]);
 
 
     return [

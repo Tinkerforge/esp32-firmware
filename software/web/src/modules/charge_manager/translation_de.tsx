@@ -14,36 +14,7 @@ let x = {
             "error": "Fehler",
             "managed_boxes": "Kontrollierte Wallboxen",
             "available_current": "Verfügbarer Strom",
-            "mode": "Lademodus",
-            "mode_fast": "Schnell",
-            "mode_off": "Aus",
-            "mode_pv": "PV",
-            "mode_min_pv": "Min + PV",
-            "mode_default": "Standardmodus",
-            "mode_min": "Min",
-            "mode_eco": "Eco",
-            "mode_eco_pv": "Eco + PV",
-            "mode_eco_min": "Eco + Min",
-            "mode_eco_min_pv": "Eco + Min + PV",
-            "mode_by_index": /*SFN*/ (mode: number, default_mode?: number) => {
-                const modes = [
-                    __("charge_manager.status.mode_fast"),
-                    __("charge_manager.status.mode_off"),
-                    __("charge_manager.status.mode_pv"),
-                    __("charge_manager.status.mode_min_pv"),
-                    __("charge_manager.status.mode_default"),
-                    __("charge_manager.status.mode_min"),
-                    __("charge_manager.status.mode_eco"),
-                    __("charge_manager.status.mode_eco_pv"),
-                    __("charge_manager.status.mode_eco_min"),
-                    __("charge_manager.status.mode_eco_min_pv"),
-                ];
-
-                if (mode == 4 && default_mode !== undefined) {
-                    return modes[mode] + " (" + modes[default_mode] + ")";
-                }
-                return modes[mode];
-            }/*NF*/
+            "mode": "Lademodus"
         },
         "navbar": {
             "charge_manager_settings": "Lastmanagement",
@@ -196,7 +167,7 @@ let x = {
             "charge_mode_switch": "Wechsle Lademodus",
             "charge_mode": "Lademodus",
             "charge_mode_switch_action_text": /*FFN*/(mode: number, default_mode: number) => {
-                let mode_str = __("charge_manager.status.mode_by_index")(mode, default_mode);
+                let mode_str = __("cm_networking.status.mode_by_index")(mode, default_mode);
                 return <>wechsle Lademodus auf <b>{mode_str}</b>.</>
             }/*NF*/
         },
