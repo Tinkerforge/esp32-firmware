@@ -260,7 +260,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         }
                     });
                 },
-                editTitle: __("charge_tracker.content.charge_log_send_edit_modal_title"),
+                editTitle: __("charge_tracker.content.charge_log_email_send_edit_modal_title"),
                 onEditGetChildren: () => this.onAddRemoteUploadConfigGetChildren(),
                 onRemoveClick: async () => {
                     const newState = this.state.remote_upload_configs.filter((_, i) => i !== index);
@@ -474,8 +474,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         let sendEmailComponent = <></>;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         sendEmailComponent = <>
-                <FormSeparator heading={__("charge_tracker.content.charge_log_send_config")}/>
-                <FormRow label={__("charge_tracker.content.charge_log_send_config")}>
+                <FormSeparator heading={__("charge_tracker.content.charge_log_email_send_config")}/>
+                <FormRow label={__("charge_tracker.content.charge_log_email_send_config")}>
                     <Table
                         columnNames={[
                             __("charge_tracker.content.user_filter"),
@@ -485,7 +485,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         ]}
                         rows={this.getRemoteUploadConfigTableRows()}
                         addEnabled={state.remote_upload_configs.length < options.REMOTE_ACCESS_MAX_USERS}
-                        addTitle={__("charge_tracker.content.charge_log_send_add_modal_title")}
+                        addTitle={__("charge_tracker.content.charge_log_email_send_add_modal_title")}
                         addMessage={__("charge_tracker.content.charge_log_send_add_message")(state.remote_upload_configs.length, options.REMOTE_ACCESS_MAX_USERS)}
                         onAddShow={() => this.onAddRemoteUploadConfigShow()}
                         onAddGetChildren={() => this.onAddRemoteUploadConfigGetChildren()}
