@@ -41,6 +41,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
+import { useEffect } from "react";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -156,13 +157,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   next_upload_timestamp_min: 0,
 //#endif
               });
-
-        util.addApiEventListener('users/config', () => {
-            let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
-            user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
-            user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
-            this.setState({user_filter_items: user_filter_items});
-        });
 
         util.addApiEventListener('charge_tracker/state', () => {
             this.setState({...API.get('charge_tracker/state')});
@@ -464,6 +458,14 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     render(props: {}, state: Readonly<ChargeTrackerState> & ChargeTrackerConfig) {
         if (!util.render_allowed())
             return <SubPage name="charge_tracker" />;
+
+        let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
+        user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
+        user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
+
+        useEffect(() => {
+            this.setState({user_filter_items: user_filter_items});
+        }, [JSON.stringify(user_filter_items)]); // Use JSON.stringify because useEffect does a shallow compare
 
         // TODO show hint that day ahead prices are not used here!
 
