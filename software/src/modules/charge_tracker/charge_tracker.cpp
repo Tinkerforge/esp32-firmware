@@ -1273,12 +1273,14 @@ static String build_filename(const time_t start, const time_t end, FileType file
     char buf[128];
     StringWriter fname(buf, std::size(buf));
 
-    fname.printf("%s-%s_%s_%04i-%02i-%02i_%04i-%02i-%02i.%s",
+    fname.printf("%s-%s_%s_%04i-%02i_%04i-%02i.%s",
                  device_name.name.get("type")->asUnsafeCStr(),
                  device_name.name.get("uid" )->asUnsafeCStr(),
                  language == Language::English ? "Charge_log" : "Ladelog",
-                 start_tm.tm_year + 1900, start_tm.tm_mon + 1, start_tm.tm_mday,
-                 end_tm.tm_year   + 1900, end_tm.tm_mon   + 1, end_tm.tm_mday,
+                 start_tm.tm_year + 1900,
+                 start_tm.tm_mon + 1,
+                 end_tm.tm_year   + 1900,
+                 end_tm.tm_mon   + 1,
                  file_type == FileType::PDF ? "pdf" : "csv");
 
     return fname.toString();
@@ -1332,11 +1334,12 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     FileType file_type = FileType::PDF;
     CSVFlavor csv_delimiter = CSVFlavor::Excel;
     String filename;
+    String display_name;
 
     auto &upload_args_ref = *upload_args;
 
     auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter]()
+            &letterhead, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter, &display_name]()
     {
         Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args_ref.config_index));
 
@@ -1386,8 +1389,13 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
             }
         }
 
-        char buf[128];
-        StringWriter sw_url(buf, std::size(buf));
+        char sw_name_buf[128];
+        StringWriter sw_name(sw_name_buf, std::size(sw_name_buf));
+        sw_name.printf("%s (%s)", device_name.display_name.get("display_name")->asUnsafeCStr(), device_name.name.get("name")->asUnsafeCStr());
+        display_name = sw_name.toString();
+
+        char sw_url_buf[128];
+        StringWriter sw_url(sw_url_buf, std::size(sw_url_buf));
 
         sw_url.printf("https://%s:%hu/api/send_chargelog_to_user",
                       remote_access_config->get("relay_host")->asUnsafeCStr(),
@@ -1424,11 +1432,13 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                            "\"password\":\"%s\","
                            "\"user_uuid\":\"%s\","
                            "\"filename\":\"%s\","
+                           "\"display_name\":\"%s\","
                            "\"chargelog\":[",
                            charger_uuid.c_str(),
                            password.c_str(),
                            user_uuid.c_str(),
-                           filename.c_str());
+                           filename.c_str(),
+                           display_name.c_str());
 
         upload_args->remote_client->send_chunk(json_header.getPtr(), json_header.getLength());
     }
