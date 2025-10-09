@@ -194,7 +194,6 @@ void Coredump::register_urls()
     });
 
     server.on_HTTPThread("/coredump/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
-        constexpr size_t OFFSET_BEFORE_ELF_HEADER = 24;
         constexpr size_t BUFFER_SIZE = 2048;
         char buffer[BUFFER_SIZE];
 
@@ -222,7 +221,21 @@ void Coredump::register_urls()
                 request.sendChunk("\n\nESP_FLASH_READ failed. Core dump truncated");
                 break;
             }
-            request.sendChunk(buffer + (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0), to_send - (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0));
+
+            size_t to_skip = 0;
+
+            if (i == 0) {
+                char elf_header[4] = {0x7F, 'E', 'L', 'F'};
+
+                for (size_t k = 0; k <= to_send - 4; ++k) {
+                    if (memcmp(buffer + k, elf_header, 4) == 0) {
+                        to_skip = k;
+                        break;
+                    }
+                }
+            }
+
+            request.sendChunk(buffer + to_skip, to_send - to_skip);
         }
 
         return request.endChunkedResponse();
