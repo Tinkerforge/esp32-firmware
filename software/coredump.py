@@ -182,6 +182,9 @@ def get_core_dump_from_debug_report(path):
         core_dump_b64 = file_str[core_dump_start_pos + len(core_dump_start):].split('base64,')[-1]
         core_dump = base64.b64decode(core_dump_b64)
 
+        if not core_dump.startswith(b'\x7fELF'):
+            core_dump = b'\x7fELF' + core_dump
+
         with open(core_dump_path, "wb") as f:
             f.write(core_dump)
 
