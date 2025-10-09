@@ -61,7 +61,7 @@ public:
     void beginChunkedResponse(uint16_t code, const char *content_type);
     inline void beginChunkedResponse_plain(uint16_t code) { return beginChunkedResponse(code, "text/plain; charset=utf-8"); }
     inline void beginChunkedResponse_json(uint16_t code) { return beginChunkedResponse(code, "application/json; charset=utf-8"); }
-    inline void beginChunkedResponse_bytes(uint16_t code) { return beginChunkedResponse(code, "application/octet-stream; charset=utf-8"); }
+    inline void beginChunkedResponse_bytes(uint16_t code) { return beginChunkedResponse(code, "application/octet-stream"); }
     inline void beginChunkedResponse_html(uint16_t code) { return beginChunkedResponse(code, "text/html; charset=utf-8"); }
     inline void beginChunkedResponse_pdf(uint16_t code) { return beginChunkedResponse(code, "application/pdf"); }
 
