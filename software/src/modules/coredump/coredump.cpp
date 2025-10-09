@@ -171,6 +171,8 @@ void Coredump::setup()
         default:
             logger.printfln("Core dump unavailable: %s (0x%lx)", esp_err_to_name(status), static_cast<uint32_t>(status));
     }
+
+    initialized = true;
 }
 
 void Coredump::register_urls()
