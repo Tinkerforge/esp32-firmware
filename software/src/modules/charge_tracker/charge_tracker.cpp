@@ -1286,33 +1286,14 @@ static String build_filename(const time_t start, const time_t end, FileType file
     return fname.toString();
 }
 
-static esp_err_t format_and_send_chunk(AsyncHTTPSClient &remote_client, bool &first, const uint8_t *buffer, size_t len)
+static esp_err_t send_binary_chunk(AsyncHTTPSClient &remote_client, const uint8_t *buffer, size_t len)
 {
     if (len == 0) {
         return ESP_OK;
     }
 
-    StringBuilder sb(len * 4); // ',' + worst-case uint8_t length = 4
-
-    for (size_t i = 0; i < len; i++) {
-        sb.putc(',');
-        char *ptr = sb.getRemainingPtr();
-        utoa(buffer[i], ptr, 10);
-        sb.setLength(sb.getLength() + strlen(ptr));
-    }
-
-    const char *chunk_start = sb.getPtr();
-    size_t chunk_length = sb.getLength();
-
-    if (first) {
-        // Skip first comma.
-        chunk_start++;
-        chunk_length--;
-        first = false;
-    }
-
-    const int sent = remote_client.send_chunk(chunk_start, chunk_length);
-    if (sent != static_cast<int>(chunk_length)) {
+    const int sent = remote_client.send_chunk(reinterpret_cast<const char *>(buffer), len);
+    if (sent != static_cast<int>(len)) {
         logger.printfln("Failed to send chunk to remote access server");
         return ESP_FAIL;
     }
@@ -1414,7 +1395,12 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     }
 
     upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
-    upload_args->remote_client->set_header("Content-Type", "application/json");
+
+    // Generate boundary for multipart form-data
+    String boundary = "----WebKitFormBoundary" + String(esp_random(), HEX);
+    String content_type = "multipart/form-data; boundary=" + boundary;
+
+    upload_args->remote_client->set_header("Content-Type", content_type.c_str());
     const char *lang_header = (language == Language::English) ? "en" : "de";
     upload_args->remote_client->set_header("X-Lang", lang_header);
 
@@ -1424,33 +1410,44 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         return;
     }
 
+    // Send JSON part
     {
-        StringBuilder json_header(400);
+        StringBuilder json_part(600);
+        json_part.printf("--%s\r\n", boundary.c_str());
+        json_part.printf("Content-Disposition: form-data; name=\"json\"\r\n");
+        json_part.printf("Content-Type: application/json\r\n\r\n");
+        json_part.printf("{"
+                         "\"charger_uuid\":\"%s\","
+                         "\"password\":\"%s\","
+                         "\"user_uuid\":\"%s\","
+                         "\"filename\":\"%s\","
+                         "\"display_name\":\"%s\""
+                         "}\r\n",
+                         charger_uuid.c_str(),
+                         password.c_str(),
+                         user_uuid.c_str(),
+                         filename.c_str(),
+                         display_name.c_str());
 
-        json_header.printf("{"
-                           "\"charger_uuid\":\"%s\","
-                           "\"password\":\"%s\","
-                           "\"user_uuid\":\"%s\","
-                           "\"filename\":\"%s\","
-                           "\"display_name\":\"%s\","
-                           "\"chargelog\":[",
-                           charger_uuid.c_str(),
-                           password.c_str(),
-                           user_uuid.c_str(),
-                           filename.c_str(),
-                           display_name.c_str());
-
-        upload_args->remote_client->send_chunk(json_header.getPtr(), json_header.getLength());
+        upload_args->remote_client->send_chunk(json_part.getPtr(), json_part.getLength());
     }
 
-    bool first = true;
+    // Start chargelog part
+    {
+        StringBuilder chargelog_part_header(200);
+        chargelog_part_header.printf("--%s\r\n", boundary.c_str());
+        chargelog_part_header.printf("Content-Disposition: form-data; name=\"chargelog\"; filename=\"%s\"\r\n", filename.c_str());
+        chargelog_part_header.printf("Content-Type: application/octet-stream\r\n\r\n");
+
+        upload_args->remote_client->send_chunk(chargelog_part_header.getPtr(), chargelog_part_header.getLength());
+    }
 
     if (file_type == FileType::PDF) {
         const int letterhead_lines = read_letterhead_lines(letterhead.get());
 
         this->generate_pdf(
-            [&remote_client = *upload_args->remote_client, &first](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
-                return format_and_send_chunk(remote_client, first, static_cast<const uint8_t *>(buffer), len);
+            [&remote_client = *upload_args->remote_client](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
+                return send_binary_chunk(remote_client, static_cast<const uint8_t *>(buffer), len);
             },
             user_filter,
             upload_args->start_timestamp_min,
@@ -1468,16 +1465,21 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
 
-        auto csv_stream_cb = [&remote_client = *upload_args->remote_client, &first](const char* buffer, size_t len) -> esp_err_t {
-            auto err = format_and_send_chunk(remote_client, first, reinterpret_cast<const uint8_t *>(buffer), len);
-            return err;
+        auto csv_stream_cb = [&remote_client = *upload_args->remote_client](const char* buffer, size_t len) -> esp_err_t {
+            return send_binary_chunk(remote_client, reinterpret_cast<const uint8_t *>(buffer), len);
         };
 
         CSVChargeLogGenerator csv_generator;
         csv_generator.generateCSV(csv_params, std::move(csv_stream_cb));
     }
 
-    upload_args->remote_client->send_chunk("]}", 2); // JSON footer
+    // Close multipart form-data
+    {
+        StringBuilder multipart_footer(50);
+        multipart_footer.printf("\r\n--%s--\r\n", boundary.c_str());
+        upload_args->remote_client->send_chunk(multipart_footer.getPtr(), multipart_footer.getLength());
+    }
+
     upload_args->remote_client->finish_chunked_request();
 
     RemoteUploadRequest *upload_args_ptr = upload_args.release();
