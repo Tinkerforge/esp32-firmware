@@ -18,7 +18,8 @@ let x = {
             "start_charging": "Start",
             "stop_charging": "Stop",
             "start_charge_for_user": "Für Benutzer",
-            "start_charge_no_tags": "Kein Benutzer mit NFC-Tag vorhanden"
+            "start_charge_no_tags": "Kein Benutzer mit NFC-Tag vorhanden",
+            "mode": "Lademodus"
         },
         "navbar": {
             "evse": "Ladestatus",

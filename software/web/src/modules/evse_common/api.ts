@@ -1,3 +1,4 @@
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 //APIPath:evse/
 
 interface Slot {
@@ -189,3 +190,8 @@ export interface debug_switch_to_three_phases {}
 export interface meter_config {
     slot: number
 }
+
+export interface charge_mode {
+    mode: ConfigChargeMode;
+}
+export type supported_charge_modes = ConfigChargeMode[];

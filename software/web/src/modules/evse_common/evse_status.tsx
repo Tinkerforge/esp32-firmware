@@ -31,6 +31,7 @@ import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { useId } from "preact/hooks";
+import { ChargeModeButtons } from "modules/cm_networking/charge_mode_buttons";
 
 interface EVSEStatusState {
     hidden: boolean;
@@ -172,7 +173,17 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                 {__("evse.status.start_charging")}
             </Button>
 
+        let charge_mode_buttons = !API.get("evse/management_enabled") ? undefined :
+            <FormRow label={__("evse.status.mode")}>
+                <ChargeModeButtons
+                    mode={API.get("evse/charge_mode").mode}
+                    supportedModes={API.get("evse/supported_charge_modes")}
+                    setMode={mode => API.save('evse/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
+                />
+            </FormRow>
+
         return <StatusSection name="evse">
+                {charge_mode_buttons}
                 <FormRow label={__("evse.status.evse")}>
                     <IndicatorGroup
                         style="width: 100%"
