@@ -35,7 +35,7 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table, TableRow } from "../../ts/components/table";
-import { useMemo, useEffect } from "preact/hooks";
+import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
@@ -53,7 +53,6 @@ type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
 interface S {
     user_filter: string;
-    user_filter_items: [string, string][];
     start_date: Date;
     end_date: Date;
     file_type: string;
@@ -457,10 +456,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
         user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
 
-        useEffect(() => {
-            this.setState({user_filter_items: user_filter_items});
-        }, [JSON.stringify(user_filter_items)]); // Use JSON.stringify because useEffect does a shallow compare
-
         // TODO show hint that day ahead prices are not used here!
 
         let dap_enabled = false;
@@ -557,7 +552,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     <InputSelect
                         value={state.user_filter}
                         onValue={(v) => this.setState({user_filter: v})}
-                        items={state.user_filter_items ?? []}
+                        items={user_filter_items ?? []}
                     />
                 </FormRow>
 
