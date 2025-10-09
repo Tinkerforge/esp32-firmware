@@ -224,7 +224,7 @@ void Coredump::register_urls()
 
             size_t to_skip = 0;
 
-            if (i == 0) {
+            if (i == 0 && to_send >= 4) {
                 char elf_header[4] = {0x7F, 'E', 'L', 'F'};
 
                 for (size_t k = 0; k <= to_send - 4; ++k) {
@@ -232,6 +232,10 @@ void Coredump::register_urls()
                         to_skip = k;
                         break;
                     }
+                }
+
+                if (to_skip == 0 && memcmp(buffer, elf_header, 4) != 0) {
+                    logger.printfln("Could not find ELF header in the first %zu bytes of the core dump image", to_send);
                 }
             }
 
