@@ -35,13 +35,12 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table, TableRow } from "../../ts/components/table";
-import { useMemo } from "preact/hooks";
+import { useMemo, useEffect } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
-import { useEffect } from "react";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;

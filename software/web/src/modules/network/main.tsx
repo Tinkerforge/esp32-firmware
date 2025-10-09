@@ -32,7 +32,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
-import { useEffect } from "react";
+import { useEffect } from "preact/hooks";
 
 export function NetworkNavbar() {
     return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Settings />} />;
