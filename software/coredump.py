@@ -173,12 +173,13 @@ core_dump_path = os.path.join(tempfile.gettempdir(), "tf_coredump.elf")
 def get_core_dump_from_debug_report(path):
     with open(path, 'r', encoding='utf-8') as file:
         file_str = file.read()
-        core_dump_start_pos = file_str.rfind("___CORE_DUMP_START___\n\n")
+        core_dump_start = "___CORE_DUMP_START___\n\n"
+        core_dump_start_pos = file_str.rfind(core_dump_start)
         if core_dump_start_pos < 0:
             print("Debug log doesn't contain a core dump")
             sys.exit(-1)
 
-        core_dump_b64 = file_str[core_dump_start_pos + 60:]
+        core_dump_b64 = file_str[core_dump_start_pos + len(core_dump_start):].split('base64,')[-1]
         core_dump = base64.b64decode(core_dump_b64)
 
         with open(core_dump_path, "wb") as f:
