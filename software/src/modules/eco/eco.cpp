@@ -100,6 +100,9 @@ void Eco::setup()
 
     std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
 
+    last_charge_15m = 0;
+    last_charge_decision = ChargeDecision::Normal;
+
     // Wait for clock to be synced and day ahead prices to be available to initialize chart data
     task_scheduler.scheduleWhenClockSynced([this]() {
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -507,11 +510,24 @@ void Eco::update()
             const uint32_t duration_remaining_15m = (duration_remaining_1m + 14)/15;                 // Round up to 15 minutes
 
             const bool ret = day_ahead_prices.get_cheap_15m(current_time_1m, duration_remaining_15m, amount_remaining_15m, cheap_hours);
+
             if (!decision_is_done) {
-                if(ret && cheap_hours[0]) {
-                    charge_decision[charger_id] = ChargeDecision::Fast;
-                } else {
+                // Make sure to always stay consistant for full 15 minute slots
+                const uint32_t current_15m = current_time_1m/15;
+                const bool overwrite_decision = last_charge_15m == current_15m;
+                last_charge_15m = current_15m;
+
+                if (duration_remaining_1m == 0) {
                     charge_decision[charger_id] = ChargeDecision::Normal;
+                } else if(overwrite_decision) {
+                    charge_decision[charger_id] = last_charge_decision;
+                } else {
+                    if(ret && cheap_hours[0]) {
+                        charge_decision[charger_id] = ChargeDecision::Fast;
+                    } else {
+                        charge_decision[charger_id] = ChargeDecision::Normal;
+                    }
+                    last_charge_decision = charge_decision[charger_id];
                 }
                 extended_logging("Charger %hhu: Current price (%li) is %s -> %s [current_time %lum, duration_remaining %lum, desired_amount %lum, charged_amount %lum]", charger_id, current_price, (charge_decision[charger_id] == ChargeDecision::Fast) ? "cheap" : "expensive", (charge_decision[charger_id] == ChargeDecision::Fast) ? "Fast" : "Normal", current_time_1m, duration_remaining_1m, desired_amount_1m, charged_amount_1m);
             }
