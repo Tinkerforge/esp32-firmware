@@ -206,7 +206,7 @@ for spec in specs:
 
             if 'mapping' in register_block:
                 for name_type in all_table_prototypes[spec['group']][spec['action']]:
-                    specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1]}();')
+                    specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1].replace('32', '')}();')
 
                 specs_cpp.append(f'        {"\n        ".join([x.strip() for x in register_block["mapping"].strip().split("\n")])}')
 
@@ -428,7 +428,7 @@ cpp += '#include "battery_modbus_tcp_specs.h"\n\n'
 cpp += '#include "tools.h"\n'
 cpp += '#include "tools/malloc.h"\n\n'
 cpp += '#include "esp_system.h"\n\n'
-cpp += '//#include "gcc_warnings.h"\n\n'
+cpp += '#include "gcc_warnings.h"\n\n'
 cpp += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes)\n'
 cpp += '{'
 cpp += '\n'.join(table_prototypes) + '\n'
