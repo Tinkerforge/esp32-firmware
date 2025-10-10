@@ -50,7 +50,6 @@
 #include <esp_https_server.h>
 #endif
 
-
 #define MAX_URI_HANDLERS 128
 #define HTTPD_STACK_SIZE 8192
 
@@ -125,7 +124,7 @@ void WebServer::post_setup()
 #endif
     if (result != ESP_OK) {
         httpd = nullptr;
-        logger.printfln("Failed to start web server: %s (0x%X)", esp_err_to_name(result), result);
+        logger.printfln("Failed to start web server: %s (0x%X)", esp_err_to_name(result), static_cast<unsigned>(result));
         return;
     }
 
@@ -148,8 +147,8 @@ void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
 
 static esp_err_t low_level_handler(httpd_req_t *req)
 {
-    auto *handler = (WebServerHandler *)req->user_ctx;
-    auto *server = (WebServer *) httpd_get_global_user_ctx(req->handle);
+    auto *handler = static_cast<WebServerHandler *>(req->user_ctx);
+    auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
 
     auto request = WebServerRequest{req};
 
@@ -174,8 +173,8 @@ static const size_t SCRATCH_BUFSIZE = 2048;
 
 static esp_err_t low_level_upload_handler(httpd_req_t *req)
 {
-    auto *handler = (WebServerHandler *)req->user_ctx;
-    auto *server = (WebServer *) httpd_get_global_user_ctx(req->handle);
+    auto *handler = static_cast<WebServerHandler *>(req->user_ctx);
+    auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
 
     auto request = WebServerRequest{req};
     if (server->auth_fn && !server->auth_fn(request)) {
@@ -217,13 +216,13 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
         auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
 
         while (remaining > 0) {
-            int received = httpd_req_recv(req, (char *)scratch_buf.get(), std::min(remaining, SCRATCH_BUFSIZE));
+            const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf.get()), std::min(remaining, SCRATCH_BUFSIZE));
             // Retry if timeout occurred
-            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+            if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
                 continue;
             }
 
-            if (received <= 0) {
+            if (recv_err <= 0) {
                 int error_code = errno;
 
                 if (handler->callbackInMainThread) {
@@ -239,6 +238,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
                 return ESP_FAIL;
             }
 
+            const size_t received = static_cast<size_t>(recv_err);
             remaining -= received;
             bool result = false;
             if (handler->callbackInMainThread) {
@@ -362,7 +362,7 @@ WebServerHandler *WebServer::addHandler(const char *uri,
 }
 
 // From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-const char *httpStatusCodeToString(int code)
+static const char *httpStatusCodeToString(int code)
 {
     switch (code) {
         case 100: return "100 Continue";                        //[RFC7231, Section 6.2.1]
@@ -453,17 +453,17 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
-        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
         return WebServerRequestReturnProtect{};
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
-        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
         return WebServerRequestReturnProtect{};
     }
 
-    struct httpd_req_aux *ra = (struct httpd_req_aux *)req->aux;
+    struct httpd_req_aux *ra = static_cast<struct httpd_req_aux *>(req->aux);
     int nodelay = 1;
     if (code >= 400) {
         // Copied over from esp-idf/components/esp_http_server/src/httpd_txrx.c
@@ -498,7 +498,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
     }
 
     if (result != ESP_OK) {
-        printf("Failed to send response: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to send response: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
     }
     return WebServerRequestReturnProtect{};
 }
@@ -512,14 +512,14 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
-        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to set response type: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
         return;
     }
 
     result = httpd_resp_set_status(req, httpStatusCodeToString(code));
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
-        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to set response status: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
         return;
     }
 
@@ -537,6 +537,8 @@ int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
             esp_system_abort("BUG: sendChunk was called after endChunkedResponse");
         case ChunkedResponseState::Started:
             break;
+        default:
+            esp_system_abort("BUG: sendChunk in invalid state");
     }
 
     if (chunk_len == 0)
@@ -545,7 +547,7 @@ int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
     auto result = httpd_resp_send_chunk(req, chunk, static_cast<ssize_t>(chunk_len));
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
-        printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
 
         // "When you are finished sending all your chunks, you must call this function with buf_len as 0."
         httpd_resp_send_chunk(req, nullptr, 0);
@@ -564,12 +566,14 @@ WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
             esp_system_abort("BUG: endChunkedResponse was called twice!");
         case ChunkedResponseState::Started:
             break;
+        default:
+            esp_system_abort("BUG: sendChunk in invalid state");
     }
 
     auto result = httpd_resp_send_chunk(req, nullptr, 0);
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
-        printf("Failed to end chunked response: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to end chunked response: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
     }
 
     chunkedResponseState = ChunkedResponseState::Ended;
@@ -580,7 +584,7 @@ void WebServerRequest::addResponseHeader(const char *field, const char *value)
 {
     auto result = httpd_resp_set_hdr(req, field, value);
     if (result != ESP_OK) {
-        printf("Failed to set response header: %s (0x%X)\n", esp_err_to_name(result), result);
+        printf("Failed to set response header: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
         return;
     }
 }
@@ -610,7 +614,7 @@ String WebServerRequest::header(const char *header_name)
     if (httpd_req_get_hdr_value_str(req, header_name, buf, buf_len) != ESP_OK) {
         return "";
     }
-    result.setLength(buf_len);
+    result.setLength(static_cast<int>(buf_len));
     return result;
 }
 
@@ -630,11 +634,11 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
         if (read <= 0) {
             return read;
         }
-        bytes_left -= read;
+        bytes_left -= static_cast<size_t>(read);
         buf += read;
     }
 
-    return contentLength();
+    return static_cast<int>(contentLength());
 }
 
 WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req)
