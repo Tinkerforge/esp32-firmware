@@ -673,11 +673,25 @@ export function init() {
                             return null;
                         }
 
+                        if (typeof new_config[1].table[1].grid_draw_setpoint_charge != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config grid draw setpoint charge is not a number");
+                            return null;
+                        }
+
+                        if (typeof new_config[1].table[1].grid_draw_setpoint_default != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config grid draw setpoint default is not a number");
+                            return null;
+                        }
+
                         table = [BatteryModbusTCPTableID.VictronEnergyGX, {
                             device_address: new_config[1].table[1].device_address,
+                            grid_draw_setpoint_charge: new_config[1].table[1].grid_draw_setpoint_charge,
+                            grid_draw_setpoint_default: new_config[1].table[1].grid_draw_setpoint_default,
                         }];
 
-                        if (!util.hasValue(table[1].device_address)) {
+                        if (!util.hasValue(table[1].device_address)
+                         || !util.hasValue(table[1].grid_draw_setpoint_charge)
+                         || !util.hasValue(table[1].grid_draw_setpoint_default)) {
                             return null;
                         }
 
@@ -857,7 +871,13 @@ export function init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter)) {
                     let extra_values = undefined;
 
-                    if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
+                    if (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX) {
+                        extra_values = {
+                            grid_draw_setpoint_charge: config[1].table[1].grid_draw_setpoint_charge,
+                            grid_draw_setpoint_default: config[1].table[1].grid_draw_setpoint_default,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
                         extra_values = {
                             grid_charge_power: config[1].table[1].grid_charge_power,
                             max_discharge_power: config[1].table[1].max_discharge_power,
@@ -878,8 +898,20 @@ export function init() {
                         </FormRow>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
+                            {config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX ?
+                                <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_charge")}>
+                                    <InputNumber
+                                        required
+                                        min={-2147483648}
+                                        max={2147483647}
+                                        unit="W"
+                                        value={config[1].table[1].grid_draw_setpoint_charge}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
+                                        }} />
+                                </FormRow> : undefined}
                             {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.charge_power")}>
+                                <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
                                     <InputFloat
                                         required
                                         digits={3}
@@ -895,6 +927,18 @@ export function init() {
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
+                            {config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX ?
+                                <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_default")}>
+                                    <InputNumber
+                                        required
+                                        min={-2147483648}
+                                        max={2147483647}
+                                        unit="W"
+                                        value={config[1].table[1].grid_draw_setpoint_default}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_default: v})}));
+                                        }} />
+                                </FormRow> : undefined}
                             <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} extra_values={extra_values} />
                         </CollapsedSection>,
 

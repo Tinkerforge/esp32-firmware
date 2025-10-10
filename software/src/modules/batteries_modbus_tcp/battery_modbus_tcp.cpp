@@ -330,7 +330,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::VictronEnergyGX:
         device_address = table_config->get("device_address")->asUint8();
-        load_victron_energy_gx_tables(tables);
+        load_victron_energy_gx_tables(tables, table_config);
         break;
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:

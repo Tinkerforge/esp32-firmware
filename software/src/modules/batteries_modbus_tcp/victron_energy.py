@@ -1,5 +1,21 @@
+# https://www.victronenergy.com/live/ess:ess_mode_2_and_3
+
 table_prototypes = [
-    ('Victron Energy GX', ['device_address']),
+    ('Victron Energy GX', [
+        'device_address',
+        {
+            'action': 'Permit Grid Charge',
+            'name': 'grid_draw_setpoint_charge',  # positive = draw, negative = feed
+            'type': 'Int32',
+            'default': 1000,  # W
+        },
+        {
+            'action': 'Revoke Grid Charge Override',
+            'name': 'grid_draw_setpoint_default',  # positive = draw, negative = feed
+            'type': 'Int32',
+            'default': 50,  # W
+        },
+    ]),
 ]
 
 default_device_addresses = [
@@ -13,13 +29,15 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set AC grid setpoint override to 65 kW',
+                'description': 'AC grid setpoint override [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2716,
+                'start_address': 2716,  # S32BE
                 'values': [
-                    0,
-                    65534,
+                    None,
+                    None,
                 ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) & 0xFFFF);',
             },
         ],
     },
@@ -29,13 +47,15 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set AC grid setpoint override to 0 W',
+                'description': 'AC grid setpoint override [W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2716,
+                'start_address': 2716,  # S32BE
                 'values': [
-                    0,
-                    0,
+                    None,
+                    None,
                 ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_default) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_default) & 0xFFFF);',
             },
         ],
     },
@@ -45,17 +65,9 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set ESS max discharge current to 0 A',
+                'description': 'ESS max discharge power [0.1 W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2704,
-                'values': [
-                    32767,
-                ],
-            },
-            {
-                'description': 'Set ESS max discharge current to 0 %',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 2702,
+                'start_address': 2704,  # S16
                 'values': [
                     0,
                 ],
@@ -68,19 +80,11 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set ESS max discharge current to -1 A',
+                'description': 'ESS max discharge power [0.1 W]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2704,
+                'start_address': 2704,  # S16
                 'values': [
-                    65535,
-                ],
-            },
-            {
-                'description': 'Set ESS max discharge current to 100 %',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 2702,
-                'values': [
-                    100,
+                    65535,  # -1 = no limit
                 ],
             },
         ],
@@ -91,17 +95,9 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set ESS max charge current to 0 %',
+                'description': 'DVCC system max charge current [A]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2701,
-                'values': [
-                    0,
-                ],
-            },
-            {
-                'description': 'Set ESS max charge current to 0 A',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 2705,
+                'start_address': 2705,  # S16
                 'values': [
                     0,
                 ],
@@ -114,19 +110,11 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
-                'description': 'Set ESS max charge current to 100 %',
+                'description': 'DVCC system max charge current [A]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2701,
+                'start_address': 2705,  # S16
                 'values': [
-                    100,
-                ],
-            },
-            {
-                'description': 'Set ESS max charge current to 155 A',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 2705,
-                'values': [
-                    155,
+                    65535,  # -1 = no limit
                 ],
             },
         ],
