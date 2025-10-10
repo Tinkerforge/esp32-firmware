@@ -26,7 +26,7 @@
 #include "digest_auth.h"
 #include "cool_string.h"
 #include "esp_httpd_priv.h"
-
+#include "tools/net.h"
 
 #include "sdkconfig.h"
 #ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
@@ -641,7 +641,31 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
     return static_cast<int>(contentLength());
 }
 
-WebServerRequest::WebServerRequest(httpd_req_t *req, bool keep_alive) : req(req)
+IPAddress WebServerRequest::getLocalAddress()
+{
+    const int sockfd = httpd_req_to_sockfd(req);
+
+    if (sockfd < 0) {
+        logger.printfln("Attempted to get sockfd from invalid req");
+        return IPAddress();
+    }
+
+    return tf_local_address_of_sockfd(sockfd);
+}
+
+IPAddress WebServerRequest::getPeerAddress()
+{
+    const int sockfd = httpd_req_to_sockfd(req);
+
+    if (sockfd < 0) {
+        logger.printfln("Attempted to get sockfd from invalid req");
+        return IPAddress();
+    }
+
+    return tf_peer_address_of_sockfd(sockfd);
+}
+
+WebServerRequest::WebServerRequest(httpd_req_t *req_, bool keep_alive) : req(req_)
 {
     if (!keep_alive)
         this->addResponseHeader("Connection", "close");

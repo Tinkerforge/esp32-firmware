@@ -21,6 +21,7 @@
 
 #include <forward_list>
 #include <functional>
+#include <IPAddress.h>
 #include <WString.h>
 #include <esp_http_server.h>
 #include <TFJson.h>
@@ -115,6 +116,9 @@ public:
     {
         return WebServerRequestReturnProtect{};
     }
+
+    IPAddress getLocalAddress();
+    IPAddress getPeerAddress();
 
 private:
     httpd_req_t *req;

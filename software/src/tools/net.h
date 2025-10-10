@@ -83,6 +83,10 @@ extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char *buf, int buflen) 
     #pragma GCC diagnostic pop
 #endif
 
+IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t addr_len);
+IPAddress tf_local_address_of_sockfd(int sockfd);
+IPAddress tf_peer_address_of_sockfd(int sockfd);
+
 bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check);
 bool is_valid_subnet_mask(const IPAddress &subnet);
 

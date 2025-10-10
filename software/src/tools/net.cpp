@@ -27,6 +27,66 @@
 
 #include "gcc_warnings.h"
 
+static constexpr uint8_t ipv4_mapped_prefix[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff}; // 0:0:0:0:0:ffff::/96
+
+IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t addr_len)
+{
+#if CONFIG_LWIP_IPV6
+    if (addr->ss_family == AF_INET6) {
+        if (addr_len < sizeof(sockaddr_in6)) {
+            return IPAddress();
+        }
+
+        const struct sockaddr_in6 *addr6 = reinterpret_cast<struct sockaddr_in6 *>(addr);
+        const uint8_t *addr6_bytes = addr6->sin6_addr.un.u8_addr;
+
+        // Handle IPv4-mapped IPv6 addresses
+        if (memcmp(addr6_bytes, ipv4_mapped_prefix, sizeof(ipv4_mapped_prefix)) == 0) {
+            return IPAddress(addr6_bytes + sizeof(ipv4_mapped_prefix));
+        }
+
+        return IPAddress(IPType::IPv6, addr6_bytes);
+    }
+#endif
+
+    if (addr_len < sizeof(sockaddr_in)) {
+        return IPAddress();
+    }
+
+    const struct sockaddr_in *addr4 = reinterpret_cast<struct sockaddr_in *>(addr);
+    return IPAddress(addr4->sin_addr.s_addr);
+}
+
+IPAddress tf_local_address_of_sockfd(int sockfd)
+{
+    struct sockaddr_storage addr;
+    socklen_t addr_len = sizeof(addr);
+
+    const int err = getsockname(sockfd, reinterpret_cast<struct sockaddr *>(&addr), &addr_len);
+
+    if (err != 0) {
+        logger.printfln("getsockname failed with errno %i", errno);
+        return IPAddress();
+    }
+
+    return tf_sockaddr_storage2IPAddress(&addr, addr_len);
+}
+
+IPAddress tf_peer_address_of_sockfd(int sockfd)
+{
+    struct sockaddr_storage addr;
+    socklen_t addr_len = sizeof(addr);
+
+    const int err = getpeername(sockfd, reinterpret_cast<struct sockaddr *>(&addr), &addr_len);
+
+    if (err != 0) {
+        logger.printfln("getpeername failed with errno %i", errno);
+        return IPAddress();
+    }
+
+    return tf_sockaddr_storage2IPAddress(&addr, addr_len);
+}
+
 bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check)
 {
     return (static_cast<uint32_t>(ip) & static_cast<uint32_t>(subnet)) == (static_cast<uint32_t>(to_check) & static_cast<uint32_t>(subnet));
