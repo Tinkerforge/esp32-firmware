@@ -159,18 +159,14 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
                       data->function_to_string(data->last_cmd).c_str());
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData");
-        if (read_usecase_data(header, data, response)) {
-            return CmdClassifierType::reply;
-        }
-        return CmdClassifierType::EnumUndefined;
+        response["nodeManagementUseCaseData"] = get_usecase_data();
+        return CmdClassifierType::reply;
 
     }
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData");
-        if (read_detailed_discovery_data(header, data, response)) {
-            return CmdClassifierType::reply;
-        }
-        return CmdClassifierType::EnumUndefined;
+        response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
+        return CmdClassifierType::reply;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
@@ -190,7 +186,13 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
     return CmdClassifierType::EnumUndefined;
 }
 
-bool NodeManagementEntity::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+void NodeManagementEntity::detailed_discovery_update()
+{
+    auto detailed_data = get_detailed_discovery_data();
+    this->inform_subscribers(entity_address, nodemgmt_feature_address, detailed_data, "nodeManagementDetailedDiscoveryData");
+}
+
+NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (EebusEntity *uc : usecase_interface->entity_list) {
@@ -198,18 +200,10 @@ bool NodeManagementEntity::read_usecase_data(HeaderType &header, SpineDataTypeHa
             node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
         }
     }
-    if (!node_management_usecase_data.useCaseInformation->empty()) {
-        response["nodeManagementUseCaseData"] = node_management_usecase_data;
-        if (response["nodeManagementUseCaseData"].isNull()) {
-            eebus.trace_fmtln("Error while writing NodeManagementUseCaseData to response");
-        }
-        return true;
-    }
-    eebus.trace_fmtln("An error occurred while trying to read the NodeManagementUseCaseData");
-    return false;
+    return node_management_usecase_data;
 }
 
-bool NodeManagementEntity::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_discovery_data() const
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
@@ -234,7 +228,7 @@ bool NodeManagementEntity::read_detailed_discovery_data(HeaderType &header, Spin
         auto features = uc->get_detailed_discovery_feature_information();
         node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
     }
-    return response["nodeManagementDetailedDiscoveryData"].set(node_management_detailed_data);
+    return node_management_detailed_data;
 
 }
 
@@ -396,21 +390,29 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
 }
 
 template <typename T>
-size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name)
+size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
 {
+    eebus.trace_fmtln("EEBUS: Informing subscribers of %s", function_name);
     if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
         return 0;
     }
     size_t sent_count = 0;
+    size_t error_count = 0;
     BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
     JsonObject dst = response.to<JsonObject>();
+
     dst[function_name] = data;
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
-            usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
-            sent_count++;
+            if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonVariantConst>(), CmdClassifierType::notify, false)) {
+                sent_count++;
+            } else {
+                error_count++;
+                // TODO: If sending fails, we should remove the subscription after a number of failed attempts as the connection is likely dead
+            }
         }
     }
+    eebus.trace_fmtln("Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
     return sent_count;
 };
 
@@ -838,8 +840,8 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvEntity::get
 void EvEntity::ev_connected_state(bool connected)
 {
     entity_active = ev_connected = connected;
+    eebus.usecases->node_management.detailed_discovery_update();
     update_api();
-    // TODO: Somehow inform subscribers of the nodemgmt entity
 }
 
 void EvEntity::update_device_config(const String &comm_standard, bool asym_supported)
@@ -1054,35 +1056,35 @@ DeviceDiagnosisStateDataType EvEntity::generate_state() const
 ControllableSystemEntity::ControllableSystemEntity()
 {
     task_scheduler.scheduleOnce([this]() {
-        // Initialize DeviceConfiguration feature
-        update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
+                                    // Initialize DeviceConfiguration feature
+                                    update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
 
-        // Initialize DeviceDiagnosis feature
-        task_scheduler.scheduleWithFixedDelay([this]() {
-                                                  DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-                                                  outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                                                  outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-                                                  outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
+                                    // Initialize DeviceDiagnosis feature
+                                    task_scheduler.scheduleUncancelable([this]() {
+                                                                              DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+                                                                              outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+                                                                              outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
+                                                                              outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
 
-                                                  eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
-                                                  eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                                                  if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
-                                                      heartbeatCounter++;
-                                                  }
-                                                  if (!heartbeat_received) {
-                                                      handle_heartbeat_timeout();
-                                                  }
-                                                  heartbeat_received = false;
-                                              },
-                                              120_s,
-                                              60_s);
-        // Initialize ElectricalConnection feature
-        update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
-        update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
-        lpc_state = LPCState::Init;
-        switch_state(LPCState::Init);
-    }, 1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
-
+                                                                              eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
+                                                                              eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+                                                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
+                                                                                  heartbeatCounter++;
+                                                                              }
+                                                                              if (!heartbeat_received) {
+                                                                                  handle_heartbeat_timeout();
+                                                                              }
+                                                                              heartbeat_received = false;
+                                                                          },
+                                                                          120_s,
+                                                                          60_s);
+                                    // Initialize ElectricalConnection feature
+                                    update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
+                                    update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
+                                    lpc_state = LPCState::Init;
+                                    switch_state(LPCState::Init);
+                                },
+                                1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
 
 }
 
@@ -1662,6 +1664,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         }
         eebus_responses_sent++;
         eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
+        //send_spine_message(*header.addressDestination, *header.addressSource, response_doc, send_response);
         connection->send_datagram(response_doc, send_response, *header.addressSource, *header.addressDestination, false);
     } else {
         if (header.ackRequest.has_value() && header.ackRequest.get()) {
@@ -1673,14 +1676,14 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 }
 
 template <typename T>
-size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, String function_name)
+size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char* function_name)
 {
     if (initialized && EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
         return node_management.inform_subscribers(entity, feature, data, function_name);
     if constexpr (EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
         eebus.trace_fmtln("Attempted to inform subscribers while Usecases were not yet initialized");
     else
-        eebus.trace_fmtln("Attempted to inform subscribers about a change in %s while subscriptions are disabled", function_name.c_str());
+        eebus.trace_fmtln("Attempted to inform subscribers about a change in %s while subscriptions are disabled", function_name);
     return 0;
 }
 

@@ -82,8 +82,8 @@ public:
     // SPINE TS 5.2.3.1
     // Specification recommends these be stored in non-volatile memory
     // But for now we dont do that as it is not needed
-    uint64_t msg_counter = 0; // Our message counter
-    uint64_t msg_counter_received = 0; // The message counter of the last received datagram
+    int msg_counter = 0; // Our message counter
+    int msg_counter_received = 0; // The message counter of the last received datagram
 
     /**
     * The last received header of a SPINE datagram.
@@ -98,7 +98,7 @@ public:
     /**
     * The JSON Document used for holding the response
     */
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    //BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     //DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // TODO: Maybe allocate this in PSRAM
     /**
     * The response datagram to be retrieved by the SPINE Connection and sent back to the peer.

@@ -22,18 +22,17 @@
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "ship_types.h"
 #include "tools.h"
 
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
     eebus.trace_fmtln("SPINE: Processing datagram:");
     eebus.trace_jsonln(datagram);
-    // TODO: Handle json formatting weirdness sent by e.g. spine-go
     last_received_time = millis();
 
     received_header = datagram["datagram"]["header"];
-
-    received_payload = datagram["datagram"]["payload"]["cmd"][0]; // The payload should not be in an array but spine-go does these strange things
+    received_payload = datagram["datagram"]["payload"]["cmd"][0];
 
     if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
         eebus.trace_fmtln("SPINE: ERROR: No datagram header or payload found");
@@ -48,6 +47,10 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         }
         return false;
     }
+    if (!check_known_address(received_header.addressSource.get())) {
+        known_addresses.push_back(received_header.addressSource.get());
+    }
+
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {
@@ -55,18 +58,15 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         eebus.trace_jsonln(received_payload);
         return false;
     }
-
     eebus.usecases->handle_message(received_header, eebus.data_handler.get(), this);
-
     return true;
 }
 
-void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, bool require_ack)
+void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, const bool require_ack)
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
     eebus.trace_jsonln(payload);
-
-    response_doc.clear();
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_TYPES_MAX_JSON_SIZE};
     HeaderType header;
     header.ackRequest = require_ack;
     header.cmdClassifier = cmd_classifier;
@@ -76,7 +76,6 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
     header.msgCounter = msg_counter++;
     header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
 
-    // TODO: Fix this stuff so it generates proper json and not eebus json
     response_doc["datagram"][0]["header"] = header;
     if (!response_doc["datagram"][1]["payload"]["cmd"][0].set(payload)) {
         eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");
@@ -108,7 +107,7 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
 {
     for (FeatureAddressType &known_address : known_addresses) {
         if (known_address.device.get() == address.device.get() && known_address.feature.get() == address.feature.get() && known_address.entity.get() == address.entity.get()) {
-            return true; // The address is known
+            return true;
         }
     }
     return false;
