@@ -169,6 +169,8 @@ void BatteriesModbusTCP::pre_setup()
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
         {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+        {"grid_draw_setpoint_charge", Config::Int32(1000)},
+        {"grid_draw_setpoint_default", Config::Int32(50)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
@@ -231,7 +233,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::VictronEnergyGX:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_victron_energy_gx_table(action);
+            table = load_victron_energy_gx_table(action, table_config);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Victron Energy GX action: %u", static_cast<uint8_t>(action));
