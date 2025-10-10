@@ -44,7 +44,6 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 
 // Configuration related to the LPC usecases
 // Comment out if subscription functionalities shall be disabled
-// TODO: Subscriptions are currently broken, so do not reenable or it will crash at startup
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
@@ -210,7 +209,6 @@ private:
 class EvseEntity final : public EebusEntity
 {
 public:
-    // TODO: Instead of pulling data from API, API pushes data to this usecases maybe? So we can trigger updates to subscribers?
     EvseEntity();
 
     /**
@@ -262,8 +260,23 @@ public:
     };
 
 private:
+    struct BillEntry
+    {
+        uint8_t id = 0; // ID of the bill entry. 0 means unused entry
+        seconds_t start_time;
+        seconds_t end_time;
+        uint16_t energy_wh;
+        uint32_t cost_eur_cent;
+        uint8_t grid_energy_percent;
+        uint8_t grid_cost_percent;
+        uint8_t self_produced_energy_percent;
+        uint8_t self_produced_cost_percent;
+    };
     int bill_feature_address = 1;
-    BillListDataType bill_list_data{};
+   // BillListDataType bill_list_data{}; // TODO: Store this differently in a list of limited size. Do not need this huge type
+    BillEntry bill_entries[8]{};
+
+    BillListDataType get_bill_list_data() const;
     /**
      * Handle the Bill Feature.
      * @param header
@@ -371,25 +384,25 @@ private:
 
     // Server Data
     //DeviceDiagnosis
-    String communication_standard = "";
+    CoolString communication_standard = "";
     bool asymmetric_supported = false;
     [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType generate_device_config_description() const;
     [[nodiscard]] DeviceConfigurationKeyValueListDataType generate_device_config_list() const;
     //Identification
     IdentificationTypeEnumType mac_type = IdentificationTypeEnumType::eui64;
-    String mac_address = "";
+    CoolString mac_address = "";
     [[nodiscard]] IdentificationListDataType generate_identification_description() const;
     //DeviceClassification
-    String manufacturer_name = "";
-    String manufacturer_code = "";
-    String ev_serial_number = "";
-    String ev_sofware_version = "";
-    String ev_hardware_version = "";
-    String vendor_name = "";
-    String vendor_code = "";
-    String brand_name = "";
-    String manufacturer_label = "";
-    String manufacturer_description = "";
+    CoolString manufacturer_name = "";
+    CoolString manufacturer_code = "";
+    CoolString ev_serial_number = "";
+    CoolString ev_sofware_version = "";
+    CoolString ev_hardware_version = "";
+    CoolString vendor_name = "";
+    CoolString vendor_code = "";
+    CoolString brand_name = "";
+    CoolString manufacturer_label = "";
+    CoolString manufacturer_description = "";
     [[nodiscard]] DeviceClassificationManufacturerDataType generate_manufacturer_description() const;
     //ElectricalConnection
     uint32_t min_power_draw = 0;
