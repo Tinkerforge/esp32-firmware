@@ -73,10 +73,11 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
 String ShipMessageDataType::type_to_json()
 {
-    // TODO: Optimize this so it doesnt create 32kb of json documents
-    size_t required_size = payload.memoryUsage() + 128; // Payload size + header size + some slack as recommended by arduinojson assistant
+
+    size_t required_size = payload.memoryUsage() + 128; // Payload size + header size + some slack as recommended by arduinojson assistant.
+    // We also just assume the psram has enough space for this.
     BasicJsonDocument<ArduinoJsonPsramAllocator> doc(required_size);
-    logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size*2 + required_size);
+    //logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size*3+64);
 
     doc["data"]["header"]["protocolId"] = protocol_id;
     bool payload_loaded = doc["data"]["payload"].set(payload);
