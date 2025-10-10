@@ -73,7 +73,10 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
 String ShipMessageDataType::type_to_json()
 {
-    DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE);
+    // TODO: Optimize this so it doesnt create 32kb of json documents
+    size_t required_size = payload.memoryUsage() + 128; // Payload size + header size + some slack as recommended by arduinojson assistant
+    BasicJsonDocument<ArduinoJsonPsramAllocator> doc(required_size);
+    logger.printfln("Create ship doc with size %d. Total ShipMessageDataType::type_to_json() usage: %d", required_size, required_size*2 + required_size);
 
     doc["data"]["header"]["protocolId"] = protocol_id;
     bool payload_loaded = doc["data"]["payload"].set(payload);
@@ -99,8 +102,7 @@ String ShipMessageDataType::type_to_json()
     }
 
     if (eebus_json_compatibility_mode) {
-        DynamicJsonDocument destination_doc(SHIP_TYPES_MAX_JSON_SIZE);
-
+        BasicJsonDocument<ArduinoJsonPsramAllocator> destination_doc(required_size * 2 + 64); // EEBUS JSON seems to need about double the space
         // Reformat SHIP Header manually
         JsonArray dataArr = destination_doc.createNestedArray("data");
         JsonObject headerWrapper = dataArr.createNestedObject();
@@ -131,25 +133,29 @@ String ShipMessageDataType::type_to_json()
                     JsonVariantConst val = kv.value();
                     if (val.is<JsonObjectConst>() || val.is<JsonArrayConst>()) {
                         JsonArray arr = dstEntry.createNestedArray(key);
-                        if (arr.isNull()) continue;
+                        if (arr.isNull())
+                            continue;
                         JsonToEEBusJson(val, arr, 0);
                     } else {
                         JsonArray arr = dstEntry.createNestedArray(key);
-                        if (arr.isNull()) continue;
+                        if (arr.isNull())
+                            continue;
                         JsonObject single = arr.createNestedObject();
                         single[key] = val;
                     }
                 }
             }
         }
-        doc.clear();
-        doc.set(destination_doc);
+        String message_outgoing_data;
+        message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
+        serializeJson(destination_doc, message_outgoing_data);
+        return message_outgoing_data;
+    } else {
+        String message_outgoing_data;
+        message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
+        serializeJson(doc, message_outgoing_data);
+        return message_outgoing_data;
     }
-
-    String message_outgoing_data;
-    message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
-    serializeJson(doc, message_outgoing_data);
-    return message_outgoing_data;
 }
 
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value)

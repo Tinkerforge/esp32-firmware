@@ -66,7 +66,8 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
     eebus.trace_jsonln(payload);
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_TYPES_MAX_JSON_SIZE};
+    // TODO: Maybe use an existing json doc here? For now we create a new one that is sized for the payload
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
     HeaderType header;
     header.ackRequest = require_ack;
     header.cmdClassifier = cmd_classifier;

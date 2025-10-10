@@ -1036,6 +1036,7 @@ void ShipConnection::state_done()
 
         if (!update_config_state(NodeState::Connected)) {
 
+            // Run MDNS discovery so we can figure out who connected to us. This might take a second
             task_scheduler.scheduleOnce(
                 [this]() {
                     eebus.ship.discover_ship_peers();
