@@ -434,14 +434,16 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                     <FormRow label={__("charge_manager.content.edit_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                         <InputSelect items={[
                                                 [CMPhaseRotation.Unknown.toString(), __("charge_manager.content.rotation_0")],
-                                                ["right-disabled", __("charge_manager.content.rotation_right")],
-                                                [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
-                                                [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
-                                                [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
-                                                ["left-disabled", __("charge_manager.content.rotation_left")],
-                                                [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
-                                                [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
-                                                [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
+                                                [__("charge_manager.content.rotation_right"),[
+                                                    [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
+                                                    [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
+                                                    [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
+                                                ]],
+                                                [__("charge_manager.content.rotation_left"),[
+                                                    [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
+                                                    [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
+                                                    [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
+                                                ]]
                                             ]}
                                             value={state.editCharger.rot}
                                             onValue={(v) => this.setState({editCharger: {...state.editCharger, rot: parseInt(v)}})}
@@ -511,14 +513,16 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             <FormRow label={__("charge_manager.content.add_charger_rotation")} help={__("charge_manager.content.charger_rotation_help")}>
                                 <InputSelect items={[
                                         [CMPhaseRotation.Unknown.toString(), __("charge_manager.content.rotation_0")],
-                                        ["right-disabled", __("charge_manager.content.rotation_right")],
-                                        [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
-                                        [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
-                                        [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
-                                        ["left-disabled", __("charge_manager.content.rotation_left")],
-                                        [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
-                                        [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
-                                        [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
+                                        [__("charge_manager.content.rotation_right"),[
+                                            [CMPhaseRotation.L123.toString(), __("charge_manager.content.rotation_1")],
+                                            [CMPhaseRotation.L231.toString(), __("charge_manager.content.rotation_3")],
+                                            [CMPhaseRotation.L312.toString(), __("charge_manager.content.rotation_6")],
+                                        ]],
+                                        [__("charge_manager.content.rotation_left"),[
+                                            [CMPhaseRotation.L132.toString(), __("charge_manager.content.rotation_2")],
+                                            [CMPhaseRotation.L213.toString(), __("charge_manager.content.rotation_4")],
+                                            [CMPhaseRotation.L321.toString(), __("charge_manager.content.rotation_5")],
+                                        ]]
                                     ]}
                                     value={state.addCharger.rot}
                                     onValue={(v) => this.setState({addCharger: {...state.addCharger, rot: parseInt(v)}})}

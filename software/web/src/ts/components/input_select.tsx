@@ -24,7 +24,7 @@ import { register_id_context_component_type } from "./form_row";
 
 export interface InputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
-    items: [string, string][];
+    items: ([string, [string, string][]]|[string, string])[];
     onValue?: (value: string) => void;
     placeholder?: string;
     className?: string;
@@ -57,6 +57,18 @@ export function InputSelect(props: InputSelectProps) {
         }
     }
 
+    let select_items = placeholder ? [<option value="" disabled selected>{placeholder}</option>] : []
+
+    for (let i = 0; i < items.length; ++i) {
+        let item = items[i];
+        if (typeof(item[1]) == "string") {
+            select_items.push(<option value={item[0].endsWith("disabled") ? "" : item[0]} key={item[0]} disabled={item[0].endsWith("disabled")}>{item[1]}</option>)
+        } else {
+            let subitems = item[1].map((k) => <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>)
+            select_items.push(<optgroup label={item[0]}>{subitems}</optgroup>)
+        }
+    }
+
     const invalidFeedback = props.invalidFeedback ? <div class="invalid-feedback" hidden={props.hidden}>{props.invalidFeedback}</div> : undefined;
 
     return (
@@ -70,12 +82,7 @@ export function InputSelect(props: InputSelectProps) {
                 id={id}
                 onInput={onValue === undefined ? undefined : (e) => onValue((e.target as HTMLSelectElement).value)}
                 >
-                {
-                    (placeholder ? [<option value="" disabled selected>{placeholder}</option>] : [])
-                        .concat(
-                            items.map((k) =>
-                                <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>))
-                }
+                {select_items}
             </select>
             {invalidFeedback}
         </>
