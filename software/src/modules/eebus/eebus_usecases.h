@@ -37,6 +37,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_connection.h"
 #include "spine_types.h"
 #include "lpc_state.enum.h"
+#include <string_view>
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 4
@@ -175,20 +176,27 @@ public:
      * @return The number of subscribers that have been informed. 0 if no subscribers have been found.
      */
     template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, String function_name);
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, const char *function_name);
 
     String get_entity_name() const override
     {
         return "NodeManagement";
     };
 
+    /**
+     * Informs the nodemanagement usecase that the detailed discovery data has changed and all subscribers should be informed.
+     */
+    void detailed_discovery_update();
+
 private:
+    AddressFeatureType nodemgmt_feature_address = 0;
+
     EEBusUseCases *usecase_interface{};
 
     NodeManagementSubscriptionDataType subscription_data{};
-    bool read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
+    NodeManagementUseCaseDataType get_usecase_data() const;
+    NodeManagementDetailedDiscoveryDataType get_detailed_discovery_data() const;
 
     CmdClassifierType handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 
@@ -564,10 +572,11 @@ public:
      * @param entity the entity address of the feature
      * @param feature the feature address
      * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
+     * @param function_name Name of the function this is notifying about. Must be the spine datatype name
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
     template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, String function_name);
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char* function_name);
 
     /**
      * Send a message to a spine destination.
