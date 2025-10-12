@@ -496,7 +496,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             show={true}
                             marker_class={'h4'}
                             no_data={__("solar_forecast.content.no_data")}
-                            loading={__("solar_forecast.content.loading")}>
+                            loading={__("solar_forecast.content.loading")}
+                            fullscreen_allow={true}
+                            fullscreen_title={__("solar_forecast.content.solar_forecast")}>
                             <UplotWrapperB
                                 ref={this.uplot_wrapper_ref}
                                 class="solar-forecast-chart"

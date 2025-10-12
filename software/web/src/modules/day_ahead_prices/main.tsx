@@ -30,6 +30,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Collapse } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { UplotLoader } from "../../ts/components/uplot_loader";
@@ -398,7 +399,9 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             show={true}
                             marker_class={'h4'}
                             no_data={__("day_ahead_prices.content.no_data")}
-                            loading={__("day_ahead_prices.content.loading")}>
+                            loading={__("day_ahead_prices.content.loading")}
+                            fullscreen_allow={true}
+                            fullscreen_title={__("day_ahead_prices.content.day_ahead_prices")}>
                             <UplotWrapperB
                                 ref={this.uplot_wrapper_ref}
                                 class="day-ahead-prices-chart"
