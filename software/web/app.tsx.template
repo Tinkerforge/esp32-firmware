@@ -194,10 +194,12 @@ export class App extends Component<AppProps, AppState> {
 
     render() {
         useLayoutEffect(() => window.scrollTo(0, 0), [this.state.sub_page]);
+        const chargerHref = util.remoteAccessMode ? new URLSearchParams(window.location.search).get("charger") : null;
+        const navbarHref = chargerHref && chargerHref.length > 0 ? `/devices/${chargerHref}` : "#status";
 
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2"} hidden={util.is_native_median_app()}>
-                <a href="#status"><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
+                <a href={navbarHref}><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
                 <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
