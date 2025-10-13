@@ -57,6 +57,7 @@ let x = {
             "rules_forbid_discharge": "Rules for battery discharge forbiddance",
             "rules_forbid_charge": "Rules for battery charge forbiddance",
 
+            "table_rule_enabled": "Enabled",
             "table_rule_desc": "Description",
             "table_rule_time": "Time",
             "table_rule_soc": "Battery SoC",
