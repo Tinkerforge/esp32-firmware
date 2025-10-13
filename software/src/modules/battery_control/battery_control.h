@@ -75,7 +75,7 @@ private:
         ForbidCharge     = 2,
     };
 
-    void preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count);
+    void preprocess_rules(const Config *rules_config, control_rule *rules);
 
     void update_avg_soc();
     void update_tariff_schedule();
