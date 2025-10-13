@@ -50,6 +50,7 @@ void BatteryControl::pre_setup()
     });
 
     rule_prototype = Config::Object({
+        {"enabled",       Config::Bool  (true)},
         {"desc",          Config::Str   ("", 0, 32)},
         {"soc_cond",      Config::Enum  (RuleCondition::Ignore)},
         {"soc_th",        Config::Uint8 (0, 100)}, // in percent (0 to 100 %)
@@ -73,6 +74,20 @@ void BatteryControl::pre_setup()
         {"discharge_forbidden",   Config::Bool(false)},
         {"charge_forbidden",      Config::Bool(false)},
     });
+}
+
+static size_t count_enabled_rules(const Config &cfg)
+{
+    const size_t total_count = cfg.count();
+    size_t enabled_count = 0;
+
+    for (size_t i = 0; i < total_count; i++) {
+        if (cfg.get(i)->get("enabled")->asBool()) {
+            enabled_count++;
+        }
+    }
+
+    return enabled_count;
 }
 
 void BatteryControl::setup()
@@ -142,9 +157,9 @@ void BatteryControl::setup()
         data->soc_cache[i] = std::numeric_limits<uint8_t>::max();
     }
 
-    const size_t permit_grid_charge_rules_cnt = rules_permit_grid_charge.count();
-    const size_t forbid_discharge_rules_cnt   = rules_forbid_discharge.count();
-    const size_t forbid_charge_rules_cnt      = rules_forbid_charge.count();
+    const size_t permit_grid_charge_rules_cnt = count_enabled_rules(rules_permit_grid_charge);
+    const size_t forbid_discharge_rules_cnt   = count_enabled_rules(rules_forbid_discharge);
+    const size_t forbid_charge_rules_cnt      = count_enabled_rules(rules_forbid_charge);
     const size_t total_rules_cnt = permit_grid_charge_rules_cnt + forbid_discharge_rules_cnt + forbid_charge_rules_cnt;
 
     if (total_rules_cnt > 0) {
@@ -159,7 +174,7 @@ void BatteryControl::setup()
             data->permit_grid_charge_rules       = pgc_rules;
             data->permit_grid_charge_rules_count = static_cast<uint8_t>(permit_grid_charge_rules_cnt);
 
-            preprocess_rules(&rules_permit_grid_charge, pgc_rules, permit_grid_charge_rules_cnt);
+            preprocess_rules(&rules_permit_grid_charge, pgc_rules);
         }
 
         control_rule *fd_rules = pgc_rules + data->permit_grid_charge_rules_count;
@@ -167,7 +182,7 @@ void BatteryControl::setup()
             data->forbid_discharge_rules       = fd_rules;
             data->forbid_discharge_rules_count = static_cast<uint8_t>(forbid_discharge_rules_cnt);
 
-            preprocess_rules(&rules_forbid_discharge, fd_rules, forbid_discharge_rules_cnt);
+            preprocess_rules(&rules_forbid_discharge, fd_rules);
         }
 
         control_rule *fc_rules = fd_rules + data->forbid_discharge_rules_count;
@@ -175,7 +190,7 @@ void BatteryControl::setup()
             data->forbid_charge_rules       = fc_rules;
             data->forbid_charge_rules_count = static_cast<uint8_t>(forbid_charge_rules_cnt);
 
-            preprocess_rules(&rules_forbid_charge, fc_rules, forbid_charge_rules_cnt);
+            preprocess_rules(&rules_forbid_charge, fc_rules);
         }
     }
 
@@ -189,6 +204,10 @@ void BatteryControl::setup()
         if (data->have_tariff_schedule_rule) sw.puts(" TariffSchedule");
         if (data->have_time_rule           ) sw.puts(" Time");
         if (data->have_fast_chg_rule       ) sw.puts(" FastChg");
+
+        if (sw.getLength() == 0) {
+            sw.puts(" [none]");
+        }
 
         logger.tracefln(this->trace_buffer_idx, "Rules:%s", buf);
     }
@@ -372,11 +391,20 @@ void BatteryControl::register_events()
     }
 }
 
-void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count)
+void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *rules)
 {
+    const size_t rules_count = rules_config->count();
+    size_t enabled_i = 0;
+
     for (size_t i = 0; i < rules_count; i++) {
         const auto rule_config = rules_config->get(i);
-        control_rule *rule = rules + i;
+
+        if (!rule_config->get("enabled")->asBool()) {
+            continue;
+        }
+
+        control_rule *rule = rules + enabled_i;
+        enabled_i++;
 
         rule->soc_cond      = rule_config->get("soc_cond"     )->asEnum<RuleCondition>();
         rule->soc_th        = rule_config->get("soc_th"       )->asUint8();

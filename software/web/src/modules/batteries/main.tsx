@@ -161,10 +161,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
     render() {
         return <Table
-            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg")]}
+            columnNames={[__("batteries.content.table_rule_enabled"), __("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg")]}
             rows={this.props.rules.map((rule_config, i) => {
                 return {
                     columnValues: [
+                        <Switch
+                            checked={rule_config.enabled}
+                            onClick={() => this.props.on_rules(this.props.rules.map((r, k) => k === i ? {...r, enabled: !r.enabled} : r))}
+                        />,
                         rule_config.desc,
                         get_column_time_cond(rule_config),
                         get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
@@ -449,6 +453,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
             addMessage={__("batteries.content.add_rule_message")(this.props.rules.length, MAX_RULES_PER_TYPE)}
             onAddShow={async () => {
                 let rule_config: RuleConfig = {
+                    enabled: true,
                     desc: "",
                     soc_cond: RuleCondition.Ignore,
                     soc_th: null,
