@@ -50,6 +50,7 @@ public:
 private:
     void apply_soft_ap_config_and_start();
     bool apply_sta_config_and_connect();
+    void start_sta_connection();
 
     uint8_t get_ap_state();
 

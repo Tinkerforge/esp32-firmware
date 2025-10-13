@@ -217,6 +217,8 @@ void Wifi::apply_soft_ap_config_and_start()
                 return;
             }
 
+            runtime_ap->scan_start_time_s = 0;
+
             if (network_count >= 0) { // Scan finished successfully
                 float channels[14] = {0}; // Don't use 0, channels are one-based.
                 float channels_smeared[14] = {0}; // Don't use 0, channels are one-based.
@@ -250,6 +252,10 @@ void Wifi::apply_soft_ap_config_and_start()
                 }
                 logger.printfln("Selecting channel %lu for soft AP", min);
                 runtime_ap->channel = min & 0xF;
+
+                // Discard internal data of found WiFis so that it doesn't permanently occupy about 1K of RAM.
+                // If the user started a scan, the results have already been sent via WS.
+                WiFi.scanDelete();
             }
 
             // If channel_to_use is still 0, either a timeout occurred or the scan failed.
@@ -393,6 +399,26 @@ bool Wifi::apply_sta_config_and_connect()
     }
     WiFi.setSleep(false);
     return true;
+}
+
+void Wifi::start_sta_connection()
+{
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        int rssi = -127;
+        esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
+        state.get("sta_rssi")->updateInt(rssi);
+
+        if (runtime_sta->connect_tries < 3 || runtime_sta->connect_tries % 3 == 2) {
+            if (!apply_sta_config_and_connect()) {
+                runtime_sta->connect_tries = 0; // Couldn't connect because STA is already connected.
+            }
+        }
+        runtime_sta->connect_tries++;
+    }, 10_s, 10_s);
+
+    if (!apply_sta_config_and_connect()) {
+        logger.printfln("Couldn't apply STA config and connect initially");
+    }
 }
 
 #define DEFAULT_REASON_STRING(X) case X: return "Unknown reason (" #X ")";
@@ -831,7 +857,12 @@ void Wifi::setup()
 
             if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count + 2, "wifi/scan_results")) {
                 get_scan_results(&sb, network_count);
-                WiFi.scanDelete();
+
+                // Discard internal data of found WiFis if the AP isn't currently performing automatic channel selection.
+                if (this->runtime_ap == nullptr || this->runtime_ap->scan_start_time_s == 0) {
+                    WiFi.scanDelete();
+                }
+
                 ws.pushRawStateUpdateEnd(&sb);
             }
 #endif
@@ -922,19 +953,6 @@ void Wifi::setup()
             state.get("connection_state")->updateEnum(get_connection_state());
         }, 1_s);
 
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            int rssi = -127;
-            esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
-            state.get("sta_rssi")->updateInt(rssi);
-
-            if (runtime_sta->connect_tries < 3 || runtime_sta->connect_tries % 3 == 2) {
-                if (!apply_sta_config_and_connect()) {
-                    runtime_sta->connect_tries = 0; // Couldn't connect because STA is already connected.
-                }
-            }
-            runtime_sta->connect_tries++;
-        }, 10_s, 10_s);
-
         wl_status_t old_status = WL_STOPPED;
         wl_status_t status;
         micros_t state_deadline;
@@ -962,8 +980,18 @@ void Wifi::setup()
             }
         }
 
-        if (!apply_sta_config_and_connect()) {
-            logger.printfln("Couldn't apply STA config and connect during setup");
+        if (runtime_ap == nullptr || runtime_ap->scan_start_time_s == 0) {
+            start_sta_connection();
+        } else {
+            task_scheduler.scheduleWithFixedDelay([this]() {
+                if (this->runtime_ap->scan_start_time_s != 0) {
+                    // Channel selection is running.
+                    return;
+                }
+
+                task_scheduler.cancel(task_scheduler.currentTaskId());
+                this->start_sta_connection();
+            }, 2_s, 500_ms);
         }
     }
 }
