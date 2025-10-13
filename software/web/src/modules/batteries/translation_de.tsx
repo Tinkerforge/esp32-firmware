@@ -57,6 +57,7 @@ let x = {
             "rules_forbid_discharge": "Regeln für Batterieentladungs-Verbot",
             "rules_forbid_charge": "Regeln für Batterieladungs-Verbot",
 
+            "table_rule_enabled": "Aktiv",
             "table_rule_desc": "Beschreibung",
             "table_rule_time": "Zeit",
             "table_rule_soc": "Batterie",
