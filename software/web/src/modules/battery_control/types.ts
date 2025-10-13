@@ -18,6 +18,7 @@
  */
 
 export interface RuleConfig {
+    enabled:       boolean;
     desc:          string;
     soc_cond:      number;
     soc_th:        number; // %
