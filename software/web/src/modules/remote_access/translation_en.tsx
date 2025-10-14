@@ -10,7 +10,9 @@ let x = {
             "connected": "Connected to server",
             "connected_to_clients": /*SFN*/ (clients: number) => `${clients} client${clients == 1 ? '' : 's'} connected` /*NF*/,
             "disconnected": "Disconnected",
-            "disabled": "Disabled"
+            "disabled": "Disabled",
+            "ntp_not_synced": "Time synchronization disabled",
+            "ntp_not_synced_text": "Remote access requires time synchronization to work properly. Enable time synchronization in the System Time settings."
         },
         "navbar": {
             "remote_access": "Remote Access"

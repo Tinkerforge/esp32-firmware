@@ -1111,6 +1111,12 @@ void RemoteAccess::register_urls()
         },
         1_s,
         1_s);
+
+    // Check if NTP sync is disabled and log a warning
+    const Config *ntp_config = api.getState("ntp/config", false);
+    if (ntp_config != nullptr && !ntp_config->get("enable")->asBool()) {
+        logger.printfln("WARNING: Remote Access is enabled but NTP sync is disabled.");
+    }
 }
 
 void RemoteAccess::register_events()

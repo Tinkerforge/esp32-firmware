@@ -43,7 +43,7 @@ import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { Button, Collapse, Container, Modal, Row, Spinner } from "react-bootstrap";
 import { Table, TableRow } from "ts/components/table";
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { StatusSection } from "ts/components/status_section";
 import { IndicatorGroup } from "ts/components/indicator_group";
 
@@ -652,6 +652,24 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             return <></>
 
         const [authToken, setAuthToken] = useState("");
+
+        // Check if NTP is disabled and remote access is enabled
+        const ntpConfig = API.get("ntp/config");
+        const remoteAccessEnabled = this.state.enable;
+        const ntpEnabled = ntpConfig.enable;
+
+        useEffect(() => {
+            if (remoteAccessEnabled && !ntpEnabled) {
+                util.add_status_alert(
+                    "remote_access_ntp_disabled",
+                    "warning",
+                    () => __("remote_access.status.ntp_not_synced"),
+                    () => __("remote_access.status.ntp_not_synced_text")
+                );
+            } else {
+                util.remove_status_alert("remote_access_ntp_disabled");
+            }
+        }, [remoteAccessEnabled, ntpEnabled]);
 
         const cert_config = API.get("certs/state");
         const cert_items: [string, string][] = [["-1", __("remote_access.content.not_used")]];
