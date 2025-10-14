@@ -66,13 +66,19 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
     eebus.trace_jsonln(payload);
-    // TODO: Maybe use an existing json doc here? For now we create a new one that is sized for the payload
+    // so i spent 4 hours on this and for some reason the pointers to sender and receivers are nullpointers in about 1/5 restarts but if i print them here its fine.
+    logger.printfln("This needs to be here otherwise it crashes for some reason. Pointer sender: %p, Pointer Receiver: %p", &sender, &receiver);
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
-    HeaderType header;
+    HeaderType header{};
     header.ackRequest = require_ack;
     header.cmdClassifier = cmd_classifier;
     header.specificationVersion = SUPPORTED_SPINE_VERSION;
     header.addressSource = sender;
+    // See if this fixes the memory issue
+    //header.addressSource->device = sender.device.get().c_str();
+    //header.addressSource->entity = sender.entity.get();
+    //header.addressSource->feature = sender.feature.get();
+
     header.addressDestination = receiver;
     header.msgCounter = msg_counter++;
     header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
