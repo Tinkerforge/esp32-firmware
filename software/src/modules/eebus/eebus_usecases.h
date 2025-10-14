@@ -63,7 +63,7 @@ enum class UseCaseType : uint8_t
 
 /**
  * The basic Framework of a EEBUS Entity.
- * Each entity has one or multiple features. An entity
+ * Each entity has one or multiple features.
  */
 class EebusEntity
 {
@@ -276,7 +276,7 @@ private:
    // BillListDataType bill_list_data{}; // TODO: Store this differently in a list of limited size. Do not need this huge type
     BillEntry bill_entries[8]{};
 
-    BillListDataType get_bill_list_data() const;
+    [[nodiscard]] BillListDataType get_bill_list_data() const;
     /**
      * Handle the Bill Feature.
      * @param header
