@@ -738,7 +738,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                 const [invalidFeedback, setInvalidFeedback] = useState("");
 
                                 return <>
-                                    <FormRow label={__("remote_access.content.auth_method")} label_muted="Test">
+                                    <FormRow label={__("remote_access.content.auth_method")}>
                                         <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => {
                                             setAuthMethod(v);
                                             setAuthToken("");
