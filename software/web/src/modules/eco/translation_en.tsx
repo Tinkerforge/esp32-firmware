@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "eco": {
         "status": {
@@ -80,7 +81,7 @@ let x = {
                     `Start of charge: Today ${new Date(start).toLocaleString([], {hour: '2-digit', minute: '2-digit'})}` :
                     `Start of charge: ${new Date(start).toLocaleString([], {weekday: 'long', hour: '2-digit', minute: '2-digit'})}`;
                 const charging_done = `Charged: ${charger_zero_amount} minutes.`;
-                const charging_todo = `To charge: ${charge_plan.amount*60 - charger_zero_amount} minutes.`;
+                const charging_todo = `To charge: ${toLocaleFixed(charge_plan.amount*60 - charger_zero_amount)} minutes.`;
 
                 return <div>{plan}<br/>{begin}<br/>{charging_done}<br/>{charging_todo}</div>;
             }/*NF*/

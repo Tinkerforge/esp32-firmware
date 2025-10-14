@@ -2,6 +2,7 @@
 import { h } from "preact";
 import * as options from "./src/options";
 import { __ } from "./src/ts/translation";
+import { toLocaleFixed } from "./src/ts/util";
 let x = {
     "main": {
         "title": `${options.PRODUCT_NAME} Webinterface`,
@@ -73,9 +74,9 @@ let x = {
             "required": "Feld darf nicht leer sein"
         },
         "input_any_float": {
-            "min_only": /*SFN*/ (min: number) => `Mindestens ${min} erforderlich`/*NF*/,
-            "max_only": /*SFN*/ (max: number) => `Maximal ${max} erlaubt`/*NF*/,
-            "min_max": /*SFN*/ (min: number, max: number) => `Mindestens ${min} erforderlich, aber maximal ${max} erlaubt`/*NF*/
+            "min_only": /*SFN*/ (min: number) => `Mindestens ${toLocaleFixed(min, 3)} erforderlich`/*NF*/,
+            "max_only": /*SFN*/ (max: number) => `Maximal ${toLocaleFixed(max, 3)} erlaubt`/*NF*/,
+            "min_max": /*SFN*/ (min: number, max: number) => `Mindestens ${toLocaleFixed(min, 3)} erforderlich, aber maximal ${toLocaleFixed(max, 3)} erlaubt`/*NF*/
         },
         "input_file": {
             "uploading": "wird hochgeladen..."

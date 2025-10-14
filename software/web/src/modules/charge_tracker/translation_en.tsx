@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "charge_tracker": {
         "status": {
@@ -89,7 +90,7 @@ let x = {
             "automation_action_text": "remove all tracked charges and reboot."
         },
         "script": {
-            "tracked_charge_count": /*SFN*/ (tracked: number, max_: number) => `${tracked} of maximum ${max_} (${Math.floor(100 * tracked / max_)} %)` /*NF*/,
+            "tracked_charge_count": /*SFN*/ (tracked: number, max_: number) => `${tracked} of maximum ${max_} (${toLocaleFixed(100 * tracked / max_)} %)` /*NF*/,
             "csv_header_start": "Start time",
             "csv_header_display_name": "Display name",
             "csv_header_username": "Username",

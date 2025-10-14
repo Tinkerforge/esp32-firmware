@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "day_ahead_prices": {
         "status": {},
@@ -54,15 +55,15 @@ let x = {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
                 if (type == 0) {// average
                     if (comparison == 0) { // greater
-                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{value} %</b> des Tagesdurchschnitt ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{toLocaleFixed(value, 1)} %</b> des Tagesdurchschnitt ist,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{value} %</b> des Tagesdurchschnitt ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{toLocaleFixed(value, 1)} %</b> des Tagesdurchschnitt ist,{" "}</>)
                     }
                 } else if (type == 1) { // absolute
                     if (comparison == 0) { // greater
-                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{value} ct</b> ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>größer</b> als <b>{toLocaleFixed(value, 2)} ct</b> ist,{" "}</>)
                     } else if (comparison == 1) { // less
-                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{value} ct</b> ist,{" "}</>)
+                        return (<>Wenn der aktuelle Börsenstrompreis <b>kleiner</b> als <b>{toLocaleFixed(value, 2)} ct</b> ist,{" "}</>)
                     }
                 }
                 return (<>Unbekannt,{" "}</>)

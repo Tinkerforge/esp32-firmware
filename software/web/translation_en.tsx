@@ -2,6 +2,7 @@
 import { h } from "preact";
 import * as options from "./src/options";
 import { __ } from "./src/ts/translation";
+import { toLocaleFixed } from "./src/ts/util";
 let x = {
     "main": {
         "title": `${options.PRODUCT_NAME} Web Interface`,
@@ -73,9 +74,9 @@ let x = {
             "required": "Field must not be empty"
         },
         "input_any_float": {
-            "min_only": /*SFN*/ (min: number) => `At least ${min} required`/*NF*/,
-            "max_only": /*SFN*/ (max: number) => `At most ${max} allowed`/*NF*/,
-            "min_max": /*SFN*/ (min: number, max: number) => `At least ${min} required, but at most ${max} allowed`/*NF*/
+            "min_only": /*SFN*/ (min: number) => `At least ${toLocaleFixed(min, 3)} required`/*NF*/,
+            "max_only": /*SFN*/ (max: number) => `At most ${toLocaleFixed(max, 3)} allowed`/*NF*/,
+            "min_max": /*SFN*/ (min: number, max: number) => `At least ${toLocaleFixed(min, 3)} required, but at most ${toLocaleFixed(max, 3)} allowed`/*NF*/
         },
         "input_file": {
             "uploading": "uploading..."
@@ -101,7 +102,7 @@ let x = {
             "starting_debug_failed": /*SFN*/ (debug_module: string) => `Starting to record ${debug_module} log failed`/*NF*/,
             "debug_running": "Recording. Do not close tab!",
             "debug_stop_failed": /*SFN*/ (debug_module: string) => `Stopping to record ${debug_module} log failed`/*NF*/,
-            "debug_stopped": /*SFN*/ (debug_module: string) => `Stupped recording ${debug_module} log`/*NF*/,
+            "debug_stopped": /*SFN*/ (debug_module: string) => `Stopped recording ${debug_module} log`/*NF*/,
             "debug_done": "Done.",
             "debug_start": "Start",
             "debug_stop": "Stop + Download"

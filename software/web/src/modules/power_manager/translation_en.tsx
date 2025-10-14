@@ -95,9 +95,9 @@ let x = {
             "max_current": "Maximum total current",
             "automation_limit_max_current_action_text": /*FFN*/(current: number, default_current: number) => {
                 if (current === -1) {
-                    return <>reset maximum total current limit to the configured default current (<b>{default_current / 1000} A</b>).</>
+                    return <>reset maximum total current limit to the configured default current (<b>{toLocaleFixed(default_current / 1000)} A</b>).</>
                 }
-                return <>limit maximum total current to <b>{current / 1000} A</b>.</>
+                return <>limit maximum total current to <b>{toLocaleFixed(current / 1000)} A</b>.</>
             }/*NF*/,
 
             "grid_power_draw": "Grid power draw",

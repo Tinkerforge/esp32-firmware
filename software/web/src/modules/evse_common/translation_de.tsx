@@ -2,6 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { removeUnicodeHacks } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "evse": {
         "status": {
@@ -284,10 +285,10 @@ let x = {
             "automation_led_action_text": /*FFN*/(indication_number: number, indication_text: string, duration: number, color: string) => {
                 let c = color == "" ? "" : <>in <span class="px-2 mr-1" style={"background-color: " + color + "; border: 1px solid black;"}></span></>;
                 if (indication_number == 0)
-                    return <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> <b>{indication_text}</b>.</>;
+                    return <>schalte die Status-LED für <b>{toLocaleFixed(duration / 1000)} Sekunden</b> <b>{indication_text}</b>.</>;
                 if (indication_number == 255)
-                    return <>schalte die Status-LED für <b>{duration / 1000} Sekunden</b> {c} <b>{indication_text}</b>.</>;
-                return <>zeige <b>{indication_text}</b> {c} für <b>{duration / 1000} Sekunden</b> auf der Status-LED.</>;
+                    return <>schalte die Status-LED für <b>{toLocaleFixed(duration / 1000)} Sekunden</b> {c} <b>{indication_text}</b>.</>;
+                return <>zeige <b>{indication_text}</b> {c} für <b>{toLocaleFixed(duration / 1000)} Sekunden</b> auf der Status-LED.</>;
             }/*NF*/
         },
         "script": {
