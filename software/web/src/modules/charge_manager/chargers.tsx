@@ -30,6 +30,7 @@ import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
+import { Plus } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import type { ChargeManagerStatus } from "./main";
@@ -492,20 +493,31 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                     state.scanResult.filter(s => !state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip))
                                         .map(s => (
                                             <ListGroupItem key={s.hostname}
+                                                        className="p-0"
                                                         action type="button"
                                                         onClick={s.error != 0 ? undefined : () => {
                                                             this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})
                                                         }}
                                                         style={s.error == 0 ? "" : "cursor: default; background-color: #eeeeee !important;"}>
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <span class="h5 text-left">{s.display_name}</span>
-                                                    {s.error == 0 ? null :
-                                                        <span class="text-right" style="color:red">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
+                                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                                    <div class="flex-grow-1 col p-2">
+                                                        <div class="row m-0 w-100 justify-content-between">
+                                                            <span class="col p-0 h5 text-left">{s.display_name}</span>
+                                                            {s.error == 0 ? null :
+                                                                <span class="col-auto p-0 text-right" style="color:red">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
+                                                            }
+                                                        </div>
+                                                        <div class="row m-0 p-0 d-flex w-100 justify-content-between">
+                                                            {util.remoteAccessMode ? <span>{s.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a>}
+                                                            {util.remoteAccessMode ? <span>{s.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a>}
+                                                        </div>
+                                                    </div>
+                                                    {s.error == 0 ?
+                                                        <div class="col-auto d-flex align-items-center justify-content-center px-3" style={{backgroundColor: "#007bff", minHeight: "100%", alignSelf: "stretch"}}>
+                                                            <Plus size="24" color="white"/>
+                                                        </div>
+                                                        : null
                                                     }
-                                                </div>
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    {util.remoteAccessMode ? <span>{s.hostname + ".local"}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.hostname + ".local"}>{s.hostname + ".local"}</a>}
-                                                    {util.remoteAccessMode ? <span>{s.ip}</span> : <a target="_blank" rel="noopener noreferrer" href={"http://" + s.ip}>{s.ip}</a>}
                                                 </div>
                                             </ListGroupItem>))
                                 }</ListGroup>
