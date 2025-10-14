@@ -476,7 +476,7 @@ body {
 
 {{{module_post_imports}}}
 
-.modal-body {
+.message-box-body {
     font-size: 1rem;
 }
 

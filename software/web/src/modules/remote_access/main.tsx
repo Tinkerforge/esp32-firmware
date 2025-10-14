@@ -702,7 +702,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                         <Row className="justify-content-center mb-2">
                             <Spinner animation="border" variant="primary"/>
                         </Row>
-                        <Row className="justify-content-center">
+                        <Row className="justify-content-center message-box-body">
                             <div>{this.state.status_modal_string}</div>
                         </Row>
                     </Container>
@@ -738,7 +738,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                 const [invalidFeedback, setInvalidFeedback] = useState("");
 
                                 return <>
-                                    <FormRow label={__("remote_access.content.auth_method")}>
+                                    <FormRow label={__("remote_access.content.auth_method")} label_muted="Test">
                                         <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => {
                                             setAuthMethod(v);
                                             setAuthToken("");

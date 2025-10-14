@@ -169,7 +169,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     <Modal.Header {...{closeButton: true} as any}>
                         <span class="modal-title form-label">{__("wifi.content.confirm_title")}</span>
                     </Modal.Header>
-                    <Modal.Body>{__("wifi.content.confirm_content")}</Modal.Body>
+                    <Modal.Body className="message-box-body">{__("wifi.content.confirm_content")}</Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => {this.dismissModal()}}>
                             {__("wifi.content.confirm_abort")}

@@ -76,6 +76,7 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
     };
 
     render(props: AsyncModalProps, state: Readonly<AsyncModalState>) {
+        const body = this.params.body();
         return (
            <Modal show={state.show}
                     onHide={() => {this.hide(false)}}
@@ -87,7 +88,7 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
                 <Modal.Header {...{closeButton: true} as any}>
                     <span class="modal-title form-label">{this.params.title()}</span>
                 </Modal.Header>
-                <Modal.Body>{this.params.body()}</Modal.Body>
+                <Modal.Body className={typeof body === "string" ? "message-box-body" : ""}>{body}</Modal.Body>
                 <Modal.Footer>
                     <Button variant={state.no_variant} onClick={() => {this.hide(false)}}>
                         {this.params.no_text()}
