@@ -1,19 +1,19 @@
 table_prototypes = [
-    ('Fox ESS H3 Hybrid Inverter', ['virtual_meter', 'device_address']),
-    ('Fox ESS H3 Smart Hybrid Inverter', ['virtual_meter', 'device_address']),
-    ('Fox ESS H3 Pro Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Fox ESS H3 AC3 Hybrid Inverter', ['device_address', 'virtual_meter']),
+    ('Fox ESS H3 Smart Hybrid Inverter', ['device_address', 'virtual_meter']),
+    ('Fox ESS H3 Pro Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
-    ('Fox ESS H3 Hybrid Inverter', 247),
+    ('Fox ESS H3 AC3 Hybrid Inverter', 247),
     ('Fox ESS H3 Smart Hybrid Inverter', 247),
     ('Fox ESS H3 Pro Hybrid Inverter', 247),
 ]
 
 specs = [
     {
-        'name': 'Fox ESS H3 Hybrid Inverter',
-        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Inverter'),
+        'name': 'Fox ESS H3 AC3 Hybrid Inverter',
+        'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -101,8 +101,8 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS H3 Hybrid Inverter Grid',
-        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Grid'),
+        'name': 'Fox ESS H3 AC3 Hybrid Inverter Grid',
+        'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -144,8 +144,8 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS H3 Hybrid Inverter Battery',
-        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Battery'),
+        'name': 'Fox ESS H3 AC3 Hybrid Inverter Battery',
+        'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -200,8 +200,8 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS H3 Hybrid Inverter Load',
-        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'Load'),
+        'name': 'Fox ESS H3 AC3 Hybrid Inverter Load',
+        'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -236,8 +236,8 @@ specs = [
         ],
     },
     {
-        'name': 'Fox ESS H3 Hybrid Inverter PV',
-        'virtual_meter': ('Fox ESS H3 Hybrid Inverter', 'PV'),
+        'name': 'Fox ESS H3 AC3 Hybrid Inverter PV',
+        'virtual_meter': ('Fox ESS H3 AC3 Hybrid Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

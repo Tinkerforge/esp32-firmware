@@ -364,6 +364,13 @@ ts += '\n\n'.join(specs_ts).replace('\r\n', '') + '\n'
 tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
 
 h  = '// WARNING: This file is generated.\n\n'
+h += '#pragma once\n\n'
+h += '\n'.join([f'#include "{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+
+tfutil.write_file_if_different('meter_modbus_tcp_virtual_meter_enums.h', h)
+
+h  = '// WARNING: This file is generated.\n\n'
+h += '#pragma once\n\n'
 h += '#include "config.h"\n'
 h += '#include "meter_modbus_tcp.h"\n'
 h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
@@ -380,7 +387,8 @@ cpp += '#define EVENT_LOG_PREFIX "meters_mbtcp"\n'
 cpp += '#define TRACE_LOG_PREFIX nullptr\n\n'
 cpp += '#include "meter_modbus_tcp_specs.h"\n\n'
 cpp += '#include "event_log_prefix.h"\n'
-cpp += '#include "module_dependencies.h"\n\n'
+cpp += '#include "module_dependencies.h"\n'
+cpp += '#include "meter_modbus_tcp_virtual_meter_enums.h"\n\n'
 cpp += '#include "gcc_warnings.h"\n\n'
 cpp += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes)\n'
 cpp += '{'

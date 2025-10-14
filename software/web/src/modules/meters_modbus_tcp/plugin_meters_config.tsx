@@ -286,12 +286,12 @@ export function init() {
                                 [MeterModbusTCPTableID.CarloGavazziEM580.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em580")],
                                 [MeterModbusTCPTableID.ChisageESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_chisage_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
-                                [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
+                                [MeterModbusTCPTableID.E3DCHauskraftwerk.toString(), __("meters_modbus_tcp.content.table_e3dc_hauskraftwerk")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
 //#if OPTIONS_PRODUCT_ID_IS_ELTAKO
                                 [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
 //#endif
-                                [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FoxESSH3AC3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_ac3_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_smart_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
@@ -311,7 +311,7 @@ export function init() {
                                 [MeterModbusTCPTableID.SiemensPAC4200.toString(), __("meters_modbus_tcp.content.table_siemens_pac4200")],
                                 [MeterModbusTCPTableID.SiemensPAC4220.toString(), __("meters_modbus_tcp.content.table_siemens_pac4220")],
                                 [MeterModbusTCPTableID.SMAHybridInverter.toString(), __("meters_modbus_tcp.content.table_sma_hybrid_inverter")],
-                                [MeterModbusTCPTableID.Solaredge.toString(), __("meters_modbus_tcp.content.table_solaredge")],
+                                [MeterModbusTCPTableID.SolaredgeInverter.toString(), __("meters_modbus_tcp.content.table_solaredge_inverter")],
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SolaxStringInverter.toString(), __("meters_modbus_tcp.content.table_solax_string_inverter")],
@@ -353,7 +353,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus
                   || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3HybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3AC3HybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC2200
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3120
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3200
@@ -372,12 +372,12 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
-                  || config[1].table[0] == MeterModbusTCPTableID.Solaredge
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
                   || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
                   || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode
                   || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode
-                  || config[1].table[0] == MeterModbusTCPTableID.E3DC
+                  || config[1].table[0] == MeterModbusTCPTableID.E3DCHauskraftwerk
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA

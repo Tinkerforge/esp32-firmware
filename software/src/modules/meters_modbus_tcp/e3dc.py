@@ -1,22 +1,22 @@
 table_prototypes = [
-    ('E3DC', ['virtual_meter', 'device_address']),
+    ('E3DC Hauskraftwerk', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
-    ('E3DC', 1),
+    ('E3DC Hauskraftwerk', 1),
 ]
 
 specs = [
     {
-        'name': 'E3DC Inverter',
-        'virtual_meter': ('E3DC', 'Inverter Unused'),
+        'name': 'E3DC Hauskraftwerk Inverter',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'Inverter Unused'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': None,
     },
     {
-        'name': 'E3DC Grid',
-        'virtual_meter': ('E3DC', 'Grid'),
+        'name': 'E3DC Hauskraftwerk Grid',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -29,8 +29,8 @@ specs = [
         ],
     },
     {
-        'name': 'E3DC Battery',
-        'virtual_meter': ('E3DC', 'Battery'),
+        'name': 'E3DC Hauskraftwerk Battery',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -49,8 +49,8 @@ specs = [
         ],
     },
     {
-        'name': 'E3DC Load',
-        'virtual_meter': ('E3DC', 'Load'),
+        'name': 'E3DC Hauskraftwerk Load',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -63,8 +63,8 @@ specs = [
         ],
     },
     {
-        'name': 'E3DC PV',
-        'virtual_meter': ('E3DC', 'PV'),
+        'name': 'E3DC Hauskraftwerk PV',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
@@ -139,8 +139,8 @@ specs = [
         ],
     },
     {
-        'name': 'E3DC Additional Generation',
-        'virtual_meter': ('E3DC', 'Additional Generation'),
+        'name': 'E3DC Hauskraftwerk Additional Generation',
+        'virtual_meter': ('E3DC Hauskraftwerk', 'Additional Generation'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

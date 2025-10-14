@@ -1,5 +1,5 @@
 table_prototypes = [
-    ('Deye Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Deye Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [

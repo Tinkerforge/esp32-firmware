@@ -1,5 +1,5 @@
 table_prototypes = [
-    ('Solarmax Max Storage', ['virtual_meter', 'device_address']),
+    ('Solarmax Max Storage', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [

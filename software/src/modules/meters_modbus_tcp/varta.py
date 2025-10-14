@@ -1,6 +1,6 @@
 table_prototypes = [
-    ('VARTA Element', ['virtual_meter', 'device_address']),
-    ('VARTA Flex', ['virtual_meter', 'device_address']),
+    ('VARTA Element', ['device_address', 'virtual_meter']),
+    ('VARTA Flex', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [

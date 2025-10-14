@@ -1,29 +1,29 @@
 table_prototypes = [
-    ('Solaredge', ['virtual_meter', 'device_address']),
+    ('Solaredge Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
-    ('Solaredge', 1),
+    ('Solaredge Inverter', 1),
 ]
 
 specs = [
     {
         'name': 'Solaredge Inverter',
-        'virtual_meter': ('Solaredge', 'Inverter Unused'),
+        'virtual_meter': ('Solaredge Inverter', 'Inverter Unused'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': None,
     },
     {
-        'name': 'Solaredge Grid',
-        'virtual_meter': ('Solaredge', 'Grid Unused'),
+        'name': 'Solaredge Inverter Grid',
+        'virtual_meter': ('Solaredge Inverter', 'Grid Unused'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': None,
     },
     {
-        'name': 'Solaredge Battery',
-        'virtual_meter': ('Solaredge', 'Battery'),
+        'name': 'Solaredge Inverter Battery',
+        'virtual_meter': ('Solaredge Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'f32_negative_max_as_nan': True,

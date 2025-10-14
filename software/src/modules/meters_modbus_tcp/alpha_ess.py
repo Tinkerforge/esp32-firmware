@@ -1,7 +1,7 @@
 # This is the same register table as Hailei
 
 table_prototypes = [
-    ('Alpha ESS Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Alpha ESS Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [

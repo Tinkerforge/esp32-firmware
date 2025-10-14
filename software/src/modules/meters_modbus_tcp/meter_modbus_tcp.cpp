@@ -132,41 +132,41 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SungrowHybridInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         sungrow_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SungrowHybridInverterVirtualMeter>();
         sungrow_hybrid_inverter.output_type = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_sungrow_hybrid_inverter_table(slot, sungrow_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SungrowStringInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         sungrow_string_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SungrowStringInverterVirtualMeter>();
         sungrow_string_inverter.output_type = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_sungrow_string_inverter_table(slot, sungrow_string_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SolarmaxMaxStorage:
-        solarmax_max_storage.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        solarmax_max_storage.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolarmaxMaxStorageVirtualMeter>();
         table = get_solarmax_max_storage_table(slot, solarmax_max_storage.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VictronEnergyGX:
-        victron_energy_gx.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        victron_energy_gx.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VictronEnergyGXVirtualMeter>();
         table = get_victron_energy_gx_table(slot, victron_energy_gx.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::DeyeHybridInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         deye_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<DeyeHybridInverterVirtualMeter>();
         deye_hybrid_inverter.device_type = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_deye_hybrid_inverter_table(slot, deye_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::AlphaESSHybridInverter:
-        alpha_ess_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        alpha_ess_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<AlphaESSHybridInverterVirtualMeter>();
         table = get_alpha_ess_hybrid_inverter_table(slot, alpha_ess_hybrid_inverter.virtual_meter);
         break;
 
@@ -348,36 +348,36 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::GoodweHybridInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         goodwe_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
         goodwe_hybrid_inverter.battery_1_mode = -1;
         goodwe_hybrid_inverter.battery_2_mode = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_goodwe_hybrid_inverter_table(slot, goodwe_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SolaxHybridInverter:
-        solax_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        solax_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaxHybridInverterVirtualMeter>();
         table = get_solax_hybrid_inverter_table(slot, solax_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FroniusGEN24Plus:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         fronius_gen24_plus.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FroniusGEN24PlusVirtualMeter>();
         fronius_gen24_plus.input_id_or_model_id = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_fronius_gen24_plus_table(slot, fronius_gen24_plus.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HaileiHybridInverter:
-        hailei_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        hailei_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HaileiHybridInverterVirtualMeter>();
         table = get_hailei_hybrid_inverter_table(slot, hailei_hybrid_inverter.virtual_meter);
         break;
 
-    case MeterModbusTCPTableID::FoxESSH3HybridInverter:
-        fox_ess_h3_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3HybridInverterVirtualMeter>();
+    case MeterModbusTCPTableID::FoxESSH3AC3HybridInverter:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
-        table = get_fox_ess_h3_hybrid_inverter_table(slot, fox_ess_h3_hybrid_inverter.virtual_meter);
+        fox_ess_h3_ac3_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3AC3HybridInverterVirtualMeter>();
+        table = get_fox_ess_h3_ac3_hybrid_inverter_table(slot, fox_ess_h3_ac3_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SiemensPAC2200:
@@ -486,8 +486,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM270:
-        carlo_gavazzi_em270.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        carlo_gavazzi_em270.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em270.virtual_meter) {
@@ -515,8 +515,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM280:
-        carlo_gavazzi_em280.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        carlo_gavazzi_em280.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
 
         switch (carlo_gavazzi_em280.virtual_meter) {
@@ -594,10 +594,10 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
-    case MeterModbusTCPTableID::Solaredge:
-        solaredge.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaredgeVirtualMeter>();
+    case MeterModbusTCPTableID::SolaredgeInverter:
+        solaredge_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaredgeInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
-        table = get_solaredge_table(slot, solaredge.virtual_meter);
+        table = get_solaredge_inverter_table(slot, solaredge_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::EastronSDM630TCP:
@@ -612,41 +612,41 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SAXPowerHomeBasicMode:
-        sax_power_home_basic_mode.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SAXPowerHomeBasicModeVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        sax_power_home_basic_mode.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SAXPowerHomeBasicModeVirtualMeter>();
         table = get_sax_power_home_basic_mode_table(slot, sax_power_home_basic_mode.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SAXPowerHomeExtendedMode:
-        sax_power_home_extended_mode.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SAXPowerHomeExtendedModeVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        sax_power_home_extended_mode.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SAXPowerHomeExtendedModeVirtualMeter>();
         table = get_sax_power_home_extended_mode_table(slot, sax_power_home_extended_mode.virtual_meter);
         break;
 
-    case MeterModbusTCPTableID::E3DC:
-        e3dc.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<E3DCVirtualMeter>();
+    case MeterModbusTCPTableID::E3DCHauskraftwerk:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
-        table = get_e3dc_table(slot, e3dc.virtual_meter);
+        e3dc_hauskraftwerk.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<E3DCHauskraftwerkVirtualMeter>();
+        table = get_e3dc_hauskraftwerk_table(slot, e3dc_hauskraftwerk.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiSUN2000:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         huawei_sun2000.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiSUN2000VirtualMeter>();
         huawei_sun2000.energy_storage_product_model = -1;
         huawei_sun2000.number_of_pv_strings = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_huawei_sun2000_table(slot, huawei_sun2000.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiSUN2000SmartDongle:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         huawei_sun2000_smart_dongle.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiSUN2000SmartDongleVirtualMeter>();
         huawei_sun2000_smart_dongle.energy_storage_product_model = -1;
-        device_address = ephemeral_table_config->get("device_address")->asUint8();
         table = get_huawei_sun2000_smart_dongle_table(slot, huawei_sun2000_smart_dongle.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::HuaweiEMMA:
-        huawei_emma.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiEMMAVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        huawei_emma.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiEMMAVirtualMeter>();
         table = get_huawei_emma_table(slot, huawei_emma.virtual_meter);
         break;
 
@@ -656,44 +656,44 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolaxStringInverter:
-        solax_string_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaxStringInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        solax_string_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaxStringInverterVirtualMeter>();
         table = get_solax_string_inverter_table(slot, solax_string_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FoxESSH3SmartHybridInverter:
-        fox_ess_h3_smart_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3SmartHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        fox_ess_h3_smart_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3SmartHybridInverterVirtualMeter>();
         table = get_fox_ess_h3_smart_hybrid_inverter_table(slot, fox_ess_h3_smart_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::FoxESSH3ProHybridInverter:
-        fox_ess_h3_pro_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3ProHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        fox_ess_h3_pro_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FoxESSH3ProHybridInverterVirtualMeter>();
         table = get_fox_ess_h3_pro_hybrid_inverter_table(slot, fox_ess_h3_pro_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SMAHybridInverter:
-        sma_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SMAHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        sma_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SMAHybridInverterVirtualMeter>();
         table = get_sma_hybrid_inverter_table(slot, sma_hybrid_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VARTAElement:
-        varta_element.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VARTAElementVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        varta_element.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VARTAElementVirtualMeter>();
         table = get_varta_element_table(slot, varta_element.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::VARTAFlex:
-        varta_flex.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VARTAFlexVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        varta_flex.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<VARTAFlexVirtualMeter>();
         table = get_varta_flex_table(slot, varta_flex.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::ChisageESSHybridInverter:
-        chisage_ess_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<ChisageESSHybridInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        chisage_ess_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<ChisageESSHybridInverterVirtualMeter>();
         table = get_chisage_ess_hybrid_inverter_table(slot, chisage_ess_hybrid_inverter.virtual_meter);
         break;
 
@@ -929,10 +929,10 @@ bool MeterModbusTCP::is_hailei_hybrid_inverter_pv_meter() const
         && hailei_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
 }
 
-bool MeterModbusTCP::is_fox_ess_h3_hybrid_inverter_pv_meter() const
+bool MeterModbusTCP::is_fox_ess_h3_ac3_hybrid_inverter_pv_meter() const
 {
-    return table_id == MeterModbusTCPTableID::FoxESSH3HybridInverter
-        && fox_ess_h3_hybrid_inverter.virtual_meter == FoxESSH3HybridInverterVirtualMeter::PV;
+    return table_id == MeterModbusTCPTableID::FoxESSH3AC3HybridInverter
+        && fox_ess_h3_ac3_hybrid_inverter.virtual_meter == FoxESSH3AC3HybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_carlo_gavazzi_em100_or_et100() const
@@ -946,16 +946,16 @@ bool MeterModbusTCP::is_carlo_gavazzi_em510() const
     return table_id == MeterModbusTCPTableID::CarloGavazziEM510;
 }
 
-bool MeterModbusTCP::is_solaredge_battery_meter() const
+bool MeterModbusTCP::is_solaredge_inverter_battery_meter() const
 {
-    return table_id == MeterModbusTCPTableID::Solaredge
-        && solaredge.virtual_meter == SolaredgeVirtualMeter::Battery;
+    return table_id == MeterModbusTCPTableID::SolaredgeInverter
+        && solaredge_inverter.virtual_meter == SolaredgeInverterVirtualMeter::Battery;
 }
 
-bool MeterModbusTCP::is_e3dc_pv_meter() const
+bool MeterModbusTCP::is_e3dc_hauskraftwerk_pv_meter() const
 {
-    return table_id == MeterModbusTCPTableID::E3DC
-        && e3dc.virtual_meter == E3DCVirtualMeter::PV;
+    return table_id == MeterModbusTCPTableID::E3DCHauskraftwerk
+        && e3dc_hauskraftwerk.virtual_meter == E3DCHauskraftwerkVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_huawei_sun2000_battery_meter() const
@@ -2516,45 +2516,45 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
-    else if (is_fox_ess_h3_hybrid_inverter_pv_meter()) {
-        if (register_start_address == FoxESSH3HybridInverterPVAddress::PV1Voltage) {
-            fox_ess_h3_hybrid_inverter.pv1_voltage = value;
+    else if (is_fox_ess_h3_ac3_hybrid_inverter_pv_meter()) {
+        if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV1Voltage) {
+            fox_ess_h3_ac3_hybrid_inverter.pv1_voltage = value;
         }
-        else if (register_start_address == FoxESSH3HybridInverterPVAddress::PV1Current) {
-            fox_ess_h3_hybrid_inverter.pv1_current = value;
+        else if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV1Current) {
+            fox_ess_h3_ac3_hybrid_inverter.pv1_current = value;
         }
-        else if (register_start_address == FoxESSH3HybridInverterPVAddress::PV1Power) {
-            fox_ess_h3_hybrid_inverter.pv1_power = value;
+        else if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV1Power) {
+            fox_ess_h3_ac3_hybrid_inverter.pv1_power = value;
         }
-        else if (register_start_address == FoxESSH3HybridInverterPVAddress::PV2Voltage) {
-            fox_ess_h3_hybrid_inverter.pv2_voltage = value;
+        else if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV2Voltage) {
+            fox_ess_h3_ac3_hybrid_inverter.pv2_voltage = value;
         }
-        else if (register_start_address == FoxESSH3HybridInverterPVAddress::PV2Current) {
-            fox_ess_h3_hybrid_inverter.pv2_current = value;
+        else if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV2Current) {
+            fox_ess_h3_ac3_hybrid_inverter.pv2_current = value;
         }
-        else if (register_start_address == FoxESSH3HybridInverterPVAddress::PV2Power) {
-            fox_ess_h3_hybrid_inverter.pv2_power = value;
+        else if (register_start_address == FoxESSH3AC3HybridInverterPVAddress::PV2Power) {
+            fox_ess_h3_ac3_hybrid_inverter.pv2_power = value;
 
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
-            if (!is_exactly_zero(fox_ess_h3_hybrid_inverter.pv1_voltage)) {
-                voltage_sum += fox_ess_h3_hybrid_inverter.pv1_voltage;
+            if (!is_exactly_zero(fox_ess_h3_ac3_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += fox_ess_h3_ac3_hybrid_inverter.pv1_voltage;
                 ++voltage_count;
             }
 
-            if (!is_exactly_zero(fox_ess_h3_hybrid_inverter.pv2_voltage)) {
-                voltage_sum += fox_ess_h3_hybrid_inverter.pv2_voltage;
+            if (!is_exactly_zero(fox_ess_h3_ac3_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += fox_ess_h3_ac3_hybrid_inverter.pv2_voltage;
                 ++voltage_count;
             }
 
             float voltage_avg = voltage_sum / voltage_count;
 
-            float current_sum = fox_ess_h3_hybrid_inverter.pv1_current
-                              + fox_ess_h3_hybrid_inverter.pv2_current;
+            float current_sum = fox_ess_h3_ac3_hybrid_inverter.pv1_current
+                              + fox_ess_h3_ac3_hybrid_inverter.pv2_current;
 
-            float power_sum = fox_ess_h3_hybrid_inverter.pv1_power
-                            + fox_ess_h3_hybrid_inverter.pv2_power;
+            float power_sum = fox_ess_h3_ac3_hybrid_inverter.pv1_power
+                            + fox_ess_h3_ac3_hybrid_inverter.pv2_power;
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
@@ -2576,52 +2576,52 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
-    else if (is_solaredge_battery_meter()) {
-        if (register_start_address == SolaredgeBatteryAddress::Battery1AverageTemperature) {
-            solaredge.battery_1_temperature = value;
+    else if (is_solaredge_inverter_battery_meter()) {
+        if (register_start_address == SolaredgeInverterBatteryAddress::Battery1AverageTemperature) {
+            solaredge_inverter.battery_1_temperature = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1InstantaneousVoltage) {
-            solaredge.battery_1_voltage = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousVoltage) {
+            solaredge_inverter.battery_1_voltage = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1InstantaneousCurrent) {
-            solaredge.battery_1_current = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousCurrent) {
+            solaredge_inverter.battery_1_current = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1InstantaneousPower) {
-            solaredge.battery_1_power = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1InstantaneousPower) {
+            solaredge_inverter.battery_1_power = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1LifetimeExportEnergyCounter) {
-            solaredge.battery_1_export_energy = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1LifetimeExportEnergyCounter) {
+            solaredge_inverter.battery_1_export_energy = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1LifetimeImportEnergyCounter) {
-            solaredge.battery_1_import_energy = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1LifetimeImportEnergyCounter) {
+            solaredge_inverter.battery_1_import_energy = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery1StateOfEnergy) {
-            solaredge.battery_1_state_of_charge = value;
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery1StateOfEnergy) {
+            solaredge_inverter.battery_1_state_of_charge = value;
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2AverageTemperature) {
-            value = nan_safe_sum(solaredge.battery_1_temperature, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2AverageTemperature) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_temperature, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2InstantaneousVoltage) {
-            value = nan_safe_avg(solaredge.battery_1_voltage, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousVoltage) {
+            value = nan_safe_avg(solaredge_inverter.battery_1_voltage, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2InstantaneousCurrent) {
-            value = nan_safe_sum(solaredge.battery_1_current, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousCurrent) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_current, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2InstantaneousPower) {
-            value = nan_safe_sum(solaredge.battery_1_power, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousPower) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_power, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2LifetimeExportEnergyCounter) {
-            value = nan_safe_sum(solaredge.battery_1_export_energy, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2LifetimeExportEnergyCounter) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_export_energy, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2LifetimeImportEnergyCounter) {
-            value = nan_safe_sum(solaredge.battery_1_import_energy, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2LifetimeImportEnergyCounter) {
+            value = nan_safe_sum(solaredge_inverter.battery_1_import_energy, value);
         }
-        else if (register_start_address == SolaredgeBatteryAddress::Battery2StateOfEnergy) {
-            value = nan_safe_avg(solaredge.battery_1_state_of_charge, value);
+        else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2StateOfEnergy) {
+            value = nan_safe_avg(solaredge_inverter.battery_1_state_of_charge, value);
         }
     }
-    else if (is_e3dc_pv_meter()) {
-        if (register_start_address == E3DCPVAddress::PVPower) {
+    else if (is_e3dc_hauskraftwerk_pv_meter()) {
+        if (register_start_address == E3DCHauskraftwerkPVAddress::PVPower) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }

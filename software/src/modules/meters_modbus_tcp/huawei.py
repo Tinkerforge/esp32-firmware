@@ -1,7 +1,7 @@
 table_prototypes = [
-    ('Huawei SUN2000', ['virtual_meter', 'device_address']),
-    ('Huawei SUN2000 Smart Dongle', ['virtual_meter', 'device_address']),
-    ('Huawei EMMA', ['virtual_meter', 'device_address']),
+    ('Huawei SUN2000', ['device_address', 'virtual_meter']),
+    ('Huawei SUN2000 Smart Dongle', ['device_address', 'virtual_meter']),
+    ('Huawei EMMA', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [

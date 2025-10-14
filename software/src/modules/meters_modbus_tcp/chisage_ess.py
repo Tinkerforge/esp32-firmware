@@ -1,5 +1,5 @@
 table_prototypes = [
-    ('Chisage ESS Hybrid Inverter', ['virtual_meter', 'device_address']),
+    ('Chisage ESS Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
