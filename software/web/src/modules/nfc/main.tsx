@@ -129,6 +129,14 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                 unauth_seen_tags.push(seen_tags[i]);
             }
 
+        const injectedTag = seen_tags[seen_tags.length - 1];
+        if (injectedTag && injectedTag.last_seen != 0) {
+            const idx = auth_seen_tags.findIndex((t) => t.tag_id == injectedTag.tag_id && t.tag_type == injectedTag.tag_type);
+            if (idx != -1 && auth_seen_tags[idx].last_seen > injectedTag.last_seen) {
+                auth_seen_tags[idx] = injectedTag;
+            }
+        }
+
         return (
             <SubPage name="nfc">
                 <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
