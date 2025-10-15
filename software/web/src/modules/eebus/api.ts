@@ -76,6 +76,11 @@ export interface usecases {
         standby_power: number;
         standby_mode: number;
     }
+    evse_commissioning_and_configuration: {
+        evse_failure: boolean;
+        evse_failure_description: string;
+    }
+
 }
 
 export interface scan {

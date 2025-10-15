@@ -427,12 +427,12 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
 }
 
 
-EvseEntity::EvseEntity()
+ChargingSummaryEntity::ChargingSummaryEntity()
 {
     update_api();
 #ifdef EEBUS_DEV_TEST_ENABLE
     task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating EvseEntity");
+                                    logger.printfln("EEBUS Usecase test enabled. Updating ChargingSummary");
                                     update_billing_data(1, 299921_s, 3242662_s, 245233, 1242, 75, 90, 25, 10);
                                     update_billing_data(2, 5622123_s, 5655611_s, 23677, 1242, 50, 100, 50, 0);
 
@@ -441,7 +441,7 @@ EvseEntity::EvseEntity()
 #endif
 }
 
-UseCaseInformationDataType EvseEntity::get_usecase_information()
+UseCaseInformationDataType ChargingSummaryEntity::get_usecase_information()
 {
     UseCaseInformationDataType evcs_usecase;
     evcs_usecase.actor = "EVSE"; // The actor can either be EVSE or Energy Broker but we support only EVSE
@@ -461,7 +461,7 @@ UseCaseInformationDataType EvseEntity::get_usecase_information()
     return evcs_usecase;
 }
 
-CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType ChargingSummaryEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == bill_feature_address) {
         return bill_feature(header, data, response, connection);
@@ -470,7 +470,7 @@ CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHa
     return CmdClassifierType::EnumUndefined;
 }
 
-std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvseEntity::get_detailed_discovery_entity_information() const
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> ChargingSummaryEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
@@ -482,7 +482,7 @@ std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvseEntity::ge
     return {entity};
 }
 
-std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::get_detailed_discovery_feature_information() const
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ChargingSummaryEntity::get_detailed_discovery_feature_information() const
 {
     NodeManagementDetailedDiscoveryFeatureInformationType feature{};
 
@@ -517,7 +517,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
     return features;
 }
 
-void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
+void ChargingSummaryEntity::update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
 {
     if (id > 8 || id < 1) {
         eebus.trace_fmtln("Billing ID %d is out of range. Must be between 1 and 8", id);
@@ -543,7 +543,7 @@ void EvseEntity::update_billing_data(int id, seconds_t start_time, seconds_t end
 }
 
 
-BillListDataType EvseEntity::get_bill_list_data() const
+BillListDataType ChargingSummaryEntity::get_bill_list_data() const
 {
     BillListDataType bill_list_data{};
     for (BillEntry entry : bill_entries) {
@@ -598,7 +598,7 @@ BillListDataType EvseEntity::get_bill_list_data() const
     return bill_list_data;
 }
 
-CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType ChargingSummaryEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     //TODO: Support partial reads, writes and deletes
     if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
@@ -639,7 +639,7 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
     return CmdClassifierType::EnumUndefined;
 }
 
-void EvseEntity::update_api() const
+void ChargingSummaryEntity::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("charging_summary");
     api_entry->removeAll();
@@ -651,8 +651,8 @@ void EvseEntity::update_api() const
         auto api_bill_entry = api_entry->get(i++);
         api_bill_entry->get("id")->updateUint(bill_entry.id);
         uint32_t charged_kwh = bill_entry.energy_wh;
-        api_bill_entry->get("charged_kwh")->updateFloat(charged_kwh / 1000.0);
-        api_bill_entry->get("cost")->updateFloat(bill_entry.cost_eur_cent / 100.0);
+        api_bill_entry->get("charged_kwh")->updateFloat(static_cast<float>(charged_kwh) / 1000.0f);
+        api_bill_entry->get("cost")->updateFloat(static_cast<float>(bill_entry.cost_eur_cent) / 100.0f);
         api_bill_entry->get("start_time")->updateUint(bill_entry.start_time.as<uint32_t>()); // TODO: Fix this time type later
         api_bill_entry->get("duration")->updateUint(bill_entry.end_time.as<uint32_t>() - bill_entry.start_time.as<uint32_t>());
 
@@ -1079,6 +1079,157 @@ DeviceDiagnosisStateDataType EvEntity::generate_state() const
         state.operatingState = DeviceDiagnosisOperatingStateEnumType::normalOperation;
     }
     return state;
+}
+
+EvseEntity::EvseEntity()
+{
+#ifdef EEBUS_DEV_TEST_ENABLE
+    task_scheduler.scheduleOnce([this]() {
+                                    logger.printfln("EEBUS Usecase test enabled. Updating EvseEntity with a test error");
+                                    update_operating_state(true, "This is a test error message");
+
+                                },
+                                50_s);
+    task_scheduler.scheduleOnce([this]() {
+                                    logger.printfln("EEBUS Usecase test enabled. Updating EvseEntity to normal operation");
+                                    update_operating_state(false, "This is a test error message. It should not be shown");
+
+                                },
+                                200_s);
+#endif
+}
+
+CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
+            response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
+            response["deviceDiagnosisStateData"] = generate_state();
+            return CmdClassifierType::reply;
+        }
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
+                                                 "Command not supported on this entity");
+        return CmdClassifierType::result;
+    }
+    EEBUS_USECASE_HELPERS::build_result_data(response,
+                                             EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
+                                             "Only Reads supported on this entity");
+    return CmdClassifierType::result;
+}
+
+UseCaseInformationDataType EvseEntity::get_usecase_information()
+{
+    UseCaseInformationDataType evse_usecase;
+    evse_usecase.actor = "EVSE";
+
+    UseCaseSupportType evse_usecase_support;
+    evse_usecase_support.useCaseName = "evseCommissioningAndConfiguration";
+    evse_usecase_support.useCaseVersion = "1.0.1";
+    evse_usecase_support.useCaseAvailable = true;
+    evse_usecase_support.scenarioSupport->push_back(1);
+    evse_usecase_support.scenarioSupport->push_back(2);
+    evse_usecase_support.useCaseDocumentSubRevision = "release";
+    evse_usecase.useCaseSupport->push_back(evse_usecase_support);
+
+    FeatureAddressType evcs_usecase_feature_address;
+    evcs_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    evcs_usecase_feature_address.entity = entity_address;
+    evse_usecase.address = evcs_usecase_feature_address;
+    return evse_usecase;
+}
+
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> EvseEntity::get_detailed_discovery_entity_information() const
+{
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EVSE;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "EVSE"; // The label of the entity. This is optional but recommended.
+
+    // We focus on returning the mandatory fields.
+    return {entity};
+}
+
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::get_detailed_discovery_feature_information() const
+{
+
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+
+    // The following functions are needed by the DeviceClassification Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_classification{};
+    device_classification.description->featureAddress->entity = entity_address;
+    device_classification.description->featureAddress->feature = feature_address_device_classification;
+    device_classification.description->featureType = FeatureTypeEnumType::DeviceClassification;
+    device_classification.description->role = RoleType::server;
+
+    // deviceClassificationManufacturerData
+    FunctionPropertyType device_configuration_description{};
+    device_configuration_description.function = FunctionEnumType::deviceClassificationManufacturerData;
+    device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
+    device_classification.description->supportedFunction->push_back(device_configuration_description);
+    features.push_back(device_classification);
+
+    // The following functions are needed by the DeviceDiagnosis Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType device_diagnosis{};
+    device_diagnosis.description->featureAddress->entity = entity_address;
+    device_diagnosis.description->featureAddress->feature = feature_address_device_diagnosis;
+    device_diagnosis.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    device_diagnosis.description->role = RoleType::server;
+
+    //identificationListData
+    FunctionPropertyType device_diagnosis_state{};
+    device_diagnosis_state.function = FunctionEnumType::deviceDiagnosisStateData;
+    device_diagnosis_state.possibleOperations->read = PossibleOperationsReadType{};
+    device_diagnosis.description->supportedFunction->push_back(device_diagnosis_state);
+    features.push_back(device_diagnosis);
+
+    return features;
+}
+
+void EvseEntity::update_operating_state(bool failure, const String &error_message)
+{
+    if (failure) {
+        operating_state = DeviceDiagnosisOperatingStateEnumType::failure;
+        last_error_message = error_message.c_str();
+    } else {
+        operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
+        last_error_message = "";
+    }
+    auto state = generate_state();
+    eebus.usecases->inform_subscribers(entity_address, feature_address_device_diagnosis, state, "deviceDiagnosisStateData");
+    update_api();
+}
+
+DeviceDiagnosisStateDataType EvseEntity::generate_state() const
+{
+    DeviceDiagnosisStateDataType state{};
+    state.lastErrorCode = last_error_message;
+    state.operatingState = operating_state;
+    return state;
+}
+
+DeviceClassificationManufacturerDataType EvseEntity::generate_manufacturer_description()
+{
+
+    DeviceClassificationManufacturerDataType manufacturer{};
+    manufacturer.deviceName = eebus.get_eebus_name().c_str();
+    manufacturer.deviceCode = OPTIONS_PRODUCT_NAME_USER_AGENT();
+    manufacturer.vendorName = OPTIONS_MANUFACTURER_FULL();
+    manufacturer.vendorCode = OPTIONS_HOSTNAME_PREFIX();
+    manufacturer.brandName = OPTIONS_CONFIG_TYPE();
+    manufacturer.manufacturerLabel = OPTIONS_MANUAL_URL();
+    return manufacturer;
+}
+
+void EvseEntity::update_api() const
+{
+    auto api_entry = eebus.eebus_usecase_state.get("evse_commissioning_and_configuration");
+    api_entry->get("evse_failure")->updateBool(operating_state != DeviceDiagnosisOperatingStateEnumType::normalOperation);
+    api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }
 
 ControllableSystemEntity::ControllableSystemEntity()
@@ -1645,12 +1796,11 @@ EEBusUseCases::EEBusUseCases()
     // Entity Addresses have to be unique
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
-    //charging_summary = EvseEntity();
     charging_summary.set_entity_address({1});
-    //limitation_of_power_consumption = ControllableSystemEntity();
     limitation_of_power_consumption.set_entity_address({2});
-    //ev_commissioning_and_configuration = EvEntity();
     ev_commissioning_and_configuration.set_entity_address({1, 1}); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
+    evse_commissioning_and_configuration.set_entity_address({3});
+
     initialized = true; // set to true, otherwise subscriptions will not work
 }
 

@@ -177,6 +177,10 @@ void EEBus::pre_setup()
                  {"maximum_power", Config::Uint16(0)},
                  {"standby_power", Config::Uint16(0)},
                  {"standby_mode", Config::Bool(false)}
+             })},
+            {"evse_commissioning_and_configuration", Config::Object({
+                 {"evse_failure", Config::Bool(false)},
+                 {"evse_failure_description", Config::Str("", 0, 64)}
              })}
         }
         );
