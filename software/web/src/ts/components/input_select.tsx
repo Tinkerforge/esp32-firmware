@@ -23,13 +23,36 @@ import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
 export interface InputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
-    idContext?: Context<string>
-    items: ([string, [string, string][]]|[string, string])[];
+    idContext?: Context<string>;
+    items: ([string, [number | string, string][]]|[number | string, string])[];
     onValue?: (value: string) => void;
     placeholder?: string;
     className?: string;
     style?: string;
     invalidFeedback?: string;
+}
+
+function find_value(value: InputSelectProps["value"], items: InputSelectProps["items"]) {
+    for (let i = 0; i < items.length; ++i) {
+        let item = items[i];
+        if (typeof(item[1]) == "string" && item[0] == value) {
+            return true;
+        } else {
+            for (let i = 0; i < item[1].length; ++i) {
+                let subitem = item[1][i];
+                if (subitem[0] == value)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+function item_to_option(item: [string | number, string]) {
+    if (typeof(item[0]) == "string")
+        return <option value={item[0].endsWith("disabled") ? "" : item[0]} key={item[0]} disabled={item[0].endsWith("disabled")}>{item[1]}</option>
+    else
+        return <option value={item[0]} key={item[0]}>{item[1]}</option>
 }
 
 export function InputSelect(props: InputSelectProps) {
@@ -38,15 +61,7 @@ export function InputSelect(props: InputSelectProps) {
     const id = !idContext ? useId() : useContext(idContext);
 
     if (placeholder) {
-        let found = false;
-
-        for (let i = 0; i < items.length; ++i) {
-            if (items[i][0] == value) {
-                found = true;
-            }
-        }
-
-        if (!found) {
+        if (!find_value(value, items)) {
             // if value is not found make sure to show the
             // placeholder instead of an empty input field
             value = "";
@@ -62,10 +77,10 @@ export function InputSelect(props: InputSelectProps) {
     for (let i = 0; i < items.length; ++i) {
         let item = items[i];
         if (typeof(item[1]) == "string") {
-            select_items.push(<option value={item[0].endsWith("disabled") ? "" : item[0]} key={item[0]} disabled={item[0].endsWith("disabled")}>{item[1]}</option>)
+            select_items.push(item_to_option(item as [string | number, string]))
         } else {
-            let subitems = item[1].map((k) => <option value={k[0].endsWith("disabled") ? "" : k[0]} key={k[0]} disabled={k[0].endsWith("disabled")}>{k[1]}</option>)
-            select_items.push(<optgroup label={item[0]}>{subitems}</optgroup>)
+            let subitems = item[1].map(k => item_to_option(k))
+            select_items.push(<optgroup label={item[0] as string}>{subitems}</optgroup>)
         }
     }
 
