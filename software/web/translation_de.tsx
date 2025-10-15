@@ -106,6 +106,10 @@ let x = {
             "debug_done": "Abgeschlossen.",
             "debug_start": "Start",
             "debug_stop": "Stop + Download"
+        },
+        "uplot": {
+            "fullscreen": "Vollbild",
+            "fullscreen_chart": "Vollbild-Chart"
         }
     },
     "util": {
