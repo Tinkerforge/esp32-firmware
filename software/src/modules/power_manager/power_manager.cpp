@@ -35,6 +35,8 @@
 
 #define METER_SLOT_BATTERY_NO_BATTERY (255)
 
+static constexpr micros_t PHASE_SWITCH_TIMEOUT = 2_min;
+
 void PowerManager::pre_setup()
 {
     // States
@@ -496,48 +498,7 @@ void PowerManager::register_urls()
 #endif
 
         api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &errmsg) {
-            if (!phase_switcher_backend->is_external_control_allowed()) {
-                const char *msg = "Ignoring external control phase change request: External control is not enabled.";
-                logger.printfln("%s", msg);
-                errmsg = msg;
-                return;
-            }
-
-            switch (phase_switcher_backend->get_phase_switching_state()) {
-                case PhaseSwitcherBackend::SwitchingState::Error: {
-                    const char *msg = "Ignoring external control phase change request: Phase switching in error state.";
-                    logger.printfln("%s", msg);
-                    errmsg = msg;
-                    return;
-                }
-                case PhaseSwitcherBackend::SwitchingState::Busy: {
-                    const char *msg = "Ignoring external control phase change request: Phase switching in progress.";
-                    logger.printfln("%s", msg);
-                    errmsg = msg;
-                    return;
-                }
-                case PhaseSwitcherBackend::SwitchingState::Ready:
-                    // All good, proceed.
-                    break;
-                default:
-                    esp_system_abort("Unexpected value of phase_switcher_backend->get_phase_switching_state()");
-            }
-
-            uint32_t phases_wanted = external_control_update.get("phases_wanted")->asUint();
-            uint32_t phases_last = this->external_control.get("phases_wanted")->asUint();
-            uint32_t phases_current = this->get_phases();
-
-            if (phases_wanted == phases_last && phases_wanted == phases_current) {
-                logger.printfln("Ignoring external control phase change request: Value is already %lu.", phases_wanted);
-                return;
-            }
-
-            this->external_control.get("phases_wanted")->updateUint(phases_wanted);
-            logger.printfln("External control phase change request: switching to %lu", phases_wanted);
-
-            if (phase_switcher_backend->switch_phases(phases_wanted)) {
-                state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
-            }
+            this->switch_phases(external_control_update.get("phases_wanted")->asUint(), errmsg, true);
         }, true);
 
         task_scheduler.scheduleWithFixedDelay([this](){
@@ -1192,6 +1153,53 @@ uint32_t PowerManager::get_phase_switching_mode() const
 uint32_t PowerManager::get_phases() const
 {
     return phase_switcher_backend->get_phases();
+}
+
+void PowerManager::switch_phases(uint32_t phases_wanted, String &errmsg, bool log) {
+    if (!phase_switcher_backend->is_external_control_allowed()) {
+        const char *msg = "Ignoring external control phase change request: External control is not enabled.";
+        if (log) { logger.printfln("%s", msg); }
+        errmsg = msg;
+        return;
+    }
+
+    uint32_t phases_last = this->external_control.get("phases_wanted")->asUint();
+
+    switch (phase_switcher_backend->get_phase_switching_state()) {
+        case PhaseSwitcherBackend::SwitchingState::Error: {
+            const char *msg = "Ignoring external control phase change request: Phase switching in error state.";
+            if (log) { logger.printfln("%s", msg); }
+            errmsg = msg;
+            return;
+        }
+        case PhaseSwitcherBackend::SwitchingState::Busy: {
+            if (phases_last != phases_wanted || deadline_elapsed(this->last_phase_switch_start + PHASE_SWITCH_TIMEOUT)) {
+                const char *msg = "Ignoring external control phase change request: Phase switching in progress.";
+                if (log) { logger.printfln("%s", msg); }
+                errmsg = msg;
+            }
+            return;
+        }
+        case PhaseSwitcherBackend::SwitchingState::Ready:
+            // All good, proceed.
+            break;
+        default:
+            esp_system_abort("Unexpected value of phase_switcher_backend->get_phase_switching_state()");
+    }
+
+    uint32_t phases_current = this->get_phases();
+
+    if (phases_wanted == phases_last && phases_wanted == phases_current) {
+        return;
+    }
+
+    this->external_control.get("phases_wanted")->updateUint(phases_wanted);
+    if (log) { logger.printfln("External control phase change request: switching to %lu", phases_wanted); }
+
+    if (phase_switcher_backend->switch_phases(phases_wanted)) {
+        this->last_phase_switch_start = now_us();
+        state.get("external_control")->updateUint(EXTERNAL_CONTROL_STATE_SWITCHING);
+    }
 }
 
 void PowerManager::print_trace_header() const {

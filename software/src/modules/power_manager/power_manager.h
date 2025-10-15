@@ -82,6 +82,8 @@ public:
     uint32_t get_phase_switching_mode() const;
     uint32_t get_phases() const;
 
+    void switch_phases(uint32_t phases_wanted, String &errmsg, bool log);
+
     [[gnu::const]] size_t get_debug_header_length() const override;
     void get_debug_header(StringBuilder *sb) override;
     [[gnu::const]] size_t get_debug_line_length() const override;
@@ -161,6 +163,8 @@ private:
 
     bool     printed_skipping_energy_update      = false;
     bool     printed_skipping_currents_update    = false;
+
+    micros_t last_phase_switch_start             = 0_us;
 
     int32_t max_current_limited_ma               = 0;
 
