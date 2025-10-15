@@ -24,6 +24,7 @@ The usecase names may have been shortened and the spec is referred to as much as
 EVCS -> Electric Vehicle Charging Summary. Implemented according to EEBUS_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
 LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
 EVCC -> EV Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVCommissioningAndConfiguration_V1.0.1.pdf
+EVSECC -> EVSE Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.0.pdf
 NMC -> Node Management and Control. Implemented according to EEBUS_SPINE_TS_ProtocolSpecification.pdf, technically nodemanagement is not a usecase but it behaves like one in many ways and is therefore implemented alongside
 
 Sometimes the following references are used e.g. LPC-905, these refer to rules laid out in the spec and can be found in the according technical spec.
@@ -37,6 +38,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_connection.h"
 #include "spine_types.h"
 #include "lpc_state.enum.h"
+#include "options.h"
 #include <string_view>
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
@@ -65,6 +67,7 @@ enum class UseCaseType : uint8_t
 /**
  * The basic Framework of a EEBUS Entity.
  * Each entity has one or multiple features.
+ * Should only be inherited and never be used directly.
  */
 class EebusEntity
 {
@@ -205,7 +208,7 @@ private:
 
 /**
  * The EEBUSChargingSummary Entity as defined in EEBus UC TS - EV Charging Summary V1.0.1.
- * TODO: This cannot be fully used until EVCS usecase is implemented. And need to figure out how this usecases works as documentation seems contratictory in parts.
+ * TODO: This cannot be fully used until EVCS usecase is implemented. And need to figure out how this usecases works as documentation seems contradictory in parts.
  */
 class ChargingSummaryEntity final : public EebusEntity
 {
@@ -275,7 +278,7 @@ private:
     };
 
     uint8_t bill_feature_address = 3;
-    // BillListDataType bill_list_data{}; // TODO: Store this differently in a list of limited size. Do not need this huge type
+
     BillEntry bill_entries[8]{};
 
     [[nodiscard]] BillListDataType get_bill_list_data() const;
@@ -418,11 +421,14 @@ private:
 
 };
 
-
+/**
+ * The EVSE Entity as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.1.
+ */
 class EvseEntity final : public EebusEntity
 {
 public:
     EvseEntity();
+
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::EvseCommissioningAndConfiguration;
@@ -467,10 +473,10 @@ private:
 /**
  * The Controllable System Entity as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
  */
-class ControllableSystemEntity final : public EebusEntity
+class PowerConsumptionLimitationEntity final : public EebusEntity
 {
 public:
-    ControllableSystemEntity();
+    PowerConsumptionLimitationEntity();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
@@ -653,12 +659,27 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
     NodeManagementEntity node_management{};
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
     ChargingSummaryEntity charging_summary{};
-    ControllableSystemEntity limitation_of_power_consumption{};
+    PowerConsumptionLimitationEntity limitation_of_power_consumption{};
     EvEntity ev_commissioning_and_configuration{};
     EvseEntity evse_commissioning_and_configuration{};
 
-    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration};
+    std::vector<EebusEntity *> entity_list{
+        &node_management,
+        &charging_summary,
+        &limitation_of_power_consumption,
+        &ev_commissioning_and_configuration,
+        &evse_commissioning_and_configuration
+    };
+#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
+    // TODO: Implement the power production limitation usecase
+
+    std::vector<EebusEntity *> entity_list{
+        &node_management,
+        &limitation_of_power_production
+    };
+#endif
 
 private:
     bool initialized = false;
