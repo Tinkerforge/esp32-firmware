@@ -86,7 +86,7 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
     }
 
     render() {
-        const fullscreen_mode = this.props.fullscreen_button_mode || 'button';
+        const fullscreen_mode = this.props.fullscreen_mode || 'button';
 
         return (
             <div
