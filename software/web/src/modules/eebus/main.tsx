@@ -359,7 +359,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                 </ConfigForm>
 
                 <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
-
+                    <p> This shows the current State of the EEBUS usecases as they are presented to other EEBUS Devices.
+                        For understanding the details of the usecases please refer to the EEBUS documentation.
+                        Some knowledge about the implemented usecases is recommended.</p>
 
                     <table class="table table-bordered table-sm">
                         <thead class="thead-light">
@@ -428,7 +430,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             </td>
                         </tr>
                         <tr>
-                            <td>Ev Commissioning and Configuration</td>
+                            <td>EV Commissioning and Configuration</td>
                             <td>
                                 <table class="table table-bordered table-sm mb-0">
                                     <tbody>
@@ -475,6 +477,31 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
                                                     ? __("eebus.content.yes")
                                                     : __("eebus.content.no")}</td>
+                                            </tr>
+                                        </>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>EVSE Commissioning and Configuration</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td>EVSE in failure state</td>
+                                        <td>
+                                            {state.usecases.evse_commissioning_and_configuration.evse_failure
+                                                ? __("eebus.content.yes")
+                                                : __("eebus.content.no")}
+                                        </td>
+                                    </tr>
+                                    {state.usecases.evse_commissioning_and_configuration.evse_failure && (
+                                        <>
+                                            <tr>
+                                                <td>Failure Message</td>
+                                                <td>{state.usecases.evse_commissioning_and_configuration.evse_failure_description}</td>
                                             </tr>
                                         </>
                                     )}

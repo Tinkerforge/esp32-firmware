@@ -40,7 +40,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include <string_view>
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
-#define EEBUS_USECASES_ACTIVE 4
+#define EEBUS_USECASES_ACTIVE 5
 
 // Configuration related to the LPC usecases
 // Comment out if subscription functionalities shall be disabled
@@ -58,6 +58,7 @@ enum class UseCaseType : uint8_t
     LimitationOfActivePowerConsumption,
     CoordinatedEvCharging,
     EvCommissioningAndConfiguration,
+    EvseCommissioningAndConfiguration,
     LimitationOfPowerProduction
 };
 
@@ -206,10 +207,10 @@ private:
  * The EEBUSChargingSummary Entity as defined in EEBus UC TS - EV Charging Summary V1.0.1.
  * TODO: This cannot be fully used until EVCS usecase is implemented. And need to figure out how this usecases works as documentation seems contratictory in parts.
  */
-class EvseEntity final : public EebusEntity
+class ChargingSummaryEntity final : public EebusEntity
 {
 public:
-    EvseEntity();
+    ChargingSummaryEntity();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
@@ -254,9 +255,9 @@ public:
      */
     void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
 
-    String get_entity_name() const override
+    [[nodiscard]] String get_entity_name() const override
     {
-        return "EvseEntity";
+        return "ChargingSummaryEntity";
     };
 
 private:
@@ -272,8 +273,9 @@ private:
         uint8_t self_produced_energy_percent;
         uint8_t self_produced_cost_percent;
     };
-    int bill_feature_address = 1;
-   // BillListDataType bill_list_data{}; // TODO: Store this differently in a list of limited size. Do not need this huge type
+
+    uint8_t bill_feature_address = 3;
+    // BillListDataType bill_list_data{}; // TODO: Store this differently in a list of limited size. Do not need this huge type
     BillEntry bill_entries[8]{};
 
     [[nodiscard]] BillListDataType get_bill_list_data() const;
@@ -376,11 +378,11 @@ private:
     bool ev_connected = false;
 
     // These can be freely assigned but need to be unique within the entity.
-    int feature_address_device_configuration = 101;
-    int feature_address_identification = 102;
-    int feature_address_device_classification = 103;
-    int feature_address_electrical_connection = 104;
-    int feature_address_device_diagnosis = 105;
+    uint8_t feature_address_device_configuration = 21;
+    uint8_t feature_address_identification = 22;
+    uint8_t feature_address_device_classification = 23;
+    uint8_t feature_address_electrical_connection = 24;
+    uint8_t feature_address_device_diagnosis = 25;
 
     // Server Data
     //DeviceDiagnosis
@@ -415,6 +417,52 @@ private:
     [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
 
 };
+
+
+class EvseEntity final : public EebusEntity
+{
+public:
+    EvseEntity();
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::EvseCommissioningAndConfiguration;
+    }
+
+    [[nodiscard]] String get_entity_name() const override
+    {
+        return "EvseEntity";
+    }
+
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.0. 3.1.2.
+    * @return
+    */
+    UseCaseInformationDataType get_usecase_information() override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    /**
+     * Update the operating state of the EVSE. As required by Scenario 2 of the Usecase. This will inform all subscribers of the new operating state.
+     * @param failure If the evse is in failure state or not. If true, the operating state will be set to "failure". If false, the operating state will be set to "normalOperation".
+     * @param error_message The message describing the failure. Only used if failure is true.
+     */
+    void update_operating_state(bool failure = false, const String &error_message = "");
+
+private:
+    // Feature Addresses
+    uint8_t feature_address_device_classification = 25;
+    uint8_t feature_address_device_diagnosis = 26;
+
+    // Server Data
+    DeviceDiagnosisOperatingStateEnumType operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
+    std::string last_error_message;
+    [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
+    static DeviceClassificationManufacturerDataType generate_manufacturer_description();
+
+    void update_api() const;
+};
+
 
 /**
  * The Controllable System Entity as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
@@ -535,10 +583,10 @@ private:
     void update_api();
 
     // These can be freely assigned but need to be unique within the entity.
-    int loadControl_feature_address = 10;
-    int deviceConfiguration_feature_address = 20;
-    int deviceDiagnosis_feature_address = 30;
-    int electricalConnection_feature_address = 40;
+    int loadControl_feature_address = 5;
+    int deviceConfiguration_feature_address = 6;
+    int deviceDiagnosis_feature_address = 7;
+    int electricalConnection_feature_address = 8;
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -589,7 +637,7 @@ public:
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
     template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char* function_name);
+    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char *function_name);
 
     /**
      * Send a message to a spine destination.
@@ -605,11 +653,12 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
     NodeManagementEntity node_management{};
-    EvseEntity charging_summary{};
+    ChargingSummaryEntity charging_summary{};
     ControllableSystemEntity limitation_of_power_consumption{};
     EvEntity ev_commissioning_and_configuration{};
+    EvseEntity evse_commissioning_and_configuration{};
 
-    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration};
+    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration};
 
 private:
     bool initialized = false;
