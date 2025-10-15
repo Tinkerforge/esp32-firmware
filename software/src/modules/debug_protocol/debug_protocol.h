@@ -23,6 +23,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "tools.h"
 
 class IDebugProtocolBackend;
 
@@ -37,5 +38,9 @@ public:
 
     micros_t debug_keep_alive_until = 0_us;
     uint64_t debug_task_id = 0;
-    std::vector<IDebugProtocolBackend *> backends;
+
+    // There are currently only 4 implementors of IDebugProtocolBackend:
+    // evse_common, em_v1,v2 and power_manager;
+    // em_v1 and em_v2 are mutually exclusive.
+    CoolArray<IDebugProtocolBackend *, 3> backends;
 };
