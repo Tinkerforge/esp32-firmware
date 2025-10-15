@@ -190,8 +190,8 @@ constexpr size_t constexpr_strlen(const char *s) {
 }
 
 template<typename T, size_t capacity_>
-struct FixedStackVector {
-    FixedStackVector() {}
+struct CoolArray {
+    CoolArray() {}
 
     T &operator[](size_t pos) {return val[pos];}
     const T &operator[](size_t pos) const {return val[pos];}

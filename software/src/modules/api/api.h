@@ -109,7 +109,7 @@ public:
 
     struct SuffixPath {
         std::unique_ptr<char[]> suffix;
-        FixedStackVector<Config::Key, Config::MAX_NESTING> path;
+        CoolArray<Config::Key, Config::MAX_NESTING> path;
     };
 
     API() = default;
