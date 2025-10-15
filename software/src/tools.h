@@ -203,7 +203,7 @@ struct CoolArray {
 
     bool add(T &&elem) {
         if (used >= capacity_)
-             return false;
+            esp_system_abort("CoolArray was full!");
 
         val[used] = elem;
         ++used;
