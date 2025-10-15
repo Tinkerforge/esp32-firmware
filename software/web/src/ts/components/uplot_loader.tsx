@@ -19,7 +19,7 @@
 
 import { h, Fragment, Component, ComponentChildren, createRef, cloneElement } from "preact";
 import { Modal, Button } from "react-bootstrap";
-import { Maximize } from "react-feather";
+import { Maximize, Maximize2 } from "react-feather";
 import { __ } from "../../ts/translation";
 
 interface UplotLoaderProps {
@@ -31,6 +31,7 @@ interface UplotLoaderProps {
     fullscreen_allow?: boolean;
     fullscreen_title?: string;
     fullscreen_aspect_ratio?: number;
+    fullscreen_mode?: 'button' | 'click';
 }
 
 export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: boolean}> {
@@ -85,8 +86,13 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
     }
 
     render() {
+        const fullscreen_mode = this.props.fullscreen_button_mode || 'button';
+
         return (
-            <>
+            <div
+                style={fullscreen_mode === 'click' ? "cursor: pointer;" : undefined}
+                onClick={fullscreen_mode === 'click' ? () => this.setState({show_fullscreen: true}) : undefined}
+            >
                 <div ref={this.no_data_ref} style={`position: absolute; width: 100%; height: 100%; visibility: hidden; display: ${this.props.show ? 'flex' : 'none'};`}>
                     <span class={this.props.marker_class} style="margin: auto;">{this.props.no_data}</span>
                 </div>
@@ -94,8 +100,8 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
                     <span class={this.props.marker_class} style="margin: auto;">{this.props.loading}</span>
                 </div>
 
-                { // Fullscreen Button
-                this.props.fullscreen_allow && (
+                { // Fullscreen button
+                this.props.fullscreen_allow && ((fullscreen_mode === 'button' && (
                     <Button
                         variant="outline-secondary"
                         size="sm"
@@ -106,7 +112,15 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
                     >
                         <Maximize />
                     </Button>
-                )}
+                )) || (fullscreen_mode === 'click' && (
+                    <div
+                        className="position-absolute"
+                        style="top: 0px; right: 0px; z-index: 10;"
+                        onClick={() => this.setState({show_fullscreen: true})}
+                    >
+                        <Maximize2 size={12} />
+                    </div>
+                )))}
 
                 {this.props.children}
 
@@ -133,7 +147,7 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
                         </Modal.Body>
                     </Modal>
                 )}
-            </>
+            </div>
         );
     }
 }
