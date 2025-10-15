@@ -117,7 +117,6 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
                         onHide={() => this.setState({show_fullscreen: false})}
                         size="xl"
                         centered
-                        dialogClassName="modal-fullscreen-chart"
                     >
                         <Modal.Header {...{closeButton: true} as any}>
                             <Modal.Title>{this.props.fullscreen_title || __("component.uplot.fullscreen_chart")}</Modal.Title>
