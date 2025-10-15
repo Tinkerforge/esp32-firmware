@@ -756,14 +756,12 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
                     }
                 } break;
             case 3100: REQUIRE(phase_switch); {
-                    if (cache->power_manager_state->get("external_control")->asUint() == 0) {
-                        String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
-                            {"phases_wanted", val.u}
-                        }});
-                        if (!err.isEmpty()) {
-                            logger.printfln("Failed to switch phases: %s", err.c_str());
-                        }
-                    }
+#if MODULE_POWER_MANAGER_AVAILABLE()
+                    String errmsg;
+                    power_manager.switch_phases(val.u, errmsg, false);
+                    if (!errmsg.isEmpty())
+                        logger.printfln("Failed to switch phases: %s", errmsg.c_str());
+#endif
                 } break;
 
             default: report_illegal_data_address = true;
@@ -873,14 +871,12 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
 
             case 5050: break; // We don't support setting the phase switch communication channel.
             case 5052: REQUIRE(phase_switch); {
-                    if (cache->power_manager_state->get("external_control")->asUint() == 0) {
-                        String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
-                            {"phases_wanted", val == 1 ? 3 : 1}
-                        }});
-                        if (!err.isEmpty()) {
-                            logger.printfln("Failed to switch phases: %s", err.c_str());
-                        }
-                    }
+#if MODULE_POWER_MANAGER_AVAILABLE()
+                    String errmsg;
+                    power_manager.switch_phases(val == 1 ? 3 : 1, errmsg, false);
+                    if (!errmsg.isEmpty())
+                        logger.printfln("Failed to switch phases: %s", errmsg.c_str());
+#endif
                 } break;
 
             default: if(this->send_illegal_data_address) {
