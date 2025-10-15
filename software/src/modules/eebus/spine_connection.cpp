@@ -66,8 +66,9 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
     eebus.trace_jsonln(payload);
-    // so i spent 4 hours on this and for some reason the pointers to sender and receivers are nullpointers in about 1/5 restarts but if i print them here its fine.
+    // so i spent 4 hours on this and for some reason the pointers to sender and receivers seem to be nullpointers in about 1/5 restarts but if i print them here its fine mostly.
     logger.printfln("This needs to be here otherwise it crashes for some reason. Pointer sender: %p, Pointer Receiver: %p", &sender, &receiver);
+
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
     HeaderType header{};
     header.ackRequest = require_ack;

@@ -19,11 +19,12 @@
 
 #include "eebus_usecases.h"
 
-#include "eebus.h"
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "ship_types.h"
 #include "tools.h"
+#include "eebus.h"
 #include <chrono>
 #include <regex>
 #include <utility>
@@ -1232,7 +1233,7 @@ void EvseEntity::update_api() const
     api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }
 
-ControllableSystemEntity::ControllableSystemEntity()
+PowerConsumptionLimitationEntity::PowerConsumptionLimitationEntity()
 {
     task_scheduler.scheduleOnce([this]() {
                                     // Initialize DeviceConfiguration feature
@@ -1267,7 +1268,7 @@ ControllableSystemEntity::ControllableSystemEntity()
 
 }
 
-UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
+UseCaseInformationDataType PowerConsumptionLimitationEntity::get_usecase_information()
 {
     UseCaseInformationDataType lpc_usecase;
     lpc_usecase.actor = "Controllable System";
@@ -1290,7 +1291,7 @@ UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
     return lpc_usecase;
 }
 
-CmdClassifierType ControllableSystemEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType PowerConsumptionLimitationEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == loadControl_feature_address) {
         return load_control_feature(header, data, response, connection);
@@ -1308,7 +1309,7 @@ CmdClassifierType ControllableSystemEntity::handle_message(HeaderType &header, S
     return CmdClassifierType::EnumUndefined;
 }
 
-std::vector<NodeManagementDetailedDiscoveryEntityInformationType> ControllableSystemEntity::get_detailed_discovery_entity_information() const
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> PowerConsumptionLimitationEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
@@ -1320,7 +1321,7 @@ std::vector<NodeManagementDetailedDiscoveryEntityInformationType> ControllableSy
     return {entity};
 }
 
-std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableSystemEntity::get_detailed_discovery_feature_information() const
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> PowerConsumptionLimitationEntity::get_detailed_discovery_feature_information() const
 {
 
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
@@ -1400,7 +1401,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     return features;
 }
 
-void ControllableSystemEntity::update_failsafe(int power_limit_w, seconds_t duration)
+void PowerConsumptionLimitationEntity::update_failsafe(int power_limit_w, seconds_t duration)
 {
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData.emplace();
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->clear();
@@ -1433,7 +1434,7 @@ void ControllableSystemEntity::update_failsafe(int power_limit_w, seconds_t dura
     // TODO: Inform Subscribers
 }
 
-void ControllableSystemEntity::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
+void PowerConsumptionLimitationEntity::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
 {
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->clear();
 
@@ -1462,7 +1463,7 @@ void ControllableSystemEntity::update_constraints(int power_consumption_max_w, i
 
 }
 
-bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
+bool PowerConsumptionLimitationEntity::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
 {
 
     load_control_limit_description_list.loadControlLimitDescriptionData.reset();
@@ -1527,7 +1528,7 @@ bool ControllableSystemEntity::update_lpc(bool limit_active, int current_limit_w
     return limit_accepted;
 }
 
-CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType PowerConsumptionLimitationEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
@@ -1561,7 +1562,7 @@ CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &hea
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType PowerConsumptionLimitationEntity::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
@@ -1587,7 +1588,7 @@ CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderTy
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType PowerConsumptionLimitationEntity::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
@@ -1662,7 +1663,7 @@ CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType 
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType PowerConsumptionLimitationEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
         response["electricalConnectionCharacteristicListData"] = electrical_connection_characteristic_list;
@@ -1671,7 +1672,7 @@ CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderT
     return CmdClassifierType::EnumUndefined;
 }
 
-bool ControllableSystemEntity::switch_state(LPCState state)
+bool PowerConsumptionLimitationEntity::switch_state(LPCState state)
 {
     bool state_chaged = false;
     switch (state) {
@@ -1700,7 +1701,7 @@ bool ControllableSystemEntity::switch_state(LPCState state)
     return state_chaged;
 }
 
-bool ControllableSystemEntity::init_state()
+bool PowerConsumptionLimitationEntity::init_state()
 {
     task_scheduler.cancel(state_change_timeout);
     state_change_timeout = task_scheduler.scheduleOnce(
@@ -1714,7 +1715,7 @@ bool ControllableSystemEntity::init_state()
 
 }
 
-bool ControllableSystemEntity::unlimited_controlled_state()
+bool PowerConsumptionLimitationEntity::unlimited_controlled_state()
 {
     if (lpc_state == LPCState::Init || lpc_state == LPCState::Limited || lpc_state == LPCState::Failsafe || lpc_state == LPCState::UnlimitedAutonomous) {
         lpc_state = LPCState::UnlimitedControlled;
@@ -1727,7 +1728,7 @@ bool ControllableSystemEntity::unlimited_controlled_state()
     return false;
 }
 
-bool ControllableSystemEntity::limited_state()
+bool PowerConsumptionLimitationEntity::limited_state()
 {
     if (lpc_state == LPCState::Init || lpc_state == LPCState::UnlimitedControlled || lpc_state == LPCState::UnlimitedAutonomous || lpc_state == LPCState::Failsafe) {
         lpc_state = LPCState::Limited;
@@ -1739,7 +1740,7 @@ bool ControllableSystemEntity::limited_state()
     return false;
 }
 
-bool ControllableSystemEntity::failsafe_state()
+bool PowerConsumptionLimitationEntity::failsafe_state()
 {
     if (lpc_state == LPCState::UnlimitedControlled || lpc_state == LPCState::Limited) {
         lpc_state = LPCState::Failsafe;
@@ -1756,7 +1757,7 @@ bool ControllableSystemEntity::failsafe_state()
     return false;
 }
 
-bool ControllableSystemEntity::unlimited_autonomous_state()
+bool PowerConsumptionLimitationEntity::unlimited_autonomous_state()
 {
     if (lpc_state == LPCState::Init || lpc_state == LPCState::Failsafe) {
         lpc_state = LPCState::UnlimitedAutonomous;
@@ -1768,7 +1769,7 @@ bool ControllableSystemEntity::unlimited_autonomous_state()
     return false;
 }
 
-void ControllableSystemEntity::update_api()
+void PowerConsumptionLimitationEntity::update_api()
 {
     auto api_entry = eebus.eebus_usecase_state.get("power_consumption_limitation");
     api_entry->get("usecase_state")->updateEnum(lpc_state);
@@ -1781,7 +1782,7 @@ void ControllableSystemEntity::update_api()
 
 }
 
-void ControllableSystemEntity::handle_heartbeat_timeout()
+void PowerConsumptionLimitationEntity::handle_heartbeat_timeout()
 {
     if (heartbeat_received)
         return;
