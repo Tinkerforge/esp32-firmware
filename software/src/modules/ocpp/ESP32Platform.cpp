@@ -42,6 +42,7 @@
 #include "mvid_to_measurand.h"
 
 static bool feature_evse = false;
+static bool feature_phase_switch = false;
 #define REQUIRE_FEATURE(x, default_val) do { if (!feature_##x && !api.hasFeature(#x)) { return default_val; } feature_##x = true;} while(0)
 
 void(*recv_cb)(char *, size_t, void *) = nullptr;
@@ -675,6 +676,21 @@ void platform_set_charging_current(int32_t connectorId, uint32_t milliAmps)
     uint16_t current = (uint16_t)std::min(32000ul, (uint32_t)milliAmps);
     if (evse_common.get_ocpp_current() != current)
         evse_common.set_ocpp_current(current);
+}
+
+bool platform_supports_phase_switch() {
+    return api.hasFeature("phase_switch");
+}
+
+void platform_set_charging_phases(int32_t connectorId, uint8_t phases)
+{
+    REQUIRE_FEATURE(phase_switch, );
+#if MODULE_POWER_MANAGER_AVAILABLE()
+    String errmsg;
+    power_manager.switch_phases(phases, errmsg, false);
+    if (!errmsg.isEmpty())
+        logger.printfln("Failed to switch phases: %s", errmsg.c_str());
+#endif
 }
 
 #define PATH_PREFIX String("/ocpp/")
