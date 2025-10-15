@@ -80,6 +80,9 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
             class: main_chart.props.class + "-fullscreen",
             show: this.state.show_fullscreen,
             aspect_ratio: this.props.fullscreen_aspect_ratio || 1.777,
+            // Always show legend and full y-axis annotation
+            legend_show: true,
+            y_three_split: false,
         };
 
         return cloneElement(main_chart, fullscreen_props);
