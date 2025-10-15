@@ -412,7 +412,7 @@ size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityT
             }
         }
     }
-    eebus.trace_fmtln("Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
+    eebus.trace_fmtln("EEBUS: Informed %d subscribers of %s, got %d errors", sent_count, function_name, error_count);
     return sent_count;
 };
 
@@ -705,8 +705,8 @@ UseCaseInformationDataType EvEntity::get_usecase_information()
 CmdClassifierType EvEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
-            response["deviceConfigurationKeyValueDescriptionData"] = generate_device_config_description();
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
+            response["deviceConfigurationKeyValueDescriptionListData"] = generate_device_config_description();
             return CmdClassifierType::reply;
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
@@ -1816,6 +1816,8 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     JsonObject responseObj = response_doc.to<JsonObject>();
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
     String entity_name = "Unknown";
+    FeatureAddressType source_address = header.addressSource.get();
+    FeatureAddressType destination_address = header.addressDestination.get();
 
     bool found_dest_entity = false;
     for (EebusEntity *entity : entity_list) {
@@ -1843,7 +1845,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         eebus_responses_sent++;
         eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
         //send_spine_message(*header.addressDestination, *header.addressSource, response_doc, send_response);
-        connection->send_datagram(response_doc, send_response, *header.addressSource, *header.addressDestination, false);
+        connection->send_datagram(response_doc, send_response, destination_address, source_address, false);
     } else {
         if (header.ackRequest.has_value() && header.ackRequest.get()) {
             eebus.trace_fmtln("Usecases: Header requested an ack, but no response was generated");

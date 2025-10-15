@@ -1059,7 +1059,7 @@ void ShipConnection::state_done()
 
     auto protocol_state = get_protocol_state();
 
-    eebus.trace_fmtln("state_done: protocol_state %d", static_cast<int>(protocol_state));
+    eebus.trace_fmtln("SHIP: state_done: protocol_state %d", static_cast<int>(protocol_state));
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
@@ -1111,7 +1111,7 @@ void ShipConnection::state_done()
         default:
             break;
     }
-    eebus.trace_fmtln("After state done state: %s", get_ship_connection_state_name(state));
+    eebus.trace_fmtln("SHIP: After state done state: %s", get_ship_connection_state_name(state));
 }
 
 void ShipConnection::state_is_not_implemented()
