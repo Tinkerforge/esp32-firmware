@@ -127,5 +127,5 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
         esp_system_abort("Registering debug protocol backends outside the setup stage is not allowed!");
     }
 
-    backends.push_back(backend);
+    backends.add(std::move(backend));
 }
