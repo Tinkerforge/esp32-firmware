@@ -166,39 +166,7 @@ void BatteriesModbusTCP::pre_setup()
         )},
     })});
 
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::VictronEnergyGX, Config::Object({
-        {"device_address", Config::Uint8(DefaultDeviceAddress::VictronEnergyGX)},
-        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
-        {"grid_draw_setpoint_charge", Config::Int32(1000)},
-        {"grid_draw_setpoint_default", Config::Int32(50)},
-    })});
-
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::DeyeHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(DefaultDeviceAddress::DeyeHybridInverter)},
-        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
-    })});
-
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(DefaultDeviceAddress::AlphaESSHybridInverter)},
-        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
-        {"max_soc", Config::Uint8(100)},
-        {"min_soc", Config::Uint8(10)},
-    })});
-
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::HaileiHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(DefaultDeviceAddress::HaileiHybridInverter)},
-        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
-        {"max_soc", Config::Uint8(100)},
-        {"min_soc", Config::Uint8(10)},
-    })});
-
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::SungrowHybridInverter, Config::Object({
-        {"device_address", Config::Uint8(DefaultDeviceAddress::SungrowHybridInverter)},
-        {"action", Config::Enum(BatteryAction::PermitGridCharge)},
-        {"grid_charge_power", Config::Uint16(1000)},
-        {"max_discharge_power", Config::Uint16(1500)},
-        {"max_charge_power", Config::Uint16(3000)},
-    })});
+    get_battery_modbus_tcp_execute_table_prototypes(&execute_table_prototypes);
 
     execute_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
@@ -221,7 +189,7 @@ void BatteriesModbusTCP::register_urls()
         BatteryModbusTCPTableID table_id = execute_config.get("table")->getTag<BatteryModbusTCPTableID>();
         Config *table_config = static_cast<Config *>(execute_config.get("table")->get());
         uint8_t device_address;
-        BatteryAction action;
+        BatteryAction action;  // FIXME: convert action and extra values into a union with action as the union tag
         BatteryModbusTCP::TableSpec *table;
 
         switch (table_id) {
