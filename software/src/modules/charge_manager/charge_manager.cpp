@@ -350,6 +350,20 @@ void ChargeManager::start_manager_task()
         auto phases = charger_alloc.allocated_phases;
         auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
 
+        // If we've never seen a packet from this charger, send "ignore allocation".
+        // This means we (the charge manager) have rebooted and either our uptime is < 30 seconds or the charger has stopped charging
+        // (managed chargers set the managed slot to 0 if they don't receive a packet for 30 seconds)
+        // We assume the the last allocation (before the reboot) is fine for up to 30 seconds.
+        if (!all_chargers_seen || this->charger_state[i].last_update == 0_us) {
+            ignore_allocation = true; // This requires managed chargers to support cm_command_v3!
+            charge_mode = ConfigChargeMode::Default; // This will instruct the managed charger to send its charge mode back as if it wants to request a charge mode change
+
+            // Set sane defaults for managed chargers with older firmwares
+            current = std::numeric_limits<decltype(current)>::max(); // Directly passed through to the EVSE bricklet, which ignores values > 32000
+            cp_disconnect = false; // Way more likely to be correct than that the manager restarted while a phase switch was in progress
+            phases = 0; // 0 phases are ignored except with WARP* firmware == 2.6.0. 2.6.1 fixed this two weeks later
+        }
+
         if(cm_networking.send_manager_update(i, ignore_allocation, current, cp_disconnect, phases, charge_mode, this->supported_charge_mode_bitmask))
             ++i;
 
@@ -548,32 +562,45 @@ void ChargeManager::setup()
     auto get_charger_name_fn = [this](uint8_t idx) {return this->get_charger_name(idx);};
     auto notify_charger_unresponsive_fn = [](uint8_t charger_index) {return cm_networking.notify_charger_unresponsive(charger_index);};
 
-    this->next_allocation = now_us() + ca_config->allocation_interval;
+    this->next_allocation = now_us() + 1_s;
 
     task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
             if (!deadline_elapsed(this->next_allocation))
                 return;
 
+            if (!all_chargers_seen) {
+                // This branch does not update this->next_allocation,
+                // because the task itself runs once per second.
+
+                // Even if all_chargers_seen is now true, don't run the allocation algorithm yet.
+                // This gives the power manager one second to re-calculate the limits with all now known
+                // active chargers
+                all_chargers_seen = seen_all_chargers();
+
+                this->limits_post_allocation = this->limits;
+
+                for (size_t i = 0; i < charger_count; ++i) {
+                    if (this->charger_state[i].last_update == 0_us)
+                        cm_networking.notify_charger_unresponsive(i);
+
+                    auto allocd_current = this->charger_state[i].allowed_current;
+                    auto allocd_phases = this->charger_state[i].phases;
+
+                    this->charger_allocation_state[i].allocated_current = allocd_current;
+                    this->charger_allocation_state[i].allocated_phases = allocd_phases;
+
+                    auto cost = get_cost(allocd_current, allocd_phases, this->charger_state[i].phase_rotation, 0, 0);
+
+                    apply_cost(cost, &this->limits_post_allocation);
+                }
+                return;
+            }
+
             this->next_allocation = now_us() + ca_config->allocation_interval;
 
             uint32_t allocated_current = 0;
 
-            // Use copy to not zero static limits forever.
-            CurrentLimits tmp_limits;
-            if (!seen_all_chargers()) {
-                tmp_limits.raw = Cost{0, 0, 0, 0};
-                tmp_limits.min = Cost{0, 0, 0, 0};
-                tmp_limits.max_pv = 0;
-
-                for (size_t i = 0; i < ARRAY_SIZE(tmp_limits.min_expiration_ts); i++) {
-                    tmp_limits.min_expiration_ts[i] = 0_us;
-                }
-                tmp_limits.max_pv_expiration_ts = 0_us;
-            } else {
-                tmp_limits = this->limits;
-            }
-
-            this->limits_post_allocation = tmp_limits;
+            this->limits_post_allocation = this->limits;
 
             for(size_t i = 0; i < charger_count; ++i) {
                 update_charger_state_from_mode(&charger_state[i], i);
@@ -595,15 +622,15 @@ void ChargeManager::setup()
             );
 
             for (size_t i = 0; i < 4; i++) {
-                allocated_currents[i] = tmp_limits.raw[i] - limits_post_allocation.raw[i];
-                this->state.get("l_raw")->get(i)->updateInt(tmp_limits.raw[i]);
-                this->state.get("l_min")->get(i)->updateInt(tmp_limits.min[i]);
-                this->state.get("l_spread")->get(i)->updateInt(tmp_limits.spread[i]);
+                allocated_currents[i] = this->limits.raw[i] - limits_post_allocation.raw[i];
+                this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
+                this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
+                this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
                 this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
                 this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
                 this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
-            this->state.get("l_max_pv")->updateInt(tmp_limits.max_pv);
+            this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
             this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
 
             for (int i = 0; i < this->charger_count; ++i) {
@@ -658,11 +685,14 @@ size_t ChargeManager::get_charger_count()
 
 bool ChargeManager::seen_all_chargers()
 {
-    if (all_chargers_seen)
-        return true;
-
     if (now_us() > 30_s) {
-        all_chargers_seen = true;
+        for (size_t i = 0; i < charger_count; ++i) {
+            if (this->charger_state[i].last_update != 0_us)
+                continue;
+            this->charger_state[i].charge_mode = config_cm_to_cm(this->pm_default_charge_mode);
+            this->charge_mode.get(i)->updateEnum(this->pm_default_charge_mode);
+        }
+
         return true;
     }
 
@@ -672,7 +702,6 @@ bool ChargeManager::seen_all_chargers()
 
     logger.printfln("Seen all chargers.");
 
-    all_chargers_seen = true;
     return true;
 }
 
@@ -704,7 +733,6 @@ void ChargeManager::register_urls()
     auto default_mode = config_cm_to_cm(this->pm_default_charge_mode);
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].charge_mode = default_mode;
-        this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(default_mode));
     }
 
     bool enabled = config.get("enable_charge_manager")->asBool();
