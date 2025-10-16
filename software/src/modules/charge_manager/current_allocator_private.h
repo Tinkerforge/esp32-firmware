@@ -101,10 +101,4 @@ void sort_chargers_impl(group_fn group, compare_fn compare, const StageContext &
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase);
 
-Cost get_cost(int current_to_allocate,
-              ChargerPhase phases_to_allocate,
-              PhaseRotation rot,
-              int allocated_current,
-              ChargerPhase allocated_phases);
-
 bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit);
