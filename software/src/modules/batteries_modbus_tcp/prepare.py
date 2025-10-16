@@ -194,9 +194,13 @@ for spec in specs:
                 for k, bit in enumerate(register_block['values']):
                     if register_block['values'][k] != None:
                         specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
-            elif function_code == 'MaskWriteRegister':
-                assert False  # FIXME
-            elif function_code in ['ReadMaskWriteSingleRegister', 'ReadMaskWriteMultipleRegisters']:
+            elif function_code in ['MaskWriteRegister', 'ReadMaskWriteSingleRegister']:
+                specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
+
+                for k, bit in enumerate(register_block['values']):
+                    if register_block['values'][k] != None:
+                        specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+            elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has invalid function code: {function_code}')
@@ -252,14 +256,8 @@ for spec in specs:
                 print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has no values')
                 sys.exit(1)
 
-            register_block_specs.append('    {\n'
-                                       f'        ModbusFunctionCode::{register_block["function_code"]},\n'
-                                       f'        {start_address},\n'
-                                       f'        const_cast<void *>(static_cast<const void *>({spec_group.under}_{spec_action.under}_register_block_{i}_values)),\n'
-                                       f'        {len(register_block['values'])},\n'
-                                        '    },')
-
             function_code = register_block['function_code']
+            values_count_scale = 1
 
             if function_code == 'WriteSingleCoil':
                 if len(register_block['values']) != 1:
@@ -270,7 +268,7 @@ for spec in specs:
                     print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has invalid value')
                     sys.exit(1)
 
-                specs_cpp.append(f'static const uint8_t {spec_group.under}_{spec_action.under}_register_block_{i}_values[] = {{\n{register_block['values'][0]}\n}};')
+                specs_cpp.append(f'static const uint8_t {spec_group.under}_{spec_action.under}_register_block_{i}_values[] = {{ {register_block['values'][0]} }};')
             elif function_code == 'WriteMultipleCoils':
                 values = [0] * ((len(register_block['values']) + 7) // 8)
 
@@ -285,12 +283,31 @@ for spec in specs:
             elif function_code in ['WriteSingleRegister', 'WriteMultipleRegisters']:
                 specs_cpp.append(f'static const uint16_t {spec_group.under}_{spec_action.under}_register_block_{i}_values[] = {{\n{"\n".join([f"    {value}," for value in register_block["values"]])}\n}};')
             elif function_code == 'MaskWriteRegister':
-                assert False  # FIXME
-            elif function_code in ['ReadMaskWriteSingleRegister', 'ReadMaskWriteMultipleRegisters']:
+                if len(register_block['values']) != 2:
+                    print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has invalid value count')
+                    sys.exit(1)
+
+                specs_cpp.append(f'static const uint16_t {spec_group.under}_{spec_action.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
+            elif function_code == 'ReadMaskWriteSingleRegister':
+                if len(register_block['values']) != 2:
+                    print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has invalid value count')
+                    sys.exit(1)
+
+                specs_cpp.append(f'static const uint16_t {spec_group.under}_{spec_action.under}_register_block_{i}_values[] = {{ {", ".join([str(value) for value in register_block["values"]])} }};')
+
+                values_count_scale = 2
+            elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {spec_group.space} / {spec_action.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
+
+            register_block_specs.append('    {\n'
+                                       f'        ModbusFunctionCode::{register_block["function_code"]},\n'
+                                       f'        {start_address},\n'
+                                       f'        const_cast<void *>(static_cast<const void *>({spec_group.under}_{spec_action.under}_register_block_{i}_values)),\n'
+                                       f'        {len(register_block['values']) // values_count_scale},\n'
+                                        '    },')
 
         if len(register_block_specs) > 0:
             specs_cpp.append(f'static const BatteryModbusTCP::RegisterBlockSpec {spec_group.under}_{spec_action.under}_register_blocks[] = {{\n{"\n".join(register_block_specs)}\n}};')

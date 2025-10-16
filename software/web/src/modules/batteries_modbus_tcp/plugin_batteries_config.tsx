@@ -719,11 +719,25 @@ export function init() {
                             return null;
                         }
 
+                        if (typeof new_config[1].table[1].max_soc != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config max soc is not a number");
+                            return null;
+                        }
+
+                        if (typeof new_config[1].table[1].min_soc != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config min soc is not a number");
+                            return null;
+                        }
+
                         table = [BatteryModbusTCPTableID.AlphaESSHybridInverter, {
                             device_address: new_config[1].table[1].device_address,
+                            max_soc: new_config[1].table[1].max_soc,
+                            min_soc: new_config[1].table[1].min_soc,
                         }];
 
-                        if (!util.hasValue(table[1].device_address)) {
+                        if (!util.hasValue(table[1].device_address)
+                         || !util.hasValue(table[1].max_soc)
+                         || !util.hasValue(table[1].min_soc)) {
                             return null;
                         }
 
@@ -735,11 +749,25 @@ export function init() {
                             return null;
                         }
 
+                        if (typeof new_config[1].table[1].max_soc != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config max soc is not a number");
+                            return null;
+                        }
+
+                        if (typeof new_config[1].table[1].min_soc != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config min soc is not a number");
+                            return null;
+                        }
+
                         table = [BatteryModbusTCPTableID.HaileiHybridInverter, {
                             device_address: new_config[1].table[1].device_address,
+                            max_soc: new_config[1].table[1].max_soc,
+                            min_soc: new_config[1].table[1].min_soc,
                         }];
 
-                        if (!util.hasValue(table[1].device_address)) {
+                        if (!util.hasValue(table[1].device_address)
+                         || !util.hasValue(table[1].max_soc)
+                         || !util.hasValue(table[1].min_soc)) {
                             return null;
                         }
 
@@ -877,6 +905,12 @@ export function init() {
                             grid_draw_setpoint_default: config[1].table[1].grid_draw_setpoint_default,
                         };
                     }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
+                        extra_values = {
+                            max_soc: config[1].table[1].max_soc,
+                            min_soc: config[1].table[1].min_soc,
+                        };
+                    }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
                         extra_values = {
                             grid_charge_power: config[1].table[1].grid_charge_power,
@@ -908,6 +942,18 @@ export function init() {
                                         value={config[1].table[1].grid_draw_setpoint_charge}
                                         onValue={(v) => {
                                             on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
+                                        }} />
+                                </FormRow> : undefined}
+                            {config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
+                                    <InputNumber
+                                        required
+                                        min={0}
+                                        max={100}
+                                        unit="%"
+                                        value={config[1].table[1].max_soc}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
                                         }} />
                                 </FormRow> : undefined}
                             {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
@@ -947,6 +993,18 @@ export function init() {
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
+                            {config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
+                                    <InputNumber
+                                        required
+                                        min={0}
+                                        max={100}
+                                        unit="%"
+                                        value={config[1].table[1].min_soc}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
+                                        }} />
+                                </FormRow> : undefined}
                             {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
                                 <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
                                     <InputFloat
@@ -962,28 +1020,33 @@ export function init() {
                                 </FormRow> : undefined}
                             <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} extra_values={extra_values} />
                         </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} extra_values={extra_values} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
-                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
-                                    <InputFloat
-                                        required
-                                        digits={2}
-                                        min={1}
-                                        max={65535}
-                                        unit="kW"
-                                        value={config[1].table[1].max_charge_power}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} extra_values={extra_values} />
-                        </CollapsedSection>,
                     );
+
+                    // FIXME: no support for forbid-charge and revoke-charge-override for Alpha ESS and Hailei
+                    if (config[1].table[0] != BatteryModbusTCPTableID.AlphaESSHybridInverter && config[1].table[0] != BatteryModbusTCPTableID.HaileiHybridInverter) {
+                        edit_children.push(
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
+                                <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} extra_values={extra_values} />
+                            </CollapsedSection>,
+
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
+                                {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
+                                    <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                                        <InputFloat
+                                            required
+                                            digits={2}
+                                            min={1}
+                                            max={65535}
+                                            unit="kW"
+                                            value={config[1].table[1].max_charge_power}
+                                            onValue={(v) => {
+                                                on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                            }} />
+                                    </FormRow> : undefined}
+                                <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} extra_values={extra_values} />
+                            </CollapsedSection>,
+                        );
+                    }
                 }
                 else if (util.hasValue(config[1].table)
                       && config[1].table[0] == BatteryModbusTCPTableID.Custom) {

@@ -1,7 +1,21 @@
 # This is the same register table as Alpha ESS
 
 table_prototypes = [
-    ('Hailei Hybrid Inverter', ['device_address']),
+    ('Hailei Hybrid Inverter', [
+        'device_address',
+        {
+            'action': 'Permit Grid Charge',
+            'name': 'max_soc',
+            'type': 'Uint8',  # FIXME: add range limit to [0..100]
+            'default': 100,  # %
+        },
+        {
+            'action': 'Revoke Discharge Override',
+            'name': 'min_soc',
+            'type': 'Uint8',  # FIXME: add range limit to [0..100]
+            'default': 10,  # %
+        },
+    ]),
 ]
 
 default_device_addresses = [
@@ -15,42 +29,43 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
+                'description': 'Time charge start hours',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0856,  # U16
+                'values': [
+                    0,
+                    23,
+                    23,
+                    23,
+                ],
+            },
+            {
+                'description': 'Time charge start minutes',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x085E,  # U16
+                'values': [
+                    0,
+                    59,
+                    59,
+                    59,
+                ],
+            },
+            {
                 'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,
+                'function_code': 'MaskWriteRegister',
+                'start_address': 0x084F,  # U16
                 'values': [
-                    1,
+                    0b10, 0b01  # leave bit 1 unchanged, set bit 0 to enable charge time period control
                 ],
             },
             {
-                'description': 'Charge Cut Soc',
+                'description': 'Charge cut SOC [%]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0855,
+                'start_address': 0x0855,  # U16
                 'values': [
-                    100,
+                    None,
                 ],
-            },
-            {
-                'description': 'Time Charge Hours',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0856,
-                'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time Charge Minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085E,
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
+                'mapping': 'values[0] = max_soc;',
             },
         ],
     },
@@ -61,18 +76,10 @@ specs = [
         'register_blocks': [
             {
                 'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,
+                'function_code': 'MaskWriteRegister',
+                'start_address': 0x084F,  # U16
                 'values': [
-                    0,
-                ],
-            },
-            {
-                'description': 'Charge Cut Soc',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0855,
-                'values': [
-                    10,
+                    0b10, 0b00  # leave bit 1 unchanged, clear bit 0 to disable charge time period control
                 ],
             },
         ],
@@ -83,47 +90,47 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
+                'description': 'Time charge start hours',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0856,  # U16
+                'values': [
+                    0,
+                    23,
+                    23,
+                    23,
+                ],
+            },
+            {
+                'description': 'Time charge start minutes',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x085E,  # U16
+                'values': [
+                    0,
+                    59,
+                    59,
+                    59,
+                ],
+            },
+            {
                 'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,
+                'function_code': 'MaskWriteRegister',
+                'start_address': 0x084F,  # U16
                 'values': [
-                    2,
-                ],
-            },
-            {
-                'description': 'Time Discharge Hours',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0851,
-                'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time Discharge Minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085A,
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
+                    0b01, 0b10  # leave bit 0 unchanged, set bit 1 to enable discharge time period control
                 ],
             },
             {
                 'description': 'UPS reserve enable',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,
+                'start_address': 0x0862,  # U16
                 'values': [
-                    1,
+                    1,  # enable
                 ],
             },
             {
-                'description': 'UPS Reserve Soc',
+                'description': 'UPS reserve SOC [%]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,
+                'start_address': 0x0850,  # U16
                 'values': [
                     100,
                 ],
@@ -136,28 +143,29 @@ specs = [
         'repeat_interval': 60,
         'register_blocks': [
             {
+                'description': 'Time period control flag',
+                'function_code': 'MaskWriteRegister',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    0b01, 0b00  # leave bit 0 unchanged, clear bit 1 to disable discharge time period control
+                ],
+            },
+            {
                 'description': 'UPS reserve enable',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,
+                'start_address': 0x0862,  # U16
                 'values': [
-                    0,
+                    0,  # disable
                 ],
             },
             {
-                'description': 'UPS Reserve Soc',
+                'description': 'UPS reserve SOC [%]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,
+                'start_address': 0x0850,  # U16
                 'values': [
-                    10,
+                    None,
                 ],
-            },
-            {
-                'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,
-                'values': [
-                    0,
-                ],
+                'mapping': 'values[0] = min_soc;',
             },
         ],
     },
