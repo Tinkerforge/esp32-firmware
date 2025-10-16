@@ -10,13 +10,13 @@ table_prototypes = [
         {
             'action': 'Revoke Discharge Override',
             'name': 'max_discharge_power',
-            'type': 'Uint16',
+            'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 1500,  # 0.01 kW
         },
         {
             'action': 'Revoke Charge Override',
             'name': 'max_charge_power',
-            'type': 'Uint16',
+            'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 3000,  # 0.01 kW
         },
     ]),
@@ -92,7 +92,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    1,
+                    1,  # apparently the minimum value is 1, this has not been verified
                 ],
             },
         ],
@@ -123,7 +123,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    1,
+                    1,  # apparently the minimum value is 1, this has not been verified
                 ],
             },
         ],
