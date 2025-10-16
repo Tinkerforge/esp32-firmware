@@ -50,9 +50,9 @@ public:
                           const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &client_update_received_cb,
                           const std::function<void(uint8_t, ClientError)> &client_error_cb);
 
-    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, ConfigChargeMode charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
+    bool send_manager_update(uint8_t client_id, bool ignore_allocation, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, ConfigChargeMode charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
 
-    void register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t)> &manager_update_received_cb);
+    void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t)> &manager_update_received_cb);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,

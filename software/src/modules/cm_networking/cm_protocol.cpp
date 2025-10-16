@@ -434,7 +434,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 #endif
 }
 
-bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, ConfigChargeMode charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask)
+bool CMNetworking::send_manager_update(uint8_t client_id, bool ignore_allocation, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, ConfigChargeMode charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask)
 {
     static uint16_t next_seq_num = 1;
 
@@ -446,7 +446,8 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
     command_pkt.header.version = CM_COMMAND_VERSION;
 
     command_pkt.v1.allocated_current = allocated_current;
-    command_pkt.v1.command_flags = cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS;
+    command_pkt.v1.command_flags = (ignore_allocation << CM_COMMAND_FLAGS_IGNORE_ALLOCATION_BIT_POS)
+                                 | (cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS);
 
     command_pkt.v2.allocated_phases = allocated_phases;
 
@@ -493,7 +494,7 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
     return true;
 }
 
-void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t)> &manager_update_received_cb)
+void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t)> &manager_update_received_cb)
 {
     client_sock = create_socket(CHARGE_MANAGEMENT_PORT, false);
 
@@ -561,7 +562,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             if (!this->manager_addr_valid) {
                 // Block charging
                 if (manager_update_received_cb) {
-                    manager_update_received_cb(0, false, 0, ConfigChargeMode::Off, nullptr, 0);
+                    manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0);
                 }
 
                 return;
@@ -577,7 +578,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
                 } else {
                     // Block charging
                     if (manager_update_received_cb) {
-                        manager_update_received_cb(0, false, 0, ConfigChargeMode::Off, nullptr, 0);
+                        manager_update_received_cb(0, false, false, 0, ConfigChargeMode::Off, nullptr, 0);
                     }
 
                     return;
@@ -591,7 +592,10 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             ConfigChargeMode supported_charge_modes[ARRAY_SIZE(command_pkt.v3.supported_charge_modes) * 8];
             size_t supported_charge_mode_length = 0;
 
+            bool ignore_allocation = false;
             if (command_pkt.header.version >= 3) {
+                ignore_allocation = CM_COMMAND_FLAGS_IGNORE_ALLOCATION_IS_SET(command_pkt.v1.command_flags);
+
                 for (int i = 0; i < CM_COMMAND_V3_MAX_CONFIG_CHARGE_MODE; ++i) {
                     if ((command_pkt.v3.supported_charge_modes[i / 8] & (1 << (i % 8))) != 0) {
                         supported_charge_modes[supported_charge_mode_length] = static_cast<ConfigChargeMode>(i);
@@ -601,6 +605,7 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, int8
             }
 
             manager_update_received_cb(command_pkt.v1.allocated_current,
+                            ignore_allocation,
                             CM_COMMAND_FLAGS_CPDISC_IS_SET(command_pkt.v1.command_flags),
                             command_pkt.header.version >= 2 ? command_pkt.v2.allocated_phases : 0,
                             command_pkt.header.version >= 3 ? (ConfigChargeMode) command_pkt.v3.charge_mode : ConfigChargeMode::Default,

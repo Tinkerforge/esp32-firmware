@@ -402,17 +402,22 @@ void EvseCommon::send_cm_client_update() {
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len) {
+    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
-        set_managed_current(current);
 
-        backend->set_control_pilot_disconnect(cp_disconnect_requested, nullptr);
-        uint32_t phases = backend->get_phases();
-        uint32_t phases_wanted = static_cast<uint32_t>(phases_requested);
-        if (phases_wanted != 0 && phases != phases_wanted) {
-            backend->switch_phases(phases_wanted);
+        if (!ignore_allocation) {
+            set_managed_current(current);
+
+            backend->set_control_pilot_disconnect(cp_disconnect_requested, nullptr);
+            uint32_t phases = backend->get_phases();
+            uint32_t phases_wanted = static_cast<uint32_t>(phases_requested);
+            if (phases_wanted != 0 && phases != phases_wanted) {
+                backend->switch_phases(phases_wanted);
+            }
+        } else {
+            last_current_update = now_us();
         }
 
         // Decouple send via deadline: If we would send a client update immediately,

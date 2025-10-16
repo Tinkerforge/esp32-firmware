@@ -343,9 +343,14 @@ void ChargeManager::start_manager_task()
             i = 0;
 
         auto &charger_alloc = this->charger_allocation_state[i];
+
+        auto ignore_allocation = false;
+        auto current = charger_alloc.allocated_current;
+        auto cp_disconnect = charger_alloc.cp_disconnect;
+        auto phases = charger_alloc.allocated_phases;
         auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
 
-        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases, charge_mode, this->supported_charge_mode_bitmask))
+        if(cm_networking.send_manager_update(i, ignore_allocation, current, cp_disconnect, phases, charge_mode, this->supported_charge_mode_bitmask))
             ++i;
 
     }, cm_send_delay);
