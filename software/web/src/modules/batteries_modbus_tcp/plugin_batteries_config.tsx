@@ -460,6 +460,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 (table[1] as any)["register_blocks"] = this.props.register_blocks;
             }
 
+            // FIXME: convert action and extra values into a union with action as the union tag
             if (util.hasValue(this.props.action)) {
                 (table[1] as any)["action"] = this.props.action;
             }

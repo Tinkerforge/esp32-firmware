@@ -20,6 +20,7 @@ modules = [
 ]
 
 table_prototypes = []
+execute_table_prototypes = []
 table_typedefs = []
 table_typenames = []
 table_news = []
@@ -34,8 +35,14 @@ for module in modules:
 
         if table_prototype[1] == None:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
+
+            execute_table_prototypes.append(f'\n    execute_table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
+            execute_table_prototypes.append('        {"action", Config::Enum(BatteryAction::PermitGridCharge)},')
+            execute_table_prototypes.append('    })});')
         else:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
+            execute_table_prototypes.append(f'\n    execute_table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
+            execute_table_prototypes.append('        {"action", Config::Enum(BatteryAction::PermitGridCharge)},')
 
             for member in table_prototype[1]:
                 if isinstance(member, dict):
@@ -52,8 +59,10 @@ for module in modules:
                     sys.exit(1)
 
                 table_prototypes.append(f'        {{"{member_name}", {member_prototype}}},')
+                execute_table_prototypes.append(f'        {{"{member_name}", {member_prototype}}},')
 
             table_prototypes.append('    })});')
+            execute_table_prototypes.append('    })});')
 
         table_typedefs.append(f'type TableConfig{table_id.camel} = [\n'
                               f'    BatteryModbusTCPTableID.{table_id.camel},\n    {{')
@@ -436,6 +445,7 @@ h  = '// WARNING: This file is generated.\n\n'
 h += '#include "config.h"\n'
 h += '#include "battery_modbus_tcp.h"\n\n'
 h += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes);\n\n'
+h += 'void get_battery_modbus_tcp_execute_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *execute_table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('battery_modbus_tcp_specs.h', h)
@@ -449,6 +459,10 @@ cpp += '#include "gcc_warnings.h"\n\n'
 cpp += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes)\n'
 cpp += '{'
 cpp += '\n'.join(table_prototypes) + '\n'
+cpp += '}\n\n'
+cpp += 'void get_battery_modbus_tcp_execute_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *execute_table_prototypes)\n'
+cpp += '{'
+cpp += '\n'.join(execute_table_prototypes) + '\n'
 cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
