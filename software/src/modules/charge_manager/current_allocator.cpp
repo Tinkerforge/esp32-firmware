@@ -413,7 +413,11 @@ GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
 }
 
 static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rotation) {
-    if (allocated_phases == 3) {
+    if (allocated_phases == 0) {
+        return Cost{0, 0, 0, 0};
+    }
+
+    else if (allocated_phases == 3) {
         return Cost{3, 1, 1, 1};
     }
     else if (rotation == PhaseRotation::Unknown) {
@@ -432,10 +436,10 @@ static inline Cost get_phase_factors(uint8_t allocated_phases, PhaseRotation rot
 // [allocated_current]@[allocated_phases]
 // to [current_to_allocate]@{phases_to_allocate].
 Cost get_cost(int current_to_allocate,
-              ChargerPhase phases_to_allocate,
+              uint8_t phases_to_allocate,
               PhaseRotation rot,
               int allocated_current,
-              ChargerPhase allocated_phases)
+              uint8_t allocated_phases)
 {
     auto allocated = allocated_current * get_phase_factors((uint8_t)allocated_phases, rot);
     auto to_allocate = current_to_allocate * get_phase_factors((uint8_t)phases_to_allocate, rot);
@@ -1941,7 +1945,7 @@ static void stage_7(StageContext &sc) {
         }
 
         auto current = allocated_current + min_.current;
-        auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
+        auto cost = get_cost(current, allocated_phases, state->phase_rotation, allocated_current, allocated_phases);
 
         // This should never happen:
         // We've just calculated how much current is still available.
@@ -2005,7 +2009,7 @@ static void stage_8(StageContext &sc) {
 
         current += allocated_current;
 
-        auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
+        auto cost = get_cost(current, allocated_phases, state->phase_rotation, allocated_current, allocated_phases);
 
         // This should never happen:
         // We've just calculated how much current is still available.

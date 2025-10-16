@@ -52,3 +52,11 @@ bool update_from_client_packet(
     ChargerAllocationState *charger_allocation_state,
     const char * const *hosts,
     const std::function<const char *(uint8_t)> &get_charger_name);
+
+void apply_cost(const Cost &cost, CurrentLimits* limits);
+
+Cost get_cost(int current_to_allocate,
+              uint8_t phases_to_allocate,
+              PhaseRotation rot,
+              int allocated_current,
+              uint8_t allocated_phases);
