@@ -29,7 +29,7 @@ from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpea
 from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
 
 from provisioning.provision_common.inventory import Inventory
-from provisioning.provision_common.provision_common import FatalError, fatal_error, green
+from provisioning.provision_common.provision_common import FatalError, fatal_error, green, my_input
 
 IPCON_HOST = 'localhost'
 IPCON_TIMEOUT = 1.0 # seconds
@@ -416,7 +416,7 @@ class Stage3:
             fatal_error('Could not click meter back button: {0}'.format(e))
 
     # internal
-    def read_meter_qr_code(self, timeout=5):
+    def read_meter_qr_code(self, timeout=5, allow_no_detection=False):
         text = ''
         timestamp = time.monotonic()
         error = None
@@ -452,7 +452,7 @@ class Stage3:
 
             time.sleep(0.1)
 
-        if len(text) == 0:
+        if not allow_no_detection and len(text) == 0:
             fatal_error('Could not read QR code: {0}'.format(error))
 
         return text
@@ -843,19 +843,17 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
-        if self.is_meter_connected_to_usb():
-            print(green('Meter is connected to USB, please disconnect it'))
+        while self.is_meter_connected_to_usb():
             self.beep_notify()
 
-            while self.is_meter_connected_to_usb():
-                time.sleep(1)
+            while my_input('Disconnect electrical tester from USB and press y + return to continue') != 'y':
+                pass
 
-        if self.read_meter_qr_code() != '01':
-            print(green('Meter is not ready, please make it ready'))
+        if self.read_meter_qr_code(allow_no_detection=True) != '01':
             self.beep_notify()
 
-            while self.read_meter_qr_code() != '01':
-                time.sleep(1)
+            while my_input('Bring electrical tester to step 01/15 and press y + return to continue') != 'y':
+                pass
 
         self.evse_uptime_start = self.get_evse_uptime_function()
         self.wall_clock_start = time.time()
