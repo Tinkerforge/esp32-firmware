@@ -181,11 +181,15 @@ void BatteriesModbusTCP::pre_setup()
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::AlphaESSHybridInverter, Config::Object({
         {"device_address", Config::Uint8(DefaultDeviceAddress::AlphaESSHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+        {"max_soc", Config::Uint8(100)},
+        {"min_soc", Config::Uint8(10)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::HaileiHybridInverter, Config::Object({
         {"device_address", Config::Uint8(DefaultDeviceAddress::HaileiHybridInverter)},
         {"action", Config::Enum(BatteryAction::PermitGridCharge)},
+        {"max_soc", Config::Uint8(100)},
+        {"min_soc", Config::Uint8(10)},
     })});
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::SungrowHybridInverter, Config::Object({
@@ -257,7 +261,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::AlphaESSHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_alpha_ess_hybrid_inverter_table(action);
+            table = load_alpha_ess_hybrid_inverter_table(action, table_config);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Alpha ESS Hybrid Inverter action: %u", static_cast<uint8_t>(action));
@@ -269,7 +273,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::HaileiHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_hailei_hybrid_inverter_table(action);
+            table = load_hailei_hybrid_inverter_table(action, table_config);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Hailei Hybrid Inverter action: %u", static_cast<uint8_t>(action));
