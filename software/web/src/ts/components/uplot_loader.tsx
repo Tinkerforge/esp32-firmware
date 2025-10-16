@@ -132,6 +132,14 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
                     <Modal
                         show={this.state.show_fullscreen}
                         onHide={() => this.setState({show_fullscreen: false})}
+                        onExiting={() => {
+                            // Disconnect observer to prevent access of "getComputedStyle"
+                            // after modal is closed
+                            if (this.fullscreen_chart_ref.current?.observer) {
+                                this.fullscreen_chart_ref.current.observer.disconnect();
+                            }
+                            this.fullscreen_chart_ref.current = null;
+                        }}
                         size="xl"
                         centered
                     >
