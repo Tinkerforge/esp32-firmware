@@ -1160,7 +1160,7 @@ void ChargeTracker::register_urls()
     });
 
     if (config.get("remote_upload_configs")->count() > 0) {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             // In case someone deletes all remote upload configs without restarting, we also stop trying to send.
             if (config.get("remote_upload_configs")->count() == 0) {
                 task_scheduler.cancel(task_scheduler.currentTaskId());

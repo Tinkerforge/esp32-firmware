@@ -983,7 +983,8 @@ void Wifi::setup()
         if (runtime_ap == nullptr || runtime_ap->scan_start_time_s == 0) {
             start_sta_connection();
         } else {
-            task_scheduler.scheduleWithFixedDelay([this]() {
+            // Discard returned task ID because the task will cancel itself.
+            (void)task_scheduler.scheduleWithFixedDelay([this]() {
                 if (this->runtime_ap->scan_start_time_s != 0) {
                     // Channel selection is running.
                     return;
