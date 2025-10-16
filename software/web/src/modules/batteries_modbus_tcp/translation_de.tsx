@@ -39,6 +39,8 @@ let x = {
             "revoke_charge_override": "Verbot zum Laden zurücknehmen",
             "grid_draw_setpoint_charge": "Sollwert Netzbezug",
             "grid_draw_setpoint_default": "Sollwert Netzbezug",
+            "max_soc": "Maximaler Ladestand",
+            "min_soc": "Minimaler Ladestand",
             "grid_charge_power": "Ladeleistung",
             "max_discharge_power": "Maximale Entladeleistung",
             "max_charge_power": "Maximale Ladeleistung",
