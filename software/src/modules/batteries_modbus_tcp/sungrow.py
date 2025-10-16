@@ -80,14 +80,6 @@ specs = [
                     0xCC,  # stop
                 ],
             },
-            {
-                'description': 'Charge/discharge power [W]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_number': 13052,  # U16
-                'values': [
-                    0,  # FIXME: should this really be set to 0W?
-                ],
-            },
         ],
     },
     {
