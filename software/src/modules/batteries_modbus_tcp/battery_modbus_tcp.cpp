@@ -340,12 +340,12 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::AlphaESSHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_alpha_ess_hybrid_inverter_tables(tables);
+        load_alpha_ess_hybrid_inverter_tables(tables, table_config);
         break;
 
     case BatteryModbusTCPTableID::HaileiHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_hailei_hybrid_inverter_tables(tables);
+        load_hailei_hybrid_inverter_tables(tables, table_config);
         break;
 
     case BatteryModbusTCPTableID::SungrowHybridInverter:
