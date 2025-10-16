@@ -39,6 +39,8 @@ let x = {
             "revoke_charge_override": "Revoke charge forbiddance",
             "grid_draw_setpoint_charge": "Grid draw setpoint",
             "grid_draw_setpoint_default": "Grid draw setpoint",
+            "max_soc": "Maximum state of charge",
+            "min_soc": "Minimum state of charge",
             "grid_charge_power": "Charge power",
             "max_discharge_power": "Maximum discharge power",
             "max_charge_power": "Maximum charge power",
