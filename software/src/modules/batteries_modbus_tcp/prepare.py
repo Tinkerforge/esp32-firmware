@@ -161,7 +161,7 @@ for spec in specs:
             specs_cpp.append(f'    register_blocks[{i}].function_code = ModbusFunctionCode::{function_code};\n'
                              f'    register_blocks[{i}].start_address = {start_address};\n'
                              f'    register_blocks[{i}].values_count = {values_count};\n'
-                             f'    register_blocks[{i}].buffer = total_buffer + {total_buffer_offset}; // FIXME: needs alignment?\n\n'
+                             f'    register_blocks[{i}].buffer = total_buffer + {total_buffer_offset};\n\n'
                               '    {\r')
 
             if function_code == 'WriteSingleCoil' or function_code == 'WriteMultipleCoils':
