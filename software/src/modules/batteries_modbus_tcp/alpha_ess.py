@@ -133,7 +133,6 @@ specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',
         'action': 'Revoke Discharge Override',
-        'default_device_address': 85,
         'repeat_interval': 60,
         'register_blocks': [
             {
@@ -165,7 +164,6 @@ specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',
         'action': 'Forbid Charge',
-        'default_device_address': 85,
         'repeat_interval': 60,
         'register_blocks': [
             # FIXME
@@ -174,7 +172,6 @@ specs = [
     {
         'group': 'Alpha ESS Hybrid Inverter',
         'action': 'Revoke Charge Override',
-        'default_device_address': 85,
         'repeat_interval': 60,
         'register_blocks': [
             # FIXME
