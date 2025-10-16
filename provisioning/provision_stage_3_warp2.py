@@ -843,16 +843,18 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
+        # check for QR code first to also catch the case when the meter is actually off. because
+        # in this situation the meter doesn't show up on USB either even if it's actually connected
+        while self.read_meter_qr_code(allow_no_detection=True) != '01':
+            self.beep_notify()
+
+            while my_input('Bring electrical tester to step 01/15 and press y + return to continue') != 'y':
+                pass
+
         while self.is_meter_connected_to_usb():
             self.beep_notify()
 
             while my_input('Disconnect electrical tester from USB and press y + return to continue') != 'y':
-                pass
-
-        if self.read_meter_qr_code(allow_no_detection=True) != '01':
-            self.beep_notify()
-
-            while my_input('Bring electrical tester to step 01/15 and press y + return to continue') != 'y':
                 pass
 
         self.evse_uptime_start = self.get_evse_uptime_function()
