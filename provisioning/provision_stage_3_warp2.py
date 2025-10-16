@@ -11,6 +11,7 @@ import time
 import traceback
 import tkinter as tk
 import typing
+import subprocess
 
 import cv2 # sudo pip3 install openvc-python
 
@@ -828,6 +829,9 @@ class Stage3:
             elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
+    def is_meter_connected_to_usb(self):
+        return subprocess.call(['lsusb', '-d', 'c251:7350'], stdout=subprocess.DEVNULL) == 0
+
     # requires power_on
     def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
@@ -839,8 +843,19 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
+        if self.is_meter_connected_to_usb():
+            print(green('Meter is connected to USB, please disconnect it'))
+            self.beep_notify()
+
+            while self.is_meter_connected_to_usb():
+                time.sleep(1)
+
         if self.read_meter_qr_code() != '01':
-            fatal_error('Meter in wrong step')
+            print(green('Meter is not ready, please make it ready'))
+            self.beep_notify()
+
+            while self.read_meter_qr_code() != '01':
+                time.sleep(1)
 
         self.evse_uptime_start = self.get_evse_uptime_function()
         self.wall_clock_start = time.time()
