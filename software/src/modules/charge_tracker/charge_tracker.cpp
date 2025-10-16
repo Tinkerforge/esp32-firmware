@@ -1126,7 +1126,7 @@ void ChargeTracker::register_urls()
     });
 
     if (config.get("remote_upload_configs")->count() > 0) {
-        task_scheduler.scheduleWithFixedDelay([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
             // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
             if (this->send_in_progress || this->currentlyCharging()) {
                 return;
