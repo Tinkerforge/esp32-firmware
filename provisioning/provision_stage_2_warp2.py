@@ -822,10 +822,11 @@ def main(stage3, scanner):
     with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
         json.dump(result, f, indent=4)
 
-    stage3.beep_notify()
+    while not stage3.is_meter_connected_to_usb():
+        stage3.beep_notify()
 
-    while my_input(f'Connect electrical tester to USB and press y + return to continue') != "y":
-        pass
+        while my_input('Connect electrical tester to USB and press y + return to continue') != 'y':
+            pass
 
     print('Uploading empty electrical test report for next test')
     handle_electrical_test_report('upload', None, 180)
