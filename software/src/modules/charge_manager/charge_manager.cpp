@@ -403,7 +403,6 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
                 continue;
 
             case ChargeMode::Min: {
-                // TODO maybe support guaranteed power == enable_current of this specific charger?
                 state->off = false;
                 state->guaranteed_pv_current = this->guaranteed_pv_current;
                 state->observe_pv_limit = true;
@@ -720,7 +719,6 @@ void ChargeManager::register_urls()
 {
 #if MODULE_POWER_MANAGER_AVAILABLE()
     // PowerManager::setup() runs after ChargeManager::setup()
-    // TODO: #if MODULE_POWER_MANAGER_AVAILABLE()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
     this->pm_default_charge_mode = power_manager.get_default_charge_mode();
 #else
