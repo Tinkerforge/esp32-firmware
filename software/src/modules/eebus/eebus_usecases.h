@@ -311,6 +311,14 @@ public:
     */
     UseCaseInformationDataType get_usecase_information() override;
 
+    /**
+    * \brief Handles a message for a usecase.
+    * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+    * @param data The actual Function call and data of the message.
+    * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
+    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    */
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
     /**
      * The entity information as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1. 3.2.1.
@@ -616,6 +624,41 @@ private:
     LoadControlLimitListDataType load_control_limit_list{};
 };
 
+class CevcEntity final : public EebusEntity
+{
+public:
+    CevcEntity();
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::CoordinatedEvCharging;
+    }
+    String get_entity_name() const override
+    {
+        return "CevcEntity";
+    }
+
+    /**
+    * \brief Handles a message for a usecase.
+    * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+    * @param data The actual Function call and data of the message.
+    * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
+    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    */
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.0. 3.1.2.
+    * @return
+    */
+    UseCaseInformationDataType get_usecase_information() override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+private:
+    uint8_t feature_address_timeseries = 30;
+    uint8_t feature_address_incentive_table = 31;
+};
 
 /**
  * The central Interface for EEBus UseCases.
@@ -664,13 +707,15 @@ public:
     PowerConsumptionLimitationEntity limitation_of_power_consumption{};
     EvEntity ev_commissioning_and_configuration{};
     EvseEntity evse_commissioning_and_configuration{};
+    CevcEntity coordinate_ev_charging{};
 
     std::vector<EebusEntity *> entity_list{
         &node_management,
         &charging_summary,
         &limitation_of_power_consumption,
         &ev_commissioning_and_configuration,
-        &evse_commissioning_and_configuration
+        &evse_commissioning_and_configuration,
+        &coordinate_ev_charging
     };
 #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
     // TODO: Implement the power production limitation usecase

@@ -149,7 +149,7 @@ bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAdd
 
 UseCaseInformationDataType NodeManagementEntity::get_usecase_information()
 {
-    return UseCaseInformationDataType();
+    return {};
     // This should never be used as the NodeManagementUsecase has no usecase information
 }
 
@@ -208,16 +208,19 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
-    node_management_detailed_data.specificationVersionList->specificationVersion->push_back(SUPPORTED_SPINE_VERSION);
+    node_management_detailed_data.specificationVersionList->specificationVersion->emplace_back(SUPPORTED_SPINE_VERSION);
 
-    node_management_detailed_data.deviceInformation->description->description = api.getState("info/display_name")->get("display_name")->asEphemeralCStr(); // Optional. Shall not be longer than 4096 characters.
-    node_management_detailed_data.deviceInformation->description->label = api.getState("info/name")->get("display_type")->asEphemeralCStr();
+    node_management_detailed_data.deviceInformation->description->description = std::string(OPTIONS_PRODUCT_NAME()) + " by " + OPTIONS_MANUFACTURER_FULL(); // Optional. Shall not be longer than 4096 characters.
+    node_management_detailed_data.deviceInformation->description->label = OPTIONS_PRODUCT_NAME();
     // Optional. Shall not be longer than 256 characters.
     node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
     // Only simple operation is supported. We dont act as a SPINE router or anything like that.
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
-
+#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
+    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::EnergyManagementSystem; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
+#endif
     for (EebusEntity *uc : usecase_interface->entity_list) {
         if (!uc->isActive()) {
             continue;
@@ -1789,6 +1792,110 @@ void PowerConsumptionLimitationEntity::handle_heartbeat_timeout()
     eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
     if (lpc_state != LPCState::Failsafe && lpc_state != LPCState::UnlimitedAutonomous)
         switch_state(LPCState::Failsafe);
+}
+
+CevcEntity::CevcEntity()
+{
+}
+
+CmdClassifierType CevcEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    // TODO: Implement the rest of this usecase, but need EV CHarging information first
+    return CmdClassifierType::EnumUndefined;
+}
+
+UseCaseInformationDataType CevcEntity::get_usecase_information()
+{
+    UseCaseInformationDataType cevc_usecase;
+    cevc_usecase.actor = "EV";
+
+    UseCaseSupportType cevc_usecase_support;
+    cevc_usecase_support.useCaseName = "coordinatedEvCharging";
+    cevc_usecase_support.useCaseVersion = "1.0.1";
+    cevc_usecase_support.useCaseAvailable = true;
+    cevc_usecase_support.scenarioSupport->insert(cevc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
+
+    cevc_usecase_support.useCaseDocumentSubRevision = "release";
+    cevc_usecase.useCaseSupport->push_back(cevc_usecase_support);
+
+    FeatureAddressType cevc_usecase_feature_address;
+    cevc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    cevc_usecase_feature_address.entity = entity_address;
+    cevc_usecase.address = cevc_usecase_feature_address;
+    return cevc_usecase;
+}
+
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> CevcEntity::get_detailed_discovery_entity_information() const
+{
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EV;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
+
+    // We focus on returning the mandatory fields.
+    return {entity};
+}
+
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcEntity::get_detailed_discovery_feature_information() const
+{
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+
+    // See EEBUS UC TS CoordinatedEvCharging v1.0.1.pdf 3.2.1.2.1
+
+    // The following functions are needed by the TimeSeries Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType timeseries_feature{};
+    timeseries_feature.description->featureAddress->entity = entity_address;
+    timeseries_feature.description->featureAddress->feature = feature_address_timeseries; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    timeseries_feature.description->featureType = FeatureTypeEnumType::TimeSeries;
+    timeseries_feature.description->role = RoleType::server;
+
+    // timeSeriesDescriptionListData
+    FunctionPropertyType timeseries_description{};
+    timeseries_description.function = FunctionEnumType::timeSeriesDescriptionListData;
+    timeseries_description.possibleOperations->read = PossibleOperationsReadType{};
+    timeseries_feature.description->supportedFunction->push_back(timeseries_description);
+
+    // timeSeriesConstraintsListData
+    FunctionPropertyType timeseries_constraints{};
+    timeseries_constraints.function = FunctionEnumType::timeSeriesConstraintsListData;
+    timeseries_constraints.possibleOperations->read = PossibleOperationsReadType{};
+    timeseries_feature.description->supportedFunction->push_back(timeseries_constraints);
+
+    // timeSeriesListData
+    FunctionPropertyType timeseries_data{};
+    timeseries_data.function = FunctionEnumType::timeSeriesListData;
+    timeseries_data.possibleOperations->read = PossibleOperationsReadType{};
+    timeseries_feature.description->supportedFunction->push_back(timeseries_description);
+    features.push_back(timeseries_feature);
+
+    NodeManagementDetailedDiscoveryFeatureInformationType incentive_table_feature{};
+    incentive_table_feature.description->featureAddress->entity = entity_address;
+    incentive_table_feature.description->featureAddress->feature = feature_address_incentive_table;
+    incentive_table_feature.description->featureType = FeatureTypeEnumType::IncentiveTable;
+    incentive_table_feature.description->role = RoleType::server;
+
+    // incentiveTableDescriptionData
+    FunctionPropertyType incentivetable_description{};
+    incentivetable_description.function = FunctionEnumType::incentiveDescriptionListData;
+    incentivetable_description.possibleOperations->read = PossibleOperationsReadType{};
+    incentive_table_feature.description->supportedFunction->push_back(incentivetable_description);
+
+    // incentiveTableConstraintsData
+    FunctionPropertyType incentivetable_constraints{};
+    incentivetable_constraints.function = FunctionEnumType::incentiveTableConstraintsData;
+    incentivetable_constraints.possibleOperations->read = PossibleOperationsReadType{};
+    incentive_table_feature.description->supportedFunction->push_back(incentivetable_constraints);
+
+    // incentiveTableData
+    FunctionPropertyType incentivetable_data{};
+    incentivetable_data.function = FunctionEnumType::incentiveTableData;
+    incentivetable_data.possibleOperations->read = PossibleOperationsReadType{};
+    incentive_table_feature.description->supportedFunction->push_back(incentivetable_data);
+
+    features.push_back(incentive_table_feature);
+
+    return features;
 }
 
 
