@@ -1,8 +1,11 @@
-import tinkerforge_util as tfutil
-tfutil.create_parent_module(__file__, 'software')
-from software.util import *
+from typing import TYPE_CHECKING
 
-#from ....util import *
+if TYPE_CHECKING:
+    from ....util import *
+else:
+    import tinkerforge_util as tfutil
+    tfutil.create_parent_module(__file__, 'software')
+    from software.util import *
 
 spec = Union("Three Phase Decision", 20, require_stable_api=False, variants=[
     Variant('None'),
