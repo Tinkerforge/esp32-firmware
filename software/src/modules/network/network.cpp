@@ -27,6 +27,7 @@
 #include "module_dependencies.h"
 #include "tools/string_builder.h"
 #include "build.h"
+#include "options.h"
 
 #include "unsafe_ports.h"
 
@@ -42,6 +43,16 @@
 #define MAX_CERT_ID -1
 #endif
 
+#if OPTIONS_WEB_SERVER_HTTPS_ENABLED() && OPTIONS_WEB_SERVER_HTTP_ENABLED()
+static constexpr TransportMode default_transport_mode = TransportMode::InsecureAndSecure;
+#elif OPTIONS_WEB_SERVER_HTTPS_ENABLED()
+static constexpr TransportMode default_transport_mode = TransportMode::Secure;
+#elif OPTIONS_WEB_SERVER_HTTP_ENABLED()
+static constexpr TransportMode default_transport_mode = TransportMode::Insecure;
+#else
+#error "Must enable at least one transport mode"
+#endif
+
 extern char local_uid_str[32];
 
 void Network::pre_setup()
@@ -49,7 +60,7 @@ void Network::pre_setup()
     config = ConfigRoot{Config::Object({
         {"hostname", Config::Str("hostname", 1, 32)}, // Will be replaced with stored config or sensible default. Cannot be empty.
         {"enable_mdns", Config::Bool(true)},
-        {"transport_mode", Config::Enum<TransportMode>(TransportMode::Insecure)},
+        {"transport_mode", Config::Enum<TransportMode>(default_transport_mode)},
         {"web_server_port", Config::Uint16(80)},
         {"web_server_port_secure", Config::Uint16(443)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
