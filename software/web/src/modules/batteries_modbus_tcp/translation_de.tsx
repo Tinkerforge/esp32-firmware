@@ -42,6 +42,8 @@ let x = {
             "max_soc": "Maximaler Ladestand",
             "min_soc": "Minimaler Ladestand",
             "grid_charge_power": "Ladeleistung",
+            "max_discharge_current": "Maximaler Entladestrom",
+            "max_charge_current": "Maximaler Ladestrom",
             "max_discharge_power": "Maximale Entladeleistung",
             "max_charge_power": "Maximale Ladeleistung",
             "register_address_mode": "Adressmodus",
