@@ -765,6 +765,14 @@ export function init() {
                             grid_draw_setpoint_default: config[1].table[1].grid_draw_setpoint_default,
                         };
                     }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter) {
+                        extra_values = {
+                            max_soc: config[1].table[1].max_soc,
+                            min_soc: config[1].table[1].min_soc,
+                            max_discharge_current: config[1].table[1].max_discharge_current,
+                            max_charge_current: config[1].table[1].max_charge_current,
+                        };
+                    }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
                         extra_values = {
                             max_soc: config[1].table[1].max_soc,
@@ -804,7 +812,7 @@ export function init() {
                                             on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
                                         }} />
                                 </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
+                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
                                 <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
                                     <InputNumber
                                         required
@@ -833,6 +841,18 @@ export function init() {
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
+                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
+                                    <InputNumber
+                                        required
+                                        min={0}
+                                        max={100}
+                                        unit="%"
+                                        value={config[1].table[1].min_soc}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
+                                        }} />
+                                </FormRow> : undefined}
                             {config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX ?
                                 <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_default")}>
                                     <InputNumber
@@ -853,6 +873,18 @@ export function init() {
                         </CollapsedSection>,
 
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
+                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
+                                <FormRow label={__("batteries_modbus_tcp.content.max_discharge_current")}>
+                                    <InputNumber
+                                        required
+                                        min={0}
+                                        max={185}
+                                        unit="A"
+                                        value={config[1].table[1].max_discharge_current}
+                                        onValue={(v) => {
+                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_current: v})}));
+                                        }} />
+                                </FormRow> : undefined}
                             {config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
                                 <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
                                     <InputNumber
@@ -890,6 +922,18 @@ export function init() {
                             </CollapsedSection>,
 
                             <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
+                                {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
+                                    <FormRow label={__("batteries_modbus_tcp.content.max_charge_current")}>
+                                        <InputNumber
+                                            required
+                                            min={0}
+                                            max={185}
+                                            unit="A"
+                                            value={config[1].table[1].max_charge_current}
+                                            onValue={(v) => {
+                                                on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_current: v})}));
+                                            }} />
+                                    </FormRow> : undefined}
                                 {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
                                     <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
                                         <InputFloat

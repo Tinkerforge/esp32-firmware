@@ -217,7 +217,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::DeyeHybridInverter:
             device_address = table_config->get("device_address")->asUint8();
             action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_deye_hybrid_inverter_table(action);
+            table = load_deye_hybrid_inverter_table(action, table_config);
 
             if (table == nullptr) {
                 report_errorf(cookie, "Unknown Deye Hybrid Inverter action: %u", static_cast<uint8_t>(action));
