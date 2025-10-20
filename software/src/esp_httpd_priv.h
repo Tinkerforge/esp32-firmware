@@ -66,6 +66,7 @@ struct sock_db {
     httpd_pending_func_t pending_fn;        /*!< Pending function for this socket */
     uint64_t lru_counter;                   /*!< LRU Counter indicating when the socket was last used */
     bool lru_socket;                        /*!< Flag indicating LRU socket */
+    uint16_t local_port;
     char pending_data[PARSER_BLOCK_SIZE];   /*!< Buffer for pending data to be received */
     size_t pending_len;                     /*!< Length of pending data to be received */
     bool for_async_req;                     /*!< If true, the socket will not be LRU purged */
@@ -114,7 +115,7 @@ struct httpd_req_aux {
  */
 struct httpd_data {
     httpd_config_t config;                  /*!< HTTPD server configuration */
-    int listen_fd;                          /*!< Server listener FD */
+    int listen_fds[ESP_HTTPD_LISTEN_PORTS]; /*!< Server listener FD */
     int ctrl_fd;                            /*!< Ctrl message receiver FD */
 #if CONFIG_HTTPD_QUEUE_WORK_BLOCKING
     SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl socket semaphore */
@@ -205,7 +206,7 @@ void httpd_sess_init(struct httpd_data *hd);
  *  - ESP_OK   : on successfully queuing the work
  *  - ESP_FAIL : in case of control socket error while sending
  */
-esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd);
+esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd, int listen_fd);
 
 /**
  * @brief   Processes incoming HTTP requests
