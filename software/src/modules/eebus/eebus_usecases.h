@@ -26,7 +26,7 @@ LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_Lim
 EVCC -> EV Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVCommissioningAndConfiguration_V1.0.1.pdf
 EVSECC -> EVSE Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.0.pdf
 NMC -> Node Management and Control. Implemented according to EEBUS_SPINE_TS_ProtocolSpecification.pdf, technically nodemanagement is not a usecase but it behaves like one in many ways and is therefore implemented alongside
-
+EVCEM -> EV Charging Electricity Measurement. Implemented according to EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf
 Sometimes the following references are used e.g. LPC-905, these refer to rules laid out in the spec and can be found in the according technical spec.
 */
 
@@ -45,10 +45,13 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_USECASES_ACTIVE 5
 
 // Configuration related to the LPC usecases
-// Comment out if subscription functionalities shall be disabled
+// Disable if subscription functionalities shall not be used
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
+
+
+
 
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
@@ -61,7 +64,9 @@ enum class UseCaseType : uint8_t
     CoordinatedEvCharging,
     EvCommissioningAndConfiguration,
     EvseCommissioningAndConfiguration,
-    LimitationOfPowerProduction
+    LimitationOfPowerProduction,
+    EvChargingElectricityMeasurement,
+    MonitoringOfPowerConsumption
 };
 
 /**
@@ -294,6 +299,35 @@ private:
 
     void update_api() const;
 };
+
+/**
+ * The ChargerateEntity Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
+ */
+class ChargerateEntity final : public EebusEntity
+{
+public:
+
+    ChargerateEntity();
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::EvChargingElectricityMeasurement;
+    }
+
+    [[nodiscard]] String get_entity_name() const override
+    {
+        return "ChargerateEntity";
+    }
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    UseCaseInformationDataType get_usecase_information() override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+private:
+    uint8_t feature_address_measurement = 40;
+    uint8_t feature_address_electrical_connection = 41;
+
+};
+
 
 class EvEntity final : public EebusEntity
 {
@@ -628,10 +662,12 @@ class CevcEntity final : public EebusEntity
 {
 public:
     CevcEntity();
+
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::CoordinatedEvCharging;
     }
+
     String get_entity_name() const override
     {
         return "CevcEntity";
