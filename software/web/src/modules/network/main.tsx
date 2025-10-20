@@ -286,9 +286,9 @@ return (
                     <FormRow label={__("network.content.transport_mode")}>
                         <InputSelect
                             items={[
-                                ["0", __("network.content.insecure")],
-                                ["1", __("network.content.secure")],
-                                ["2", __("network.content.insecure_and_secure")],
+                                [TransportMode.Insecure.toString(),          __("network.content.insecure")],
+                                [TransportMode.Secure.toString(),            __("network.content.secure")],
+                                [TransportMode.InsecureAndSecure.toString(), __("network.content.insecure_and_secure")],
                             ]}
                             value={state.transport_mode}
                             onValue={(v) => this.setState({transport_mode: parseInt(v)})}
