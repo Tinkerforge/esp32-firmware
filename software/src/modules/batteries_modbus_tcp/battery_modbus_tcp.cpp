@@ -335,7 +335,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_deye_hybrid_inverter_tables(tables);
+        load_deye_hybrid_inverter_tables(tables, table_config);
         break;
 
     case BatteryModbusTCPTableID::AlphaESSHybridInverter:
