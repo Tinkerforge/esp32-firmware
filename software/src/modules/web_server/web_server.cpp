@@ -55,6 +55,8 @@
 // The enum from the header can be used even if the Network module is not included.
 #include "modules/network/transport_mode.enum.h"
 
+#include "gcc_warnings.h"
+
 #define MAX_URI_HANDLERS 128
 #define HTTPD_STACK_SIZE 8192
 
@@ -98,12 +100,12 @@ void WebServer::post_setup()
 #if MODULE_CERTS_AVAILABLE() && MODULE_NETWORK_AVAILABLE()
         const int8_t cert_id = network.get_cert_id();
         const int8_t key_id  = network.get_key_id();
-        bool use_external_cert = (cert_id != -1) && (key_id != -1);
+        bool use_external_cert = (cert_id >= 0) && (key_id >= 0);
 
         if (use_external_cert) {
             do {
                 size_t cert_crt_len = 0;
-                cert_crt = certs.get_cert(cert_id, &cert_crt_len);
+                cert_crt = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_crt_len);
                 if (cert_crt == nullptr) {
                     logger.printfln("Certificate with ID %d is not available", cert_id);
                     use_external_cert = false;
@@ -111,7 +113,7 @@ void WebServer::post_setup()
                 }
 
                 size_t cert_key_len = 0;
-                cert_key = certs.get_cert(key_id, &cert_key_len);
+                cert_key = certs.get_cert(static_cast<uint8_t>(key_id), &cert_key_len);
                 if (cert_key == nullptr) {
                     logger.printfln("Certificate with ID %d is not available", key_id);
                     use_external_cert = false;
@@ -190,7 +192,15 @@ void WebServer::post_setup()
 
     // === Basic httpd config ===
 
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
     httpd_config_t httpd_config = HTTPD_DEFAULT_CONFIG();
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
     httpd_config.lru_purge_enable = true;
     httpd_config.stack_size = HTTPD_STACK_SIZE;
