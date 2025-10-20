@@ -77,6 +77,54 @@ bool Cert::read()
     return true;
 }
 
+[[gnu::noinline]]
+static int cert_set_key_usage(mbedtls_x509write_cert *mbed_cert)
+{
+    mbedtls_asn1_sequence item;
+
+    // For HTTPS set extended key usage to serverAuth
+    item.buf.tag = MBEDTLS_ASN1_OID;
+    item.buf.p = reinterpret_cast<unsigned char *>(const_cast<char *>(MBEDTLS_OID_SERVER_AUTH));
+    item.buf.len = MBEDTLS_OID_SIZE(MBEDTLS_OID_SERVER_AUTH);
+    item.next = nullptr;
+
+    return mbedtls_x509write_crt_set_ext_key_usage(mbed_cert, &item);
+}
+
+[[gnu::noinline]]
+static int cert_set_san(mbedtls_x509write_cert *mbed_cert)
+{
+    mbedtls_x509_san_list san_local;
+    mbedtls_x509_san_list san_host;
+    mbedtls_x509_san_list san_fritz;
+    mbedtls_x509_san_list san_ap_ip;
+
+    char hostname_local[] = "warp2-abcd.local"; // TODO Use actual (default) hostname.
+    san_local.node.type = MBEDTLS_X509_SAN_DNS_NAME;
+    san_local.node.san.unstructured_name.p = reinterpret_cast<unsigned char *>(hostname_local);
+    san_local.node.san.unstructured_name.len = strlen(hostname_local);
+    san_local.next = nullptr;
+
+    san_host.node.type = MBEDTLS_X509_SAN_DNS_NAME;
+    san_host.node.san.unstructured_name.p = reinterpret_cast<unsigned char *>(hostname_local);
+    san_host.node.san.unstructured_name.len = strlen(hostname_local) - 6;
+    san_host.next = &san_local;
+
+    char hostname_fritz[] = "warp2-abcd.fritz.box";
+    san_fritz.node.type = MBEDTLS_X509_SAN_DNS_NAME;
+    san_fritz.node.san.unstructured_name.p = reinterpret_cast<unsigned char *>(hostname_fritz);
+    san_fritz.node.san.unstructured_name.len = strlen(hostname_fritz);
+    san_fritz.next = &san_host;
+
+    unsigned char ap_ip[] = {10,0,0,1};
+    san_ap_ip.node.type = MBEDTLS_X509_SAN_IP_ADDRESS;
+    san_ap_ip.node.san.unstructured_name.p = ap_ip;
+    san_ap_ip.node.san.unstructured_name.len = sizeof(ap_ip);
+    san_ap_ip.next = &san_fritz;
+
+    return mbedtls_x509write_crt_set_subject_alternative_name(mbed_cert, &san_ap_ip);
+}
+
 bool Cert::generate()
 {
     if (LittleFS.exists(KEY_FILE)) {
@@ -139,7 +187,7 @@ bool Cert::generate()
         return false;
     }
 
-    mbedtls_x509write_crt_set_version(&mbed_cert, 2);
+    mbedtls_x509write_crt_set_version(&mbed_cert, MBEDTLS_X509_CRT_VERSION_3);
 
     // Set hostname or IP for CN
     // TODO: Get proper hostname or IP dynamically
@@ -154,7 +202,7 @@ bool Cert::generate()
         return false;
     }
 
-    ret = mbedtls_x509write_crt_set_validity(&mbed_cert, "20240803120000", "21230803120000");
+    ret = mbedtls_x509write_crt_set_validity(&mbed_cert, "20250101000000", "21250101000000");
     if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_validity failed: 0x%04x", ret);
         return false;
@@ -174,32 +222,17 @@ bool Cert::generate()
         return false;
     }
 
-    // For HTTPS set extended key usage to serverAuth
-    const unsigned char ext_key_usage_der[] = {0x30, 0x0a, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x01};
-    ret = mbedtls_x509write_crt_set_extension(
-        &mbed_cert,
-        MBEDTLS_OID_EXTENDED_KEY_USAGE,
-        MBEDTLS_OID_SIZE(MBEDTLS_OID_EXTENDED_KEY_USAGE),
-        0,
-        ext_key_usage_der, sizeof(ext_key_usage_der)
-    );
+    ret = cert_set_key_usage(&mbed_cert);
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_extension failed: 0x%04x", ret);
+        logger.printfln("mbedtls_x509write_crt_set_ext_key_usage failed: 0x%04x", ret);
         return false;
     }
 
-    // TODO: This does not make any difference for what the browsers show.
-    //       I don't think we need it.
-#if 0
-    const unsigned char san_der[] = {0x30, 0x11, 0x82, 0x0f, 'm','y','d','e','v','i','c','e','.','l','o','c','a','l'};
-    ret = mbedtls_x509write_crt_set_extension(
-        &mbed_cert,
-        MBEDTLS_OID_SUBJECT_ALT_NAME,
-        MBEDTLS_OID_SIZE(MBEDTLS_OID_SUBJECT_ALT_NAME),
-        0,
-        san_der, sizeof(san_der)
-    );
-#endif
+    ret = cert_set_san(&mbed_cert);
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_subject_alternative_name failed: 0x%04x", ret);
+        return false;
+    }
 
     crt_length = mbedtls_x509write_crt_der(&mbed_cert, crt, sizeof(crt), mbedtls_ctr_drbg_random, &ctr_drbg);
     memmove(crt, crt + sizeof(crt) - crt_length, crt_length);
