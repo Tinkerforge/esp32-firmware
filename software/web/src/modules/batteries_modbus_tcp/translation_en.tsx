@@ -42,6 +42,8 @@ let x = {
             "max_soc": "Maximum state of charge",
             "min_soc": "Minimum state of charge",
             "grid_charge_power": "Charge power",
+            "max_discharge_current": "Maximum discharge current",
+            "max_charge_current": "Maximum charge current",
             "max_discharge_power": "Maximum discharge power",
             "max_charge_power": "Maximum charge power",
             "register_address_mode": "Address mode",
