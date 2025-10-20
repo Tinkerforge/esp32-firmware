@@ -27,7 +27,7 @@ import { BatteryClassID } from "../batteries/battery_class_id.enum";
 import { BatteryAction } from "../batteries/battery_action.enum";
 import { BatteryConfig } from "../batteries/types";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
-import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config } from "./battery_modbus_tcp_specs";
+import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./battery_modbus_tcp_specs";
 import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -450,6 +450,8 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
     }
 
     async execute() {
+        // FIXME: trigger form validation
+
         let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
         this.setState({table_id: this.props.table_id, waiting: true, cookie: cookie, result: ""}, async () => {
@@ -521,17 +523,17 @@ function import_custom_table(table: RegisterTable)
     }
 
     if (typeof table.repeat_interval != "number") {
-        console.log("Batteries Modbus/TCP: Imported config repeat interval is not a number");
+        console.log("Batteries Modbus/TCP: Imported config repeat_interval is not a number");
         return null;
     }
 
     if (!util.isNonNullObject(table.register_blocks)) {
-        console.log("Batteries Modbus/TCP: Imported config register blocks is not an object");
+        console.log("Batteries Modbus/TCP: Imported config register_blocks is not an object");
         return null;
     }
 
     if (typeof table.register_blocks.length != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register blocks has no length");
+        console.log("Batteries Modbus/TCP: Imported config register_blocks has no length");
         return null;
     }
 
@@ -539,32 +541,32 @@ function import_custom_table(table: RegisterTable)
 
     for (let i = 0; i < table.register_blocks.length; ++i) {
         if (!util.isNonNullObject(table.register_blocks[i])) {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item is not an object");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item is not an object");
             return null;
         }
 
         if (typeof table.register_blocks[i].desc != "string") {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item desc is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item desc is not a number");
             return null;
         }
 
         if (typeof table.register_blocks[i].func != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item func is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item func is not a number");
             return null;
         }
 
         if (typeof table.register_blocks[i].addr != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item addr is not a number");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item addr is not a number");
             return null;
         }
 
         if (!util.isNonNullObject(table.register_blocks[i].vals)) {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item vals is not an object");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item vals is not an object");
             return null;
         }
 
         if (typeof table.register_blocks[i].vals.length != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register blocks item vals has no length");
+            console.log("Batteries Modbus/TCP: Imported config register_blocks item vals has no length");
             return null;
         }
 
@@ -572,7 +574,7 @@ function import_custom_table(table: RegisterTable)
 
         for (let k = 0; k < table.register_blocks[i].vals.length; ++k) {
             if (typeof table.register_blocks[i].vals[k] != "number") {
-                console.log("Batteries Modbus/TCP: Imported config register blocks item vals item is not a number");
+                console.log("Batteries Modbus/TCP: Imported config register_blocks item vals item is not a number");
                 return null;
             }
 
@@ -634,186 +636,43 @@ export function init() {
 
                 let table: TableConfig;
 
-                switch (new_config[1].table[0]) {
-                    case BatteryModbusTCPTableID.Custom:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].register_address_mode != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config register address mode is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.Custom, {
-                            device_address:              new_config[1].table[1].device_address,
-                            register_address_mode:       new_config[1].table[1].register_address_mode,
-                            permit_grid_charge:          import_custom_table(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_custom_table(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_custom_table(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_custom_table(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_custom_table(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_custom_table(new_config[1].table[1].revoke_charge_override),
-                        }];
-
-                        if (!util.hasValue(table[1].permit_grid_charge)
-                         || !util.hasValue(table[1].revoke_grid_charge_override)
-                         || !util.hasValue(table[1].forbid_discharge)
-                         || !util.hasValue(table[1].revoke_discharge_override)
-                         || !util.hasValue(table[1].forbid_charge)
-                         || !util.hasValue(table[1].revoke_charge_override)) {
-                            return null;
-                        }
-
-                        break;
-
-                    case BatteryModbusTCPTableID.VictronEnergyGX:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].grid_draw_setpoint_charge != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config grid draw setpoint charge is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].grid_draw_setpoint_default != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config grid draw setpoint default is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.VictronEnergyGX, {
-                            device_address: new_config[1].table[1].device_address,
-                            grid_draw_setpoint_charge: new_config[1].table[1].grid_draw_setpoint_charge,
-                            grid_draw_setpoint_default: new_config[1].table[1].grid_draw_setpoint_default,
-                        }];
-
-                        if (!util.hasValue(table[1].device_address)
-                         || !util.hasValue(table[1].grid_draw_setpoint_charge)
-                         || !util.hasValue(table[1].grid_draw_setpoint_default)) {
-                            return null;
-                        }
-
-                        break;
-
-                    case BatteryModbusTCPTableID.DeyeHybridInverter:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.DeyeHybridInverter, {
-                            device_address: new_config[1].table[1].device_address,
-                        }];
-
-                        if (!util.hasValue(table[1].device_address)) {
-                            return null;
-                        }
-
-                        break;
-
-                    case BatteryModbusTCPTableID.AlphaESSHybridInverter:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].max_soc != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config max soc is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].min_soc != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config min soc is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.AlphaESSHybridInverter, {
-                            device_address: new_config[1].table[1].device_address,
-                            max_soc: new_config[1].table[1].max_soc,
-                            min_soc: new_config[1].table[1].min_soc,
-                        }];
-
-                        if (!util.hasValue(table[1].device_address)
-                         || !util.hasValue(table[1].max_soc)
-                         || !util.hasValue(table[1].min_soc)) {
-                            return null;
-                        }
-
-                        break;
-
-                    case BatteryModbusTCPTableID.HaileiHybridInverter:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].max_soc != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config max soc is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].min_soc != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config min soc is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.HaileiHybridInverter, {
-                            device_address: new_config[1].table[1].device_address,
-                            max_soc: new_config[1].table[1].max_soc,
-                            min_soc: new_config[1].table[1].min_soc,
-                        }];
-
-                        if (!util.hasValue(table[1].device_address)
-                         || !util.hasValue(table[1].max_soc)
-                         || !util.hasValue(table[1].min_soc)) {
-                            return null;
-                        }
-
-                        break;
-
-                    case BatteryModbusTCPTableID.SungrowHybridInverter:
-                        if (typeof new_config[1].table[1].device_address != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config device address is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].grid_charge_power != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config grid charge power is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].max_discharge_power != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config max discharge power is not a number");
-                            return null;
-                        }
-
-                        if (typeof new_config[1].table[1].max_charge_power != "number") {
-                            console.log("Batteries Modbus/TCP: Imported config max charge power is not a number");
-                            return null;
-                        }
-
-                        table = [BatteryModbusTCPTableID.SungrowHybridInverter, {
-                            device_address: new_config[1].table[1].device_address,
-                            grid_charge_power: new_config[1].table[1].grid_charge_power,
-                            max_discharge_power: new_config[1].table[1].max_discharge_power,
-                            max_charge_power: new_config[1].table[1].max_charge_power,
-                        }];
-
-                        if (!util.hasValue(table[1].device_address)
-                         || !util.hasValue(table[1].grid_charge_power)
-                         || !util.hasValue(table[1].max_discharge_power)
-                         || !util.hasValue(table[1].max_charge_power)) {
-                            return null;
-                        }
-
-                        break;
-
-                    default:
-                        console.log("Batteries Modbus/TCP: Imported config table has unknown class:", new_config[1].table[0]);
+                if (new_config[1].table[0] == BatteryModbusTCPTableID.Custom) {
+                    if (typeof new_config[1].table[1].device_address != "number") {
+                        console.log("Batteries Modbus/TCP: Imported config device_address is not a number");
                         return null;
+                    }
+
+                    if (typeof new_config[1].table[1].register_address_mode != "number") {
+                        console.log("Batteries Modbus/TCP: Imported config register_address_mode is not a number");
+                        return null;
+                    }
+
+                    table = [BatteryModbusTCPTableID.Custom, {
+                        device_address:              new_config[1].table[1].device_address,
+                        register_address_mode:       new_config[1].table[1].register_address_mode,
+                        permit_grid_charge:          import_custom_table(new_config[1].table[1].permit_grid_charge),
+                        revoke_grid_charge_override: import_custom_table(new_config[1].table[1].revoke_grid_charge_override),
+                        forbid_discharge:            import_custom_table(new_config[1].table[1].forbid_discharge),
+                        revoke_discharge_override:   import_custom_table(new_config[1].table[1].revoke_discharge_override),
+                        forbid_charge:               import_custom_table(new_config[1].table[1].forbid_charge),
+                        revoke_charge_override:      import_custom_table(new_config[1].table[1].revoke_charge_override),
+                    }];
+
+                    if (!util.hasValue(table[1].permit_grid_charge)
+                     || !util.hasValue(table[1].revoke_grid_charge_override)
+                     || !util.hasValue(table[1].forbid_discharge)
+                     || !util.hasValue(table[1].revoke_discharge_override)
+                     || !util.hasValue(table[1].forbid_charge)
+                     || !util.hasValue(table[1].revoke_charge_override)) {
+                        return null;
+                    }
+                }
+                else {
+                    table = import_table_config(new_config[1].table);
+
+                    if (!util.hasValue(table)) {
+                        return null;
+                    }
                 }
 
                 let display_name = "";

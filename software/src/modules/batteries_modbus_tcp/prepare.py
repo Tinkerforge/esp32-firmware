@@ -24,6 +24,7 @@ execute_table_prototypes = []
 table_typedefs = []
 table_typenames = []
 table_news = []
+table_imports = []
 default_device_addresses = []
 specs = []
 all_table_prototypes = {}
@@ -68,6 +69,8 @@ for module in modules:
                               f'    BatteryModbusTCPTableID.{table_id.camel},\n    {{')
 
         table_new = []
+        table_import_type_check = []
+        table_import_assignment = []
 
         if table_prototype[1] == None:
             table_new.append('null')
@@ -90,6 +93,13 @@ for module in modules:
 
                 table_new.append(f'{member_name}: {member_default}')
 
+                table_import_type_check.append(f'        if (typeof table_in[1].{member_name} != "number") {{\n'
+                                               f'            console.log("Batteries Modbus/TCP: Imported config {member_name} is not a number");\n'
+                                                '            return null;\n'
+                                                '        }')
+
+                table_import_assignment.append(f'            {member_name}: table_in[1].{member_name},\r')
+
                 if isinstance(member, dict):
                     all_table_prototypes.setdefault(table_prototype[0], {}).setdefault(member['action'], []).append((member['name'], member['type']))
 
@@ -97,8 +107,15 @@ for module in modules:
 
         table_typenames.append(f'TableConfig{table_id.camel}')
 
-        table_news.append(f'    case BatteryModbusTCPTableID.{table_id.camel}:')
-        table_news.append(f'        return [BatteryModbusTCPTableID.{table_id.camel}, {{{", ".join(table_new)}}}];\n'.replace('{null}', 'null'))
+        table_news.append(f'    case BatteryModbusTCPTableID.{table_id.camel}:\r')
+        table_news.append(f'        return [BatteryModbusTCPTableID.{table_id.camel}, {{{", ".join(table_new)}}}];'.replace('{null}', 'null'))
+
+        table_imports.append(f'    case BatteryModbusTCPTableID.{table_id.camel}:\r')
+        table_imports += table_import_type_check
+        table_imports.append(f'        table_out = [BatteryModbusTCPTableID.{table_id.camel}, {{\r')
+        table_imports += table_import_assignment
+        table_imports.append('        }];\n\n'
+                             '        break;')
 
     default_device_addresses += module.default_device_addresses
     specs += module.specs
@@ -420,8 +437,8 @@ ts += '\n'.join(table_typedefs) + '\n'
 ts += 'export type TableConfig = TableConfigNone |\n'
 ts += '                          TableConfigCustom |\n'
 ts += '                          ' + ' |\n                          '.join(table_typenames) + ';\n\n'
-ts += 'export function new_table_config(table: BatteryModbusTCPTableID): TableConfig {\n'
-ts += '    switch (table) {\n'
+ts += 'export function new_table_config(table_id: BatteryModbusTCPTableID): TableConfig {\n'
+ts += '    switch (table_id) {\n'
 ts += '    case BatteryModbusTCPTableID.Custom:\n'
 ts += '        return [BatteryModbusTCPTableID.Custom, {\n'
 ts += '            device_address: 1,\n'
@@ -433,10 +450,20 @@ ts += '            revoke_discharge_override: {repeat_interval: 60, register_blo
 ts += '            forbid_charge: {repeat_interval: 60, register_blocks: []},\n'
 ts += '            revoke_charge_override: {repeat_interval: 60, register_blocks: []},\n'
 ts += '        }];\n\n'
-ts += '\n'.join(table_news) + '\n'
+ts += '\n\n'.join(table_news).replace('\r\n', '') + '\n\n'
 ts += '    default:\n'
 ts += '        return [BatteryModbusTCPTableID.None, null];\n'
 ts += '    }\n'
+ts += '}\n\n'
+ts += 'export function import_table_config(table_in: TableConfig): TableConfig {\n'
+ts += '    let table_out: TableConfig;\n'
+ts += '    switch (table_in[0]) {\n'
+ts += '\n\n'.join(table_imports).replace('\r\n', '') + '\n\n'
+ts += '    default:\n'
+ts += '        console.log("Batteries Modbus/TCP: Imported config table has unknown class:", table_in[0]);\n'
+ts += '        return null;\n'
+ts += '    }\n\n'
+ts += '    return table_out;\n'
 ts += '}\n'
 
 tfutil.write_file_if_different('../../../web/src/modules/batteries_modbus_tcp/battery_modbus_tcp_specs.ts', ts)
