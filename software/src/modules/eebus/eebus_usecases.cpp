@@ -666,6 +666,103 @@ void ChargingSummaryEntity::update_api() const
     }
 }
 
+ChargerateEntity::ChargerateEntity()
+{
+    // TODO: Initialize values
+}
+
+CmdClassifierType ChargerateEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    // TODO: Handle messages
+    return CmdClassifierType::EnumUndefined;
+}
+
+UseCaseInformationDataType ChargerateEntity::get_usecase_information()
+{
+    UseCaseInformationDataType evcm_usecase;
+    evcm_usecase.actor = "EV";
+
+    UseCaseSupportType evcm_usecase_support;
+    evcm_usecase_support.useCaseName = "measurementOfElectricityDuringCharging";
+    evcm_usecase_support.useCaseVersion = "1.0.1";
+    evcm_usecase_support.useCaseAvailable = true;
+    evcm_usecase_support.scenarioSupport->insert(evcm_usecase_support.scenarioSupport->end(), {1, 2, 3});
+
+    evcm_usecase_support.useCaseDocumentSubRevision = "release";
+    evcm_usecase.useCaseSupport->push_back(evcm_usecase_support);
+
+    FeatureAddressType evcm_usecase_feature_address;
+    evcm_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    evcm_usecase_feature_address.entity = entity_address;
+    evcm_usecase.address = evcm_usecase_feature_address;
+    return evcm_usecase;
+}
+
+std::vector<NodeManagementDetailedDiscoveryEntityInformationType> ChargerateEntity::get_detailed_discovery_entity_information() const
+{
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EV;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "Controllable System"; // The label of the entity. This is optional but recommended.
+
+    // We focus on returning the mandatory fields.
+    return {entity};
+}
+
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ChargerateEntity::get_detailed_discovery_feature_information() const
+{
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+
+    NodeManagementDetailedDiscoveryFeatureInformationType measurement_feature{};
+    measurement_feature.description->featureAddress->entity = entity_address;
+    measurement_feature.description->featureAddress->feature = 35;
+    measurement_feature.description->featureType = FeatureTypeEnumType::Measurement;
+    // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
+    measurement_feature.description->role = RoleType::server;
+
+    // measurementDescriptionListData
+    FunctionPropertyType measurementDescription{};
+    measurementDescription.function = FunctionEnumType::measurementDescriptionListData;
+    measurementDescription.possibleOperations->read = PossibleOperationsReadType{};
+    measurement_feature.description->supportedFunction->push_back(measurementDescription);
+
+    // measurementConstraintsListData
+    FunctionPropertyType measurementConstrains{};
+    measurementConstrains.function = FunctionEnumType::measurementConstraintsListData;
+    measurementConstrains.possibleOperations->read = PossibleOperationsReadType{};
+    measurement_feature.description->supportedFunction->push_back(measurementConstrains);
+
+    // measurementConstraintsListData
+    FunctionPropertyType measurementData{};
+    measurementData.function = FunctionEnumType::measurementListData;
+    measurementData.possibleOperations->read = PossibleOperationsReadType{};
+    measurement_feature.description->supportedFunction->push_back(measurementData);
+    features.push_back(measurement_feature);
+
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnection_feature{};
+    electricalConnection_feature.description->featureAddress->entity = entity_address;
+    electricalConnection_feature.description->featureAddress->feature = 35;
+    electricalConnection_feature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
+    // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
+    electricalConnection_feature.description->role = RoleType::server;
+
+    // electricalConnectionDescriptionListData
+    FunctionPropertyType electricalConnectionDescription{};
+    electricalConnectionDescription.function = FunctionEnumType::electricalConnectionDescriptionListData;
+    electricalConnectionDescription.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnection_feature.description->supportedFunction->push_back(electricalConnectionDescription);
+
+    // electricalConnectionParameterDescriptionListData
+    FunctionPropertyType electricalConnectionParameters{};
+    electricalConnectionParameters.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
+    electricalConnectionParameters.possibleOperations->read = PossibleOperationsReadType{};
+    electricalConnection_feature.description->supportedFunction->push_back(electricalConnectionParameters);
+    features.push_back(electricalConnection_feature);
+
+    return features;
+}
+
 EvEntity::EvEntity()
 {
     entity_active = false; // Disable entity until an EV is connected
@@ -1812,7 +1909,7 @@ UseCaseInformationDataType CevcEntity::get_usecase_information()
     UseCaseSupportType cevc_usecase_support;
     cevc_usecase_support.useCaseName = "coordinatedEvCharging";
     cevc_usecase_support.useCaseVersion = "1.0.1";
-    cevc_usecase_support.useCaseAvailable = true;
+    cevc_usecase_support.useCaseAvailable = false; // TODO: Set to true when implemented
     cevc_usecase_support.scenarioSupport->insert(cevc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
 
     cevc_usecase_support.useCaseDocumentSubRevision = "release";
