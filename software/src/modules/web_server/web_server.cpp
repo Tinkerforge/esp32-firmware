@@ -59,6 +59,8 @@
 #define MAX_URI_HANDLERS 128
 #define HTTPD_STACK_SIZE 8192
 
+static void dummy_free_fn(void *) {}
+
 void WebServer::post_setup()
 {
     if (this->httpd != nullptr) {
@@ -66,116 +68,165 @@ void WebServer::post_setup()
     }
 
 #if HTTPS_AVAILABLE()
-    httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-
-    const int8_t cert_id = network.get_cert_id();
-    const int8_t key_id  = network.get_key_id();
-    const bool use_external_cert = (cert_id != -1) && (key_id != -1);
-
-#if MODULE_CERTS_AVAILABLE()
-    if (use_external_cert) {
-        size_t cert_crt_len = 0;
-        auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
-        if (cert_crt == nullptr) {
-            logger.printfln("Certificate with ID %d is not available", cert_id);
-            return;
-        }
-
-        size_t cert_key_len = 0;
-        auto cert_key = certs.get_cert(key_id, &cert_key_len);
-        if (cert_key == nullptr) {
-            logger.printfln("Certificate with ID %d is not available", key_id);
-            return;
-        }
-
-        // cert config for external certs
-        config.servercert     = cert_crt.release();
-        config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-        config.prvtkey_pem    = cert_key.release();
-        config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
-    }
-#endif
-
-    if (!use_external_cert) {
-        if (cert == nullptr) {
-            cert = make_unique_psram<Cert>();
-        }
-        if (!cert->read()) {
-            logger.printfln("Failed to read self-signed certificate");
-            return;
-        }
-
-        // TODO: This is only for debugging, remove later
-        cert->log();
-
-        config.servercert     = cert->crt;
-        config.servercert_len = cert->crt_length + 1;
-        config.prvtkey_pem    = cert->key;
-        config.prvtkey_len    = cert->key_length + 1;
-    }
-
-    const auto transport_mode = network.get_transport_mode();
-
-    switch(transport_mode) {
-        case TransportMode::Insecure:
-            config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
-            break;
-        case TransportMode::Secure:
-            config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
-            break;
-        case TransportMode::InsecureAndSecure:
-            // TODO: Currently we only support one transport mode at a time.
-            config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
-            break;
-        default:
-            config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
-            logger.printfln("Invalid transport mode %d", static_cast<int>(transport_mode));
-            break;
-    }
-
-    config.port_secure    = network.get_web_server_port_secure();
-    config.port_insecure  = network.get_web_server_port();
-#else
-    // Use fake ssl_config_t to be able to reuse code
-    typedef struct {
-        httpd_config_t httpd;
-    } fake_ssl_config_t;
-
-    fake_ssl_config_t config = {
-        .httpd = HTTPD_DEFAULT_CONFIG()
+    httpd_ssl_config_t ssl_configs[3] = {
+        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
+        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
+        HTTPD_SSL_PORT_CONFIG_DEFAULT(),
     };
-#endif
+    size_t ssl_configs_used = 0;
 
-    config.httpd.lru_purge_enable = true;
-    config.httpd.stack_size = HTTPD_STACK_SIZE;
-    config.httpd.max_uri_handlers = MAX_URI_HANDLERS;
-    config.httpd.global_user_ctx = this;
-    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
-    config.httpd.global_user_ctx_free_fn = [](void *foo){};
-    config.httpd.max_open_sockets = 10;
-    config.httpd.enable_so_linger = true;
-    config.httpd.linger_timeout = 100;
+    bool http_fallback_needed = false;
+    bool https_multiport_needed = false;
 
 #if MODULE_NETWORK_AVAILABLE()
-    config.httpd.server_port = network.get_web_server_port();
+    const TransportMode transport_mode = network.get_transport_mode();
+#else
+    const TransportMode transport_mode = TransportMode::InsecureAndSecure;
+#endif
+
+    // === Secure or mixed mode ===
+
+    // Certificate buffers must live until httpd has started.
+    std::unique_ptr<unsigned char[]> cert_crt;
+    std::unique_ptr<unsigned char[]> cert_key;
+    unique_ptr_any<Cert> cert;
+
+    if (transport_mode != TransportMode::Insecure) {
+        httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
+        bool cert_ok = false;
+
+        // Try external certificate
+#if MODULE_CERTS_AVAILABLE() && MODULE_NETWORK_AVAILABLE()
+        const int8_t cert_id = network.get_cert_id();
+        const int8_t key_id  = network.get_key_id();
+        bool use_external_cert = (cert_id != -1) && (key_id != -1);
+
+        if (use_external_cert) {
+            do {
+                size_t cert_crt_len = 0;
+                cert_crt = certs.get_cert(cert_id, &cert_crt_len);
+                if (cert_crt == nullptr) {
+                    logger.printfln("Certificate with ID %d is not available", cert_id);
+                    use_external_cert = false;
+                    break;
+                }
+
+                size_t cert_key_len = 0;
+                cert_key = certs.get_cert(key_id, &cert_key_len);
+                if (cert_key == nullptr) {
+                    logger.printfln("Certificate with ID %d is not available", key_id);
+                    use_external_cert = false;
+                    break;
+                }
+
+                ssl_config->servercert     = cert_crt.get();
+                ssl_config->servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
+                ssl_config->prvtkey_pem    = cert_key.get();
+                ssl_config->prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+
+                cert_ok = true;
+            } while (false);
+        }
+#else
+        const bool use_external_cert = false;
+#endif
+
+        // Self-signed certificate selected or external cert failed to load
+        if (!use_external_cert) {
+            do {
+                cert = make_unique_psram<Cert>();
+
+                if (cert == nullptr) {
+                    http_fallback_needed = true;
+                    break;
+                }
+                if (!cert->read()) {
+                    logger.printfln("Failed to read self-signed certificate");
+                    http_fallback_needed = true;
+                    return;
+                }
+
+                // TODO: This is only for debugging, remove later
+                cert->log();
+
+                ssl_config->servercert     = cert->crt;
+                ssl_config->servercert_len = cert->crt_length + 1;
+                ssl_config->prvtkey_pem    = cert->key;
+                ssl_config->prvtkey_len    = cert->key_length + 1;
+
+                cert_ok = true;
+            } while (false);
+        }
+
+        if (cert_ok) {
+                ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+
+#if MODULE_NETWORK_AVAILABLE()
+                ssl_config->port_secure = network.get_web_server_port_secure();
+#else
+                ssl_config->port_secure = 443;
+#endif
+
+                ssl_configs_used++;
+                https_multiport_needed = true;
+        }
+    }
+
+    // === Insecure or mixed mode or fallback when secure-only is not available ===
+
+    if (transport_mode != TransportMode::Secure || http_fallback_needed) {
+        httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
+
+        ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
+
+#if MODULE_NETWORK_AVAILABLE()
+        ssl_config->port_insecure = network.get_web_server_port();
+#else
+        ssl_config->port_insecure = 80;
+#endif
+
+        ssl_configs_used++;
+    }
+#endif // HTTPS_AVAILABLE()
+
+    // === Basic httpd config ===
+
+    httpd_config_t httpd_config = HTTPD_DEFAULT_CONFIG();
+
+    httpd_config.lru_purge_enable = true;
+    httpd_config.stack_size = HTTPD_STACK_SIZE;
+    httpd_config.max_uri_handlers = MAX_URI_HANDLERS;
+    httpd_config.global_user_ctx = this;
+    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
+    httpd_config.global_user_ctx_free_fn = dummy_free_fn;
+    httpd_config.max_open_sockets = 10;
+    httpd_config.enable_so_linger = true;
+    httpd_config.linger_timeout = 100; // Try to get WS close and TLS close out.
+
+#if MODULE_NETWORK_AVAILABLE()
+    httpd_config.server_port = network.get_web_server_port(); // Only used in single-port-mode
 #endif
 
 #if MODULE_HTTP_AVAILABLE()
-    config.httpd.uri_match_fn = custom_uri_match;
+    httpd_config.uri_match_fn = custom_uri_match;
 #endif
 
     // Start the httpd server
 #if HTTPS_AVAILABLE()
-    if (config.transport_mode == HTTPD_SSL_TRANSPORT_SECURE) {
-        auto result_https = httpd_ssl_start(&this->httpd, &config);
+    if (https_multiport_needed) {
+        logger.printfln("Starting multi-port server with %zu port%s", ssl_configs_used, ssl_configs_used == 1 ? "": "s");
+
+        esp_err_t result_https = httpd_ssl_start_multi(&this->httpd, &httpd_config, ssl_configs, ssl_configs_used);
         if (result_https != ESP_OK) {
             httpd = nullptr;
             logger.printfln("Failed to start https web server: %s (0x%X)", esp_err_to_name(result_https), static_cast<unsigned>(result_https));
             return;
         }
-    } else if (config.transport_mode == HTTPD_SSL_TRANSPORT_INSECURE) {
+    } else {
 #endif
-        auto result_http = httpd_start(&this->httpd, &config.httpd);
+        logger.printfln("Starting single-port server on port %hhu", httpd_config.server_port);
+
+        esp_err_t result_http = httpd_start(&this->httpd, &httpd_config);
         if (result_http != ESP_OK) {
             httpd = nullptr;
             logger.printfln("Failed to start http web server: %s (0x%X)", esp_err_to_name(result_http), static_cast<unsigned>(result_http));

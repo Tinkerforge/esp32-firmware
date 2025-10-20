@@ -196,5 +196,4 @@ private:
                                  wshCallback &&callback,
                                  wshUploadCallback &&uploadCallback,
                                  wshUploadErrorCallback &&uploadErrorCallback);
-    unique_ptr_any<Cert> cert = nullptr;
 };
