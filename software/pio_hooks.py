@@ -586,6 +586,15 @@ def repair_meters_sun_spec_dir():
         except FileNotFoundError:
             pass
 
+def remove_generated_enum_and_union_files():
+    for path in glob.glob("src/modules/*/*.enum.cpp") + \
+                glob.glob("src/modules/*/*.enum.h") + \
+                glob.glob("web/src/modules/*/*.enum.ts") + \
+                glob.glob("src/modules/*/*.union.cpp") + \
+                glob.glob("src/modules/*/*.union.h") + \
+                glob.glob("web/src/modules/*/*.union.ts"):
+        os.remove(path)
+
 def find_module_space(modules, name_space):
     index = 0
     for module in modules:
@@ -753,6 +762,7 @@ def main():
     repair_firmware_update_dir()
     repair_meters_modbus_tcp_dir()
     repair_meters_sun_spec_dir()
+    remove_generated_enum_and_union_files()
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
