@@ -21,9 +21,14 @@
 
 #include <cstdint>
 
+#include "mbedtls/x509_crt.h"
+
 class Cert
 {
 private:
+    bool fill_cert(mbedtls_x509write_cert *mbed_cert);
+    bool key_and_sign(mbedtls_x509write_cert *mbed_cert);
+    bool write_cert_and_key();
     bool generate();
 
 public:
