@@ -586,14 +586,32 @@ def repair_meters_sun_spec_dir():
         except FileNotFoundError:
             pass
 
-def remove_generated_enum_and_union_files():
+def remove_orphaned_enum_files():
+    prefix_paths = []
+
+    for path in glob.glob("src/modules/*/*.enum"):
+        path_parts = os.path.split(path)
+        filename_parts = path_parts[-1].split('.')
+
+        prefix_paths.append(os.path.join(path_parts[0], f'{util.FlavoredName(filename_parts[0]).get().under}.enum'))
+
     for path in glob.glob("src/modules/*/*.enum.cpp") + \
                 glob.glob("src/modules/*/*.enum.h") + \
-                glob.glob("web/src/modules/*/*.enum.ts") + \
-                glob.glob("src/modules/*/*.union.cpp") + \
-                glob.glob("src/modules/*/*.union.h") + \
-                glob.glob("web/src/modules/*/*.union.ts"):
-        os.remove(path)
+                glob.glob("web/src/modules/*/*.enum.ts"):
+        to_be_removed = False
+
+        if path.endswith(".cpp"):
+            to_be_removed = path[:-4] not in prefix_paths
+        elif path.endswith(".h"):
+            to_be_removed = path[:-2] not in prefix_paths
+        elif path.endswith(".ts"):
+            to_be_removed = path[4:-3] not in prefix_paths
+
+        if to_be_removed:
+            try:
+                os.remove(path)
+            except FileNotFoundError:
+                pass
 
 def find_module_space(modules, name_space):
     index = 0
@@ -762,7 +780,7 @@ def main():
     repair_firmware_update_dir()
     repair_meters_modbus_tcp_dir()
     repair_meters_sun_spec_dir()
-    remove_generated_enum_and_union_files()
+    remove_orphaned_enum_files()
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
