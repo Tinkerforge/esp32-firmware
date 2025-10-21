@@ -193,6 +193,8 @@ bool Cert::fill_cert(mbedtls_x509write_cert *mbed_cert)
 [[gnu::noinline]]
 bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
 {
+    bool retval;
+
     // Initialize entropy
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
@@ -203,7 +205,8 @@ bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
     int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, reinterpret_cast<const unsigned char *>(pers), strlen(pers));
     if (ret != 0) {
         logger.printfln("mbedtls_ctr_drbg_seed failed: 0x%04x", ret);
-        return false;
+        retval = false;
+        goto err_out;
     }
 
     // Init key
@@ -213,7 +216,8 @@ bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
     ret = mbedtls_pk_setup(&mbed_key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
     if (ret != 0) {
         logger.printfln("mbedtls_pk_setup failed: 0x%04x", ret);
-        return false;
+        retval = false;
+        goto err_out;
     }
 
     ret = mbedtls_ecp_gen_key(MBEDTLS_ECP_DP_SECP256R1,
@@ -221,7 +225,8 @@ bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
                               mbedtls_ctr_drbg_random, &ctr_drbg);
     if (ret != 0) {
         logger.printfln("mbedtls_ecp_gen_key failed: 0x%04x", ret);
-        return false;
+        retval = false;
+        goto err_out;
     }
 
     mbedtls_x509write_crt_set_subject_key(mbed_cert, &mbed_key);
@@ -235,10 +240,16 @@ bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
     memmove(key, key + sizeof(key) - key_length, key_length);
     logger.printfln("Key (DER) with length %d generated (first byte: %x)", key_length, key[0]);
 
+    retval = true;
+
+err_out:
+    mbedtls_entropy_free(&entropy);
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+
     mbedtls_pk_free(&mbed_key);
     mbedtls_x509write_crt_free(mbed_cert);
 
-    return true;
+    return retval;
 }
 
 [[gnu::noinline]]
@@ -320,10 +331,11 @@ bool Cert::generate()
     mbedtls_x509write_cert mbed_cert;
 
     if (!fill_cert(&mbed_cert)) {
+        mbedtls_x509write_crt_free(&mbed_cert);
         return false;
     }
 
-    if (!key_and_sign(&mbed_cert)) {
+    if (!key_and_sign(&mbed_cert)) { // Will always free mbed_cert
         return false;
     }
 
