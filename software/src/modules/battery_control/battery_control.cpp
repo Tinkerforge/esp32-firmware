@@ -28,9 +28,9 @@
 
 #include "gcc_warnings.h"
 
-static constexpr const uint16_t MAX_RULES_PER_TYPE = 32;
-static_assert(MAX_RULES_PER_TYPE < 256, "MAX_RULES_PER_TYPE must be below 256 to fit into an uint8_t");
+static_assert(OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE() < 256, "OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE must be below 256 to fit into an uint8_t");
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE() || MODULE_SOLAR_FORECAST_AVAILABLE()
 static int get_localtime_hour()
 {
     const time_t time_utc = time(nullptr);
@@ -39,6 +39,7 @@ static int get_localtime_hour()
 
     return tm_local.tm_hour;
 }
+#endif
 
 void BatteryControl::pre_setup()
 {
@@ -65,9 +66,9 @@ void BatteryControl::pre_setup()
         {"fast_chg_cond", Config::Enum  (RuleCondition::Ignore)},
     });
 
-    rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
-    rules_forbid_discharge   = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
-    rules_forbid_charge      = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
+    rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
+    rules_forbid_discharge   = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
+    rules_forbid_charge      = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
 
     state = Config::Object({
         {"grid_charge_permitted", Config::Bool(false)},
