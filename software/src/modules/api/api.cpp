@@ -1049,11 +1049,11 @@ const char *API::build_suffix_path(SuffixPath &suffix_path, const char *suffix, 
         }
 
         if (is_number) {
-            if (!suffix_path.path.add(static_cast<size_t>(strtoul(ptr, nullptr, 10)))) {
+            if (!suffix_path.path.add_checked(static_cast<size_t>(strtoul(ptr, nullptr, 10)))) {
                 return "path too long";
             }
         } else {
-            if (!suffix_path.path.add(ptr)) {
+            if (!suffix_path.path.add_checked(ptr)) {
                 return "path too long";
             }
         }
