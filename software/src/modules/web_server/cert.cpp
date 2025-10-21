@@ -125,22 +125,74 @@ static int cert_set_san(mbedtls_x509write_cert *mbed_cert)
     return mbedtls_x509write_crt_set_subject_alternative_name(mbed_cert, &san_ap_ip);
 }
 
-bool Cert::generate()
+[[gnu::noinline]]
+bool Cert::fill_cert(mbedtls_x509write_cert *mbed_cert)
 {
-    if (LittleFS.exists(KEY_FILE)) {
-        LittleFS.remove(KEY_FILE);
+    mbedtls_x509write_crt_init(mbed_cert);
+    mbedtls_x509write_crt_set_md_alg(mbed_cert, MBEDTLS_MD_SHA256);
+
+    // Set serial number, version, issuer name, validity, basic constraints, and subject key identifier
+    unsigned char serial[1] = { 0x01 };
+    int ret = mbedtls_x509write_crt_set_serial_raw(mbed_cert, serial, sizeof(serial));
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_serial_raw failed: 0x%04x", ret);
+        return false;
     }
 
-    if (LittleFS.exists(CERT_FILE)) {
-        LittleFS.remove(CERT_FILE);
+    mbedtls_x509write_crt_set_version(mbed_cert, MBEDTLS_X509_CRT_VERSION_3);
+
+    // Set hostname or IP for CN
+    // TODO: Get proper hostname or IP dynamically
+    ret = mbedtls_x509write_crt_set_subject_name(mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_subject_name failed: 0x%04x", ret);
+        return false;
+    }
+    // Issuer == subject for self-signed certificate
+    ret = mbedtls_x509write_crt_set_issuer_name(mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_issuer_name failed: 0x%04x", ret);
+        return false;
     }
 
-    // Temporarily use key and crt for DER format, will be converted to PEM later
-    std::fill_n(key, sizeof(key), 0);
-    std::fill_n(crt, sizeof(crt), 0);
-    key_length = 0;
-    crt_length = 0;
+    ret = mbedtls_x509write_crt_set_validity(mbed_cert, "20250101000000", "21250101000000");
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_validity failed: 0x%04x", ret);
+        return false;
+    }
 
+    // For HTTPS we need CA = FALSE
+    ret = mbedtls_x509write_crt_set_basic_constraints(mbed_cert, 0, -1);
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: 0x%04x", ret);
+        return false;
+    }
+
+    // For HTTPS set key usage to digital signature and key encipherment
+    ret = mbedtls_x509write_crt_set_key_usage(mbed_cert, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_key_usage failed: 0x%04x", ret);
+        return false;
+    }
+
+    ret = cert_set_key_usage(mbed_cert);
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_ext_key_usage failed: 0x%04x", ret);
+        return false;
+    }
+
+    ret = cert_set_san(mbed_cert);
+    if (ret != 0) {
+        logger.printfln("mbedtls_x509write_crt_set_subject_alternative_name failed: 0x%04x", ret);
+        return false;
+    }
+
+    return true;
+}
+
+[[gnu::noinline]]
+bool Cert::key_and_sign(mbedtls_x509write_cert *mbed_cert)
+{
     // Initialize entropy
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
@@ -154,7 +206,7 @@ bool Cert::generate()
         return false;
     }
 
-    // Init key and cert writer
+    // Init key
     mbedtls_pk_context mbed_key;
     mbedtls_pk_init(&mbed_key);
 
@@ -172,69 +224,10 @@ bool Cert::generate()
         return false;
     }
 
-    // Create self-signed certificate
-    mbedtls_x509write_cert mbed_cert;
-    mbedtls_x509write_crt_init(&mbed_cert);
-    mbedtls_x509write_crt_set_md_alg(&mbed_cert, MBEDTLS_MD_SHA256);
-    mbedtls_x509write_crt_set_subject_key(&mbed_cert, &mbed_key);
-    mbedtls_x509write_crt_set_issuer_key(&mbed_cert, &mbed_key); // self-signed
+    mbedtls_x509write_crt_set_subject_key(mbed_cert, &mbed_key);
+    mbedtls_x509write_crt_set_issuer_key(mbed_cert, &mbed_key); // self-signed
 
-    // Set serial number, version, issuer name, validity, basic constraints, and subject key identifier
-    unsigned char serial[1] = { 0x01 };
-    ret = mbedtls_x509write_crt_set_serial_raw(&mbed_cert, serial, sizeof(serial));
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_serial_raw failed: 0x%04x", ret);
-        return false;
-    }
-
-    mbedtls_x509write_crt_set_version(&mbed_cert, MBEDTLS_X509_CRT_VERSION_3);
-
-    // Set hostname or IP for CN
-    // TODO: Get proper hostname or IP dynamically
-    ret = mbedtls_x509write_crt_set_subject_name(&mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_subject_name failed: 0x%04x", ret);
-        return false;
-    }
-    ret = mbedtls_x509write_crt_set_issuer_name(&mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_issuer_name failed: 0x%04x", ret);
-        return false;
-    }
-
-    ret = mbedtls_x509write_crt_set_validity(&mbed_cert, "20250101000000", "21250101000000");
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_validity failed: 0x%04x", ret);
-        return false;
-    }
-
-    // For HTTPS we need CA = FALSE
-    ret = mbedtls_x509write_crt_set_basic_constraints(&mbed_cert, 0, -1);
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: 0x%04x", ret);
-        return false;
-    }
-
-    // For HTTPS set key usage to digital signature and key encipherment
-    ret = mbedtls_x509write_crt_set_key_usage(&mbed_cert, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_key_usage failed: 0x%04x", ret);
-        return false;
-    }
-
-    ret = cert_set_key_usage(&mbed_cert);
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_ext_key_usage failed: 0x%04x", ret);
-        return false;
-    }
-
-    ret = cert_set_san(&mbed_cert);
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_subject_alternative_name failed: 0x%04x", ret);
-        return false;
-    }
-
-    crt_length = mbedtls_x509write_crt_der(&mbed_cert, crt, sizeof(crt), mbedtls_ctr_drbg_random, &ctr_drbg);
+    crt_length = mbedtls_x509write_crt_der(mbed_cert, crt, sizeof(crt), mbedtls_ctr_drbg_random, &ctr_drbg);
     memmove(crt, crt + sizeof(crt) - crt_length, crt_length);
     logger.printfln("Cert (DER) with length %d generated (first byte: %x)", crt_length, crt[0]);
 
@@ -243,14 +236,20 @@ bool Cert::generate()
     logger.printfln("Key (DER) with length %d generated (first byte: %x)", key_length, key[0]);
 
     mbedtls_pk_free(&mbed_key);
-    mbedtls_x509write_crt_free(&mbed_cert);
+    mbedtls_x509write_crt_free(mbed_cert);
 
+    return true;
+}
+
+[[gnu::noinline]]
+bool Cert::write_cert_and_key()
+{
     // Save generated cert and key that are in DER format as PEM files
     unsigned char base64[768];
     size_t base64_len = 0;
 
     std::fill_n(base64, sizeof(base64), 0);
-    ret = mbedtls_base64_encode(base64, sizeof(base64), &base64_len, crt, crt_length);
+    int ret = mbedtls_base64_encode(base64, sizeof(base64), &base64_len, crt, crt_length);
 
     File file_cert = LittleFS.open(CERT_FILE, "w", true);
     if (!file_cert) {
@@ -300,6 +299,37 @@ bool Cert::generate()
         file_key.print("-----END EC PRIVATE KEY-----\n");
     }
     file_key.close();
+
+    return true;
+}
+
+bool Cert::generate()
+{
+    if (LittleFS.exists(KEY_FILE)) {
+        LittleFS.remove(KEY_FILE);
+    }
+
+    if (LittleFS.exists(CERT_FILE)) {
+        LittleFS.remove(CERT_FILE);
+    }
+
+    key_length = 0;
+    crt_length = 0;
+
+    // Create self-signed certificate
+    mbedtls_x509write_cert mbed_cert;
+
+    if (!fill_cert(&mbed_cert)) {
+        return false;
+    }
+
+    if (!key_and_sign(&mbed_cert)) {
+        return false;
+    }
+
+    if (!write_cert_and_key()) {
+        return false;
+    }
 
     return true;
 }
