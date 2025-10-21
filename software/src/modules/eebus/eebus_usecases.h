@@ -50,8 +50,27 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
 
-
-
+// Feature Addresses for the different features in the usecases. Addresses can repeat accross entities but we make sure they are unique for simplicity
+enum FeatureAddresses : uint8_t
+{
+    nodemgmt_feature_address = 0,
+    chargingsummary_bill,
+    chargerate_measurement,
+    chargerate_electrical_connection,
+    ev_device_configuration,
+    ev_identification,
+    ev_device_classification,
+    ev_electrical_connection,
+    ev_device_diagnosis,
+    evse_device_classification,
+    evse_device_diagnosis,
+    lpc_loadcontrol,
+    lpc_device_configuration,
+    lpc_device_diagnosis,
+    lpc_electrical_connection,
+    cevc_timeseries,
+    cevc_incentive_table,
+};
 
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
@@ -70,15 +89,15 @@ enum class UseCaseType : uint8_t
 };
 
 /**
- * The basic Framework of a EEBUS Entity.
- * Each entity has one or multiple features.
+ * The basic Framework of a EEBUS Usecase.
+ * Each usecase has one or multiple features and belongs to an entity
  * Should only be inherited and never be used directly.
  */
-class EebusEntity
+class EebusUsecase
 {
 public:
     // Usecase Handlers
-    virtual ~EebusEntity() = default;
+    virtual ~EebusUsecase() = default;
 
     [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
 
@@ -115,7 +134,7 @@ public:
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-    [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
+    [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
     [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
 
 protected:
@@ -127,7 +146,7 @@ protected:
 /**
  * The Default Nodemanagement UseCase. Needs to be supported by all EEBUS devices.
  */
-class NodeManagementEntity final : public EebusEntity
+class NodeManagementEntity final : public EebusUsecase
 {
 public:
     NodeManagementEntity();
@@ -163,7 +182,7 @@ public:
     */
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
      * The NodeManagement Usecase only has one features which is the NodeManagement feature itself.
      * @return The lis of features supported by this entity.
@@ -213,12 +232,14 @@ private:
 
 /**
  * The EEBUSChargingSummary Entity as defined in EEBus UC TS - EV Charging Summary V1.0.1.
- * TODO: This cannot be fully used until EVCS usecase is implemented. And need to figure out how this usecases works as documentation seems contradictory in parts.
- */
-class ChargingSummaryEntity final : public EebusEntity
+ * This should have the same entity address as other entities with the EVSE actor <br>
+ * Actor: EVSE <br>
+ * Features: Bill (billDescriptionListData, billConstraintsListData, billListData) <br>
+*/
+class EvcsUsecase final : public EebusUsecase
 {
 public:
-    ChargingSummaryEntity();
+    EvcsUsecase();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
@@ -242,7 +263,7 @@ public:
         return UseCaseType::ChargingSummary;
     }
 
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
      * Returns the supported features. EVSE supports only one feature which is the Bill feature.
      * @return a list of the supported features.
@@ -265,7 +286,7 @@ public:
 
     [[nodiscard]] String get_entity_name() const override
     {
-        return "ChargingSummaryEntity";
+        return "EvcsUsecase";
     };
 
 private:
@@ -282,7 +303,7 @@ private:
         uint8_t self_produced_cost_percent;
     };
 
-    uint8_t bill_feature_address = 3;
+    uint8_t bill_feature_address = FeatureAddresses::chargingsummary_bill;
 
     BillEntry bill_entries[8]{};
 
@@ -301,13 +322,16 @@ private:
 };
 
 /**
- * The ChargerateEntity Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
+ * The EvcemUsecase Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
+ * This should have the same entity address as other entities with the EV actor <br>
+ * Actor: EV <br>
+ * Features: Measurement (measurementDescriptionListData, measurementConstraintsListData, measurementListData), ElectricalConnection (electricalConnectionDescriptionListData, electricalConnectionParameterDescriptionListData) <br>
  */
-class ChargerateEntity final : public EebusEntity
+class EvcemUsecase final : public EebusUsecase
 {
 public:
+    EvcemUsecase();
 
-    ChargerateEntity();
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::EvChargingElectricityMeasurement;
@@ -315,24 +339,30 @@ public:
 
     [[nodiscard]] String get_entity_name() const override
     {
-        return "ChargerateEntity";
+        return "EvcemUsecase";
     }
+
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
     UseCaseInformationDataType get_usecase_information() override;
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
 private:
-    uint8_t feature_address_measurement = 40;
-    uint8_t feature_address_electrical_connection = 41;
+    uint8_t feature_address_measurement = FeatureAddresses::chargerate_measurement;
+    uint8_t feature_address_electrical_connection = FeatureAddresses::chargerate_electrical_connection;
 
 };
 
-
-class EvEntity final : public EebusEntity
+/**
+ * The Evcc Entity as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1.
+ * This should have the same entity address as other entities with the EV actor <br>
+ * Actor: EV <br>
+ * Features (Functions): DeviceDiagnosis (deviceConfigurationKeyValueDescriptionListData, deviceConfigurationKeyValueListData), Identification (identificationListData), DeviceClassification (deviceClassificationManufacturerData), ElectricalConnection (electricalConnectionParameterDescriptionListData, electricalConnectionPermittedValueSetListData), DeviceDiagnosis (deviceDiagnosisStateData) <br>
+ */
+class EvccUsecase final : public EebusUsecase
 {
 public:
-    EvEntity();
+    EvccUsecase();
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -358,7 +388,7 @@ public:
      * The entity information as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1. 3.2.1.
      * @return The entity information.
      */
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
      * Returns the supported features. As defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1. 3.2.1.2.1.
      * @return a list of the supported features.
@@ -422,12 +452,11 @@ private:
     void update_api() const;
     bool ev_connected = false;
 
-    // These can be freely assigned but need to be unique within the entity.
-    uint8_t feature_address_device_configuration = 21;
-    uint8_t feature_address_identification = 22;
-    uint8_t feature_address_device_classification = 23;
-    uint8_t feature_address_electrical_connection = 24;
-    uint8_t feature_address_device_diagnosis = 25;
+    uint8_t feature_address_device_configuration = FeatureAddresses::ev_device_configuration;
+    uint8_t feature_address_identification = FeatureAddresses::ev_identification;
+    uint8_t feature_address_device_classification = FeatureAddresses::ev_device_classification;
+    uint8_t feature_address_electrical_connection = FeatureAddresses::ev_electrical_connection;
+    uint8_t feature_address_device_diagnosis = FeatureAddresses::ev_device_diagnosis;
 
     // Server Data
     //DeviceDiagnosis
@@ -465,11 +494,14 @@ private:
 
 /**
  * The EVSE Entity as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.1.
+ * This should have the same entity address as other entities with the EVSE actor <br>
+ * Actor: EVSE <br>
+ * Features (Functions): DeviceClassification (deviceClassificationManufacturerData), DeviceDiagnosis (deviceDiagnosisStateData) <br>
  */
-class EvseEntity final : public EebusEntity
+class EvseccUsecase final : public EebusUsecase
 {
 public:
-    EvseEntity();
+    EvseccUsecase();
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -478,7 +510,7 @@ public:
 
     [[nodiscard]] String get_entity_name() const override
     {
-        return "EvseEntity";
+        return "EvseccUsecase";
     }
 
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
@@ -487,7 +519,7 @@ public:
     * @return
     */
     UseCaseInformationDataType get_usecase_information() override;
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     /**
@@ -499,8 +531,8 @@ public:
 
 private:
     // Feature Addresses
-    uint8_t feature_address_device_classification = 25;
-    uint8_t feature_address_device_diagnosis = 26;
+    uint8_t feature_address_device_classification = FeatureAddresses::evse_device_classification;
+    uint8_t feature_address_device_diagnosis = FeatureAddresses::evse_device_diagnosis;
 
     // Server Data
     DeviceDiagnosisOperatingStateEnumType operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
@@ -513,12 +545,16 @@ private:
 
 
 /**
- * The Controllable System Entity as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
- */
-class PowerConsumptionLimitationEntity final : public EebusEntity
+ * The LpcUsecase as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
+ * This should have the same entity address as other entities with the Controllable System actor <br>
+ * Actor: Controllable System <br>
+ * Features (Functions): LoadControl (loadControlLimitDescriptionListData, loadControlLimitListData), DeviceConfiguration (deviceConfigurationKeyValueDescriptionListData, deviceConfigurationKeyValueListData), DeviceDiagnosis (deviceDiagnosisHeartbeatData), ElectricalConnection (electricalConnectionCharacteristicListData)   <br>
+*/
+
+class LpcUsecase final : public EebusUsecase
 {
 public:
-    PowerConsumptionLimitationEntity();
+    LpcUsecase();
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
@@ -546,7 +582,7 @@ public:
      * The entity information as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.
      * @return The entity information.
      */
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
      * Returns the supported features. As defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.2.1.
      * @return a list of the supported features.
@@ -631,10 +667,10 @@ private:
     void update_api();
 
     // These can be freely assigned but need to be unique within the entity.
-    int loadControl_feature_address = 5;
-    int deviceConfiguration_feature_address = 6;
-    int deviceDiagnosis_feature_address = 7;
-    int electricalConnection_feature_address = 8;
+    int loadControl_feature_address = FeatureAddresses::lpc_loadcontrol;
+    int deviceConfiguration_feature_address = FeatureAddresses::lpc_device_configuration;
+    int deviceDiagnosis_feature_address = FeatureAddresses::lpc_device_diagnosis;
+    int electricalConnection_feature_address = FeatureAddresses::lpc_electrical_connection;
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -658,10 +694,17 @@ private:
     LoadControlLimitListDataType load_control_limit_list{};
 };
 
-class CevcEntity final : public EebusEntity
+/**
+ * The CevcUsecase as defined in EEBus UC TS - Coordinate EV Charging V1.0.1.
+ * This should have the same entity address as other entities with the EV actor <br>
+ * Actor: EV <br>
+ * Features (Functions): TimeSeries (timeSeriesDescriptionListData, timeSeriesConstraintsListData, timeSeriesListData), IncentiveTable (incentiveTableDescriptionData, incentiveTableConstraintsData, incentiveTableData), DeviceDiagnosis (deviceDiagnosisHeartbeatData), ElectricalConnection (electricalConnectionCharacteristicListData)   <br>
+*/
+
+class CevcUsecase final : public EebusUsecase
 {
 public:
-    CevcEntity();
+    CevcUsecase();
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -670,7 +713,7 @@ public:
 
     String get_entity_name() const override
     {
-        return "CevcEntity";
+        return "CevcUsecase";
     }
 
     /**
@@ -688,12 +731,12 @@ public:
     * @return
     */
     UseCaseInformationDataType get_usecase_information() override;
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryEntityInformationType> get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
 private:
-    uint8_t feature_address_timeseries = 30;
-    uint8_t feature_address_incentive_table = 31;
+    uint8_t feature_address_timeseries = FeatureAddresses::cevc_timeseries;
+    uint8_t feature_address_incentive_table = FeatureAddresses::cevc_incentive_table;
 };
 
 /**
@@ -739,24 +782,26 @@ public:
 
     NodeManagementEntity node_management{};
 #if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
-    ChargingSummaryEntity charging_summary{};
-    PowerConsumptionLimitationEntity limitation_of_power_consumption{};
-    EvEntity ev_commissioning_and_configuration{};
-    EvseEntity evse_commissioning_and_configuration{};
-    CevcEntity coordinate_ev_charging{};
+    EvcsUsecase charging_summary{};
+    LpcUsecase limitation_of_power_consumption{};
+    EvccUsecase ev_commissioning_and_configuration{};
+    EvseccUsecase evse_commissioning_and_configuration{};
+    CevcUsecase coordinate_ev_charging{};
+    EvcemUsecase ev_charging_electricity_measurement{};
 
-    std::vector<EebusEntity *> entity_list{
+    std::vector<EebusUsecase *> entity_list{
         &node_management,
         &charging_summary,
         &limitation_of_power_consumption,
         &ev_commissioning_and_configuration,
         &evse_commissioning_and_configuration,
-        &coordinate_ev_charging
+        &coordinate_ev_charging,
+        &ev_charging_electricity_measurement
     };
 #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
     // TODO: Implement the power production limitation usecase
 
-    std::vector<EebusEntity *> entity_list{
+    std::vector<EebusUsecase *> entity_list{
         &node_management,
         &limitation_of_power_production
     };
