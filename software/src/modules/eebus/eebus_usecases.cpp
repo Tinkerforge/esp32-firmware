@@ -224,7 +224,9 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
         }
         bool add_entity_info = true;
         for (auto &existing_entity_info : *(node_management_detailed_data.entityInformation)) {
-            if (existing_entity_info.description->entityType == uc->get_detailed_discovery_entity_information().description->entityType.get()) {
+            auto entity_info = uc->get_detailed_discovery_entity_information();
+            // If the entity type matches, we do not add it again and if it has no entity type defined it is inactive
+            if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get()) {
                 add_entity_info = false;
                 break;
             }
@@ -480,6 +482,7 @@ CmdClassifierType EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeH
 
 NodeManagementDetailedDiscoveryEntityInformationType EvcsUsecase::get_detailed_discovery_entity_information() const
 {
+
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EVSE;
@@ -733,18 +736,23 @@ UseCaseInformationDataType EvcemUsecase::get_usecase_information()
 NodeManagementDetailedDiscoveryEntityInformationType EvcemUsecase::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EV;
-    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
 
-    // We focus on returning the mandatory fields.
+    // If the ev is not connected this returns an empty entity information
+    if (eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        entity.description->entityAddress->entity = entity_address;
+        entity.description->entityType = EntityTypeEnumType::EV;
+        // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+        entity.description->label = "EV";
+    }
     return entity;
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase::get_detailed_discovery_feature_information() const
 {
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return features;
+    }
 
     NodeManagementDetailedDiscoveryFeatureInformationType measurement_feature{};
     measurement_feature.description->featureAddress->entity = entity_address;
@@ -2136,19 +2144,24 @@ UseCaseInformationDataType CevcUsecase::get_usecase_information()
 
 NodeManagementDetailedDiscoveryEntityInformationType CevcUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EV;
-    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
 
-    // We focus on returning the mandatory fields.
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    if (eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        entity.description->entityAddress->entity = entity_address;
+        entity.description->entityType = EntityTypeEnumType::EV;
+        // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+        entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
+    }
     return entity;
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::get_detailed_discovery_feature_information() const
 {
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return features;
+    }
 
     // See EEBUS UC TS CoordinatedEvCharging v1.0.1.pdf 3.2.1.2.1
 
