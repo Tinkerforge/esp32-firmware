@@ -503,6 +503,11 @@ public:
         return "EvEntity";
     };
 
+    bool is_ev_connected() const
+    {
+        return ev_connected;
+    };
+
 private:
     void update_api() const;
     bool ev_connected = false;
