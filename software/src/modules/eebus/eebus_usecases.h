@@ -347,10 +347,65 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
+
+    /**
+     * Update the measurements. This will inform all subscribers of the new measurements.
+     * @param amps_phase_1 Amps on phase a
+     * @param amps_phase_2 Amps on phase b
+     * @param amps_phase_3 Amps on phase c
+     * @param power_phase_1 Total power on phase 1 in watts
+     * @param power_phase_2 Total power on phase 2 in watts
+     * @param power_phase_3 Total power on phase 3 in watts
+     * @param charged_wh Total charged into the ev during the current session in wh
+     * @param charged_measured If the charged_wh value is measured. If false it is assumed its calculated. Default is false
+     */
+    void update_measurements(int amps_phase_1, int amps_phase_2, int amps_phase_3, int power_phase_1, int power_phase_2, int power_phase_3, int charged_wh, bool charged_measured = false);
+
+    /**
+     * Update the constraints of the system. This will inform all subscribers of the new constraints. Values set to negative values will be omitted from the eebus information
+     * @param amps_min Minimum amps in A that can be measured
+     * @param amps_max Maximum amps in A that can be measured
+     * @param amps_stepsize Stepsize of the amps in A measurement
+     * @param power_min Minimum power in w that can be measured
+     * @param power_max Maximum power in w  that can be measured
+     * @param power_stepsize Stepsize of the power in w  measurement
+     * @param energy_min Minimum charged power in wh that can be measured
+     * @param energy_max Maximum charged power in wh that can be measured
+     * @param energy_stepsize Stepsize of the charged power in wh measurement
+     */
+    void update_constraints(int amps_min, int amps_max, int amps_stepsize, int power_min, int power_max, int power_stepsize, int energy_min, int energy_max, int energy_stepsize);
+
 private:
+    // Feature Addresses
     uint8_t feature_address_measurement = FeatureAddresses::chargerate_measurement;
     uint8_t feature_address_electrical_connection = FeatureAddresses::chargerate_electrical_connection;
 
+    // Data held about the current charge
+    int amps_draw_phase[3]; // Amp draw per phase
+    int power_draw_phase[3]; // Power per phase
+    int power_charged_wh; // Total charged into the ev during the current session in wh
+    bool power_charged_measured = false;
+
+    // Constraints
+    int measurement_limit_amps_min = 0;
+    int measurement_limit_amps_max = 32;
+    int measurement_limit_amps_stepsize = 1;
+    int measurement_limit_power_min = 0;
+    int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int measurement_limit_power_stepsize = 10;
+    int measurement_limit_energy_min = 0;
+    int measurement_limit_energy_max = 1000000;
+    int measurement_limit_energy_stepsize = 10;
+
+    // Generators for data types
+    [[nodiscard]] MeasurementDescriptionListDataType generate_measurement_description() const;
+    [[nodiscard]] MeasurementConstraintsListDataType generate_measurement_constraints() const;
+    [[nodiscard]] MeasurementListDataType generate_measurement_list() const;
+
+    [[nodiscard]] ElectricalConnectionDescriptionListDataType generate_electrical_connection_description() const;
+    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_parameters() const;
+
+    void update_api() const;
 };
 
 /**
