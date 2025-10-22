@@ -135,6 +135,15 @@ struct Cost {
         return rhs * lhs;
     }
 
+    Cost operator-() {
+        this->pv *= -1;
+        this->l1 *= -1;
+        this->l2 *= -1;
+        this->l3 *= -1;
+
+        return *this;
+    }
+
     int min() const {
         return std::min({this->pv, this->l1, this->l2, this->l3});
     }
