@@ -454,16 +454,20 @@ function CMStatusCharger(props: {
     if (c_info != "")
         desc = [c_info];
 
+    let supported_charge_modes = API.get("charge_manager/supported_charge_modes")
+    let modes: [string, string][] = supported_charge_modes.map(x => [x.toString(), __("cm_networking.status.mode_by_index")(x, props.default_mode)]);
+    let mode = props.charge_mode
+    let mode_found = supported_charge_modes.indexOf(mode) >= 0;
+
     return  <div class={"card " + (props.charger_index + 1 == props.charger_count ? "mb-0" : "")}>
                 <div class="card-header">
                     <div class="row align-items-center mx-n1">
                         <div class="col px-1"><h5 class="m-0">{name_link}</h5></div>
                         <div class="col-auto px-1">
                             <InputSelect
-                                items={API.get("charge_manager/supported_charge_modes")
-                                    .map(x => [x.toString(), __("cm_networking.status.mode_by_index")(x, props.default_mode)])
-                                }
-                                value={props.charge_mode.toString()}
+                                items={modes}
+                                value={mode.toString()}
+                                placeholder={mode_found ? "" : __("cm_networking.status.mode_by_index")(mode, props.default_mode)}
                                 onValue={x => API.call_with_path("charge_manager/charge_modes", props.charger_index, parseInt(x))}
                                 />
                         </div>
@@ -556,10 +560,19 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
         let row_count = Math.ceil(cards.length / 2);
 
+        let current_mode = API.get("power_manager/charge_mode").mode
+        let modes = API.get("charge_manager/charge_modes")
+        // Make sure every mode button is clickable if not all chargers have the same mode.
+        if (!modes.every(m => m == modes[0])) {
+            current_mode = ConfigChargeMode.Default;
+        } else {
+            current_mode = modes[0];
+        }
+
         return <StatusSection name="charge_manager">
             <FormRow label={__("charge_manager.status.mode")}>
                 <ChargeModeButtons
-                    mode={API.get("power_manager/charge_mode").mode}
+                    mode={current_mode}
                     supportedModes={API.get("charge_manager/supported_charge_modes")}
                     setMode={mode => API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
                 />
