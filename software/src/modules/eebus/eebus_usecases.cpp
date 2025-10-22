@@ -661,7 +661,7 @@ void EvcsUsecase::update_api() const
         uint32_t charged_kwh = bill_entry.energy_wh;
         api_bill_entry->get("charged_kwh")->updateFloat(static_cast<float>(charged_kwh) / 1000.0f);
         api_bill_entry->get("cost")->updateFloat(static_cast<float>(bill_entry.cost_eur_cent) / 100.0f);
-        api_bill_entry->get("start_time")->updateUint(bill_entry.start_time.as<uint32_t>()); // TODO: Fix this time type later
+        api_bill_entry->get("start_time")->updateUint(bill_entry.start_time.as<uint32_t>()); // TODO: Fix this time type
         api_bill_entry->get("duration")->updateUint(bill_entry.end_time.as<uint32_t>() - bill_entry.start_time.as<uint32_t>());
 
         api_bill_entry->get("percent_self_produced_energy")->updateUint(bill_entry.self_produced_energy_percent);
@@ -672,12 +672,40 @@ void EvcsUsecase::update_api() const
 
 EvcemUsecase::EvcemUsecase()
 {
-    // TODO: Initialize values
+#ifdef EEBUS_DEV_TEST_ENABLE
+    task_scheduler.scheduleUncancelable([this]() {
+                                              logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
+                                              update_measurements(32, 32, 32, 7000, 7000, 7000, this->power_charged_wh + 100);
+                                          },
+                                          60_s,
+                                          60_s);
+#endif
 }
 
 CmdClassifierType EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    // TODO: Handle messages
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::measurementDescriptionListData) {
+            response["measurementDescriptionListData"] = generate_measurement_description();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::measurementConstraintsListData) {
+            response["measurementConstraintsListData"] = generate_measurement_constraints();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::measurementListData) {
+            response["measurementListData"] = generate_measurement_list();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionListData) {
+            response["electricalConnectionDescriptionListData"] = generate_electrical_connection_description();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
+            response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_parameters();
+            return CmdClassifierType::reply;
+        }
+    }
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -708,7 +736,7 @@ NodeManagementDetailedDiscoveryEntityInformationType EvcemUsecase::get_detailed_
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EV;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "Controllable System"; // The label of the entity. This is optional but recommended.
+    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
     return entity;
@@ -765,6 +793,186 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
     features.push_back(electricalConnection_feature);
 
     return features;
+}
+
+void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_phase_2, const int amps_phase_3, const int power_phase_1, const int power_phase_2, const int power_phase_3, const int charged_wh, const bool charged_measured)
+{
+    amps_draw_phase[0] = amps_phase_1;
+    amps_draw_phase[1] = amps_phase_2;
+    amps_draw_phase[2] = amps_phase_3;
+    power_draw_phase[0] = power_phase_1;
+    power_draw_phase[1] = power_phase_2;
+    power_draw_phase[2] = power_phase_3;
+    power_charged_wh = charged_wh;
+    power_charged_measured = charged_measured;
+
+    auto measurement_list_data = generate_measurement_list();
+    eebus.usecases->inform_subscribers(this->entity_address, this->feature_address_measurement, measurement_list_data, "measurementListData");
+    update_api();
+}
+
+void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, const int amps_stepsize, const int power_min, const int power_max, const int power_stepsize, const int energy_min, const int energy_max, const int energy_stepsize)
+{
+    measurement_limit_amps_min = amps_min;
+    measurement_limit_amps_max = amps_max;
+    measurement_limit_amps_stepsize = amps_stepsize;
+    measurement_limit_power_min = power_min;
+    measurement_limit_power_max = power_max;
+    measurement_limit_power_stepsize = power_stepsize;
+    measurement_limit_energy_min = energy_min;
+    measurement_limit_energy_max = energy_max;
+    measurement_limit_energy_stepsize = energy_stepsize;
+
+    auto constraints = generate_measurement_constraints();
+    eebus.usecases->inform_subscribers(this->entity_address, this->feature_address_measurement, constraints, "measurementConstraintsListData");
+
+    update_api();
+}
+
+MeasurementDescriptionListDataType EvcemUsecase::generate_measurement_description() const
+{
+    MeasurementDescriptionListDataType measurement_description{};
+    for (uint8_t i = 0; i < 7; i++) {
+        MeasurementDescriptionDataType measurement_description_data{};
+        measurement_description_data.measurementId = i + 1;
+        if (i < 3) {
+            measurement_description_data.measurementType = MeasurementTypeEnumType::current;
+            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
+            measurement_description_data.unit = UnitOfMeasurementEnumType::A;
+            measurement_description_data.scopeType = ScopeTypeEnumType::acCurrent;
+        } else if (i < 6) {
+            measurement_description_data.measurementType = MeasurementTypeEnumType::power;
+            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
+            measurement_description_data.unit = UnitOfMeasurementEnumType::W;
+            measurement_description_data.scopeType = ScopeTypeEnumType::acPower;
+        } else {
+            measurement_description_data.measurementType = MeasurementTypeEnumType::energy;
+            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
+            measurement_description_data.unit = UnitOfMeasurementEnumType::Wh;
+            measurement_description_data.scopeType = ScopeTypeEnumType::charge;
+        }
+        measurement_description.measurementDescriptionData->push_back(measurement_description_data);
+    }
+    return measurement_description;
+}
+
+MeasurementConstraintsListDataType EvcemUsecase::generate_measurement_constraints() const
+{
+    MeasurementConstraintsListDataType measurement_constraints{};
+    for (uint8_t i = 0; i < 7; i++) {
+        MeasurementConstraintsDataType measurement_constraints_data{};
+        measurement_constraints_data.measurementId = i + 1;
+        if (i < 3) {
+            if (measurement_limit_amps_min >= 0)
+                measurement_constraints_data.valueRangeMin->number = measurement_limit_amps_min;
+            if (measurement_limit_amps_max >= 0)
+                measurement_constraints_data.valueRangeMax->number = measurement_limit_amps_max;
+            if (measurement_limit_amps_stepsize)
+                measurement_constraints_data.valueStepSize->number = measurement_limit_amps_stepsize;
+        } else if (i < 6) {
+            if (measurement_limit_power_min >= 0)
+                measurement_constraints_data.valueRangeMin->number = measurement_limit_power_min;
+            if (measurement_limit_power_max >= 0)
+                measurement_constraints_data.valueRangeMax->number = measurement_limit_power_max;
+            if (measurement_limit_power_stepsize)
+                measurement_constraints_data.valueStepSize->number = measurement_limit_power_stepsize;
+        } else {
+            if (measurement_limit_energy_min >= 0)
+                measurement_constraints_data.valueRangeMin->number = measurement_limit_power_min;
+            if (measurement_limit_power_max >= 0)
+                measurement_constraints_data.valueRangeMax->number = measurement_limit_power_max;
+            if (measurement_limit_power_stepsize)
+                measurement_constraints_data.valueStepSize->number = measurement_limit_power_stepsize;
+        }
+        measurement_constraints.measurementConstraintsData->push_back(measurement_constraints_data);
+    }
+    return measurement_constraints;
+}
+
+MeasurementListDataType EvcemUsecase::generate_measurement_list() const
+{
+    MeasurementListDataType measurement_list{};
+    for (uint8_t i = 0; i < 7; i++) {
+        MeasurementDataType measurement_data{};
+        measurement_data.measurementId = i + 1;
+        measurement_data.valueType = MeasurementValueTypeEnumType::value;
+        if (i < 3) {
+            measurement_data.value->number = amps_draw_phase[i];
+        } else if (i < 6) {
+            measurement_data.value->number = power_draw_phase[i - 3];
+        } else {
+            measurement_data.value->number = power_charged_wh;
+            if (power_charged_measured) {
+                measurement_data.valueSource = MeasurementValueSourceEnumType::measuredValue;
+            } else {
+                measurement_data.valueSource = MeasurementValueSourceEnumType::calculatedValue;
+            }
+        }
+        measurement_list.measurementData->push_back(measurement_data);
+    }
+    return measurement_list;
+}
+
+ElectricalConnectionDescriptionListDataType EvcemUsecase::generate_electrical_connection_description() const
+{
+    ElectricalConnectionDescriptionListDataType electrical_connection_description{};
+    ElectricalConnectionDescriptionDataType connection_description_data{};
+    connection_description_data.electricalConnectionId = 1;
+    connection_description_data.powerSupplyType = ElectricalConnectionVoltageTypeEnumType::ac;
+    connection_description_data.positiveEnergyDirection = EnergyDirectionEnumType::consume;
+    electrical_connection_description.electricalConnectionDescriptionData->push_back(connection_description_data);
+
+    return electrical_connection_description;
+}
+
+ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_electrical_connection_parameters() const
+{
+    ElectricalConnectionParameterDescriptionListDataType electrical_connection_parameters{};
+    for (uint8_t i = 0; i < 7; i++) {
+        ElectricalConnectionParameterDescriptionDataType connection_parameters_data{};
+        connection_parameters_data.parameterId = i + 1; // This is a new ID
+        connection_parameters_data.measurementId = i + 1; // This should be the same as the measurement IDs in other function
+        connection_parameters_data.electricalConnectionId = 1; // This refers to the electrical connection in the connection description function
+        if (i < 6) {
+            switch (i) {
+                case 0:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::a;
+                    break;
+                case 1:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::b;
+                    break;
+                case 2:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::c;
+                    break;
+                case 3:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::a;
+                    break;
+                case 4:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::b;
+                    break;
+                case 5:
+                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::c;
+                    break;
+                default:
+                    break;
+            }
+            if (i < 3) {
+                connection_parameters_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+            }
+        } else {
+            connection_parameters_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+            connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc;
+            connection_parameters_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
+
+        }
+        electrical_connection_parameters.electricalConnectionParameterDescriptionData->push_back(connection_parameters_data);
+    }
+    return electrical_connection_parameters;
+}
+
+void EvcemUsecase::update_api() const
+{
+    // TODO: Update API
 }
 
 EvccUsecase::EvccUsecase()
