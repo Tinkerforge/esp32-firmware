@@ -54,8 +54,6 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { Battery } from "react-feather";
 
-const MAX_RULES_PER_TYPE = 32;
-
 export function BatteriesNavbar() {
     return <NavbarItem name="batteries" module="batteries" title={__("batteries.navbar.batteries")} symbol={<Battery />} />;
 }
@@ -448,9 +446,9 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     },
                 }
             })}
-            addEnabled={this.props.rules.length < MAX_RULES_PER_TYPE}
+            addEnabled={this.props.rules.length < options.BATTERY_CONTROL_MAX_RULES_PER_TYPE}
             addTitle={__("batteries.content.add_rule_title")}
-            addMessage={__("batteries.content.add_rule_message")(this.props.rules.length, MAX_RULES_PER_TYPE)}
+            addMessage={__("batteries.content.add_rule_message")(this.props.rules.length, options.BATTERY_CONTROL_MAX_RULES_PER_TYPE)}
             onAddShow={async () => {
                 let rule_config: RuleConfig = {
                     enabled: true,
