@@ -1795,6 +1795,28 @@ static void stage_6(StageContext &sc) {
     }
 }
 
+// Undo stage 6: reclaims allocated minimum current.
+// This is called before allocating phases to each charge mode group
+static void undo_stage_6(StageContext &sc) {
+    int matched = filter_chargers(ctx.allocated_current > 0);
+
+    // No need to sort here: We know that we have enough current to give each charger its minimum current.
+    // A charger that can't be activated has 0 phases allocated.
+
+    trace_sort(-6);
+
+    for (int i = 0; i < matched; ++i) {
+        const auto *state = &sc.charger_state[sc.idx_array[i]];
+
+        auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
+        auto cost = get_minimum_cost(allocated_phases, state->phase_rotation, sc.cfg);
+
+        sc.current_allocation[sc.idx_array[i]] = 0;
+        trace("-6: %d: %d@%dp", sc.idx_array[i], sc.current_allocation[sc.idx_array[i]], allocated_phases);
+        apply_cost(-cost, sc.limits);
+    }
+}
+
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
 static int current_capacity(const StageContext &sc, const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg, CurrentCapacityLimit *out_limit = nullptr) {
     auto requested_current = get_requested_current(sc, state, cfg, allocated_phases, out_limit);
@@ -2329,6 +2351,10 @@ int allocate_current(
     sc.charger_count = not_off_count;
     stage_2(sc);
     stage_3(sc);
+
+    // Allocate minimum current to all now active chargers (i.e. those with phases allocated to)
+    // Doing this now prevents chargers of higher priority (i.e. charge mode)
+    // from stealing the required minimum current of chargers of lower priority.
     stage_6(sc);
 
     for (ChargeMode::Type mode = ChargeMode::_max; mode >= ChargeMode::Min; mode = (ChargeMode::Type)((int)mode >> 1)) {
@@ -2342,6 +2368,10 @@ int allocate_current(
         }
 
         sc.charger_count = filter_n_chargers(not_off_count, (get_highest_charge_mode_bit(ctx.state) & ctx.charge_mode_filter) != 0);
+
+        // Undo allocating the minimum current, but only for chargers of this priority.
+        // This allows stages 4, 5 and 6 to expect that all chargers of this priority have allocated no current.
+        undo_stage_6(sc);
 
         stage_4(sc);
         stage_5(sc);
