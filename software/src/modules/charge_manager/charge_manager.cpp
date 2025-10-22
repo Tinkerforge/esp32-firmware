@@ -299,6 +299,8 @@ void ChargeManager::start_manager_task()
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
     cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4) mutable {
+            auto old_charger_state = charger_state[client_id].charger_state;
+
             if (update_from_client_packet(
                     client_id,
                     v1,
@@ -311,10 +313,16 @@ void ChargeManager::start_manager_task()
                     this->hosts.get(),
                     get_charger_name_fn
                     )) {
+
                 // This should be done in update_from_client_packet, but the current allocator does not know about config charge modes and this->config_cm_to_cm.
                 // If requested_charge_mode is default, no charge mode change is requested.
                 if (v4 != nullptr && v4->requested_charge_mode != (uint8_t)ConfigChargeMode::Default)
                     charger_state[client_id].charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
+
+                // If the car is unplugged, change back to the default charge mode once.
+                if (v1->charger_state == 0 && old_charger_state != 0)
+                    charger_state[client_id].charge_mode = this->config_cm_to_cm(this->pm_default_charge_mode);
+
                 update_charger_state_config(client_id);
             }
     }, [this](uint8_t client_id, ClientError error){
