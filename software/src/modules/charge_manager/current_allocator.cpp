@@ -751,12 +751,12 @@ static void decision_postprocess(StageContext &sc) {
             set_charger_decision(sc, i, ZeroPhaseDecision::None());
         }
 
-        // TODO: is this necessary?
+        // This is necessary if the activation reason is cleared, for example welcome charge.
         if (allocd == 1 && !desc_1_yes) {
             set_charger_decision(sc, i, OnePhaseDecision::YesNormal());
         }
 
-        // TODO: is this necessary?
+        // This is necessary if the activation reason is cleared, for example welcome charge.
         if (allocd == 3 && !desc_3_yes) {
             set_charger_decision(sc, i, ThreePhaseDecision::YesNormal());
         }
