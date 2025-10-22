@@ -800,6 +800,15 @@ static void stage_1(StageContext &sc) {
         }
     }
 
+    /*
+        TODO: Rotationskriterien zusammenlegen
+        - höchstes Modusbit wartender Boxen (jeweils pro Phase + PV + insgesamt)
+        - höchstes Modusbit aktiver Boxen (jeweils pro Phase + PV + insgesamt)
+        - aktive Box rotieren wenn:
+            - deren insgesamt-Bit < höchstes wartendes insgesamt-Bit
+            - wenn insgesamt-Bit gleich: rotieren wenn aktiv auf phase (oder PV) auf der höchstes Bit gleich ist
+    */
+
     for (int i = 0; i < sc.charger_count; ++i) {
         const auto *state = &sc.charger_state[i];
         if (state->off)
@@ -1182,6 +1191,7 @@ static void stage_3(StageContext &sc) {
     // behind others and sort those by the plug in timestamp to make sure the same chargers are shut down
     // if phases are overloaded in every iteration.
     // Sort PV chargers before fast chargers (symmetric to stage 4)
+    // TODO was_just_plugged_in -> welcome charge
     sort_chargers(
         was_just_plugged_in(ctx.state) ? (ChargeMode::_max + 1) : get_highest_charge_mode_bit(ctx.state),
         // We only compare in groups, so was_just_plugged_in(right.state) is true iff it is for left.
@@ -1573,7 +1583,7 @@ static void stage_4(StageContext &sc) {
             set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoForced1pUntil(phase_switch_hyst));
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
-        if (is_fixed_3p)
+        if (is_fixed_3p) // TODO: move to stage 1 if we clear everything there
             set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoFixed3p());
 
         // This is not relevant for the decision here,
@@ -2190,7 +2200,7 @@ int allocate_current(
         cfg,
         ca_state,
         charger_allocation_state,
-        0xFFFFFFFF
+        0xFF
     };
     logger.trace_timestamp(charge_manager.trace_buffer_index);
 
