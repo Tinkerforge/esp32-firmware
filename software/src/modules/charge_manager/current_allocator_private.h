@@ -35,7 +35,7 @@ struct StageContext {
     const CurrentAllocatorConfig *cfg;
     CurrentAllocatorState *ca_state;
     const ChargerAllocationState *charger_allocation_state;
-    uint32_t charge_mode_filter;
+    uint8_t charge_mode_filter;
     const micros_t now = now_us();
 };
 
@@ -45,7 +45,7 @@ struct FilterContext {
     uint8_t allocated_phases;
     const CurrentAllocatorConfig *cfg;
     const ChargerState *state;
-    uint32_t charge_mode_filter;
+    uint8_t charge_mode_filter;
 };
 
 struct GroupContext {
