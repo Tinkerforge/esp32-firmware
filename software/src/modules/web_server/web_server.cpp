@@ -262,6 +262,8 @@ void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
     httpd_queue_work(httpd, fn, arg);
 }
 
+static const size_t SCRATCH_BUFSIZE = 2048;
+
 static esp_err_t low_level_handler(httpd_req_t *req)
 {
     auto *handler = static_cast<WebServerHandler *>(req->user_ctx);
@@ -278,106 +280,83 @@ static esp_err_t low_level_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
-    if (handler->callbackInMainThread)
-        task_scheduler.await([handler, request](){handler->callback(request);});
-    else
-        handler->callback(request);
-
-    return ESP_OK;
-}
-
-static const size_t SCRATCH_BUFSIZE = 2048;
-
-static esp_err_t low_level_upload_handler(httpd_req_t *req)
-{
-    auto *handler = static_cast<WebServerHandler *>(req->user_ctx);
-    auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
-
-    auto request = WebServerRequest{req};
-    if (server->auth_fn && !server->auth_fn(request)) {
-        if (server->on_not_authorized) {
-            server->on_not_authorized(request);
-            return ESP_OK;
-        }
-        request.requestAuthentication();
-        return ESP_OK;
-    }
-
-    if (req->content_len == 0) {
-        if (request.header("Content-Length").isEmpty()) {
-            // Probably a chunked encoding. Not supported.
-            if (handler->callbackInMainThread) {
-                task_scheduler.await([handler, request](){handler->uploadErrorCallback(request, EBADMSG);});
-            }
-            else {
-                handler->uploadErrorCallback(request, EBADMSG);
-            }
-            return ESP_FAIL;
-        } else {
-            // This is really a request were there are 0 bytes to receive. Call the upload handler once.
-            bool result = false;
-            if (handler->callbackInMainThread) {
-                task_scheduler.await([handler, request, &result]{result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
-            } else {
-                result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
-            }
-
-            if (!result) {
-                return ESP_FAIL;
-            }
-        }
-    } else {
-        // Receive payload
-        size_t remaining = req->content_len;
-        size_t offset = 0;
-        auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
-
-        while (remaining > 0) {
-            const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf.get()), std::min(remaining, SCRATCH_BUFSIZE));
-            // Retry if timeout occurred
-            if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
-                continue;
-            }
-
-            if (recv_err <= 0) {
-                int error_code = errno;
-
+    if (handler->accepts_upload) {
+        if (req->content_len == 0) {
+            if (request.header("Content-Length").isEmpty()) {
+                // Probably a chunked encoding. Not supported.
                 if (handler->callbackInMainThread) {
-                    auto result = task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(request, error_code);});
-                    if (result != TaskScheduler::AwaitResult::Done) {
-                        return ESP_FAIL;
-                    }
+                    task_scheduler.await([handler, &request](){handler->uploadErrorCallback(request, EBADMSG);});
                 }
                 else {
-                    handler->uploadErrorCallback(request, error_code);
+                    handler->uploadErrorCallback(request, EBADMSG);
+                }
+                return ESP_FAIL;
+            } else {
+                // This is really a request were there are 0 bytes to receive. Call the upload handler once.
+                bool result = false;
+                if (handler->callbackInMainThread) {
+                    task_scheduler.await([handler, &request, &result]{result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
+                } else {
+                    result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
                 }
 
-                return ESP_FAIL;
-            }
-
-            const size_t received = static_cast<size_t>(recv_err);
-            remaining -= received;
-            bool result = false;
-            if (handler->callbackInMainThread) {
-                auto scratch_ptr = scratch_buf.get();
-                auto await_result = task_scheduler.await([handler, request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
-                if (await_result != TaskScheduler::AwaitResult::Done) {
+                if (!result) {
                     return ESP_FAIL;
                 }
-            } else {
-                result = handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
             }
+        } else {
+            // Receive payload
+            size_t remaining = req->content_len;
+            size_t offset = 0;
+            auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
 
-            if (!result) {
-                return ESP_FAIL;
+            while (remaining > 0) {
+                const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf.get()), std::min(remaining, SCRATCH_BUFSIZE));
+                // Retry if timeout occurred
+                if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
+                    continue;
+                }
+
+                if (recv_err <= 0) {
+                    int error_code = errno;
+
+                    if (handler->callbackInMainThread) {
+                        auto result = task_scheduler.await([handler, &request, error_code](){handler->uploadErrorCallback(request, error_code);});
+                        if (result != TaskScheduler::AwaitResult::Done) {
+                            return ESP_FAIL;
+                        }
+                    }
+                    else {
+                        handler->uploadErrorCallback(request, error_code);
+                    }
+
+                    return ESP_FAIL;
+                }
+
+                const size_t received = static_cast<size_t>(recv_err);
+                remaining -= received;
+                bool result = false;
+                if (handler->callbackInMainThread) {
+                    auto scratch_ptr = scratch_buf.get();
+                    auto await_result = task_scheduler.await([handler, &request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
+                    if (await_result != TaskScheduler::AwaitResult::Done) {
+                        return ESP_FAIL;
+                    }
+                } else {
+                    result = handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
+                }
+
+                if (!result) {
+                    return ESP_FAIL;
+                }
+
+                offset += received;
             }
-
-            offset += received;
         }
     }
 
     if (handler->callbackInMainThread)
-        task_scheduler.await([handler, request](){handler->callback(request);});
+        task_scheduler.await([handler, &request](){handler->callback(request);});
     else
         handler->callback(request);
 
@@ -441,6 +420,11 @@ void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)
     this->on_not_authorized = std::move(callback);
 }
 
+void WebServer::onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn_)
+{
+    this->auth_fn = std::move(auth_fn_);
+}
+
 WebServerHandler *WebServer::addHandler(const char *uri,
                                         httpd_method_t method,
                                         bool callbackInMainThread,
@@ -456,8 +440,7 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     httpd_uri_t ll_handler = {};
     ll_handler.uri       = uri;
     ll_handler.method    = method;
-    // This check has to happen before uploadCallback is forwarded!
-    ll_handler.handler   = uploadCallback == nullptr ? low_level_handler : low_level_upload_handler;
+    ll_handler.handler   = low_level_handler;
 
     handlers.emplace_front(callbackInMainThread,
                            std::move(callback),
@@ -469,7 +452,6 @@ WebServerHandler *WebServer::addHandler(const char *uri,
 #ifdef DEBUG_FS_ENABLE
     result->uri = perm_strdup(uri);
     result->method = method;
-    result->accepts_upload = uploadCallback != nullptr;
 #endif
 
     ll_handler.user_ctx = result;
@@ -477,6 +459,18 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     httpd_register_uri_handler(httpd, &ll_handler);
     return result;
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+WebServerHandler::WebServerHandler(bool callbackInMainThread_, wshCallback &&callback_, wshUploadCallback &&uploadCallback_, wshUploadErrorCallback &&uploadErrorCallback_) :
+    accepts_upload(uploadCallback_ != nullptr), // Compare with input parameter before std::move
+    callbackInMainThread(callbackInMainThread_),
+    callback(std::move(callback_)),
+    uploadCallback(std::move(uploadCallback_)),
+    uploadErrorCallback(std::move(uploadErrorCallback_))
+{
+}
+#pragma GCC diagnostic pop
 
 // From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 static const char *httpStatusCodeToString(int code)
@@ -757,6 +751,23 @@ int WebServerRequest::receive(char *buf, size_t buf_len)
 
     return static_cast<int>(contentLength());
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+const char *WebServerRequest::methodString()
+{
+    switch (method()) {
+        case HTTP_GET:
+            return "GET";
+        case HTTP_PUT:
+            return "PUT";
+        case HTTP_POST:
+            return "POST";
+        default:
+            return "";
+    }
+}
+#pragma GCC diagnostic pop
 
 IPAddress WebServerRequest::getLocalAddress()
 {

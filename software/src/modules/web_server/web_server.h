@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <forward_list>
 #include <functional>
 #include <IPAddress.h>
@@ -87,35 +88,24 @@ public:
     [[gnu::warn_unused_result]]
     int receive(char *buf, size_t buf_len);
 
-    int method()
+    inline httpd_method_t method()
     {
-        return req->method;
+        return static_cast<httpd_method_t>(req->method);
     }
 
-    const char *methodString()
-    {
-        switch (method()) {
-            case HTTP_GET:
-                return "GET";
-            case HTTP_PUT:
-                return "PUT";
-            case HTTP_POST:
-                return "POST";
-        }
-        return "";
-    }
+    const char *methodString();
 
-    String uri()
+    inline String uri()
     {
         return String(req->uri);
     }
 
-    const char *uriCStr()
+    inline const char *uriCStr()
     {
         return req->uri;
     }
 
-    WebServerRequestReturnProtect unsafe_ResponseAlreadySent()
+    inline WebServerRequestReturnProtect unsafe_ResponseAlreadySent()
     {
         return WebServerRequestReturnProtect{};
     }
@@ -139,16 +129,9 @@ using wshUploadCallback = std::function<bool(WebServerRequest request, String fi
 using wshUploadErrorCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request, int error_code)>;
 
 struct WebServerHandler {
-    WebServerHandler(bool callbackInMainThread,
-                     wshCallback &&callback,
-                     wshUploadCallback &&uploadCallback,
-                     wshUploadErrorCallback &&uploadErrorCallback) : //uri(uri),
-                                                                     //method(method),
-                                                                     callbackInMainThread(callbackInMainThread),
-                                                                     callback(std::move(callback)),
-                                                                     uploadCallback(std::move(uploadCallback)),
-                                                                     uploadErrorCallback(std::move(uploadErrorCallback)) {}
+    WebServerHandler(bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
+    bool accepts_upload;
     bool callbackInMainThread;
     wshCallback callback;
     wshUploadCallback uploadCallback;
@@ -157,14 +140,13 @@ struct WebServerHandler {
 #ifdef DEBUG_FS_ENABLE
     const char *uri;
     httpd_method_t method;
-    bool accepts_upload;
 #endif
 };
 
 class WebServer final : public IModule
 {
 public:
-    WebServer() : httpd(nullptr), handlers() {}
+    WebServer() : handlers() {}
 
     void post_setup();
     void pre_reboot();
@@ -176,17 +158,12 @@ public:
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback);
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
+    void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
-    void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn)
-    {
-        this->auth_fn = std::move(auth_fn);
-    }
-
-    httpd_handle_t httpd;
+    httpd_handle_t httpd = nullptr;
     std::forward_list<WebServerHandler> handlers;
     int handler_count = 0;
     wshCallback on_not_authorized;
-
     std::function<bool(WebServerRequest)> auth_fn;
 
 private:
