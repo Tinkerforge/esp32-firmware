@@ -347,8 +347,15 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
         [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
-            if (record->cs.timestamp_minutes < params.start_timestamp_min ||
-                record->cs.timestamp_minutes > params.end_timestamp_min) {
+            auto timestamp = record->cs.timestamp_minutes;
+            auto filter_start = params.start_timestamp_min;
+            auto filter_end = params.end_timestamp_min;
+
+            if (timestamp != 0 && filter_start != 0 && timestamp < filter_start) {
+                return ESP_OK;
+            }
+
+            if (timestamp != 0 && filter_end != 0 && timestamp > filter_end) {
                 return ESP_OK;
             }
 
