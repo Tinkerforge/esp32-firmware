@@ -131,6 +131,23 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     </ListGroupItem>
 }
 
+
+function date_to_minutes(d: Date, round_mode: 'start_of_day' | 'end_of_day') {
+    let date = d ?? new Date(0);
+    // dates are "invalid date" (i.e. getTime returns NaN) if the user clicks an input's clear button.
+    if (isNaN(date.getTime()))
+        date = new Date(0);
+
+    if (date.getTime() != 0) {
+        switch (round_mode) {
+            case 'start_of_day': date.setHours( 0,  0, 0, 0); break;
+            case 'end_of_day':   date.setHours(23, 59, 0, 0); break;
+        }
+    }
+
+    return date.getTime() / 1000 / 60;
+}
+
 export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {status_ref?: RefObject<ChargeTrackerStatus>}, ChargeTrackerState> {
     constructor() {
         super('charge_tracker/config',
@@ -412,19 +429,15 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_date: Date, end_date: Date, price?: number) {
-        // Use new /charge_tracker/csv endpoint
+    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
-        let start = start_date ?? new Date();
-        let end = end_date ?? new Date();
-        end.setHours(23, 59, 59, 999);
 
         const language = get_active_language().value != 'de' ? Language.English : Language.German;
         const payload = {
             api_not_final_acked: true,
             language: language,
-            start_timestamp_min: Math.floor(start.getTime() / 1000 / 60),
-            end_timestamp_min: Math.floor(end.getTime() / 1000 / 60),
+            start_timestamp_min: start_minutes,
+            end_timestamp_min: end_minutes,
             user_filter: user_filter,
             csv_delimiter: csvFlavorEnum,
         };
@@ -490,23 +503,16 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         const onDropdownClick = async (config_index: number) => {
             try {
-                let start = state.start_date ?? new Date(0);
-                if (isNaN(start.getTime()))
-                    start = new Date(0);
-
-                let end = state.end_date ?? new Date(Date.now());
-                if (isNaN(end.getTime()))
-                    end = new Date(Date.now());
-
-                end.setHours(23, 59, 59, 999);
+                let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
+                let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
                 const language = get_active_language().value != 'de' ? Language.English : Language.German;
 
                 await API.call("charge_tracker/send_charge_log", {
                     api_not_final_acked: true,
                     language: language,
-                    start_timestamp_min: Math.floor(start.getTime() / 1000 / 60),
-                    end_timestamp_min: Math.floor(end.getTime() / 1000 / 60),
+                    start_timestamp_min: start_minutes,
+                    end_timestamp_min: end_minutes,
                     user_filter: parseInt(state.user_filter),
                     file_type: parseInt(state.file_type),
                     letterhead: state.pdf_letterhead,
@@ -620,33 +626,26 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} onClick={async () => {
                             this.setState({show_spinner: true});
 
-                            let start = state.start_date ?? new Date(0);
-                            // Start and end dates are "invalid date" if the user clicks the input's clear button.
-                            if (isNaN(start.getTime()))
-                                start = new Date(0);
-
-                            let end = state.end_date ?? new Date(Date.now());
-                            if (isNaN(end.getTime()))
-                                end = new Date(Date.now());
+                            let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
+                            let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
                             try {
                                 if (state.file_type === "0") {
                                     // Download PDF
-                                    end.setHours(23, 59);
                                     const now = Date.now();
                                     const language = get_active_language().value != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
                                         language: language,
-                                        start_timestamp_min: start.getTime() / 1000 / 60,
-                                        end_timestamp_min: end.getTime() / 1000 / 60,
+                                        start_timestamp_min: start_minutes,
+                                        end_timestamp_min: end_minutes,
                                         user_filter: parseInt(state.user_filter),
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
                                 } else {
                                     // Download CSV
-                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start, end, state.electricity_price);
+                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start_minutes, end_minutes, state.electricity_price);
                                 }
                             } finally {
                                 this.setState({show_spinner: false});
