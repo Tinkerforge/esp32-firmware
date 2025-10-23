@@ -110,6 +110,20 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
             async_event.error_http_client = ESP_OK;
             async_event.error_http_status = http_status;
 
+            // In case of 404 add the transferred data to the event.
+            // This allows the caller to check for specific error messages
+            // in the response body (e.g. "no prices available yet" at api.warp-charger.com).
+            if (http_status == 404) {
+                // Don't handle chunked data for 404
+                if (esp_http_client_is_complete_data_received(that->http_client)) {
+                    async_event.error_data = event->data;
+                    async_event.error_data_len = event->data_len;
+                } else {
+                    async_event.error_data = nullptr;
+                    async_event.error_data_len = 0;
+                }
+            }
+
             if (!that->abort_requested) {
                 that->callback(&async_event);
             }

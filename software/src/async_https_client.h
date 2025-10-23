@@ -69,6 +69,8 @@ struct AsyncHTTPSClientEvent
             esp_tls_error_handle_t error_handle; // AsyncHTTPSClientError::HTTPError
             esp_err_t error_http_client; // AsyncHTTPSClientError::HTTPClientError
             int error_http_status; // AsyncHTTPSClientError::HTTPStatusError
+            const void *error_data; // Only filled for 404 HTTP status if response is not chunked
+            size_t error_data_len;
         };
 
         // AsyncHTTPSClientEventType::Data
