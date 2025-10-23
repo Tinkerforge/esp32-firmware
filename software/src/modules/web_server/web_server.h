@@ -129,27 +129,32 @@ using wshUploadCallback = std::function<bool(WebServerRequest request, String fi
 using wshUploadErrorCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request, int error_code)>;
 
 struct WebServerHandler {
-    WebServerHandler(bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler(const char *uri, size_t uri_len, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
+    const char *uri;
+    size_t uri_len;
+    httpd_method_t method;
     bool accepts_upload;
     bool callbackInMainThread;
     wshCallback callback;
     wshUploadCallback uploadCallback;
     wshUploadErrorCallback uploadErrorCallback;
+    WebServerHandler *next = nullptr;
+};
 
-#ifdef DEBUG_FS_ENABLE
-    const char *uri;
-    httpd_method_t method;
-#endif
+enum class WebServerSortOrder {
+    ASCENDING,
+    DESCENDING,
 };
 
 class WebServer final : public IModule
 {
 public:
-    WebServer() : handlers() {}
+    WebServer() {}
 
     void post_setup();
     void pre_reboot();
+    void register_events();
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
@@ -160,17 +165,23 @@ public:
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
+#ifdef DEBUG_FS_ENABLE
+    void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
+#endif
+
     httpd_handle_t httpd = nullptr;
-    std::forward_list<WebServerHandler> handlers;
-    int handler_count = 0;
     wshCallback on_not_authorized;
     std::function<bool(WebServerRequest)> auth_fn;
 
 private:
-    WebServerHandler *addHandler(const char *uri,
-                                 httpd_method_t method,
-                                 bool callbackInMainThread,
-                                 wshCallback &&callback,
-                                 wshUploadCallback &&uploadCallback,
-                                 wshUploadErrorCallback &&uploadErrorCallback);
+    static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler);
+    static esp_err_t low_level_handler(httpd_req_t *req);
+
+    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+
+    WebServerHandler *match_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);
+    WebServerHandler *match_wildcard_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);
+
+    WebServerHandler *handlers = nullptr;
+    WebServerHandler *wildcard_handlers = nullptr;
 };

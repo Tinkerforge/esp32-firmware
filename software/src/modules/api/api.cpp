@@ -696,52 +696,45 @@ void API::register_urls()
             sw.clear();
         }
 
-        std::forward_list<WebServerHandler>::iterator it;
-        bool first = true;
-        done = false;
         sw.clear();
-        while (!done) {
-            auto result = task_scheduler.await([&sw, &i, &done, first, &it, this](){
-                if (first) {
-                    it = server.handlers.begin();
-                    if (responses.size() != 0)
-                        sw.printf(",");
+        sw.puts(responses.size() == 0 ? "\n" : ",\n");
+
+        WebServerHandler *handlers;
+        WebServerHandler *wildcard_handlers;
+        server.get_handlers(&handlers, &wildcard_handlers);
+        bool non_wildcards_done = false;
+
+        // The HTTP handlers belong to the HTTP task and can be accessed without going through the main task.
+        while (true) {
+            if (handlers == nullptr) {
+                if (!non_wildcards_done) {
+                    non_wildcards_done = true;
+                    handlers = wildcard_handlers;
+                    continue; // Check again, in case wildcard_handlers is a nullptr.
+                } else {
+                    // Non-wildcards and wildcards done.
+                    break;
                 }
-
-                // There could be 0 handlers registered.
-                done = it == server.handlers.end();
-                if (done)
-                    return;
-
-                const auto &handler = *it;
-
-                sw.printf("{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s}",
-                                handler.uri + 1, handler.method, handler.accepts_upload ? "true" : "false"); // Skip first /
-
-                ++it;
-                done = it == server.handlers.end();
-
-                if (!done)
-                    sw.printf(",\n");
-                else
-                    sw.printf("\n");
-            });
-
-            if (result != TaskScheduler::AwaitResult::Done) {
-                return request.endChunkedResponse();
             }
 
-            first = false;
-            if (sw.getRemainingLength() == 0)
+            sw.printf("{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s}",
+                handlers->uri + 1, handlers->method, handlers->accepts_upload ? "true" : "false"); // +1 to skip first /
+
+            if (sw.getRemainingLength() == 0) {
                 esp_system_abort("API info buffer was too small!");
-            else if (sw.getLength() != 0)
-                request.sendChunk(sw);
+            }
+
+            request.sendChunk(sw);
+
             sw.clear();
+            sw.puts(",\n");
+
+            handlers = handlers->next;
         }
-        sw.clear();
+        sw.clear(); // Discard final comma and line feed.
 
         // Be nice and end the file with a \n.
-        sw.printf("]\n");
+        sw.puts("]\n");
         request.sendChunk(sw);
 
         return request.endChunkedResponse();

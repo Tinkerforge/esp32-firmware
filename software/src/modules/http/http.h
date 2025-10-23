@@ -30,8 +30,6 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len);
-
 class Http final : public IModule,
                    public IAPIBackend
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -51,8 +49,8 @@ public:
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     bool pushRawStateUpdate(const String &payload, const String &path) override;
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
-    WebServerRequestReturnProtect api_handler_get(WebServerRequest req);
-    WebServerRequestReturnProtect api_handler_put(WebServerRequest req);
+
+    bool api_handler(WebServerRequest &req, size_t in_uri_len);
 
     WebServerRequestReturnProtect automation_trigger_handler(WebServerRequest req);
 
@@ -78,6 +76,19 @@ public:
 #endif
 
 private:
+    enum class APIType {STATE, COMMAND, RESPONSE};
+
+    struct api_match_data {
+        APIType type;
+        size_t idx;
+        const char *suffix;
+        size_t suffix_len;
+    };
+
+    WebServerRequestReturnProtect api_handler_get(WebServerRequest &req, const api_match_data &match_data);
+    WebServerRequestReturnProtect api_handler_put(WebServerRequest &req, api_match_data &match_data);
+    WebServerRequestReturnProtect api_handler_run(WebServerRequest &req, api_match_data &match_data);
+
     WebServerRequestReturnProtect run_response(WebServerRequest req, size_t respidx);
 
     Ownership response_ownership;

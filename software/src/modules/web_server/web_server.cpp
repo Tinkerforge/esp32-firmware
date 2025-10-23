@@ -27,6 +27,7 @@
 #include "cool_string.h"
 #include "esp_httpd_priv.h"
 #include "tools/malloc.h"
+#include "tools/memory.h"
 #include "tools/net.h"
 #include "options.h"
 
@@ -57,10 +58,23 @@
 
 #include "gcc_warnings.h"
 
-#define MAX_URI_HANDLERS 128
+#define MAX_URI_HANDLERS 4
 #define HTTPD_STACK_SIZE 8192
 
 static void dummy_free_fn(void *) {}
+
+static bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
+{
+    if (ref_uri[1] == '*') {
+        return true;
+    }
+
+    if (strcmp(ref_uri, in_uri) == 0) {
+        return true;
+    }
+
+    return false;
+}
 
 void WebServer::post_setup()
 {
@@ -148,7 +162,7 @@ void WebServer::post_setup()
                 }
 
                 // TODO: This is only for debugging, remove later
-                cert->log();
+                //cert->log();
 
                 ssl_config->servercert     = cert->crt;
                 ssl_config->servercert_len = cert->crt_length + 1;
@@ -211,14 +225,12 @@ void WebServer::post_setup()
     httpd_config.max_open_sockets = 10;
     httpd_config.enable_so_linger = true;
     httpd_config.linger_timeout = 100; // Try to get WS close and TLS close out.
+    httpd_config.uri_match_fn = custom_uri_match;
 
 #if MODULE_NETWORK_AVAILABLE()
     httpd_config.server_port = network.get_web_server_port(); // Only used in single-port-mode
 #endif
 
-#if MODULE_HTTP_AVAILABLE()
-    httpd_config.uri_match_fn = custom_uri_match;
-#endif
 
     // Start the httpd server
 #if HTTPS_AVAILABLE()
@@ -267,7 +279,7 @@ static const size_t SCRATCH_BUFSIZE = 2048;
 
 // Don't inline the receive handler so that the scratch buffer doesn't always hog the stack.
 [[gnu::noinline]]
-static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler)
+esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler)
 {
     size_t remaining = req->content_len;
     size_t offset = 0;
@@ -318,11 +330,9 @@ static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_
     return ESP_OK;
 }
 
-static esp_err_t low_level_handler(httpd_req_t *req)
+esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 {
-    auto *handler = static_cast<WebServerHandler *>(req->user_ctx);
     auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
-
     auto request = WebServerRequest{req};
 
     if (server->auth_fn && !server->auth_fn(request)) {
@@ -332,6 +342,30 @@ static esp_err_t low_level_handler(httpd_req_t *req)
         }
         request.requestAuthentication();
         return ESP_OK;
+    }
+
+    const char *uri = req->uri;
+    const size_t uri_len = strlen(uri);
+    const httpd_method_t method = static_cast<httpd_method_t>(req->method);
+
+    WebServerHandler *handler = server->match_handlers(uri, uri_len, method);
+
+    if (handler == nullptr) {
+        // No simple handler for this URI, pass to HTTP API.
+#if MODULE_HTTP_AVAILABLE()
+        if (http.api_handler(request, uri_len)) {
+            // HTTP API handled the request.
+            return ESP_OK;
+        }
+#endif
+
+        handler = server->match_wildcard_handlers(uri, uri_len, method);
+
+        if (handler == nullptr) {
+            request.send_plain(404, "Nothing matches the given URI.");
+
+            return ESP_OK;
+        }
     }
 
     if (handler->accepts_upload) {
@@ -438,6 +472,27 @@ void WebServer::onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> 
     this->auth_fn = std::move(auth_fn_);
 }
 
+static WebServerHandler **web_server_find_handler_placement(WebServerHandler **handler_target, WebServerSortOrder sort_order, size_t uri_length)
+{
+    while (*handler_target != nullptr){
+        WebServerHandler *next_handler = *handler_target;
+
+        if (sort_order == WebServerSortOrder::ASCENDING) {
+            if (next_handler->uri_len > uri_length) {
+                break;
+            }
+        } else { // DESCENDING
+            if (next_handler->uri_len < uri_length) {
+                break;
+            }
+        }
+
+        handler_target = &next_handler->next;
+    }
+
+    return handler_target;
+}
+
 WebServerHandler *WebServer::addHandler(const char *uri,
                                         httpd_method_t method,
                                         bool callbackInMainThread,
@@ -445,37 +500,119 @@ WebServerHandler *WebServer::addHandler(const char *uri,
                                         wshUploadCallback &&uploadCallback,
                                         wshUploadErrorCallback &&uploadErrorCallback)
 {
-    if (handler_count >= MAX_URI_HANDLERS) {
-        logger.printfln("Can't add WebServer handler for %s: %d handlers already registered. Please increase MAX_URI_HANDLERS.", uri, handler_count);
+    size_t uri_len = strlen(uri);
+
+    if (uri_len == 0 || uri[0] != '/') {
+        logger.printfln("Attempted to register handler for invalid URI '%s'", uri);
         return nullptr;
     }
 
-    httpd_uri_t ll_handler = {};
-    ll_handler.uri       = uri;
-    ll_handler.method    = method;
-    ll_handler.handler   = low_level_handler;
+    if (!address_is_in_rodata(uri)) {
+        uri = perm_strdup(uri);
+    }
 
-    handlers.emplace_front(callbackInMainThread,
+    WebServerHandler **handler_target;
+
+    if (uri[uri_len - 1] == '*') { // Is wildcard handler?
+        uri_len--; // Ignore trailing asterisk.
+        handler_target = web_server_find_handler_placement(&wildcard_handlers, WebServerSortOrder::DESCENDING, uri_len);
+    } else {
+        handler_target = web_server_find_handler_placement(&handlers, WebServerSortOrder::ASCENDING, uri_len);
+    }
+
+    void *arena_ptr = perm_aligned_alloc(alignof(WebServerHandler), sizeof(WebServerHandler), DRAM);
+
+    if (arena_ptr == nullptr) {
+        logger.printfln("Not enough memory in arena for URI handler");
+        return nullptr;
+    }
+
+    WebServerHandler *new_handler = new(arena_ptr) WebServerHandler{uri,
+                           uri_len,
+                           method,
+                           callbackInMainThread,
                            std::move(callback),
                            std::move(uploadCallback),
-                           std::move(uploadErrorCallback));
-    ++handler_count;
+                           std::move(uploadErrorCallback)};
 
-    WebServerHandler *result = &handlers.front();
-#ifdef DEBUG_FS_ENABLE
-    result->uri = perm_strdup(uri);
-    result->method = method;
-#endif
+    new_handler->next = *handler_target;
+    *handler_target = new_handler;
 
-    ll_handler.user_ctx = result;
-
-    httpd_register_uri_handler(httpd, &ll_handler);
-    return result;
+    return new_handler;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Weffc++"
-WebServerHandler::WebServerHandler(bool callbackInMainThread_, wshCallback &&callback_, wshUploadCallback &&uploadCallback_, wshUploadErrorCallback &&uploadErrorCallback_) :
+WebServerHandler *WebServer::match_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method)
+{
+    WebServerHandler *handler = handlers;
+
+    while (handler != nullptr) {
+        if (handler->uri_len > req_uri_len) {
+            // This and all upcoming handlers have longer URIs.
+            return nullptr;
+        }
+
+        if (handler->uri_len == req_uri_len
+            && (handler->method == method || handler->method == static_cast<httpd_method_t>(HTTP_ANY))
+            && strcmp(handler->uri, req_uri) == 0) {
+                return handler;
+        }
+
+        handler = handler->next;
+    }
+
+    return nullptr;
+}
+
+WebServerHandler *WebServer::match_wildcard_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method)
+{
+    WebServerHandler *handler = wildcard_handlers;
+
+    while (handler != nullptr) {
+        const size_t wildcard_len = handler->uri_len; // Excludes trailing asterisk.
+
+        if (wildcard_len <= req_uri_len
+            && (handler->method == method || handler->method == static_cast<httpd_method_t>(HTTP_ANY))
+            && strncmp(handler->uri, req_uri, wildcard_len) == 0) {
+                return handler;
+        }
+
+        handler = handler->next;
+    }
+
+    return nullptr;
+}
+
+#ifdef DEBUG_FS_ENABLE
+void WebServer::get_handlers(WebServerHandler **handlers_out, WebServerHandler **wildcard_handlers_out)
+{
+    *handlers_out          = handlers;
+    *wildcard_handlers_out = wildcard_handlers;
+}
+#endif
+
+// The wildcard handler must be registered after the register_urls stage because it would otherwise match before everything else.
+void WebServer::register_events()
+{
+    httpd_uri_t handler = {
+        .uri = "/*",
+        .method = static_cast<httpd_method_t>(HTTP_ANY),
+        .handler = low_level_handler,
+        .user_ctx = nullptr,
+        .is_websocket = false, // TODO true?
+        .handle_ws_control_frames = false, // TODO true?
+        .supported_subprotocol = nullptr,
+    };
+
+    const esp_err_t ret = httpd_register_uri_handler(httpd, &handler);
+    if (ret != ESP_OK) {
+        logger.printfln("Cannot register handler: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+    }
+}
+
+WebServerHandler::WebServerHandler(const char *uri_, size_t uri_len_, httpd_method_t method_, bool callbackInMainThread_, wshCallback &&callback_, wshUploadCallback &&uploadCallback_, wshUploadErrorCallback &&uploadErrorCallback_) :
+    uri(uri_),
+    uri_len(uri_len_),
+    method(method_),
     accepts_upload(uploadCallback_ != nullptr), // Compare with input parameter before std::move
     callbackInMainThread(callbackInMainThread_),
     callback(std::move(callback_)),
@@ -483,7 +620,6 @@ WebServerHandler::WebServerHandler(bool callbackInMainThread_, wshCallback &&cal
     uploadErrorCallback(std::move(uploadErrorCallback_))
 {
 }
-#pragma GCC diagnostic pop
 
 // From: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 static const char *httpStatusCodeToString(int code)
