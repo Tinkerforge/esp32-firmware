@@ -1032,7 +1032,7 @@ void ChargeTracker::register_urls()
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 
-    server.on("/charge_tracker/send_charge_log", HTTP_PUT, [this](WebServerRequest request) {
+    server.on_HTTPThread("/charge_tracker/send_charge_log", HTTP_PUT, [this](WebServerRequest request) {
         if (this->send_in_progress) {
             return request.send_plain(429, "Another upload is already in progress");
         }
@@ -1045,6 +1045,7 @@ void ChargeTracker::register_urls()
         int csv_delimiter = (int)CSVFlavor::Excel;
         uint8_t config_index = 0;
         uint32_t cookie = 0;
+        uint32_t remote_upload_config_count = 0;
 
         auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         auto letterhead = letterhead_buf.get();
@@ -1085,6 +1086,7 @@ void ChargeTracker::register_urls()
             csv_delimiter = doc["csv_delimiter"];
             config_index = doc["config_index"];
             cookie = doc["cookie"];
+            remote_upload_config_count = config.get("remote_upload_configs")->count();
 
             if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
                 return request.send_plain(400, "Missing config_index or cookie parameter");
@@ -1114,8 +1116,6 @@ void ChargeTracker::register_urls()
                 }
             });
         }
-
-        uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
         if (config_index >= remote_upload_config_count) {
             return request.send_plain(400, "Invalid config_index");
