@@ -30,6 +30,9 @@
 #include "tools.h"
 #include "options.h"
 
+static constexpr const char DATA_NOT_FOUND_RESPONSE[] = "{\"error\":\"Data not found\"}";
+static constexpr size_t DATA_NOT_FOUND_RESPONSE_LEN = sizeof(DATA_NOT_FOUND_RESPONSE) - 1;
+
 static constexpr auto CHECK_INTERVAL = 1_min;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_min;
 
@@ -329,6 +332,27 @@ void DayAheadPrices::update()
                 break;
 
             case AsyncHTTPSClientError::HTTPStatusError:
+                // When no prices are available yet, the server returns a 404 with the following JSON body:
+                // {"error":"Data not found"}
+                // This is different to a standard "404 not found".
+                // We look for this specific response and print a more user friendly message.
+                if (event->error_data_len == DATA_NOT_FOUND_RESPONSE_LEN) {
+                    if (memcmp(event->error_data, DATA_NOT_FOUND_RESPONSE, DATA_NOT_FOUND_RESPONSE_LEN) == 0) {
+                        micros_t last_print;
+                        if (last_no_prices_available.try_unwrap(&last_print)) {
+                            if (now_us() - last_print < 60_min) {
+                                // Only log the "no prices available yet" message once per hour
+                                break;
+                            }
+                        }
+
+                        logger.printfln("No prices available yet");
+                        last_no_prices_available = now_us();
+                        break;
+                    }
+                }
+
+                // Otherwise print the normal http status error message
                 logger.printfln("HTTP error while downloading day ahead prices: %d", event->error_http_status);
                 break;
 
@@ -379,6 +403,7 @@ void DayAheadPrices::update()
                 download_state = DAP_DOWNLOAD_STATE_ERROR;
                 break;
             } else {
+                last_no_prices_available = {};
                 json_buffer[json_buffer_position] = '\0';
                 handle_new_data();
             }

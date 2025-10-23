@@ -87,6 +87,8 @@ private:
     PriceSorted *prices_sorted = nullptr;
     int32_t prices_sorted_first_date = 0;
 
+    Option<micros_t> last_no_prices_available = {};
+
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot prices;
