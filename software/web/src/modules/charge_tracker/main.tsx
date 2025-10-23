@@ -444,12 +444,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         try {
             const csv = await API.call("charge_tracker/csv", payload, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-            if (flavor === 'excel') {
-                const csvString = new TextDecoder().decode(await csv.bytes());
-                util.downloadToTimestampedFile(util.win1252Encode(csvString), __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=windows-1252; header=present");
-            } else {
-                util.downloadToTimestampedFile(csv, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
-            }
+            util.downloadToTimestampedFile(csv, __("charge_tracker.content.charge_log_file"), "csv", flavor === 'excel' ? "text/csv; charset=windows-1252; header=present" : "text/csv; charset=utf-8; header=present");
         } catch (err) {
             util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err);
         }
