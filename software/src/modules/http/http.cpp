@@ -62,73 +62,41 @@ private:
     WebServerRequest *request;
 };
 
-static enum {NONE, STATE, COMMAND, RESPONSE} last_matched_api_type = NONE;
-static size_t last_matched_api_idx = 0;
-static const char * last_matched_api_suffix = 0;
-static size_t last_matched_api_suffix_len = 0;
-bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
+bool Http::api_handler(WebServerRequest &req, size_t in_uri_len)
 {
-    last_matched_api_type = NONE;
-    last_matched_api_idx = 0;
-    last_matched_api_suffix = nullptr;
-    last_matched_api_suffix_len = 0;
-
-    if (boot_stage <= BootStage::REGISTER_URLS)
-        return false;
-
-    if (ref_uri == nullptr || in_uri == nullptr)
-        return false;
-
-    // Don't match the API handler.
-    if (strncmp_with_same_len("/*", in_uri, len) == 0)
-        return false;
-
-    size_t ref_len = strlen(ref_uri);
-
-    if (ref_len == 0)
-        return false;
-
-    // Match other wildcard handlers if:
-    // - ref_uri is a wildcard handler (it ends in *)
-    // - ref_uri is is not the API handler
-    // - in_uri is at least as long as the wildcard handler without the *
-    // - in_uri and ref_uri are the same up to one char before the *
-    if ((ref_uri[ref_len - 1] == '*')
-     && (strncmp_with_same_len(ref_uri, "/*", 2) != 0)
-     && (strnlen(in_uri, len) >= (ref_len - 1))
-     && (strncmp(ref_uri, in_uri, std::min(ref_len - 1, len)) == 0)) {
-        return true;
-    }
-
-    // Match directly registered URLs.
-    if (strncmp_with_same_len(ref_uri, in_uri, len) == 0)
-        return true;
-
-    // Only match in_uri with APIs if ref_uri is the registered API handler.
-    if (strncmp_with_same_len(ref_uri, "/*", 2) != 0 || len < 2)
-        return false;
-
-    // Skip first char when matching APIs: in_uri starts with /; the api paths don't.
-    in_uri += 1;
-    len -= 1;
+    // Skip first char when matching APIs: request uri starts with /; the api paths don't.
+    const char *in_uri = req.uriCStr() + 1;
+    const size_t len = in_uri_len - 1;
 
     const size_t command_size = api.commands.size();
     for (size_t i = 0; i < command_size; i++)
         if (API::complete_or_prefix_match(in_uri, len, api.commands[i])) {
-            last_matched_api_type = COMMAND;
-            last_matched_api_idx = i;
-            last_matched_api_suffix = in_uri + api.commands[i].get_path_len();
-            last_matched_api_suffix_len = len - api.commands[i].get_path_len();
+            const size_t path_len = api.commands[i].get_path_len();
+
+            api_match_data match_data = {
+                .type = APIType::COMMAND,
+                .idx = i,
+                .suffix = in_uri + path_len,
+                .suffix_len = len - path_len,
+            };
+
+            api_handler_run(req, match_data);
             return true;
         }
 
     const size_t state_size = api.states.size();
     for (size_t i = 0; i < state_size; i++)
         if (API::complete_or_prefix_match(in_uri, len, api.states[i])) {
-            last_matched_api_type = STATE;
-            last_matched_api_idx = i;
-            last_matched_api_suffix = in_uri + api.states[i].get_path_len();
-            last_matched_api_suffix_len = len - api.states[i].get_path_len();
+            const size_t path_len = api.states[i].get_path_len();
+
+            api_match_data match_data = {
+                .type = APIType::STATE,
+                .idx = i,
+                .suffix = in_uri + path_len,
+                .suffix_len = len - path_len,
+            };
+
+            api_handler_run(req, match_data);
             return true;
         }
 
@@ -136,10 +104,16 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     for (size_t i = 0; i < response_size; i++)
         // prefix matches are not supported for responses
         if (API::complete_match(in_uri, len, api.responses[i])) {
-            last_matched_api_type = RESPONSE;
-            last_matched_api_idx = i;
-            last_matched_api_suffix = in_uri + api.responses[i].get_path_len();
-            last_matched_api_suffix_len = len - api.responses[i].get_path_len();
+            const size_t path_len = api.responses[i].get_path_len();
+
+            api_match_data match_data = {
+                .type = APIType::RESPONSE,
+                .idx = i,
+                .suffix = in_uri + path_len,
+                .suffix_len = len - path_len,
+            };
+
+            api_handler_run(req, match_data);
             return true;
         }
 
@@ -267,21 +241,19 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t re
     return WebServerRequestReturnProtect{};
 }
 
-WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
+WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest &req, const api_match_data &match_data)
 {
-    switch (last_matched_api_type) {
-        case NONE:
-            return req.send_plain(500, "URI matcher did not match API but api_handler_get was called. This should never happen");
-        case STATE: {
+    switch (match_data.type) {
+        case APIType::STATE: {
             API::SuffixPath suffix_path;
 
-            const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
+            const char *error = API::build_suffix_path(suffix_path, match_data.suffix, match_data.suffix_len);
             if (error != nullptr)
                 return req.send_plain(404, error);
 
             String response;
             uint16_t status_code = 200;
-            auto result = task_scheduler.await([&response, &status_code, i=last_matched_api_idx, &suffix_path]() {
+            auto result = task_scheduler.await([&response, &status_code, i=match_data.idx, &suffix_path]() {
                 Config *cfg = api.states[i].config;
                 cfg = cfg->walk(suffix_path.path.data(), suffix_path.path.size());
                 if (cfg == nullptr) {
@@ -304,16 +276,16 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 
             return req.send_plain(status_code, response);
         }
-        case COMMAND: {
+        case APIType::COMMAND: {
             API::SuffixPath suffix_path;
 
-            const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
+            const char *error = API::build_suffix_path(suffix_path, match_data.suffix, match_data.suffix_len);
             if (error != nullptr)
                 return req.send_plain(404, error);
 
-            return run_command(req, last_matched_api_idx, suffix_path);
+            return run_command(req, match_data.idx, suffix_path);
         }
-        case RESPONSE:
+        case APIType::RESPONSE:
             break;
     }
 
@@ -322,18 +294,16 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
     return req.send_plain(405, "Request method for this URI is not handled by server");
 }
 
-WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
+WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest &req, api_match_data &match_data)
 {
-    switch (last_matched_api_type) {
-        case NONE:
-            return req.send_plain(500, "URI matcher did not match API but api_handler_get was called. This should never happen");
-        case RESPONSE:
-            return run_response(req, last_matched_api_idx);
-        case STATE: {
+    switch (match_data.type) {
+        case APIType::RESPONSE:
+            return run_response(req, match_data.idx);
+        case APIType::STATE: {
             // If the matched API type is state, the user wants to call the corresponding _update command.
             // For example `curl warp-abc/foo/bar -X PUT -d {"enable": true}` should be the same as if foo/bar_update was called.
 
-            String uri_update = StringSumHelper(api.states[last_matched_api_idx].path) + "_update";
+            String uri_update = StringSumHelper(api.states[match_data.idx].path) + "_update";
             size_t command_idx = 0xFFFFFFFF;
             for (size_t a = 0; a < api.commands.size(); a++) {
                 if (api.commands[a].get_path_len() == uri_update.length() && memcmp(api.commands[a].path, uri_update.c_str(), uri_update.length()) == 0) {
@@ -347,23 +317,38 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
                 return req.send_plain(405, "Request method for this URI is not handled by server");
 
             // We've found the command that was meant to be called. Update the api index and fall through to normal command handling
-            last_matched_api_idx = command_idx;
+            match_data.idx = command_idx;
             [[fallthrough]];
         }
-        case COMMAND: {
+        case APIType::COMMAND: {
             API::SuffixPath suffix_path;
 
-            const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
+            const char *error = API::build_suffix_path(suffix_path, match_data.suffix, match_data.suffix_len);
             if (error != nullptr)
                 return req.send_plain(404, error);
 
-            return run_command(req, last_matched_api_idx, suffix_path);
+            return run_command(req, match_data.idx, suffix_path);
         }
     }
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
     return req.send_plain(405, "Request method for this URI is not handled by server");
+}
+
+WebServerRequestReturnProtect Http::api_handler_run(WebServerRequest &req, api_match_data &match_data)
+{
+    const httpd_method_t method = req.method();
+
+    switch (method) {
+        case HTTP_GET:
+            return api_handler_get(req, match_data);
+        case HTTP_PUT:
+        case HTTP_POST:
+            return api_handler_put(req, match_data);
+        default:
+            return req.send_plain(405, "Method not allowed for API path");
+    }
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -498,10 +483,6 @@ void Http::register_urls()
     server.on("/automation_trigger/*", HTTP_PUT, [this](WebServerRequest request){return automation_trigger_handler(request);});
     server.on("/automation_trigger/*", HTTP_POST, [this](WebServerRequest request){return automation_trigger_handler(request);});
 #endif
-
-    server.on_HTTPThread("/*", HTTP_GET, [this](WebServerRequest request){return api_handler_get(request);});
-    server.on_HTTPThread("/*", HTTP_PUT, [this](WebServerRequest request){return api_handler_put(request);});
-    server.on_HTTPThread("/*", HTTP_POST, [this](WebServerRequest request){return api_handler_put(request);});
 }
 
 void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
