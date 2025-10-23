@@ -514,8 +514,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                     config_index
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
-
-                util.add_alert("charge-log-upload", "success", () => __("charge_tracker.script.upload_charge_log_success"), () => "");
             } catch (err) {
                 util.add_alert("charge-log-upload", "danger", () => __("charge_tracker.script.upload_charge_log_failed"), err);
             }
