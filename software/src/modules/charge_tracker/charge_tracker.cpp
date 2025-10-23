@@ -951,7 +951,11 @@ void ChargeTracker::register_urls()
             letterhead_lines = read_letterhead_lines(letterhead);
         }
 
-        const auto callback = [this, &request](const void *data, size_t len, bool last_data) -> int {
+        const auto callback = [this, &request](const void *data, size_t len) -> int {
+            // sendChunk complains if called with length == 0, because this indicates the end of the chunked response.
+            // endChunkedResponse is called after the PDF generation is done.
+            if (len == 0)
+                return ESP_OK;
             return request.sendChunk(static_cast<const char *>(data), len);
         };
 
@@ -1446,7 +1450,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         const int letterhead_lines = read_letterhead_lines(letterhead.get());
 
         this->generate_pdf(
-            [&remote_client = *upload_args->remote_client](const void *buffer, size_t len, bool /*last_data*/) -> esp_err_t {
+            [&remote_client = *upload_args->remote_client](const void *buffer, size_t len) -> esp_err_t {
                 return send_binary_chunk(remote_client, static_cast<const uint8_t *>(buffer), len);
             },
             user_filter,
@@ -1638,7 +1642,7 @@ void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_inde
 #endif
 
 void ChargeTracker::generate_pdf(
-    std::function<int(const void *buffer, size_t len, bool last_data)> &&callback,
+    std::function<int(const void *buffer, size_t len)> &&callback,
     int user_filter,
     uint32_t start_timestamp_min,
     uint32_t end_timestamp_min,
@@ -1881,5 +1885,4 @@ search_done:
         return lines_generated;
     });
     free(display_name_cache);
-    callback(nullptr, 0, true);
 }

@@ -78,7 +78,7 @@ public:
 private:
     bool repair_last(float);
     void repair_charges();
-    void generate_pdf(std::function<int(const void *buffer, size_t len, bool last_data)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
+    void generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
 
     Config last_charges_prototype;
     Config charge_log_send_prototype;
