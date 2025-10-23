@@ -443,7 +443,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         };
 
         try {
-            const now = Date.now();
             const csv = await API.call("charge_tracker/csv", payload, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
             if (flavor === 'excel') {
                 const csvString = new TextDecoder().decode(await csv.bytes());
@@ -451,7 +450,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             } else {
                 util.downloadToTimestampedFile(csv, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
             }
-            const duration = Date.now() - now;
         } catch (err) {
             util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err);
         }
@@ -631,8 +629,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                             try {
                                 if (state.file_type === "0") {
-                                    // Download PDF
-                                    const now = Date.now();
                                     const language = get_active_language().value != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
