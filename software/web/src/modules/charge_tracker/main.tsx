@@ -514,9 +514,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
                     config_index
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
-            } catch (err) {
-                util.add_alert("charge-log-upload", "danger", () => __("charge_tracker.script.upload_charge_log_failed"), err);
-            }
+            } catch {}
         };
         const remoteAccessConfig = API.get('remote_access/config');
         const sendEmailDropdownItems = state.remote_upload_configs.map((cfg, index) => {
