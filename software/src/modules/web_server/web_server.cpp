@@ -262,7 +262,61 @@ void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
     httpd_queue_work(httpd, fn, arg);
 }
 
+// Check stack usage after increasing buffer size.
 static const size_t SCRATCH_BUFSIZE = 2048;
+
+// Don't inline the receive handler so that the scratch buffer doesn't always hog the stack.
+[[gnu::noinline]]
+static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler)
+{
+    size_t remaining = req->content_len;
+    size_t offset = 0;
+    uint8_t scratch_buf[SCRATCH_BUFSIZE];
+
+    while (remaining > 0) {
+        const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf), std::min(remaining, SCRATCH_BUFSIZE));
+        // Retry if timeout occurred
+        if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
+            continue;
+        }
+
+        if (recv_err <= 0) {
+            int error_code = errno;
+
+            if (handler->callbackInMainThread) {
+                auto result = task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(*request, error_code);});
+                if (result != TaskScheduler::AwaitResult::Done) {
+                    return ESP_FAIL;
+                }
+            }
+            else {
+                handler->uploadErrorCallback(*request, error_code);
+            }
+
+            return ESP_FAIL;
+        }
+
+        const size_t received = static_cast<size_t>(recv_err);
+        remaining -= received;
+        bool result = false;
+        if (handler->callbackInMainThread) {
+            auto await_result = task_scheduler.await([handler, request, offset, &scratch_buf, received, remaining, &result]{result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);});
+            if (await_result != TaskScheduler::AwaitResult::Done) {
+                return ESP_FAIL;
+            }
+        } else {
+            result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);
+        }
+
+        if (!result) {
+            return ESP_FAIL;
+        }
+
+        offset += received;
+    }
+
+    return ESP_OK;
+}
 
 static esp_err_t low_level_handler(httpd_req_t *req)
 {
@@ -306,51 +360,10 @@ static esp_err_t low_level_handler(httpd_req_t *req)
             }
         } else {
             // Receive payload
-            size_t remaining = req->content_len;
-            size_t offset = 0;
-            auto scratch_buf = heap_alloc_array<uint8_t>(SCRATCH_BUFSIZE);
+            const esp_err_t ret = low_level_receive_handler(&request, req, handler);
 
-            while (remaining > 0) {
-                const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf.get()), std::min(remaining, SCRATCH_BUFSIZE));
-                // Retry if timeout occurred
-                if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
-                    continue;
-                }
-
-                if (recv_err <= 0) {
-                    int error_code = errno;
-
-                    if (handler->callbackInMainThread) {
-                        auto result = task_scheduler.await([handler, &request, error_code](){handler->uploadErrorCallback(request, error_code);});
-                        if (result != TaskScheduler::AwaitResult::Done) {
-                            return ESP_FAIL;
-                        }
-                    }
-                    else {
-                        handler->uploadErrorCallback(request, error_code);
-                    }
-
-                    return ESP_FAIL;
-                }
-
-                const size_t received = static_cast<size_t>(recv_err);
-                remaining -= received;
-                bool result = false;
-                if (handler->callbackInMainThread) {
-                    auto scratch_ptr = scratch_buf.get();
-                    auto await_result = task_scheduler.await([handler, &request, offset, scratch_ptr, received, remaining, &result]{result = handler->uploadCallback(request, "not implemented", offset, scratch_ptr, received, remaining);});
-                    if (await_result != TaskScheduler::AwaitResult::Done) {
-                        return ESP_FAIL;
-                    }
-                } else {
-                    result = handler->uploadCallback(request, "not implemented", offset, scratch_buf.get(), received, remaining);
-                }
-
-                if (!result) {
-                    return ESP_FAIL;
-                }
-
-                offset += received;
+            if (ret != ESP_OK) {
+                return ret;
             }
         }
     }
