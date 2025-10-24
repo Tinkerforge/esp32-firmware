@@ -24,14 +24,19 @@ try:
 
     if return_code != 0:
         sys.exit(return_code)
+except KeyboardInterrupt:
+    sys.exit(1)
 finally:
     end = time.monotonic()
     elasped = int(end - begin)
 
-    print(f'ELASPED: {elasped} seconds')
+    print(f'ELASPED: {datetime.timedelta(seconds=elasped)}')
 
     with open('pio_timed.log', 'a') as f:
         f.write(f'{datetime.datetime.now().isoformat()} {elasped}\n')
 
 if monitor:
-    sys.exit(subprocess.run(['./ff', '-s']).returncode)
+    try:
+        sys.exit(subprocess.run(['./ff', '-s']).returncode)
+    except KeyboardInterrupt:
+        sys.exit(1)
