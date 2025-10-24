@@ -500,7 +500,7 @@ public:
 
     String get_entity_name() const override
     {
-        return "EvEntity";
+        return "EvccUsecase";
     };
 
     bool is_ev_connected() const
@@ -675,7 +675,7 @@ public:
 
     String get_entity_name() const override
     {
-        return "ControllableSystemEntity";
+        return "LpcUsecase";
     };
 
 private:

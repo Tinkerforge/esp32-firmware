@@ -223,8 +223,8 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
             continue;
         }
         bool add_entity_info = true;
+        auto entity_info = uc->get_detailed_discovery_entity_information();
         for (auto &existing_entity_info : *(node_management_detailed_data.entityInformation)) {
-            auto entity_info = uc->get_detailed_discovery_entity_information();
             // If the entity type matches, we do not add it again and if it has no entity type defined it is inactive
             if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get()) {
                 add_entity_info = false;
@@ -232,7 +232,7 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
             }
         }
 
-        if (add_entity_info) {
+        if (add_entity_info && entity_info.description->entityType.has_value()) {
             node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
         }
         auto features = uc->get_detailed_discovery_feature_information();
@@ -744,6 +744,9 @@ UseCaseInformationDataType EvcemUsecase::get_usecase_information()
 NodeManagementDetailedDiscoveryEntityInformationType EvcemUsecase::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return entity;
+    }
 
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EV;
@@ -762,7 +765,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
 
     NodeManagementDetailedDiscoveryFeatureInformationType measurement_feature{};
     measurement_feature.description->featureAddress->entity = entity_address;
-    measurement_feature.description->featureAddress->feature = 35;
+    measurement_feature.description->featureAddress->feature = feature_address_measurement;
     measurement_feature.description->featureType = FeatureTypeEnumType::Measurement;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     measurement_feature.description->role = RoleType::server;
@@ -788,7 +791,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
 
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnection_feature{};
     electricalConnection_feature.description->featureAddress->entity = entity_address;
-    electricalConnection_feature.description->featureAddress->feature = 35;
+    electricalConnection_feature.description->featureAddress->feature = feature_address_electrical_connection;
     electricalConnection_feature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     electricalConnection_feature.description->role = RoleType::server;
@@ -994,13 +997,13 @@ EvccUsecase::EvccUsecase()
     entity_active = false; // Disable entity until an EV is connected
 #ifdef EEBUS_DEV_TEST_ENABLE
     task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating EvEntity");
+                                    logger.printfln("EEBUS Usecase test enabled. Updating EvccUsecase");
                                     ev_connected_state(true);
                                     update_device_config("iso15118-2ed1", true);
                                     update_identification("12:34:56:78:9a:bc");
                                     update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
-                                    update_electrical_connection(0, 3600, 800);
-                                    update_operating_state(true);
+                                    update_electrical_connection(0, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
+                                    update_operating_state(false);
 
                                 },
                                 40_s);
@@ -1054,15 +1057,13 @@ CmdClassifierType EvccUsecase::handle_message(HeaderType &header, SpineDataTypeH
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData) {
             response["electricalConnectionPermittedValueSetListData"] = generate_electrical_connection_values();
+            return CmdClassifierType::reply;
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
             response["deviceDiagnosisStateData"] = generate_state();
             return CmdClassifierType::reply;
         }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
-                                                 "Command not supported on this entity");
-        return CmdClassifierType::reply;
+
     } else if (header.cmdClassifier == CmdClassifierType::write || header.cmdClassifier == CmdClassifierType::call) {
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
@@ -1076,6 +1077,9 @@ NodeManagementDetailedDiscoveryEntityInformationType EvccUsecase::get_detailed_d
 {
 
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return entity;
+    }
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EV;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
@@ -2152,6 +2156,9 @@ NodeManagementDetailedDiscoveryEntityInformationType CevcUsecase::get_detailed_d
 {
 
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return entity;
+    }
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EV;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
@@ -2269,20 +2276,23 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
     bool found_dest_entity = false;
     for (EebusUsecase *entity : entity_list) {
-        if (header.addressDestination->entity.has_value() && entity->matches_entity_address(header.addressDestination->entity.get())) {
-            found_dest_entity = true;
-            eebus.trace_fmtln("Usecases: Found entity: %s", entity->get_entity_name().c_str());
+        if (header.addressDestination->entity.has_value() && entity->matches_entity_address(header.addressDestination->entity.get()) && !found_dest_entity) {
             send_response = entity->handle_message(header, data, responseObj, connection);
-            break;
+            if (send_response != CmdClassifierType::EnumUndefined) {
+                found_dest_entity = true;
+                eebus.trace_fmtln("Usecases: Found entity: %s", entity->get_entity_name().c_str());
+            } else {
+                eebus.trace_fmtln("Usecases: Entity %s could not handle the message", entity->get_entity_name().c_str());
+            }
         }
     }
 
     if (!found_dest_entity) {
-        eebus.trace_fmtln("Usecases: Received message for unknown entity %d", entity_name.c_str());
+        eebus.trace_fmtln("Usecases: Received message for unknown entity");
         EEBUS_USECASE_HELPERS::build_result_data(responseObj,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                  "Unknown entity requested");
-        send_response = CmdClassifierType::reply; // We always send a response if we do not know the entity
+        send_response = CmdClassifierType::result; // We always send a response if we do not know the entity
     }
     if (send_response != CmdClassifierType::EnumUndefined) {
         eebus.trace_fmtln("Usecases: Sending response");
@@ -2374,6 +2384,9 @@ String get_result_error_number_string(const int error_number)
 
 void build_result_data(JsonObject &response, ResultErrorNumber error_number, const char *description)
 {
+    if (error_number != ResultErrorNumber::NoError) {
+        eebus.trace_fmtln("Usecases: Building result data with error number %s and description: %s", get_result_error_number_string(static_cast<int>(error_number)).c_str(), description);
+    }
     ResultDataType result{};
     result.description = description;
     result.errorNumber = static_cast<uint8_t>(error_number);
