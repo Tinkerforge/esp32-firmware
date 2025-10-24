@@ -100,6 +100,10 @@ public:
     virtual WantsStateUpdate wantsStateUpdate(size_t stateIdx);
 };
 
+#ifdef DEBUG_FS_ENABLE
+class WebServerRequest;
+#endif
+
 class API final : public IModule
 {
 public:
@@ -204,6 +208,10 @@ private:
     bool already_registered(const char *path, size_t path_len, const char *api_type);
 
     void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);
+
+#ifdef DEBUG_FS_ENABLE
+    bool dump_all_registrations(WebServerRequest &request, StringWriter &sw, const std::function<bool(size_t i)> &dump_registration);
+#endif
 
     Config features_prototype;
     Config modified_prototype;

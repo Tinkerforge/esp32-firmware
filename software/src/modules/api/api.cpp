@@ -543,6 +543,36 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config, SavedD
     return restore_ok;
 }
 
+#ifdef DEBUG_FS_ENABLE
+bool API::dump_all_registrations(WebServerRequest &request, StringWriter &sw, const std::function<bool(size_t i)> &dump_registration)
+{
+    for (size_t i = 0;; i++) {
+        bool produced_output;
+
+        auto result = task_scheduler.await([&dump_registration, i, &produced_output]() {
+            produced_output = dump_registration(i);
+        });
+
+        if (result != TaskScheduler::AwaitResult::Done) {
+            return false;
+        }
+
+        if (!produced_output) {
+            return true;
+        }
+
+        if (sw.getRemainingLength() == 0) {
+            esp_system_abort("API info buffer was too small!");
+        }
+
+        request.sendChunk(sw);
+
+        sw.clear();
+        sw.puts(",\n");
+    }
+}
+#endif
+
 void API::register_urls()
 {
 #ifdef DEBUG_FS_ENABLE
@@ -556,148 +586,95 @@ void API::register_urls()
         auto buf = heap_alloc_array<char>(BUF_SIZE);
         StringWriter sw{buf.get(), BUF_SIZE};
 
-        sw.printf("[");
+        sw.putc('[');
+        request.sendChunk(sw);
+        sw.clear();
 
-        size_t i = 0;
-        bool done = false;
-        while (!done) {
-            auto result = task_scheduler.await([&sw, &i, &done, this](){
-                // There could be 0 states registered.
-                done = i >= states.size();
-                if (done)
-                    return;
-
-                const auto &reg = states[i];
-
-                sw.printf("{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
-                                    reg.get_path_len(), reg.path,
-                                    reg.get_low_latency() ? "true" : "false");
-
-                for (int key = 0; key < reg.get_keys_to_censor_len(); ++key)
-                    if (key != reg.get_keys_to_censor_len() - 1)
-                        sw.printf("\"%s\",", reg.keys_to_censor[key]);
-                    else
-                        sw.printf("\"%s\"", reg.keys_to_censor[key]);
-
-                sw.printf("],\"content\":");
-                reg.config->print_api_info(sw);
-
-                ++i;
-                done = i >= states.size();
-
-                if (!done)
-                    sw.printf("},\n");
-                else
-                    sw.printf("}\n");
-            });
-            if (result != TaskScheduler::AwaitResult::Done) {
-                return request.endChunkedResponse();
+        bool success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
+            // There could be 0 states registered.
+            if (i >= states.size()) {
+                return false;
             }
 
-            if (sw.getRemainingLength() == 0)
-                esp_system_abort("API info buffer was too small!");
-            else if (sw.getLength() != 0)
-                request.sendChunk(sw);
-            sw.clear();
-        }
+            const auto &reg = states[i];
 
-        i = 0;
-        done = false;
-        sw.clear();
-        while (!done) {
-            auto result = task_scheduler.await([&sw, &i, &done, this](){
-                if (i == 0 &&  states.size() != 0)
-                    sw.printf(",");
-
-                // There could be 0 commands registered.
-                done = i >= commands.size();
-                if (done)
-                    return;
-
-                const auto &reg = commands[i];
-
-                sw.printf("{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
+            sw.printf("{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
                                 reg.get_path_len(), reg.path,
-                                reg.get_is_action() ? "true" : "false");
+                                reg.get_low_latency() ? "true" : "false");
 
-                for (int key = 0; key < reg.get_keys_to_censor_in_debug_report_len(); ++key)
-                    if (key != reg.get_keys_to_censor_in_debug_report_len() - 1)
-                        sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
-                    else
-                        sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
-
-                sw.printf("],\"content\":");
-                reg.config->print_api_info(sw);
-
-                ++i;
-                done = i >= commands.size();
-
-                if (!done)
-                    sw.printf("},\n");
+            for (int key = 0; key < reg.get_keys_to_censor_len(); ++key)
+                if (key != reg.get_keys_to_censor_len() - 1)
+                    sw.printf("\"%s\",", reg.keys_to_censor[key]);
                 else
-                    sw.printf("}\n");
-            });
+                    sw.printf("\"%s\"", reg.keys_to_censor[key]);
 
-            if (result != TaskScheduler::AwaitResult::Done) {
-                return request.endChunkedResponse();
-            }
+            sw.puts("],\"content\":");
+            reg.config->print_api_info(sw);
+            sw.putc('}');
 
-            if (sw.getRemainingLength() == 0)
-                esp_system_abort("API info buffer was too small!");
-            else if (sw.getLength() != 0)
-                request.sendChunk(sw);
-            sw.clear();
+            return true;
+        });
+
+        if (!success) {
+            return request.endChunkedResponse();
         }
 
-        i = 0;
-        done = false;
-        sw.clear();
-        while (!done) {
-            auto result = task_scheduler.await([&sw, &i, &done, this](){
-                if (i == 0 && commands.size() != 0)
-                    sw.printf(",");
-
-                // There could be 0 responses registered.
-                done = i >= responses.size();
-                if (done)
-                    return;
-
-                const auto &reg = responses[i];
-
-                sw.printf("{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
-                                reg.path_len, reg.path);
-
-                for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
-                    if (key != reg.keys_to_censor_in_debug_report_len - 1)
-                        sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
-                    else
-                        sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
-
-                sw.printf("],\"content\":");
-                reg.config->print_api_info(sw);
-
-                ++i;
-                done = i >= responses.size();
-
-                if (!done)
-                    sw.printf("},\n");
-                else
-                    sw.printf("}\n");
-            });
-
-            if (result != TaskScheduler::AwaitResult::Done) {
-                return request.endChunkedResponse();
+        success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
+            // There could be 0 commands registered.
+            if (i >= commands.size()) {
+                return false;
             }
 
-            if (sw.getRemainingLength() == 0)
-                esp_system_abort("API info buffer was too small!");
-            else if (sw.getLength() != 0)
-                request.sendChunk(sw);
-            sw.clear();
+            const auto &reg = commands[i];
+
+            sw.printf("{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
+                            reg.get_path_len(), reg.path,
+                            reg.get_is_action() ? "true" : "false");
+
+            for (int key = 0; key < reg.get_keys_to_censor_in_debug_report_len(); ++key)
+                if (key != reg.get_keys_to_censor_in_debug_report_len() - 1)
+                    sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
+                else
+                    sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
+
+            sw.puts("],\"content\":");
+            reg.config->print_api_info(sw);
+            sw.putc('}');
+
+            return true;
+        });
+
+        if (!success) {
+            return request.endChunkedResponse();
         }
 
-        sw.clear();
-        sw.puts(responses.size() == 0 ? "\n" : ",\n");
+        success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
+            // There could be 0 responses registered.
+            if (i >= responses.size()) {
+                return false;
+            }
+
+            const auto &reg = responses[i];
+
+            sw.printf("{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
+                            reg.path_len, reg.path);
+
+            for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
+                if (key != reg.keys_to_censor_in_debug_report_len - 1)
+                    sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
+                else
+                    sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
+
+            sw.puts("],\"content\":");
+            reg.config->print_api_info(sw);
+            sw.putc('}');
+
+            return true;
+        });
+
+        if (!success) {
+            return request.endChunkedResponse();
+        }
 
         WebServerHandler *handlers;
         WebServerHandler *wildcard_handlers;
@@ -731,10 +708,9 @@ void API::register_urls()
 
             handlers = handlers->next;
         }
-        sw.clear(); // Discard final comma and line feed.
 
-        // Be nice and end the file with a \n.
-        sw.puts("]\n");
+        sw.clear();     // Discard final comma and newline.
+        sw.puts("]\n"); // Be nice and end the file with a newline.
         request.sendChunk(sw);
 
         return request.endChunkedResponse();
