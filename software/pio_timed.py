@@ -1,16 +1,29 @@
 #!/usr/bin/env -S python3 -u
 
-# USAGE: ./pio_timed.py run -e energy_manager -t upload && ./ff -s
-
 import sys
 import subprocess
 import time
 import datetime
 
+args = list(sys.argv[1:])
+monitor = False
+i = 0
+
+while i < len(args):
+    if args[i] == '-t' and i + 1 < len(args) and args[i + 1] == 'monitor':
+        args.pop(i)
+        args.pop(i)
+        monitor = True
+    else:
+        i += 1
+
 begin = time.monotonic()
 
 try:
-    sys.exit(subprocess.run(['pio'] + sys.argv[1:]).returncode)
+    return_code = subprocess.run(['pio'] + args).returncode
+
+    if return_code != 0:
+        sys.exit(return_code)
 finally:
     end = time.monotonic()
     elasped = int(end - begin)
@@ -20,3 +33,5 @@ finally:
     with open('pio_timed.log', 'a') as f:
         f.write(f'{datetime.datetime.now().isoformat()} {elasped}\n')
 
+if monitor:
+    sys.exit(subprocess.run(['./ff', '-s']).returncode)
