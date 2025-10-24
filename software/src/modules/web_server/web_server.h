@@ -35,8 +35,10 @@
 
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
+// Any low-level handling errors can be passed inside,
+// which will tell httpd to close the connection.
 struct WebServerRequestReturnProtect {
-    char pad;
+    esp_err_t error = ESP_OK;
 };
 
 class WebServerRequest
@@ -129,11 +131,12 @@ using wshUploadCallback = std::function<bool(WebServerRequest request, String fi
 using wshUploadErrorCallback = std::function<WebServerRequestReturnProtect(WebServerRequest request, int error_code)>;
 
 struct WebServerHandler {
-    WebServerHandler(const char *uri, size_t uri_len, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler(const char *uri, size_t uri_len, httpd_method_t method, bool isWebsocket, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
     const char *uri;
     size_t uri_len;
     httpd_method_t method;
+    bool is_websocket;
     bool accepts_upload;
     bool callbackInMainThread;
     wshCallback callback;
@@ -154,7 +157,6 @@ public:
 
     void post_setup();
     void pre_reboot();
-    void register_events();
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
@@ -162,6 +164,7 @@ public:
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback);
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler *onWS_HTTPThread(const char *uri, wshCallback &&callback);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
@@ -177,7 +180,7 @@ private:
     static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler);
     static esp_err_t low_level_handler(httpd_req_t *req);
 
-    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool isWebsocket, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
     WebServerHandler *match_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);
     WebServerHandler *match_wildcard_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);

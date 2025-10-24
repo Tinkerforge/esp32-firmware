@@ -58,22 +58,14 @@
 
 #include "gcc_warnings.h"
 
-#define MAX_URI_HANDLERS 4
 #define HTTPD_STACK_SIZE 8192
 
 static void dummy_free_fn(void *) {}
 
+// Only one handler will be registered with the httpd and it will match everything.
 static bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
-    if (ref_uri[1] == '*') {
-        return true;
-    }
-
-    if (strcmp(ref_uri, in_uri) == 0) {
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 void WebServer::post_setup()
@@ -218,7 +210,7 @@ void WebServer::post_setup()
 
     httpd_config.lru_purge_enable = true;
     httpd_config.stack_size = HTTPD_STACK_SIZE;
-    httpd_config.max_uri_handlers = MAX_URI_HANDLERS;
+    httpd_config.max_uri_handlers = 1; // Only one handler will be registered directly with the httpd.
     httpd_config.global_user_ctx = this;
     // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
     httpd_config.global_user_ctx_free_fn = dummy_free_fn;
@@ -256,6 +248,21 @@ void WebServer::post_setup()
 #if HTTPS_AVAILABLE()
     }
 #endif
+
+    const httpd_uri_t handler = {
+        .uri = "", // URI can be zero-length because the custom URI matcher won't look at it anyway.
+        .method = static_cast<httpd_method_t>(HTTP_ANY),
+        .handler = low_level_handler,
+        .user_ctx = nullptr,
+        .is_websocket = false,
+        .handle_ws_control_frames = true,
+        .supported_subprotocol = nullptr,
+    };
+
+    const esp_err_t ret = httpd_register_uri_handler(httpd, &handler);
+    if (ret != ESP_OK) {
+        logger.printfln("Cannot register handler: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+    }
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("httpd", HTTPD_STACK_SIZE);
@@ -363,7 +370,14 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 
         if (handler == nullptr) {
             request.send_plain(404, "Nothing matches the given URI.");
+            return ESP_OK;
+        }
+    }
 
+    if (!handler->is_websocket) {
+        const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
+        if (aux->ws_handshake_detect) {
+            request.send_plain(400, "Bad Request: WebSocket not supported");
             return ESP_OK;
         }
     }
@@ -402,10 +416,14 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         }
     }
 
-    if (handler->callbackInMainThread)
+    if (handler->callbackInMainThread) {
         task_scheduler.await([handler, &request](){handler->callback(request);});
-    else
-        handler->callback(request);
+        // Could capture the WebServerRequestReturnProtect error, but it's currently not used in any main thread callbacks and it wouldn't fit into the internal lambda capture list.
+        return ESP_OK;
+    } else {
+        const WebServerRequestReturnProtect ret = handler->callback(request);
+        return ret.error;
+    }
 
     return ESP_OK;
 }
@@ -416,6 +434,7 @@ WebServerHandler *WebServer::on(const char *uri,
 {
     return addHandler(uri,
                       method,
+                      false, // isWebsocket
                       true,
                       std::move(callback),
                       wshUploadCallback(),
@@ -430,6 +449,7 @@ WebServerHandler *WebServer::on(const char *uri,
 {
     return addHandler(uri,
                       method,
+                      false, // isWebsocket
                       true,
                       std::move(callback),
                       std::move(uploadCallback),
@@ -442,6 +462,7 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
 {
     return addHandler(uri,
                       method,
+                      false, // isWebsocket
                       false,
                       std::move(callback),
                       wshUploadCallback(),
@@ -456,10 +477,22 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
 {
     return addHandler(uri,
                       method,
+                      false, // isWebsocket
                       false,
                       std::move(callback),
                       std::move(uploadCallback),
                       std::move(uploadErrorCallback));
+}
+
+WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, wshCallback &&callback)
+{
+    return addHandler(uri,
+                      HTTP_GET,
+                      true, // isWebsocket
+                      false,
+                      std::move(callback),
+                      wshUploadCallback(),
+                      wshUploadErrorCallback());
 }
 
 void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)
@@ -495,6 +528,7 @@ static WebServerHandler **web_server_find_handler_placement(WebServerHandler **h
 
 WebServerHandler *WebServer::addHandler(const char *uri,
                                         httpd_method_t method,
+                                        bool isWebsocket,
                                         bool callbackInMainThread,
                                         wshCallback &&callback,
                                         wshUploadCallback &&uploadCallback,
@@ -530,6 +564,7 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     WebServerHandler *new_handler = new(arena_ptr) WebServerHandler{uri,
                            uri_len,
                            method,
+                           isWebsocket,
                            callbackInMainThread,
                            std::move(callback),
                            std::move(uploadCallback),
@@ -590,29 +625,11 @@ void WebServer::get_handlers(WebServerHandler **handlers_out, WebServerHandler *
 }
 #endif
 
-// The wildcard handler must be registered after the register_urls stage because it would otherwise match before everything else.
-void WebServer::register_events()
-{
-    httpd_uri_t handler = {
-        .uri = "/*",
-        .method = static_cast<httpd_method_t>(HTTP_ANY),
-        .handler = low_level_handler,
-        .user_ctx = nullptr,
-        .is_websocket = false, // TODO true?
-        .handle_ws_control_frames = false, // TODO true?
-        .supported_subprotocol = nullptr,
-    };
-
-    const esp_err_t ret = httpd_register_uri_handler(httpd, &handler);
-    if (ret != ESP_OK) {
-        logger.printfln("Cannot register handler: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-    }
-}
-
-WebServerHandler::WebServerHandler(const char *uri_, size_t uri_len_, httpd_method_t method_, bool callbackInMainThread_, wshCallback &&callback_, wshUploadCallback &&uploadCallback_, wshUploadErrorCallback &&uploadErrorCallback_) :
+WebServerHandler::WebServerHandler(const char *uri_, size_t uri_len_, httpd_method_t method_, bool isWebsocket_, bool callbackInMainThread_, wshCallback &&callback_, wshUploadCallback &&uploadCallback_, wshUploadErrorCallback &&uploadErrorCallback_) :
     uri(uri_),
     uri_len(uri_len_),
     method(method_),
+    is_websocket(isWebsocket_),
     accepts_upload(uploadCallback_ != nullptr), // Compare with input parameter before std::move
     callbackInMainThread(callbackInMainThread_),
     callback(std::move(callback_)),
@@ -751,7 +768,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
             if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
                 /* If failed to turn off TCP_NODELAY, throw error and
                  * return failure to signal for socket closure */
-            logger.printfln("setsockopt failed to disable TCP_NODELAY: %s (%i)", strerror(errno), errno);
+                logger.printfln("setsockopt failed to disable TCP_NODELAY: %s (%i) (result was %s (0x%X))", strerror(errno), errno, esp_err_to_name(result), static_cast<unsigned>(result));
                 result = ESP_ERR_INVALID_STATE;
             }
         }

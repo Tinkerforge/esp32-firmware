@@ -95,18 +95,16 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
 
     bool result = true;
 
-    struct httpd_data *hd = static_cast<struct httpd_data *>(ws->httpd);
-
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (wi.fds[i] == -1) {
             continue;
         }
 
-        if (httpd_ws_get_fd_info(hd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        if (httpd_ws_get_fd_info(ws->httpd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
             continue;
         }
 
-        if (httpd_ws_send_frame_async(hd, wi.fds[i], &ws_pkt) != ESP_OK) {
+        if (httpd_ws_send_frame_async(ws->httpd, wi.fds[i], &ws_pkt) != ESP_OK) {
             ws->keepAliveCloseDead(wi.fds[i]);
             result = false;
         }
@@ -134,57 +132,6 @@ static void work(void *arg)
 
 static esp_err_t ws_handler(httpd_req_t *req)
 {
-    if (req->method == HTTP_GET) {
-        auto request = WebServerRequest{req};
-        if (server.auth_fn && !server.auth_fn(request)) {
-            if (server.on_not_authorized) {
-                server.on_not_authorized(request);
-                return ESP_OK;
-            }
-            request.requestAuthentication();
-            return ESP_OK;
-        }
-
-        struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
-        if (aux->ws_handshake_detect) {
-            WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
-            if (!ws->haveFreeSlot()) {
-                ws->closeLRUClient();
-            }
-
-            struct httpd_data *hd = static_cast<struct httpd_data *>(ws->httpd);
-            esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
-            if (ret != ESP_OK) {
-                return ret;
-            }
-
-            aux->sd->ws_handshake_done = true;
-            aux->sd->ws_handler = ws_handler;
-            aux->sd->ws_control_frames = true;
-            aux->sd->ws_user_ctx = req->user_ctx;
-
-            int sock = httpd_req_to_sockfd(req);
-
-            bool success = true;
-
-            if (ws->on_client_connect_fn) {
-                // call the client connect callback before adding the client to
-                // the keep alive list to ensure that the full state is send by the
-                // callback before any other message with a partial state might
-                // be send to all clients known by the keep alive list
-                success = ws->on_client_connect_fn(WebSocketsClient{sock, ws});
-            }
-
-            if (success) {
-                ws->keepAliveAdd(sock);
-            } else {
-                return ESP_FAIL;
-            }
-        } else {
-            request.send_plain(200);
-        }
-        return ESP_OK;
-    }
     httpd_ws_frame_t ws_pkt;
     uint8_t *buf = NULL;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
@@ -653,24 +600,78 @@ void WebSockets::updateDebugState()
 
 void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd_, const char *supported_subprotocol)
 {
-    if (address_is_in_rodata(uri)) {
-        this->handler_uri = uri;
-    } else {
-        this->handler_uri = strdup(uri);
+    if (this->running) {
+        esp_system_abort("WebSockets already started");
     }
 
-    this->httpd = httpd_;
+    this->running = true;
 
-    httpd_uri_t ws = {};
-    ws.uri = uri;
-    ws.method = HTTP_GET;
-    ws.handler = ws_handler;
-    ws.user_ctx = this;
-    ws.is_websocket = false;
-    ws.handle_ws_control_frames = true;
-    ws.supported_subprotocol = supported_subprotocol;
+    if (this->httpd != httpd_) {
+        if (this->httpd == nullptr) {
+            this->httpd = httpd_;
+        } else {
+            esp_system_abort("Already registered to another httpd");
+        }
+    }
 
-    httpd_register_uri_handler(httpd, &ws);
+    if (!this->uri_handler_registered) {
+        if (supported_subprotocol != nullptr && !address_is_in_rodata(supported_subprotocol)) {
+            supported_subprotocol = perm_strdup(supported_subprotocol);
+        }
+
+        server.onWS_HTTPThread(uri, [this, supported_subprotocol](WebServerRequest request) -> WebServerRequestReturnProtect {
+            if (!this->running) {
+                return request.send_plain(503, "Endpoint not available");
+            }
+
+            struct httpd_data *hd = static_cast<struct httpd_data *>(this->httpd);
+            httpd_req_t *req = &hd->hd_req;
+            struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
+
+            if (!aux->ws_handshake_detect) {
+                return request.send_plain(426, "Upgrade Required: WebSockets only");
+            }
+
+            if (!this->haveFreeSlot()) {
+                this->closeLRUClient();
+            }
+
+            const esp_err_t ret = httpd_ws_respond_server_handshake(req, supported_subprotocol);
+            if (ret != ESP_OK) {
+                if (ret == ESP_ERR_NOT_FOUND)       return request.send_plain(400, "Bad Request: Missing Sec-WebSocket headers");
+                if (ret == ESP_ERR_INVALID_VERSION) return request.send_plain(400, "Bad Request: Invalid WebSocket version");
+                if (ret == ESP_ERR_INVALID_ARG)     return request.send_plain(500, "Server error: EINVAL");
+
+                return WebServerRequestReturnProtect{.error = ret};
+            }
+
+            aux->sd->ws_handshake_done = true;
+            aux->sd->ws_handler = ws_handler;
+            aux->sd->ws_control_frames = true;
+            aux->sd->ws_user_ctx = this;
+
+            const int sock = httpd_req_to_sockfd(req);
+            bool success = true;
+
+            if (this->on_client_connect_fn) {
+                // call the client connect callback before adding the client to
+                // the keep alive list to ensure that the full state is send by the
+                // callback before any other message with a partial state might
+                // be send to all clients known by the keep alive list
+                success = this->on_client_connect_fn(WebSocketsClient{sock, this});
+            }
+
+            if (success) {
+                this->keepAliveAdd(sock);
+                return request.unsafe_ResponseAlreadySent(); // Don't send a HTTP response after switching to WebSockets.
+            } else {
+                // Returning ESP_FAIL inside the WebServerRequestReturnProtect should tell httpd to close the connection.
+                return WebServerRequestReturnProtect{.error = ESP_FAIL};
+            }
+        });
+
+        this->uri_handler_registered = true;
+    }
 
     this->task_ids[0] = task_scheduler.scheduleWithFixedDelay([this](){
         this->triggerHttpThread();
@@ -697,22 +698,28 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         checkActiveClients();
     }, 100_ms, 100_ms);
 
-    if (state_path != nullptr) {
+    if (state_path != nullptr && !this->state_handler_registered) {
         // TODO Add pull only states to API
-        this->state_handler = server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
+        server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
+            if (!this->running) {
+                return request.send_plain(503, "Endpoint not available");
+            }
+
             String s = this->state.to_string();
             return request.send_json(200, s);
         });
+
+        this->state_handler_registered = true;
     }
 }
 
 void WebSockets::stop() {
-    if (this->httpd == nullptr)
+    if (!this->running) {
         return;
+    }
 
-    // Deregister handler before disconnecting clients to make sure
-    // no client (re)connects before the handler is deregistered
-    httpd_unregister_uri_handler(this->httpd, handler_uri, HTTP_GET);
+    // Mark as not running before disconnecting clients to make sure no client (re)connects.
+    this->running = false;
 
     // Send close frame to all clients
     this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
@@ -731,10 +738,6 @@ void WebSockets::stop() {
         this->keepAliveCloseDead(keep_alive_fds[i]);
     }
 
-    if (state_handler != nullptr && boot_stage != BootStage::PRE_REBOOT) {
-        logger.printfln("Stopping a WebSockets instance that has the state path set is not supported yet! This will leak memory!");
-    }
-
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.remove(this->watchdog_handle);
 #endif
@@ -742,13 +745,6 @@ void WebSockets::stop() {
     for (size_t i = 0; i < ARRAY_SIZE(this->task_ids); ++i) {
         task_scheduler.cancel(this->task_ids[i]);
         this->task_ids[i] = 0;
-    }
-
-    this->httpd = nullptr;
-
-    if (!address_is_in_rodata(this->handler_uri)) {
-        free(const_cast<char *>(this->handler_uri));
-        this->handler_uri = nullptr;
     }
 }
 
@@ -763,6 +759,14 @@ void WebSockets::onConnect_HTTPThread(std::function<bool(WebSocketsClient)> &&fn
 //       If we would do this the other way around, the interfaces would be nicer.
 //       However, in WebSockets we would need to keep a list of all WebSocketsClient instances and
 //       and maintain it (remove closed connections etc). This is not necessary now.
+//
+//       Consider using httpd_sess_set_ctx() with a custom free_fn that does nothing.
+//       Set context:
+//       httpd_sess_set_ctx(httpd, sock, reinterpret_cast<void *>(0x1234u), custom_ctx_free_fn);
+//       Access context inside ws_handler:
+//       void *ctx1 = req->sess_ctx;
+//       void *ctx2 = req->aux->sd->ctx;
+//       void *ctx3 = httpd_sess_get_ctx(aux->sd->handle, aux->sd->fd);
 void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn)
 {
     on_binary_data_received_fn = std::move(fn);

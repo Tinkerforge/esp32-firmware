@@ -53,8 +53,6 @@ void clear_ws_work_item(ws_work_item *wi);
 #define WEBSOCKET_WORKER_RUNNING 1
 #define WEBSOCKET_WORKER_DONE 2
 
-struct WebServerHandler;
-
 class WebSockets
 {
 public:
@@ -108,16 +106,17 @@ public:
     micros_t last_worker_run = 0_us;
     uint32_t worker_poll_count = 0;
 
-    httpd_handle_t httpd;
+    httpd_handle_t httpd = nullptr;
+    bool running = false;
+    bool uri_handler_registered = false;
+    bool state_handler_registered = false;
 
     std::function<bool(WebSocketsClient)> on_client_connect_fn;
     std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> on_binary_data_received_fn;
 
     ConfigRoot state;
 
-    const char *handler_uri;
     uint64_t task_ids[4];
-    WebServerHandler *state_handler = nullptr;
 
     int watchdog_handle;
 };
