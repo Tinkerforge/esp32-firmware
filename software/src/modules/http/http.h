@@ -52,8 +52,6 @@ public:
 
     bool api_handler(WebServerRequest &req, size_t in_uri_len);
 
-    WebServerRequestReturnProtect automation_trigger_handler(WebServerRequest req);
-
 #if MODULE_AUTOMATION_AVAILABLE()
     enum class HttpTriggerActionResult {
         WrongUrl,
@@ -73,6 +71,7 @@ public:
     };
 
     bool has_triggered(const Config *conf, void *data) override;
+    WebServerRequestReturnProtect automation_trigger_handler(WebServerRequest req);
 #endif
 
 private:

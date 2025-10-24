@@ -357,6 +357,11 @@ bool Http::has_triggered(const Config *conf, void *data)
     const Config *cfg = static_cast<const Config *>(conf->get());
     auto *trigger = (HttpTrigger *)data;
 
+    if (trigger->uri_suffix != cfg->get("url_suffix")->asUnsafeCStr()) {
+        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongUrl);
+        return false;
+    }
+
     auto method = trigger->req.method();
     switch (cfg->get("method")->asEnum<HttpTriggerMethod>()) {
         case HttpTriggerMethod::GET:
@@ -399,11 +404,6 @@ bool Http::has_triggered(const Config *conf, void *data)
             break;
     }
 
-    if (trigger->uri_suffix != cfg->get("url_suffix")->asEphemeralCStr()) {
-        trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::WrongUrl);
-        return false;
-    }
-
     const auto &expected_payload = cfg->get("payload")->asString();
 
     if (expected_payload.length() != 0 && expected_payload.length() != trigger->req.contentLength()) {
@@ -441,47 +441,37 @@ bool Http::has_triggered(const Config *conf, void *data)
     trigger->most_specific_error = std::max(trigger->most_specific_error, HttpTriggerActionResult::OK);
     return true;
 }
-#endif
 
 WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest req)
 {
-#if MODULE_AUTOMATION_AVAILABLE()
-    String uri = req.uri();
-    int idx = uri.indexOf("automation_trigger/");
-    if (idx < 0) {
-        return req.send_plain(405, "Request method for this URI is not handled by server");
-    }
-    uri = uri.substring(idx + strlen("automation_trigger/"));
-
+    const String uri = req.uriCStr() + std::size("/automation_trigger/") - 1; // -1 to exclude null-termination
     HttpTrigger trigger{req, uri, nullptr, false, HttpTriggerActionResult::WrongUrl};
+
     automation.trigger(AutomationTriggerID::HTTP, &trigger, this);
 
     switch (trigger.most_specific_error) {
+        case HttpTriggerActionResult::OK:
+            return req.send_plain(200);
         case HttpTriggerActionResult::WrongUrl:
             return req.send_plain(404, "No automation rule matches this URL");
         case HttpTriggerActionResult::WrongMethod:
             return req.send_plain(405, "No automation rule for this URL matches this method");
         case HttpTriggerActionResult::WrongPayloadLength:
-            return req.send_plain(400, "No automation rule for this URL and method matches this payload length");
+            return req.send_plain(422, "No automation rule for this URL and method matches this payload length");
         case HttpTriggerActionResult::FailedToReceivePayload:
             return req.send_plain(500, "Failed to receive payload");
         case HttpTriggerActionResult::WrongPayload:
-            return req.send_plain(400, "No automation rule for this URL and method matches this payload");
-        case HttpTriggerActionResult::OK:
-            return req.send_plain(200);
+            return req.send_plain(422, "No automation rule for this URL and method matches this payload");
+        default:
+            return req.send_plain(500, "Unspecified automation error");
     }
-
-    // The switch above should be exhaustive. Return "normal" 405 if it is not.
-#endif
-    return req.send_plain(405, "Request method for this URI is not handled by server");
 }
+#endif
 
 void Http::register_urls()
 {
 #if MODULE_AUTOMATION_AVAILABLE()
-    server.on("/automation_trigger/*", HTTP_GET, [this](WebServerRequest request){return automation_trigger_handler(request);});
-    server.on("/automation_trigger/*", HTTP_PUT, [this](WebServerRequest request){return automation_trigger_handler(request);});
-    server.on("/automation_trigger/*", HTTP_POST, [this](WebServerRequest request){return automation_trigger_handler(request);});
+    server.on("/automation_trigger/*", static_cast<httpd_method_t>(HTTP_ANY), [this](WebServerRequest request) {return automation_trigger_handler(request);});
 #endif
 }
 
