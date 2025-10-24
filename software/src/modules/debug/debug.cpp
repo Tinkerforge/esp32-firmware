@@ -384,7 +384,7 @@ const char * const fs_browser_footer =
 "</div>";
 
 
-static WebServerRequestReturnProtect browse_get(WebServerRequest request, String path) {
+static WebServerRequestReturnProtect browse_get(WebServerRequest &request, String path) {
     if (path.length() > 1 && path[path.length() - 1] == '/')
         path = path.substring(0, path.length() - 1);
 
@@ -425,7 +425,7 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest request, String
     }
 }
 
-static WebServerRequestReturnProtect browse_delete(WebServerRequest request, String path) {
+static WebServerRequestReturnProtect browse_delete(WebServerRequest &request, String path) {
     if (path.length() > 1 && path[path.length() - 1] == '/')
         path = path.substring(0, path.length() - 1);
 
@@ -444,7 +444,7 @@ static WebServerRequestReturnProtect browse_delete(WebServerRequest request, Str
     }
 }
 
-static WebServerRequestReturnProtect browse_put(WebServerRequest request, String path) {
+static WebServerRequestReturnProtect browse_put(WebServerRequest &request, String path) {
     bool create_directory = path.length() > 1 && path[path.length() - 1] == '/';
     if (create_directory)
         path = path.substring(0, path.length() - 1);
@@ -478,6 +478,24 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
     f.write(reinterpret_cast<uint8_t *>(payload.get()), size);
     return request.send_plain(200, "File " + path + " created.");
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+static WebServerRequestReturnProtect browse_method_switch(WebServerRequest &request, const char *path) {
+    const httpd_method_t method = request.method();
+
+    switch (method) {
+        case HTTP_GET:
+            return browse_get(request, path);
+        case HTTP_PUT:
+            return browse_put(request, path);
+        case HTTP_DELETE:
+            return browse_delete(request, path);
+        default:
+            return request.send_plain(405, "Method not allowed for filesystem browser");
+    }
+}
+#pragma GCC diagnostic pop
 #endif
 
 extern Arena dram_arena;
@@ -529,34 +547,12 @@ void Debug::register_urls()
         return req.send_plain(200, buf);
     });
 
-    server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
-        String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-
-        return browse_get(request, path);
+    server.on_HTTPThread("/debug/fs/*", static_cast<httpd_method_t>(HTTP_ANY), [this](WebServerRequest request) {
+        return browse_method_switch(request, request.uriCStr() + 9); // Cut off leading /debug/fs
     });
 
-    server.on_HTTPThread("/debug/fs/*", HTTP_DELETE, [this](WebServerRequest request) {
-        String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-
-        return browse_delete(request, path);
-    });
-
-    server.on_HTTPThread("/debug/fs/*", HTTP_PUT, [this](WebServerRequest request) {
-        String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-
-        return browse_put(request, path);
-    });
-
-    server.on_HTTPThread("/debug/fs", HTTP_GET, [this](WebServerRequest request) {
-        return browse_get(request, "/");
-    });
-
-    server.on_HTTPThread("/debug/fs", HTTP_DELETE, [this](WebServerRequest request) {
-        return browse_delete(request, "/");
-    });
-
-    server.on_HTTPThread("/debug/fs", HTTP_PUT, [this](WebServerRequest request) {
-        return browse_put(request, "/");
+    server.on_HTTPThread("/debug/fs", static_cast<httpd_method_t>(HTTP_ANY), [this](WebServerRequest request) {
+        return browse_method_switch(request, "/");
     });
 #endif
 }
