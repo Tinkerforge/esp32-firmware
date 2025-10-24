@@ -35,7 +35,7 @@ import { SubPage         } from "../../ts/components/sub_page";
 import { MeterClassID    } from "../meters/meter_class_id.enum";
 import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { BatteryMode } from "./battery_mode.enum";
+import { BatteryPriority } from "./battery_priority.enum";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Sun } from "react-feather";
 import { get_allowed_charge_modes } from "modules/charge_manager/main";
@@ -367,25 +367,25 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                 />
                             </FormRow>
 
-                            <FormRow label={__("power_manager.content.battery_mode")}>
+                            <FormRow label={__("power_manager.content.battery_priority")}>
                                 <InputSelect
                                     disabled={s.meter_slot_battery_power >= 255}
                                     required={s.meter_slot_battery_power < 255}
                                     items={[
-                                        [BatteryMode.PreferChargers.toString(), __("power_manager.content.battery_mode_prefer_chargers")],
-                                        [BatteryMode.PreferBattery.toString(), __("power_manager.content.battery_mode_prefer_battery")],
-                                        [BatteryMode.TargetSOC.toString(), __("power_manager.content.battery_mode_target_soc")],
+                                        [BatteryPriority.PreferChargers.toString(), __("power_manager.content.battery_priority_prefer_chargers")],
+                                        [BatteryPriority.PreferBattery.toString(), __("power_manager.content.battery_priority_prefer_battery")],
+                                        [BatteryPriority.TargetSOC.toString(), __("power_manager.content.battery_priority_target_soc")],
                                     ]}
                                     value={s.battery_mode}
                                     onValue={(v) => this.setState({battery_mode: parseInt(v)})}
                                 />
                             </FormRow>
 
-                            <Collapse in={s.battery_mode == 2}>
+                            <Collapse in={s.battery_mode == BatteryPriority.TargetSOC}>
                                 <div>
                                     <FormRow label={__("power_manager.content.battery_target_soc")} label_muted={__("power_manager.content.battery_target_soc_muted")} help={__("power_manager.content.battery_target_soc_help")}>
                                         <InputFloat
-                                            required={s.battery_mode == 2}
+                                            required={s.battery_mode == BatteryPriority.TargetSOC}
                                             unit="%"
                                             value={s.battery_target_soc}
                                             onValue={this.set('battery_target_soc')}

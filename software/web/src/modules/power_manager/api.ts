@@ -23,7 +23,7 @@ export interface config {
     excess_charging_enable: boolean;
     meter_slot_grid_power: number;
     meter_slot_battery_power: number;
-    battery_mode: number;
+    battery_mode: number; // FIXME: for API stability reasons this member cannot be renamed to battery_priority
     battery_target_soc: number;
     battery_inverted: boolean;
     battery_deadzone: number;
