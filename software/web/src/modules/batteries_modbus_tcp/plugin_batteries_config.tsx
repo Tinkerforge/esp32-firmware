@@ -976,7 +976,7 @@ export function init() {
                                 max={255}
                                 value={config[1].table[1].device_address}
                                 onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
                         </FormRow>,
 
