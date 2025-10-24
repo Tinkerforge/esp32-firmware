@@ -521,6 +521,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcsUsecase::
     FunctionPropertyType billListData{};
     billListData.function = FunctionEnumType::billListData;
     billListData.possibleOperations->read = PossibleOperationsReadType{};
+    billListData.possibleOperations->write = PossibleOperationsWriteType{};
     feature.description->supportedFunction->push_back(billListData);
 
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
@@ -611,8 +612,8 @@ BillListDataType EvcsUsecase::get_bill_list_data() const
 
 CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    //TODO: Support partial reads, writes and deletes
-    if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
+    //TODO: Support writes and deletes
+    if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData && header.cmdClassifier == CmdClassifierType::read) {
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
         BillDescriptionListDataType billDescriptionListData{};
         billDescriptionListData.billDescriptionData.emplace();
@@ -627,7 +628,7 @@ CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHan
         response["billDescriptionListData"] = billDescriptionListData;
         return CmdClassifierType::reply;
     }
-    if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData && header.cmdClassifier == CmdClassifierType::read) {
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
         BillConstraintsListDataType billConstraintsListData{};
         billConstraintsListData.billConstraintsData.emplace();
@@ -642,10 +643,17 @@ CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHan
         return CmdClassifierType::reply;
 
     }
-    if (data->last_cmd == SpineDataTypeHandler::Function::billListData) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::billListData && header.cmdClassifier == CmdClassifierType::read) {
         // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
         response["billListData"] = get_bill_list_data();
         return CmdClassifierType::reply;
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::billListData && header.cmdClassifier == CmdClassifierType::write) {
+        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
+        //response["billListData"] = get_bill_list_data();
+        //TODO: Implement write on this feature
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Writing billing data is not yet supported");
+        return CmdClassifierType::result;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -737,13 +745,11 @@ NodeManagementDetailedDiscoveryEntityInformationType EvcemUsecase::get_detailed_
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
 
-    // If the ev is not connected this returns an empty entity information
-    if (eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
-        entity.description->entityAddress->entity = entity_address;
-        entity.description->entityType = EntityTypeEnumType::EV;
-        // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-        entity.description->label = "EV";
-    }
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EV;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "EV";
+
     return entity;
 }
 
@@ -2146,12 +2152,11 @@ NodeManagementDetailedDiscoveryEntityInformationType CevcUsecase::get_detailed_d
 {
 
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    if (eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
-        entity.description->entityAddress->entity = entity_address;
-        entity.description->entityType = EntityTypeEnumType::EV;
-        // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-        entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
-    }
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = EntityTypeEnumType::EV;
+    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
+
     return entity;
 }
 
@@ -2243,8 +2248,6 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 {
     //TODO: Implement a mutex with waiting so only one message can be processed at a time
 
-    //response.clear();
-    //connection->ship_connection->outgoing_json_doc.clear();
     eebus_commands_received++;
     eebus.eebus_usecase_state.get("commands_received")->updateUint(eebus_commands_received);
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_TYPES_MAX_JSON_SIZE};
@@ -2253,6 +2256,16 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     String entity_name = "Unknown";
     FeatureAddressType source_address = header.addressSource.get();
     FeatureAddressType destination_address = header.addressDestination.get();
+
+    if (data->last_cmd == SpineDataTypeHandler::Function::resultData) {
+        eebus.trace_fmtln("Usecases: Received resultData, no further processing");
+        ResultDataType result_data = data->resultdatatype.get();
+        if (result_data.errorNumber.get() != static_cast<uint8_t>(EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError)) {
+            logger.printfln("Usecases: An error was received from the communication Partner. Error Number: %s, Description: %s", EEBUS_USECASE_HELPERS::get_result_error_number_string(result_data.errorNumber.get()).c_str(), result_data.description.get().c_str());
+        }
+        data->reset();
+        return;
+    }
 
     bool found_dest_entity = false;
     for (EebusUsecase *entity : entity_list) {
@@ -2329,6 +2342,34 @@ const char *get_spine_device_name()
 {
     // This returns the device name as defined in EEBUS SPINE TS ProtocolSpecification
     return ("d:_n:" + eebus.get_eebus_name()).c_str();
+}
+
+String get_result_error_number_string(const int error_number)
+{
+    ResultErrorNumber error = static_cast<ResultErrorNumber>(error_number);
+    switch (error) {
+        case ResultErrorNumber::NoError:
+            return "NoError";
+        case ResultErrorNumber::GeneralError:
+            return "GeneralError";
+        case ResultErrorNumber::Timeout:
+            return "Timeout";
+        case ResultErrorNumber::Overload:
+            return "Overload";
+        case ResultErrorNumber::DestinationUnknown:
+            return "DestinationUnknown";
+        case ResultErrorNumber::DestinationUnreachable:
+            return "DestinationUnreachable";
+        case ResultErrorNumber::CommandNotSupported:
+            return "CommandNotSupported";
+        case ResultErrorNumber::CommandRejected:
+            return "CommandRejected";
+        case ResultErrorNumber::RestrictedFunctionExchangeCombinationNotSupported:
+            return "RestrictedFunctionExchangeCombinationNotSupported";
+        case ResultErrorNumber::BindingRequired:
+            return "BindingRequired";
+    }
+    return "UnknownError";
 }
 
 void build_result_data(JsonObject &response, ResultErrorNumber error_number, const char *description)
