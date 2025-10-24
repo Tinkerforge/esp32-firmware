@@ -23,7 +23,7 @@
 #include "module.h"
 #include "config.h"
 #include "phase_switcher_back-end.h"
-#include "battery_mode.enum.h"
+#include "battery_priority.enum.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/charge_manager/current_limits.h"
 #include "module_available.h"
@@ -209,7 +209,7 @@ private:
     bool     excess_charging_enabled  = false;
     uint32_t meter_slot_power         = UINT32_MAX;
     uint32_t meter_slot_battery_power = UINT32_MAX;
-    BatteryMode battery_mode          = BatteryMode::PreferChargers;
+    BatteryPriority battery_priority  = BatteryPriority::PreferChargers;
     uint8_t  battery_target_soc       = 0;
     bool     battery_inverted         = false;
     uint16_t battery_deadzone_w       = 0;

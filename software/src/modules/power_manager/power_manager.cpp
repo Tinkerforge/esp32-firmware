@@ -66,7 +66,7 @@ void PowerManager::pre_setup()
         {"default_mode", Config::Enum(ConfigChargeMode::Fast)},
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
-        {"battery_mode", Config::Enum(BatteryMode::PreferChargers)},
+        {"battery_mode", Config::Enum(BatteryPriority::PreferChargers)}, // FIXME: for API stability reasons this member cannot be renamed to battery_priority
         {"battery_target_soc", Config::Uint8(0)},
         {"battery_inverted", Config::Bool(false)},
         {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
@@ -307,7 +307,7 @@ void PowerManager::setup()
     meter_slot_power            = config.get("meter_slot_grid_power")->asUint();
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
     meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint();
-    battery_mode                = config.get("battery_mode")->asEnum<BatteryMode>();
+    battery_priority            = config.get("battery_mode")->asEnum<BatteryPriority>(); // FIXME: for API stability reasons this member cannot be renamed to battery_priority
     battery_target_soc          = static_cast<uint8_t>(config.get("battery_target_soc")->asUint());
     battery_inverted            = config.get("battery_inverted")->asBool();
     battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
@@ -810,9 +810,9 @@ void PowerManager::update_energy()
                 // Always avoid discharging the battery (negative values), but when the battery is charging (positive values),
                 // taking its power means prioritizing chargers, ignoring its power means prioritizing the battery.
                 if (power_battery_w > 0) {
-                    if (battery_mode == BatteryMode::PreferBattery) {
+                    if (battery_priority == BatteryPriority::PreferBattery) {
                         power_battery_w = 0;
-                    } else if (battery_mode == BatteryMode::TargetSOC) {
+                    } else if (battery_priority == BatteryPriority::TargetSOC) {
                         if (isnan(battery_soc_raw)) {
                             // SOC unknown; let the battery do its thing.
                             power_battery_w = 0;
