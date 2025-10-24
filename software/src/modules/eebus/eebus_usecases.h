@@ -894,6 +894,8 @@ enum class ResultErrorNumber
     BindingRequired
 };
 
+String get_result_error_number_string(int error_number);
+
 /**
 * Generate a result data object and writes it to the response object. Generally required when the header demands an acknowledgement or a result.
 * @param response The JsonObject to write the result data to.
