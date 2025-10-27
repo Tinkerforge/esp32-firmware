@@ -347,6 +347,7 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
     http_config.url = url;
     http_config.user_data = this;
     http_config.is_async = false;
+    http_config.timeout_ms = 1000;
     http_config.buffer_size = 1024;
     http_config.buffer_size_tx = 1024;
 
