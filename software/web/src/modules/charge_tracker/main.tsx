@@ -41,6 +41,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
+import { GenerationState } from "./generation_state.enum";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -520,8 +521,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             return <Dropdown.Item onClick={() => onDropdownClick(index)}>{remoteAccessConfig.users.find(user => user.id === cfg.user_id)?.email}</Dropdown.Item>
         });
         sendEmailDropdown = state.remote_upload_configs.length > 0 ? <Dropdown>
-            <Dropdown.Toggle id="dropdown-basic">
-                {__("charge_tracker.content.charge_log_email_send_to_user")}
+            <Dropdown.Toggle id="dropdown-basic" disabled={state.generation !== GenerationState.Ready}>
+                <span class="mr-2">
+                    {__("charge_tracker.content.charge_log_email_send_to_user")}
+                </span>
+                <Spinner animation="border" size="sm" as="span" hidden={state.generation !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {sendEmailDropdownItems}
@@ -616,7 +620,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                 <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} onClick={async () => {
+                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} disabled={state.generation !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 
                             let start_minutes = date_to_minutes(state.start_date, 'start_of_day');

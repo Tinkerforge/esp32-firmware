@@ -5,6 +5,7 @@ import { FileType } from "./file_type.enum";
 import { CSVFlavor } from "./csv_flavor.enum";
 //#endif
 import { Language } from "../system/language.enum";
+import { GenerationState } from "./generation_state.enum";
 
 interface Charge {
     timestamp_minutes: number;
@@ -106,6 +107,7 @@ export type current_charge = current_charge_base & (current_charge_nfc
 export interface state {
     tracked_charges: number;
     first_charge_timestamp: number;
+    generation: GenerationState;
 }
 
 export interface remove_all_charges {
