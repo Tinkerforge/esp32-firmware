@@ -514,9 +514,9 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
                       std::move(uploadErrorCallback));
 }
 
-WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, wshCallback &&callback, uint16_t port)
+WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, httpd_handle_t *http_handle_out, wshCallback &&callback, uint16_t port)
 {
-    return addHandler(port,
+    WebServerHandler *handler = addHandler(port,
                       uri,
                       HTTP_GET,
                       true, // isWebsocket
@@ -524,6 +524,12 @@ WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, wshCallback &&call
                       std::move(callback),
                       wshUploadCallback(),
                       wshUploadErrorCallback());
+
+    if (handler != nullptr) {
+        *http_handle_out = httpd;
+    }
+
+    return handler;
 }
 
 void WebServer::onNotAuthorized_HTTPThread(wshCallback &&callback)

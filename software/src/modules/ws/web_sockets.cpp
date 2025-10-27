@@ -31,7 +31,7 @@
 
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
-void clear_ws_work_item(ws_work_item *wi)
+static void clear_ws_work_item(ws_work_item *wi)
 {
     free(wi->payload);
     wi->payload = nullptr;
@@ -84,28 +84,28 @@ bool WebSockets::queueFull()
     return false;
 }
 
-static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
+bool WebSockets::send_ws_work_item(const ws_work_item *wi)
 {
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
-    ws_pkt.payload = reinterpret_cast<uint8_t *>(wi.payload);
-    ws_pkt.len = wi.payload_len;
-    ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : wi.ws_type;
+    ws_pkt.payload = reinterpret_cast<uint8_t *>(wi->payload);
+    ws_pkt.len = wi->payload_len;
+    ws_pkt.type = wi->payload_len == 0 ? HTTPD_WS_TYPE_PING : wi->ws_type;
 
     bool result = true;
 
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (wi.fds[i] == -1) {
+        if (wi->fds[i] == -1) {
             continue;
         }
 
-        if (httpd_ws_get_fd_info(ws->httpd, wi.fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        if (httpd_ws_get_fd_info(this->httpd, wi->fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
             continue;
         }
 
-        if (httpd_ws_send_frame_async(ws->httpd, wi.fds[i], &ws_pkt) != ESP_OK) {
-            ws->keepAliveCloseDead(wi.fds[i]);
+        if (httpd_ws_send_frame_async(this->httpd, wi->fds[i], &ws_pkt) != ESP_OK) {
+            this->keepAliveCloseDead(wi->fds[i]);
             result = false;
         }
     }
@@ -113,14 +113,14 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
     return result;
 }
 
-static void work(void *arg)
+void WebSockets::work(void *arg)
 {
     WebSockets *ws = static_cast<WebSockets *>(arg);
     ws->worker_active = WEBSOCKET_WORKER_RUNNING;
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
-        send_ws_work_item(ws, wi);
+        ws->send_ws_work_item(&wi);
         clear_ws_work_item(&wi);
     }
 
@@ -130,7 +130,7 @@ static void work(void *arg)
 #endif
 }
 
-static esp_err_t ws_handler(httpd_req_t *req)
+esp_err_t WebSockets::ws_handler(httpd_req_t *req)
 {
     httpd_ws_frame_t ws_pkt;
     uint8_t *buf = NULL;
@@ -353,7 +353,7 @@ void WebSockets::fakeReceivedPongAll()
 bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
-    bool result = send_ws_work_item(ws, wi);
+    bool result = ws->send_ws_work_item(&wi);
     return result;
 }
 
@@ -455,7 +455,7 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     ws_work_item wi{{}, payload, payload_len, ws_type};
     memcpy(wi.fds, keep_alive_fds, sizeof(keep_alive_fds));
-    return send_ws_work_item(this, wi);
+    return this->send_ws_work_item(&wi);
 }
 
 bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)
@@ -598,7 +598,7 @@ void WebSockets::updateDebugState()
     }
 }
 
-void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd_, const char *supported_subprotocol)
+void WebSockets::start(const char *uri, const char *state_path, const char *supported_subprotocol, uint16_t port)
 {
     if (this->running) {
         esp_system_abort("WebSockets already started");
@@ -606,20 +606,12 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 
     this->running = true;
 
-    if (this->httpd != httpd_) {
-        if (this->httpd == nullptr) {
-            this->httpd = httpd_;
-        } else {
-            esp_system_abort("Already registered to another httpd");
-        }
-    }
-
     if (!this->uri_handler_registered) {
         if (supported_subprotocol != nullptr && !address_is_in_rodata(supported_subprotocol)) {
             supported_subprotocol = perm_strdup(supported_subprotocol);
         }
 
-        server.onWS_HTTPThread(uri, [this, supported_subprotocol](WebServerRequest request) -> WebServerRequestReturnProtect {
+        server.onWS_HTTPThread(uri, &this->httpd, [this, supported_subprotocol](WebServerRequest request) -> WebServerRequestReturnProtect {
             if (!this->running) {
                 return request.send_plain(503, "Endpoint not available");
             }
@@ -646,7 +638,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
             }
 
             aux->sd->ws_handshake_done = true;
-            aux->sd->ws_handler = ws_handler;
+            aux->sd->ws_handler = WebSockets::ws_handler;
             aux->sd->ws_control_frames = true;
             aux->sd->ws_user_ctx = this;
 
@@ -668,7 +660,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
                 // Returning ESP_FAIL inside the WebServerRequestReturnProtect should tell httpd to close the connection.
                 return WebServerRequestReturnProtect{.error = ESP_FAIL};
             }
-        });
+        }, port);
 
         this->uri_handler_registered = true;
     }
@@ -724,7 +716,7 @@ void WebSockets::stop() {
     // Send close frame to all clients
     this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
     worker_active = WEBSOCKET_WORKER_ENQUEUED;
-    httpd_queue_work(httpd, work, this);
+    httpd_queue_work(httpd, WebSockets::work, this);
     // Give http thread 200ms to send the close frames.
     for(int i = 0; i < 10 && worker_active != WEBSOCKET_WORKER_DONE; ++i)
         delay(20);

@@ -167,17 +167,13 @@ public:
     WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback, uint16_t port = 0);
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, uint16_t port = 0);
     WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback, uint16_t port = 0);
-    WebServerHandler *onWS_HTTPThread(const char *uri, wshCallback &&callback, uint16_t port = 0);
+    WebServerHandler *onWS_HTTPThread(const char *uri, httpd_handle_t *httpd_handle_out, wshCallback &&callback, uint16_t port = 0);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
 #ifdef DEBUG_FS_ENABLE
     void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
 #endif
-
-    httpd_handle_t httpd = nullptr;
-    wshCallback on_not_authorized;
-    std::function<bool(WebServerRequest)> auth_fn;
 
 private:
     struct listen_port_handlers_t {
@@ -195,5 +191,8 @@ private:
     const WebServerHandler *match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
     const WebServerHandler *match_wildcard_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
 
+    httpd_handle_t httpd = nullptr;
+    wshCallback on_not_authorized;
+    std::function<bool(WebServerRequest)> auth_fn;
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
 };
