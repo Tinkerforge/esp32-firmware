@@ -33,6 +33,9 @@
 #include "module.h"
 #include "tools/string_builder.h"
 
+constexpr size_t WEB_SERVER_MAX_PORTS = 3;
+static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);
+
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
 // Any low-level handling errors can be passed inside,
@@ -160,11 +163,11 @@ public:
 
     void runInHTTPThread(void (*fn)(void *arg), void *arg);
 
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback);
-    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
-    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback);
-    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
-    WebServerHandler *onWS_HTTPThread(const char *uri, wshCallback &&callback);
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, uint16_t port = 0);
+    WebServerHandler *on(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback, uint16_t port = 0);
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, uint16_t port = 0);
+    WebServerHandler *on_HTTPThread(const char *uri, httpd_method_t method, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback, uint16_t port = 0);
+    WebServerHandler *onWS_HTTPThread(const char *uri, wshCallback &&callback, uint16_t port = 0);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
@@ -177,14 +180,20 @@ public:
     std::function<bool(WebServerRequest)> auth_fn;
 
 private:
-    static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler);
+    struct listen_port_handlers_t {
+        uint16_t port;
+        bool supports_http_api;
+        WebServerHandler *handlers;
+        WebServerHandler *wildcard_handlers;
+    };
+
+    static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, const WebServerHandler *handler);
     static esp_err_t low_level_handler(httpd_req_t *req);
 
-    WebServerHandler *addHandler(const char *uri, httpd_method_t method, bool isWebsocket, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
+    WebServerHandler *addHandler(uint16_t port, const char *uri, httpd_method_t method, bool isWebsocket, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
-    WebServerHandler *match_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);
-    WebServerHandler *match_wildcard_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method);
+    const WebServerHandler *match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
+    const WebServerHandler *match_wildcard_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
 
-    WebServerHandler *handlers = nullptr;
-    WebServerHandler *wildcard_handlers = nullptr;
+    listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
 };
