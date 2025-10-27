@@ -47,8 +47,6 @@ struct ws_work_item {
     httpd_ws_type_t ws_type;
 };
 
-void clear_ws_work_item(ws_work_item *wi);
-
 #define WEBSOCKET_WORKER_ENQUEUED 0
 #define WEBSOCKET_WORKER_RUNNING 1
 #define WEBSOCKET_WORKER_DONE 2
@@ -56,11 +54,13 @@ void clear_ws_work_item(ws_work_item *wi);
 class WebSockets
 {
 public:
+    friend class WebSocketsClient;
+
     WebSockets() : worker_active(WEBSOCKET_WORKER_DONE) {}
 
     void pre_setup();
     void pre_reboot();
-    void start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol = nullptr);
+    void start(const char *uri, const char *state_path, const char *supported_subprotocol = nullptr, uint16_t port = 0);
     void stop();
 
     bool sendToClient(const char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
@@ -69,19 +69,26 @@ public:
     bool sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     bool sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
 
-    bool haveFreeSlot();
     bool haveActiveClient();
+    void fakeReceivedPongAll();
+
+    void onConnect_HTTPThread(std::function<bool(WebSocketsClient)> &&fn);
+    void onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn);
+
+private:
+    bool haveFreeSlot();
     void pingActiveClients();
     void checkActiveClients();
     void closeLRUClient();
     void receivedPong(int fd);
-    void fakeReceivedPongAll();
 
     void cleanUpQueue();
     bool queueFull();
 
-    void onConnect_HTTPThread(std::function<bool(WebSocketsClient)> &&fn);
-    void onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn);
+    bool send_ws_work_item(const ws_work_item *wi);
+
+    static void work(void *arg);
+    static esp_err_t ws_handler(httpd_req_t *req);
 
     void triggerHttpThread();
     bool haveWork(ws_work_item *item);

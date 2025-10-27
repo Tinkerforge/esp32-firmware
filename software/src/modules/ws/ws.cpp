@@ -124,7 +124,7 @@ void WS::register_urls()
         return true;
     });
 
-    web_sockets.start("/ws", "/info/ws", server.httpd);
+    web_sockets.start("/ws", "/info/ws");
 
     task_scheduler.scheduleUncancelable([this](){
         char *payload;
