@@ -68,6 +68,20 @@ static bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len
     return true;
 }
 
+static bool load_certs_with_fallback(httpd_ssl_config_t *ssl_config, const cert_load_info *load_info, Cert *cert)
+{
+    if (!cert->load_external_with_internal_fallback(load_info)) {
+        return false;
+    }
+
+    cert->get_data(&ssl_config->servercert, &ssl_config->servercert_len, &ssl_config->prvtkey_pem, &ssl_config->prvtkey_len);
+
+    ssl_config->servercert_len += 1;
+    ssl_config->prvtkey_len    += 1;
+
+    return true;
+}
+
 void WebServer::post_setup()
 {
     if (this->httpd != nullptr) {
@@ -81,6 +95,9 @@ void WebServer::post_setup()
         .handlers = nullptr,
         .wildcard_handlers = nullptr,
     };
+
+    // Certificate buffers must live until httpd has started.
+    Cert certificates[WEB_SERVER_MAX_PORTS] = {};
 
 #if HTTPS_AVAILABLE()
     httpd_ssl_config_t ssl_configs[WEB_SERVER_MAX_PORTS] = {
@@ -101,90 +118,41 @@ void WebServer::post_setup()
 
     // === Secure or mixed mode ===
 
-    // Certificate buffers must live until httpd has started.
-    std::unique_ptr<unsigned char[]> cert_crt;
-    std::unique_ptr<unsigned char[]> cert_key;
-    unique_ptr_any<Cert> cert;
-
     if (transport_mode != TransportMode::Insecure) {
         httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
-        bool cert_ok = false;
 
-        // Try external certificate
-#if MODULE_CERTS_AVAILABLE() && MODULE_NETWORK_AVAILABLE()
-        const int8_t cert_id = network.get_cert_id();
-        const int8_t key_id  = network.get_key_id();
-        bool use_external_cert = (cert_id >= 0) && (key_id >= 0);
-
-        if (use_external_cert) {
-            do {
-                size_t cert_crt_len = 0;
-                cert_crt = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_crt_len);
-                if (cert_crt == nullptr) {
-                    logger.printfln("Certificate with ID %d is not available", cert_id);
-                    use_external_cert = false;
-                    break;
-                }
-
-                size_t cert_key_len = 0;
-                cert_key = certs.get_cert(static_cast<uint8_t>(key_id), &cert_key_len);
-                if (cert_key == nullptr) {
-                    logger.printfln("Certificate with ID %d is not available", key_id);
-                    use_external_cert = false;
-                    break;
-                }
-
-                ssl_config->servercert     = cert_crt.get();
-                ssl_config->servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-                ssl_config->prvtkey_pem    = cert_key.get();
-                ssl_config->prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
-
-                cert_ok = true;
-            } while (false);
-        }
-#else
-        const bool use_external_cert = false;
-#endif
-
-        // Self-signed certificate selected or external cert failed to load
-        if (!use_external_cert) {
-            do {
-                cert = make_unique_psram<Cert>();
-
-                if (cert == nullptr) {
-                    http_fallback_needed = true;
-                    break;
-                }
-                if (!cert->read()) {
-                    logger.printfln("Failed to read self-signed certificate");
-                    http_fallback_needed = true;
-                    return;
-                }
-
-                // TODO: This is only for debugging, remove later
-                //cert->log();
-
-                ssl_config->servercert     = cert->crt;
-                ssl_config->servercert_len = cert->crt_length + 1;
-                ssl_config->prvtkey_pem    = cert->key;
-                ssl_config->prvtkey_len    = cert->key_length + 1;
-
-                cert_ok = true;
-            } while (false);
-        }
-
-        if (cert_ok) {
-                ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+        int8_t cert_id = -1;
+        int8_t key_id  = -1;
 
 #if MODULE_NETWORK_AVAILABLE()
-                ssl_config->port_secure = network.get_web_server_port_secure();
-#else
-                ssl_config->port_secure = 443;
+        cert_id = network.get_cert_id();
+        key_id  = network.get_key_id();
 #endif
 
-                listen_port_handlers[ssl_configs_used] = default_handlers;
-                ssl_configs_used++;
-                https_multiport_needed = true;
+        const cert_load_info load_info = {
+            .cert_id = cert_id,
+            .key_id = key_id,
+            .cert_path = "/web_server/cert",
+            .key_path  = "/web_server/key",
+            .generator_fn = default_certificate_generator_fn,
+        };
+
+        const bool cert_ok = load_certs_with_fallback(ssl_config, &load_info, certificates + ssl_configs_used);
+
+        if (cert_ok) {
+            ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+
+#if MODULE_NETWORK_AVAILABLE()
+            ssl_config->port_secure = network.get_web_server_port_secure();
+#else
+            ssl_config->port_secure = 443;
+#endif
+
+            listen_port_handlers[ssl_configs_used] = default_handlers;
+            ssl_configs_used++;
+            https_multiport_needed = true;
+        } else {
+            http_fallback_needed = true;
         }
     }
 

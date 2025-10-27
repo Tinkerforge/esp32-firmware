@@ -20,25 +20,45 @@
 #pragma once
 
 #include <cstdint>
+#include <memory> // for std::unique_ptr
 
+#include "mbedtls/ctr_drbg.h"
 #include "mbedtls/x509_crt.h"
+
+typedef bool (*certificate_generator_fn)(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
+
+bool default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
+
+struct cert_load_info {
+    int16_t cert_id;
+    int16_t key_id;
+    const char *cert_path;
+    const char *key_path;
+    certificate_generator_fn generator_fn;
+};
 
 class Cert
 {
-private:
-    bool fill_cert(mbedtls_x509write_cert *mbed_cert);
-    bool key_and_sign(mbedtls_x509write_cert *mbed_cert);
-    bool write_cert_and_key();
-    bool generate();
-
 public:
     Cert() {};
 
-    bool read();
-    void log();
+    bool load_external(const cert_load_info *load_info);
+    bool load_internal(const cert_load_info *load_info);
+    bool load_external_with_internal_fallback(const cert_load_info *load_info);
 
-    unsigned char crt[768];
-    unsigned char key[512];
+    void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out);
+
+private:
+    static bool load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, uint16_t *length);
+    bool load_internal_files(const cert_load_info *load_info);
+
+    bool generate_cert_and_key(const cert_load_info *load_info);
+    bool write_cert_and_key(const cert_load_info *load_info);
+    bool generate(const cert_load_info *load_info);
+
+    std::unique_ptr<uint8_t[]> crt;
+    std::unique_ptr<uint8_t[]> key;
+
     uint16_t crt_length = 0;
     uint16_t key_length = 0;
 };
