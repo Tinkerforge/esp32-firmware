@@ -64,7 +64,6 @@ public:
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs(const int8_t retry_count = 0);
     void start_charge_log_upload_for_config(const uint8_t config_index, const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr);
-    bool send_in_progress = false;
 #endif
 
     ConfigRoot last_charges;

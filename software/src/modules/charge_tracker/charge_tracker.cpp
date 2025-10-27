@@ -1051,11 +1051,7 @@ void ChargeTracker::register_urls()
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 
     server.on_HTTPThread("/charge_tracker/send_charge_log", HTTP_PUT, [this](WebServerRequest request) {
-        if (this->send_in_progress) {
-            return request.send_plain(429, "Another upload is already in progress");
-        }
-
-        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
+        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::ManualRemoteSend);
         if (lock_helper == nullptr) {
             return request.send_plain(429, "Another charge log generation is already in progress");
         }
@@ -1167,7 +1163,7 @@ void ChargeTracker::register_urls()
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
-            if (this->send_in_progress || this->currentlyCharging()) {
+            if (this->currentlyCharging()) {
                 return;
             }
 
@@ -1244,7 +1240,6 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
         });
 
         logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
-        charge_tracker.send_in_progress = false;
         upload_args->remote_client->close_chunked_request();
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
@@ -1567,7 +1562,6 @@ static void upload_charge_logs_task(void *arg)
 #endif
     }
 
-    charge_tracker.send_in_progress = false;
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.remove(wd_handle);
 #endif
@@ -1576,8 +1570,6 @@ static void upload_charge_logs_task(void *arg)
 
 void ChargeTracker::upload_charge_logs(const int8_t retry_count)
 {
-    send_in_progress = true;
-
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
     RemoteUploadRequest *args = new RemoteUploadRequest;
@@ -1590,7 +1582,6 @@ void ChargeTracker::upload_charge_logs(const int8_t retry_count)
     args->generation_lock = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
     if (args->generation_lock == nullptr) {
         logger.printfln("Could not acquire charge log generation lock for remote upload");
-        send_in_progress = false;
         delete args;
         return;
     }
@@ -1599,7 +1590,6 @@ void ChargeTracker::upload_charge_logs(const int8_t retry_count)
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-        send_in_progress = false;
         delete args;
     }
 }
@@ -1612,8 +1602,6 @@ void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_inde
         logger.printfln("Invalid config index %u. Only %lu configurations available.", config_index, remote_upload_config_count);
         return;
     }
-
-    send_in_progress = true;
 
     RemoteUploadRequest *task_args = new RemoteUploadRequest;
     task_args->config_count = remote_upload_config_count;
@@ -1633,7 +1621,6 @@ void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_inde
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-        send_in_progress = false;
     }
 }
 #endif
