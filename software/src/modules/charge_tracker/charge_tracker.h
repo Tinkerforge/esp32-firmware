@@ -29,11 +29,13 @@
 #include "file_type.enum.h"
 #include "../system/language.enum.h"
 #include "csv_flavor.enum.h"
+#include "generation_state.enum.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define MAX_RETRY_COUNT 10
 #define BASE_RETRY_DELAY_MINUTES 5
 struct RemoteUploadRequest;
+class ChargeLogGenerationLockHelper;
 
 class ChargeTracker final : public IModule
 {
@@ -61,7 +63,7 @@ public:
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs(const int8_t retry_count = 0);
-    void start_charge_log_upload_for_config(const uint8_t config_index, const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr);
+    void start_charge_log_upload_for_config(const uint8_t config_index, const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr);
     bool send_in_progress = false;
 #endif
 
@@ -136,6 +138,22 @@ struct RemoteUploadRequest {
 
     /** HTTP client instance for performing the upload request */
     std::unique_ptr<AsyncHTTPSClient> remote_client = nullptr;
+
+    std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr;
+};
+
+/**
+ * This helper struct provides a raii-style lock that ensures only one charge log generation
+ * without the need of holding a mutex for the entire generation duration.
+ */
+class ChargeLogGenerationLockHelper {
+    public:
+        static std::unique_ptr<ChargeLogGenerationLockHelper> try_lock(GenerationState kind);
+
+        ~ChargeLogGenerationLockHelper();
+    private:
+        static std::mutex generation_mutex;
+        static bool is_locked;
 };
 
 #include "module_available_end.h"

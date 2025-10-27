@@ -32,6 +32,7 @@
 #include "csv_charge_log.h"
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
+#include "generation_state.enum.h"
 #include "../system/language.enum.h"
 #include "charge_tracker_defs.h"
 
@@ -68,6 +69,10 @@ static_assert(MAX_CONFIGURED_CHARGELOG_USERS <= 255, "MAX_CONFIGURED_CHARGELOG_U
 
 // 30 files with 256 records each: 7680 records @ ~ max. 10 records per day = ~ 2 years and one month of records.
 // Also update frontend when changing this!
+
+// Define static member variable for ChargeLogGenerationLockHelper
+std::mutex ChargeLogGenerationLockHelper::generation_mutex;
+bool ChargeLogGenerationLockHelper::is_locked = false;
 #define CHARGE_RECORD_FILE_COUNT 30
 #define CHARGE_RECORD_MAX_FILE_SIZE 4096
 
@@ -151,7 +156,8 @@ void ChargeTracker::pre_setup()
 
     state = Config::Object({
         {"tracked_charges", Config::Uint16(0)},
-        {"first_charge_timestamp", Config::Uint32(0)}
+        {"first_charge_timestamp", Config::Uint32(0)},
+        {"generation", Config::Enum(GenerationState::Ready)}
     });
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
@@ -887,6 +893,10 @@ void ChargeTracker::register_urls()
         auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         auto letterhead = letterhead_buf.get();
         int letterhead_lines = 0;
+        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::LocalDownload);
+        if (lock_helper == nullptr) {
+            return request.send_plain(429, "Another charge log generation is already in progress");
+        }
 
         {
             if (request.contentLength() > 1024) {
@@ -974,6 +984,10 @@ void ChargeTracker::register_urls()
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
         Language language = Language::German;
         int csv_delimiter = (int)CSVFlavor::Excel;
+        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::LocalDownload);
+        if (lock_helper == nullptr) {
+            return request.send_plain(429, "Another charge log generation is already in progress");
+        }
 
         {
             if (request.contentLength() > 1024) {
@@ -1041,6 +1055,12 @@ void ChargeTracker::register_urls()
             return request.send_plain(429, "Another upload is already in progress");
         }
 
+        std::unique_ptr<ChargeLogGenerationLockHelper> lock_helper = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
+        if (lock_helper == nullptr) {
+            return request.send_plain(429, "Another charge log generation is already in progress");
+        }
+
+
         int user_filter = -2;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
@@ -1090,7 +1110,6 @@ void ChargeTracker::register_urls()
             csv_delimiter = doc["csv_delimiter"];
             config_index = doc["config_index"];
             cookie = doc["cookie"];
-            remote_upload_config_count = config.get("remote_upload_configs")->count();
 
             if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
                 return request.send_plain(400, "Missing config_index or cookie parameter");
@@ -1107,7 +1126,9 @@ void ChargeTracker::register_urls()
                 strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
             }
 
-            task_scheduler.await([this, letterhead, letterhead_passed](){
+            task_scheduler.await([this, &remote_upload_config_count, letterhead, letterhead_passed](){
+                remote_upload_config_count = config.get("remote_upload_configs")->count();
+
                 auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
                 if (!letterhead_passed) {
                     strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
@@ -1125,7 +1146,21 @@ void ChargeTracker::register_urls()
             return request.send_plain(400, "Invalid config_index");
         }
 
-        this->start_charge_log_upload_for_config(config_index, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, static_cast<CSVFlavor>(csv_delimiter), std::move(letterhead_buf));
+        char *letterhead_ptr = letterhead_buf.release();
+        ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
+        task_scheduler.scheduleOnce([this, config_index, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr]() {
+            this->start_charge_log_upload_for_config(
+                config_index,
+                cookie,
+                user_filter,
+                start_timestamp_min,
+                end_timestamp_min,
+                language,
+                file_type,
+                static_cast<CSVFlavor>(csv_delimiter),
+                std::unique_ptr<char[]>(letterhead_ptr),
+                std::unique_ptr<ChargeLogGenerationLockHelper>(lock_helper_ptr));
+        });
         return request.send_plain(200, "Charge-log upload for specific config started");
     });
 
@@ -1195,26 +1230,6 @@ void ChargeTracker::register_urls()
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 
-[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
-static void report_errorf(uint32_t cookie, const char *fmt, ...)
-{
-    va_list args;
-    char buf[256];
-    TFJsonSerializer json{buf, sizeof(buf)};
-
-    json.addObject();
-    json.addMemberNumber("cookie", cookie);
-    va_start(args, fmt);
-    json.addMemberStringVF("error", fmt, args);
-    va_end(args);
-    json.endObject();
-    json.end();
-
-#if MODULE_WS_AVAILABLE()
-    ws.pushRawStateUpdate(buf, "charge_tracker/upload_result");
-#endif
-}
-
 static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
     int status = upload_args->remote_client->read_response_status();
@@ -1277,6 +1292,9 @@ static esp_err_t send_binary_chunk(AsyncHTTPSClient &remote_client, const uint8_
 // since this function can block for a long time, it must not be called from the main thread
 void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
+    if (upload_args->generation_lock == nullptr) {
+        esp_system_abort("Charge log generation lock not held during remote upload");
+    }
 
     String charger_uuid;
     String password;
@@ -1394,7 +1412,8 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                          "\"password\":\"%s\","
                          "\"user_uuid\":\"%s\","
                          "\"filename\":\"%s\","
-                         "\"display_name\":\"%s\""
+                         "\"display_name\":\"%s\","
+                         "\"monthly_send\":false"
                          "}\r\n",
                          charger_uuid.c_str(),
                          password.c_str(),
@@ -1535,7 +1554,7 @@ static void upload_charge_logs_task(void *arg)
 #endif
         }
     } else {
-        // Upload for specific config only
+
         upload_args->start_timestamp_min = actual_start_min;
         upload_args->end_timestamp_min = actual_end_min;
         upload_args->retry_count = -1;  // Use -1 as "no retries" indicator
@@ -1568,16 +1587,24 @@ void ChargeTracker::upload_charge_logs(const int8_t retry_count)
     args->user_filter = -3; // Use config default
     args->start_timestamp_min = 0; // Use default last month calculation
     args->end_timestamp_min = 0;
+    args->generation_lock = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
+    if (args->generation_lock == nullptr) {
+        logger.printfln("Could not acquire charge log generation lock for remote upload");
+        send_in_progress = false;
+        delete args;
+        return;
+    }
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
 
     if (ret != pdPASS_safe) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
         send_in_progress = false;
+        delete args;
     }
 }
 
-void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_index, uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead)
+void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_index, uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock)
 {
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
@@ -1600,6 +1627,7 @@ void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_inde
     task_args->csv_delimiter = csv_delimiter;
     task_args->use_format_overrides = true; // Specific config request (config_index != -1)
     task_args->letterhead = std::move(letterhead);
+    task_args->generation_lock = std::move(generation_lock);
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
 
@@ -1854,4 +1882,28 @@ search_done:
         return lines_generated;
     });
     free(display_name_cache);
+}
+
+std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
+    std::lock_guard<std::mutex> guard{generation_mutex};
+
+    if (is_locked) {
+        return nullptr;
+    }
+    is_locked = true;
+
+    ensure_running_in_main_task([kind]() {
+        charge_tracker.state.get("generation")->updateEnum<GenerationState>(kind);
+    });
+
+    return std::make_unique<ChargeLogGenerationLockHelper>();
+}
+
+ChargeLogGenerationLockHelper::~ChargeLogGenerationLockHelper() {
+    std::lock_guard<std::mutex> guard{generation_mutex};
+    is_locked = false;
+
+    ensure_running_in_main_task([]() {
+        charge_tracker.state.get("generation")->updateEnum<GenerationState>(GenerationState::Ready);
+    });
 }
