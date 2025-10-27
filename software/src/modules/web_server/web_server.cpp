@@ -74,8 +74,16 @@ void WebServer::post_setup()
         return;
     }
 
+    listen_port_handlers_t *default_handlers = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
+    *default_handlers = {
+        .port = 0,
+        .supports_http_api = true,
+        .handlers = nullptr,
+        .wildcard_handlers = nullptr,
+    };
+
 #if HTTPS_AVAILABLE()
-    httpd_ssl_config_t ssl_configs[3] = {
+    httpd_ssl_config_t ssl_configs[WEB_SERVER_MAX_PORTS] = {
         HTTPD_SSL_PORT_CONFIG_DEFAULT(),
         HTTPD_SSL_PORT_CONFIG_DEFAULT(),
         HTTPD_SSL_PORT_CONFIG_DEFAULT(),
@@ -174,6 +182,7 @@ void WebServer::post_setup()
                 ssl_config->port_secure = 443;
 #endif
 
+                listen_port_handlers[ssl_configs_used] = default_handlers;
                 ssl_configs_used++;
                 https_multiport_needed = true;
         }
@@ -192,6 +201,7 @@ void WebServer::post_setup()
         ssl_config->port_insecure = 80;
 #endif
 
+        listen_port_handlers[ssl_configs_used] = default_handlers;
         ssl_configs_used++;
     }
 #endif // HTTPS_AVAILABLE()
@@ -286,7 +296,7 @@ static const size_t SCRATCH_BUFSIZE = 2048;
 
 // Don't inline the receive handler so that the scratch buffer doesn't always hog the stack.
 [[gnu::noinline]]
-esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, WebServerHandler *handler)
+esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, const WebServerHandler *handler)
 {
     size_t remaining = req->content_len;
     size_t offset = 0;
@@ -351,22 +361,37 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         return ESP_OK;
     }
 
+    const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
+    const size_t listen_port_index = aux->sd->listen_port_index;
+
+    if (listen_port_index >= std::size(server->listen_port_handlers)) {
+        logger.printfln("Received request with invalid listen port index %zu", listen_port_index);
+        return ESP_FAIL;
+    }
+
+    const listen_port_handlers_t *port_handlers = server->listen_port_handlers[listen_port_index];
+
+    if (port_handlers == nullptr) {
+        logger.printfln("Received request with unused listen port index %zu", listen_port_index);
+        return ESP_FAIL;
+    }
+
     const char *uri = req->uri;
     const size_t uri_len = strlen(uri);
     const httpd_method_t method = static_cast<httpd_method_t>(req->method);
 
-    WebServerHandler *handler = server->match_handlers(uri, uri_len, method);
+    const WebServerHandler *handler = server->match_handlers(port_handlers, uri, uri_len, method);
 
     if (handler == nullptr) {
-        // No simple handler for this URI, pass to HTTP API.
 #if MODULE_HTTP_AVAILABLE()
-        if (http.api_handler(request, uri_len)) {
+        // No simple handler for this URI, pass to HTTP API.
+        if (port_handlers->supports_http_api && http.api_handler(request, uri_len)) {
             // HTTP API handled the request.
             return ESP_OK;
         }
 #endif
 
-        handler = server->match_wildcard_handlers(uri, uri_len, method);
+        handler = server->match_wildcard_handlers(port_handlers, uri, uri_len, method);
 
         if (handler == nullptr) {
             request.send_plain(404, "Nothing matches the given URI.");
@@ -374,12 +399,9 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         }
     }
 
-    if (!handler->is_websocket) {
-        const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
-        if (aux->ws_handshake_detect) {
-            request.send_plain(400, "Bad Request: WebSocket not supported");
-            return ESP_OK;
-        }
+    if (aux->ws_handshake_detect && !handler->is_websocket) {
+        request.send_plain(400, "Bad Request: WebSocket not supported");
+        return ESP_OK;
     }
 
     if (handler->accepts_upload) {
@@ -430,9 +452,11 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 
 WebServerHandler *WebServer::on(const char *uri,
                                 httpd_method_t method,
-                                wshCallback &&callback)
+                                wshCallback &&callback,
+                                uint16_t port)
 {
-    return addHandler(uri,
+    return addHandler(port,
+                      uri,
                       method,
                       false, // isWebsocket
                       true,
@@ -445,9 +469,11 @@ WebServerHandler *WebServer::on(const char *uri,
                                 httpd_method_t method,
                                 wshCallback &&callback,
                                 wshUploadCallback &&uploadCallback,
-                                wshUploadErrorCallback &&uploadErrorCallback)
+                                wshUploadErrorCallback &&uploadErrorCallback,
+                                uint16_t port)
 {
-    return addHandler(uri,
+    return addHandler(port,
+                      uri,
                       method,
                       false, // isWebsocket
                       true,
@@ -458,9 +484,11 @@ WebServerHandler *WebServer::on(const char *uri,
 
 WebServerHandler *WebServer::on_HTTPThread(const char *uri,
                                            httpd_method_t method,
-                                           wshCallback &&callback)
+                                           wshCallback &&callback,
+                                           uint16_t port)
 {
-    return addHandler(uri,
+    return addHandler(port,
+                      uri,
                       method,
                       false, // isWebsocket
                       false,
@@ -473,9 +501,11 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
                                            httpd_method_t method,
                                            wshCallback &&callback,
                                            wshUploadCallback &&uploadCallback,
-                                           wshUploadErrorCallback &&uploadErrorCallback)
+                                           wshUploadErrorCallback &&uploadErrorCallback,
+                                           uint16_t port)
 {
-    return addHandler(uri,
+    return addHandler(port,
+                      uri,
                       method,
                       false, // isWebsocket
                       false,
@@ -484,9 +514,10 @@ WebServerHandler *WebServer::on_HTTPThread(const char *uri,
                       std::move(uploadErrorCallback));
 }
 
-WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, wshCallback &&callback)
+WebServerHandler *WebServer::onWS_HTTPThread(const char *uri, wshCallback &&callback, uint16_t port)
 {
-    return addHandler(uri,
+    return addHandler(port,
+                      uri,
                       HTTP_GET,
                       true, // isWebsocket
                       false,
@@ -526,7 +557,8 @@ static WebServerHandler **web_server_find_handler_placement(WebServerHandler **h
     return handler_target;
 }
 
-WebServerHandler *WebServer::addHandler(const char *uri,
+WebServerHandler *WebServer::addHandler(uint16_t port,
+                                        const char *uri,
                                         httpd_method_t method,
                                         bool isWebsocket,
                                         bool callbackInMainThread,
@@ -534,6 +566,32 @@ WebServerHandler *WebServer::addHandler(const char *uri,
                                         wshUploadCallback &&uploadCallback,
                                         wshUploadErrorCallback &&uploadErrorCallback)
 {
+    if (port == 80 || port == 443) {
+        esp_system_abort("Don't register handlers on port 80 or 443. Use port 0 to register web interface handlers.");
+    }
+
+    listen_port_handlers_t *port_handlers;
+
+    if (port == 0) {
+        port_handlers = listen_port_handlers[0]; // Web interface handlers are always first.
+    } else {
+        port_handlers = nullptr;
+
+        for (size_t i = 1; i < std::size(listen_port_handlers); i++) {
+            listen_port_handlers_t *handlers = listen_port_handlers[i];
+
+            if (handlers->port == port) {
+                port_handlers = handlers;
+                break;
+            }
+        }
+
+        if (port_handlers == nullptr) {
+            logger.printfln("Cannot add URI '%s' for unregistered port %hu", uri, port);
+            return nullptr;
+        }
+    }
+
     size_t uri_len = strlen(uri);
 
     if (uri_len == 0 || uri[0] != '/') {
@@ -549,9 +607,9 @@ WebServerHandler *WebServer::addHandler(const char *uri,
 
     if (uri[uri_len - 1] == '*') { // Is wildcard handler?
         uri_len--; // Ignore trailing asterisk.
-        handler_target = web_server_find_handler_placement(&wildcard_handlers, WebServerSortOrder::DESCENDING, uri_len);
+        handler_target = web_server_find_handler_placement(&port_handlers->wildcard_handlers, WebServerSortOrder::DESCENDING, uri_len);
     } else {
-        handler_target = web_server_find_handler_placement(&handlers, WebServerSortOrder::ASCENDING, uri_len);
+        handler_target = web_server_find_handler_placement(&port_handlers->handlers, WebServerSortOrder::ASCENDING, uri_len);
     }
 
     void *arena_ptr = perm_aligned_alloc(alignof(WebServerHandler), sizeof(WebServerHandler), DRAM);
@@ -576,9 +634,9 @@ WebServerHandler *WebServer::addHandler(const char *uri,
     return new_handler;
 }
 
-WebServerHandler *WebServer::match_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method)
+const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
 {
-    WebServerHandler *handler = handlers;
+    const WebServerHandler *handler = port_handlers->handlers;
 
     while (handler != nullptr) {
         if (handler->uri_len > req_uri_len) {
@@ -598,9 +656,9 @@ WebServerHandler *WebServer::match_handlers(const char *req_uri, size_t req_uri_
     return nullptr;
 }
 
-WebServerHandler *WebServer::match_wildcard_handlers(const char *req_uri, size_t req_uri_len, httpd_method_t method)
+const WebServerHandler *WebServer::match_wildcard_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
 {
-    WebServerHandler *handler = wildcard_handlers;
+    const WebServerHandler *handler = port_handlers->wildcard_handlers;
 
     while (handler != nullptr) {
         const size_t wildcard_len = handler->uri_len; // Excludes trailing asterisk.
@@ -620,8 +678,10 @@ WebServerHandler *WebServer::match_wildcard_handlers(const char *req_uri, size_t
 #ifdef DEBUG_FS_ENABLE
 void WebServer::get_handlers(WebServerHandler **handlers_out, WebServerHandler **wildcard_handlers_out)
 {
-    *handlers_out          = handlers;
-    *wildcard_handlers_out = wildcard_handlers;
+    const listen_port_handlers_t *port_handlers = listen_port_handlers[0];
+
+    *handlers_out          = port_handlers->handlers;
+    *wildcard_handlers_out = port_handlers->wildcard_handlers;
 }
 #endif
 
