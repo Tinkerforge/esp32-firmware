@@ -433,3 +433,11 @@ Option<time_t> get_localtime_today_midnight_in_utc()
 
     return get_localtime_midnight_in_utc(tv.tv_sec);
 }
+
+void ensure_running_in_main_task(std::function<void(void)> &&fn) {
+    if (running_in_main_task()) {
+        fn();
+    } else {
+        task_scheduler.await(std::move(fn));
+    }
+}

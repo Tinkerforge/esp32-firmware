@@ -51,6 +51,8 @@ inline bool running_in_main_task()
     return mainTaskHandle == xTaskGetCurrentTaskHandle();
 }
 
+void ensure_running_in_main_task(std::function<void(void)> &&fn);
+
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write);
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
