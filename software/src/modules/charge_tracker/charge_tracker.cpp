@@ -1215,35 +1215,6 @@ static void report_errorf(uint32_t cookie, const char *fmt, ...)
 #endif
 }
 
-static void handle_upload_retry(std::unique_ptr<RemoteUploadRequest> upload_args)
-{
-    if (upload_args->retry_count == -1) {
-        // No retries left, report error
-        report_errorf(upload_args->cookie, "Charge-log upload failed. Look at the event log for details.");
-        return;
-    }
-
-    upload_args->retry_count++;
-    if (upload_args->retry_count >= MAX_UPLOAD_RETRIES) {
-        logger.printfln("Charge-log upload failed. Maximum number of retries reached. Giving up.");
-        charge_tracker.send_in_progress = false;
-        return;
-    }
-    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_args->retry_count - 1));
-    if (delay_minutes > 480) {
-        delay_minutes = 480;
-    }
-
-    upload_args->next_retry_delay = millis_t(delay_minutes * 60 * 1000);
-    int8_t upload_retry_count = upload_args->retry_count;
-    task_scheduler.scheduleOnce([upload_retry_count]() mutable {
-        charge_tracker.upload_charge_logs(upload_retry_count);
-    }, upload_args->next_retry_delay);
-
-    logger.printfln("Charge-log upload failed. Retry %d in %lu minutes",
-                    upload_retry_count, delay_minutes);
-}
-
 static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
     int status = upload_args->remote_client->read_response_status();
@@ -1263,7 +1234,6 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
         upload_args->remote_client->close_chunked_request();
-        handle_upload_retry(std::move(upload_args));
     }
     return ESP_OK;
 }
@@ -1409,7 +1379,6 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     upload_args->remote_client->set_header("X-Lang", lang_header);
 
     if (upload_args->remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
-        handle_upload_retry(std::move(upload_args));
         logger.printfln("Failed to send charge-log");
         return;
     }
