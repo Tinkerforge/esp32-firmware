@@ -2145,6 +2145,13 @@ int RemoteAccess::stop_ping() {
     return 0;
 }
 
+bool RemoteAccess::is_connected_local_ip(const IPAddress &ip) {
+    if (connection_state.get(ip[2])->get("state")->asUint8() == 2) {
+        return true;
+    }
+    return false;
+}
+
 [[gnu::const]]
 Config &RemoteAccess::get_ping_state() {
     return ping_state;
