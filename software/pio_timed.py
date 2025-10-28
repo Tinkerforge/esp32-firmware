@@ -33,7 +33,7 @@ finally:
     print(f'ELAPSED: {datetime.timedelta(seconds=elapsed)}')
 
     with open('pio_timed.log', 'a') as f:
-        f.write(f'{datetime.datetime.now().isoformat()} {elapsed}\n')
+        f.write(f'{datetime.datetime.now().isoformat()} {elapsed} {" ".join(args)}\n')
 
 if monitor:
     try:
