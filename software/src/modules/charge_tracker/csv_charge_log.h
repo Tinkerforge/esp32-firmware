@@ -66,7 +66,7 @@ public:
 
 private:
     void escapeCSVField(const String& field, StringWriter &output);
-    String formatCSVLine(const String (&fields)[9], CSVFlavor flavor);
+    String formatCSVLine(const String (&fields)[9], size_t field_count, CSVFlavor flavor);
     String formatTimestamp(uint32_t timestamp_min, Language language);
     String formatDuration(uint32_t duration_seconds);
     String formatEnergy(float energy_kwh);

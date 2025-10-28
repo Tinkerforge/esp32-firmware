@@ -62,7 +62,7 @@ const char* CSVTranslations::getHeaderUsername(Language language) {
 }
 
 const char* CSVTranslations::getHeaderPrice(Language language) {
-    return (language == Language::English) ? "Charging costs in €; Working price" : "Ladekosten in €; Arbeitspreis";
+    return (language == Language::English) ? "Charging costs in € (Working price)" : "Ladekosten in € (Arbeitspreis)";
 }
 
 const char* CSVTranslations::getUnknownUser(Language language) {
@@ -95,18 +95,19 @@ void CSVChargeLogGenerator::escapeCSVField(const String& field, StringWriter &ou
     output.putc('"');
 }
 
-String CSVChargeLogGenerator::formatCSVLine(const String (&fields)[9], CSVFlavor flavor) {
+String CSVChargeLogGenerator::formatCSVLine(const String (&fields)[9], size_t field_count, CSVFlavor flavor) {
     char buf[256];
     StringWriter line(buf, std::size(buf));
 
     const char separator = (flavor == CSVFlavor::Excel) ? ';' : ',';
 
-    for (size_t i = 0; i < 9; i++) {
+    for (size_t i = 0; i < field_count; i++) {
         escapeCSVField(fields[i], line);
-        line.putc(separator);
+        if (i < field_count - 1) {
+            line.putc(separator);
+        }
     }
 
-    line.setLength(line.getLength() - 1); // Remove trailing separator.
     line.puts(flavor == CSVFlavor::Excel ? "\r\n" : "\n");
 
     return String(line.getPtr(), line.getLength());
@@ -202,12 +203,13 @@ String CSVChargeLogGenerator::getUserName(uint8_t user_id, Language language) {
 
 String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& params) {
     String headers[9];
+    size_t field_count = 7;
 
     headers[0] = CSVTranslations::getHeaderStart(params.language);
     headers[1] = CSVTranslations::getHeaderDisplayName(params.language);
     headers[2] = CSVTranslations::getHeaderEnergy(params.language);
     headers[3] = CSVTranslations::getHeaderDuration(params.language);
-    //headers[4] already blank
+    // headers[4] is already empty
     headers[5] = CSVTranslations::getHeaderMeterStart(params.language);
     headers[6] = CSVTranslations::getHeaderMeterEnd(params.language);
     headers[7] = CSVTranslations::getHeaderUsername(params.language);
@@ -218,11 +220,10 @@ String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& param
         snprintf(price_header, sizeof(price_header), "%s %.2f ct/kWh",
                 CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
         headers[8] = String(price_header);
-    } else {
-        //headers[8] already blank
+        field_count = 9;
     }
 
-    return formatCSVLine(headers, params.flavor);
+    return formatCSVLine(headers, field_count, params.flavor);
 }
 
 String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
@@ -376,24 +377,23 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             }
 
             String fields[9];
+            size_t field_count = 7;
             char display_name[33];
             get_display_name(record->cs.user_id, display_name, display_name_cache);
             fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
             fields[1] = display_name;
             fields[2] = formatEnergy(energy_charged);
             fields[3] = formatDuration(record->ce.charge_duration);
-            //fields[4] already blank
             fields[5] = formatEnergy(record->cs.meter_start);
             fields[6] = formatEnergy(record->ce.meter_end);
             fields[7] = display_name;
 
             if (params.electricity_price > 0) {
                 fields[8] = formatPrice(price_euros);
-            } else {
-                //fields[8] already blank
+                field_count = 9;
             }
 
-            String csv_line = formatCSVLine(fields, params.flavor);
+            String csv_line = formatCSVLine(fields, field_count, params.flavor);
 
             if (params.flavor == CSVFlavor::Excel) {
                 csv_line = convertToWindows1252(csv_line);
