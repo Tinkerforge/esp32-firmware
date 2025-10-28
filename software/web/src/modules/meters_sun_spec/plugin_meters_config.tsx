@@ -39,6 +39,7 @@ import { Download } from 'react-feather';
 import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
 
 const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
+const SCAN_LOG_INTERVAL = 250; // milliseconds
 
 export type SunSpecMetersConfig = [
     MeterClassID.SunSpec,
@@ -75,69 +76,77 @@ interface DeviceScannerProps {
 }
 
 interface DeviceScannerState {
-    scan_device_address_first: number;
-    scan_device_address_last: number;
-    scan_running: boolean;
-    scan_cookie: number;
-    scan_error: boolean;
-    scan_progress: number;
-    scan_log: string;
-    scan_show_log: boolean;
-    scan_results: DeviceScannerResult[];
+    device_address_first: number;
+    device_address_last: number;
+    running: boolean;
+    cookie: number;
+    aborted: boolean;
+    error: boolean;
+    progress: number;
+    log: string;
+    show_log: boolean;
+    results: DeviceScannerResult[];
 }
 
 class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
-    scan_continue_timer: number = undefined;
+    continue_timer: number = undefined;
+    log_timer: number = undefined;
+    pending_log: string = '';
 
     constructor() {
         super();
 
         this.state = {
-            scan_device_address_first: 1,
-            scan_device_address_last: 247,
-            scan_running: false,
-            scan_cookie: null,
-            scan_error: false,
-            scan_progress: 0,
-            scan_log: '',
-            scan_show_log: false,
-            scan_results: [],
+            device_address_first: 1,
+            device_address_last: 247,
+            running: false,
+            cookie: null,
+            aborted: false,
+            error: false,
+            progress: 0,
+            log: '',
+            show_log: false,
+            results: [],
         } as any;
 
         util.addApiEventListener('meters_sun_spec/scan_log', () => {
             let scan_log = API.get('meters_sun_spec/scan_log');
 
-            if (!this.state.scan_running || scan_log.cookie !== this.state.scan_cookie) {
+            if (!this.state.running || scan_log.cookie !== this.state.cookie) {
                 return;
             }
 
-            this.setState({scan_log: this.state.scan_log + scan_log.message})
+            this.pending_log += scan_log.message;
+
+            if (this.state.log.length == 0) {
+                this.update_log();
+            }
         });
 
         util.addApiEventListener('meters_sun_spec/scan_error', () => {
             let scan_error = API.get('meters_sun_spec/scan_error');
 
-            if (!this.state.scan_running || scan_error.cookie !== this.state.scan_cookie) {
+            if (!this.state.running || scan_error.cookie !== this.state.cookie) {
                 return;
             }
 
-            this.setState({scan_error: true});
+            this.setState({error: true});
         });
 
         util.addApiEventListener('meters_sun_spec/scan_progress', () => {
             let scan_progress = API.get('meters_sun_spec/scan_progress');
 
-            if (!this.state.scan_running || scan_progress.cookie !== this.state.scan_cookie) {
+            if (!this.state.running || scan_progress.cookie !== this.state.cookie) {
                 return;
             }
 
-            this.setState({scan_progress: scan_progress.progress});
+            this.setState({progress: scan_progress.progress});
         });
 
         util.addApiEventListener('meters_sun_spec/scan_result', () => {
             let scan_result = API.get('meters_sun_spec/scan_result');
 
-            if (!this.state.scan_running || scan_result.cookie !== this.state.scan_cookie) {
+            if (!this.state.running || scan_result.cookie !== this.state.cookie) {
                 return;
             }
 
@@ -148,14 +157,14 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             // this combination must be unique according to sunspec specification
             let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
 
-            if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id && other.model_instance == scan_result.model_instance).length == 0) {
+            if (this.state.results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id && other.model_instance == scan_result.model_instance).length == 0) {
                 let manufacturer_name = scan_result.manufacturer_name.trim();
 
                 if (manufacturer_name == 'KOSTAL Solar Electric GmbH') {
                     manufacturer_name = 'KOSTAL';
                 }
 
-                this.setState({scan_results: this.state.scan_results.concat({
+                this.setState({results: this.state.results.concat({
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
@@ -171,127 +180,117 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         util.addApiEventListener('meters_sun_spec/scan_done', () => {
             let scan_done = API.get('meters_sun_spec/scan_done');
 
-            if (!this.state.scan_running || scan_done.cookie !== this.state.scan_cookie) {
+            if (!this.state.running || scan_done.cookie !== this.state.cookie) {
                 return;
             }
 
-            if (this.scan_continue_timer !== undefined) {
-                clearTimeout(this.scan_continue_timer);
-                this.scan_continue_timer = undefined;
+            if (this.continue_timer !== undefined) {
+                clearInterval(this.continue_timer);
+                this.continue_timer = undefined;
             }
 
-            this.setState({scan_running: false, scan_cookie: null, scan_progress: 100});
+            if (this.log_timer !== undefined) {
+                clearInterval(this.log_timer);
+                this.log_timer = undefined;
+            }
+
+            this.update_log();
+
+            let progress = this.state.progress;
+
+            if (!this.state.aborted) {
+                progress = 100;
+            }
+
+            this.setState({running: false, cookie: null, progress: progress});
         });
     }
 
-    async abort_scan() {
-        if (this.scan_continue_timer !== undefined) {
-            clearTimeout(this.scan_continue_timer);
-            this.scan_continue_timer = undefined;
+    update_log(message?: string) {
+        let log = this.state.log + this.pending_log;
+
+        this.pending_log = '';
+
+        if (message) {
+            log += message;
         }
 
-        if (!this.state.scan_running) {
+        this.setState({log: log});
+    }
+
+    async abort_scan() {
+        if (!this.state.running || this.state.aborted) {
             return;
         }
 
         let result;
 
         try {
-            result = await (await util.put('/meters_sun_spec/scan_abort', {cookie: this.state.scan_cookie})).text();
+            result = await (await util.put('/meters_sun_spec/scan_abort', {cookie: this.state.cookie})).text();
         }
         catch (e) {
-            this.setState({
-                scan_running: false,
-                scan_cookie: null,
-                scan_log: this.state.scan_log + "Error while aborting the scan: " + e.message.replace('400(Bad Request) ', '') + "\n",
-            });
-
-            return;
+            result = e.message.replace('400(Bad Request) ', '');
         }
-
-        let scan_log = this.state.scan_log;
 
         if (result.length > 0) {
-             scan_log += "Error while aborting the scan: " + result + "\n";
+            this.update_log("Error while aborting scan: " + result + "\n");
         }
         else {
-             scan_log += "Scan aborted\n";
+            this.setState({aborted: true});
         }
-
-        this.setState({
-            scan_running: false,
-            scan_cookie: null,
-            scan_log: scan_log,
-        });
     }
 
     override async componentWillUnmount() {
         await this.abort_scan();
     }
 
-    get_scan_result_item(scan_result: DeviceScannerResult) {
+    get_scan_result_item(result: DeviceScannerResult) {
         let preferred_model_id: number = null;
 
-        if ([101, 102, 103, 201, 202, 203, 204].indexOf(scan_result.model_id) >= 0 &&
-            this.state.scan_results.findIndex((other) => other.model_id == scan_result.model_id + 10) >= 0) {
-            preferred_model_id = scan_result.model_id + 10;
+        if ([101, 102, 103, 201, 202, 203, 204].indexOf(result.model_id) >= 0 &&
+            this.state.results.findIndex((other) => other.model_id == result.model_id + 10) >= 0) {
+            preferred_model_id = result.model_id + 10;
         }
 
-        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id] && preferred_model_id === null;
+        let selectable = SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id] && preferred_model_id === null;
 
         return <ListGroupItem
-                key={scan_result.model_id}
+                key={result.model_id}
                 action
                 type="button"
-                onClick={selectable ? () => {this.props.onResultSelected(scan_result)} : undefined}
+                onClick={selectable ? () => {this.props.onResultSelected(result)} : undefined}
                 style={selectable ? "" : "cursor: default; background-color: #eeeeee !important;"}>
             <div class="d-flex w-100 justify-content-between">
-                <span class="h5 text-left">{scan_result.display_name}</span>
+                <span class="h5 text-left">{result.display_name}</span>
                 {selectable ? undefined :
                     <span class="text-right" style="color:red">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
                 }
             </div>
             <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {scan_result.device_address}</span>
-                <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {scan_result.serial_number}</span>
-                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)} [{scan_result.model_id}] / {scan_result.model_instance}</span>
+                <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</span>
+                <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {result.serial_number}</span>
+                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</span>
             </div>
         </ListGroupItem>;
     }
 
     async scan_continue() {
-        this.scan_continue_timer = undefined;
-
-        if (!this.state.scan_running) {
+        if (!this.state.running) {
             return;
         }
 
         let result;
 
         try {
-            result = await (await util.put('/meters_sun_spec/scan_continue', {cookie: this.state.scan_cookie})).text();
+            result = await (await util.put('/meters_sun_spec/scan_continue', {cookie: this.state.cookie})).text();
         }
         catch (e) {
-            this.setState({
-                scan_running: false,
-                scan_cookie: null,
-                scan_log: this.state.scan_log + "Error while keeping the scan running: " + e.message.replace('400(Bad Request) ', '') + "\n",
-            });
-
-            return;
+            result = e.message.replace('400(Bad Request) ', '');
         }
 
         if (result.length > 0) {
-            this.setState({
-                scan_running: false,
-                scan_cookie: null,
-                scan_log: this.state.scan_log + "Error while keeping the scan running: " + result + "\n",
-            });
-
-            return;
+            this.update_log("Error while keeping scan running: " + result + "\n");
         }
-
-        this.scan_continue_timer = window.setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
     }
 
     render() {
@@ -303,9 +302,9 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             required
                             min={0}
                             max={255}
-                            value={this.state.scan_device_address_first}
+                            value={this.state.device_address_first}
                             onValue={(v) => {
-                                this.setState({scan_device_address_first: v});
+                                this.setState({device_address_first: v});
                             }} />
                     </div>
                     <div class="col-sm-6">
@@ -313,27 +312,30 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             required
                             min={0}
                             max={255}
-                            value={this.state.scan_device_address_last}
+                            value={this.state.device_address_last}
                             onValue={(v) => {
-                                this.setState({scan_device_address_last: v});
+                                this.setState({device_address_last: v});
                             }} />
                     </div>
                 </div>
-            {!this.state.scan_running ?
+            {!this.state.running ?
                 <Button key="scan"
                         variant="primary"
                         className="form-control"
                         onClick={async () => {
-                            let scan_cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+                            let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+
+                            this.pending_log = '';
 
                             this.setState({
-                                scan_running: true,
-                                scan_cookie: scan_cookie,
-                                scan_error: false,
-                                scan_show_log: true,
-                                scan_progress: 0,
-                                scan_log: '',
-                                scan_results: [],
+                                running: true,
+                                cookie: cookie,
+                                error: false,
+                                aborted: false,
+                                show_log: true,
+                                progress: 0,
+                                log: '',
+                                results: [],
                             }, async () => {
                                 let result;
 
@@ -341,58 +343,50 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                                     result = await (await util.put('/meters_sun_spec/scan', {
                                         host: this.props.host,
                                         port: this.props.port,
-                                        device_address_first: this.state.scan_device_address_first,
-                                        device_address_last: this.state.scan_device_address_last,
-                                        cookie: scan_cookie,
+                                        device_address_first: this.state.device_address_first,
+                                        device_address_last: this.state.device_address_last,
+                                        cookie: cookie,
                                     })).text();
                                 }
                                 catch (e) {
-                                    this.setState({
-                                        scan_running: false,
-                                        scan_cookie: null,
-                                        scan_log: e.message.replace('400(Bad Request) ', ''),
-                                    });
-
-                                    return;
+                                    result = e.message.replace('400(Bad Request) ', '');
                                 }
 
                                 if (result.length > 0) {
-                                    this.setState({
-                                        scan_running: false,
-                                        scan_cookie: null,
-                                        scan_log: result,
-                                    });
+                                    this.update_log("Error while starting scan: " + result + "\n");
+                                    this.setState({running: false, cookie: null});
 
                                     return;
                                 }
 
-                                this.scan_continue_timer = window.setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
+                                this.continue_timer = window.setInterval(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
+                                this.log_timer = window.setInterval(() => this.update_log(), SCAN_LOG_INTERVAL);
                             });
                         }}
-                        disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>
+                        disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port)}>
                     {__("meters_sun_spec.content.scan")}
                 </Button> :
                 <Button key="scan_abort"
                         variant="primary"
                         className="form-control"
                         onClick={async () => await this.abort_scan()}
-                        >
+                        disabled={this.state.aborted}>
                     {__("meters_sun_spec.content.scan_abort")}
                 </Button>}
             </FormRow>
 
-            {this.state.scan_running ?
+            {this.state.running ?
                 <FormRow label="">
-                    <Progress progress={this.state.scan_progress / 100} />
+                    <Progress progress={this.state.progress / 100} />
                 </FormRow>
                 : undefined}
 
-            {this.state.scan_show_log ?
+            {this.state.show_log ?
                 <><FormRow label="">
-                    <OutputTextarea rows={10} resize='vertical' value={this.state.scan_log} />
+                    <OutputTextarea rows={10} resize='vertical' value={this.state.log} />
                 </FormRow>
 
-                {this.state.scan_error ?
+                {this.state.error ?
                     <FormRow label="">
                         <Alert variant="warning" className="mb-0">{__("meters_sun_spec.content.scan_error")()}</Alert>
                     </FormRow>
@@ -400,24 +394,24 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
                 <FormRow label="">
                     <Button variant="primary"
-                            disabled={this.state.scan_running || this.state.scan_log.length == 0}
+                            disabled={this.state.running || this.state.log.length == 0}
                             className="form-control"
-                            onClick={() => util.downloadToTimestampedFile(this.state.scan_log, __("meters_sun_spec.content.scan_log_file"), "txt", "text/plain")}>
+                            onClick={() => util.downloadToTimestampedFile(this.state.log, __("meters_sun_spec.content.scan_log_file"), "txt", "text/plain")}>
                         <span class="mr-2">{__("meters_sun_spec.content.scan_log")}</span>
                         <Download/>
                     </Button>
                 </FormRow></>
                 : undefined}
 
-            {this.state.scan_results.length > 0 ?
+            {this.state.results.length > 0 ?
                 <FormRow label={__("meters_sun_spec.content.scan_results")}>
                     <ListGroup>
-                        {this.state.scan_results
-                            .filter((scan_result) => SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
-                            .map((scan_result) => this.get_scan_result_item(scan_result))}
-                        {this.state.scan_results
-                            .filter((scan_result) => !SUN_SPEC_MODEL_IS_SUPPORTED[scan_result.model_id])
-                            .map((scan_result) => this.get_scan_result_item(scan_result))}
+                        {this.state.results
+                            .filter((result) => SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id])
+                            .map((result) => this.get_scan_result_item(result))}
+                        {this.state.results
+                            .filter((result) => !SUN_SPEC_MODEL_IS_SUPPORTED[result.model_id])
+                            .map((result) => this.get_scan_result_item(result))}
                     </ListGroup>
                 </FormRow>
                 : undefined}

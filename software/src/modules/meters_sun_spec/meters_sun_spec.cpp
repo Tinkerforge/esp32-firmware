@@ -215,7 +215,7 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Done: {
-            scan_printfln("Scan finished");
+            scan_printfln(scan->abort ? "Scan aborted" : "Scan finished");
             scan_flush_log();
 
 #if MODULE_WS_AVAILABLE()
