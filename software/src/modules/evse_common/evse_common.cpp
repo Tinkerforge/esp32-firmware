@@ -299,12 +299,6 @@ void EvseCommon::setup()
 
     debug_protocol.register_backend(backend);
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    task_scheduler.scheduleOnce([this]() {
-        automation.trigger(AutomationTriggerID::ChargerState, nullptr, this);
-    });
-#endif
-
     task_scheduler.scheduleWithFixedDelay([this](){
         backend->update_all_data();
     }, 250_ms);
@@ -325,14 +319,15 @@ bool EvseCommon::has_triggered(const Config *conf, void *data)
     switch (conf->getTag<AutomationTriggerID>()) {
         case AutomationTriggerID::ChargerState:
         {
-            uint32_t tmp_states[2] = {0};
             if (states == nullptr) {
-                states = tmp_states;
+                return false;
             }
 
-            if ((cfg->get("new_charger_state")->asInt() == states[1]
-                || cfg->get("new_charger_state")->asInt() == -1)
-                && (cfg->get("old_charger_state")->asInt() == states[0] || cfg->get("old_charger_state")->asInt() == -1) )
+            auto old_ = cfg->get("old_charger_state")->asInt();
+            auto new_ = cfg->get("new_charger_state")->asInt();
+
+            if (   (old_ == states[0] || old_ == -1)
+                && (new_ == states[1] || new_ == -1 ))
                 return true;
         }
             break;
