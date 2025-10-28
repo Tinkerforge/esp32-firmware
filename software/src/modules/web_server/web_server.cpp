@@ -131,7 +131,7 @@ void WebServer::post_setup()
             .key_id = key_id,
             .cert_path = "/web_server/cert",
             .key_path  = "/web_server/key",
-            .generator_fn = default_certificate_generator_fn,
+            .generator_fn = Cert::default_certificate_generator_fn,
         };
 
         const bool cert_ok = load_certs_with_fallback(ssl_config, &load_info, certificates + ssl_configs_used);
