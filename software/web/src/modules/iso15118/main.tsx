@@ -35,7 +35,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { ChargeType } from "./chargetype.enum";
+import { ChargeType } from "./charge_type.enum";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;

@@ -28,8 +28,7 @@
 #include "din70121.h"
 #include "iso2.h"
 #include "iso20.h"
-
-#include "chargetype.enum.h"
+#include "charge_type.enum.h"
 
 class ISO15118 final : public IModule
 {
