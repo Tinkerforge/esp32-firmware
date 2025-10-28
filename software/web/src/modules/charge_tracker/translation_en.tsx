@@ -85,7 +85,8 @@ let x = {
             "never": "Never",
             "upload_last_month": "Upload last month",
             "test_send": "Test Send",
-            "sending": "Sending..."
+            "sending": "Sending...",
+            "charge_log_email_send_config_help": "The email sending of the charge logs is performed on the 1st of each month when no charging process is active. The grace period is 4 hours."
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",

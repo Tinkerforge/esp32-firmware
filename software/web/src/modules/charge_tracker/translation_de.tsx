@@ -85,7 +85,8 @@ let x = {
             "never": "Nie",
             "upload_last_month": "Letzten Monat hochladen",
             "test_send": "Test-Versand",
-            "sending": "Sende..."
+            "sending": "Sende...",
+            "charge_log_email_send_config_help": "Der E-Mail-Versand der Ladelogs wird jeweils am 1. des Monats durchgeführt, sobald kein Ladevorgang aktiv ist. Die Karenzzeit beträgt 4 Stunden."
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",

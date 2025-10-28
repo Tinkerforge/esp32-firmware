@@ -529,7 +529,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         sendEmailComponent = <>
                 <FormSeparator heading={__("charge_tracker.content.charge_log_email_send_config")}/>
-                <FormRow label={__("charge_tracker.content.charge_log_email_send_config")}>
+                <FormRow label={__("charge_tracker.content.charge_log_email_send_config")} help={__("charge_tracker.content.charge_log_email_send_config_help")}>
                     <Table
                         columnNames={[
                             __("charge_tracker.content.user_filter"),
