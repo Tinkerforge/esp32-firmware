@@ -33,6 +33,9 @@
 #include "module.h"
 #include "tools/string_builder.h"
 
+// The enum from the header can be used even if the Network module is not included.
+#include "modules/network/transport_mode.enum.h"
+
 constexpr size_t WEB_SERVER_MAX_PORTS = 3;
 static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);
 
@@ -153,6 +156,13 @@ enum class WebServerSortOrder {
     DESCENDING,
 };
 
+struct WebServerExtraPortData {
+    uint16_t port;
+    TransportMode transport_mode;
+    cert_load_info cert_info;
+    WebServerExtraPortData *next;
+};
+
 class WebServer final : public IModule
 {
 public:
@@ -170,6 +180,8 @@ public:
     WebServerHandler *onWS_HTTPThread(const char *uri, httpd_handle_t *httpd_handle_out, wshCallback &&callback, uint16_t port = 0);
     void onNotAuthorized_HTTPThread(wshCallback &&callback);
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
+
+    void register_extra_port(WebServerExtraPortData *port_data);
 
 #ifdef DEBUG_FS_ENABLE
     void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
@@ -195,4 +207,5 @@ private:
     wshCallback on_not_authorized;
     std::function<bool(WebServerRequest)> auth_fn;
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
+    WebServerExtraPortData *extra_ports;
 };

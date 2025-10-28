@@ -53,9 +53,6 @@
 #include <esp_https_server.h>
 #endif
 
-// The enum from the header can be used even if the Network module is not included.
-#include "modules/network/transport_mode.enum.h"
-
 #include "gcc_warnings.h"
 
 #define HTTPD_STACK_SIZE 8192
@@ -173,6 +170,54 @@ void WebServer::post_setup()
         ssl_configs_used++;
     }
 #endif // HTTPS_AVAILABLE()
+
+    while (extra_ports != nullptr) {
+        WebServerExtraPortData *extra_port = extra_ports;
+
+        if (ssl_configs_used >= std::size(ssl_configs)) {
+            logger.printfln("Cannot listen on extra port %hu: All ports in use", extra_port->port);
+            break;
+        } else {
+            do {
+                httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
+
+                if (extra_port->transport_mode == TransportMode::Insecure) {
+                    ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
+                    ssl_config->port_insecure = extra_port->port;
+                } else {
+#if HTTPS_AVAILABLE()
+                    ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+                    ssl_config->port_secure = extra_port->port;
+
+                    if (!load_certs_with_fallback(ssl_config, &extra_port->cert_info, certificates + ssl_configs_used)) {
+                        logger.printfln("Cannot listen on extra port %hu: Failed to load certificate", extra_port->port);
+                        break;
+                    }
+#else
+                    logger.printfln("Cannot listen on extra port %hu: HTTPS requested but not available", extra_port->port);
+                    break;
+#endif
+                }
+
+                listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
+                *port_handler = {
+                    .port = extra_port->port,
+                    .supports_http_api = false,
+                    .handlers = nullptr,
+                    .wildcard_handlers = nullptr,
+                };
+
+                listen_port_handlers[ssl_configs_used] = port_handler;
+                ssl_configs_used++;
+
+                https_multiport_needed = true;
+            } while (false);
+        }
+
+        extra_ports = extra_port->next;
+        extra_port->next = nullptr;
+        free(extra_port);
+    }
 
     // === Basic httpd config ===
 
@@ -610,6 +655,18 @@ WebServerHandler *WebServer::addHandler(uint16_t port,
     *handler_target = new_handler;
 
     return new_handler;
+}
+
+void WebServer::register_extra_port(WebServerExtraPortData *port_data)
+{
+    if (boot_stage > BootStage::SETUP) {
+        esp_system_abort("Extra ports can only be registered in (pre)setup");
+    }
+
+    assert(port_data != nullptr);
+
+    port_data->next = extra_ports;
+    extra_ports = port_data;
 }
 
 const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
