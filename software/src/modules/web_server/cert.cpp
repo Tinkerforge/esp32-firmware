@@ -146,6 +146,11 @@ void Cert::get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t 
     }
 }
 
+bool Cert::is_loaded()
+{
+    return key_length != 0;
+}
+
 void Cert::free()
 {
     if (crt != nullptr) crt.reset();
@@ -165,9 +170,6 @@ bool Cert::generate_cert_and_key(const cert_load_info *load_info)
     uint8_t *key_buf;
     bool retval;
 
-    mbedtls_x509write_cert mbed_cert = {};
-    mbedtls_pk_context mbed_key = {};
-
     // Initialize entropy
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
@@ -177,10 +179,16 @@ bool Cert::generate_cert_and_key(const cert_load_info *load_info)
     const char *pers = "web_cert";
     int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, reinterpret_cast<const unsigned char *>(pers), strlen(pers));
     if (ret != 0) {
-        logger.printfln("mbedtls_ctr_drbg_seed failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_ctr_drbg_seed failed: -0x%04x", static_cast<unsigned>(-ret));
         retval = false;
         goto err_out;
     }
+
+    // Initialize cert and key
+    mbedtls_x509write_cert mbed_cert;
+    mbedtls_pk_context mbed_key;
+    mbedtls_x509write_crt_init(&mbed_cert);
+    mbedtls_pk_init(&mbed_key);
 
     if (!load_info->generator_fn(&mbed_cert, &mbed_key, &ctr_drbg)) {
         retval = false;
@@ -193,7 +201,7 @@ bool Cert::generate_cert_and_key(const cert_load_info *load_info)
     crt_buf = crt.get();
     ret = mbedtls_x509write_crt_der(&mbed_cert, crt_buf, MAX_CRT_SIZE, mbedtls_ctr_drbg_random, &ctr_drbg);
     if (ret < 0) {
-        logger.printfln("mbedtls_x509write_crt_der failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_der failed: -0x%04x", static_cast<unsigned>(-ret));
         retval = false;
         goto err_out;
     }
@@ -204,7 +212,7 @@ bool Cert::generate_cert_and_key(const cert_load_info *load_info)
     key_buf = key.get();
     ret = mbedtls_pk_write_key_der(&mbed_key, key_buf, MAX_KEY_SIZE);
     if (ret < 0) {
-        logger.printfln("mbedtls_pk_write_key_der failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_pk_write_key_der failed: -0x%04x", static_cast<unsigned>(-ret));
         retval = false;
         goto err_out;
     }
@@ -248,7 +256,7 @@ bool Cert::write_cert_and_key(const cert_load_info *load_info)
     }
 
     if (ret != 0) {
-        logger.printfln("Base64 encode failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("Base64 encode failed: -0x%04x", static_cast<unsigned>(-ret));
     } else {
         file_cert.print("-----BEGIN CERTIFICATE-----\n");
 
@@ -268,7 +276,7 @@ bool Cert::write_cert_and_key(const cert_load_info *load_info)
     std::fill_n(base64, sizeof(base64), 0);
     ret = mbedtls_base64_encode(base64, sizeof(base64), &base64_len, key.get(), key_length);
     if (ret != 0) {
-        logger.printfln("Base64 encode failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("Base64 encode failed: -0x%04x", static_cast<unsigned>(-ret));
     } else {
         file_key.print("-----BEGIN EC PRIVATE KEY-----\n");
 
@@ -360,16 +368,15 @@ static int cert_set_san(mbedtls_x509write_cert *mbed_cert)
 }
 
 [[gnu::noinline]]
-static bool fill_default_cert(mbedtls_x509write_cert *mbed_cert)
+bool Cert::default_cert_fill_fn(mbedtls_x509write_cert *mbed_cert)
 {
-    mbedtls_x509write_crt_init(mbed_cert);
     mbedtls_x509write_crt_set_md_alg(mbed_cert, MBEDTLS_MD_SHA256);
 
     // Set serial number, version, issuer name, validity, basic constraints, and subject key identifier
     unsigned char serial[1] = { 0x01 };
     int ret = mbedtls_x509write_crt_set_serial_raw(mbed_cert, serial, sizeof(serial));
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_serial_raw failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_serial_raw failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
@@ -379,45 +386,45 @@ static bool fill_default_cert(mbedtls_x509write_cert *mbed_cert)
     // TODO: Get proper hostname or IP dynamically
     ret = mbedtls_x509write_crt_set_subject_name(mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_subject_name failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_subject_name failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
     // Issuer == subject for self-signed certificate
     ret = mbedtls_x509write_crt_set_issuer_name(mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_issuer_name failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_issuer_name failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     ret = mbedtls_x509write_crt_set_validity(mbed_cert, "20250101000000", "21250101000000");
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_validity failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_validity failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     // For HTTPS we need CA = FALSE
     ret = mbedtls_x509write_crt_set_basic_constraints(mbed_cert, 0, -1);
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     // For HTTPS set key usage to digital signature and key encipherment
     ret = mbedtls_x509write_crt_set_key_usage(mbed_cert, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_key_usage failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_key_usage failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     ret = cert_set_key_usage(mbed_cert);
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_ext_key_usage failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_ext_key_usage failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     ret = cert_set_san(mbed_cert);
     if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_subject_alternative_name failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_x509write_crt_set_subject_alternative_name failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
@@ -425,22 +432,19 @@ static bool fill_default_cert(mbedtls_x509write_cert *mbed_cert)
 }
 
 [[gnu::noinline]]
-static bool key_and_sign_default_cert(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg)
+bool Cert::default_key_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg)
 {
-    // Init key
-    mbedtls_pk_init(mbed_key);
-
     int ret = mbedtls_pk_setup(mbed_key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
     if (ret != 0) {
-        logger.printfln("mbedtls_pk_setup failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_pk_setup failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
     ret = mbedtls_ecp_gen_key(MBEDTLS_ECP_DP_SECP256R1,
                               mbedtls_pk_ec(*mbed_key),
-                              mbedtls_ctr_drbg_random, &ctr_drbg);
+                              mbedtls_ctr_drbg_random, ctr_drbg);
     if (ret != 0) {
-        logger.printfln("mbedtls_ecp_gen_key failed: 0x%04x", static_cast<unsigned>(ret));
+        logger.printfln("mbedtls_ecp_gen_key failed: -0x%04x", static_cast<unsigned>(-ret));
         return false;
     }
 
@@ -450,11 +454,11 @@ static bool key_and_sign_default_cert(mbedtls_x509write_cert *mbed_cert, mbedtls
     return true;
 }
 
-bool default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg)
+bool Cert::default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg)
 {
-    if (!fill_default_cert(mbed_cert)) {
+    if (!Cert::default_key_generator_fn(mbed_cert, mbed_key, ctr_drbg)) {
         return false;
     }
 
-    return key_and_sign_default_cert(mbed_cert, mbed_key, ctr_drbg);
+    return Cert::default_cert_fill_fn(mbed_cert);
 }

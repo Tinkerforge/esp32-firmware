@@ -27,8 +27,6 @@
 
 typedef bool (*certificate_generator_fn)(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
 
-bool default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
-
 struct cert_load_info {
     int16_t cert_id;
     int16_t key_id;
@@ -47,7 +45,12 @@ public:
     bool load_external_with_internal_fallback(const cert_load_info *load_info);
 
     void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out);
+    bool is_loaded();
     void free();
+
+    static bool default_cert_fill_fn(mbedtls_x509write_cert *mbed_cert);
+    static bool default_key_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
+    static bool default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
 
 private:
     static bool load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, uint16_t *length);
