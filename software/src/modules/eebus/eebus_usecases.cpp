@@ -28,6 +28,8 @@
 #include <chrono>
 #include <regex>
 #include <utility>
+#include "lib/libiso8601/iso8601.h"
+#include "ocpp/Types.h"
 
 
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -443,8 +445,8 @@ EvcsUsecase::EvcsUsecase()
 #ifdef EEBUS_DEV_TEST_ENABLE
     task_scheduler.scheduleOnce([this]() {
                                     logger.printfln("EEBUS Usecase test enabled. Updating ChargingSummary");
-                                    update_billing_data(1, 299921_s, 3242662_s, 245233, 1242, 75, 90, 25, 10);
-                                    update_billing_data(2, 5622123_s, 5655611_s, 23677, 1242, 50, 100, 50, 0);
+                                    update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
+                                    update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
 
                                 },
                                 30_s);
@@ -529,7 +531,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcsUsecase::
     return features;
 }
 
-void EvcsUsecase::update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
+void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)
 {
     if (id > 8 || id < 1) {
         eebus.trace_fmtln("Billing ID %d is out of range. Must be between 1 and 8", id);
@@ -565,9 +567,8 @@ BillListDataType EvcsUsecase::get_bill_list_data() const
         billData.billId = entry.id;
         billData.billType = BillTypeEnumType::chargingSummary;
 
-        // TODO: Convert to proper time format
-        billData.total->timePeriod->startTime = std::to_string(entry.start_time.as<int>());
-        billData.total->timePeriod->endTime = std::to_string(entry.start_time.as<int>());
+        billData.total->timePeriod->startTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
+        billData.total->timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
         BillValueType total_value;
         total_value.value->number = entry.energy_wh;
         total_value.unit = UnitOfMeasurementEnumType::Wh;
@@ -672,8 +673,8 @@ void EvcsUsecase::update_api() const
         uint32_t charged_kwh = bill_entry.energy_wh;
         api_bill_entry->get("charged_kwh")->updateFloat(static_cast<float>(charged_kwh) / 1000.0f);
         api_bill_entry->get("cost")->updateFloat(static_cast<float>(bill_entry.cost_eur_cent) / 100.0f);
-        api_bill_entry->get("start_time")->updateUint(bill_entry.start_time.as<uint32_t>()); // TODO: Fix this time type
-        api_bill_entry->get("duration")->updateUint(bill_entry.end_time.as<uint32_t>() - bill_entry.start_time.as<uint32_t>());
+        api_bill_entry->get("start_time")->updateUint(bill_entry.start_time);
+        api_bill_entry->get("duration")->updateUint(bill_entry.end_time - bill_entry.start_time);
 
         api_bill_entry->get("percent_self_produced_energy")->updateUint(bill_entry.self_produced_energy_percent);
         api_bill_entry->get("percent_self_produced_cost")->updateUint(bill_entry.self_produced_cost_percent);
@@ -2448,5 +2449,24 @@ seconds_t iso_duration_to_seconds(std::string iso_duration)
         }
     }
     return seconds_t(duration_seconds);
+}
+
+time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t)
+{
+    iso8601_time time;
+    if (iso8601_parse(iso_timestamp, &time) != 0) {
+        return false;
+    }
+    iso8601_to_time_t(&time, t);
+    return true;
+}
+
+String unix_to_iso_timestamp(time_t unix_time)
+{
+    tm t;
+    gmtime_r(&unix_time, &t);
+    char buf[OCPP_ISO_8601_MAX_LEN];
+    strftime(buf, OCPP_ISO_8601_MAX_LEN, "%FT%TZ", &t);
+    return buf;
 }
 } // namespace EEBUS_USECASE_HELPERS

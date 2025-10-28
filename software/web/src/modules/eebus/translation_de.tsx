@@ -55,7 +55,7 @@ let x = {
                 "device_trusted": "Verbindung erlauben",
                 "model_brand": "Hersteller",
                 "model_model": "Gerät",
-                "model_type": "Gerätetype",
+                "model_type": "Gerätetyp",
                 "trusted_no": "Nein",
                 "trusted_yes": "Ja",
                 "edit_peer_title": "Bearbeiten",
