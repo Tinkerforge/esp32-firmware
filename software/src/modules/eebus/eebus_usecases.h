@@ -282,7 +282,7 @@ public:
      * @param self_produced_energy_percent The amount of self produced energy used for charging in Wh
      * @param self_produced_cost_percent The cost of the self produced energy used for charging in Euro cents
      */
-    void update_billing_data(int id, seconds_t start_time, seconds_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
+    void update_billing_data(int id, time_t start_time, time_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
 
     [[nodiscard]] String get_entity_name() const override
     {
@@ -293,8 +293,8 @@ private:
     struct BillEntry
     {
         uint8_t id = 0; // ID of the bill entry. 0 means unused entry
-        seconds_t start_time;
-        seconds_t end_time;
+        time_t start_time;
+        time_t end_time;
         uint16_t energy_wh;
         uint32_t cost_eur_cent;
         uint8_t grid_energy_percent;
