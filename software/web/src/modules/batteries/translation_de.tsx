@@ -121,12 +121,6 @@ let x = {
             "save_failed": "Speichern der Speichersteuerungs-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Speichersteuerungs-Einstellungen",
             "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/
-        },
-        "automation": {
-            "permit_grid_charge": "Laden des Speichers vom Netz erlauben",
-            "revoke_grid_charge_override": "Erlaubnis zum Laden des Speichers vom Netz zurücknehmen",
-            "forbid_discharge": "Entladen des Speichers verbieten",
-            "revoke_discharge_override": "Verbot zum Entladen des Speichers zurücknehmen"
         }
     }
 }
