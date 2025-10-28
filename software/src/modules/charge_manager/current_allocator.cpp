@@ -587,6 +587,7 @@ static constexpr OnePhaseDecisionTag to_clear_pre_1p[] = {
     OnePhaseDecisionTag::NoPhaseImprovement,
     OnePhaseDecisionTag::NoForced3pUntil,
     OnePhaseDecisionTag::NoFixed3p,
+    OnePhaseDecisionTag::NoHysteresisBlockedUntil,
 };
 
 static constexpr ThreePhaseDecisionTag to_clear_pre_3p[] = {
@@ -595,7 +596,8 @@ static constexpr ThreePhaseDecisionTag to_clear_pre_3p[] = {
     ThreePhaseDecisionTag::NoPhaseMinimum,
     ThreePhaseDecisionTag::NoPhaseImprovement,
     ThreePhaseDecisionTag::NoForced1pUntil,
-    ThreePhaseDecisionTag::NoFixed1p
+    ThreePhaseDecisionTag::NoFixed1p,
+    ThreePhaseDecisionTag::NoHysteresisBlockedUntil,
 };
 
 static constexpr ZeroPhaseDecisionTag yes_0p[] = {
