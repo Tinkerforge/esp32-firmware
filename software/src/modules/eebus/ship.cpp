@@ -106,7 +106,7 @@ void Ship::setup_wss()
         mbedtls_x509_crt_init(&x509_crt);
         int ret = mbedtls_x509_crt_parse(&x509_crt, buf, buflen);
         if (ret != 0) {
-            logger.printfln(" An error occurred while setting up the SHIP Websocket");
+            logger.printfln(" An error occurred while setting up the SHIP Websocket. EEBUS Failed to start");
             eebus.trace_fmtln("mbedtls_x509_crt_parse failed: 0x%04x", ret);
         } else {
             char ship_ski[64] = {0};
@@ -182,23 +182,31 @@ void Ship::setup_wss()
         sockaddr_in6 addr;
         socklen_t addr_len = sizeof(addr);
         getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
-        char client_ip[INET6_ADDRSTRLEN];
 
+        char client_ip[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &addr.sin6_addr, client_ip, sizeof(client_ip));
 
         CoolString peer_ski = "unknown";
         std::string peer_ip = client_ip;
-
-        for (size_t i = 0; i < eebus.config.get("peers")->count(); i++) {
-            if (peer_ip.find(eebus.config.get("peers")->get(i)->get("ip")->asString().c_str()) != std::string::npos) {
-                peer_ski = eebus.config.get("peers")->get(i)->get("ski")->asString();
-                break;
-            }
+        // need to strip out the IPv6 prefix if present
+        std::string ip_ip6_start = "::FFFF:";
+        auto peer_ip_pos = peer_ip.find(ip_ip6_start);
+        if (peer_ip_pos != std::string::npos) {
+            peer_ip = peer_ip.erase(peer_ip_pos, ip_ip6_start.length());
         }
-        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s", client_ip, ntohs(addr.sin6_port), peer_ski.c_str());
+
+        auto node = peer_handler.get_peer_by_ip(peer_ip.c_str());
+        if (node != nullptr) {
+            peer_ski = node->txt_ski;
+        } else {
+            eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s", peer_ip.c_str());
+            peer_handler.update_dns_name_by_ip(peer_ip.c_str(), peer_ip.c_str());
+        }
+        peer_handler.update_state_by_ip(peer_ip.c_str(), NodeState::Connected);
+        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s", peer_ip.c_str(), ntohs(addr.sin6_port), peer_ski.c_str());
 
         ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, peer_ski)));
-        logger.printfln("New SHIP Client connected");
+        logger.printfln("New SHIP Client connected from %s", peer_ip.c_str());
 
         return true;
     });
@@ -296,7 +304,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
     }
 
     auto update_discovery_state = [this](ShipDiscoveryState state) {
-        this->discovery_state = state;
         eebus.state.get("discovery_state")->updateEnum(state);
     };
 
@@ -321,12 +328,28 @@ ShipDiscoveryState Ship::discover_ship_peers()
         update_discovery_state(ShipDiscoveryState::ScanDone);
         return discovery_state;
     }
-    mdns_results.clear();
     while (results) {
-        ShipNode ship_node;
-        ship_node.dns_name = results->hostname;
-        ship_node.port = results->port;
-
+        //ShipNode ship_node;
+        //ship_node.dns_name = results->hostname;
+        //ship_node.port = results->port;
+        String ip_address{};
+        while (results->addr) {
+            if (ip_address.length() > 0) {
+                eebus.trace_fmtln("Error in EEBUS MDNS: More than one IP Address found, this might cause issues.");
+            }
+            esp_ip_addr_t ip = results->addr->addr;
+            if (ip.type == IPADDR_TYPE_V4) {
+                ip_address = IPAddress(ip.u_addr.ip4.addr).toString().c_str();
+            } else {
+                eebus.trace_fmtln("MDNS returned ipv6 address");
+                //ship_node.ip_address.push_back(IPAddress(ip.u_addr.ip6.addr));
+                // TODO: Add IPv6 support. Convert the IP type from esp_ip6_addr to IPAddress
+            }
+            results->addr = results->addr->next;
+        }
+        if (ip_address.length() < 1) {
+            continue;
+        }
         // TODO: Maybe make some security checks? So no harmful data is ingested. Or does mdns library sanizite the data?
         for (int i = 0; i < results->txt_count; i++) {
             mdns_txt_item_t *txt = &results->txt[i];
@@ -335,40 +358,30 @@ ShipDiscoveryState Ship::discover_ship_peers()
             }
             // mandatory fields
             if (strcmp(txt->key, "txtvers") == 0) {
-                ship_node.txt_vers = txt->value;
+                peer_handler.update_vers_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "id") == 0) {
-                ship_node.txt_id = txt->value;
+                peer_handler.update_id_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "path") == 0) {
-                ship_node.txt_wss_path = txt->value;
+                peer_handler.update_id_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "ski") == 0) {
-                ship_node.txt_ski = txt->value;
+                peer_handler.update_ski_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "register") == 0) {
-                ship_node.txt_autoregister = strcmp(txt->value, "true") == 0;
+                peer_handler.update_autoregister_by_ip(ip_address, strcmp(txt->value, "true") == 0);
                 // Optional Fields
             } else if (strcmp(txt->key, "brand") == 0) {
-                ship_node.txt_brand = txt->value;
+                peer_handler.update_brand_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "model") == 0) {
-                ship_node.txt_model = txt->value;
+                peer_handler.update_model_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "type") == 0) {
-                ship_node.txt_type = txt->value;
+                peer_handler.update_type_by_ip(ip_address, txt->value);
             }
+            if (peer_handler.get_peer_by_ip(ip_address)->state != NodeState::Connected)
+                peer_handler.update_state_by_ip(ip_address, NodeState::Discovered);
         }
-        // Add IP adress to ship_node. Can be multiple IPv4 and IPv6 addresses
-        while (results->addr) {
-            esp_ip_addr_t ip = results->addr->addr;
-            if (ip.type == IPADDR_TYPE_V4) {
-                ship_node.ip_addresses.push_back(IPAddress(ip.u_addr.ip4.addr));
-            } else {
-                //ship_node.ip_addresses.push_back(IPAddress(ip.u_addr.ip6.addr));
-                // TODO: Add IPv6 support. Convert the IP type from esp_ip6_addr to IPAddress
-            }
-            results->addr = results->addr->next;
-        }
-        mdns_results.push_back(ship_node);
         results = results->next;
     }
 
-    logger.printfln("EEBUS MDNS Discovery: Found %d results", mdns_results.size());
+    logger.printfln("EEBUS MDNS Discovery: Found %d results", peer_handler.get_peers().size());
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
@@ -377,8 +390,9 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
 void Ship::print_skis(StringBuilder *sb)
 {
-    for (uint16_t i = 0; i < mdns_results.size(); i++) {
-        mdns_results[i].as_json(sb);
+    auto peers = peer_handler.get_peers();
+    for (uint16_t i = 0; i < peers.size(); i++) {
+        peers[i].as_json(sb);
         sb->putc(',');
     }
 }
@@ -415,15 +429,312 @@ void ShipNode::as_json(StringBuilder *sb)
     json.addMemberBoolean("trusted", trusted);
     json.addMemberNumber("port", port);
     json.addMemberNumber("state", (uint8_t)state);
-
-    StringBuilder ip_sb;
-    ip_sb.putc('[');
-    for (IPAddress ip : ip_addresses) {
-        ip_sb.puts(ip.toString().c_str());
-        ip_sb.putc(',');
-    }
-    ip_sb.putc(']');
-    json.addMemberString("ip_addresses", ip_sb.getPtr());
+    json.addMemberString("ip_address", ip_address.c_str());
     json.end();
     sb->puts(json_buf);
+}
+
+ShipPeerHandler::ShipPeerHandler()
+{
+    peers.clear();
+}
+
+ShipNode *ShipPeerHandler::get_peer_by_ski(const String &ski)
+{
+    auto it = std::find_if(peers.begin(),
+                           peers.end(),
+                           [&ski](const ShipNode &n) {
+                               return n.txt_ski == ski;
+                           });
+    if (it != peers.end())
+        return &*it;
+    return nullptr;
+}
+
+void ShipPeerHandler::remove_peer_by_ski(const String &ski)
+{
+    peers.erase(
+        std::ranges::remove_if(peers,
+                               [&ski](const ShipNode &n) {
+                                   return n.txt_ski == ski;
+                               }).begin(),
+        peers.end());
+}
+
+void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->ip_address = ip;
+    } else {
+        new_peer_from_ski(ski);
+        update_ip_by_ski(ski, ip);
+    }
+}
+
+void ShipPeerHandler::update_port_by_ski(const String &ski, uint16_t port)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->port = port;
+    } else {
+        new_peer_from_ski(ski);
+        update_port_by_ski(ski, port);
+    }
+}
+
+void ShipPeerHandler::update_trusted_by_ski(const String &ski, bool trusted)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->trusted = trusted;
+    } else {
+        new_peer_from_ski(ski);
+        update_trusted_by_ski(ski, trusted);
+    }
+}
+
+ShipNode *ShipPeerHandler::get_peer_by_ip(const String &ip)
+{
+    auto it = std::find_if(peers.begin(),
+                           peers.end(),
+                           [&ip](const ShipNode &n) {
+                               return n.ip_address == ip;
+                           });
+    if (it != peers.end())
+        return &*it;
+    return nullptr;
+}
+
+void ShipPeerHandler::remove_peer_by_ip(const String &ip)
+{
+    peers.erase(
+        std::ranges::remove_if(peers,
+                               [&ip](const ShipNode &n) {
+                                   return n.ip_address == ip;
+                               }).begin(),
+        peers.end());
+}
+
+/* --- update by ski --- */
+void ShipPeerHandler::update_state_by_ski(const String &ski, NodeState state)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->state = state;
+    } else {
+        new_peer_from_ski(ski);
+        update_state_by_ski(ski, state);
+    }
+}
+
+void ShipPeerHandler::update_dns_name_by_ski(const String &ski, const String &dns_name)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->dns_name = dns_name;
+    } else {
+        new_peer_from_ski(ski);
+        update_dns_name_by_ski(ski, dns_name);
+    }
+}
+
+void ShipPeerHandler::update_vers_by_ski(const String &ski, const String &txt_vers)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_vers = txt_vers;
+    } else {
+        new_peer_from_ski(ski);
+        update_vers_by_ski(ski, txt_vers);
+    }
+}
+
+void ShipPeerHandler::update_id_by_ski(const String &ski, const String &txt_id)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_id = txt_id;
+    } else {
+        new_peer_from_ski(ski);
+        update_id_by_ski(ski, txt_id);
+    }
+}
+
+void ShipPeerHandler::update_wss_path_by_ski(const String &ski, const String &txt_wss_path)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_wss_path = txt_wss_path;
+    } else {
+        new_peer_from_ski(ski);
+        update_wss_path_by_ski(ski, txt_wss_path);
+    }
+}
+
+void ShipPeerHandler::update_autoregister_by_ski(const String &ski, bool autoregister)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_autoregister = autoregister;
+    } else {
+        new_peer_from_ski(ski);
+        update_autoregister_by_ski(ski, autoregister);
+    }
+}
+
+void ShipPeerHandler::update_brand_by_ski(const String &ski, const String &brand)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_brand = brand;
+    } else {
+        new_peer_from_ski(ski);
+        update_brand_by_ski(ski, brand);
+    }
+}
+
+void ShipPeerHandler::update_model_by_ski(const String &ski, const String &model)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_model = model;
+    } else {
+        new_peer_from_ski(ski);
+        update_model_by_ski(ski, model);
+    }
+}
+
+void ShipPeerHandler::update_type_by_ski(const String &ski, const String &type)
+{
+    if (const auto peer = get_peer_by_ski(ski)) {
+        peer->txt_type = type;
+    } else {
+        new_peer_from_ski(ski);
+        update_type_by_ski(ski, type);
+    }
+}
+
+/* --- update by ip --- */
+void ShipPeerHandler::update_port_by_ip(const String &ip, uint16_t port)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->port = port;
+    } else {
+        new_peer_from_ip(ip);
+        update_port_by_ip(ip, port);
+    }
+}
+
+void ShipPeerHandler::update_trusted_by_ip(const String &ip, bool trusted)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->trusted = trusted;
+    } else {
+        new_peer_from_ip(ip);
+        update_trusted_by_ip(ip, trusted);
+    }
+}
+
+void ShipPeerHandler::update_state_by_ip(const String &ip, NodeState state)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->state = state;
+    } else {
+        new_peer_from_ip(ip);
+        update_state_by_ip(ip, state);
+    }
+}
+
+void ShipPeerHandler::update_dns_name_by_ip(const String &ip, const String &dns_name)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->dns_name = dns_name;
+    } else {
+        new_peer_from_ip(ip);
+        update_dns_name_by_ip(ip, dns_name);
+    }
+}
+
+void ShipPeerHandler::update_vers_by_ip(const String &ip, const String &txt_vers)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_vers = txt_vers;
+    } else {
+        new_peer_from_ip(ip);
+        update_vers_by_ip(ip, txt_vers);
+    }
+}
+
+void ShipPeerHandler::update_id_by_ip(const String &ip, const String &txt_id)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_id = txt_id;
+    } else {
+        new_peer_from_ip(ip);
+        update_id_by_ip(ip, txt_id);
+    }
+}
+
+void ShipPeerHandler::update_wss_path_by_ip(const String &ip, const String &txt_wss_path)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_wss_path = txt_wss_path;
+    } else {
+        new_peer_from_ip(ip);
+        update_wss_path_by_ip(ip, txt_wss_path);
+    }
+}
+
+void ShipPeerHandler::update_ski_by_ip(const String &ip, const String &txt_ski)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_ski = txt_ski;
+    } else {
+        new_peer_from_ip(ip);
+        update_ski_by_ip(ip, txt_ski);
+    }
+}
+
+void ShipPeerHandler::update_autoregister_by_ip(const String &ip, bool autoregister)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_autoregister = autoregister;
+    } else {
+        new_peer_from_ip(ip);
+        update_autoregister_by_ip(ip, autoregister);
+    }
+}
+
+void ShipPeerHandler::update_brand_by_ip(const String &ip, const String &brand)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_brand = brand;
+    } else {
+        new_peer_from_ip(ip);
+        update_brand_by_ip(ip, brand);
+    }
+}
+
+void ShipPeerHandler::update_model_by_ip(const String &ip, const String &model)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_model = model;
+    } else {
+        new_peer_from_ip(ip);
+        update_model_by_ip(ip, model);
+    }
+}
+
+void ShipPeerHandler::update_type_by_ip(const String &ip, const String &type)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        peer->txt_type = type;
+    } else {
+        new_peer_from_ip(ip);
+        update_type_by_ip(ip, type);
+    }
+}
+
+void ShipPeerHandler::new_peer_from_ski(const String &ski)
+{
+    ShipNode node = {};
+    node.txt_ski = ski;
+    peers.push_back(node);
+}
+
+void ShipPeerHandler::new_peer_from_ip(const String &ip)
+{
+    ShipNode node = {};
+    node.ip_address = ip;
+    peers.push_back(node);
 }

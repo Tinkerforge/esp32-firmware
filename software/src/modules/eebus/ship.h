@@ -35,13 +35,13 @@ struct ShipNode
 {
 
     // Basic information about the node
-    std::vector<IPAddress> ip_addresses;
+    String ip_address;
     uint16_t port = 0;
     bool trusted = false;
     NodeState state = NodeState::Unknown;
     // Stuff that is Mandatory in the TXT record
     String dns_name = "";
-    String txt_vers = ""; //Maybe change to number?
+    String txt_vers = "";
     String txt_id = "";
     String txt_wss_path = "";
     String txt_ski = "";
@@ -54,6 +54,59 @@ struct ShipNode
     // TODO Add more stuff that might be relevant like last seen, features, etc.
 
     void as_json(StringBuilder *sb); /* */
+};
+
+class ShipPeerHandler
+{
+public:
+    ShipPeerHandler();
+    std::vector<ShipNode> get_peers()
+    {
+        return peers;
+    }
+
+    void reset()
+    {
+        peers.clear();
+    }
+
+    /* Updates identified by SKI (txt_ski). Will add a new peer if no existing one was found with the ip */
+    ShipNode *get_peer_by_ski(const String &ski);
+    void remove_peer_by_ski(const String &ski);
+    void update_ip_by_ski(const String &ski, const String &ip);
+    void update_port_by_ski(const String &ski, uint16_t port);
+    void update_trusted_by_ski(const String &ski, bool trusted);
+    void update_state_by_ski(const String &ski, NodeState state);
+    void update_dns_name_by_ski(const String &ski, const String &dns_name);
+    void update_vers_by_ski(const String &ski, const String &txt_vers);
+    void update_id_by_ski(const String &ski, const String &txt_id);
+    void update_wss_path_by_ski(const String &ski, const String &txt_wss_path);
+    void update_autoregister_by_ski(const String &ski, bool autoregister);
+    void update_brand_by_ski(const String &ski, const String &brand);
+    void update_model_by_ski(const String &ski, const String &model);
+    void update_type_by_ski(const String &ski, const String &type);
+
+    /* Updates identified by IP (matches any entry in ShipNode::ip_address). Return true on success. */
+    ShipNode *get_peer_by_ip(const String &ip);
+    void remove_peer_by_ip(const String &ip);
+    void update_port_by_ip(const String &ip, uint16_t port);
+    void update_trusted_by_ip(const String &ip, bool trusted);
+    void update_state_by_ip(const String &ip, NodeState state);
+    void update_dns_name_by_ip(const String &ip, const String &dns_name);
+    void update_vers_by_ip(const String &ip, const String &txt_vers);
+    void update_id_by_ip(const String &ip, const String &txt_id);
+    void update_wss_path_by_ip(const String &ip, const String &txt_wss_path);
+    void update_ski_by_ip(const String &ip, const String &txt_ski);
+    void update_autoregister_by_ip(const String &ip, bool autoregister);
+    void update_brand_by_ip(const String &ip, const String &brand);
+    void update_model_by_ip(const String &ip, const String &model);
+    void update_type_by_ip(const String &ip, const String &type);
+
+private:
+    std::vector<ShipNode> peers{};
+    void new_peer_from_ski(const String &ski);
+    void new_peer_from_ip(const String &ip);
+
 };
 
 class Ship
@@ -80,13 +133,14 @@ public:
     //ConfigRoot config;
     //ConfigRoot state;
 
-    std::vector<ShipNode> mdns_results;
+    ShipPeerHandler peer_handler{};
+    //std::vector<ShipNode> ship_nodes_discovered;
     ShipDiscoveryState discovery_state;
     std::vector<unique_ptr_any<ShipConnection>> ship_connections;
     bool is_enabled;
 
 private:
-    void setup_mdns();
+    static void setup_mdns();
     void setup_wss();
 
     WebSockets web_sockets;
