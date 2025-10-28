@@ -212,7 +212,7 @@ void EEBus::register_urls()
     api.addCommand(
         "eebus/add",
         &add_peer,
-        {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
+        {},
         [this](String &errmsg) {
             if (!initialized) {
                 eebus.trace_fmtln("Tried adding or editing peer while EEBUS is disabled");
@@ -224,32 +224,13 @@ void EEBus::register_urls()
                 eebus.trace_fmtln("Error adding or Updating peer: %s", errmsg.c_str());
                 return;
             }
-            Config::Wrap peer = nullptr;
-            bool found = false;
-            for (size_t i = 0; i < config.get("peers")->count(); i++) {
-                auto p = config.get("peers")->get(i);
-                if (p->get("ski")->asString() == add_peer.get("ski")->asString()) {
-                    peer = p;
-                    found = true;
-                    eebus.trace_fmtln("Updating ship peer %s with ip %s",
-                                      peer->get("ski")->asString().c_str(),
-                                      peer->get("ip")->asString().c_str());
-                    break;
-                }
-            }
-            if (!found) {
-                peer = config.get("peers")->add();
-                eebus.trace_fmtln("Adding ship peer %s with ip %s",
-                                  peer->get("ski")->asString().c_str(),
-                                  peer->get("ip")->asString().c_str());
-            }
-            peer->get("ip")->updateString(add_peer.get("ip")->asString());
-            peer->get("port")->updateUint(add_peer.get("port")->asUint());
-            peer->get("trusted")->updateBool(add_peer.get("trusted")->asBool());
-            peer->get("dns_name")->updateString(add_peer.get("dns_name")->asString());
-            peer->get("wss_path")->updateString(add_peer.get("wss_path")->asString());
-            peer->get("ski")->updateString(add_peer.get("ski")->asString());
-            api.writeConfig("eebus/config", &config);
+            String ski = add_peer.get("ski")->asString();
+            ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
+            ship.peer_handler.update_port_by_ski(ski, add_peer.get("port")->asUint());
+            ship.peer_handler.update_trusted_by_ski(ski, add_peer.get("trusted")->asBool());
+            ship.peer_handler.update_dns_name_by_ski(ski, add_peer.get("dns_name")->asString());
+            ship.peer_handler.update_wss_path_by_ski(ski, add_peer.get("wss_path")->asString());
+            update_peers_config();
             ship.connect_trusted_peers();
         },
         true);
@@ -268,17 +249,8 @@ void EEBus::register_urls()
                 eebus.trace_fmtln("Error removing peer: %s", errmsg.c_str());
                 return;
             }
-            for (size_t i = 0; i < config.get("peers")->count(); i++) {
-                auto peer = config.get("peers")->get(i);
-                if (peer->get("ski")->asString() == remove_peer.get("ski")->asString()) {
-                    eebus.trace_fmtln("Removing ship peer %s with ip %s",
-                                      peer->get("ski")->asString().c_str(),
-                                      peer->get("ip")->asString().c_str());
-                    config.get("peers")->remove(i);
-                    break;
-                }
-            }
-            api.writeConfig("eebus/config", &config);
+            ship.peer_handler.remove_peer_by_ski(remove_peer.get("ski")->asString());
+            update_peers_config();
         },
         true);
 
@@ -304,7 +276,6 @@ void EEBus::register_urls()
                         ship.connect_trusted_peers();
                     },
                     1_s);
-                // we do a bit of a wait here so the user has time to see the feedback on the frontend
 
                 return "scan started";
             }
@@ -371,58 +342,28 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 
 void EEBus::update_peers_config()
 {
-    size_t currently_configured_count = config.get("peers")->count();
-
-    for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        // Cleanup invalid peers
-        if (config.get("peers")->get(i)->get("ski")->asString().isEmpty()
-            || config.get("peers")->get(i)->get("ski")->asString().length() < 1) {
-            config.get("peers")->remove(i);
-        }
+    config.get("peers")->removeAll();
+    auto peers = ship.peer_handler.get_peers();
+    for (const ShipNode &node : peers) {
+        auto peer = config.get("peers")->add();
+        peer->get("ip")->updateString(node.ip_address.c_str());
+        peer->get("port")->updateUint(node.port);
+        peer->get("trusted")->updateBool(node.trusted);
+        peer->get("dns_name")->updateString(node.dns_name);
+        peer->get("id")->updateString(node.txt_id);
+        peer->get("wss_path")->updateString(node.txt_wss_path);
+        peer->get("ski")->updateString(node.txt_ski);
+        peer->get("autoregister")->updateBool(node.txt_autoregister);
+        peer->get("model_brand")->updateString(node.txt_brand);
+        peer->get("model_model")->updateString(node.txt_model);
+        peer->get("mode_type")->updateString(node.txt_type);
+        peer->get("state")->updateEnum(node.state);
     }
-
-    for (ShipNode node : ship.mdns_results) {
-        bool found = false;
-        // Update existing peer
-        for (size_t i = 0; i < currently_configured_count; i++) {
-            auto peer = config.get("peers")->get(i);
-            if (peer->get("ski")->asString() == node.txt_ski) {
-                peer->get("port")->updateUint(node.port);
-                if (node.ip_addresses.size() > 0) {
-                    peer->get("ip")->updateString(node.ip_addresses[0].toString());
-                }
-                peer->get("dns_name")->updateString(node.dns_name);
-                peer->get("id")->updateString(node.txt_id);
-                peer->get("wss_path")->updateString(node.txt_wss_path);
-                peer->get("ski")->updateString(node.txt_ski);
-                peer->get("autoregister")->updateBool(node.txt_autoregister);
-                peer->get("model_brand")->updateString(node.txt_brand);
-                peer->get("model_model")->updateString(node.txt_model);
-                peer->get("mode_type")->updateString(node.txt_type);
-                if (peer->get("state")->asEnum<NodeState>() != NodeState::Connected) {
-                    peer->get("state")->updateEnum(NodeState::Discovered);
-                }
-                found = true;
-                break;
-            }
-        }
-        // Add new peer
-        if (!found) {
-            auto peer = config.get("peers")->add();
-            peer->get("ip")->updateString(node.ip_addresses[0].toString());
-            peer->get("port")->updateUint(node.port);
-            peer->get("trusted")->updateBool(node.trusted);
-            peer->get("dns_name")->updateString(node.dns_name);
-            peer->get("id")->updateString(node.txt_id);
-            peer->get("wss_path")->updateString(node.txt_wss_path);
-            peer->get("ski")->updateString(node.txt_ski);
-            peer->get("autoregister")->updateBool(node.txt_autoregister);
-            peer->get("model_brand")->updateString(node.txt_brand);
-            peer->get("model_model")->updateString(node.txt_model);
-            peer->get("mode_type")->updateString(node.txt_type);
-            peer->get("state")->updateEnum(NodeState::Discovered);
-        }
+    auto last_peer = config.get("peers")->count() - 1;
+    if (last_peer>0) {
+        config.get("peers")->removeLast();
     }
+    api.writeConfig("eebus/config", &config);
 }
 
 void EEBus::trace_strln(const char *str, const size_t length)
