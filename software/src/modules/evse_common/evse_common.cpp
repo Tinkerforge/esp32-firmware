@@ -161,6 +161,24 @@ void EvseCommon::pre_setup()
             return "";
         }
     );
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    automation.register_action(
+        AutomationActionID::EVSEChargeMode,
+        Config::Object({
+            {"mode", Config::Enum(ConfigChargeMode::Fast)}
+        }),
+        [this](const Config *cfg) {
+            const String err = api.callCommand("evse/charge_mode_update", Config::ConfUpdateObject{{
+                {"mode", cfg->get("mode")->asEnumUnderlyingType<ConfigChargeMode>()}
+            }});
+            if (!err.isEmpty()) {
+                logger.printfln("Automation couldn't request charge mode change: %s", err.c_str());
+            }
+        },
+        nullptr,
+        false);
+#endif
+
 #endif
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
@@ -482,6 +500,9 @@ void EvseCommon::register_urls()
         shutdown_logged = true;
         backend->set_charging_slot_max_current(CHARGING_SLOT_CHARGE_MANAGER, 0);
     }, 1_s, 1_s);
+
+
+
 #endif
 
     // States

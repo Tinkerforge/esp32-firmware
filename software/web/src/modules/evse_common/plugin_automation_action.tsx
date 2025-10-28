@@ -29,6 +29,7 @@ import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { Collapse } from "react-bootstrap";
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 
 export type EvseAutomationAction = [
     AutomationActionID.SetCurrent,
@@ -212,6 +213,44 @@ function new_led_config(): AutomationAction {
     ];
 }
 
+//#region ChargeModeSwitch
+export type EVSEChargeModeAutomationAction = [
+    AutomationActionID.EVSEChargeMode,
+    {
+        mode: number;
+    },
+];
+
+function get_pm_charge_mode_switch_table_children(action: EVSEChargeModeAutomationAction) {
+    return __("evse.automation.charge_mode_switch_action_text")(action[1].mode);
+}
+
+function get_pm_charge_mode_switch_edit_children(action: EVSEChargeModeAutomationAction, on_action: (action: AutomationAction) => void) {
+    const allowed_modes = API.get("evse/supported_charge_modes");
+    const modes = allowed_modes.map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)] as [string, string]);
+
+    return [
+        <FormRow label={__("evse.automation.charge_mode")}>
+            <InputSelect
+                items={modes}
+                value={action[1].mode.toString()}
+                onValue={(v) => {
+                    on_action(util.get_updated_union(action, {mode: parseInt(v)}));
+                }} />
+        </FormRow>,
+    ];
+}
+
+function new_pm_charge_mode_switch_config(): AutomationAction {
+    return [
+        AutomationActionID.PMChargeModeSwitch,
+        {
+            mode: 1,
+        },
+    ];
+}
+//#endregion
+
 export function init(): InitResult {
     return {
         action_components: {
@@ -228,6 +267,13 @@ export function init(): InitResult {
                 clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
                 get_edit_children: get_led_edit_children,
                 get_table_children: get_led_table_children,
+            },
+            [AutomationActionID.EVSEChargeMode]: {
+                translation_name: () => __("evse.automation.charge_mode_switch"),
+                new_config: new_pm_charge_mode_switch_config,
+                clone_config: (action: AutomationAction) => [action[0], {...action[1]}] as AutomationAction,
+                get_table_children: get_pm_charge_mode_switch_table_children,
+                get_edit_children: get_pm_charge_mode_switch_edit_children,
             },
         },
     };

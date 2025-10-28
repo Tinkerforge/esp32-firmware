@@ -290,6 +290,12 @@ let x = {
                 if (indication_number == 255)
                     return <>schalte die Status-LED für <b>{toLocaleFixed(duration / 1000)} Sekunden</b> {c} <b>{indication_text}</b>.</>;
                 return <>zeige <b>{indication_text}</b> {c} für <b>{toLocaleFixed(duration / 1000)} Sekunden</b> auf der Status-LED.</>;
+            }/*NF*/,
+            "charge_mode_switch": "Fordere Lademodus an",
+            "charge_mode": "Lademodus",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
+                let mode_str = __("cm_networking.status.mode_by_index")(mode);
+                return <>fordere Lademodus <b>{mode_str} an</b>.</>
             }/*NF*/
         },
         "script": {
