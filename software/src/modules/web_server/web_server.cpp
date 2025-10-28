@@ -272,6 +272,11 @@ void WebServer::post_setup()
     }
 #endif
 
+    // Free certificate buffers early to hopefully reduce fragmentation.
+    for (size_t i = 0; i < std::size(certificates); i++) {
+        certificates[i].free();
+    }
+
     const httpd_uri_t handler = {
         .uri = "", // URI can be zero-length because the custom URI matcher won't look at it anyway.
         .method = static_cast<httpd_method_t>(HTTP_ANY),

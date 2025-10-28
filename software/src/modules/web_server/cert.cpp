@@ -146,6 +146,15 @@ void Cert::get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t 
     }
 }
 
+void Cert::free()
+{
+    if (crt != nullptr) crt.reset();
+    if (key != nullptr) key.reset();
+
+    crt_length = 0;
+    key_length = 0;
+}
+
 [[gnu::noinline]]
 bool Cert::generate_cert_and_key(const cert_load_info *load_info)
 {
