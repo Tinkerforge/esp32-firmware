@@ -520,12 +520,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = state.remote_upload_configs.map((cfg, index) => {
             return <Dropdown.Item onClick={() => onDropdownClick(index)}>{remoteAccessConfig.users.find(user => user.id === cfg.user_id)?.email}</Dropdown.Item>
         });
-        sendEmailDropdown = state.remote_upload_configs.length > 0 ? <Dropdown>
-            <Dropdown.Toggle id="dropdown-basic" disabled={state.generation !== GenerationState.Ready}>
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown>
+            <Dropdown.Toggle id="dropdown-basic" disabled={state.generator_state !== GenerationState.Ready}>
                 <span class="mr-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
                 </span>
-                <Spinner animation="border" size="sm" as="span" hidden={state.generation !== GenerationState.ManualRemoteSend}/>
+                <Spinner animation="border" size="sm" as="span" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {sendEmailDropdownItems}

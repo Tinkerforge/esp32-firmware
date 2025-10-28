@@ -151,8 +151,7 @@ class ChargeLogGenerationLockHelper {
 
         ~ChargeLogGenerationLockHelper();
     private:
-        static std::mutex generation_mutex;
-        static bool is_locked;
+        static std::atomic<GenerationState> generation_lock_state;
 };
 
 #include "module_available_end.h"

@@ -71,8 +71,8 @@ static_assert(MAX_CONFIGURED_CHARGELOG_USERS <= 255, "MAX_CONFIGURED_CHARGELOG_U
 // Also update frontend when changing this!
 
 // Define static member variable for ChargeLogGenerationLockHelper
-std::mutex ChargeLogGenerationLockHelper::generation_mutex;
-bool ChargeLogGenerationLockHelper::is_locked = false;
+std::atomic<GenerationState> ChargeLogGenerationLockHelper::generation_lock_state{GenerationState::Ready};
+
 #define CHARGE_RECORD_FILE_COUNT 30
 #define CHARGE_RECORD_MAX_FILE_SIZE 4096
 
@@ -157,7 +157,7 @@ void ChargeTracker::pre_setup()
     state = Config::Object({
         {"tracked_charges", Config::Uint16(0)},
         {"first_charge_timestamp", Config::Uint32(0)},
-        {"generation", Config::Enum(GenerationState::Ready)}
+        {"generator_state", Config::Enum(GenerationState::Ready)}
     });
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
@@ -1872,25 +1872,21 @@ search_done:
 }
 
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
-    std::lock_guard<std::mutex> guard{generation_mutex};
-
-    if (is_locked) {
+    GenerationState expected = GenerationState::Ready;
+    if (!generation_lock_state.compare_exchange_strong(expected, kind)) {
         return nullptr;
     }
-    is_locked = true;
 
     ensure_running_in_main_task([kind]() {
-        charge_tracker.state.get("generation")->updateEnum<GenerationState>(kind);
+        charge_tracker.state.get("generator_state")->updateEnum<GenerationState>(kind);
     });
 
     return std::make_unique<ChargeLogGenerationLockHelper>();
 }
 
 ChargeLogGenerationLockHelper::~ChargeLogGenerationLockHelper() {
-    std::lock_guard<std::mutex> guard{generation_mutex};
-    is_locked = false;
-
     ensure_running_in_main_task([]() {
-        charge_tracker.state.get("generation")->updateEnum<GenerationState>(GenerationState::Ready);
+        charge_tracker.state.get("generator_state")->updateEnum<GenerationState>(GenerationState::Ready);
     });
+    generation_lock_state.store(GenerationState::Ready);
 }

@@ -107,7 +107,7 @@ export type current_charge = current_charge_base & (current_charge_nfc
 export interface state {
     tracked_charges: number;
     first_charge_timestamp: number;
-    generation: GenerationState;
+    generator_state: GenerationState;
 }
 
 export interface remove_all_charges {
