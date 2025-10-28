@@ -32,8 +32,6 @@
 #include "generation_state.enum.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
-#define MAX_RETRY_COUNT 10
-#define BASE_RETRY_DELAY_MINUTES 5
 struct RemoteUploadRequest;
 class ChargeLogGenerationLockHelper;
 
@@ -62,8 +60,8 @@ public:
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
-    void upload_charge_logs(const int8_t retry_count = 0);
-    void start_charge_log_upload_for_config(const uint8_t config_index, const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr);
+    void upload_charge_logs();
+    void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
 #endif
 
     ConfigRoot last_charges;
@@ -99,9 +97,6 @@ struct RemoteUploadRequest {
     /** Index of the remote upload configuration to use (0-based, -1 = all configs) */
     int8_t config_index = 0;
 
-    /** Current retry attempt count (0 = first attempt, incremented on each retry, -1 = no retries) */
-    int8_t retry_count = -1;
-
     /** Total number of configurations available */
     uint8_t config_count = 0;
 
@@ -117,9 +112,6 @@ struct RemoteUploadRequest {
     /** End of the time range to upload, in minutes since Unix epoch */
     uint32_t end_timestamp_min = 0;
 
-    /** Delay before next retry attempt (used for exponential backoff scheduling) */
-    millis_t next_retry_delay = millis_t(0);
-
     /** Language to use for the upload request */
     Language language = Language::German;
 
@@ -131,6 +123,9 @@ struct RemoteUploadRequest {
 
     /** Whether to use format overrides from the struct (true) or read from config (false) */
     bool use_format_overrides = false;
+
+    /** Remote access user UUID for authentication */
+    String remote_access_user_uuid = "";
 
     /** Letterhead for PDF generation */
     std::unique_ptr<char[]> letterhead = nullptr;

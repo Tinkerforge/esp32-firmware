@@ -27,7 +27,6 @@ interface remote_upload_config {
 
 export interface send_charge_log {
     api_not_final_acked: boolean;
-    config_index: number;
     cookie: number;
     user_filter: number;
     start_timestamp_min: number;
@@ -36,6 +35,7 @@ export interface send_charge_log {
     language: Language;
     csv_delimiter: CSVFlavor;
     letterhead?: string;
+    remote_access_user_uuid: string;
 }
 
 export interface upload_result {

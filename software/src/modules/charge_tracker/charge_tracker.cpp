@@ -1056,16 +1056,15 @@ void ChargeTracker::register_urls()
             return request.send_plain(429, "Another charge log generation is already in progress");
         }
 
-
         int user_filter = -2;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
         Language language = Language::German;
         FileType file_type = FileType::PDF;
         int csv_delimiter = (int)CSVFlavor::Excel;
-        uint8_t config_index = 0;
         uint32_t cookie = 0;
         uint32_t remote_upload_config_count = 0;
+        String remote_access_user_uuid;
 
         auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         auto letterhead = letterhead_buf.get();
@@ -1104,11 +1103,15 @@ void ChargeTracker::register_urls()
             uint8_t file_type_val = doc["file_type"];
             file_type = static_cast<FileType>(file_type_val);
             csv_delimiter = doc["csv_delimiter"];
-            config_index = doc["config_index"];
             cookie = doc["cookie"];
 
-            if (!doc.containsKey("config_index") || !doc.containsKey("cookie")) {
-                return request.send_plain(400, "Missing config_index or cookie parameter");
+            if (!doc.containsKey("cookie")) {
+                return request.send_plain(400, "Missing cookie parameter");
+            }
+
+            // Read remote_access_user_uuid from request if provided
+            if (doc.containsKey("remote_access_user_uuid") && !doc["remote_access_user_uuid"].isNull()) {
+                remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
             }
 
             // Handle letterhead for PDF file type
@@ -1138,15 +1141,10 @@ void ChargeTracker::register_urls()
             });
         }
 
-        if (config_index >= remote_upload_config_count) {
-            return request.send_plain(400, "Invalid config_index");
-        }
-
         char *letterhead_ptr = letterhead_buf.release();
         ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
-        task_scheduler.scheduleOnce([this, config_index, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr]() {
-            this->start_charge_log_upload_for_config(
-                config_index,
+        task_scheduler.scheduleOnce([this, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr, remote_access_user_uuid]() {
+                this->start_charge_log_upload_for_user(
                 cookie,
                 user_filter,
                 start_timestamp_min,
@@ -1155,7 +1153,8 @@ void ChargeTracker::register_urls()
                 file_type,
                 static_cast<CSVFlavor>(csv_delimiter),
                 std::unique_ptr<char[]>(letterhead_ptr),
-                std::unique_ptr<ChargeLogGenerationLockHelper>(lock_helper_ptr));
+                std::unique_ptr<ChargeLogGenerationLockHelper>(lock_helper_ptr),
+                remote_access_user_uuid);
         });
         return request.send_plain(200, "Charge-log upload for specific config started");
     });
@@ -1179,7 +1178,7 @@ void ChargeTracker::register_urls()
             uint32_t earliest_send = 0;
             for (const Config &cfg : config.get("remote_upload_configs")) {
                 const uint32_t last_send_minutes = cfg.get("last_upload_timestamp_min")->asUint();
-                if (earliest_send < last_send_minutes) {
+                if (earliest_send > last_send_minutes) {
                     earliest_send = last_send_minutes;
                 }
             }
@@ -1189,8 +1188,8 @@ void ChargeTracker::register_urls()
                 return;
             }
 
-            this->upload_charge_logs(0);
-        }, 1_min, 4_h);
+            this->upload_charge_logs();
+        }, 10_s, 4_h);
         // Delay one minute so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
         // Check only once every four hours, to avoid a stampede event at midnight on the 2nd of a month.
         // Protocols will thus be uploaded between midnight and 4:00 on the 2nd of a month.
@@ -1287,75 +1286,43 @@ static esp_err_t send_binary_chunk(AsyncHTTPSClient &remote_client, const uint8_
 // since this function can block for a long time, it must not be called from the main thread
 void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) {
     logger.printfln("Starting charge-log generation and remote upload...");
-    if (upload_args->generation_lock == nullptr) {
-        esp_system_abort("Charge log generation lock not held during remote upload");
-    }
 
     String charger_uuid;
     String password;
-    String user_uuid;
     String url;
     int cert_id;
-    std::unique_ptr<char[]> letterhead;
-    int user_filter;
-    Language language;
-    FileType file_type = FileType::PDF;
-    CSVFlavor csv_delimiter = CSVFlavor::Excel;
     String filename;
     String display_name;
 
     auto &upload_args_ref = *upload_args;
 
-    auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &user_filter, &language, &upload_args_ref, &file_type, &csv_delimiter, &display_name]()
+    auto ret = task_scheduler.await([this, &filename, &charger_uuid, &password, &url, &cert_id,
+        &upload_args_ref, &display_name]()
     {
-        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args_ref.config_index));
+        if (!upload_args_ref.use_format_overrides) {
+            Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args_ref.config_index));
 
-        // Only use struct values when formats are not overwritten (specific config request), otherwise read from config
-        if (upload_args_ref.use_format_overrides) {
-            language = upload_args_ref.language;
-            file_type = upload_args_ref.file_type;
-            csv_delimiter = upload_args_ref.csv_delimiter;
-            user_filter = upload_args_ref.user_filter;
-        } else {
-            language = charge_log_send->get("language")->asEnum<Language>();
-            file_type = charge_log_send->get("file_type")->asEnum<FileType>();
-            csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
-            user_filter = charge_log_send->get("user_filter")->asInt();
-        }
-        filename = build_filename(((time_t)upload_args_ref.start_timestamp_min) * 60, ((time_t)upload_args_ref.end_timestamp_min) * 60, file_type, language);
+            upload_args_ref.language = charge_log_send->get("language")->asEnum<Language>();
+            upload_args_ref.file_type = charge_log_send->get("file_type")->asEnum<FileType>();
+            upload_args_ref.csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
+            upload_args_ref.user_filter = charge_log_send->get("user_filter")->asInt();
 
-        if (file_type == FileType::PDF) {
-            // Use letterhead from upload_args if provided, otherwise use config
-            if (upload_args_ref.use_format_overrides && upload_args_ref.letterhead) {
-
-                //Deep copy in case sending fails and we need to retry
-                const size_t letterhead_terminated_length = strlen(upload_args_ref.letterhead.get()) + 1;
-                letterhead = heap_alloc_array<char>(letterhead_terminated_length);
-                strncpy(letterhead.get(), upload_args_ref.letterhead.get(), letterhead_terminated_length);
-            } else {
+            if (upload_args_ref.file_type == FileType::PDF) {
                 const String &letterhead_string = charge_log_send->get("letterhead")->asString();
                 const size_t letterhead_terminated_length = letterhead_string.length() + 1;
 
-                letterhead = heap_alloc_array<char>(letterhead_terminated_length);
-                strncpy(letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+                upload_args_ref.letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+                strncpy(upload_args_ref.letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
             }
         }
 
-        const int user_id = charge_log_send->get("user_id")->asInt();
+        filename = build_filename(((time_t)upload_args_ref.start_timestamp_min) * 60, ((time_t)upload_args_ref.end_timestamp_min) * 60, upload_args_ref.file_type, upload_args_ref.language);
 
         const Config *remote_access_config = api.getState("remote_access/config");
 
         charger_uuid = remote_access_config->get("uuid")->asString();
         password = remote_access_config->get("password")->asString();
         cert_id = remote_access_config->get("cert_id")->asInt();
-
-        for (const auto &user : remote_access_config->get("users")) {
-            if (user.get("id")->asUint() == user_id) {
-                user_uuid = user.get("uuid")->asString();
-                break;
-            }
-        }
 
         char sw_name_buf[128];
         StringWriter sw_name(sw_name_buf, std::size(sw_name_buf));
@@ -1376,7 +1343,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         return;
     }
 
-    if (charger_uuid.isEmpty() || password.isEmpty() || user_uuid.isEmpty()) {
+    if (charger_uuid.isEmpty() || password.isEmpty() || upload_args->remote_access_user_uuid.isEmpty()) {
         logger.printfln("Missing remote access credentials.");
         return;
     }
@@ -1388,7 +1355,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     String content_type = "multipart/form-data; boundary=" + boundary;
 
     upload_args->remote_client->set_header("Content-Type", content_type.c_str());
-    const char *lang_header = (language == Language::English) ? "en" : "de";
+    const char *lang_header = (upload_args->language == Language::English) ? "en" : "de";
     upload_args->remote_client->set_header("X-Lang", lang_header);
 
     if (upload_args->remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
@@ -1408,13 +1375,14 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                          "\"user_uuid\":\"%s\","
                          "\"filename\":\"%s\","
                          "\"display_name\":\"%s\","
-                         "\"monthly_send\":false"
+                         "\"monthly_send\":%s"
                          "}\r\n",
                          charger_uuid.c_str(),
                          password.c_str(),
-                         user_uuid.c_str(),
+                         upload_args->remote_access_user_uuid.c_str(),
                          filename.c_str(),
-                         display_name.c_str());
+                         display_name.c_str(),
+                         upload_args->use_format_overrides ? "false" : "true");
 
         upload_args->remote_client->send_chunk(json_part.getPtr(), json_part.getLength());
     }
@@ -1429,25 +1397,25 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         upload_args->remote_client->send_chunk(chargelog_part_header.getPtr(), chargelog_part_header.getLength());
     }
 
-    if (file_type == FileType::PDF) {
-        const int letterhead_lines = read_letterhead_lines(letterhead.get());
+    if (upload_args->file_type == FileType::PDF) {
+        const int letterhead_lines = read_letterhead_lines(upload_args->letterhead.get());
 
         this->generate_pdf(
             [&remote_client = *upload_args->remote_client](const void *buffer, size_t len) -> esp_err_t {
                 return send_binary_chunk(remote_client, static_cast<const uint8_t *>(buffer), len);
             },
-            user_filter,
+            upload_args->user_filter,
             upload_args->start_timestamp_min,
             upload_args->end_timestamp_min,
             rtc.timestamp_minutes(),
-            language, letterhead.get(), letterhead_lines, nullptr);
+            upload_args->language, upload_args->letterhead.get(), letterhead_lines, nullptr);
     } else {
         CSVGenerationParams csv_params;
-        csv_params.user_filter = user_filter;
+        csv_params.user_filter = upload_args->user_filter;
         csv_params.start_timestamp_min = upload_args->start_timestamp_min;
         csv_params.end_timestamp_min = upload_args->end_timestamp_min;
-        csv_params.language = language;
-        csv_params.flavor = csv_delimiter;
+        csv_params.language = upload_args->language;
+        csv_params.flavor = upload_args->csv_delimiter;
         task_scheduler.await([this, &csv_params]() {
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
@@ -1523,11 +1491,15 @@ static void upload_charge_logs_task(void *arg)
     }
 
     // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
-    if (upload_args->config_index == -1) {
+    if (!upload_args->use_format_overrides) {
         for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
             uint32_t last_upload;
-            task_scheduler.await([&last_upload, user_idx]() {
-                last_upload = charge_tracker.config.get("remote_upload_configs")->get(user_idx)->get("last_upload_timestamp_min")->asUint();
+            String user_uuid;
+            task_scheduler.await([&last_upload, &user_uuid, user_idx]() {
+                Config::Wrap upload_config = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
+                last_upload = upload_config->get("last_upload_timestamp_min")->asUint();
+                size_t user_id = static_cast<size_t>(upload_config->get("user_id")->asInt()) - 1;
+                user_uuid = remote_access.config.get("users")->get(user_id)->get("uuid")->asString();
             });
 
             if (!wants_send(t_now / 60, last_upload)) {
@@ -1538,9 +1510,8 @@ static void upload_charge_logs_task(void *arg)
             upload_request->config_index = user_idx;
             upload_request->start_timestamp_min = actual_start_min;
             upload_request->end_timestamp_min = actual_end_min;
-            upload_request->retry_count = upload_args->retry_count;
-            upload_request->next_retry_delay = millis_t{0};
             upload_request->user_filter = upload_args->user_filter;
+            upload_request->remote_access_user_uuid = user_uuid;
             upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
             charge_tracker.send_file(std::move(upload_request));
@@ -1549,11 +1520,8 @@ static void upload_charge_logs_task(void *arg)
 #endif
         }
     } else {
-
         upload_args->start_timestamp_min = actual_start_min;
         upload_args->end_timestamp_min = actual_end_min;
-        upload_args->retry_count = -1;  // Use -1 as "no retries" indicator
-        upload_args->next_retry_delay = millis_t{0};
         upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
 
         charge_tracker.send_file(std::move(upload_args));
@@ -1565,16 +1533,18 @@ static void upload_charge_logs_task(void *arg)
 #if MODULE_WATCHDOG_AVAILABLE()
     watchdog.remove(wd_handle);
 #endif
+
+    // Decunstructors are not called after vTaskDelete, so we must release the pointer here
+    upload_args = nullptr;
     vTaskDelete(NULL); // exit RTOS task
 }
 
-void ChargeTracker::upload_charge_logs(const int8_t retry_count)
+void ChargeTracker::upload_charge_logs()
 {
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
 
     RemoteUploadRequest *args = new RemoteUploadRequest;
     args->config_count = remote_upload_config_count;
-    args->retry_count = retry_count;
     args->config_index = -1; // -1 for all users
     args->user_filter = -3; // Use config default
     args->start_timestamp_min = 0; // Use default last month calculation
@@ -1594,19 +1564,10 @@ void ChargeTracker::upload_charge_logs(const int8_t retry_count)
     }
 }
 
-void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_index, uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock)
+void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
 {
-    uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
-
-    if (config_index >= remote_upload_config_count) {
-        logger.printfln("Invalid config index %u. Only %lu configurations available.", config_index, remote_upload_config_count);
-        return;
-    }
-
     RemoteUploadRequest *task_args = new RemoteUploadRequest;
-    task_args->config_count = remote_upload_config_count;
     task_args->cookie = cookie;
-    task_args->config_index = config_index; // specific config index
     task_args->user_filter = user_filter;
     task_args->start_timestamp_min = start_timestamp_min;
     task_args->end_timestamp_min = end_timestamp_min;
@@ -1616,6 +1577,7 @@ void ChargeTracker::start_charge_log_upload_for_config(const uint8_t config_inde
     task_args->use_format_overrides = true; // Specific config request (config_index != -1)
     task_args->letterhead = std::move(letterhead);
     task_args->generation_lock = std::move(generation_lock);
+    task_args->remote_access_user_uuid = remote_access_user_uuid;
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
 

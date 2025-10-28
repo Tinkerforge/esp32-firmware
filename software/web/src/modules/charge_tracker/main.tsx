@@ -495,7 +495,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </FormRow>
             </>
 
-        const onDropdownClick = async (config_index: number) => {
+        const onDropdownClick = async (remote_access_user_uuid: string) => {
             try {
                 let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
                 let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
@@ -512,13 +512,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     letterhead: state.pdf_letterhead,
                     csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
-                    config_index
+                    remote_access_user_uuid
                 }, () => __("charge_tracker.script.upload_charge_log_failed"));
             } catch {}
         };
         const remoteAccessConfig = API.get('remote_access/config');
-        const sendEmailDropdownItems = state.remote_upload_configs.map((cfg, index) => {
-            return <Dropdown.Item onClick={() => onDropdownClick(index)}>{remoteAccessConfig.users.find(user => user.id === cfg.user_id)?.email}</Dropdown.Item>
+        const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
+            return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
         sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown>
             <Dropdown.Toggle id="dropdown-basic" disabled={state.generator_state !== GenerationState.Ready}>
@@ -620,7 +620,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                 <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} disabled={state.generation !== GenerationState.Ready} onClick={async () => {
+                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 
                             let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
