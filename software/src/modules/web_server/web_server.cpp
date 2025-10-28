@@ -544,6 +544,10 @@ WebServerHandler *WebServer::addHandler(uint16_t port,
         esp_system_abort("Don't register handlers on port 80 or 443. Use port 0 to register web interface handlers.");
     }
 
+    if (boot_stage < BootStage::REGISTER_URLS) {
+        esp_system_abort("Attempted to register URL handler before REGISTER_URLS stage");
+    }
+
     listen_port_handlers_t *port_handlers;
 
     if (port == 0) {
