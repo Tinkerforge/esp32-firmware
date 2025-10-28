@@ -1225,6 +1225,34 @@ void ChargeTracker::register_urls()
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
 
+static void push_upload_result_error(uint32_t cookie, const char *error_msg)
+{
+    char buf[256];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    json.addMemberString("error", error_msg);
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "charge_tracker/upload_result");
+}
+
+static void push_upload_result_success(uint32_t cookie)
+{
+    char buf[128];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    json.addMemberString("error", "");
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "charge_tracker/upload_result");
+}
+
 static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest> upload_args)
 {
     int status = upload_args->remote_client->read_response_status();
@@ -1240,9 +1268,21 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
 
         logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
         upload_args->remote_client->close_chunked_request();
+        
+        // Push success to websocket for manual uploads
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_success(upload_args->cookie);
+        }
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
         upload_args->remote_client->close_chunked_request();
+        
+        // Push error to websocket for manual uploads
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            char error_msg[64];
+            snprintf(error_msg, sizeof(error_msg), "Upload failed with status %d", status);
+            push_upload_result_error(upload_args->cookie, error_msg);
+        }
     }
     return ESP_OK;
 }
@@ -1340,11 +1380,18 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     });
 
     if (ret != TaskScheduler::AwaitResult::Done) {
+        logger.printfln("Failed to await task scheduler for charge log generation");
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to prepare upload (task scheduler timeout)");
+        }
         return;
     }
 
     if (charger_uuid.isEmpty() || password.isEmpty() || upload_args->remote_access_user_uuid.isEmpty()) {
         logger.printfln("Missing remote access credentials.");
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Missing remote access credentials");
+        }
         return;
     }
 
@@ -1360,6 +1407,9 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
 
     if (upload_args->remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
         logger.printfln("Failed to send charge-log");
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to start HTTP request");
+        }
         return;
     }
 

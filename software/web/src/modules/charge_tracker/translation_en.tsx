@@ -112,7 +112,7 @@ let x = {
             "download_charge_log_failed": "Failed to download tracked charges",
             "download_usernames_failed": "Failed to download the usernames used in tracked charges",
             "upload_start_failed": "Failed to start email sending of charge-log",
-            "upload_charge_log_success": "Charge-log sending started successfully",
+            "upload_charge_log_success": "Charge-log sending was successful",
             "upload_charge_log_failed": "Failed to send charge-log",
 
             "save_failed": "Failed to save the charge tracker settings.",

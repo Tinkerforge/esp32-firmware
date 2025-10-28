@@ -210,12 +210,18 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         util.addApiEventListener('charge_tracker/upload_result', () => {
             let upload_result = API.get('charge_tracker/upload_result');
+
+            const result = JSON.parse(JSON.stringify(upload_result)); // deep copy since it would be overridden later otherwise
+            const alertName = "charge-log-upload-" + result.cookie;
             util.add_alert(
-                "charge-log-upload-" + upload_result.cookie,
-                upload_result.error === "" ? "success" : "danger",
-                () => upload_result.error === "" ? __("charge_tracker.script.upload_charge_log_success") : __("charge_tracker.script.upload_charge_log_failed"),
-                () => upload_result.error
+                alertName,
+                result.error === "" ? "success" : "danger",
+                () => result.error === "" ? __("charge_tracker.script.upload_charge_log_success") : __("charge_tracker.script.upload_charge_log_failed"),
+                () => result.error
             );
+            if (result.error === "") {
+                setTimeout(() => util.remove_alert(alertName), 5000);
+            }
         });
 //#endif
 

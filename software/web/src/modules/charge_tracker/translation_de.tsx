@@ -112,7 +112,7 @@ let x = {
             "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen",
             "upload_start_failed": "Email-Versand der aufgezeichneten Ladevorgänge konnte nicht gestartet werden",
-            "upload_charge_log_success": "Ladelog Versand gestartet",
+            "upload_charge_log_success": "Ladelog versenden erfolgreich",
             "upload_charge_log_failed": "Ladelog versenden fehlgeschlagen",
 
             "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen.",
