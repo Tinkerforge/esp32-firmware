@@ -290,6 +290,12 @@ let x = {
                 if (indication_number == 255)
                     return <>turn the status LED <b>{indication_text}</b> {c} for <b>{toLocaleFixed(duration / 1000)} seconds</b>.</>
                 return<>show <b>{indication_text}</b> {c} for <b>{toLocaleFixed(duration / 1000)} seconds</b> on the status LED.</>
+            }/*NF*/,
+            "charge_mode_switch": "Request charge mode",
+            "charge_mode": "Charge mode",
+            "charge_mode_switch_action_text": /*FFN*/(mode: number) => {
+                let mode_str = __("cm_networking.status.mode_by_index")(mode);
+                return <>request charge mode <b>{mode_str}</b>.</>
             }/*NF*/
         },
         "script": {
