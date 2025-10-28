@@ -83,7 +83,9 @@ let x = {
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "next_send": "Next send",
             "never": "Never",
-            "upload_last_month": "Upload last month"
+            "upload_last_month": "Upload last month",
+            "test_send": "Test Send",
+            "sending": "Sending..."
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",
@@ -114,6 +116,7 @@ let x = {
             "upload_start_failed": "Failed to start email sending of charge-log",
             "upload_charge_log_success": "Charge-log sending was successful",
             "upload_charge_log_failed": "Failed to send charge-log",
+            "test_charge_log_upload_started": "Test charge log upload started",
 
             "save_failed": "Failed to save the charge tracker settings.",
             "reboot_content_changed": "Charge tracker settings"

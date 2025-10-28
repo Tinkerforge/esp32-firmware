@@ -34,11 +34,12 @@ interface ItemModalProps extends ModalProps {
     no_text?: string;
     yes_variant?: string;
     yes_text?: string;
+    additionalFooterButtons?: ComponentChildren;
 }
 
 export class ItemModal extends Component<ItemModalProps, any> {
     render(props: ItemModalProps) {
-        let {onCheck, onSubmit, onHide, show, size, title, children, no_variant, no_text, yes_variant, yes_text, ...p} = props;
+        let {onCheck, onSubmit, onHide, show, size, title, children, no_variant, no_text, yes_variant, yes_text, additionalFooterButtons, ...p} = props;
 
         return (
             <Modal size={size ?? "xl"} show={show} onHide={() => onHide()} centered {...p}>
@@ -64,8 +65,9 @@ export class ItemModal extends Component<ItemModalProps, any> {
                     <Modal.Body className="pb-0">
                         {children}
                     </Modal.Body>
-                    {(no_variant && no_text) || (yes_variant && yes_text) ?
+                    {(no_variant && no_text) || (yes_variant && yes_text) || additionalFooterButtons ?
                         <Modal.Footer>
+                            {additionalFooterButtons}
                             {no_variant && no_text ?
                             <Button variant={no_variant} onClick={() => onHide()}>
                                 {no_text}

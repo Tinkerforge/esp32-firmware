@@ -83,7 +83,9 @@ let x = {
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "next_send": "Nächster Versand",
             "never": "Nie",
-            "upload_last_month": "Letzten Monat hochladen"
+            "upload_last_month": "Letzten Monat hochladen",
+            "test_send": "Test-Versand",
+            "sending": "Sende..."
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",
@@ -114,6 +116,7 @@ let x = {
             "upload_start_failed": "Email-Versand der aufgezeichneten Ladevorgänge konnte nicht gestartet werden",
             "upload_charge_log_success": "Ladelog versenden erfolgreich",
             "upload_charge_log_failed": "Ladelog versenden fehlgeschlagen",
+            "test_charge_log_upload_started": "Test-Ladelog-Upload gestartet",
 
             "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen.",
             "reboot_content_changed": "Ladetracker-Einstellungen"

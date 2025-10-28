@@ -38,7 +38,7 @@ import { Table, TableRow } from "../../ts/components/table";
 import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
+import { BatteryCharging, Calendar, Clock, Download, User, List, Send } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
 import { GenerationState } from "./generation_state.enum";
@@ -273,6 +273,20 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 },
                 editTitle: __("charge_tracker.content.charge_log_email_send_edit_modal_title"),
                 onEditGetChildren: () => this.onAddRemoteUploadConfigGetChildren(),
+                editAdditionalFooterButtons: (
+                    <Button
+                        variant="info"
+                        disabled={this.state.new_remote_upload_config.user_id === 0 || this.state.generator_state != GenerationState.Ready}
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            await this.testSendChargeLog();
+                        }}
+                    >
+                        <span class="mr-2"><Send size={16}/></span>
+                        {this.state.generator_state === GenerationState.ManualRemoteSend ? __("charge_tracker.content.sending") : __("charge_tracker.content.test_send")}
+                        {this.state.generator_state === GenerationState.ManualRemoteSend && <Spinner animation="border" size="sm" as="span" class="ml-2"/>}
+                    </Button>
+                ),
                 onRemoveClick: async () => {
                     const newState = this.state.remote_upload_configs.filter((_, i) => i !== index);
                     this.setState({remote_upload_configs: newState});
@@ -303,6 +317,41 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     get_remote_access_user_email(user_id: number, users: API.getType['remote_access/config']['users']): string {
         const user = users.find(u => u.id === user_id);
         return user.email
+    }
+
+    async testSendChargeLog() {
+        try {
+            const config = this.state.new_remote_upload_config;
+            const remote_access_config = API.get("remote_access/config");
+            const user = remote_access_config.users.find(u => u.id === config.user_id);
+
+            // Get last month's time range
+            const now = new Date();
+            const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            startOfLastMonth.setHours(0, 0, 0, 0);
+            const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            endOfLastMonth.setHours(23, 59, 0, 0);
+
+            let start_minutes = Math.floor(startOfLastMonth.getTime() / 1000 / 60);
+            let end_minutes = Math.floor(endOfLastMonth.getTime() / 1000 / 60);
+
+            await API.call("charge_tracker/send_charge_log", {
+                api_not_final_acked: true,
+                language: config.language,
+                start_timestamp_min: start_minutes,
+                end_timestamp_min: end_minutes,
+                user_filter: config.user_filter,
+                file_type: config.file_type,
+                letterhead: config.letterhead,
+                csv_delimiter: config.csv_delimiter,
+                cookie: Math.floor(Math.random() * 0xFFFFFFFF),
+                remote_access_user_uuid: user.uuid
+            }, () => __("charge_tracker.script.upload_charge_log_failed"));
+
+            this.setState({generator_state: GenerationState.ManualRemoteSend});
+            util.add_alert("test-charge-log-send", "info", () => __("charge_tracker.script.test_charge_log_upload_started"), () => "");
+            setTimeout(() => util.remove_alert("test-charge-log-send"), 3000);
+        } catch (err) {}
     }
 
     async onAddRemoteUploadConfigShow() {
@@ -494,6 +543,20 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         onAddShow={() => this.onAddRemoteUploadConfigShow()}
                         onAddGetChildren={() => this.onAddRemoteUploadConfigGetChildren()}
                         onAddSubmit={() => this.onAddRemoteUploadConfigSubmit()}
+                        addAdditionalFooterButtons={
+                            <Button
+                                variant="info"
+                                disabled={this.state.new_remote_upload_config.user_id === 0 || this.state.generator_state != GenerationState.Ready}
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    await this.testSendChargeLog();
+                                }}
+                            >
+                                <span class="mr-2"><Send size={16}/></span>
+                                {this.state.generator_state === GenerationState.ManualRemoteSend ? __("charge_tracker.content.sending") : __("charge_tracker.content.test_send")}
+                                {this.state.generator_state === GenerationState.ManualRemoteSend && <Spinner animation="border" size="sm" as="span" class="ml-2"/>}
+                            </Button>
+                        }
                     />
                 </FormRow>
                 <FormRow label={__("charge_tracker.content.next_send")}>

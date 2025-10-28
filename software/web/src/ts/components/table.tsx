@@ -40,6 +40,7 @@ export interface TableRow {
     onEditCheck?: () => Promise<boolean>;
     onEditSubmit?: () => Promise<void>;
     onEditHide?: () => Promise<void>;
+    editAdditionalFooterButtons?: ComponentChildren;
     onRemoveClick?: () => Promise<boolean>; // return true if row was actually removed, return false otherwise
     onEditStart?: never;
     onEditCommit?: never;
@@ -57,6 +58,7 @@ export interface TableProps {
     onAddCheck?: () => Promise<boolean>;
     onAddSubmit?: () => Promise<void>;
     onAddHide?: () => Promise<void>;
+    addAdditionalFooterButtons?: ComponentChildren;
     tableTill?: "xs" | "sm" | "md" | "lg" | "xl";
     nestingDepth?: number;
     onAddStart?: never;
@@ -320,6 +322,7 @@ export class Table extends Component<TableProps, TableState> {
                     title={props.addTitle}
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.add")}
+                    additionalFooterButtons={props.addAdditionalFooterButtons}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
                     size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} >{/* "md" doesn't exist, but is just the normal size, the cast make it ignore "md"*/}
@@ -354,6 +357,7 @@ export class Table extends Component<TableProps, TableState> {
                     title={state.showEditModal !== null ? props.rows[state.showEditModal].editTitle : ''}
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.apply")}
+                    additionalFooterButtons={state.showEditModal !== null ? props.rows[state.showEditModal].editAdditionalFooterButtons : undefined}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
                     size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} >{/* "md" doesn't exist, but is just the normal size, the cast make it ignore "md"*/}
