@@ -2146,9 +2146,14 @@ int RemoteAccess::stop_ping() {
 }
 
 bool RemoteAccess::is_connected_local_ip(const IPAddress &ip) {
-    if (connection_state.get(ip[2])->get("state")->asUint8() == 2) {
+    if (connection_state.count() < static_cast<size_t>(ip[2] + 1)) {
+        return false;
+    }
+
+    if (connection_state.get(ip[2])->get("state")->asUint8() == 2 && ip[0] == 10 && ip[1] == 123 && ip[3] == 3) {
         return true;
     }
+
     return false;
 }
 
