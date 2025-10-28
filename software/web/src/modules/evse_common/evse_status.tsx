@@ -173,7 +173,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                 {__("evse.status.start_charging")}
             </Button>
 
-        let charge_mode_buttons = !API.get("evse/management_enabled") ? undefined :
+        let charge_mode_buttons = !API.get("evse/management_enabled").enabled ? undefined :
             <FormRow label={__("evse.status.mode")}>
                 <ChargeModeButtons
                     mode={API.get("evse/charge_mode").mode}
