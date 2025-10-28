@@ -28,12 +28,12 @@ except KeyboardInterrupt:
     sys.exit(1)
 finally:
     end = time.monotonic()
-    elasped = int(end - begin)
+    elapsed = int(end - begin)
 
-    print(f'ELASPED: {datetime.timedelta(seconds=elasped)}')
+    print(f'ELAPSED: {datetime.timedelta(seconds=elapsed)}')
 
     with open('pio_timed.log', 'a') as f:
-        f.write(f'{datetime.datetime.now().isoformat()} {elasped}\n')
+        f.write(f'{datetime.datetime.now().isoformat()} {elapsed}\n')
 
 if monitor:
     try:
