@@ -23,6 +23,10 @@
 
 void GenericTCPClientConnector::connect_internal()
 {
+    if (connected_client != nullptr) {
+        return;
+    }
+
     client->connect(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number) {
         if (result == TFGenericTCPClientConnectResult::Connected) {
