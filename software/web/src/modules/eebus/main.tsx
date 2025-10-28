@@ -106,7 +106,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         columnValues: [
                                             peer.model_model,
                                             peer.model_brand,
-                                            peer.dns_name,
+                                            (peer.dns_name && peer.dns_name.length >= 2) ? peer.dns_name : peer.ip,
                                             peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
                                         fieldValues: [
                                             peer.model_model,
