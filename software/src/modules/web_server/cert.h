@@ -47,6 +47,7 @@ public:
     bool load_external_with_internal_fallback(const cert_load_info *load_info);
 
     void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out);
+    void free();
 
 private:
     static bool load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, uint16_t *length);
