@@ -1810,7 +1810,7 @@ def main():
                         if len(line) == 0:
                             continue
 
-                        m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(\d+))?\s*(?://\s*(.*))?)$', line)
+                        m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(-?\d+))?\s*(?://\s*(.*))?)$', line)
 
                         if m == None:
                             print(f'Error: Malformed line enum file "{filename}" in backend {mod_path}: {line}')
