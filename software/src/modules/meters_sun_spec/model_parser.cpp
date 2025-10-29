@@ -30,10 +30,20 @@
 
 #include "gcc_warnings.h"
 
-IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, uint16_t model_id, DCPortType dc_port_type)
+IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type)
 {
     if (model_id == 160) {
-        return new MetersSunSpecParser160(slot);
+        uint16_t max_mppt_count = UINT16_MAX;
+
+        // Fronius GEN24 Plus maps its battery charing/discharging at MPPT 3 and 4 that need to be
+        // ignored. check for " GEN24 " to catch "Primo GEN24 5.0" as well as "Symo GEN24 10.0"
+        if (strcmp(manufacturer_name, "Fronius") == 0 && strstr(model_name, " GEN24 ") != nullptr) {
+            logger.printfln_meter("Restricting Fronius GEN24 Plus MPPT module count to 2");
+
+            max_mppt_count = 2;
+        }
+
+        return new MetersSunSpecParser160(slot, max_mppt_count);
     }
 
     if (model_id == 714) {

@@ -19,6 +19,8 @@
 
 #include "model_parser_160.h"
 
+#include <algorithm>
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools/float.h"
@@ -142,11 +144,11 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
 
     const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
 
-    cached_mppt_count = block1->N;
+    cached_mppt_count = std::min(block1->N, max_mppt_count);
 
     if (cached_mppt_count > MODEL_160_MAX_MPPT_COUNT) {
         // FIXME: remove this limitation that is caused by the 125 register read limit
-        logger.printfln_meter("SunSpec model 160 has %zu MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
+        logger.printfln_meter("SunSpec model 160 has %u MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
 
         cached_mppt_count = MODEL_160_MAX_MPPT_COUNT;
     }
@@ -165,7 +167,7 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
     }
 
     const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
-    size_t mppt_count = block1->N;
+    uint16_t mppt_count = std::min(block1->N, max_mppt_count);
 
     if (mppt_count > cached_mppt_count) {
         mppt_count = cached_mppt_count;
@@ -179,7 +181,7 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
     values[4] = NAN;
     values[5] = NAN;
 
-    for (size_t mppt_idx = 0; mppt_idx < mppt_count; ++mppt_idx) {
+    for (uint16_t mppt_idx = 0; mppt_idx < mppt_count; ++mppt_idx) {
         const struct Model160_MPPT_s *block1_mppt = static_cast<const struct Model160_MPPT_s *>(static_cast<const void *>(&register_data[1][MODEL_160_REGISTER_COUNT + mppt_idx * MODEL_160_MPPT_REGISTER_COUNT]));
 
         // FIXME: maybe use DCSt to exclude disabled modules?
