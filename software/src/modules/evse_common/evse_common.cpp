@@ -183,7 +183,7 @@ void EvseCommon::pre_setup()
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
     charge_mode = Config::Object({
-        {"mode", Config::Uint8(0)}
+        {"mode", Config::Enum(ConfigChargeMode::Default)}
     });
 
     supported_charge_modes = Config::Tuple({});
