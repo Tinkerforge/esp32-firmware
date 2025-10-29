@@ -490,7 +490,7 @@ specs = [
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 37610,
                 'value_type': 'S16',
-                'scale_factor': -0.1,
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Battery 1 Temperature [0.1 °C]',
