@@ -122,7 +122,9 @@ private:
     bool is_huawei_emma_pv_meter() const;
     bool is_solax_string_inverter_meter() const;
     bool is_solax_string_inverter_pv_meter() const;
+    bool is_fox_ess_h3_smart_hybrid_inverter_battery_meter() const;
     bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
+    bool is_fox_ess_h3_pro_hybrid_inverter_battery_meter() const;
     bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
     bool is_sma_hybrid_inverter_battery_meter() const;
     bool is_varta_flex_grid_meter() const;
@@ -429,6 +431,13 @@ private:
         // Fox ESS H3 Smart hybrid inverter
         struct {
             FoxESSH3SmartHybridInverterVirtualMeter virtual_meter;
+            uint16_t bms_1_connection_status;
+            float bms_1_voltage;
+            float bms_1_current;
+            float bms_1_temperature;
+            float bms_1_soc;
+            float bms_1_design_energy;
+            uint16_t bms_2_connection_status;
             float pv1_voltage;
             float pv1_current;
             float pv1_power;
@@ -446,6 +455,13 @@ private:
         // Fox ESS H3 Pro hybrid inverter
         struct {
             FoxESSH3ProHybridInverterVirtualMeter virtual_meter;
+            uint16_t bms_1_connection_status;
+            float bms_1_voltage;
+            float bms_1_current;
+            float bms_1_temperature;
+            float bms_1_soc;
+            float bms_1_design_energy;
+            uint16_t bms_2_connection_status;
             float pv1_voltage;
             float pv1_current;
             float pv1_power;
