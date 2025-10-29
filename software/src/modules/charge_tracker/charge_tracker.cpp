@@ -1161,6 +1161,12 @@ void ChargeTracker::register_urls()
 
     if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
+            // In case someone deletes all remote upload configs without restarting, we also stop trying to send.
+            if (config.get("remote_upload_configs")->count() == 0) {
+                task_scheduler.cancel(task_scheduler.currentTaskId());
+                return;
+            }
+
             // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
             if (this->currentlyCharging()) {
                 return;
@@ -1261,22 +1267,22 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
         upload_args.release();
         return ESP_ERR_HTTP_EAGAIN;
     } else if (status == 200) {
-        task_scheduler.await([&upload_args]() {
-            charge_tracker.config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args->config_index))->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
-            API::writeConfig("charge_tracker/config", &charge_tracker.config);
-        });
-
         logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
         upload_args->remote_client->close_chunked_request();
-        
+
         // Push success to websocket for manual uploads
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             push_upload_result_success(upload_args->cookie);
+        } else {
+            task_scheduler.await([&upload_args]() {
+                charge_tracker.config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args->config_index))->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+                API::writeConfig("charge_tracker/config", &charge_tracker.config);
+            });
         }
     } else {
         logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
         upload_args->remote_client->close_chunked_request();
-        
+
         // Push error to websocket for manual uploads
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             char error_msg[64];
@@ -1542,14 +1548,21 @@ static void upload_charge_logs_task(void *arg)
 
     // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
     if (!upload_args->use_format_overrides) {
+        const Config *remote_access_config = api.getState("remote_access/config");
         for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
             uint32_t last_upload;
             String user_uuid;
-            task_scheduler.await([&last_upload, &user_uuid, user_idx]() {
+
+            task_scheduler.await([&last_upload, &user_uuid, user_idx, remote_access_config]() {
                 Config::Wrap upload_config = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
                 last_upload = upload_config->get("last_upload_timestamp_min")->asUint();
                 size_t user_id = static_cast<size_t>(upload_config->get("user_id")->asInt()) - 1;
-                user_uuid = remote_access.config.get("users")->get(user_id)->get("uuid")->asString();
+                for (const Config &user_cfg : remote_access_config->get("users")) {
+                    if (user_cfg.get("id")->asUint8() == static_cast<int>(user_id)) {
+                        user_uuid = user_cfg.get("uuid")->asString();
+                        break;
+                    }
+                }
             });
 
             if (!wants_send(t_now / 60, last_upload)) {
@@ -1624,7 +1637,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     task_args->language = language;
     task_args->file_type = file_type;
     task_args->csv_delimiter = csv_delimiter;
-    task_args->use_format_overrides = true; // Specific config request (config_index != -1)
+    task_args->use_format_overrides = true;
     task_args->letterhead = std::move(letterhead);
     task_args->generation_lock = std::move(generation_lock);
     task_args->remote_access_user_uuid = remote_access_user_uuid;
