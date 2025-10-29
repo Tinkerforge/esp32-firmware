@@ -1495,6 +1495,19 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
     update_registration_state(RegistrationState::Success);
 }
 
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+static std::vector<int> find_charge_tracker_configs(const uint8_t user_id) {
+    std::vector<int> result;
+    for (size_t i = 0; i < charge_tracker.config.get("remote_upload_configs")->count(); i++) {
+        Config::Wrap user = charge_tracker.config.get("remote_upload_configs")->get(i);
+        if (user->get("user_id")->asInt() == user_id) {
+            result.push_back(static_cast<int>(i));
+        }
+    }
+    return result;
+}
+#endif
+
 void RemoteAccess::resolve_management()
 {
     if (!this->management_request_allowed) {
@@ -1627,6 +1640,12 @@ void RemoteAccess::resolve_management()
                 for (uint8_t i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                     remove_key(user_id, i);
                 }
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+                const std::vector<int> ct_indices = find_charge_tracker_configs(user_id);
+                for (const int ct_idx : ct_indices) {
+                    charge_tracker.config.get("remote_upload_configs")->remove(static_cast<size_t>(ct_idx));
+                }
+#endif
                 users->remove(idx);
                 changed = true;
             } else if (user_email != "null") {
@@ -1637,6 +1656,10 @@ void RemoteAccess::resolve_management()
 
         if (changed) {
             api.writeConfig("remote_access/config", &config);
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+            api.writeConfig("charge_tracker/config", &charge_tracker.config);
+#endif
         }
 
         this->management_request_done = true;
