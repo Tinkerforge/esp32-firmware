@@ -28,7 +28,7 @@ let x = {
             "external_control_unavailable": "Externe Steuerung (EVCC) – keine kontrollierte Wallbox für Phasenumschaltung",
             "external_control_notification": "Externe Steuerung für die Phasenumschaltung ist aktiv. Dadurch werden alle Einstellungen im Zusammenhang mit PV-Überschussladen deaktiviert.",
 
-            "header_excess_charging": "Photovoltaik-Überschussladen",
+            "header_excess_charging": "PV-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
             "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>Das <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>Tutorial PV-Überschussladen</a> hilft bei der Einrichtung.</p> : undefined/*NF*/,
             "enable_excess_charging_desc": "Regelt die kontrollierten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
