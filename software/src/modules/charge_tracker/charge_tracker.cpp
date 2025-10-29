@@ -1109,10 +1109,10 @@ void ChargeTracker::register_urls()
                 return request.send_plain(400, "Missing cookie parameter");
             }
 
-            // Read remote_access_user_uuid from request if provided
-            if (doc.containsKey("remote_access_user_uuid") && !doc["remote_access_user_uuid"].isNull()) {
-                remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
+            if (!doc.containsKey("remote_access_user_uuid")) {
+                return request.send_plain(400, "Missing remote_access_user_uuid parameter");
             }
+            remote_access_user_uuid = String(doc["remote_access_user_uuid"].as<const char*>());
 
             // Handle letterhead for PDF file type
             bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
@@ -1485,44 +1485,33 @@ static void upload_charge_logs_task(void *arg)
 
     std::unique_ptr<RemoteUploadRequest> upload_args{static_cast<RemoteUploadRequest *>(arg)};
 
-    const time_t t_now = time(nullptr);
-
-    tm last_month_start;
-    localtime_r(&t_now, &last_month_start);
-
-    tm last_month_end;
-    last_month_end = last_month_start;
-
-    last_month_start.tm_mday = 1;
-    if (last_month_start.tm_mon == 0) {
-        last_month_start.tm_mon = 11;
-        last_month_start.tm_year--;
-    } else {
-        last_month_start.tm_mon--;
-    }
-    last_month_start.tm_hour = 0;
-    last_month_start.tm_min = 0;
-    last_month_start.tm_sec = 0;
-    last_month_start.tm_isdst = -1;
-
-    last_month_end.tm_mday = 1;
-    last_month_end.tm_hour = 0;
-    last_month_end.tm_min = 0;
-    last_month_end.tm_sec = 0;
-    last_month_end.tm_isdst = -1;
-
-    // Use provided time range if specified, otherwise calculate last month
-    uint32_t actual_start_min, actual_end_min;
-    if (upload_args->start_timestamp_min != 0 || upload_args->end_timestamp_min != 0) {
-        actual_start_min = upload_args->start_timestamp_min;
-        actual_end_min = upload_args->end_timestamp_min;
-    } else {
-        actual_start_min = static_cast<uint32_t>( mktime(&last_month_start)    / 60);
-        actual_end_min   = static_cast<uint32_t>((mktime(&last_month_end) - 1) / 60);
-    }
-
-    // If specific_config_index is -1, upload for all configs, otherwise upload for specific config
     if (!upload_args->use_format_overrides) {
+        const time_t t_now = time(nullptr);
+
+        tm last_month_start;
+        localtime_r(&t_now, &last_month_start);
+
+        tm last_month_end;
+        last_month_end = last_month_start;
+
+        last_month_start.tm_mday = 1;
+        if (last_month_start.tm_mon == 0) {
+            last_month_start.tm_mon = 11;
+            last_month_start.tm_year--;
+        } else {
+            last_month_start.tm_mon--;
+        }
+        last_month_start.tm_hour = 0;
+        last_month_start.tm_min = 0;
+        last_month_start.tm_sec = 0;
+        last_month_start.tm_isdst = -1;
+
+        last_month_end.tm_mday = 1;
+        last_month_end.tm_hour = 0;
+        last_month_end.tm_min = 0;
+        last_month_end.tm_sec = 0;
+        last_month_end.tm_isdst = -1;
+
         const Config *remote_access_config = api.getState("remote_access/config");
         for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
             uint32_t last_upload;
@@ -1546,8 +1535,8 @@ static void upload_charge_logs_task(void *arg)
 
             auto upload_request = std::make_unique<RemoteUploadRequest>();
             upload_request->config_index = user_idx;
-            upload_request->start_timestamp_min = actual_start_min;
-            upload_request->end_timestamp_min = actual_end_min;
+            upload_request->start_timestamp_min = static_cast<uint32_t>(mktime(&last_month_start)) / 60;
+            upload_request->end_timestamp_min = static_cast<uint32_t>(mktime(&last_month_end)) / 60;
             upload_request->user_filter = upload_args->user_filter;
             upload_request->remote_access_user_uuid = user_uuid;
             upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
@@ -1558,8 +1547,6 @@ static void upload_charge_logs_task(void *arg)
 #endif
         }
     } else {
-        upload_args->start_timestamp_min = actual_start_min;
-        upload_args->end_timestamp_min = actual_end_min;
         upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
 
         charge_tracker.send_file(std::move(upload_args));
