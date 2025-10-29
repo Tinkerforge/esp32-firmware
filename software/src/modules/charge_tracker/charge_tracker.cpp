@@ -1201,31 +1201,6 @@ void ChargeTracker::register_urls()
         // Protocols will thus be uploaded between midnight and 4:00 on the 2nd of a month.
     }
 
-    api.addCommand("charge_tracker/reset_last_send", Config::Null(), {}, [this](String &errmsg) {
-        timeval tv;
-        bool is_synced = rtc.clock_synced(&tv);
-        if (!is_synced) {
-            errmsg = "RTC not synced";
-            return;
-        }
-
-        tm now;
-        localtime_r(&tv.tv_sec, &now);
-
-        // Set to last month
-        if (now.tm_mon == 0) {
-            now.tm_mon = 11;
-            now.tm_year--;
-        } else {
-            now.tm_mon--;
-        }
-
-        time_t last_month_time = mktime(&now);
-        uint32_t last_month_minutes = last_month_time / 60;
-
-        config.get("last_upload_timestamp_min")->updateUint(last_month_minutes);
-        API::writeConfig("charge_tracker/config", &config);
-    }, true);
 #endif
 }
 
