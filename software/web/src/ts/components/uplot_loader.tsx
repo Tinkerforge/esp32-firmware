@@ -34,17 +34,23 @@ interface UplotLoaderProps {
     fullscreen_mode?: 'button' | 'click';
 }
 
-export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: boolean}> {
+interface UplotLoaderState {
+    show_fullscreen: boolean;
+}
+
+export class UplotLoader extends Component<UplotLoaderProps, UplotLoaderState> {
     no_data_ref = createRef();
     loading_ref = createRef();
     fullscreen_chart_ref = createRef();
 
     // Close modal on back button
     popstate_handler: ((event: PopStateEvent) => void) | null = null;
+
     override componentDidMount() {
-        this.popstate_handler = () => { this.setState({show_fullscreen: false})};
+        this.popstate_handler = () => {this.setState({show_fullscreen: false})};
         window.addEventListener('popstate', this.popstate_handler);
     }
+
     override componentWillUnmount() {
         if (this.popstate_handler) {
             window.removeEventListener('popstate', this.popstate_handler);
@@ -54,7 +60,10 @@ export class UplotLoader extends Component<UplotLoaderProps, {show_fullscreen: b
 
     constructor() {
         super();
-        this.setState({show_fullscreen: false});
+
+        this.state = {
+            show_fullscreen: false,
+        };
     }
 
     set_loading() {
