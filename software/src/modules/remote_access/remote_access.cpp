@@ -1447,6 +1447,12 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
         return;
     }
 
+    if (resp_doc["charger_uuid"] == "null" || resp_doc["charger_password"] == "null" || resp_doc["management_pub"] == "null") {
+        update_registration_state(RegistrationState::Error, String("Missing fields in registration response"));
+        this->request_cleanup();
+        return;
+    }
+
     const char *charger_password = resp_doc["charger_password"];
     const char *management_pub = resp_doc["management_pub"];
 
@@ -1474,6 +1480,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     new_user->get("email")->updateString(user_config.get("email")->asString());
     new_user->get("id")->updateUint(1);
     new_user->get("public_key")->updateString(public_key);
+    new_user->get("uuid")->updateString(resp_doc["user_id"]);
 
     API::writeConfig("remote_access/config", &this->config);
     update_registration_state(RegistrationState::Success);
@@ -1487,10 +1494,27 @@ void RemoteAccess::parse_add_user(std::queue<WgKey> &key_cache, const String &pu
         store_key(next_user_id, i, key.priv.c_str(), key.psk.c_str(), key.pub.c_str());
     }
 
+    StaticJsonDocument<256> resp_doc;
+    DeserializationError error = deserializeJson(resp_doc, response_body.begin(), response_body.length());
+
+    if (error) {
+        char err_str[64];
+        snprintf(err_str, sizeof(err_str), "Error while deserializing add user response: %s", error.c_str());
+        update_registration_state(RegistrationState::Error, String(err_str));
+        this->request_cleanup();
+        return;
+    }
+
+    if (resp_doc["user_id"] == "null") {
+        update_registration_state(RegistrationState::Error, String("User ID missing in response"));
+        this->request_cleanup();
+        return;
+    }
     auto new_user = this->config.get("users")->add();
     new_user->get("email")->updateString(email);
     new_user->get("id")->updateUint(next_user_id);
     new_user->get("public_key")->updateString(pub_key);
+    new_user->get("uuid")->updateString(resp_doc["user_id"]);
     api.writeConfig("remote_access/config", &this->config);
     update_registration_state(RegistrationState::Success);
 }
