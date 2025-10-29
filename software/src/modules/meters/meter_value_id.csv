@@ -385,7 +385,7 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 384,Temperature,Heat Sink,,,,°C,1,Temperature,heat sink,Temperatur,Kühlkörper,,,,,,
 385,Temperature,Transformer,,,,°C,1,Temperature,transformer,Temperatur,Transformator,,,,,,
 386,Fan Speed,,,,,rpm,1,Fan speed,,Lüfterdrehzahl,,,,,RPM,NONE,
-387,State Of Charge,,,,,%,1,State of charge,,Batterieladestand,,,,96.6.1,SO_C,NONE,
+387,State Of Charge,,,,,%,1,State of charge,,Ladestand,,,,96.6.1,SO_C,NONE,
 388,Electric Charge,,,,,Ah,3,Transported electric charge,,Transportierte elektrische Ladung,,,,,,,Gibt der SDM630 aus
 389,Current,,DC,Import,,A,3,DC current (draw),,Gleichstrom (Bezug),,,,,,,Für Inverter
 390,Current,,DC,Export,,A,3,DC current (feed),,Gleichstrom (Einspeisung),,,,,,,Für Inverter
