@@ -21,7 +21,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Component, ComponentChild, Fragment } from "preact";
+import { h, Component, ComponentChild, Fragment, toChildArray } from "preact";
 import { useState } from "preact/hooks";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
@@ -99,16 +99,9 @@ interface ChargeManagerStatusState {
 function with_timespan(fn: (timespan: string) => string, timestamp: number) {
     const now = API.get('info/keep_alive').uptime;
     if (timestamp < now) {
-        console.log("timestamp:", timestamp, "now:", now, "formatted:", util.format_timespan_ms(now - timestamp));
-        return fn(" Elapsed for " + util.format_timespan_ms(now - timestamp));
+        return fn(__("charge_manager.script.until_alloc"));
     }
-    return fn(util.format_timespan_ms(timestamp - now));
-}
-
-function phase_to_string(phase: number) {
-    if (phase == 0)
-        return 'PV';
-    return 'L' + phase;
+    return fn(__("charge_manager.script.for_timespan")(util.format_timespan_ms(timestamp - now)));
 }
 
 function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
@@ -126,7 +119,7 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
         case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
             return __("charge_manager.script.zpd_yes_rotated_for_higher_prio");
         case ZeroPhaseDecisionTag.YesPhaseOverload:
-            return __("charge_manager.script.zpd_yes_phase_overload")(phase_to_string(d0[1][0]), d0[1][1]);
+            return __("charge_manager.script.zpd_yes_phase_overload")(d0[1][1], d0[1][0]);
         case ZeroPhaseDecisionTag.YesPVExcessOverload:
             return __("charge_manager.script.zpd_yes_pv_excess_overload")(d0[1]);
         case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
@@ -143,9 +136,9 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
         case OnePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan(__("charge_manager.script.opd_yes_welcome_charge_until"), d1[1]);
         case OnePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan(ts => __("charge_manager.script.opd_no_phase_minimum")(ts, phase_to_string(d1[1][3]), d1[1][1], d1[1][2]), d1[1][0]);
+            return with_timespan(ts => __("charge_manager.script.opd_no_phase_minimum")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoPhaseImprovement:
-            return  with_timespan(ts => __("charge_manager.script.opd_no_phase_improvement")(ts, phase_to_string(d1[1][3]), d1[1][1], d1[1][2]), d1[1][0]);
+            return  with_timespan(ts => __("charge_manager.script.opd_no_phase_improvement")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoForced3pUntil:
             return with_timespan(__("charge_manager.script.opd_no_force_3p_until"), d1[1]);
         case OnePhaseDecisionTag.NoFixed3p:
@@ -168,9 +161,9 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
         case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan(__("charge_manager.script.tpd_yes_welcome_charge_until"), d3[1]);
         case ThreePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_minimum")(ts, phase_to_string(d3[1][3]), d3[1][1], d3[1][2]), d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_minimum")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoPhaseImprovement:
-            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_improvement")(ts, phase_to_string(d3[1][3]), d3[1][1], d3[1][2]), d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_improvement")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoForced1pUntil:
             return with_timespan(__("charge_manager.script.tpd_no_force_1p_until"), d3[1]);
         case ThreePhaseDecisionTag.NoFixed1p:
@@ -213,15 +206,86 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
     }
 }
 
+function get_timestamp_d0(d: ZeroPhaseDecision): number {
+    switch (d[0]) {
+        case ZeroPhaseDecisionTag.None:
+        case ZeroPhaseDecisionTag.YesChargeModeOff:
+        case ZeroPhaseDecisionTag.YesNotActive:
+        case ZeroPhaseDecisionTag.YesRotatedForB1:
+        case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
+        case ZeroPhaseDecisionTag.YesPhaseOverload:
+        case ZeroPhaseDecisionTag.YesPVExcessOverload:
+            return Number.MAX_SAFE_INTEGER;
+
+        case ZeroPhaseDecisionTag.YesWaitingForRotation:
+        case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
+            return d[1];
+        case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
+            return d[1][1];
+    }
+}
+
+function get_timestamp_d1(d: OnePhaseDecision): number {
+    switch (d[0]) {
+        case OnePhaseDecisionTag.None:
+        case OnePhaseDecisionTag.YesSwitchedToFixed1p:
+        case OnePhaseDecisionTag.YesNormal:
+        case OnePhaseDecisionTag.YesWakingUp:
+        case OnePhaseDecisionTag.NoFixed3p:
+            return Number.MAX_SAFE_INTEGER;
+
+
+        case OnePhaseDecisionTag.YesWelcomeChargeUntil:
+        case OnePhaseDecisionTag.NoForced3pUntil:
+        case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+            return d[1];
+
+        case OnePhaseDecisionTag.NoPhaseMinimum:
+        case OnePhaseDecisionTag.NoPhaseImprovement:
+            return d[1][1];
+    }
+}
+
+function get_timestamp_d3(d: ThreePhaseDecision): number {
+    switch (d[0]) {
+        case ThreePhaseDecisionTag.None:
+        case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
+        case ThreePhaseDecisionTag.YesNormal:
+        case ThreePhaseDecisionTag.YesUnknownRotSwitchable:
+        case ThreePhaseDecisionTag.YesWakingUp:
+        case ThreePhaseDecisionTag.NoFixed1p:
+            return Number.MAX_SAFE_INTEGER;
+
+        case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
+        case ThreePhaseDecisionTag.NoForced1pUntil:
+        case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
+            return d[1];
+
+        case ThreePhaseDecisionTag.NoPhaseMinimum:
+        case ThreePhaseDecisionTag.NoPhaseImprovement:
+            return d[1][1];
+    }
+}
+
+function get_timestamp_dc(d: CurrentDecision): number {
+    switch (d[0]) {
+        case CurrentDecisionTag.None:
+        case CurrentDecisionTag.Minimum:
+        case CurrentDecisionTag.EnableNotCharging:
+        case CurrentDecisionTag.PhaseLimit:
+        case CurrentDecisionTag.Requested:
+        case CurrentDecisionTag.Fair:
+        case CurrentDecisionTag.GuaranteedPV:
+        case CurrentDecisionTag.FastRampUp:
+        case CurrentDecisionTag.SupportedByCharger:
+        case CurrentDecisionTag.LeftOver:
+            return Number.MAX_SAFE_INTEGER;
+    }
+}
+
+
 function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): [ComponentChild[], ComponentChild] {
-     //if (x.s == CASState.NoVehicle)
-        //return ["", ""];
-
-    // Creates a sparse array
-    let descs = Array(4);
-
-    if (x.dc[0] != CurrentDecisionTag.None)
-        descs[3] = <div>Current: {current_desc_to_text(x.dc)}</div>;
+    let decs: [ZeroPhaseDecision, OnePhaseDecision, ThreePhaseDecision] = [undefined, undefined, undefined];
 
     let details = [<div>Off: {zero_phase_desc_to_text(x.d0)}</div>,
                    <div>1p: {one_phase_desc_to_text(x.d1)}</div>,
@@ -244,7 +308,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case ZeroPhaseDecisionTag.YesPhaseOverload:
                 case ZeroPhaseDecisionTag.YesPVExcessOverload:
                 case ZeroPhaseDecisionTag.YesWaitingForRotation:
-                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    decs[0] = x.d0;
                     break;
             }
             switch (x.d1[0]) {
@@ -261,7 +325,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case OnePhaseDecisionTag.NoPhaseImprovement:
                 case OnePhaseDecisionTag.NoForced3pUntil:
                 case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
-                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    decs[1] = x.d1;
                     break;
             }
             switch (x.d3[0]) {
@@ -278,7 +342,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case ThreePhaseDecisionTag.NoPhaseImprovement:
                 case ThreePhaseDecisionTag.NoForced1pUntil:
                 case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
-                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    decs[2] = x.d3;
                     break;
             }
             break;
@@ -298,7 +362,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
 
                 case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
                 case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
-                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    decs[0] = x.d0;
                     break;
             }
             switch (x.d1[0]) {
@@ -308,14 +372,14 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case OnePhaseDecisionTag.NoPhaseImprovement:
                 case OnePhaseDecisionTag.NoForced3pUntil:
                 case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+                case OnePhaseDecisionTag.YesNormal:
                     // Hide
                     break;
 
                 case OnePhaseDecisionTag.YesSwitchedToFixed1p:
-                case OnePhaseDecisionTag.YesNormal:
                 case OnePhaseDecisionTag.YesWelcomeChargeUntil:
                 case OnePhaseDecisionTag.YesWakingUp:
-                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    decs[1] = x.d1;
                     break;
             }
             switch (x.d3[0]) {
@@ -332,7 +396,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case ThreePhaseDecisionTag.NoPhaseImprovement:
                 case ThreePhaseDecisionTag.NoForced1pUntil:
                 case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
-                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    decs[2] = x.d3;
                     break;
             }
             break;
@@ -352,7 +416,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
 
                 case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
                 case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
-                    descs[0] = <div>Off: {zero_phase_desc_to_text(x.d0)}</div>;
+                    decs[0] = x.d0;
                     break;
             }
             switch (x.d1[0]) {
@@ -369,7 +433,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case OnePhaseDecisionTag.NoPhaseImprovement:
                 case OnePhaseDecisionTag.NoForced3pUntil:
                 case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
-                    descs[1] = <div>1p: {one_phase_desc_to_text(x.d1)}</div>;
+                    decs[1] = x.d1;
                     break;
             }
             switch (x.d3[0]) {
@@ -379,22 +443,46 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
                 case ThreePhaseDecisionTag.NoForced1pUntil:
                 case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
                 case ThreePhaseDecisionTag.NoFixed1p:
+                case ThreePhaseDecisionTag.YesNormal:
                     // Hide
                     break;
 
                 case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
-                case ThreePhaseDecisionTag.YesNormal:
                 case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
                 case ThreePhaseDecisionTag.YesWakingUp:
-                    descs[2] = <div>3p: {three_phase_desc_to_text(x.d3)}</div>;
+                    decs[2] = x.d3;
                     break;
             }
             break;
     }
 
-    // De-sparse array
-    descs = descs.filter(d => d !== undefined);
-    return [descs, details];
+    let timestamps = [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
+
+    if (decs[0] !== undefined)
+        timestamps[0] = get_timestamp_d0(decs[0])
+    if (decs[1] !== undefined)
+        timestamps[1] = get_timestamp_d1(decs[1])
+    if (decs[2] !== undefined)
+        timestamps[2] = get_timestamp_d3(decs[2])
+
+    let dec_tups = decs.map((d, i) => {return {d: d, i:i, ts:timestamps[i]}}).filter(tup => tup.d !== undefined)
+
+    let idx = 0;
+
+    if (dec_tups.some(tup => tup.ts < Number.MAX_SAFE_INTEGER)) {
+        idx = dec_tups.reduce((acc, cur) => cur.ts < acc.ts ? cur : acc).i;
+
+    } else if (dec_tups.length > 0) {
+        idx = dec_tups[0].i;
+
+    } else {
+        return [[], details];
+    }
+
+    let d = [details[idx]];
+    if (x.dc[0] != CurrentDecisionTag.None)
+        d = d.concat(details[3]);
+    return [d, details];
 }
 
 function CMStatusCharger(props: {
