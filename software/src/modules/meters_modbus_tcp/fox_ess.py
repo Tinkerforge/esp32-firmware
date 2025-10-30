@@ -1002,7 +1002,8 @@ specs = [
             {
                 'name': 'PV Power Total [W]',
                 'value_id': 'PowerPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
+                'start_address': 39118,
+                'value_type': 'U32BE',
             },
             {
                 'name': 'PV Power Total Signed [W]',

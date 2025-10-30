@@ -2923,17 +2923,11 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV1Current) {
             fox_ess_h3_smart_hybrid_inverter.pv1_current = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV1Power) {
-            fox_ess_h3_smart_hybrid_inverter.pv1_power = value;
-        }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV2Voltage) {
             fox_ess_h3_smart_hybrid_inverter.pv2_voltage = value;
         }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV2Current) {
             fox_ess_h3_smart_hybrid_inverter.pv2_current = value;
-        }
-        else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV2Power) {
-            fox_ess_h3_smart_hybrid_inverter.pv2_power = value;
         }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV3Voltage) {
             fox_ess_h3_smart_hybrid_inverter.pv3_voltage = value;
@@ -2941,17 +2935,11 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV3Current) {
             fox_ess_h3_smart_hybrid_inverter.pv3_current = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV3Power) {
-            fox_ess_h3_smart_hybrid_inverter.pv3_power = value;
-        }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV4Voltage) {
             fox_ess_h3_smart_hybrid_inverter.pv4_voltage = value;
         }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV4Current) {
             fox_ess_h3_smart_hybrid_inverter.pv4_current = value;
-        }
-        else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PV4Power) {
-            fox_ess_h3_smart_hybrid_inverter.pv4_power = value;
 
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
@@ -2983,15 +2971,11 @@ void MeterModbusTCP::parse_next()
                               + fox_ess_h3_smart_hybrid_inverter.pv3_current
                               + fox_ess_h3_smart_hybrid_inverter.pv4_current;
 
-            float power_sum = fox_ess_h3_smart_hybrid_inverter.pv1_power
-                            + fox_ess_h3_smart_hybrid_inverter.pv2_power
-                            + fox_ess_h3_smart_hybrid_inverter.pv3_power
-                            + fox_ess_h3_smart_hybrid_inverter.pv4_power;
-
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
-            meters.update_value(slot, table->index[read_index + 3], power_sum);
-            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PVPowerTotal) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
     else if (is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter()) {
@@ -3169,17 +3153,11 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV1Current) {
             fox_ess_h3_pro_hybrid_inverter.pv1_current = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV1Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv1_power = value;
-        }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV2Voltage) {
             fox_ess_h3_pro_hybrid_inverter.pv2_voltage = value;
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV2Current) {
             fox_ess_h3_pro_hybrid_inverter.pv2_current = value;
-        }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV2Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv2_power = value;
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV3Voltage) {
             fox_ess_h3_pro_hybrid_inverter.pv3_voltage = value;
@@ -3187,17 +3165,11 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV3Current) {
             fox_ess_h3_pro_hybrid_inverter.pv3_current = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV3Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv3_power = value;
-        }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV4Voltage) {
             fox_ess_h3_pro_hybrid_inverter.pv4_voltage = value;
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV4Current) {
             fox_ess_h3_pro_hybrid_inverter.pv4_current = value;
-        }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV4Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv4_power = value;
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV5Voltage) {
             fox_ess_h3_pro_hybrid_inverter.pv5_voltage = value;
@@ -3205,17 +3177,11 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV5Current) {
             fox_ess_h3_pro_hybrid_inverter.pv5_current = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV5Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv5_power = value;
-        }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV6Voltage) {
             fox_ess_h3_pro_hybrid_inverter.pv6_voltage = value;
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV6Current) {
             fox_ess_h3_pro_hybrid_inverter.pv6_current = value;
-        }
-        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PV6Power) {
-            fox_ess_h3_pro_hybrid_inverter.pv6_power = value;
 
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
@@ -3259,17 +3225,11 @@ void MeterModbusTCP::parse_next()
                               + fox_ess_h3_pro_hybrid_inverter.pv5_current
                               + fox_ess_h3_pro_hybrid_inverter.pv6_current;
 
-            float power_sum = fox_ess_h3_pro_hybrid_inverter.pv1_power
-                            + fox_ess_h3_pro_hybrid_inverter.pv2_power
-                            + fox_ess_h3_pro_hybrid_inverter.pv3_power
-                            + fox_ess_h3_pro_hybrid_inverter.pv4_power
-                            + fox_ess_h3_pro_hybrid_inverter.pv5_power
-                            + fox_ess_h3_pro_hybrid_inverter.pv6_power;
-
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
-            meters.update_value(slot, table->index[read_index + 3], power_sum);
-            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PVPowerTotal) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
     else if (is_sma_hybrid_inverter_battery_meter()) {
