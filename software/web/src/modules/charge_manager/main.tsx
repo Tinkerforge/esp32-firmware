@@ -48,6 +48,7 @@ import { CurrentDecision } from "./current_decision.union";
 import { CurrentDecisionTag } from "./current_decision_tag.enum";
 import { CASState } from "./cas_state.enum";
 import { CASError } from "./cas_error.enum";
+import { FormSeparator } from "ts/components/form_separator";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -596,6 +597,40 @@ function CMStatusCharger(props: {
             </div>
 }
 
+function render_allowed() {
+    return util.render_allowed()
+         && API.get("charge_manager/config").enable_charge_manager
+         && API.get("charge_manager/config").chargers.length != 0;
+}
+
+export function ChargeManagerHeading() {
+    if (!render_allowed())
+        return <StatusSection name="charge_manager_heading" />;
+
+    return <StatusSection name="charge_manager_heading">
+        <FormSeparator heading={__("charge_manager.status.charge_manager")}/>
+    </StatusSection>
+}
+
+export function ChargeManagerModeButtons() {
+    if (!render_allowed())
+        return <StatusSection name="charge_manager_mode_buttons" />;
+
+    let current_mode = API.get("power_manager/charge_mode").mode
+    let modes = API.get("charge_manager/charge_modes")
+
+    return <StatusSection name="charge_manager_mode_buttons">
+        <FormRow label={__("charge_manager.status.mode")}>
+            <ChargeModeButtons
+                mode={current_mode}
+                supportedModes={API.get("charge_manager/supported_charge_modes")}
+                setMode={mode => API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
+                modeEnabled={modes.some(m => m != current_mode)}
+            />
+        </FormRow>
+    </StatusSection>
+}
+
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
     constructor() {
         super();
@@ -618,14 +653,14 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
     }
 
     render(props: {}, state: Readonly<ChargeManagerStatusState>) {
-        if (!util.render_allowed()
-         || !state.config.enable_charge_manager
-         || state.config.chargers.length == 0)
+        if (!render_allowed())
             return <StatusSection name="charge_manager" />;
 
+        let eco_enabled = false;
+
 //#if MODULE_ECO_AVAILABLE
-        let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
-        let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
+        // Even if the charge plan is disabled, the eco module can decide to charge if the electricity price is under a threshold
+        eco_enabled = API.get("eco/config").enable
 //#endif
         const default_mode = API.get("power_manager/config").default_mode;
         const charge_modes = API.get("charge_manager/charge_modes");
@@ -633,7 +668,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         let cards = state.state.chargers.map((c, i) =>
             <CMStatusCharger
-                show_eco_chart={show_eco_chart}
+                show_eco_chart={eco_enabled && charge_modes[i] >= ConfigChargeMode.Eco && charge_modes[i] <= ConfigChargeMode.EcoMinPV}
                 uptime={uptime}
                 charge_manager_state={state.state.state}
                 default_mode={default_mode}
@@ -648,25 +683,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
         let row_count = Math.ceil(cards.length / 2);
 
-        let current_mode = API.get("power_manager/charge_mode").mode
-        let modes = API.get("charge_manager/charge_modes")
-        // Make sure every mode button is clickable if not all chargers have the same mode.
-        if (!modes.every(m => m == modes[0])) {
-            current_mode = ConfigChargeMode.Default;
-        } else {
-            current_mode = modes[0];
-        }
-
         return <StatusSection name="charge_manager">
-            <FormRow label={__("charge_manager.status.mode")}>
-                <ChargeModeButtons
-                    mode={current_mode}
-                    supportedModes={API.get("charge_manager/supported_charge_modes")}
-                    setMode={mode => API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
-                />
-            </FormRow>
 
-            {controls_only_self && API.get_unchecked("power_manager/config")?.enabled ? null :
+            {state.state.state != 2 ? null :
                 <FormRow label={__("charge_manager.status.charge_manager")}>
                     <IndicatorGroup
                         style="width: 100%"

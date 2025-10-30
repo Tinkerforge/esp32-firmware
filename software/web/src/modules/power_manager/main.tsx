@@ -39,6 +39,7 @@ import { BatteryPriority } from "./battery_priority.enum";
 import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Sun } from "react-feather";
 import { get_allowed_charge_modes } from "modules/charge_manager/main";
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 
 const METER_SLOT_BATTERY_NO_BATTERY = 255;
 
@@ -197,8 +198,10 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         if (!util.render_allowed())
             return <SubPage name="pv_excess_settings" />;
 
-        let mode_list: StringStringTuple[] = get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
-                                             .map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)]);
+        let mode_list: StringStringTuple[] = [[ConfigChargeMode.Default.toString(), __("power_manager.content.default_mode_persist")]]
+
+        mode_list.concat(get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
+                                             .map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)]));
 
         let meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
         for (let i = 0; i < meter_slots.length; i++) {

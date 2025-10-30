@@ -179,6 +179,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                     mode={API.get("evse/charge_mode").mode}
                     supportedModes={API.get("evse/supported_charge_modes")}
                     setMode={mode => API.save('evse/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"))}
+                    modeEnabled={false}
                 />
             </FormRow>
 

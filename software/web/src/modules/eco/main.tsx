@@ -393,8 +393,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
         const charge_mode = API.get('power_manager/charge_mode').mode;
 
         const visible = API.get('charge_manager/config').enable_charge_manager
-                     && API.get('eco/config').enable
-                     && charge_mode >= ConfigChargeMode.Eco && charge_mode <= ConfigChargeMode.EcoMinPV;
+                     && API.get('eco/config').enable;
 
         let cpy = {...state.charge_plan, time: this.get_date_from_minutes(state.charge_plan.time)};
 

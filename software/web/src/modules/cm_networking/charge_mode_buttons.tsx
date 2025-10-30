@@ -5,33 +5,44 @@ import { ButtonGroup, Button } from "react-bootstrap";
 import { CheckCircle, Circle } from "react-feather";
 import { ConfigChargeMode } from "./config_charge_mode.enum";
 
-function ChargeModeButton(props: {current_mode: ConfigChargeMode, disabled?: boolean, mode: ConfigChargeMode, name: string, setMode: (x: ConfigChargeMode) => void}) {
-    const selected = props.current_mode == props.mode;
-    const disabled = props.disabled;
+/*
+selected disabled   variant   clickable   symbol
+    0       0       primary     yes     Circle
+    0       1       secondary   no      Circle
+    1       0       success     yes     Circle
+    1       1       success     no      CheckCircle
+*/
+
+function ChargeModeButton(props: {selected: boolean, disabled: boolean, mode: ConfigChargeMode, name: string, setMode: (x: ConfigChargeMode) => void}) {
     return <Button
         style="display: flex;align-items: center;justify-content: center;"
         className="m-1 rounded-left rounded-right"
-        variant={selected ? "success" : (disabled ? "secondary" : "primary")}
-        disabled={disabled || selected}
+        variant={props.selected ? "success" : (props.disabled ? "secondary" : "primary")}
+        disabled={props.disabled}
         onClick={() => props.setMode(props.mode)}>
-        {selected ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
+        {(props.selected && props.disabled) ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
     </Button>
 }
 
-export function ChargeModeButtons(props: {mode: ConfigChargeMode, setMode: (x: ConfigChargeMode) => void, supportedModes: readonly ConfigChargeMode[]}) {
-    let {mode, setMode, supportedModes} = props;
+export function ChargeModeButtons(props: {mode: ConfigChargeMode, setMode: (x: ConfigChargeMode) => void, supportedModes: readonly ConfigChargeMode[], modeEnabled: boolean}) {
+    const {mode, setMode, supportedModes, modeEnabled} = props;
 
     const all_buttons = [
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.Off}      name={__("cm_networking.status.mode_off")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.PV}       name={__("cm_networking.status.mode_pv")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.Min}      name={__("cm_networking.status.mode_min")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.MinPV}    name={__("cm_networking.status.mode_min_pv")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.Eco}      name={__("cm_networking.status.mode_eco")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.EcoPV}    name={__("cm_networking.status.mode_eco_pv")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.EcoMin}   name={__("cm_networking.status.mode_eco_min")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.EcoMinPV} name={__("cm_networking.status.mode_eco_min_pv")}/>,
-        <ChargeModeButton setMode={setMode} current_mode={mode} mode={ConfigChargeMode.Fast}     name={__("cm_networking.status.mode_fast")}/>
-    ];
+        ConfigChargeMode.Off,
+        ConfigChargeMode.PV,
+        ConfigChargeMode.Min,
+        ConfigChargeMode.MinPV,
+        ConfigChargeMode.Eco,
+        ConfigChargeMode.EcoPV,
+        ConfigChargeMode.EcoMin,
+        ConfigChargeMode.EcoMinPV,
+        ConfigChargeMode.Fast,
+    ].map(m =>
+        <ChargeModeButton mode={m}
+                          selected={m == mode}
+                          disabled={supportedModes.indexOf(m) < 0 || (m == mode && !modeEnabled) }
+                          setMode={setMode}
+                          name={__("cm_networking.status.mode_by_index")(m)}/>);
 
     let modes = supportedModes.slice();
 
