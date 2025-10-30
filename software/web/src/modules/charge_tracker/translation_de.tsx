@@ -16,8 +16,8 @@ let x = {
             "charge_log_file": "Ladelog",
             "download": "Ladelog herunterladen",
             "download_desc": "",
-            "download_btn": "Ladelog als CSV herunterladen",
-            "download_btn_pdf": "Ladelog als PDF herunterladen",
+            "download_btn": "Ladelog herunterladen",
+            "download_btn_pdf": "Ladelog herunterladen",
 
             "pdf_letterhead": "PDF-Briefkopf",
             "pdf_letterhead_muted": "",
@@ -79,14 +79,14 @@ let x = {
             "charge_log_email_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_email_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
             "charge_log_email_send_edit_modal_title": "E-Mail-Versandkonfiguration bearbeiten",
-            "charge_log_email_send_to_user": "Sende Ladelog an Benutzer",
+            "charge_log_email_send_to_user": "E-Mail senden an",
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "next_send": "Nächster Versand",
             "never": "Nie",
             "upload_last_month": "Letzten Monat hochladen",
             "test_send": "Test-Versand",
             "sending": "Sende...",
-            "charge_log_email_send_config_help": "Der E-Mail-Versand der Ladelogs wird jeweils am 1. des Monats durchgeführt, sobald kein Ladevorgang aktiv ist. Die Karenzzeit beträgt 4 Stunden."
+            "charge_log_email_send_config_help": "Der E-Mail-Versand der Ladelogs wird jeweils am 1. des Monats durchgeführt, sobald kein Ladevorgang aktiv ist."
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",

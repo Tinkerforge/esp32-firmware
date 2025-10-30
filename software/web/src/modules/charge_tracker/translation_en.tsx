@@ -16,8 +16,8 @@ let x = {
             "charge_log_file": "charge-log",
             "download": "Download charge log",
             "download_desc": "",
-            "download_btn": "Download charge log as CSV",
-            "download_btn_pdf": "Download charge log as PDF",
+            "download_btn": "Download charge log",
+            "download_btn_pdf": "Download charge log",
 
             "pdf_letterhead": "PDF letterhead",
             "pdf_letterhead_muted": "",
@@ -79,14 +79,14 @@ let x = {
             "charge_log_email_send_config": "Email send configuration",
             "charge_log_email_send_add_modal_title": "Add email send configuration",
             "charge_log_email_send_edit_modal_title": "Edit email send configuration",
-            "charge_log_email_send_to_user": "Send charge log via email",
+            "charge_log_email_send_to_user": "Send via email to",
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "next_send": "Next send",
             "never": "Never",
             "upload_last_month": "Upload last month",
             "test_send": "Test Send",
             "sending": "Sending...",
-            "charge_log_email_send_config_help": "The email sending of the charge logs is performed on the 1st of each month when no charging process is active. The grace period is 4 hours."
+            "charge_log_email_send_config_help": "The email sending of the charge logs is performed on the 1st of each month when no charging process is active."
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",
