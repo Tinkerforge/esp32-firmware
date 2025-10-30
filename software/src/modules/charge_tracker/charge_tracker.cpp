@@ -1521,9 +1521,9 @@ static void upload_charge_logs_task(void *arg)
             task_scheduler.await([&last_upload, &user_uuid, user_idx, remote_access_config]() {
                 Config::Wrap upload_config = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
                 last_upload = upload_config->get("last_upload_timestamp_min")->asUint();
-                size_t user_id = static_cast<size_t>(upload_config->get("user_id")->asInt()) - 1;
+                size_t user_id = static_cast<size_t>(upload_config->get("user_id")->asInt());
                 for (const Config &user_cfg : remote_access_config->get("users")) {
-                    if (user_cfg.get("id")->asUint8() == static_cast<int>(user_id)) {
+                    if (user_cfg.get("id")->asUint8() == static_cast<uint8_t>(user_id)) {
                         user_uuid = user_cfg.get("uuid")->asString();
                         break;
                     }
