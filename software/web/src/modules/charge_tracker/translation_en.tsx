@@ -14,10 +14,10 @@ let x = {
         "content": {
             "charge_tracker": "Charge Tracker",
             "charge_log_file": "charge-log",
-            "download": "Download charge log",
+            "download": "Download charge-log",
             "download_desc": "",
-            "download_btn": "Download charge log",
-            "download_btn_pdf": "Download charge log",
+            "download_btn": "Download charge-log",
+            "download_btn_pdf": "Download charge-log",
 
             "pdf_letterhead": "PDF letterhead",
             "pdf_letterhead_muted": "",
@@ -86,7 +86,7 @@ let x = {
             "upload_last_month": "Upload last month",
             "test_send": "Test Send",
             "sending": "Sending...",
-            "charge_log_email_send_config_help": "The email sending of the charge logs is performed on the 1st of each month when no charging process is active."
+            "charge_log_email_send_config_help": "Email sending provides the ability to send the charge-logs on the 1st of each month to remote access users. Due to technical limitations, the charge-logs are not end-to-end encrypted."
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",

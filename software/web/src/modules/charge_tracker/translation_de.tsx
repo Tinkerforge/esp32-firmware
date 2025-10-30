@@ -86,7 +86,7 @@ let x = {
             "upload_last_month": "Letzten Monat hochladen",
             "test_send": "Test-Versand",
             "sending": "Sende...",
-            "charge_log_email_send_config_help": "Der E-Mail-Versand der Ladelogs wird jeweils am 1. des Monats durchgeführt, sobald kein Ladevorgang aktiv ist."
+            "charge_log_email_send_config_help": "Der E-Mail-Versand bietet die Möglichkeit, die Ladelogs jeweils am 1. des Monats an Fernzugriffsbenutzer zu senden. Die Ladelogs sind aufgrund Technischer Einschränkungen nicht Ende-zu-Ende verschlüsselt."
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",
