@@ -947,6 +947,8 @@ void RemoteAccess::register_urls()
             https_client = std::unique_ptr<AsyncHTTPSClient>{new AsyncHTTPSClient(true)};
         }
 
+        update_registration_state(RegistrationState::InProgress);
+
         https_client->set_header("Content-Type", "application/json");
         auto next_stage = [this, key_cache = std::move(key_cache), pub_key = std::move(pub_key), next_user_id, email = std::move(email)](const Config &/*cfg*/) mutable {
             this->parse_add_user(key_cache, pub_key, email, next_user_id);
