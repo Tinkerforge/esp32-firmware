@@ -74,18 +74,10 @@ void PowerManager::pre_setup()
         {"guaranteed_power", Config::Uint(1380, 0, 22080)}, // in watt
         {"cloud_filter_mode", Config::Uint(CLOUD_FILTER_MEDIUM, CLOUD_FILTER_OFF, CLOUD_FILTER_STRONG)},
     }), [](const Config &cfg, ConfigSource source) -> String {
-        if (cfg.get("default_mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
-            return "Default mode 4 not allowed!";
-
         const bool excess_charging_enable = cfg.get("excess_charging_enable")->asBool();
 
-        if (cfg.get("phase_switching_mode")->asUint() == 3) { // external control
-            if (excess_charging_enable) {
-                return "Can't enable excess charging when external control is enabled for phase switching.";
-            }
-            if (cfg.get("default_mode")->asEnum<ConfigChargeMode>() != ConfigChargeMode::Fast) {
-                return "Can't select any charging mode besides 'Fast' when external control is enabled for phase switching.";
-            }
+        if (cfg.get("phase_switching_mode")->asUint() == PHASE_SWITCHING_EXTERNAL_CONTROL && excess_charging_enable) {
+            return "Can't enable excess charging when external control is enabled for phase switching.";
         }
 
         if (excess_charging_enable) {
