@@ -184,15 +184,15 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Battery Discharge Energy Total [0.1 kWh]',
-                'value_id': 'EnergyDCDischarge',
+                'name': 'Battery Charge Energy Total [0.1 kWh]',
+                'value_id': 'EnergyDCCharge',
                 'start_address': 32003,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Battery Charge Energy Total [0.1 kWh]',
-                'value_id': 'EnergyDCCharge',
+                'name': 'Battery Discharge Energy Total [0.1 kWh]',
+                'value_id': 'EnergyDCDischarge',
                 'start_address': 32006,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -532,25 +532,9 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.01,
-                'variants': ['Smart'],
-            },
-            {
-                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.1,
-                'variants': ['Pro'],
-            },
-            {
                 'name': 'Total Charge Energy  [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCCharge',
-                'start_address': 39609,
+                'start_address': 39605,
                 'value_type': 'U32BE',
                 'scale_factor': 0.01,
                 'variants': ['Smart'],
@@ -558,6 +542,22 @@ specs = [
             {
                 'name': 'Total Charge Energy  [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCCharge',
+                'start_address': 39605,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 39609,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
+                'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -626,25 +626,9 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.01,
-                'variants': ['Smart'],
-            },
-            {
-                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.1,
-                'variants': ['Pro'],
-            },
-            {
                 'name': 'Total Charge Energy  [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCCharge',
-                'start_address': 39609,
+                'start_address': 39605,
                 'value_type': 'U32BE',
                 'scale_factor': 0.01,
                 'variants': ['Smart'],
@@ -652,6 +636,22 @@ specs = [
             {
                 'name': 'Total Charge Energy  [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCCharge',
+                'start_address': 39605,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 39609,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -754,25 +754,9 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.01,
-                'variants': ['Smart'],
-            },
-            {
-                'name': 'Total Discharge Energy  [0.1 kWh]',
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 39605,
-                'value_type': 'U32BE',
-                'scale_factor': 0.1,
-                'variants': ['Pro'],
-            },
-            {
                 'name': 'Total Charge Energy  [0.01 kWh]',
                 'value_id': 'EnergyDCCharge',
-                'start_address': 39609,
+                'start_address': 39605,
                 'value_type': 'U32BE',
                 'scale_factor': 0.01,
                 'variants': ['Smart'],
@@ -780,6 +764,22 @@ specs = [
             {
                 'name': 'Total Charge Energy  [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
+                'start_address': 39605,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.01 kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 39609,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Total Discharge Energy  [0.1 kWh]',
+                'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
