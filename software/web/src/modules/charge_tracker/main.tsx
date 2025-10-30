@@ -554,7 +554,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             >
                                 <span class="mr-2"><Send size={16}/></span>
                                 {this.state.generator_state === GenerationState.ManualRemoteSend ? __("charge_tracker.content.sending") : __("charge_tracker.content.test_send")}
-                                {this.state.generator_state === GenerationState.ManualRemoteSend && <Spinner animation="border" size="sm" as="span" class="ml-2"/>}
+                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={this.state.generator_state !== GenerationState.ManualRemoteSend}/>
                             </Button>
                         }
                     />
@@ -594,8 +594,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 <span class="mr-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
                 </span>
-                <Mail />
-                <Spinner animation="border" size="sm" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
+                    <Mail />
+                <Spinner animation="border" size="sm" className="ml-2" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {sendEmailDropdownItems}
