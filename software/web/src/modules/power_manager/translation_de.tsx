@@ -34,6 +34,7 @@ let x = {
             "enable_excess_charging_desc": "Regelt die kontrollierten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart verwendet",
+            "default_mode_persist": "Unverändert",
             "meter_slot_grid_power": "Stromzähler",
             "meter_slot_grid_power_muted": "typischerweise am Netzanschluss",
             "meter_slot_grid_power_none": "Kein Stromzähler konfiguriert",

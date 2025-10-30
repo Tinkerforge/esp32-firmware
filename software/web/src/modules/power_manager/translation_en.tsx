@@ -34,6 +34,7 @@ let x = {
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after reboot",
+            "default_mode_persist": "Unchanged",
             "meter_slot_grid_power": "Power meter",
             "meter_slot_grid_power_muted": "typically at the grid connection",
             "meter_slot_grid_power_none": "No power meter configured",
