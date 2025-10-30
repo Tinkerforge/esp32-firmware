@@ -63,7 +63,7 @@ void PowerManager::pre_setup()
         {"enabled", Config::Bool(false)},
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
-        {"default_mode", Config::Enum(ConfigChargeMode::Fast)},
+        {"default_mode", Config::Enum(ConfigChargeMode::Default)},
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
         {"battery_mode", Config::Enum(BatteryPriority::PreferChargers)}, // FIXME: for API stability reasons this member cannot be renamed to battery_priority
