@@ -122,9 +122,13 @@ private:
     bool is_huawei_emma_pv_meter() const;
     bool is_solax_string_inverter_meter() const;
     bool is_solax_string_inverter_pv_meter() const;
-    bool is_fox_ess_h3_smart_hybrid_inverter_battery_meter() const;
+    bool is_fox_ess_h3_smart_hybrid_inverter_battery_1_meter() const;
+    bool is_fox_ess_h3_smart_hybrid_inverter_battery_2_meter() const;
+    bool is_fox_ess_h3_smart_hybrid_inverter_battery_1_and_2_meter() const;
     bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
-    bool is_fox_ess_h3_pro_hybrid_inverter_battery_meter() const;
+    bool is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter() const;
+    bool is_fox_ess_h3_pro_hybrid_inverter_battery_2_meter() const;
+    bool is_fox_ess_h3_pro_hybrid_inverter_battery_1_and_2_meter() const;
     bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
     bool is_sma_hybrid_inverter_battery_meter() const;
     bool is_varta_flex_grid_meter() const;

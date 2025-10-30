@@ -1006,10 +1006,22 @@ bool MeterModbusTCP::is_solax_string_inverter_pv_meter() const
         && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::PV;
 }
 
-bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_meter() const
+bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_1_meter() const
 {
     return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
-        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery;
+        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery1;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_2_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
+        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery2;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_1_and_2_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
+        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery1And2;
 }
 
 bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const
@@ -1018,10 +1030,22 @@ bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const
         && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::PV;
 }
 
-bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_meter() const
+bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter() const
 {
     return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
-        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery;
+        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery1;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_2_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
+        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery2;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_1_and_2_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
+        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery1And2;
 }
 
 bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const
@@ -2724,77 +2748,167 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
-    else if (is_fox_ess_h3_smart_hybrid_inverter_battery_meter()) {
-        if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1ConnectionStatus) {
+    else if (is_fox_ess_h3_smart_hybrid_inverter_battery_1_meter()) {
+        if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1ConnectionStatus) {
             fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status = c16.u;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1Voltage) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1Voltage) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1Current) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1Temperature) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1SoC) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS1DesignEnergy) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::BMS2ConnectionStatus) {
+            fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::TotalDischargeEnergy) {
+            // this is the combined discharge energy of both batteries, only show if battery 2 is offline
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status != 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1Address::TotalChargeEnergy) {
+            // this is the combined charge energy of both batteries, only show if battery 2 is offline
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status != 0) {
+                value = NAN;
+            }
+        }
+    }
+    else if (is_fox_ess_h3_smart_hybrid_inverter_battery_2_meter()) {
+        if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2ConnectionStatus) {
+            fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2Voltage) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2Current) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2Temperature) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2SoC) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS2DesignEnergy) {
+            if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::BMS1ConnectionStatus) {
+            fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::TotalDischargeEnergy) {
+            // this is the combined discharge energy of both batteries, only show if battery 1 is offline
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status != 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery2Address::TotalChargeEnergy) {
+            // this is the combined charge energy of both batteries, only show if battery 1 is offline
+            if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status != 0) {
+                value = NAN;
+            }
+        }
+    }
+    else if (is_fox_ess_h3_smart_hybrid_inverter_battery_1_and_2_meter()) {
+        if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1ConnectionStatus) {
+            fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1Voltage) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_smart_hybrid_inverter.bms_1_voltage = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1Current) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1Current) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_smart_hybrid_inverter.bms_1_current = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1Temperature) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1Temperature) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_smart_hybrid_inverter.bms_1_temperature = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1SoC) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1SoC) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_smart_hybrid_inverter.bms_1_soc = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS1DesignEnergy) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS1DesignEnergy) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_smart_hybrid_inverter.bms_1_design_energy = value;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2ConnectionStatus) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2ConnectionStatus) {
             fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status = c16.u;
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2Voltage) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2Voltage) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_smart_hybrid_inverter.bms_1_voltage, value);
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2Current) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2Current) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_sum(fox_ess_h3_smart_hybrid_inverter.bms_1_current, value);
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2Temperature) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2Temperature) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_smart_hybrid_inverter.bms_1_temperature, value);
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2SoC) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2SoC) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_smart_hybrid_inverter.bms_1_soc, value);
         }
-        else if (register_start_address == FoxESSH3SmartHybridInverterBatteryAddress::BMS2DesignEnergy) {
+        else if (register_start_address == FoxESSH3SmartHybridInverterBattery1And2Address::BMS2DesignEnergy) {
             if (fox_ess_h3_smart_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
@@ -2880,77 +2994,167 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
-    else if (is_fox_ess_h3_pro_hybrid_inverter_battery_meter()) {
-        if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1ConnectionStatus) {
+    else if (is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter()) {
+        if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1ConnectionStatus) {
             fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status = c16.u;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1Voltage) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1Voltage) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1Current) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1Temperature) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1SoC) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS1DesignEnergy) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::BMS2ConnectionStatus) {
+            fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::TotalDischargeEnergy) {
+            // this is the combined discharge energy of both batteries, only show if battery 2 is offline
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status != 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1Address::TotalChargeEnergy) {
+            // this is the combined charge energy of both batteries, only show if battery 2 is offline
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status != 0) {
+                value = NAN;
+            }
+        }
+    }
+    else if (is_fox_ess_h3_pro_hybrid_inverter_battery_2_meter()) {
+        if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2ConnectionStatus) {
+            fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2Voltage) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2Current) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2Temperature) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2SoC) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS2DesignEnergy) {
+            if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::BMS1ConnectionStatus) {
+            fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::TotalDischargeEnergy) {
+            // this is the combined discharge energy of both batteries, only show if battery 1 is offline
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status != 0) {
+                value = NAN;
+            }
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery2Address::TotalChargeEnergy) {
+            // this is the combined charge energy of both batteries, only show if battery 1 is offline
+            if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status != 0) {
+                value = NAN;
+            }
+        }
+    }
+    else if (is_fox_ess_h3_pro_hybrid_inverter_battery_1_and_2_meter()) {
+        if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1ConnectionStatus) {
+            fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status = c16.u;
+        }
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1Voltage) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_pro_hybrid_inverter.bms_1_voltage = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1Current) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1Current) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_pro_hybrid_inverter.bms_1_current = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1Temperature) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1Temperature) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_pro_hybrid_inverter.bms_1_temperature = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1SoC) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1SoC) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_pro_hybrid_inverter.bms_1_soc = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS1DesignEnergy) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS1DesignEnergy) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_1_connection_status == 0) {
                 value = NAN;
             }
 
             fox_ess_h3_pro_hybrid_inverter.bms_1_design_energy = value;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2ConnectionStatus) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2ConnectionStatus) {
             fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status = c16.u;
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2Voltage) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2Voltage) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_pro_hybrid_inverter.bms_1_voltage, value);
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2Current) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2Current) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_sum(fox_ess_h3_pro_hybrid_inverter.bms_1_current, value);
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2Temperature) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2Temperature) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_pro_hybrid_inverter.bms_1_temperature, value);
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2SoC) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2SoC) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
 
             value = nan_safe_avg(fox_ess_h3_pro_hybrid_inverter.bms_1_soc, value);
         }
-        else if (register_start_address == FoxESSH3ProHybridInverterBatteryAddress::BMS2DesignEnergy) {
+        else if (register_start_address == FoxESSH3ProHybridInverterBattery1And2Address::BMS2DesignEnergy) {
             if (fox_ess_h3_pro_hybrid_inverter.bms_2_connection_status == 0) {
                 value = NAN;
             }
