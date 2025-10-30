@@ -64,9 +64,10 @@ export function InnerNavbar(props: NavbarProps) {
     }
 
     return <Nav as="ul" className="flex-column" id="nav-list" style={props.visible ? undefined : "visibility: hidden;"}>
-                {props.mode == "login" ?
+                {props.mode == "login" ? <>
                     <NavbarItem name="login" title={__("main.navbar_login")} symbol={<Key />} hidden={false} no_href={true} />
-                    : undefined}
+                    <RemoteCloseButton />
+                    </> : undefined}
                 {props.mode == "normal" ? <>
                     <NavbarItem name="status" title={__("main.navbar_status")} symbol={<Home />} hidden={false} />
                         {props.children}
