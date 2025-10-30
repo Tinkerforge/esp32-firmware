@@ -134,6 +134,7 @@ private:
 
     ConfigRoot charge_mode;
     ConfigRoot pm_charge_mode;
+    ConfigRoot pm_charge_mode_update;
     ConfigRoot supported_charge_modes;
 
 #ifdef DEBUG_FS_ENABLE
