@@ -1347,10 +1347,9 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
         password = remote_access_config->get("password")->asString();
         cert_id = remote_access_config->get("cert_id")->asInt();
 
-        char sw_name_buf[128];
-        StringWriter sw_name(sw_name_buf, std::size(sw_name_buf));
-        sw_name.printf("%s (%s)", device_name.display_name.get("display_name")->asUnsafeCStr(), device_name.name.get("name")->asUnsafeCStr());
-        display_name = sw_name.toString();
+        display_name = device_name.display_name.get("display_name")->asString();
+        if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
+            display_name += " (" + device_name.name.get("name")->asString() + ")";
 
         char sw_url_buf[128];
         StringWriter sw_url(sw_url_buf, std::size(sw_url_buf));
