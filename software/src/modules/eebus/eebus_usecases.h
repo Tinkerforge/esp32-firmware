@@ -39,7 +39,6 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_types.h"
 #include "lpc_state.enum.h"
 #include "options.h"
-#include <string_view>
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 5
@@ -794,9 +793,71 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
+
+    /**
+     * A charging Plan entry as needed to communicate the EV charging demands.
+     */
+    struct ChargingPlanEntry
+    {
+        seconds_t duration;
+        int max_power_expected;
+        int min_power_expected;
+        int opt_power_wanted;
+    };
+
+    /**
+     * A PowerLimit entry as needed to communicate the power limits set by the grid operator or energy manager.
+     */
+    using PowerLimitEntry = ChargingPlanEntry;
+
+    /**
+     * The Incentive Slot entry as needed to communicate the incentive slots to the EV.
+     */
+    struct IncentiveSlotEntry
+    {
+        /**
+         * The tier of the incentive.
+         */
+        struct IncentiveTier
+        {
+            int lower_boundary_w;
+            int upper_boundary_w;
+            float incentive_value;
+        };
+
+        time_t start_time;
+        time_t end_time;
+        std::vector<IncentiveTier> tiers;
+    };
+
 private:
+    // Feature Addresses
     uint8_t feature_address_timeseries = FeatureAddresses::cevc_timeseries;
     uint8_t feature_address_incentive_table = FeatureAddresses::cevc_incentive_table;
+
+    // Functions
+    // Timeseries Feature
+    [[nodiscard]] TimeSeriesDescriptionListDataType read_time_series_description() const;
+    [[nodiscard]] TimeSeriesConstraintsListDataType read_time_series_constraints() const;
+    [[nodiscard]] TimeSeriesListDataType read_time_series_list() const;
+    CmdClassifierType write_time_series_list(HeaderType &header, TimeSeriesListDataType data, JsonObject response);
+    // IncentiveTable Feature
+    [[nodiscard]] IncentiveTableDescriptionDataType read_incentive_table_description() const;
+    CmdClassifierType write_incentive_table_description(HeaderType &header, IncentiveTableDataType data, JsonObject response);
+    [[nodiscard]] IncentiveTableConstraintsDataType read_incentive_table_constraints() const;
+    [[nodiscard]] IncentiveTableDataType read_incentive_table_data() const;
+    CmdClassifierType write_incentive_table_data(HeaderType &header, IncentiveTableDataType data, JsonObject response);
+
+    // Data held and transmitted
+    time_t arrival_time{};
+    time_t departure_time{};
+    int minimum_energy_wh = 0;
+    int maximum_energy_wh = 0;
+    int optimal_energy_wh = 0;
+    std::vector<ChargingPlanEntry> charging_plan{};
+    std::vector<PowerLimitEntry> power_limits{};
+    std::vector<IncentiveSlotEntry> incentives_available{};
+
 };
 
 /**
@@ -916,4 +977,9 @@ std::string iso_duration_to_string(seconds_t duration);
  * @return The duration in seconds.
  */
 seconds_t iso_duration_to_seconds(std::string iso_duration);
+
+time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
+
+String unix_to_iso_timestamp(time_t unix_time);
+
 } // namespace EEBUS_USECASE_HELPERS

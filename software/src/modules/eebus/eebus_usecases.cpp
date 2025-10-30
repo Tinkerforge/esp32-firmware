@@ -2128,7 +2128,33 @@ CevcUsecase::CevcUsecase()
 
 CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    // TODO: Implement the rest of this usecase, but need EV CHarging information first
+    if (header.cmdClassifier == CmdClassifierType::read) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
+            response["timeSeriesDescriptionListData"] = read_time_series_description();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListData) {
+            response["timeSeriesConstraintsListData"] = read_time_series_constraints();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesListData) {
+            response["timeSeriesListData"] = read_time_series_list();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableDescriptionData) {
+            response["incentiveTableDescriptionData"] = read_incentive_table_description();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsData) {
+            response["incentiveTableConstraintsData"] = read_incentive_table_constraints();
+            return CmdClassifierType::reply;
+        }
+        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableData) {
+            response["incentiveTableData"] = read_incentive_table_data();;
+            return CmdClassifierType::reply;
+        }
+    }
+    // TODO: Implement the rest of this usecase
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -2201,6 +2227,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
     FunctionPropertyType timeseries_data{};
     timeseries_data.function = FunctionEnumType::timeSeriesListData;
     timeseries_data.possibleOperations->read = PossibleOperationsReadType{};
+    timeseries_data.possibleOperations->write = PossibleOperationsWriteType{};
     timeseries_feature.description->supportedFunction->push_back(timeseries_description);
     features.push_back(timeseries_feature);
 
@@ -2214,6 +2241,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
     FunctionPropertyType incentivetable_description{};
     incentivetable_description.function = FunctionEnumType::incentiveDescriptionListData;
     incentivetable_description.possibleOperations->read = PossibleOperationsReadType{};
+    incentivetable_description.possibleOperations->write = PossibleOperationsWriteType{};
     incentive_table_feature.description->supportedFunction->push_back(incentivetable_description);
 
     // incentiveTableConstraintsData
@@ -2226,11 +2254,66 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
     FunctionPropertyType incentivetable_data{};
     incentivetable_data.function = FunctionEnumType::incentiveTableData;
     incentivetable_data.possibleOperations->read = PossibleOperationsReadType{};
+    incentivetable_data.possibleOperations->write = PossibleOperationsWriteType{};
     incentive_table_feature.description->supportedFunction->push_back(incentivetable_data);
 
     features.push_back(incentive_table_feature);
 
     return features;
+}
+
+TimeSeriesDescriptionListDataType CevcUsecase::read_time_series_description() const
+{
+    // TODO: Implement read_time_series_description
+    return {};
+}
+
+TimeSeriesConstraintsListDataType CevcUsecase::read_time_series_constraints() const
+{
+    // TODO: Implement read_time_series_constraints
+    return {};
+}
+
+TimeSeriesListDataType CevcUsecase::read_time_series_list() const
+{
+    // TODO: Implement read_time_series_list
+    return {};
+}
+
+CmdClassifierType CevcUsecase::write_time_series_list(HeaderType &header, TimeSeriesListDataType data, JsonObject response)
+{
+    // TODO: Implement write_time_series_list
+    return CmdClassifierType::EnumUndefined;
+}
+
+IncentiveTableDescriptionDataType CevcUsecase::read_incentive_table_description() const
+{
+    // TODO: Implement read_incentive_table_description
+    return {};
+}
+
+CmdClassifierType CevcUsecase::write_incentive_table_description(HeaderType &header, IncentiveTableDataType data, JsonObject response)
+{
+    // TODO: Implement write_incentive_table_description
+    return CmdClassifierType::EnumUndefined;
+}
+
+IncentiveTableConstraintsDataType CevcUsecase::read_incentive_table_constraints() const
+{
+    // TODO: Implement read_incentive_table_constraints
+    return {};
+}
+
+IncentiveTableDataType CevcUsecase::read_incentive_table_data() const
+{
+    // TODO: Implement read_incentive_table_data
+    return {};
+}
+
+CmdClassifierType CevcUsecase::write_incentive_table_data(HeaderType &header, IncentiveTableDataType data, JsonObject response)
+{
+    // TODO: Implement write_incentive_table_data
+    return CmdClassifierType::EnumUndefined;
 }
 
 
