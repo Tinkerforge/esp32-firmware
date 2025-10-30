@@ -137,14 +137,6 @@ export class UplotLoader extends Component<UplotLoaderProps, UplotLoaderState> {
                     >
                         <Maximize />
                     </Button>
-                )) || (fullscreen_mode === 'click' && (
-                    <div
-                        className="position-absolute"
-                        style="top: 0px; right: 0px; z-index: 10;"
-                        onClick={() => this.setState({show_fullscreen: true})}
-                    >
-                        <Maximize2 size={12} />
-                    </div>
                 )))}
 
                 {this.props.children}
