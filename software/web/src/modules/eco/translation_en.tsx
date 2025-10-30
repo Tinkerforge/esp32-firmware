@@ -62,7 +62,9 @@ let x = {
 
                 const active = charge_plan.enable ? "active" : "not active";
                 const time_str   = charge_plan.time.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-                const plan   = `Current charge plan: Use the ${charge_plan.amount} cheapest hours ${day} ${time_str}. The charge plan is ${active}.`;
+                const plan   = charge_plan.amount == 1 ?
+                                   `Current charge plan: Use the cheapest hour ${day} ${time_str}. The charge plan is ${active}.` :
+                                   `Current charge plan: Use the ${charge_plan.amount} cheapest hours ${day} ${time_str}. The charge plan is ${active}.`;
                 if (!charge_plan.enable || charger_zero_start == -1) {
                     return <>{plan}</>;
                 }

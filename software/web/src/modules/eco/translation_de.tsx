@@ -61,7 +61,9 @@ let x = {
 
                 const active = charge_plan.enable ? "aktiv" : "nicht aktiv";
                 const time_str   = charge_plan.time.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-                const plan   = `Aktueller Ladeplan: Nutze die günstigsten ${charge_plan.amount} Stunden ${day} ${time_str} Uhr. Der Ladeplan ist ${active}.`;
+                const plan   = charge_plan.amount == 1 ?
+                                   `Aktueller Ladeplan: Nutze die günstigste Stunde ${day} ${time_str} Uhr. Der Ladeplan ist ${active}.` :
+                                   `Aktueller Ladeplan: Nutze die günstigsten ${charge_plan.amount} Stunden ${day} ${time_str} Uhr. Der Ladeplan ist ${active}.`;
                 if (!charge_plan.enable || charger_zero_start == -1) {
                     return <>{plan}</>;
                 }
