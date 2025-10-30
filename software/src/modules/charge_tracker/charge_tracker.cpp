@@ -1269,22 +1269,24 @@ static esp_err_t check_remote_client_status(std::unique_ptr<RemoteUploadRequest>
 }
 
 static String build_filename(const time_t start, const time_t end, FileType file_type, Language language) {
-    struct tm start_tm;
-    struct tm end_tm;
-    localtime_r(&start, &start_tm);
-    localtime_r(&end, &end_tm);
+    struct tm gen_tm;
+    time_t generation_time = time(nullptr);
+    localtime_r(&generation_time, &gen_tm);
 
     char buf[128];
     StringWriter fname(buf, std::size(buf));
 
-    fname.printf("%s-%s_%s_%04i-%02i_%04i-%02i.%s",
+    fname.printf("%s-%s-%s-%04d-%02d-%02dT%02d-%02d-%02d-%03d.%s",
                  device_name.name.get("type")->asUnsafeCStr(),
                  device_name.name.get("uid" )->asUnsafeCStr(),
-                 language == Language::English ? "Charge_log" : "Ladelog",
-                 start_tm.tm_year + 1900,
-                 start_tm.tm_mon + 1,
-                 end_tm.tm_year   + 1900,
-                 end_tm.tm_mon   + 1,
+                 language == Language::English ? "charge-log" : "Ladelog",
+                 gen_tm.tm_year + 1900,
+                 gen_tm.tm_mon + 1,
+                 gen_tm.tm_mday,
+                 gen_tm.tm_hour,
+                 gen_tm.tm_min,
+                 gen_tm.tm_sec,
+                 0, // milliseconds (not available from struct tm)
                  file_type == FileType::PDF ? "pdf" : "csv");
 
     return fname.toString();
