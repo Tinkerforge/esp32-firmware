@@ -28,7 +28,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
 import { InputDate } from "../../ts/components/input_date";
-import { Button, Collapse, ListGroup, ListGroupItem, Spinner, Dropdown } from "react-bootstrap";
+import { Button, Collapse, ListGroup, ListGroupItem, Spinner, Dropdown, Row } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -38,7 +38,7 @@ import { Table, TableRow } from "../../ts/components/table";
 import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
-import { BatteryCharging, Calendar, Clock, Download, User, List, Send } from "react-feather";
+import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
 import { Language } from "../system/language.enum";
 import { GenerationState } from "./generation_state.enum";
@@ -589,12 +589,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
             return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
-        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown>
-            <Dropdown.Toggle disabled={state.generator_state !== GenerationState.Ready}>
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown className="col-12 col-sm pr-0 pl-sm-3 pl-0 mt-2 mt-sm-0">
+            <Dropdown.Toggle className="w-100 text-nowrap" disabled={state.generator_state !== GenerationState.Ready}>
                 <span class="mr-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
                 </span>
-                <Spinner animation="border" size="sm" as="span" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
+                <Mail />
+                <Spinner animation="border" size="sm" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {sendEmailDropdownItems}
@@ -688,8 +689,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </Collapse>
 
                 <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Button variant="primary" className="form-control" style={{ flex: '0 1 auto' }} disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
+                    <Row className="m-0">
+                        <Button variant="primary" className="form-control col text-nowrap" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 
                             let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
@@ -722,7 +723,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
                         </Button>
                         {sendEmailDropdown}
-                    </div>
+                    </Row>
                 </FormRow>
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
