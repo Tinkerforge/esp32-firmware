@@ -47,7 +47,9 @@ let x = {
                 <p>Specifies a threshold in kWh above which a charge will only be started if PV excess is available (the charge plan is ignored).</p>
                 <p>Example: 'Only if PV yield forecast below' is configured to <b>75 kWh/day</b> and the <b>PV yield forecast for today is 80 kWh/day</b> (above 75 kWh). In this case, the <b>charge plan is not executed</b> and charging is only possible if PV excess is available.</p>
                 <p>Therefore, energy is not bought–even if it would be cheap to do so–if it is known that enough PV excess will be available.</p>
-            </>
+            </>,
+
+            "eco_chart_title": "Charge plan"
         },
         "script": {
             "save_failed": "Failed to save the eco settings",

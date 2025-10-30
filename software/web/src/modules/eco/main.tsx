@@ -309,7 +309,10 @@ export class EcoChart extends Component<{visible: boolean, charger_id: number, d
                 show={true}
                 marker_class={'h4'}
                 no_data={__("day_ahead_prices.content.no_data")}
-                loading={__("day_ahead_prices.content.loading")}>
+                loading={__("day_ahead_prices.content.loading")}
+                fullscreen_allow
+                fullscreen_title={__("eco.content.eco_chart_title")}
+                fullscreen_mode='click'>
                 <UplotWrapperB
                     ref={this.uplot_wrapper_ref}
                     legend_show={false}
