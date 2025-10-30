@@ -165,7 +165,7 @@ interface EcoStatusState {
     charge_plan: API.getType["eco/charge_plan"];
 }
 
-export class EcoChart extends Component<{charger_id: number, departure?: Departure, time?: number, amount?: number, enable?: boolean}, {}> {
+export class EcoChart extends Component<{visible: boolean, charger_id: number, departure?: Departure, time?: number, amount?: number, enable?: boolean}, {}> {
     uplot_loader_ref  = createRef();
     uplot_wrapper_ref = createRef();
 
@@ -214,10 +214,8 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
                 return;
             }
 
-            const charge_mode = API.get('power_manager/charge_mode').mode;
-            const visible = charge_mode >= ConfigChargeMode.Eco && charge_mode <= ConfigChargeMode.EcoMinPV;
             // Don't poll eco/chart if the chart is not visible
-            if (!visible) {
+            if (!this.props.visible) {
                 return;
             }
 
@@ -440,7 +438,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                 </div>
 
                 <div class="card mt-2">
-                <EcoChart charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
+                <EcoChart visible={visible} charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
                 </div>
                 <div class="mt-2">
                     <Button

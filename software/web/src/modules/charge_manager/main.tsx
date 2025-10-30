@@ -585,7 +585,7 @@ function CMStatusCharger(props: {
 {/*#if MODULE_ECO_AVAILABLE*/}
                     <Collapse in={props.show_eco_chart}>
                         <div><div class="mt-3">
-                            <EcoChart charger_id={props.charger_index} />
+                            <EcoChart visible={props.show_eco_chart} charger_id={props.charger_index} />
                         </div></div>
                     </Collapse>
 {/*#endif*/}
