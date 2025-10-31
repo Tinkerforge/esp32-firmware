@@ -440,7 +440,6 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpHoldingRegister(uint16_t reg) {
             }
             val.u = swapBytes(val.u);
         }
-        logger.printfln_debug("READ %u %.*s", reg, 4, val.chars);
 #endif
     }
 
