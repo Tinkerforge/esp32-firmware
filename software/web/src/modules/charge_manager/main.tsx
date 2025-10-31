@@ -133,21 +133,21 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
         case OnePhaseDecisionTag.None:
             return "None";
         case OnePhaseDecisionTag.YesWelcomeChargeUntil:
-            return with_timespan(__("charge_manager.script.opd_yes_welcome_charge_until"), d1[1]);
+            return with_timespan(__("charge_manager.script.pd_yes_welcome_charge_until"), d1[1]);
         case OnePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan(ts => __("charge_manager.script.opd_no_phase_minimum")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
+            return with_timespan(ts => __("charge_manager.script.pd_no_phase_minimum")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoPhaseImprovement:
-            return  with_timespan(ts => __("charge_manager.script.opd_no_phase_improvement")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
+            return  with_timespan(ts => __("charge_manager.script.pd_no_phase_improvement")(ts, d1[1][3], d1[1][1], d1[1][2]), d1[1][0]);
         case OnePhaseDecisionTag.NoForced3pUntil:
             return with_timespan(__("charge_manager.script.opd_no_force_3p_until"), d1[1]);
         case OnePhaseDecisionTag.NoFixed3p:
             return __("charge_manager.script.opd_no_fixed_3p");
         case OnePhaseDecisionTag.YesWakingUp:
-            return __("charge_manager.script.opd_yes_waking_up");
+            return __("charge_manager.script.pd_yes_waking_up");
         case OnePhaseDecisionTag.YesNormal:
-            return __("charge_manager.script.opd_yes");
+            return __("charge_manager.script.pd_yes");
         case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
-            return with_timespan(__("charge_manager.script.opd_no_hysteresis_blocks_until"), d1[1]);
+            return with_timespan(__("charge_manager.script.pd_no_hysteresis_blocks_until"), d1[1]);
         case OnePhaseDecisionTag.YesSwitchedToFixed1p:
             return __("charge_manager.script.opd_yes_switched_to_fixed_1p");
     }
@@ -158,11 +158,11 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
         case ThreePhaseDecisionTag.None:
             return "None";
         case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
-            return with_timespan(__("charge_manager.script.tpd_yes_welcome_charge_until"), d3[1]);
+            return with_timespan(__("charge_manager.script.pd_yes_welcome_charge_until"), d3[1]);
         case ThreePhaseDecisionTag.NoPhaseMinimum:
-            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_minimum")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.pd_no_phase_minimum")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoPhaseImprovement:
-            return with_timespan(ts => __("charge_manager.script.tpd_no_phase_improvement")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
+            return with_timespan(ts => __("charge_manager.script.pd_no_phase_improvement")(ts, d3[1][3], d3[1][1], d3[1][2]), d3[1][0]);
         case ThreePhaseDecisionTag.NoForced1pUntil:
             return with_timespan(__("charge_manager.script.tpd_no_force_1p_until"), d3[1]);
         case ThreePhaseDecisionTag.NoFixed1p:
@@ -170,11 +170,11 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
         case ThreePhaseDecisionTag.YesUnknownRotSwitchable:
             return __("charge_manager.script.tpd_yes_unknown_rot_switchable");
         case ThreePhaseDecisionTag.NoHysteresisBlockedUntil:
-            return with_timespan(__("charge_manager.script.tpd_no_hysteresis_blocks_until"), d3[1]);
+            return with_timespan(__("charge_manager.script.pd_no_hysteresis_blocks_until"), d3[1]);
         case ThreePhaseDecisionTag.YesWakingUp:
-            return __("charge_manager.script.tpd_yes_waking_up");
+            return __("charge_manager.script.pd_yes_waking_up");
         case ThreePhaseDecisionTag.YesNormal:
-            return __("charge_manager.script.tpd_yes");
+            return __("charge_manager.script.pd_yes");
         case ThreePhaseDecisionTag.YesSwitchedToFixed3p:
             return __("charge_manager.script.tpd_yes_switched_to_fixed_3p");
     }
