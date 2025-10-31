@@ -23,10 +23,20 @@
 
 class WebSockets;
 
-struct WebSocketsClient {
-    int fd;
-    WebSockets *ws;
+class WebSocketsClient {
+public:
+    WebSocketsClient(int fd_, WebSockets *ws_) : fd(fd_), ws(ws_) {};
+    ~WebSocketsClient();
 
     bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     void close_HTTPThread();
+
+    void *setCtx(void *ctx);
+    inline void *getCtx() {return ctx;};
+    inline int getFd() {return fd;};
+
+private:
+    int fd;
+    WebSockets *ws;
+    void *ctx = nullptr;
 };

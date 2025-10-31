@@ -48,7 +48,7 @@ void WS::setup()
 
 void WS::register_urls()
 {
-    web_sockets.onConnect_HTTPThread([this](WebSocketsClient client) {
+    web_sockets.onConnect_HTTPThread([this](WebSocketsClient *client) {
         // Max payload size is OPTIONS_API_JSON_MAX_LENGTH.
         // The framing needs 10 + 12 + 3 bytes (with the second \n to mark the end of the API dump)
         // API path lengths should probably fit in the 103 bytes left.
@@ -61,7 +61,7 @@ void WS::register_urls()
             multi_heap_info_t dram_info;
             heap_caps_get_info(&dram_info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             logger.printfln("Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
-            client.close_HTTPThread();
+            client->close_HTTPThread();
             return false;
         }
 
@@ -106,7 +106,7 @@ void WS::register_urls()
             }
 
             if (sb.getLength() == 0) {
-                client.close_HTTPThread();
+                client->close_HTTPThread();
                 return false;
             }
 
@@ -114,7 +114,7 @@ void WS::register_urls()
                 sb.putc('\n');
             }
 
-            if (!client.sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
+            if (!client->sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
                 return false;
             }
 

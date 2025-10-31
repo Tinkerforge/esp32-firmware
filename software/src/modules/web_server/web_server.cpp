@@ -65,6 +65,25 @@ static bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len
     return true;
 }
 
+static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
+{
+    // If a close_fn is registered, httpd won't close the fd by itself.
+    close(session->fd);
+
+#if MODULE_WS_AVAILABLE()
+    if (session->ws_handshake_done && !session->ws_control_frames) {
+        // Upon receiving a WS close frame, web_sockets sets ws_control_frames to false to mark this connection as handled.
+        // If ws_control_frames is false, the websocket close event was already handled.
+        return;
+    }
+
+    if (session->ws_user_ctx) {
+        WebSockets *web_sockets = static_cast<WebSockets *>(session->ws_user_ctx);
+        web_sockets->notify_unclean_close(session);
+    }
+#endif
+}
+
 static bool load_certs_with_fallback(httpd_ssl_config_t *ssl_config, const cert_load_info *load_info, Cert *cert)
 {
     if (!cert->load_external_with_internal_fallback(load_info)) {
@@ -241,6 +260,7 @@ void WebServer::post_setup()
     httpd_config.enable_so_linger = true;
     httpd_config.linger_timeout = 100; // Try to get WS close and TLS close out.
     httpd_config.uri_match_fn = custom_uri_match;
+    httpd_config.close_fn = custom_close_fn;
 
 #if MODULE_NETWORK_AVAILABLE()
     httpd_config.server_port = network.get_web_server_port(); // Only used in single-port-mode
