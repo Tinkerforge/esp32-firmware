@@ -18,6 +18,7 @@
  */
 #include "ship.h"
 
+#include <esp_crt_bundle.h>
 #include <esp_https_server.h>
 
 #include "build.h"
@@ -27,12 +28,11 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
-
+static constexpr uint16_t SHIP_PORT = 4712;
 
 void Ship::pre_setup()
 {
-    web_sockets.pre_setup(); // Moved to setup_wss(), is this needed this early?
+    web_sockets.pre_setup();
 }
 
 void Ship::setup()
@@ -97,7 +97,7 @@ void Ship::setup_wss()
 
     // SSL config
     config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
-    config.port_secure = 4712;
+    config.port_secure = SHIP_PORT;
     config.port_insecure = 0;
 
     // Lambda to parse the X509 certificate
@@ -277,7 +277,7 @@ void Ship::setup_mdns()
     eebus.trace_fmtln("setup_mdns() start");
 
     // SHIP 7.2 Service Name
-    mdns_service_add(NULL, "_ship", "_tcp", 4712, NULL, 0);
+    mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
 
     // SHIP 7.3.2 TXT Record
     // Mandatory Fields
@@ -381,7 +381,7 @@ ShipDiscoveryState Ship::discover_ship_peers()
         results = results->next;
     }
 
-    logger.printfln("EEBUS MDNS Discovery: Found %d results", peer_handler.get_peers().size());
+    logger.printfln("EEBUS MDNS Discovery: Found %zu results", peer_handler.get_peers().size());
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
