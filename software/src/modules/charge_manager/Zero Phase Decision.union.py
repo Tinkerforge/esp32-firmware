@@ -9,7 +9,6 @@ else:
 
 spec = Union("Zero Phase Decision", 20, require_stable_api=False, variants=[
     Variant('None'),
-    Variant('Yes Charge Mode Off'),
     Variant('Yes Waiting For Rotation', [
         Member('Next Rotation', Types.Uptime)
     ]),

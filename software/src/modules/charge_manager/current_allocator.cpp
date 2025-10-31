@@ -601,7 +601,6 @@ static constexpr ThreePhaseDecisionTag to_clear_pre_3p[] = {
 };
 
 static constexpr ZeroPhaseDecisionTag yes_0p[] = {
-    ZeroPhaseDecisionTag::YesChargeModeOff,
     ZeroPhaseDecisionTag::YesWaitingForRotation,
     ZeroPhaseDecisionTag::YesNotActive,
     ZeroPhaseDecisionTag::YesRotatedForB1,
@@ -692,12 +691,6 @@ static void decision_preprocess(StageContext &sc) {
 
         clear_charger_decision(sc, i, ZeroPhaseDecisionTag::NoCloudFilterBlocksUntil);
         clear_charger_decision(sc, i, ZeroPhaseDecisionTag::NoHysteresisBlocksUntil);
-
-        // set/clear ChargeModeOff <==> state->off
-        if (state->off)
-            set_charger_decision(sc, i, ZeroPhaseDecision::YesChargeModeOff());
-        else
-            clear_charger_decision(sc, i, ZeroPhaseDecisionTag::YesChargeModeOff);
 
         const auto tag_1p = sc.charger_decisions[i].one.tag;
         const auto tag_3p = sc.charger_decisions[i].three.tag;
