@@ -206,6 +206,7 @@ let x = {
             "button_configuration_start_charging": "Start charging",
             "button_configuration_stop_charging": "Stop charging",
             "button_configuration_start_and_stop_charging": "Start or stop charging",
+            "button_configuration_charge_mode": "Request charge mode",
 
             "ev_wakeup_desc": "EV Wakeup",
             "ev_wakeup_desc_help": <><p>Some vehicles' charging electronics enter a power-saving mode if a charging process is not initiated within a certain time. The vehicle wakeup function attempts to automatically wake up such electronics if the vehicle does not respond within 30 seconds when power is available. This is implemented by temporarily disconnecting the Control Pilot (CP) signal.</p></>,

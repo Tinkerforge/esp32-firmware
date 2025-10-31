@@ -351,6 +351,14 @@ int EVSEV2::set_charging_slot_default(uint8_t slot, uint16_t current, bool enabl
     return tf_evse_v2_set_charging_slot_default(&device, slot, current, enabled, clear_on_disconnect);
 }
 
+int EVSEV2::set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]) {
+    return tf_evse_v2_set_enumerate_configuration(&device, enumerator_h, enumerator_s, enumerator_v);
+}
+
+int EVSEV2::set_enumerate_value(uint8_t value) {
+    return tf_evse_v2_set_enumerate_value(&device, value);
+}
+
 static const char *debug_header_prefix =
     "STATE,"
     "iec61851_state,"
@@ -867,6 +875,13 @@ void EVSEV2::update_all_data()
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
 
+    // get_enumerate_value
+    uint8_t enumerate_value;
+    uint32_t enumerate_value_change_time;
+
+    // get_cp_reconnect_time
+    uint8_t cp_reconnect_time;
+
     int rc = tf_evse_v2_get_all_data_1(&device,
                                        &iec61851_state,
                                        &charger_state,
@@ -914,7 +929,10 @@ void EVSEV2::update_all_data()
                                    &phases_state,
                                    &phases_info,
                                    &phase_auto_switch_enabled,
-                                   &phases_connected_);
+                                   &phases_connected_,
+                                   &enumerate_value,
+                                   &enumerate_value_change_time,
+                                   &cp_reconnect_time);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1223,6 +1241,9 @@ void EVSEV2::update_all_data()
     evse_common.low_level_state.get("phases_requested")->updateUint(phases_requested);
     evse_common.low_level_state.get("phases_state")->updateUint(phases_state);
     evse_common.low_level_state.get("phases_info")->updateUint(phases_info);
+
+    evse_common.enumerate_value.get("value")->updateUint(enumerate_value);
+    evse_common.enumerate_value.get("value_change_time")->updateUint(enumerate_value_change_time);
 
 #if MODULE_WATCHDOG_AVAILABLE()
     static size_t watchdog_handle = watchdog.add("evse_v2_all_data", "EVSE not reachable");
