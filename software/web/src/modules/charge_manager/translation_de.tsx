@@ -235,9 +235,8 @@ let x = {
             "phase": /*SFN*/ (phase: number) => phase == 0 ? 'PV-Überschuss' : `Phase L${phase}`/*NF*/,
             "phase_current": /*SFN*/ (phase: number) => phase == 0 ? 'PV-Überschuss' : `L${phase}-Phasenstrom`/*NF*/,
             "for_timespan": /*SFN*/ (timespan: string) => `für ${timespan}`/*NF*/,
-            "until_alloc": `bis zur nächsten Umverteilung`,
+            "until_alloc": `bis zur nächsten Allokation`,
 
-            "zpd_yes_charge_mode_off": "Lademodus \"Aus\"",
             "zpd_yes_waiting_for_rotation": /*SFN*/ (timespan: string) => `Warte ${timespan} auf Rotation` /*NF*/,
             "zpd_yes_not_active": "Fahrzeug hat Ladevorgang beendet",
             "zpd_yes_rotated_for_b1": "Für wartende Wallbox deaktiviert",
@@ -247,25 +246,21 @@ let x = {
             "zpd_no_cloud_filter_blocks_until": /*SFN*/ (timespan: string, overload: number) => `PV-Überschuss überlastet, aber Wolkenfilter blockiert Abschaltung ${timespan}` /*NF*/,
             "zpd_no_hysteresis_blocks_until": /*SFN*/ (timespan: string) => `PV-Überschuss überlastet, aber Schalt-Hysterese blockiert Abschaltung ${timespan}` /*NF*/,
 
-            "opd_yes_welcome_charge_until": /*SFN*/ (timespan: string) => `Willkommensladung ${timespan}` /*NF*/,
-            "opd_no_phase_minimum": /*SFN*/ (timespan: string, phase: number, required: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}: Hätte diesen kürzlich um ${required - minimum} mA überlastet.` /*NF*/,
-            "opd_no_phase_improvement": /*SFN*/ (timespan: string, phase: number, allocable: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}.` /*NF*/,
+            "pd_yes_welcome_charge_until": /*SFN*/ (timespan: string) => `Willkommensladung ${timespan}` /*NF*/,
+            "pd_no_phase_minimum": /*SFN*/ (timespan: string, phase: number, required: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}: Hätte diesen kürzlich um ${required - minimum} mA überlastet.` /*NF*/,
+            "pd_no_phase_improvement": /*SFN*/ (timespan: string, phase: number, allocable: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}.` /*NF*/,
+            "pd_yes_waking_up": "Versuche Fahrzeug aufzuwecken",
+            "pd_yes": "Normal aktiviert",
+            "pd_no_hysteresis_blocks_until": /*SFN*/ (timespan: string) => `Schalt-Hysterese blockiert ${timespan}` /*NF*/,
+
+
             "opd_no_force_3p_until": /*SFN*/ (timespan: string) => `Wegen kürzlicher Phasenumschaltung ${timespan} nur dreiphasiges Laden erlaubt` /*NF*/,
             "opd_no_fixed_3p": "Wallbox ist dreiphasig angeschlossen und unterstützt keine Phasenumschaltung",
-            "opd_yes_waking_up": "Versuche Fahrzeug aufzuwecken",
-            "opd_yes": "Normal aktiviert",
-            "opd_no_hysteresis_blocks_until": /*SFN*/ (timespan: string) => `Schalt-Hysterese blockiert ${timespan}` /*NF*/,
             "opd_yes_switched_to_fixed_1p": "Wallbox hat ein einphasig ladendes Fahrzeug detektiert",
 
-            "tpd_yes_welcome_charge_until": /*SFN*/ (timespan: string) => `Willkommensladung ${timespan}` /*NF*/,
-            "tpd_no_phase_minimum": /*SFN*/ (timespan: string, phase: number, required: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}: Hätte diesen kürzlich um ${required - minimum} mA überlastet.` /*NF*/,
-            "tpd_no_phase_improvement": /*SFN*/ (timespan: string, phase: number, allocable: number, minimum: number) => `Warte ${timespan} auf mehr ${__("charge_manager.script.phase_current")(phase)}.` /*NF*/,
             "tpd_no_force_1p_until": /*SFN*/ (timespan: string) => `Wegen kürzlicher Phasenumschaltung ${timespan} nur einphasiges Laden erlaubt` /*NF*/,
             "tpd_no_fixed_1p": "Wallbox ist einphasig angeschlossen oder hat einphasig ladendes Fahrzeug detektiert",
             "tpd_yes_unknown_rot_switchable": "Wallbox hat unbekannte Phasenrotation und unterstützt Phasenumschaltung. Bevorzuge dreiphasiges Laden",
-            "tpd_yes_waking_up": "Versuche Fahrzeug aufzuwecken",
-            "tpd_yes": "Normal aktiviert",
-            "tpd_no_hysteresis_blocks_until": /*SFN*/ (timespan: string) => `Schalt-Hysterese blockiert ${timespan}` /*NF*/,
             "tpd_yes_switched_to_fixed_3p": "Wallbox hat ein dreiphasig ladendes Fahrzeug detektiert",
 
             "cd_minimum": "Minimalstrom",
@@ -276,13 +271,7 @@ let x = {
             "cd_guaranteed_pv": "Garantierte PV-Leistung",
             "cd_fast_ramp_up": "Ermittle Fahrzeuglimit",
             "cd_supported_by_charger": "Wallboxlimit",
-            "cd_left_over": "Reststrom",
-
-            "next_rotation_at": /*SFN*/ (timespan: string) => "Nächste Rotation in " + timespan /*NF*/,
-            "pv_excess_overloaded_hysteresis_blocks_until": /*SFN*/ (overload_mA: number, timespan: string) => "PV-Überschuss um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet. Werde in " + timespan + " beginnen, Wallboxen abzuschalten." /*NF*/,
-            "hysteresis_elapses_at": /*SFN*/ (timespan: string) => "Hysterese läuft ab in " + timespan /*NF*/
-
-
+            "cd_left_over": "Reststrom"
         }
     }
 }
