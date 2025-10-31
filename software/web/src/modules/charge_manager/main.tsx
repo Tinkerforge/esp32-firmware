@@ -108,7 +108,7 @@ function with_timespan(fn: (timespan: string) => string, timestamp: number) {
 function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
     switch (d0[0]) {
         case ZeroPhaseDecisionTag.None:
-            return "None"
+            return __("charge_manager.script.d_none")
         case ZeroPhaseDecisionTag.YesWaitingForRotation:
             return with_timespan(__("charge_manager.script.zpd_yes_waiting_for_rotation"), d0[1]);
         case ZeroPhaseDecisionTag.YesNotActive:
@@ -131,7 +131,7 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
 function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
     switch (d1[0]) {
         case OnePhaseDecisionTag.None:
-            return "None";
+            return __("charge_manager.script.d_none");
         case OnePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan(__("charge_manager.script.pd_yes_welcome_charge_until"), d1[1]);
         case OnePhaseDecisionTag.NoPhaseMinimum:
@@ -156,7 +156,7 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
 function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
     switch (d3[0]) {
         case ThreePhaseDecisionTag.None:
-            return "None";
+            return __("charge_manager.script.d_none");
         case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan(__("charge_manager.script.pd_yes_welcome_charge_until"), d3[1]);
         case ThreePhaseDecisionTag.NoPhaseMinimum:
@@ -183,7 +183,7 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
 function current_desc_to_text(dc: CurrentDecision): ComponentChild {
     switch (dc[0]) {
         case CurrentDecisionTag.None:
-            return "None";
+            return __("charge_manager.script.d_none");
         case CurrentDecisionTag.Minimum:
             return __("charge_manager.script.cd_minimum");
         case CurrentDecisionTag.EnableNotCharging:
@@ -285,10 +285,10 @@ function get_timestamp_dc(d: CurrentDecision): number {
 function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): [ComponentChild[], ComponentChild] {
     let decs: [ZeroPhaseDecision, OnePhaseDecision, ThreePhaseDecision] = [undefined, undefined, undefined];
 
-    let details = [<div>Off: {zero_phase_desc_to_text(x.d0)}</div>,
+    let details = [<div>{__("charge_manager.script.off")}: {zero_phase_desc_to_text(x.d0)}</div>,
                    <div>1p: {one_phase_desc_to_text(x.d1)}</div>,
                    <div>3p: {three_phase_desc_to_text(x.d3)}</div>,
-                   <div>Current: {current_desc_to_text(x.dc)}</div>]
+                   <div>{__("charge_manager.script.current")}: {current_desc_to_text(x.dc)}</div>]
 
     switch (x.ap) {
         case 0:
@@ -614,7 +614,7 @@ export function ChargeManagerModeButtons() {
     let modes = API.get("charge_manager/charge_modes")
 
     return <StatusSection name="charge_manager_mode_buttons">
-        <FormRow label={__("charge_manager.status.mode")}>
+        <FormRow label={__("charge_manager.status.mode")} label_muted={__("charge_manager.status.mode_muted")}>
             <ChargeModeButtons
                 mode={current_mode}
                 supportedModes={API.get("charge_manager/supported_charge_modes")}

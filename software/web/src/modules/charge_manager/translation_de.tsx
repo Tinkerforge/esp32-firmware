@@ -238,6 +238,10 @@ let x = {
             "for_timespan": /*SFN*/ (timespan: string) => `für ${timespan}`/*NF*/,
             "until_alloc": `bis zur nächsten Allokation`,
 
+            "off": "Aus",
+            "current": "Strom",
+            "d_none": "Keine Entscheidung getroffen",
+
             "zpd_yes_waiting_for_rotation": /*SFN*/ (timespan: string) => `Warte ${timespan} auf Rotation` /*NF*/,
             "zpd_yes_not_active": "Fahrzeug hat Ladevorgang beendet",
             "zpd_yes_rotated_for_b1": "Für wartende Wallbox deaktiviert",
