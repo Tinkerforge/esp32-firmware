@@ -321,8 +321,9 @@ void ChargeManager::start_manager_task()
                     charger_state[client_id].charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
 
                 // If the car is unplugged, change back to the default charge mode once.
-                if (v1->charger_state == 0 && old_charger_state != 0)
-                    charger_state[client_id].charge_mode = this->config_cm_to_cm(this->pm_default_charge_mode);
+                if (v1->charger_state == 0 && old_charger_state != 0) {
+                    charger_state[client_id].charge_mode = this->config_cm_to_cm(ConfigChargeMode::Default);
+                }
 
                 update_charger_state_config(client_id);
             }
@@ -437,7 +438,7 @@ uint8_t ChargeManager::config_cm_to_cm(ConfigChargeMode power_manager_charge_mod
         case ConfigChargeMode::MinPV:
             return ChargeMode::Min | ChargeMode::PV;
         case ConfigChargeMode::Default:
-            return this->config_cm_to_cm(this->pm_default_charge_mode);
+            return this->config_cm_to_cm(this->get_default_mode());
         case ConfigChargeMode::Min:
             return ChargeMode::Min;
         case ConfigChargeMode::Eco:
@@ -697,8 +698,9 @@ bool ChargeManager::seen_all_chargers()
         for (size_t i = 0; i < charger_count; ++i) {
             if (this->charger_state[i].last_update != 0_us)
                 continue;
-            this->charger_state[i].charge_mode = config_cm_to_cm(this->pm_default_charge_mode);
-            this->charge_mode.get(i)->updateEnum(this->pm_default_charge_mode);
+            auto mode = this->get_default_mode();
+            this->charger_state[i].charge_mode = config_cm_to_cm(mode);
+            this->charge_mode.get(i)->updateEnum(mode);
         }
 
         return true;
@@ -883,6 +885,15 @@ void ChargeManager::update_supported_charge_modes(bool pv, bool eco) {
         size_t mode = (size_t) supported_charge_modes.get(i)->asEnum<ConfigChargeMode>();
         this->supported_charge_mode_bitmask[mode / 8] |= 1 << (mode % 8);
     }
+}
+
+ConfigChargeMode ChargeManager::get_default_mode() {
+    if (this->pm_default_charge_mode != ConfigChargeMode::Default)
+        return this->pm_default_charge_mode;
+    // default mode == default means persistent.
+    // Use the currently selected charge mode (for all chargers)
+
+    return this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>();
 }
 
 void ChargeManager::register_events() {

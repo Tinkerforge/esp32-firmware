@@ -111,6 +111,8 @@ private:
 
     void update_supported_charge_modes(bool pv, bool eco);
 
+    ConfigChargeMode get_default_mode();
+
     size_t charger_count = 0;
 
     micros_t last_available_current_update = 0_us;
