@@ -21,6 +21,14 @@
 #include "web_sockets.h"
 #include "web_sockets_client.h"
 
+WebSocketsClient::~WebSocketsClient()
+{
+    if (ctx != nullptr) {
+        free(ctx);
+        ctx = nullptr;
+    }
+}
+
 bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
@@ -31,4 +39,11 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
 void WebSocketsClient::close_HTTPThread()
 {
     ws->keepAliveCloseDead(fd);
+}
+
+void *WebSocketsClient::setCtx(void *ctx_)
+{
+    void *old_ctx = ctx;
+    ctx = ctx_;
+    return old_ctx;
 }

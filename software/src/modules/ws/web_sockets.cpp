@@ -177,12 +177,23 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
     } else if (ws_pkt.type == HTTPD_WS_TYPE_BINARY) {
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         if (ws->on_binary_data_received_fn != nullptr) {
-            ws->on_binary_data_received_fn(httpd_req_to_sockfd(req), &ws_pkt);
+            WebSocketsClient *client = static_cast<WebSocketsClient *>(req->sess_ctx);
+            ws->on_binary_data_received_fn(client, &ws_pkt);
         }
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->keepAliveRemove(httpd_req_to_sockfd(req));
+
+        // Abuse the ws_control_frames flag to indicate that we received a close frame.
+        // Any socket that still has both ws_handshake_done and ws_control_frames set to true on close wasn't closed cleanly.
+        struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
+        aux->sd->ws_control_frames = false;
+
+        if (ws->on_client_disconnect_fn != nullptr) {
+            WebSocketsClient *client = static_cast<WebSocketsClient *>(req->sess_ctx);
+            ws->on_client_disconnect_fn(client, true);
+        }
     }
     free(buf);
     return ESP_OK;
@@ -586,6 +597,15 @@ void WebSockets::updateDebugState()
     }
 }
 
+static void session_ctx_free_fn(void *ctx)
+{
+    if (ctx == nullptr) {
+        return;
+    }
+
+    delete static_cast<WebSocketsClient *>(ctx);
+}
+
 void WebSockets::start(const char *uri, const char *state_path, const char *supported_subprotocol, uint16_t port)
 {
     if (this->running) {
@@ -634,11 +654,15 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
             bool success = true;
 
             if (this->on_client_connect_fn) {
+                WebSocketsClient *client = new WebSocketsClient{sock, this};
+
+                httpd_sess_set_ctx(httpd, sock, client, session_ctx_free_fn);
+
                 // call the client connect callback before adding the client to
                 // the keep alive list to ensure that the full state is send by the
                 // callback before any other message with a partial state might
                 // be send to all clients known by the keep alive list
-                success = this->on_client_connect_fn(WebSocketsClient{sock, this});
+                success = this->on_client_connect_fn(client);
             }
 
             if (success) {
@@ -728,30 +752,31 @@ void WebSockets::stop() {
     }
 }
 
-void WebSockets::onConnect_HTTPThread(std::function<bool(WebSocketsClient)> &&fn)
+void WebSockets::onConnect_HTTPThread(std::function<bool(WebSocketsClient *)> &&fn)
 {
     on_client_connect_fn = std::move(fn);
 }
 
-// TODO: In a perfect world this function would be part of the WebSocketsClient class.
-//       In the ws_handler it could then be called with just the websocket frame.
-//       Currently all callees of this function have to check the fd against all open connections and match it.
-//       If we would do this the other way around, the interfaces would be nicer.
-//       However, in WebSockets we would need to keep a list of all WebSocketsClient instances and
-//       and maintain it (remove closed connections etc). This is not necessary now.
-//
-//       Consider using httpd_sess_set_ctx() with a custom free_fn that does nothing.
-//       Set context:
-//       httpd_sess_set_ctx(httpd, sock, reinterpret_cast<void *>(0x1234u), custom_ctx_free_fn);
-//       Access context inside ws_handler:
-//       void *ctx1 = req->sess_ctx;
-//       void *ctx2 = req->aux->sd->ctx;
-//       void *ctx3 = httpd_sess_get_ctx(aux->sd->handle, aux->sd->fd);
-void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> &&fn)
+void WebSockets::onDisconnect_HTTPThread(std::function<void(WebSocketsClient *client, bool clean_close)> &&fn)
+{
+    on_client_disconnect_fn = std::move(fn);
+}
+
+void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(WebSocketsClient *client, httpd_ws_frame_t *ws_pkt)> &&fn)
 {
     on_binary_data_received_fn = std::move(fn);
 }
 
 void WebSockets::pre_reboot() {
     this->stop();
+}
+
+void WebSockets::notify_unclean_close(struct sock_db *session)
+{
+    keepAliveRemove(session->fd);
+
+    if (on_client_disconnect_fn != nullptr && session->ctx != nullptr) {
+        WebSocketsClient *client = static_cast<WebSocketsClient *>(session->ctx);
+        on_client_disconnect_fn(client, false);
+    }
 }
