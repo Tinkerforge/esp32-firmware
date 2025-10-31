@@ -14,7 +14,8 @@ let x = {
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current",
-            "mode": "Charging mode"
+            "mode": "charge mode",
+            "mode_muted": "Updates the charge mode of all controlled chargers"
         },
         "navbar": {
             "charge_manager_settings": "Charge Management",
@@ -253,7 +254,7 @@ let x = {
             "mode_explainer_1_em_with_ps": <>{__("This_device")} is controlled by another WARP Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.</>,
             "mode_explainer_2_em_with_ps": <>{__("This_device")} controls one or more WARP Chargers and can perform phase switching for a single controlled charger that is connected to its contactor.</>,
 
-            "mode_change_failed": "Failed to change charging mode.",
+            "mode_change_failed": "Failed to change charge mode.",
 
             "phase": /*SFN*/ (phase: number) => phase == 0 ? 'PV excess' : `phase L${phase}`/*NF*/,
             "phase_current": /*SFN*/ (phase: number) => phase == 0 ? 'PV excess' : `L${phase} phase current`/*NF*/,

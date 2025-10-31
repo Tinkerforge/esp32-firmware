@@ -14,7 +14,8 @@ let x = {
             "error": "Fehler",
             "managed_boxes": "Kontrollierte Wallboxen",
             "available_current": "Verfügbarer Strom",
-            "mode": "Lademodus"
+            "mode": "Lademodus",
+            "mode_muted": "setzt den Lademodus aller kontrollierten Wallboxen"
         },
         "navbar": {
             "charge_manager_settings": "Lastmanagement",
