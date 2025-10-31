@@ -399,7 +399,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         }
 
                         {!this.state.is_evse_v2 ? undefined :
-                            <>
                             <FormRow label={__("evse.content.phases_connected")} help={__("evse.content.phases_connected_help")}>
                                 <InputSelect items={[
                                                 ["1",__("evse.content.phases_connected_1")],
@@ -411,7 +410,9 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                         }}
                                 />
                             </FormRow>
+                        }
 
+                        {!this.state.is_evse_v3 ? undefined :
                             <FormRow label={__("evse.content.phase_switch_wait_time")} help={__("evse.content.phase_switch_wait_time_help")}>
                                 <InputSelect items={[
                                         ["0",__("evse.content.phase_switch_wait_time_default")],
@@ -426,7 +427,6 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     }}
                                 />
                             </FormRow>
-                            </>
                         }
                         </>
                     }
