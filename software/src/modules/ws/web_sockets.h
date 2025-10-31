@@ -26,19 +26,10 @@
 #include <esp_http_server.h>
 
 #include "config.h"
+#include "web_sockets_client.h"
 
 #define MAX_WEB_SOCKET_CLIENTS 5
 #define MAX_WEB_SOCKET_WORK_ITEMS_IN_QUEUE 32
-
-class WebSockets;
-
-struct WebSocketsClient {
-    int fd;
-    WebSockets *ws;
-
-    bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
-    void close_HTTPThread();
-};
 
 struct ws_work_item {
     int fds[MAX_WEB_SOCKET_CLIENTS];

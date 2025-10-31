@@ -350,18 +350,6 @@ void WebSockets::fakeReceivedPongAll()
     }
 }
 
-bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
-{
-    ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
-    bool result = ws->send_ws_work_item(&wi);
-    return result;
-}
-
-void WebSocketsClient::close_HTTPThread()
-{
-    ws->keepAliveCloseDead(fd);
-}
-
 bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, httpd_ws_type_t ws_type)
 {
     // Connection was closed -> message was "sent", as in it has not to be resent
