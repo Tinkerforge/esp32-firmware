@@ -104,6 +104,10 @@ let x = {
             "gpio_in": "Konfigurierbarer Eingang",
             "gpio_shutdown": "Abschalteingang",
             "button_configuration": "Tastereinstellung",
+            "phase_switch_wait_time": "Wartezeit bei Phasenumschaltung",
+            "phase_switch_wait_time_help": "Eine Phasenumschaltung täuscht immer das Abziehen und Anstecken des Ladekabels durch Trennen des CP-Signals vor. Manche Fahrzeuge benötigen eine längere Wartezeit, bevor das Ladekabel wieder verbunden wird. Der Standardwert ist die minimale Zeit, die mit allen von uns getesteten Fahrzeugen funktioniert. Ein künftiges Firmware-Update kann diese Zeit für bessere Kompatibilität anpassen.",
+            "phase_switch_wait_time_default": "Standard (45 Sekunden)",
+            "seconds": "Sekunden",
 
             "auto_start_description": "Manuelle Ladefreigabe",
             "auto_start_description_help": <><p>Wenn die manuelle Ladefreigabe aktiviert wird, wird ein Ladevorgang niemals automatisch begonnen. Jeder Ladevorgang muss über das Webinterface, die API oder (je nach Tastereinstellung) den Taster gestartet werden. Die manuelle Ladefreigabe blockiert zusätzlich zu eventuell anderen aktiven Ladestromgrenzen. Das heißt, dass sie nicht aktiviert werden muss, wenn Ladevorgänge beispielsweise mit der Benutzerfreigabe per NFC-Tag, oder der Steuerung per OCPP kontrolliert werden.</p></>,

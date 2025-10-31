@@ -361,12 +361,12 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME 63
+#define TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME 63
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_CP_RECONNECT_TIME 64
+#define TF_EVSE_V2_FUNCTION_GET_PHASE_SWITCH_WAIT_TIME 64
 
 /**
  * \ingroup TF_EVSEV2
@@ -1315,117 +1315,117 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_DEFAULT 0
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_DEFAULT 0
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_15_SECONDS 1
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_15_SECONDS 1
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_20_SECONDS 2
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_20_SECONDS 2
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_25_SECONDS 3
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_25_SECONDS 3
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_30_SECONDS 4
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_30_SECONDS 4
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_35_SECONDS 5
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_35_SECONDS 5
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_40_SECONDS 6
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_40_SECONDS 6
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_45_SECONDS 7
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_45_SECONDS 7
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_50_SECONDS 8
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_50_SECONDS 8
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_55_SECONDS 9
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_55_SECONDS 9
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_60_SECONDS 10
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_60_SECONDS 10
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_65_SECONDS 11
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_65_SECONDS 11
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_70_SECONDS 12
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_70_SECONDS 12
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_75_SECONDS 13
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_75_SECONDS 13
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_80_SECONDS 14
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_80_SECONDS 14
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_85_SECONDS 15
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_85_SECONDS 15
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_90_SECONDS 16
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_90_SECONDS 16
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_95_SECONDS 17
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_95_SECONDS 17
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_100_SECONDS 18
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_100_SECONDS 18
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_105_SECONDS 19
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_105_SECONDS 19
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_110_SECONDS 20
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_110_SECONDS 20
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_115_SECONDS 21
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_115_SECONDS 21
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CP_RECONNECT_TIME_120_SECONDS 22
+#define TF_EVSE_V2_PHASE_SWITCH_WAIT_TIME_120_SECONDS 22
 
 /**
  * \ingroup TF_EVSEV2
@@ -1880,7 +1880,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_cp_reconnect_time);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time);
 
 /**
  * \ingroup TF_EVSEV2
@@ -2083,14 +2083,14 @@ int tf_evse_v2_get_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t *ret_value, uint3
  *
  * TODO
  */
-int tf_evse_v2_set_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t cp_reconnect_time);
+int tf_evse_v2_set_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t phase_switch_wait_time);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t *ret_cp_reconnect_time);
+int tf_evse_v2_get_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t *ret_phase_switch_wait_time);
 
 /**
  * \ingroup TF_EVSEV2

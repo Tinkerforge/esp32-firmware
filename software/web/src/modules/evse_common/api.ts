@@ -195,3 +195,7 @@ export interface charge_mode {
     mode: ConfigChargeMode;
 }
 export type supported_charge_modes = ConfigChargeMode[];
+
+export interface phase_switch_wait_time {
+    time: number;
+}

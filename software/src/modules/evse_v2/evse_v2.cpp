@@ -132,6 +132,11 @@ void EVSEV2::pre_setup()
 
     gp_output_update = gp_output;
 
+    phase_switch_wait_time = Config::Object({
+        {"time", Config::Uint8(0)}
+    });
+    phase_switch_wait_time_update = phase_switch_wait_time;
+
 #if MODULE_AUTOMATION_AVAILABLE()
     // Create a temporary config that allocates a schema.
     auto automation_cfg = Config::Object({
@@ -271,6 +276,13 @@ void EVSEV2::post_register_urls()
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](String &/*errmsg*/) {
         is_in_bootloader(tf_evse_v2_set_gp_output(&device, gp_output_update.get("gp_output")->asUint()));
+    }, true);
+#endif
+
+#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+    api.addState("evse/phase_switch_wait_time", &phase_switch_wait_time);
+    api.addCommand("evse/phase_switch_wait_time_update", &phase_switch_wait_time_update, {}, [this](String &/*errmsg*/) {
+        is_in_bootloader(tf_evse_v2_set_phase_switch_wait_time(&device, phase_switch_wait_time_update.get("time")->asUint()));
     }, true);
 #endif
 }
@@ -858,6 +870,9 @@ void EVSEV2::update_all_data()
     uint8_t phases_info;
     bool phase_auto_switch_enabled;
     uint8_t phases_connected_;
+    uint8_t enumerate_value;
+    uint32_t enumerate_value_change_time;
+    uint8_t phase_switch_wait_time_;
 
     // get_low_level_state
     uint8_t led_state;
@@ -874,13 +889,6 @@ void EVSEV2::update_all_data()
     // get_all_charging_slots
     uint16_t max_current[20];
     uint8_t active_and_clear_on_disconnect[20];
-
-    // get_enumerate_value
-    uint8_t enumerate_value;
-    uint32_t enumerate_value_change_time;
-
-    // get_cp_reconnect_time
-    uint8_t cp_reconnect_time;
 
     int rc = tf_evse_v2_get_all_data_1(&device,
                                        &iec61851_state,
@@ -932,7 +940,7 @@ void EVSEV2::update_all_data()
                                    &phases_connected_,
                                    &enumerate_value,
                                    &enumerate_value_change_time,
-                                   &cp_reconnect_time);
+                                   &phase_switch_wait_time_);
 
     if (rc != TF_E_OK) {
         logger.printfln("all_data_2 %d", rc);
@@ -1234,6 +1242,10 @@ void EVSEV2::update_all_data()
 
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
+#endif
+
+#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+    phase_switch_wait_time.get("time")->updateUint(phase_switch_wait_time_);
 #endif
 
     evse_common.low_level_state.get("temperature")->updateInt(temperature);
