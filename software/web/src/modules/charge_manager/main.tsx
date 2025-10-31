@@ -109,8 +109,6 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): string {
     switch (d0[0]) {
         case ZeroPhaseDecisionTag.None:
             return "None"
-        case ZeroPhaseDecisionTag.YesChargeModeOff:
-            return __("charge_manager.script.zpd_yes_charge_mode_off");
         case ZeroPhaseDecisionTag.YesWaitingForRotation:
             return with_timespan(__("charge_manager.script.zpd_yes_waiting_for_rotation"), d0[1]);
         case ZeroPhaseDecisionTag.YesNotActive:
@@ -210,7 +208,6 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
 function get_timestamp_d0(d: ZeroPhaseDecision): number {
     switch (d[0]) {
         case ZeroPhaseDecisionTag.None:
-        case ZeroPhaseDecisionTag.YesChargeModeOff:
         case ZeroPhaseDecisionTag.YesNotActive:
         case ZeroPhaseDecisionTag.YesRotatedForB1:
         case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
@@ -297,7 +294,6 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
         case 0:
             switch (x.d0[0]) {
                 case ZeroPhaseDecisionTag.None:
-                case ZeroPhaseDecisionTag.YesChargeModeOff:
                 case ZeroPhaseDecisionTag.NoCloudFilterBlocksUntil:
                 case ZeroPhaseDecisionTag.NoHysteresisBlocksUntil:
                 case ZeroPhaseDecisionTag.YesNotActive:
@@ -350,7 +346,6 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
         case 1:
             switch (x.d0[0]) {
                 case ZeroPhaseDecisionTag.None:
-                case ZeroPhaseDecisionTag.YesChargeModeOff:
                 case ZeroPhaseDecisionTag.YesNotActive:
                 case ZeroPhaseDecisionTag.YesRotatedForB1:
                 case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
@@ -404,7 +399,6 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
         case 3:
             switch (x.d0[0]) {
                 case ZeroPhaseDecisionTag.None:
-                case ZeroPhaseDecisionTag.YesChargeModeOff:
                 case ZeroPhaseDecisionTag.YesNotActive:
                 case ZeroPhaseDecisionTag.YesRotatedForB1:
                 case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
