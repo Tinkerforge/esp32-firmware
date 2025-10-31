@@ -47,6 +47,7 @@ interface EVSESettingsState {
     auto_start_charging: API.getType['evse/auto_start_charging'];
     require_meter_enabled: API.getType['require_meter/config'];
     led_configuration: API.getType['evse/led_configuration'];
+    phase_switch_wait_time: API.getType['evse/phase_switch_wait_time'];
     evse_uptime: number
     is_evse_v2: boolean
     is_evse_v3: boolean
@@ -114,6 +115,10 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         util.addApiEventListener("evse/phases_connected", () => {
             this.setState({phases_connected: API.get("evse/phases_connected")});
         });
+
+        util.addApiEventListener("evse/phase_switch_wait_time", () => {
+            this.setState({phase_switch_wait_time: API.get("evse/phase_switch_wait_time")});
+        });
     }
 
     override async sendSave(topic: "charge_limits/default_limits", cfg: EVSESettingsState & ChargeLimitsConfig) {
@@ -128,6 +133,11 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/ev_wakeup', {"enabled": this.state.ev_wakeup.enabled}, () => __("evse.script.save_failed"));
             await API.save('evse/phase_auto_switch', {"enabled": this.state.phase_auto_switch.enabled}, () => __("evse.script.save_failed"));
             await API.save('evse/phases_connected', this.state.phases_connected, () => __("evse.script.save_failed"));
+        }
+
+        if (this.state.is_evse_v3) {
+            // TODO evse_v4?
+            await API.save('evse/phase_switch_wait_time', {"time": this.state.phase_switch_wait_time.time}, () => __("evse.script.save_failed"));
         }
 
         super.sendSave(topic, cfg);
@@ -148,6 +158,9 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             await API.save('evse/phase_auto_switch', {"enabled": true}, () => __("evse.script.save_failed"));
             await API.save('evse/phases_connected', {"phases": 3}, () => __("evse.script.save_failed"));
         }
+        if (this.state.is_evse_v3) {
+            await API.save('evse/phase_switch_wait_time', {"time": 0}, () => __("evse.script.save_failed"));
+        }
 
         super.sendReset(topic);
     }
@@ -161,11 +174,15 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
         result ||= API.is_modified('evse/led_configuration');
 
         if (this.state.is_evse_v2) {
+            // TODO: this smells broken. APIs below are not persistent configs, so there is no _modified topic to check.
             result ||= API.is_modified('evse/button_configuration');
             result ||= API.is_modified('evse/gpio_configuration');
             result ||= API.is_modified('evse/ev_wakeup');
             result ||= API.is_modified('evse/phase_auto_switch');
             result ||= API.is_modified('evse/phases_connected');
+        }
+        if (this.state.is_evse_v3) {
+            result ||= API.is_modified('evse/phase_switch_wait_time');
         }
 
         result ||= super.getIsModified(topic);
@@ -186,7 +203,8 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
             boost_mode,
             auto_start_charging,
             require_meter_enabled,
-            led_configuration} = s;
+            led_configuration,
+            phase_switch_wait_time} = s;
 
         const has_meter = API.hasFeature("meter");
         let disable_three_phase_entry = false;
@@ -381,6 +399,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         }
 
                         {!this.state.is_evse_v2 ? undefined :
+                            <>
                             <FormRow label={__("evse.content.phases_connected")} help={__("evse.content.phases_connected_help")}>
                                 <InputSelect items={[
                                                 ["1",__("evse.content.phases_connected_1")],
@@ -392,6 +411,22 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                         }}
                                 />
                             </FormRow>
+
+                            <FormRow label={__("evse.content.phase_switch_wait_time")} help={__("evse.content.phase_switch_wait_time_help")}>
+                                <InputSelect items={[
+                                        ["0",__("evse.content.phase_switch_wait_time_default")],
+                                        ...[...Array(22).keys()].map((i) => [
+                                            (i + 1).toString(),
+                                            (15 + i * 5) + " " + __("evse.content.seconds")
+                                        ] as [string, string])
+                                    ]}
+                                    value={phase_switch_wait_time.time}
+                                    onValue={async (v) => {
+                                        this.setState({phase_switch_wait_time: {time: parseInt(v)}});
+                                    }}
+                                />
+                            </FormRow>
+                            </>
                         }
                         </>
                     }

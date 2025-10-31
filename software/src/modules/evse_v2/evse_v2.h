@@ -138,6 +138,8 @@ private:
     ConfigRoot control_pilot_disconnect_update;
     ConfigRoot gp_output;
     ConfigRoot gp_output_update;
+    ConfigRoot phase_switch_wait_time;
+    ConfigRoot phase_switch_wait_time_update;
 };
 
 #include "module_available_end.h"

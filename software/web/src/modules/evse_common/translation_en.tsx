@@ -104,6 +104,10 @@ let x = {
             "gpio_in": "General purpose input",
             "gpio_shutdown": "Shutdown input",
             "button_configuration": "Button configuration",
+            "phase_switch_wait_time": "Phase switch wait time",
+            "phase_switch_wait_time_help": "A phase switch always fakes un- and re-plugging the charge cable by disconnecting the CP signal. Some vehicles require a longer wait time before reconnecting the cable. The default value is the minimum time that works with all vehicles we have tested. A future firmware update may adjust this time for better compatibility.",
+            "phase_switch_wait_time_default": "Default (45 seconds)",
+            "seconds": "seconds",
 
             "auto_start_description": "Manual charge release",
             "auto_start_description_help": <><p>If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.</p></>,

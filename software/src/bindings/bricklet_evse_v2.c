@@ -239,7 +239,7 @@ int tf_evse_v2_get_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 *ret_response_expected = (evse_v2->response_expected[2] & (1 << 3)) != 0;
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME:
+        case TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (evse_v2->response_expected[2] & (1 << 4)) != 0;
             }
@@ -421,7 +421,7 @@ int tf_evse_v2_set_response_expected(TF_EVSEV2 *evse_v2, uint8_t function_id, bo
                 evse_v2->response_expected[2] &= ~(1 << 3);
             }
             break;
-        case TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME:
+        case TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME:
             if (response_expected) {
                 evse_v2->response_expected[2] |= (1 << 4);
             } else {
@@ -2328,7 +2328,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_cp_reconnect_time) {
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_phase_switch_wait_time) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -2386,7 +2386,7 @@ int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_co
             if (ret_phases_connected != NULL) { *ret_phases_connected = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_enumerate_value != NULL) { *ret_enumerate_value = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
             if (ret_enumerate_value_change_time != NULL) { *ret_enumerate_value_change_time = tf_packet_buffer_read_uint32_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 4); }
-            if (ret_cp_reconnect_time != NULL) { *ret_cp_reconnect_time = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phase_switch_wait_time != NULL) { *ret_phase_switch_wait_time = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(evse_v2->tfp);
     }
@@ -4112,7 +4112,7 @@ int tf_evse_v2_get_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t *ret_value, uint3
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_set_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t cp_reconnect_time) {
+int tf_evse_v2_set_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t phase_switch_wait_time) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -4128,12 +4128,12 @@ int tf_evse_v2_set_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t cp_reconnect_ti
     }
 
     bool _response_expected = true;
-    tf_evse_v2_get_response_expected(evse_v2, TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME, &_response_expected);
-    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME, 1, _response_expected);
+    tf_evse_v2_get_response_expected(evse_v2, TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME, &_response_expected);
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME, 1, _response_expected);
 
     uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(evse_v2->tfp);
 
-    _send_buf[0] = (uint8_t)cp_reconnect_time;
+    _send_buf[0] = (uint8_t)phase_switch_wait_time;
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -4170,7 +4170,7 @@ int tf_evse_v2_set_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t cp_reconnect_ti
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t *ret_cp_reconnect_time) {
+int tf_evse_v2_get_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t *ret_phase_switch_wait_time) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -4186,7 +4186,7 @@ int tf_evse_v2_get_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t *ret_cp_reconne
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_CP_RECONNECT_TIME, 0, _response_expected);
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_PHASE_SWITCH_WAIT_TIME, 0, _response_expected);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 
@@ -4204,7 +4204,7 @@ int tf_evse_v2_get_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t *ret_cp_reconne
         if (_error_code != 0 || _length != 1) {
             tf_packet_buffer_remove(_recv_buf, _length);
         } else {
-            if (ret_cp_reconnect_time != NULL) { *ret_cp_reconnect_time = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_phase_switch_wait_time != NULL) { *ret_phase_switch_wait_time = tf_packet_buffer_read_uint8_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
         }
         tf_tfp_packet_processed(evse_v2->tfp);
     }
