@@ -27,13 +27,13 @@ def log(*args, **kwargs):
 
 class FlavoredName:
     def __init__(self, name):
-        last_c = None
+        # last_c = None
 
-        for c in name:
-            if last_c != None and last_c.islower() and c.isupper():
-                raise Exception(f'{c} cannot follow {last_c} in {name}')
+        # for c in name:
+        #     if last_c != None and last_c.islower() and c.isupper():
+        #         raise Exception(f'{c} cannot follow {last_c} in {name}')
 
-            last_c = c
+        #     last_c = c
 
         self.words = name.split(' ')
         self.cache = {}
