@@ -2971,8 +2971,8 @@ void MeterModbusTCP::parse_next()
                               + fox_ess_h3_smart_hybrid_inverter.pv3_current
                               + fox_ess_h3_smart_hybrid_inverter.pv4_current;
 
-            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
-            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 2], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 3], current_sum);
         }
         else if (register_start_address == FoxESSH3SmartHybridInverterPVAddress::PVPowerTotal) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
@@ -3225,8 +3225,8 @@ void MeterModbusTCP::parse_next()
                               + fox_ess_h3_pro_hybrid_inverter.pv5_current
                               + fox_ess_h3_pro_hybrid_inverter.pv6_current;
 
-            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
-            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 2], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 3], current_sum);
         }
         else if (register_start_address == FoxESSH3ProHybridInverterPVAddress::PVPowerTotal) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
