@@ -42,10 +42,11 @@ private:
     ConfigRoot state_chargers_prototype;
 
     size_t trace_buffer_index;
-    micros_t last_seen_plug_in[MAX_CONTROLLED_CHARGERS];
 
-    uint32_t last_charge_15m;
-    ChargeDecision last_charge_decision;
+    micros_t *last_seen_plug_in;
+    uint32_t *last_charge_15m;
+    ChargeDecision *last_charge_decision;
+    ChargeDecision *charge_decision;
 
     void disable_charge_plan();
     void set_chargers_state_chart_data(const uint8_t charger_id, bool *chart_input, const uint8_t chart_input_length, const bool use_default_chart);
@@ -58,6 +59,4 @@ public:
     void setup() override;
     void register_urls() override;
     ChargeDecision get_charge_decision(const uint8_t charger_id);
-
-    ChargeDecision charge_decision[MAX_CONTROLLED_CHARGERS];
 };

@@ -45,6 +45,13 @@ void Eco::pre_setup()
 {
     this->trace_buffer_index = logger.alloc_trace_buffer("eco", 1 << 18);
 
+    // Note: If we desperately need psram we can alloc this when the eco module is enabled
+    // and free again when eco module is disabled.
+    charge_decision      = new_array_psram_or_dram<ChargeDecision>(MAX_CONTROLLED_CHARGERS);
+    last_charge_15m      = new_array_psram_or_dram<uint32_t>(MAX_CONTROLLED_CHARGERS);
+    last_seen_plug_in    = new_array_psram_or_dram<micros_t>(MAX_CONTROLLED_CHARGERS);
+    last_charge_decision = new_array_psram_or_dram<ChargeDecision>(MAX_CONTROLLED_CHARGERS);
+
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"park_time", Config::Bool(false)},
@@ -94,14 +101,10 @@ void Eco::setup()
 
     state.get("chargers")->setCount(controlled_chargers);
 
-    for (size_t i = 0; i < controlled_chargers; i++) {
-        last_seen_plug_in[i] = 0_us;
-    }
-
     std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
-
-    last_charge_15m = 0;
-    last_charge_decision = ChargeDecision::Normal;
+    std::fill_n(last_seen_plug_in, MAX_CONTROLLED_CHARGERS, 0_us);
+    std::fill_n(last_charge_15m, MAX_CONTROLLED_CHARGERS, 0);
+    std::fill_n(last_charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);
 
     // Wait for clock to be synced and day ahead prices to be available to initialize chart data
     task_scheduler.scheduleWhenClockSynced([this]() {
@@ -514,20 +517,20 @@ void Eco::update()
             if (!decision_is_done) {
                 // Make sure to always stay consistant for full 15 minute slots
                 const uint32_t current_15m = current_time_1m/15;
-                const bool overwrite_decision = last_charge_15m == current_15m;
-                last_charge_15m = current_15m;
+                const bool overwrite_decision = last_charge_15m[charger_id] == current_15m;
+                last_charge_15m[charger_id] = current_15m;
 
                 if (duration_remaining_1m == 0) {
                     charge_decision[charger_id] = ChargeDecision::Normal;
                 } else if(overwrite_decision) {
-                    charge_decision[charger_id] = last_charge_decision;
+                    charge_decision[charger_id] = last_charge_decision[charger_id];
                 } else {
                     if(ret && cheap_hours[0]) {
                         charge_decision[charger_id] = ChargeDecision::Fast;
                     } else {
                         charge_decision[charger_id] = ChargeDecision::Normal;
                     }
-                    last_charge_decision = charge_decision[charger_id];
+                    last_charge_decision[charger_id] = charge_decision[charger_id];
                 }
                 extended_logging("Charger %hhu: Current price (%li) is %s -> %s [current_time %lum, duration_remaining %lum, desired_amount %lum, charged_amount %lum]", charger_id, current_price, (charge_decision[charger_id] == ChargeDecision::Fast) ? "cheap" : "expensive", (charge_decision[charger_id] == ChargeDecision::Fast) ? "Fast" : "Normal", current_time_1m, duration_remaining_1m, desired_amount_1m, charged_amount_1m);
             }
