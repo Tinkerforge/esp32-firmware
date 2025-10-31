@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2025-09-21.      *
+ * This file was automatically generated on 2025-10-31.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -29,6 +29,10 @@ struct TF_EVSEV2;
 #if TF_IMPLEMENT_CALLBACKS != 0
 
 typedef void (*TF_EVSEV2_EnergyMeterValuesHandler)(struct TF_EVSEV2 *evse_v2, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data);
+typedef void (*TF_EVSEV2_EichrechtDatasetLowLevelHandler)(struct TF_EVSEV2 *evse_v2, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_EVSEV2_EichrechtDatasetHandler)(struct TF_EVSEV2 *evse_v2, char *message, uint16_t message_length, void *user_data);
+typedef void (*TF_EVSEV2_EichrechtSignatureLowLevelHandler)(struct TF_EVSEV2 *evse_v2, uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data);
+typedef void (*TF_EVSEV2_EichrechtSignatureHandler)(struct TF_EVSEV2 *evse_v2, char *message, uint16_t message_length, void *user_data);
 
 #endif
 /**
@@ -42,9 +46,21 @@ typedef struct TF_EVSEV2 {
     TF_EVSEV2_EnergyMeterValuesHandler energy_meter_values_handler;
     void *energy_meter_values_user_data;
 
+    TF_EVSEV2_EichrechtDatasetLowLevelHandler eichrecht_dataset_low_level_handler;
+    void *eichrecht_dataset_low_level_user_data;
+
+    TF_EVSEV2_EichrechtSignatureLowLevelHandler eichrecht_signature_low_level_handler;
+    void *eichrecht_signature_low_level_user_data;
+
+    TF_EVSEV2_EichrechtDatasetHandler eichrecht_dataset_handler;
+    TF_HighLevelCallback eichrecht_dataset_hlc;
+
+    TF_EVSEV2_EichrechtSignatureHandler eichrecht_signature_handler;
+    TF_HighLevelCallback eichrecht_signature_hlc;
+
 #endif
     uint16_t magic;
-    uint8_t response_expected[3];
+    uint8_t response_expected[4];
 } TF_EVSEV2;
 
 /**
@@ -280,6 +296,81 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_GENERAL_INFORMATION 48
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_GENERAL_INFORMATION 49
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT 50
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT 51
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_CHARGE_POINT 52
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_CHARGE_POINT 53
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_TRANSACTION 54
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION 55
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_PUBLIC_KEY 56
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_CONFIGURATION 59
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_CONFIGURATION 60
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_VALUE 61
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_VALUE 62
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_CP_RECONNECT_TIME 63
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_CP_RECONNECT_TIME 64
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -343,6 +434,16 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_CALLBACK_ENERGY_METER_VALUES 45
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CALLBACK_EICHRECHT_DATASET_LOW_LEVEL 57
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CALLBACK_EICHRECHT_SIGNATURE_LOW_LEVEL 58
 
 #endif
 
@@ -634,6 +735,11 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_BUTTON_CONFIGURATION_ENUMERATE 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_CONTROL_PILOT_DISCONNECTED 0
 
 /**
@@ -795,6 +901,531 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_STATE_OK 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_STATE_NOT_ALL_INFO_SET 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_STATE_BUSY 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_STATE_NOT_SUPPORTED 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_NONE 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_PLAIN 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_RELATED 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_PSK 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_NONE 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_RS 5
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_AUTH 6
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_RS_TLS 7
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_AUTH_TLS 8
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_CACHE 9
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_WHITELIST 10
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_CERTIFIED 11
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_ISO15118_NONE 12
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_ISO15118_PNC 13
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_NONE 14
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_RING 15
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_SMS 16
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_NOT_SET 17
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_NONE 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_DENIED 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_UNDEFINED 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO14443 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO15693 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EMAID 5
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EVCCID 6
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EVCOID 7
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO7812 8
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CARD_TXN_NR 9
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL 10
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL_1 11
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL_2 12
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL 13
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL_1 14
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL_2 15
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_PHONE_NUMBER 16
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_KEY_CODE 17
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_CHARGE_POINT_IDENTIFICATION_TYPE_EVSEID 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_CHARGE_POINT_IDENTIFICATION_TYPE_CBIDC 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_NOT_INITIALISED 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_IDLE 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_SIGNATURE_IN_PROGRESS 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_SIGNATURE_OK 15
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_DATE_TIME 128
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_CHECKSUM_ERROR 129
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_COMMAND 130
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_STATE 131
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_MEASUREMENT 132
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_TEST_MODE_ERROR 133
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_VERIFY_STATE_ERROR 243
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_SIGNATURE_STATE_ERROR 244
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_KEYPAIR_GENERATION 245
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_SHA_FAILED 246
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INIT_FAILED 247
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_DATA_NOT_LOCKED 248
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_CONFIG_NOT_LOCKED 249
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_VERIFY_ERROR 250
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_PUBLIC_KEY_ERROR 251
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_MESSAGE_FORMAT 252
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_INVALID_MESSAGE_SIZE 253
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_SIGNATURE_ERROR 254
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_STATUS_UNDEFINED_ERROR 255
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_FORMAT_ASN1 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_SIGNATURE_FORMAT_BASE64 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_IDLE 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_ACTIVE 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_ACTIVE_AFTER_POWER_FAILURE 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_ACTIVE_AFTER_RESET 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_INVALID_DATE_TIME 128
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_BEGIN 'B'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_END 'E'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_INTERMEDIATE 'C'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_EXCEPTION 'X'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_TARIFF_CHANGE 'T'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_SUSPENDED 'S'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_END_WITH_BEGIN 'r'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_FISCAL_READING 'f'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_HOLD_COMMAND 'h'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_LAST_CHARGE_READING 'i'
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_DEFAULT 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_15_SECONDS 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_20_SECONDS 2
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_25_SECONDS 3
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_30_SECONDS 4
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_35_SECONDS 5
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_40_SECONDS 6
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_45_SECONDS 7
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_50_SECONDS 8
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_55_SECONDS 9
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_60_SECONDS 10
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_65_SECONDS 11
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_70_SECONDS 12
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_75_SECONDS 13
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_80_SECONDS 14
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_85_SECONDS 15
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_90_SECONDS 16
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_95_SECONDS 17
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_100_SECONDS 18
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_105_SECONDS 19
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_110_SECONDS 20
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_115_SECONDS 21
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CP_RECONNECT_TIME_120_SECONDS 22
 
 /**
  * \ingroup TF_EVSEV2
@@ -961,6 +1592,58 @@ int tf_evse_v2_set_response_expected_all(TF_EVSEV2 *evse_v2, bool response_expec
  * TODO
  */
 int tf_evse_v2_register_energy_meter_values_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EnergyMeterValuesHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Registers the given \c handler to the Eichrecht Dataset Low Level callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_evse_v2_register_eichrecht_dataset_low_level_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtDatasetLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Registers the given \c handler to the Eichrecht Dataset callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(char *message, uint16_t message_length, void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_evse_v2_register_eichrecht_dataset_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data);
+
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Registers the given \c handler to the Eichrecht Signature Low Level callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint16_t message_length, uint16_t message_chunk_offset, char message_chunk_data[60], void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_evse_v2_register_eichrecht_signature_low_level_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtSignatureLowLevelHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * Registers the given \c handler to the Eichrecht Signature callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(char *message, uint16_t message_length, void *user_data) \endcode
+ *
+ * TODO
+ */
+int tf_evse_v2_register_eichrecht_signature_callback(TF_EVSEV2 *evse_v2, TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
@@ -1197,7 +1880,7 @@ int tf_evse_v2_get_all_data_1(TF_EVSEV2 *evse_v2, uint8_t *ret_iec61851_state, u
  *
  * TODO
  */
-int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected);
+int tf_evse_v2_get_all_data_2(TF_EVSEV2 *evse_v2, uint8_t *ret_shutdown_input_configuration, uint8_t *ret_input_configuration, uint8_t *ret_output_configuration, int16_t *ret_indication, uint16_t *ret_duration, uint16_t *ret_color_h, uint8_t *ret_color_s, uint8_t *ret_color_v, uint8_t *ret_button_configuration, uint32_t *ret_button_press_time, uint32_t *ret_button_release_time, bool *ret_button_pressed, bool *ret_ev_wakeup_enabled, bool *ret_control_pilot_disconnect, bool *ret_boost_mode_enabled, int16_t *ret_temperature, uint8_t *ret_phases_current, uint8_t *ret_phases_requested, uint8_t *ret_phases_state, uint8_t *ret_phases_info, bool *ret_phase_auto_switch_enabled, uint8_t *ret_phases_connected, uint8_t *ret_enumerate_value, uint32_t *ret_enumerate_value_change_time, uint8_t *ret_cp_reconnect_time);
 
 /**
  * \ingroup TF_EVSEV2
@@ -1303,6 +1986,111 @@ int tf_evse_v2_set_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t charging_protoc
  * TODO
  */
 int tf_evse_v2_get_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t *ret_charging_protocol, uint16_t *ret_cp_duty_cycle);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_eichrecht_general_information(TF_EVSEV2 *evse_v2, const char gateway_identification[32], const char gateway_serial[32], uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_general_information(TF_EVSEV2 *evse_v2, char ret_gateway_identification[32], char ret_gateway_serial[32]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_eichrecht_user_assignment(TF_EVSEV2 *evse_v2, bool identification_status, const uint8_t identification_flags[4], uint8_t identification_type, const char identification_data[40], uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_user_assignment(TF_EVSEV2 *evse_v2, bool *ret_identification_status, uint8_t ret_identification_flags[4], uint8_t *ret_identification_type, char ret_identification_data[40]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_eichrecht_charge_point(TF_EVSEV2 *evse_v2, uint8_t identification_type, const char identification[20], uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_charge_point(TF_EVSEV2 *evse_v2, uint8_t *ret_identification_type, char ret_identification[20]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_eichrecht_transaction(TF_EVSEV2 *evse_v2, char transaction, uint32_t unix_time, int16_t utc_time_offset, uint16_t signature_format, uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_transaction(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_public_key(TF_EVSEV2 *evse_v2, uint8_t ret_public_key[64]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_enumerate_configuration(TF_EVSEV2 *evse_v2, const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_enumerate_configuration(TF_EVSEV2 *evse_v2, uint16_t ret_enumerator_h[8], uint8_t ret_enumerator_s[8], uint8_t ret_enumerator_v[8]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t value);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_enumerate_value(TF_EVSEV2 *evse_v2, uint8_t *ret_value, uint32_t *ret_value_change_time);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t cp_reconnect_time);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_cp_reconnect_time(TF_EVSEV2 *evse_v2, uint8_t *ret_cp_reconnect_time);
 
 /**
  * \ingroup TF_EVSEV2

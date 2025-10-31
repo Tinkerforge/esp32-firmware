@@ -109,6 +109,8 @@ protected:
     virtual void set_charging_slot_active(uint8_t slot, bool enabled) = 0;
     virtual int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) = 0;
     virtual int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) = 0;
+    virtual int set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]) = 0;
+    virtual int set_enumerate_value(uint8_t value) = 0;
     // End: Pass through to bindings functions
 
     virtual void update_all_data() = 0;
@@ -224,6 +226,7 @@ private:
     ConfigRoot charge_mode;
     ConfigRoot supported_charge_modes;
 #endif
+    ConfigRoot enumerate_value;
     micros_t request_charge_mode_until = 0_us;
 
     // Stored on ESP

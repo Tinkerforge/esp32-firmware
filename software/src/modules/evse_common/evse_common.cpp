@@ -188,6 +188,11 @@ void EvseCommon::pre_setup()
 
     supported_charge_modes = Config::Tuple({});
 #endif
+
+    enumerate_value = Config::Object({
+        {"value", Config::Uint8(0)},
+        {"value_change_time", Config::Uint32(0)},
+    });
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -424,7 +429,6 @@ void EvseCommon::register_urls()
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
-
         if (!ignore_allocation) {
             set_managed_current(current);
 
@@ -461,13 +465,90 @@ void EvseCommon::register_urls()
             request_charge_mode_until = 0_us;
         }
 
+        // Everything below only handles changing the charge mode via the front button.
+
+        bool list_changed = false;
         if (this->supported_charge_modes.count() != supported_mode_len) {
+            list_changed = true;
             this->supported_charge_modes.replace(supported_mode_len, Config::Enum(ConfigChargeMode::Default));
+
+            constexpr uint16_t h_4[] {
+                0, 120, 60, 180, 0, 0, 0, 0
+            };
+            constexpr uint8_t s_4[] {
+                255, 255, 255, 255, 0, 0, 0, 0
+            };
+            constexpr uint8_t v_4[] {
+                255, 255, 255, 255, 0, 0, 0, 0
+            };
+
+            constexpr uint16_t h_2[] {
+                0, 180, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t s_2[] {
+                255, 255, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t v_2[] {
+                255, 255, 0, 0, 0, 0, 0, 0
+            };
+
+            constexpr uint16_t h_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t s_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+            constexpr uint8_t v_0[] {
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+
+            if (supported_mode_len == 4)
+                backend->set_enumerate_configuration(h_4, s_4, v_4);
+            else if (supported_mode_len == 2)
+                backend->set_enumerate_configuration(h_2, s_2, v_2);
+            else
+                backend->set_enumerate_configuration(h_0, s_0, v_0);
+
+        } else {
+            for (size_t i = 0; i < supported_mode_len; ++i) {
+                list_changed |= this->supported_charge_modes.get(i)->asEnum<ConfigChargeMode>() != supported_modes[i];
+            }
         }
 
-        for (size_t i = 0; i < supported_mode_len; ++i) {
-            this->supported_charge_modes.get(i)->updateEnum(supported_modes[i]);
+        if (list_changed) {
+            // Supported charge modes are sent via a bitmask -> the preferred order is destroyed.
+            // Restore the preferred order by serarching each mode from the sorted list in the supported modes.
+            constexpr ConfigChargeMode sorted_modes[] {
+                ConfigChargeMode::Off,
+                ConfigChargeMode::PV,
+                ConfigChargeMode::Min,
+                ConfigChargeMode::MinPV,
+                ConfigChargeMode::Eco,
+                ConfigChargeMode::EcoPV,
+                ConfigChargeMode::EcoMin,
+                ConfigChargeMode::EcoMinPV,
+                ConfigChargeMode::Fast
+            };
+
+            size_t written = 0;
+            for (size_t sorted_idx = 0; sorted_idx < std::size(sorted_modes); ++sorted_idx) {
+                auto sorted_mode = sorted_modes[sorted_idx];
+
+                for (size_t supported_idx = 0; supported_idx < supported_mode_len; ++supported_idx) {
+                    if (supported_modes[supported_idx] != sorted_mode)
+                        continue;
+
+                    this->supported_charge_modes.get(written)->updateEnum(sorted_mode);
+                    ++written;
+                    break;
+                }
+            }
         }
+
+        for (size_t i = 0; i < supported_mode_len; ++i)
+            if (this->supported_charge_modes.get(i)->asEnum<ConfigChargeMode>() == mode)
+                backend->set_enumerate_value(i);
+
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -706,6 +787,8 @@ void EvseCommon::register_urls()
         backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
     }, false); //TODO: should this be an action?
 #endif
+
+    api.addState("evse/enumerate_value", &enumerate_value);
 }
 
 void EvseCommon::register_events()
@@ -724,6 +807,27 @@ void EvseCommon::register_events()
             return EventResult::OK;
         });
     }
+#endif
+
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    event.registerEvent("evse/enumerate_value", {"value_change_time"}, [this](const Config *) {
+        if (this->enumerate_value.get("value_change_time")->asUint() == 0)
+            return EventResult::OK;
+
+        auto new_value = this->enumerate_value.get("value")->asUint8();
+
+        if (new_value >= this->supported_charge_modes.count())
+            return EventResult::OK;
+
+        const String err = api.callCommand("evse/charge_mode_update", Config::ConfUpdateObject{{
+            {"mode", this->supported_charge_modes.get(new_value)->asEnumUnderlyingType<ConfigChargeMode>()}
+        }});
+        if (!err.isEmpty()) {
+            logger.printfln("Event couldn't request charge mode change: %s", err.c_str());
+        }
+
+        return EventResult::OK;
+    });
 #endif
 }
 

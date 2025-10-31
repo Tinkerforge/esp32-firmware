@@ -206,6 +206,7 @@ let x = {
             "button_configuration_start_charging": "Ladestart",
             "button_configuration_stop_charging": "Ladestop",
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
+            "button_configuration_charge_mode": "Lademodus anfordern",
 
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
             "ev_wakeup_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge wechselt in einen Energiesparmodus, falls ein Ladevorgang nicht innerhalb einer gewissen Zeit gestartet wird. Der Fahrzeug-Weckruf versucht, solche Ladeelektroniken automatisch zu wecken, falls das Fahrzeug nicht innerhalb von 30 Sekunden reagiert, wenn Strom zur Verfugung steht. Umgesetzt wird dies durch eine kurzzeitige Trennung des Control-Pilot- bzw. CP-Signals.</p></>,

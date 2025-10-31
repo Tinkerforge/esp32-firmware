@@ -91,6 +91,8 @@ protected:
     void set_charging_slot_active(uint8_t slot, bool enabled) override;
     int get_charging_slot_default(uint8_t slot, uint16_t *ret_max_current, bool *ret_enabled, bool *ret_clear_on_disconnect) override;
     int set_charging_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear_on_disconnect) override;
+    int set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]) override;
+    virtual int set_enumerate_value(uint8_t value) override;
 
     [[gnu::const]] size_t get_debug_header_length() const override;
     void get_debug_header(StringBuilder *sb) override;

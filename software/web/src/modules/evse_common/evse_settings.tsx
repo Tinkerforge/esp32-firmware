@@ -291,6 +291,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                             ["1",__("evse.content.button_configuration_start_charging")],
                                             ["2",__("evse.content.button_configuration_stop_charging")],
                                             ["3",__("evse.content.button_configuration_start_and_stop_charging")],
+                                            ["4",__("evse.content.button_configuration_charge_mode")],
                                         ]}
                                     value={button_cfg.button}
                                     onValue={async (v) => {
