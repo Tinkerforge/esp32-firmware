@@ -99,7 +99,7 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
     if (err == ESP_OK) {
         state_machine_next_step();
     } else {
-        logger.printfln("Error connectiing to peer");
+        logger.printfln("Error connecting to peer");
         schedule_close(0_ms);
     }
 }
@@ -132,6 +132,10 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 void ShipConnection::schedule_close(const millis_t delay_ms)
 {
     logger.printfln("Close requested for SHIP Connection");
+
+    task_scheduler.cancel(timeout_task);
+    timeout_task = 0;
+
     task_scheduler.scheduleOnce(
         [this]() {
             logger.printfln("Closing connections to %s", peer_ski.c_str());
@@ -492,6 +496,8 @@ void ShipConnection::state_cmi_client_wait()
 {
     // SHIP 13.4.3 3.1
     task_scheduler.cancel(timeout_task);
+    timeout_task = 0;
+
     set_and_schedule_state(ShipConnectionState::CmiClientEvaluate);
 }
 
@@ -511,6 +517,8 @@ void ShipConnection::state_cmi_server_wait()
 {
     // SHIP 13.4.3 2.1
     task_scheduler.cancel(timeout_task);
+    timeout_task = 0;
+
     set_and_schedule_state(ShipConnectionState::CmiServerEvaluate);
 }
 
