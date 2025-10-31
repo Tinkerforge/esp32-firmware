@@ -71,9 +71,8 @@ void EEBus::pre_setup()
             },
         }),
         [this](Config &update, ConfigSource source) -> String {
-            logger.printfln("Updating config");
-            if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
-                if (boot_stage == BootStage::LOOP) {
+            if (boot_stage == BootStage::LOOP) {
+                if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
                     task_scheduler.scheduleOnce([this]() {
                         this->toggle_module();
                     });
@@ -121,12 +120,7 @@ void EEBus::pre_setup()
         {
             // TODO: Are these connections still neccessary? Or shall they just be in config
             "connections",
-            Config::Array({
-                              Config::Object({
-                                  {"ski", Config::Str("", 0, 40)},
-                                  {"ship_state", Config::Uint8(0)},
-                              })
-                          },
+            Config::Array({},
                           &state_connections_prototype,
                           0,
                           MAX_PEER_REMEMBERED,
@@ -195,10 +189,7 @@ void EEBus::setup()
     toggle_module();
     update_peers_config();
 
-    state.get("connections")->removeAll();
-
     initialized = true;
-    logger.printfln("EEBUS initialized");
     eebus.trace_fmtln("EEBUS initialized");
 }
 
