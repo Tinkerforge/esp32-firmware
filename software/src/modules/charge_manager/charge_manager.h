@@ -111,6 +111,45 @@ private:
 
     void update_supported_charge_modes(bool pv, bool eco);
 
+    /*
+        Charge modes are confusing.
+
+        Currently the situation is as follows:
+        - power_manager/charge_mode is the global charge mode, that is applied to all chargers when updated.
+          This API is only used by the charge manager. It is registered unter power_manager for legacy reasons.
+
+        - charge_manager/charge_modes (an array) is the charge mode of each charger.
+          Writing this API overrides the charge mode for the specific charger(s).
+
+          Overridden charge modes are changed back to the default (see below)
+          when the charge manager sees a X -> 0 transition of the charger state (i.e. a vehicle is unplugged)
+
+          A managed charger can request a charge mode change.
+          This is the same as if this charger's value in charge_manager/charge_modes was updated:a charge move override for a single charging session.
+
+        - power_manager/config contains the "default_mode":
+          This is the default mode that will be used to de-override a charger's mode.
+
+          The default_mode can be ConfigChargeMode::Default.
+          This is used as a marker that power_manager/charge_mode should be persistent.
+
+          If power_manager/charge_mode is persistent, a charger's mode will be set to the **current** value of power_manager/charge_mode when unplugging the vehicle.
+          If it is not, the charger's mode will be set to power_manager/config["default_mode"]
+
+        - The currently selected and all supported modes are sent to managed chargers (see cm_networking)
+          The charger responds with a requested charge mode override or ConfigChargeMode::Default if it does not want to request an override.
+
+          If the charge manager restarts, it sends ConfigChargeMode::Default to all managed chargers.
+          The managed charger than responds as if it wants to override the mode.
+          This allows the manager to recover overridden charge modes of managed chargers from before the reboot.
+
+          If a managed charger restarts, the (possibly overridden) charge mode is sent by the charge manager, so this recovers automagically.
+
+          If the charge manager and a managed charger restart at the same time
+          (power outage or if the charge manager is a charger itself)
+          an overridden charge mode is lost and the default mode will be used once again.
+          This also happens if a charger does not respond to charge manager messages for more than 30 seconds after a charge manager reboot.
+    */
     ConfigChargeMode get_default_mode();
 
     size_t charger_count = 0;
