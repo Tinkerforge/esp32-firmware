@@ -813,14 +813,18 @@ void MetersSunSpec::scan_printfln(const char *fmt, ...)
 
     va_list args;
     va_start(args, fmt);
-    size_t used = vsnprintf_u(nullptr, 0, fmt, args);
-    va_end(args);
+
+    va_list args_copy;
+    va_copy(args_copy, args);
+    size_t used = vsnprintf_u(nullptr, 0, fmt, args_copy);
+    va_end(args_copy);
 
     if (scan->printfln_buffer_used + used + 1 /* for \n */ >= sizeof(scan->printfln_buffer)) {
         scan_flush_log();
     }
 
     scan->printfln_buffer_used += vsnprintf_u(scan->printfln_buffer + scan->printfln_buffer_used, sizeof(scan->printfln_buffer) - scan->printfln_buffer_used, fmt, args);
+    va_end(args);
 
     scan->printfln_buffer[scan->printfln_buffer_used++] = '\n';
     scan->printfln_buffer[scan->printfln_buffer_used] = '\0';
