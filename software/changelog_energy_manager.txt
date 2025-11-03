@@ -501,7 +501,7 @@
 - Fix firmware update progress bar
 - Fix controlled chargers erroneously being shown as unavailable after 49 days
 
-2025-11-03: 2.4.10 (<unknown>)
+2025-11-03: 2.4.10 (dcf64e9e)
 - Rework charge manager status section
 - Add charge manager decision information
 - Support overriding charge mode for a single charger and charge
