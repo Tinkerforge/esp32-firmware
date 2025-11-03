@@ -303,7 +303,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
                     {!this.state.is_evse_v2 ? undefined :
                         <>
-                        <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")}>
+                        <FormRow label={__("evse.content.button_configuration")} label_muted={__("evse.content.button_configuration_muted")} help={button_cfg.button != 4 ? undefined : __("evse.content.charge_mode_explainer")(this.state.is_evse_v3, API.get("evse/supported_charge_modes"))}>
                             <InputSelect items={[
                                             ["0",__("evse.content.button_configuration_disabled")],
                                             ["1",__("evse.content.button_configuration_start_charging")],

@@ -472,6 +472,7 @@ void EvseCommon::register_urls()
             list_changed = true;
             this->supported_charge_modes.replace(supported_mode_len, Config::Enum(ConfigChargeMode::Default));
 
+            // Also update evse_common/translation* when changing colors here!
             constexpr uint16_t h_4[] {
                 0, 120, 60, 180, 0, 0, 0, 0
             };

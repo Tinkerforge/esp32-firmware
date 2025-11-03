@@ -1,8 +1,9 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { removeUnicodeHacks } from "../../ts/translation";
+import { __, removeUnicodeHacks } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
+import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 let x = {
     "evse": {
         "status": {
@@ -211,6 +212,22 @@ let x = {
             "button_configuration_stop_charging": "Ladestop",
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
             "button_configuration_charge_mode": "Lademodus anfordern",
+            "charge_mode_explainer": /*FFN*/ (has_rgb_led: boolean, supported_charge_modes: readonly ConfigChargeMode[]) => {
+                let colors = {2: ["Rot", "Cyan"], 4: ["Rot", "Grün", "Gelb", "Cyan"]};
+                let c: string[] = [];
+                let header = "Beim ersten Taster-Druck wird der aktuelle Lademodus angezeigt. Weiteres Drücken innerhalb von 10 Sekunden wechselt den Lademodus für den nächsten oder laufenden Ladevorgang.";
+
+                if (supported_charge_modes.length == 2 || supported_charge_modes.length == 4)
+                    c = colors[supported_charge_modes.length];
+                else
+                    return <>{header}</>;
+
+                return <>
+                    {header}
+                    <ul class="mb-0">
+                        {supported_charge_modes.map((m, i) => <li>{has_rgb_led ? c[i] : `${i + 1}x blinken`}: {__("cm_networking.status.mode_by_index")(m)}</li>)}
+                    </ul>
+                </>}/*NF*/,
 
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
             "ev_wakeup_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge wechselt in einen Energiesparmodus, falls ein Ladevorgang nicht innerhalb einer gewissen Zeit gestartet wird. Der Fahrzeug-Weckruf versucht, solche Ladeelektroniken automatisch zu wecken, falls das Fahrzeug nicht innerhalb von 30 Sekunden reagiert, wenn Strom zur Verfugung steht. Umgesetzt wird dies durch eine kurzzeitige Trennung des Control-Pilot- bzw. CP-Signals.</p></>,
