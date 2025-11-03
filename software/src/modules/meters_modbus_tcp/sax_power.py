@@ -10,13 +10,6 @@ default_device_addresses = [
 
 specs = [
     {
-        'name': 'SAX Power Home Basic Mode Inverter',
-        'virtual_meter': ('SAX Power Home Basic Mode', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'HoldingRegister',
-        'values': None,
-    },
-    {
         'name': 'SAX Power Home Basic Mode Grid',
         'virtual_meter': ('SAX Power Home Basic Mode', 'Grid'),
         'default_location': 'Grid',
@@ -52,13 +45,6 @@ specs = [
                 'offset': -16384.0,
             },
         ],
-    },
-    {
-        'name': 'SAX Power Home Extended Mode Inverter',
-        'virtual_meter': ('SAX Power Home Extended Mode', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'HoldingRegister',
-        'values': None,
     },
     {
         'name': 'SAX Power Home Extended Mode Grid',

@@ -8,13 +8,6 @@ default_device_addresses = [
 
 specs = [
     {
-        'name': 'Victron Energy GX Inverter',
-        'virtual_meter': ('Victron Energy GX', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'InputRegister',
-        'values': None,
-    },
-    {
         'name': 'Victron Energy GX Grid',
         'virtual_meter': ('Victron Energy GX', 'Grid'),
         'default_location': 'Grid',

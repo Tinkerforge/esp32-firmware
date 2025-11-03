@@ -8,13 +8,6 @@ default_device_addresses = [
 
 specs = [
     {
-        'name': 'E3DC Hauskraftwerk Inverter',
-        'virtual_meter': ('E3DC Hauskraftwerk', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'HoldingRegister',
-        'values': None,
-    },
-    {
         'name': 'E3DC Hauskraftwerk Grid',
         'virtual_meter': ('E3DC Hauskraftwerk', 'Grid'),
         'default_location': 'Grid',

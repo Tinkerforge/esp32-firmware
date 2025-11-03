@@ -8,20 +8,6 @@ default_device_addresses = [
 
 specs = [
     {
-        'name': 'SMA Hybrid Inverter',
-        'virtual_meter': ('SMA Hybrid Inverter', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'InputRegister',
-        'values': None,
-    },
-    {
-        'name': 'SMA Hybrid Inverter Grid',
-        'virtual_meter': ('SMA Hybrid Inverter', 'Grid Unused'),
-        'default_location': 'Grid',
-        'register_type': 'InputRegister',
-        'values': None,
-    },
-    {
         'name': 'SMA Hybrid Inverter Battery',  # FIXME: handle NAN markers
         'virtual_meter': ('SMA Hybrid Inverter', 'Battery'),
         'default_location': 'Battery',
@@ -86,19 +72,5 @@ specs = [
                 'scale_factor': 0.001,
             },
         ],
-    },
-    {
-        'name': 'SMA Hybrid Inverter Load',
-        'virtual_meter': ('SMA Hybrid Inverter', 'Load Unused'),
-        'default_location': 'Load',
-        'register_type': 'InputRegister',
-        'values': None,
-    },
-    {
-        'name': 'SMA Hybrid Inverter PV',
-        'virtual_meter': ('SMA Hybrid Inverter', 'PV Unused'),
-        'default_location': 'PV',
-        'register_type': 'InputRegister',
-        'values': None,
     },
 ]

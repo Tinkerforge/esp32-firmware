@@ -245,13 +245,8 @@ for group, value in virtual_meters.items():
     for member_spec_name_default_location in value:
         member, spec_name, _ = member_spec_name_default_location
 
-        if member.space.endswith(' Unused'):
-            specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
-                             f'        logger.printfln_meter("Invalid {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
-                              '        return nullptr;')
-        else:
-            specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
-                             f'        return &{spec_name.under}_table;')
+        specs_cpp.append(f'    case {group.camel}VirtualMeter::{member.camel}:\n'
+                         f'        return &{spec_name.under}_table;')
 
     specs_cpp.append(f'    default:\n'
                      f'        logger.printfln_meter("Unknown {group.space} Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));\n'
@@ -273,8 +268,7 @@ for group, value in virtual_meters.items():
     for member_spec_name_default_location in value:
         member, _, _ = member_spec_name_default_location
 
-        if not member.space.endswith(' Unused'):
-            specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
+        specs_ts.append(f'            [{group.camel}VirtualMeter.{member.camel}.toString(), __("meters_modbus_tcp.content.virtual_meter_{member.under}")],\r')
 
     specs_ts.append('        ];\n'
                     '\n'
@@ -296,8 +290,7 @@ for group, value in virtual_meters.items():
         for member_spec_name_default_location in value:
             member, _, default_location = member_spec_name_default_location
 
-            if not member.space.endswith(' Unused'):
-                specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{default_location};\r')
+            specs_ts.append(f'            case {group.camel}VirtualMeter.{member.camel}: return MeterLocation.{default_location};\r')
 
         specs_ts.append('        }\n'
                         '\n'

@@ -1,4 +1,4 @@
 None
-Inverter Unused
-Grid Unused
-Battery
+// Inverter = 1 // Not used (yet)
+// Grid = 2 // Not used (yet)
+Battery = 3

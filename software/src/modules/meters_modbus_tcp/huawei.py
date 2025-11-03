@@ -580,13 +580,6 @@ specs = [
         ],
     },
     {
-        'name': 'Huawei SUN2000 Smart Dongle Inverter',
-        'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'HoldingRegister',
-        'values': None,
-    },
-    {
         'name': 'Huawei SUN2000 Smart Dongle Grid',
         'virtual_meter': ('Huawei SUN2000 Smart Dongle', 'Grid'),
         'default_location': 'Grid',

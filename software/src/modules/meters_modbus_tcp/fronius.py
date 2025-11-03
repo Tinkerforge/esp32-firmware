@@ -138,20 +138,6 @@ def make_battery_values(start_number_offset):
 
 specs = [
     {
-        'name': 'Fronius GEN24 Plus Inverter',
-        'virtual_meter': ('Fronius GEN24 Plus', 'Inverter Unused'),
-        'default_location': 'Inverter',
-        'register_type': 'HoldingRegister',
-        'values': None,
-    },
-    {
-        'name': 'Fronius GEN24 Plus Grid',
-        'virtual_meter': ('Fronius GEN24 Plus', 'Grid Unused'),
-        'default_location': 'Grid',
-        'register_type': 'HoldingRegister',
-        'values': None,
-    },
-    {
         'name': 'Fronius GEN24 Plus Battery Type',
         'virtual_meter': ('Fronius GEN24 Plus', 'Battery'),
         'default_location': 'Battery',
