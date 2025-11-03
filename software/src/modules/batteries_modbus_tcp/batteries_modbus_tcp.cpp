@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2024-2025 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,40 +32,12 @@
 
 #include "gcc_warnings.h"
 
-[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
-static void report_errorf(uint32_t cookie, const char *fmt, ...)
-{
-    va_list args;
-    char buf[256];
-    TFJsonSerializer json{buf, sizeof(buf)};
-
-    json.addObject();
-    json.addMemberNumber("cookie", cookie);
-    va_start(args, fmt);
-    json.addMemberStringVF("error", fmt, args);
-    va_end(args);
-    json.endObject();
-    json.end();
-
-    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
-}
-
-static void report_success(uint32_t cookie)
-{
-    char buf[256];
-    TFJsonSerializer json{buf, sizeof(buf)};
-
-    json.addObject();
-    json.addMemberNumber("cookie", cookie);
-    json.addMemberNull("error");
-    json.endObject();
-    json.end();
-
-    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
-}
-
 void BatteriesModbusTCP::pre_setup()
 {
+    for (size_t i = 0; i < OPTIONS_BATTERIES_MAX_SLOTS(); ++i) {
+        instances[i] = nullptr;
+    }
+
     table_prototypes.push_back({BatteryModbusTCPTableID::None, *Config::Null()});
 
     table_custom_register_block_prototype = Config::Object({
@@ -82,61 +54,16 @@ void BatteriesModbusTCP::pre_setup()
 
     table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint8(1)},
+        {"repeat_interval", Config::Uint16(60)},
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
-        {"permit_grid_charge", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
+        {"battery_modes", Config::Tuple(6, Config::Object({
             {"register_blocks", Config::Array({},
                 &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
-        })},
-        {"revoke_grid_charge_override", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        })},
-        {"forbid_discharge", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        })},
-        {"revoke_discharge_override", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        })},
-        {"forbid_charge", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        })},
-        {"revoke_charge_override", Config::Object({
-            {"repeat_interval", Config::Uint16(60)},
-            {"register_blocks", Config::Array({},
-                &table_custom_register_block_prototype,
-                0,
-                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
-                Config::type_id<Config::ConfObject>()
-            )},
-        })},
+        }))},
     })});
 
     get_battery_modbus_tcp_table_prototypes(&table_prototypes);
@@ -156,8 +83,11 @@ void BatteriesModbusTCP::pre_setup()
         {"timeout", Config::Uint32(0)},
     });*/
 
-    execute_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
+    batteries.register_battery_generator(get_class(), this);
+
+    test_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint8(1)},
+        {"repeat_interval", Config::Uint16(60)},
         {"register_blocks", Config::Array({},
             &table_custom_register_block_prototype,
             0,
@@ -166,152 +96,339 @@ void BatteriesModbusTCP::pre_setup()
         )},
     })});
 
-    get_battery_modbus_tcp_execute_table_prototypes(&execute_table_prototypes);
+    get_battery_modbus_tcp_test_table_prototypes(&test_table_prototypes);
 
-    execute_config = ConfigRoot{Config::Object({
+    test_config = ConfigRoot{Config::Object({
+        {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS())},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"table", Config::Union<BatteryModbusTCPTableID>(*Config::Null(),
             BatteryModbusTCPTableID::None,
-            execute_table_prototypes.data(),
-            static_cast<uint8_t>(execute_table_prototypes.size())
+            test_table_prototypes.data(),
+            static_cast<uint8_t>(test_table_prototypes.size())
         )},
         {"cookie", Config::Uint32(0)},
     })};
 
-    batteries.register_battery_generator(get_class(), this);
+    test_continue_config = ConfigRoot{Config::Object({
+        {"cookie", Config::Uint32(0)},
+    })};
+
+    test_abort_config = test_continue_config;
 }
 
 void BatteriesModbusTCP::register_urls()
 {
-    api.addCommand("batteries_modbus_tcp/execute", &execute_config, {}, [this](String &/*errmsg*/) {
-        uint32_t cookie = execute_config.get("cookie")->asUint();
-        BatteryModbusTCPTableID table_id = execute_config.get("table")->getTag<BatteryModbusTCPTableID>();
-        Config *table_config = static_cast<Config *>(execute_config.get("table")->get());
-        uint8_t device_address;
-        BatteryAction action;  // FIXME: convert action and extra values into a union with action as the union tag
-        BatteryModbusTCP::TableSpec *table;
-
-        switch (table_id) {
-        case BatteryModbusTCPTableID::None:
-            report_errorf(cookie, "No table");
-            return;
-
-        case BatteryModbusTCPTableID::Custom:
-            device_address = table_config->get("device_address")->asUint8();
-            table = BatteryModbusTCP::load_custom_table(table_config, false);
-            break;
-
-        case BatteryModbusTCPTableID::VictronEnergyGX:
-            device_address = table_config->get("device_address")->asUint8();
-            action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_victron_energy_gx_table(action, table_config);
-
-            if (table == nullptr) {
-                report_errorf(cookie, "Unknown Victron Energy GX action: %u", static_cast<uint8_t>(action));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::DeyeHybridInverter:
-            device_address = table_config->get("device_address")->asUint8();
-            action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_deye_hybrid_inverter_table(action, table_config);
-
-            if (table == nullptr) {
-                report_errorf(cookie, "Unknown Deye Hybrid Inverter action: %u", static_cast<uint8_t>(action));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::AlphaESSHybridInverter:
-            device_address = table_config->get("device_address")->asUint8();
-            action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_alpha_ess_hybrid_inverter_table(action, table_config);
-
-            if (table == nullptr) {
-                report_errorf(cookie, "Unknown Alpha ESS Hybrid Inverter action: %u", static_cast<uint8_t>(action));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::HaileiHybridInverter:
-            device_address = table_config->get("device_address")->asUint8();
-            action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_hailei_hybrid_inverter_table(action, table_config);
-
-            if (table == nullptr) {
-                report_errorf(cookie, "Unknown Hailei Hybrid Inverter action: %u", static_cast<uint8_t>(action));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::SungrowHybridInverter:
-            device_address = table_config->get("device_address")->asUint8();
-            action = table_config->get("action")->asEnum<BatteryAction>();
-            table = load_sungrow_hybrid_inverter_table(action, table_config);
-
-            if (table == nullptr) {
-                report_errorf(cookie, "Unknown Sungrow Hybrid Inverter action: %u", static_cast<uint8_t>(action));
-                return;
-            }
-
-            break;
-
-        default:
-            report_errorf(cookie, "Unknown table: %u", static_cast<uint8_t>(table_id));
-            return;
-        }
-
-        const String &host = execute_config.get("host")->asString();
-        uint16_t port = static_cast<uint16_t>(execute_config.get("port")->asUint());
+    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](String &errmsg) {
+        BatteryModbusTCPTableID table_id = test_config.get("table")->getTag<BatteryModbusTCPTableID>();
+        Config *table_config = static_cast<Config *>(test_config.get("table")->get());
 
         defer {
-            // When done parsing the execute command, drop Strings and Array items from config
-            // to free memory. This invalidates the "host" references above, which will be copied
-            // by the execute call before being cleared.
-            execute_config.get("host")->clearString();
+            // When done parsing the test command, drop Strings and Array items from config to free memory
+            test_config.get("host")->clearString();
 
             if (table_id == BatteryModbusTCPTableID::Custom) {
                 table_config->get("register_blocks")->removeAll();
             }
         };
 
-        modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [cookie, host, port, device_address, table](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            if (result != TFGenericTCPClientConnectResult::Connected) {
-                char error[256] = "";
+        if (test != nullptr) {
+            errmsg = "Another test is already in progress, please try again later!";
+            return;
+        }
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, host.c_str(), port, error, sizeof(error));
-                report_errorf(cookie, "%s", error);
-                BatteryModbusTCP::free_table(table);
+        test = new Test;
+
+        test_printfln("Starting test");
+
+        test->slot = test_config.get("slot")->asUint();
+        test->host = test_config.get("host")->asString();
+        test->port = static_cast<uint16_t>(test_config.get("port")->asUint());
+        test->cookie = test_config.get("cookie")->asUint();
+        test->last_keep_alive = now_us();
+        test->state = TestState::Done;
+
+        BatteryMode mode;
+
+        switch (table_id) {
+        case BatteryModbusTCPTableID::None:
+            test_printfln("No table");
+            return;
+
+        case BatteryModbusTCPTableID::Custom:
+            test->device_address = table_config->get("device_address")->asUint8();
+            test->repeat_interval = table_config->get("repeat_interval")->asUint16();
+
+            BatteryModbusTCP::load_custom_table(&test->table, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Invalid custom table");
                 return;
             }
 
-            TFModbusTCPSharedClient *client = static_cast<TFModbusTCPSharedClient *>(shared_client);
+            break;
 
-            BatteryModbusTCP::execute(client, device_address, table, [cookie, client, table](const char *error) {
-                if (error == nullptr) {
-                    report_success(cookie);
-                }
-                else {
-                    report_errorf(cookie, "%s", error);
-                }
+        case BatteryModbusTCPTableID::VictronEnergyGX:
+            test->device_address = table_config->get("device_address")->asUint8();
+            mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-                task_scheduler.scheduleOnce([client]() {
-                    modbus_tcp_client.get_pool()->release(client);
-                });
+            load_victron_energy_gx_table(&test->table, &test->repeat_interval, mode, table_config);
 
-                BatteryModbusTCP::free_table(table);
-            });
-        },
-        [](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-        });
+            if (test->table == nullptr) {
+                test_printfln("Unknown Victron Energy GX mode: %u", static_cast<uint8_t>(mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::DeyeHybridInverter:
+            test->device_address = table_config->get("device_address")->asUint8();
+            mode = table_config->get("mode")->asEnum<BatteryMode>();
+
+            load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Unknown Deye Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::AlphaESSHybridInverter:
+            test->device_address = table_config->get("device_address")->asUint8();
+            mode = table_config->get("mode")->asEnum<BatteryMode>();
+
+            load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Unknown Alpha ESS Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::HaileiHybridInverter:
+            test->device_address = table_config->get("device_address")->asUint8();
+            mode = table_config->get("mode")->asEnum<BatteryMode>();
+
+            load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Unknown Hailei Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::SungrowHybridInverter:
+            test->device_address = table_config->get("device_address")->asUint8();
+            mode = table_config->get("mode")->asEnum<BatteryMode>();
+
+            load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Unknown Sungrow Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                return;
+            }
+
+            break;
+
+        default:
+            test_printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
+            return;
+        }
+
+        test->state = TestState::Connect;
     }, true);
+
+    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](String &errmsg) {
+        if (test == nullptr) {
+            return;
+        }
+
+        uint32_t cookie = test_continue_config.get("cookie")->asUint();
+
+        if (cookie != test->cookie) {
+            errmsg = "Cannot continue another test";
+            return;
+        }
+
+        test->last_keep_alive = now_us();
+    }, true);
+
+    api.addCommand("batteries_modbus_tcp/test_abort", &test_abort_config, {}, [this](String &errmsg) {
+        if (test == nullptr) {
+            return;
+        }
+
+        uint32_t cookie = test_abort_config.get("cookie")->asUint();
+
+        if (cookie != test->cookie) {
+            errmsg = "Cannot abort another test";
+            return;
+        }
+
+        test->abort = true;
+    }, true);
+}
+
+void BatteriesModbusTCP::loop()
+{
+    if (test == nullptr) {
+        return;
+    }
+
+    if (test->printfln_buffer_used > 0 && deadline_elapsed(test->printfln_last_flush + 500_ms)) {
+        test_flush_log();
+    }
+
+    if (!test->abort && deadline_elapsed(test->last_keep_alive + 10_s)) {
+        const char *message = "Aborting test because no continue call was received for more than 10 seconds";
+
+        logger.printfln("%s", message);
+        test_printfln("%s", message);
+
+        test->abort = true;
+    }
+
+    switch (test->state) {
+    case TestState::Connect:
+        logger.printfln_debug("loop: Connect");
+
+        if (test->abort) {
+            test->state = TestState::Done;
+            break;
+        }
+
+        test_printfln("Connecting to %s:%u", test->host.c_str(), test->port);
+        test->state = TestState::Connecting;
+
+        modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port,
+        [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            if (result != TFGenericTCPClientConnectResult::Connected) {
+                char buf[256] = "";
+
+                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf));
+                test_printfln("%s", buf);
+
+                test->state = TestState::Done;
+                return;
+            }
+
+            test->client = shared_client;
+            test->state = TestState::CreateTableWriter;
+        },
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            char buf[256] = "";
+
+            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf));
+            test_printfln("%s", buf);
+
+            test->client = nullptr;
+            test->state = reason == TFGenericTCPClientDisconnectReason::Requested ? TestState::Done : TestState::DestroyTableWriter;
+        });
+
+        break;
+
+    case TestState::Connecting:
+        break;
+
+    case TestState::Disconnect:
+        logger.printfln_debug("loop: Disconnect");
+
+        if (test->client != nullptr) {
+            modbus_tcp_client.get_pool()->release(test->client);
+        }
+        else {
+            test->state = TestState::Done;
+        }
+
+        break;
+
+    case TestState::Done: {
+        logger.printfln_debug("loop: Done");
+
+            test_printfln("Test finished");
+            test_flush_log();
+
+#if MODULE_WS_AVAILABLE()
+            char buf[128];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", test->cookie);
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/test_done")) {
+                break; // need to report the test as done before doing something else
+            }
+#endif
+
+            delete test;
+            test = nullptr;
+        }
+
+        break;
+
+    case TestState::CreateTableWriter:
+        logger.printfln_debug("loop: CreateTableWriter");
+
+        if (test->abort) {
+            test->state = TestState::Disconnect;
+            break;
+        }
+
+        if (instances[test->slot] != nullptr) {
+            instances[test->slot]->set_paused(true);
+        }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
+        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->table,
+        [this](const char *fmt, va_list args) {
+            test_vprintfln(fmt, args);
+        });
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+
+        test->state = TestState::TableWriting;
+
+        break;
+
+    case TestState::DestroyTableWriter:
+        BatteryModbusTCP::destroy_table_writer(test->writer);
+        test->writer = nullptr;
+
+        BatteryModbusTCP::free_table(test->table);
+        test->table = nullptr;
+
+        if (instances[test->slot] != nullptr) {
+            instances[test->slot]->set_paused(false);
+        }
+
+        if (test->client != nullptr) {
+            test->state = TestState::Disconnect;
+        }
+        else {
+            test->state = TestState::Done;
+        }
+
+        break;
+
+    case TestState::TableWriting:
+        if (test->abort) {
+            test->state = TestState::DestroyTableWriter;
+        }
+
+        break;
+
+    default:
+        esp_system_abort("batteries_modbus_tcp: Invalid state.");
+    }
 }
 
 [[gnu::const]] BatteryClassID BatteriesModbusTCP::get_class() const
@@ -321,7 +438,11 @@ void BatteriesModbusTCP::register_urls()
 
 IBattery *BatteriesModbusTCP::new_battery(uint32_t slot, Config *state, Config *errors)
 {
-    return new BatteryModbusTCP(slot, state, errors, modbus_tcp_client.get_pool());
+    BatteryModbusTCP *battery = new BatteryModbusTCP(slot, state, errors, modbus_tcp_client.get_pool());
+
+    instances[slot] = battery;
+
+    return battery;
 }
 
 const Config *BatteriesModbusTCP::get_config_prototype()
@@ -345,25 +466,16 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source)
         return String();
     }
 
-    const char * const keys[] = {
-        "permit_grid_charge",
-        "revoke_grid_charge_override",
-        "forbid_discharge",
-        "revoke_discharge_override",
-        "forbid_charge",
-        "revoke_charge_override",
-    };
-
     size_t total_values_count = 0;
 
-    for (const char *key : keys) {
-        auto register_blocks = update.get("table")->get()->get(key)->get("register_blocks");
+    for (size_t i = 0; i < 6; ++i) {
+        auto register_blocks = update.get("table")->get()->get("battery_modes")->get(i)->get("register_blocks");
 
-        for (size_t i = 0; i < register_blocks->count(); ++i) {
+        for (size_t k = 0; k < register_blocks->count(); ++k) {
             // FIXME: validate func is valid and vals length match func restrictions
 
-            auto start_address = register_blocks->get(i)->get("addr")->asUint();
-            auto values_count  = register_blocks->get(i)->get("vals")->count();
+            auto start_address = register_blocks->get(k)->get("addr")->asUint();
+            auto values_count  = register_blocks->get(k)->get("vals")->count();
 
             total_values_count += values_count;
 
@@ -378,4 +490,60 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source)
     }
 
     return String();
+}
+
+void BatteriesModbusTCP::test_flush_log()
+{
+    if (test == nullptr) {
+        return;
+    }
+
+    logger.printfln_debug("test_flush_log");
+
+#if MODULE_WS_AVAILABLE()
+    char buf[1024];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", test->cookie);
+    json.addMemberString("message", test->printfln_buffer);
+    json.endObject();
+    json.end();
+#endif
+
+    test->printfln_buffer_used = 0;
+    test->printfln_last_flush = now_us();
+
+#if MODULE_WS_AVAILABLE()
+    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/test_log"); // FIXME: error handling
+#endif
+}
+
+void BatteriesModbusTCP::test_vprintfln(const char *fmt, va_list args)
+{
+    if (test == nullptr) {
+        return;
+    }
+
+    va_list args_copy;
+    va_copy(args_copy, args);
+    size_t used = vsnprintf_u(nullptr, 0, fmt, args_copy);
+    va_end(args);
+
+    if (test->printfln_buffer_used + used + 1 /* for \n */ >= sizeof(test->printfln_buffer)) {
+        test_flush_log();
+    }
+
+    test->printfln_buffer_used += vsnprintf_u(test->printfln_buffer + test->printfln_buffer_used, sizeof(test->printfln_buffer) - test->printfln_buffer_used, fmt, args);
+
+    test->printfln_buffer[test->printfln_buffer_used++] = '\n';
+    test->printfln_buffer[test->printfln_buffer_used] = '\0';
+}
+
+void BatteriesModbusTCP::test_printfln(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    test_vprintfln(fmt, args);
+    va_end(args);
 }

@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2024-2025 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,28 +30,13 @@
 
 #include "gcc_warnings.h"
 
-struct Execution {
-    uint8_t device_address = 0;
-    TFModbusTCPSharedClient *client = nullptr;
-    BatteryModbusTCP::TableSpec *table = nullptr;
-    size_t index = 0;
-    BatteryModbusTCP::ExecuteCallback callback = nullptr;
-};
-
-BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_custom_table(const Config *config, bool load_repeat_interval)
+void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr, const Config *config)
 {
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
     size_t register_blocks_count         = register_blocks_config->count();
-    TableSpec *table                     = static_cast<TableSpec *>(malloc_psram_or_dram(sizeof(TableSpec)));
+    BatteryModbusTCP::TableSpec *table   = static_cast<BatteryModbusTCP::TableSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::TableSpec)));
 
-    if (load_repeat_interval) {
-        table->repeat_interval = config->get("repeat_interval")->asUint16();
-    }
-    else {
-        table->repeat_interval = 0;
-    }
-
-    table->register_blocks       = static_cast<RegisterBlockSpec *>(malloc_psram_or_dram(sizeof(RegisterBlockSpec) * register_blocks_count));
+    table->register_blocks       = static_cast<BatteryModbusTCP::RegisterBlockSpec *>(malloc_psram_or_dram(sizeof(BatteryModbusTCP::RegisterBlockSpec) * register_blocks_count));
     table->register_blocks_count = register_blocks_count;
 
     size_t total_buffer_length = 0; // bytes
@@ -79,7 +64,7 @@ BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_custom_table(const Config *c
 
     for (size_t i = 0; i < register_blocks_count; ++i) {
         auto register_block_config = register_blocks_config->get(i);
-        RegisterBlockSpec *register_block = &table->register_blocks[i];
+        BatteryModbusTCP::RegisterBlockSpec *register_block = &table->register_blocks[i];
 
         register_block->function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
         register_block->start_address = static_cast<uint16_t>(register_block_config->get("addr")->asUint());
@@ -127,7 +112,7 @@ BatteryModbusTCP::TableSpec *BatteryModbusTCP::load_custom_table(const Config *c
         total_buffer_offset += buffer_length;
     }
 
-    return table;
+    *table_ptr = table;
 }
 
 void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
@@ -144,25 +129,52 @@ void BatteryModbusTCP::free_table(BatteryModbusTCP::TableSpec *table)
     free_any(table);
 }
 
-static void execute_finish(Execution *execution, const char *error)
+[[gnu::format(__printf__, 2, 3)]]
+static void table_writer_logfln(BatteryModbusTCP::TableWriter *writer, const char *fmt, ...)
 {
-    execution->callback(error);
-    delete execution;
+    va_list args;
+
+    va_start(args, fmt);
+    writer->vlogfln(fmt, args);
+    va_end(args);
 }
 
-static void execute_next(Execution *execution)
+static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer);
+
+static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool success)
 {
-    if (execution->index >= execution->table->register_blocks_count) {
-        execute_finish(execution, nullptr);
+    millis_t delay = 5_s;
+
+    if (success) {
+        delay = seconds_t{writer->repeat_interval};
+    }
+
+    task_scheduler.cancel(writer->task_id);
+
+    ++writer->repeat_count;
+    writer->task_id = 0;
+    writer->index = 0;
+
+    if (delay != 0_s) {
+        writer->task_id = task_scheduler.scheduleOnce([writer]() {
+            table_writer_logfln(writer, "Setting mode (repeat %zu)", writer->repeat_count);
+            next_table_writer_step(writer);
+        }, delay);
+    }
+}
+
+static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
+{
+    if (writer->index >= writer->table->register_blocks_count) {
+        last_table_writer_step(writer, true);
         return;
     }
 
-    const BatteryModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
+    const BatteryModbusTCP::RegisterBlockSpec *register_block = &writer->table->register_blocks[writer->index];
     TFModbusTCPFunctionCode function_code;
     uint16_t data_count;
     const void *buffer;
     void *buffer_to_free = nullptr;
-    char error[128];
 
     switch (register_block->function_code) {
     case ModbusFunctionCode::WriteSingleCoil:
@@ -203,7 +215,8 @@ static void execute_next(Execution *execution)
         buffer = buffer_to_free;
 
         if (buffer == nullptr) {
-            execute_finish(execution, "Could not allocate read buffer");
+            table_writer_logfln(writer, "Could not allocate read buffer");
+            last_table_writer_step(writer, false);
             return;
         }
 
@@ -214,31 +227,29 @@ static void execute_next(Execution *execution)
     case ModbusFunctionCode::ReadHoldingRegisters:
     case ModbusFunctionCode::ReadInputRegisters:
     default:
-        snprintf(error, sizeof(error), "Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
-        execute_finish(execution, error);
+        table_writer_logfln(writer, "Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
+        last_table_writer_step(writer, false);
         return;
     }
 
-    static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->device_address,
-                                                                        function_code,
-                                                                        register_block->start_address,
-                                                                        data_count,
-                                                                        const_cast<void *>(buffer),
-                                                                        2_s,
-    [execution, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
+    static_cast<TFModbusTCPSharedClient *>(writer->client)->transact(writer->device_address,
+                                                                     function_code,
+                                                                     register_block->start_address,
+                                                                     data_count,
+                                                                     const_cast<void *>(buffer),
+                                                                     2_s,
+    [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            char transact_error[128];
-
-            snprintf(transact_error, sizeof(transact_error),
-                     "Action execution failed at %zu of %zu: %s (%d)%s%s",
-                     execution->index + 1, execution->table->register_blocks_count,
-                     get_tf_modbus_tcp_client_transaction_result_name(result),
-                     static_cast<int>(result),
-                     error_message != nullptr ? " / " : "",
-                     error_message != nullptr ? error_message : "");
-
             free(buffer_to_free);
-            execute_finish(execution, transact_error);
+            table_writer_logfln(writer,
+                                "Setting mode failed at %zu of %zu: %s (%d)%s%s",
+                                writer->index + 1, writer->table->register_blocks_count,
+                                get_tf_modbus_tcp_client_transaction_result_name(result),
+                                static_cast<int>(result),
+                                error_message != nullptr ? " / " : "",
+                                error_message != nullptr ? error_message : "");
+
+            last_table_writer_step(writer, false);
             return;
         }
 
@@ -260,42 +271,74 @@ static void execute_next(Execution *execution)
                 step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
             }
 
-            static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->device_address,
-                                                                                step2_function_code,
-                                                                                register_block->start_address,
-                                                                                data_count,
-                                                                                const_cast<void *>(buffer),
-                                                                                2_s,
-            [execution, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+            static_cast<TFModbusTCPSharedClient *>(writer->client)->transact(writer->device_address,
+                                                                             step2_function_code,
+                                                                             register_block->start_address,
+                                                                             data_count,
+                                                                             const_cast<void *>(buffer),
+                                                                             2_s,
+            [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    char step2_transact_error[128];
-
-                    snprintf(step2_transact_error, sizeof(step2_transact_error),
-                             "Action execution (step 2) failed at %zu of %zu: %s (%d)%s%s",
-                             execution->index + 1, execution->table->register_blocks_count,
-                             get_tf_modbus_tcp_client_transaction_result_name(step2_result),
-                             static_cast<int>(step2_result),
-                             step2_error_message != nullptr ? " / " : "",
-                             step2_error_message != nullptr ? step2_error_message : "");
-
                     free(buffer_to_free);
-                    execute_finish(execution, step2_transact_error);
+                    table_writer_logfln(writer,
+                                        "Setting mode (step 2) failed at %zu of %zu: %s (%d)%s%s",
+                                        writer->index + 1, writer->table->register_blocks_count,
+                                        get_tf_modbus_tcp_client_transaction_result_name(step2_result),
+                                        static_cast<int>(step2_result),
+                                        step2_error_message != nullptr ? " / " : "",
+                                        step2_error_message != nullptr ? step2_error_message : "");
+
+                    last_table_writer_step(writer, false);
                     return;
                 }
 
-                ++execution->index;
+                ++writer->index;
 
                 free(buffer_to_free);
-                execute_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+                next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
             });
         }
         else {
-            ++execution->index;
+            ++writer->index;
 
             free(buffer_to_free);
-            execute_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+            next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
         }
     });
+}
+
+BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCPSharedClient *client,
+                                                                     uint8_t device_address,
+                                                                     uint16_t repeat_interval, // seconds
+                                                                     TableSpec *table,
+                                                                     TableWriterVLogFLnFunction &&vlogfln)
+{
+    TableWriter *writer = new TableWriter;
+
+    writer->client = client;
+    writer->device_address = device_address;
+    writer->repeat_interval = repeat_interval;
+    writer->table = table;
+    writer->vlogfln = std::move(vlogfln);
+
+    if (table->register_blocks_count > 0) {
+        writer->task_id = task_scheduler.scheduleOnce([writer]() {
+            table_writer_logfln(writer, "Setting mode (%s)", writer->repeat_interval > 0 ? "first" : "once");
+            next_table_writer_step(writer);
+        });
+    }
+
+    return writer;
+}
+
+void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *writer)
+{
+    if (writer == nullptr) {
+        return;
+    }
+
+    task_scheduler.cancel(writer->task_id);
+    delete writer;
 }
 
 BatteryClassID BatteryModbusTCP::get_class() const
@@ -305,11 +348,12 @@ BatteryClassID BatteryModbusTCP::get_class() const
 
 void BatteryModbusTCP::setup(const Config &ephemeral_config)
 {
-    host      = ephemeral_config.get("host")->asString();
-    port      = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
-    table_id  = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
+    host     = ephemeral_config.get("host")->asString();
+    port     = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
+    table_id = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
 
     const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
+    const Config *battery_modes_config;
 
     switch (table_id) {
     case BatteryModbusTCPTableID::None:
@@ -318,39 +362,38 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::Custom:
         device_address = table_config->get("device_address")->asUint8();
+        repeat_interval = table_config->get("repeat_interval")->asUint16();
+        battery_modes_config = static_cast<const Config *>(table_config->get("battery_modes"));
 
-        // FIXME: leaking this, because as of right now battery instances don't get destroyed
-        tables[static_cast<size_t>(BatteryAction::PermitGridCharge)]         = load_custom_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
-        tables[static_cast<size_t>(BatteryAction::RevokeGridChargeOverride)] = load_custom_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
-        tables[static_cast<size_t>(BatteryAction::ForbidDischarge)]          = load_custom_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
-        tables[static_cast<size_t>(BatteryAction::RevokeDischargeOverride)]  = load_custom_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
-        tables[static_cast<size_t>(BatteryAction::ForbidCharge)]             = load_custom_table(static_cast<const Config *>(table_config->get("forbid_charge")));
-        tables[static_cast<size_t>(BatteryAction::RevokeChargeOverride)]     = load_custom_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
+        for (size_t i = static_cast<size_t>(BatteryMode::Disable); i <= static_cast<size_t>(BatteryMode::_max); ++i) {
+            load_custom_table(&tables[i], static_cast<const Config *>(battery_modes_config->get(i)));
+        }
+
         break;
 
     case BatteryModbusTCPTableID::VictronEnergyGX:
         device_address = table_config->get("device_address")->asUint8();
-        load_victron_energy_gx_tables(tables, table_config);
+        load_victron_energy_gx_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_deye_hybrid_inverter_tables(tables, table_config);
+        load_deye_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::AlphaESSHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_alpha_ess_hybrid_inverter_tables(tables, table_config);
+        load_alpha_ess_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::HaileiHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_hailei_hybrid_inverter_tables(tables, table_config);
+        load_hailei_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::SungrowHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
-        load_sungrow_hybrid_inverter_tables(tables, table_config);
+        load_sungrow_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     default:
@@ -361,11 +404,11 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
 void BatteryModbusTCP::register_events()
 {
-    // FIXME: maybe don't keep the connection open, but instead only connect for the duration of action's execution
-    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+    network.on_network_connected([this](const Config *connected) {
         if (connected->asBool()) {
             start_connection();
-        } else {
+        }
+        else {
             stop_connection();
         }
 
@@ -378,69 +421,88 @@ void BatteryModbusTCP::pre_reboot()
     stop_connection();
 }
 
-void BatteryModbusTCP::get_repeat_intervals(uint16_t intervals_s[6]) const
-{
-    for (size_t i = 0; i < 6; i++) {
-        intervals_s[i] = tables[i]->repeat_interval; // In seconds, 0 = no repeat.
-    }
-}
-
 [[gnu::const]]
-bool BatteryModbusTCP::supports_action(BatteryAction /*action*/) const
+bool BatteryModbusTCP::supports_mode(BatteryMode mode) const
 {
-    return true;
-}
-
-void BatteryModbusTCP::start_action(BatteryAction action, std::function<void(bool)> &&callback)
-{
-    TableSpec *table = tables[static_cast<size_t>(action)];
-
-    if (table == nullptr) {
-        if (callback) {
-            callback(true);
-        }
-
-        return; // nothing to do
+    if (mode == BatteryMode::None) {
+        return false;
     }
 
-    if (connected_client == nullptr) {
-        logger.printfln_battery("Not connected, cannot start action");
+    return tables[static_cast<size_t>(mode)] != nullptr;
+}
 
-        if (callback) {
-            callback(false);
-        }
-
+void BatteryModbusTCP::set_mode(BatteryMode mode)
+{
+    if (requested_mode == mode) {
         return;
     }
 
-    execute(static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, table, [this, callback](const char *error) {
-        if (error != nullptr) {
-            logger.printfln_battery("%s", error);
-        }
+    requested_mode = mode;
 
-        if (callback) {
-            callback(error == nullptr);
-        }
-    });
+    set_active_mode(requested_mode);
+}
+void BatteryModbusTCP::set_paused(bool paused_)
+{
+    if (this->paused == paused_) {
+        return;
+    }
+
+    this->paused = paused_;
+
+    set_active_mode(requested_mode);
 }
 
 void BatteryModbusTCP::connect_callback()
 {
+    set_active_mode(requested_mode);
 }
 
 void BatteryModbusTCP::disconnect_callback()
 {
+    set_active_mode(BatteryMode::None);
 }
 
-void BatteryModbusTCP::execute(TFModbusTCPSharedClient *client, uint8_t device_address, TableSpec *table, ExecuteCallback &&callback)
+void BatteryModbusTCP::set_active_mode(BatteryMode mode)
 {
-    Execution *execution = new Execution;
+    if (paused) {
+        mode = BatteryMode::None;
+    }
 
-    execution->device_address = device_address;
-    execution->client = client;
-    execution->table = table;
-    execution->index = 0;
-    execution->callback = std::move(callback);
+    bool mode_changed = active_mode != mode;
 
-    execute_next(execution);
+    active_mode = mode;
+
+    if (active_mode == BatteryMode::None) {
+        destroy_table_writer(active_writer);
+        active_writer = nullptr;
+
+        stop_connection();
+    }
+    else if (network.is_connected()) {
+        start_connection();
+
+        if (mode_changed) {
+            destroy_table_writer(active_writer);
+            active_writer = nullptr;
+
+            TableSpec *table = tables[static_cast<size_t>(active_mode)];
+
+            if (table != nullptr) {
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
+                active_writer = create_table_writer(static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, table,
+                [this](const char *fmt, va_list args) {
+                    char message[256];
+
+                    vsnprintf(message, sizeof(message), fmt, args);
+                    logger.printfln_battery("%s", message);
+                });
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+            }
+        }
+    }
 }
