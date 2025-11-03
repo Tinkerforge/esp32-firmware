@@ -432,14 +432,14 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         handler = server->match_wildcard_handlers(port_handlers, uri, uri_len, method);
 
         if (handler == nullptr) {
-            request.send_plain(404, "Nothing matches the given URI.");
-            return ESP_OK;
+            const WebServerRequestReturnProtect ret = request.send_plain(404, "Nothing matches the given URI.");
+            return ret.error;
         }
     }
 
     if (aux->ws_handshake_detect && !handler->is_websocket) {
-        request.send_plain(400, "Bad Request: WebSocket not supported");
-        return ESP_OK;
+        const WebServerRequestReturnProtect ret = request.send_plain(400, "Bad Request: WebSocket not supported");
+        return ret.error;
     }
 
     if (handler->accepts_upload) {
@@ -477,15 +477,24 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
     }
 
     if (handler->callbackInMainThread) {
-        task_scheduler.await([handler, &request](){handler->callback(request);});
-        // Could capture the WebServerRequestReturnProtect error, but it's currently not used in any main thread callbacks and it wouldn't fit into the internal lambda capture list.
-        return ESP_OK;
+        struct {
+            WebServerRequest *req;
+            esp_err_t error;
+        } rq = {
+            .req = &request,
+            .error = ESP_ERR_NOT_FINISHED,
+        };
+
+        task_scheduler.await([handler, &rq]() {
+            const WebServerRequestReturnProtect ret = handler->callback(*rq.req);
+            rq.error = ret.error;
+        });
+
+        return rq.error;
     } else {
         const WebServerRequestReturnProtect ret = handler->callback(request);
         return ret.error;
     }
-
-    return ESP_OK;
 }
 
 WebServerHandler *WebServer::on(const char *uri,
@@ -860,44 +869,13 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
         return WebServerRequestReturnProtect{};
     }
 
-    struct httpd_req_aux *ra = static_cast<struct httpd_req_aux *>(req->aux);
-    int nodelay = 1;
-    if (code >= 400) {
-        // Copied over from esp-idf/components/esp_http_server/src/httpd_txrx.c
-        // We want to set TCP_NODELAY but keep our (complete) set of HTTP status codes.
-
-        /* Use TCP_NODELAY option to force socket to send data in buffer
-         * This ensures that the error message is sent before the socket
-         * is closed */
-        if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
-            /* If failed to turn on TCP_NODELAY, throw warning and continue */
-            logger.printfln("setsockopt failed to enable TCP_NODELAY: %s (%i)", strerror(errno), errno);
-            nodelay = 0;
-        }
-    }
-
     result = httpd_resp_send(req, content, static_cast<ssize_t>(content_len));
-
-    if (code >= 400) {
-        // Copied over from esp-idf/components/esp_http_server/src/httpd_txrx.c
-        // We want to set TCP_NODELAY but keep our (complete) set of HTTP status codes.
-
-        /* If TCP_NODELAY was set successfully above, time to disable it */
-        if (nodelay == 1) {
-            nodelay = 0;
-            if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
-                /* If failed to turn off TCP_NODELAY, throw error and
-                 * return failure to signal for socket closure */
-                logger.printfln("setsockopt failed to disable TCP_NODELAY: %s (%i) (result was %s (0x%X))", strerror(errno), errno, esp_err_to_name(result), static_cast<unsigned>(result));
-                result = ESP_ERR_INVALID_STATE;
-            }
-        }
-    }
 
     if (result != ESP_OK) {
         printf("Failed to send response: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
     }
-    return WebServerRequestReturnProtect{};
+
+    return WebServerRequestReturnProtect{result};
 }
 
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
