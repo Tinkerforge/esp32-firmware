@@ -31,7 +31,7 @@
             "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
             "generate_keypair": "Schlüsselpaar generieren",
             "generate_keypair_button": "Generieren",
-            "wireguard_public_key": "Öffentlicher Schlüssel",
+            "wireguard_public_key": "Eigener öffentlicher Schlüssel",
             "invalid_private_key": "Ungültiger privater Schlüssel"
         },
         "script": {

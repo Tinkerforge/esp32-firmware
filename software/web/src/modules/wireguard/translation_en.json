@@ -31,7 +31,7 @@
             "allowed_subnet": "Allowed subnet mask of received packets",
             "generate_keypair": "Generate key pair",
             "generate_keypair_button": "Generate",
-            "wireguard_public_key": "Public key",
+            "wireguard_public_key": "Own public key",
             "invalid_private_key": "Invalid private key"
         },
         "script": {
