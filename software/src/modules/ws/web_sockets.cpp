@@ -91,7 +91,7 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
 
     ws_pkt.payload = reinterpret_cast<uint8_t *>(wi->payload);
     ws_pkt.len = wi->payload_len;
-    ws_pkt.type = wi->payload_len == 0 ? HTTPD_WS_TYPE_PING : wi->ws_type;
+    ws_pkt.type = wi->ws_type;
 
     bool result = true;
 
@@ -717,6 +717,8 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
     }
 }
 
+static constexpr char reboot_close_payload[] = {0x03, 0xE9, 'R', 'e', 'b', 'o', 'o', 't'}; // Code 1001: Going away
+
 void WebSockets::stop() {
     if (!this->running) {
         return;
@@ -726,9 +728,11 @@ void WebSockets::stop() {
     this->running = false;
 
     // Send close frame to all clients
-    this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
+    this->sendToAll(reboot_close_payload, std::size(reboot_close_payload), HTTPD_WS_TYPE_CLOSE);
+
     worker_active = WEBSOCKET_WORKER_ENQUEUED;
     httpd_queue_work(httpd, WebSockets::work, this);
+
     // Give http thread 200ms to send the close frames.
     for(int i = 0; i < 10 && worker_active != WEBSOCKET_WORKER_DONE; ++i)
         delay(20);
