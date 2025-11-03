@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "module.h"
+#include "battery_modbus_tcp.h"
 #include "battery_modbus_tcp_table_id.enum.h"
 #include "modules/batteries/ibattery_generator.h"
-#include "modules/modbus_tcp_client/modbus_function_code.enum.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -39,6 +39,7 @@ public:
     // for IModule
     void pre_setup() override;
     void register_urls() override;
+    void loop() override;
 
     // for IBatteryGenerator
     [[gnu::const]] BatteryClassID get_class() const override;
@@ -49,13 +50,51 @@ public:
     virtual String validate_config(Config &update, ConfigSource source) override;
 
 private:
+    enum class TestState : uint8_t {
+        Connect,
+        Connecting,
+        Disconnect,
+        Done,
+        CreateTableWriter,
+        DestroyTableWriter,
+        TableWriting,
+    };
+
+    void test_flush_log();
+    [[gnu::format(__printf__, 2, 0)]] void test_vprintfln(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] void test_printfln(const char *fmt, ...);
+
     Config config_prototype;
     Config table_custom_register_block_prototype;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> table_prototypes;
     //Config errors_prototype;
 
-    ConfigRoot execute_config;
-    std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> execute_table_prototypes;
+    ConfigRoot test_config;
+    std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> test_table_prototypes;
+    ConfigRoot test_continue_config;
+    ConfigRoot test_abort_config;
+
+    struct Test {
+        TFGenericTCPSharedClient *client = nullptr;
+        micros_t last_keep_alive = 0_us;
+        uint32_t slot;
+        String host;
+        uint16_t port;
+        uint32_t cookie;
+        uint8_t device_address;
+        uint16_t repeat_interval; // seconds
+        BatteryModbusTCP::TableSpec *table;
+        BatteryModbusTCP::TableWriter *writer;
+        TestState state = TestState::Connect;
+        char printfln_buffer[512] = "";
+        micros_t printfln_last_flush = 0_us;
+        size_t printfln_buffer_used = 0;
+        bool abort = false;
+    };
+
+    Test *test = nullptr;
+
+    BatteryModbusTCP *instances[OPTIONS_BATTERIES_MAX_SLOTS()];
 };
 
 #if defined(__GNUC__)
