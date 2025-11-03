@@ -1190,7 +1190,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                         </>]
 
                                         if (this.state.edit_battery_config[0] != BatteryClassID.None) {
-                                            rows = rows.concat(<Fragment key={`edit_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.edit_battery_config[0]].get_edit_children(this.state.edit_battery_config, (battery_config) => this.setState({edit_battery_config: battery_config}))}</Fragment>);
+                                            rows = rows.concat(<Fragment key={`edit_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.edit_battery_config[0]].get_edit_children(this.state.edit_battery_slot, this.state.edit_battery_config, (battery_config) => this.setState({edit_battery_config: battery_config}))}</Fragment>);
                                         }
 
                                         return rows;
@@ -1278,7 +1278,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                                 ];
 
                                 if (this.state.add_battery_config[0] != BatteryClassID.None) {
-                                    rows = rows.concat(<Fragment key={`add_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.add_battery_config[0]].get_edit_children(this.state.add_battery_config, (battery_config) => this.setState({add_battery_config: battery_config}))}</Fragment>);
+                                    rows = rows.concat(<Fragment key={`add_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.add_battery_config[0]].get_edit_children(this.state.add_battery_slot, this.state.add_battery_config, (battery_config) => this.setState({add_battery_config: battery_config}))}</Fragment>);
                                 }
 
                                 return rows;

@@ -21,11 +21,11 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h, Fragment, Component, ComponentChildren } from "preact";
-import { Button } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/battery_class_id.enum";
-import { BatteryAction } from "../batteries/battery_action.enum";
 import { BatteryConfig } from "../batteries/types";
+import { BatteryMode } from "../batteries/battery_mode.enum";
 import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
 import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./battery_modbus_tcp_specs";
 import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
@@ -36,6 +36,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
+import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Table, TableRow } from "../../ts/components/table";
 
 export type ModbusTCPBatteriesConfig = [
@@ -140,7 +141,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
         }
 
-        return [
+        let children = [
             <FormRow label={__("batteries_modbus_tcp.content.register_blocks_desc")} label_muted={__("batteries_modbus_tcp.content.register_blocks_desc_muted")}>
                 <InputText
                     maxLength={32}
@@ -186,18 +187,24 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     onValue={(v) => {
                         this.setState({register_block: {...this.state.register_block, addr: v - start_address_offset}});
                     }} />
-            </FormRow>,
-            <FormRow label={values_label} label_muted={values_label_muted}>
-                <InputTextPatterned
-                    required
-                    pattern={values_pattern}
-                    value={this.state.values}
-                    onValue={(v) => {
-                        this.setState({values: values_filter(v)});
-                    }}
-                    invalidFeedback={values_invalid} />
-            </FormRow>,
+            </FormRow>
         ];
+
+        if (util.hasValue(values_label)) {
+            children.push(
+                <FormRow label={values_label} label_muted={values_label_muted}>
+                    <InputTextPatterned
+                        required
+                        pattern={values_pattern}
+                        value={this.state.values}
+                        onValue={(v) => {
+                            this.setState({values: values_filter(v)});
+                        }}
+                        invalidFeedback={values_invalid} />
+                </FormRow>);
+        }
+
+        return children;
     }
 
     format_vals(function_code: number, vals: number[]) {
@@ -403,68 +410,170 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 }
 
-interface ExecutorProps {
-    label?: string;
+const TEST_CONTINUE_INTERVAL = 3000; // milliseconds
+const TEST_LOG_INTERVAL = 250; // milliseconds
+
+interface TestRunnerProps {
+    slot: number;
     host: string;
     port: number;
     table_id: number;
     device_address: number;
+    repeat_interval?: number;
     register_blocks?: RegisterBlock[];
-    action?: number;
+    modes?: [number, string][];
     extra_values?: {[key: string]: number};
 }
 
-interface ExecutorState {
+interface TestRunnerState {
     table_id: number;
-    waiting: boolean;
+    running: boolean;
     cookie: number;
-    result: string;
+    aborted: boolean;
+    log: string;
+    show_log: boolean;
 }
 
-class Executor extends Component<ExecutorProps, ExecutorState> {
-    constructor(props: ExecutorProps) {
-        super(props);
+class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
+    continue_timer: number = undefined;
+    log_timer: number = undefined;
+    pending_log: string = '';
+
+    constructor() {
+        super();
 
         this.state = {
             table_id: null,
-            waiting: false,
+            running: false,
             cookie: null,
-            result: "",
-        } as ExecutorState;
+            aborted: false,
+            log: '',
+            show_log: false,
+        } as any;
 
-        util.addApiEventListener('batteries_modbus_tcp/execute_result', () => {
-            let execute_result = API.get('batteries_modbus_tcp/execute_result');
+        util.addApiEventListener('batteries_modbus_tcp/test_log', () => {
+            let test_log = API.get('batteries_modbus_tcp/test_log');
 
-            if (!this.state.waiting || execute_result.cookie !== this.state.cookie) {
+            console.log("test_log", JSON.stringify(test_log))
+
+            if (!this.state.running || test_log.cookie !== this.state.cookie) {
                 return;
             }
 
-            let result: string = __("batteries_modbus_tcp.content.execute_done");
+            this.pending_log += test_log.message;
 
-            if (execute_result.error !== null) {
-                result = __("batteries_modbus_tcp.content.execute_error_prefix") + execute_result.error; // FIXME: translate
+            if (this.state.log.length == 0) {
+                this.update_log();
+            }
+        });
+
+        util.addApiEventListener('batteries_modbus_tcp/test_done', () => {
+            let test_done = API.get('batteries_modbus_tcp/test_done');
+
+            console.log("test_done", JSON.stringify(test_done))
+
+            if (!this.state.running || test_done.cookie !== this.state.cookie) {
+                return;
             }
 
-            this.setState({waiting: false, cookie: null, result: result});
+            if (this.continue_timer !== undefined) {
+                clearInterval(this.continue_timer);
+                this.continue_timer = undefined;
+            }
+
+            if (this.log_timer !== undefined) {
+                clearInterval(this.log_timer);
+                this.log_timer = undefined;
+            }
+
+            this.update_log();
+            this.setState({running: false, cookie: null});
         });
     }
 
-    async execute() {
-        // FIXME: trigger form validation
+    update_log(message?: string) {
+        let log = this.state.log + this.pending_log;
 
+        this.pending_log = '';
+
+        if (message) {
+            log += message;
+        }
+
+        this.setState({log: log});
+    }
+
+    async abort_test() {
+        if (!this.state.running || this.state.aborted) {
+            return;
+        }
+
+        let result;
+
+        try {
+            result = await (await util.put('/batteries_modbus_tcp/test_abort', {cookie: this.state.cookie})).text();
+        }
+        catch (e) {
+            result = e.message.replace('400(Bad Request) ', '');
+        }
+
+        if (result.length > 0) {
+            this.update_log("Error while aborting test: " + result + "\n");
+        }
+        else {
+            this.setState({aborted: true});
+        }
+    }
+
+    override async componentWillUnmount() {
+        await this.abort_test();
+    }
+
+    async test_continue() {
+        if (!this.state.running) {
+            return;
+        }
+
+        let result;
+
+        try {
+            result = await (await util.put('/batteries_modbus_tcp/test_continue', {cookie: this.state.cookie})).text();
+        }
+        catch (e) {
+            result = e.message.replace('400(Bad Request) ', '');
+        }
+
+        if (result.length > 0) {
+            this.update_log("Error while keeping test running: " + result + "\n");
+        }
+    }
+
+    async start_mode(mode?: number) {
         let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
-        this.setState({table_id: this.props.table_id, waiting: true, cookie: cookie, result: ""}, async () => {
-            let result = "<unknown>";
+        this.pending_log = '';
+
+        this.setState({
+            table_id: this.props.table_id,
+            running: true,
+            cookie: cookie,
+            aborted: false,
+            show_log: true,
+            log: '',
+        }, async () => {
             let table = [this.props.table_id, {device_address: this.props.device_address}];
+
+            if (util.hasValue(this.props.repeat_interval)) {
+                (table[1] as any)["repeat_interval"] = this.props.repeat_interval;
+            }
 
             if (util.hasValue(this.props.register_blocks)) {
                 (table[1] as any)["register_blocks"] = this.props.register_blocks;
             }
 
-            // FIXME: convert action and extra values into a union with action as the union tag
-            if (util.hasValue(this.props.action)) {
-                (table[1] as any)["action"] = this.props.action;
+            // FIXME: convert mode and extra values into a union with mode as the union tag
+            if (util.hasValue(mode)) {
+                (table[1] as any)["mode"] = mode;
             }
 
             if (util.hasValue(this.props.extra_values)) {
@@ -473,8 +582,11 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 }
             }
 
+            let result;
+
             try {
-                result = await (await util.put("/batteries_modbus_tcp/execute", {
+                result = await (await util.put('/batteries_modbus_tcp/test', {
+                    slot: this.props.slot,
                     host: this.props.host,
                     port: this.props.port,
                     table: table,
@@ -482,29 +594,67 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 })).text();
             }
             catch (e) {
-                result = e.message.replace("400(Bad Request) ", "");
+                result = e.message.replace('400(Bad Request) ', '');
             }
 
             if (result.length > 0) {
-                this.setState({waiting: false, cookie: null, result: __("batteries_modbus_tcp.content.execute_error_prefix") + result});
+                this.update_log("Error while starting test: " + result + "\n");
+                this.setState({running: false, cookie: null});
+
+                return;
             }
+
+            this.continue_timer = window.setInterval(async () => {await this.test_continue()}, TEST_CONTINUE_INTERVAL);
+            this.log_timer = window.setInterval(() => this.update_log(), TEST_LOG_INTERVAL);
         });
     }
 
     render() {
+        let start_button_disabled = this.props.host.trim().length == 0
+                                 || !util.hasValue(this.props.port)
+                                 || (util.hasValue(this.props.register_blocks) && this.props.register_blocks.length == 0);
+
         return <>
-            <FormRow label={util.hasValue(this.props.label) ? this.props.label : ""}>
-                <Button
-                    variant="primary"
-                    className="form-control"
-                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || (!util.hasValue(this.props.action) && (!util.hasValue(this.props.register_blocks) || this.props.register_blocks.length == 0)) || this.state.waiting}
-                    onClick={async () => await this.execute()}>{__("batteries_modbus_tcp.content.execute")}
-                </Button>
+            <FormRow label={__("batteries_modbus_tcp.content.test")} label_muted={__("batteries_modbus_tcp.content.test_muted")}>
+            {!this.state.running ?
+                (this.props.modes ?
+                    <Dropdown key="test_start">
+                        <Dropdown.Toggle
+                            variant="primary"
+                            className="form-control"
+                            disabled={start_button_disabled}>
+                            {__("batteries_modbus_tcp.content.test_start")}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu alignRight>
+                            <Dropdown.Header class="text-wrap">{__("batteries_modbus_tcp.content.test_mode")}</Dropdown.Header>
+                            {this.props.modes.map(mode =>
+                                <Dropdown.Item
+                                    as="button"
+                                    className="py-2"
+                                    onClick={async () => await this.start_mode(mode[0])}>
+                                    {mode[1]}
+                                </Dropdown.Item>)}
+                        </Dropdown.Menu>
+                    </Dropdown> :
+                    <Button key="test_start"
+                            variant="primary"
+                            className="form-control"
+                            onClick={async () => await this.start_mode()}
+                            disabled={start_button_disabled}>
+                        {__("batteries_modbus_tcp.content.test_start")}
+                    </Button>) :
+                <Button key="test_abort"
+                        variant="primary"
+                        className="form-control"
+                        onClick={async () => await this.abort_test()}
+                        disabled={this.state.aborted}>
+                    {__("batteries_modbus_tcp.content.test_abort")}
+                </Button>}
             </FormRow>
 
-            {this.props.table_id === this.state.table_id && (this.state.waiting || this.state.result.length > 0) ?
-                <FormRow label={__("batteries_modbus_tcp.content.execute_result")}>
-                    <InputText value={this.state.waiting ? __("batteries_modbus_tcp.content.execute_waiting") : this.state.result} />
+            {this.props.table_id === this.state.table_id && this.state.show_log ?
+                <FormRow label="">
+                    <OutputTextarea rows={10} resize='vertical' value={this.state.log} />
                 </FormRow>
                 : undefined}
         </>;
@@ -513,20 +663,6 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
 
 function import_custom_table(table: RegisterTable)
 {
-    if (!util.isNonNullObject(table)) {
-        console.log("Batteries Modbus/TCP: Imported config is not an object");
-        return null;
-    }
-
-    if (table.repeat_interval === undefined) {
-        table.repeat_interval = 60;
-    }
-
-    if (typeof table.repeat_interval != "number") {
-        console.log("Batteries Modbus/TCP: Imported config repeat_interval is not a number");
-        return null;
-    }
-
     if (!util.isNonNullObject(table.register_blocks)) {
         console.log("Batteries Modbus/TCP: Imported config register_blocks is not an object");
         return null;
@@ -589,7 +725,7 @@ function import_custom_table(table: RegisterTable)
         });
     }
 
-    return {repeat_interval: table.repeat_interval, register_blocks: register_blocks};
+    return {register_blocks: register_blocks};
 }
 
 export function init() {
@@ -642,29 +778,39 @@ export function init() {
                         return null;
                     }
 
+                    if (typeof new_config[1].table[1].repeat_interval != "number") {
+                        console.log("Batteries Modbus/TCP: Imported config repeat_interval is not a number");
+                        return null;
+                    }
+
                     if (typeof new_config[1].table[1].register_address_mode != "number") {
                         console.log("Batteries Modbus/TCP: Imported config register_address_mode is not a number");
                         return null;
                     }
 
+                    if (!util.isNonNullObject(new_config[1].table[1].battery_modes)) {
+                        console.log("Batteries Modbus/TCP: Imported config battery_modes is not an object");
+                        return null;
+                    }
+
                     table = [BatteryModbusTCPTableID.Custom, {
-                        device_address:              new_config[1].table[1].device_address,
-                        register_address_mode:       new_config[1].table[1].register_address_mode,
-                        permit_grid_charge:          import_custom_table(new_config[1].table[1].permit_grid_charge),
-                        revoke_grid_charge_override: import_custom_table(new_config[1].table[1].revoke_grid_charge_override),
-                        forbid_discharge:            import_custom_table(new_config[1].table[1].forbid_discharge),
-                        revoke_discharge_override:   import_custom_table(new_config[1].table[1].revoke_discharge_override),
-                        forbid_charge:               import_custom_table(new_config[1].table[1].forbid_charge),
-                        revoke_charge_override:      import_custom_table(new_config[1].table[1].revoke_charge_override),
+                        device_address:        new_config[1].table[1].device_address,
+                        repeat_interval:       new_config[1].table[1].repeat_interval,
+                        register_address_mode: new_config[1].table[1].register_address_mode,
+                        battery_modes:         [],
                     }];
 
-                    if (!util.hasValue(table[1].permit_grid_charge)
-                     || !util.hasValue(table[1].revoke_grid_charge_override)
-                     || !util.hasValue(table[1].forbid_discharge)
-                     || !util.hasValue(table[1].revoke_discharge_override)
-                     || !util.hasValue(table[1].forbid_charge)
-                     || !util.hasValue(table[1].revoke_charge_override)) {
-                        return null;
+                    for (let i = 0; i < 6; ++i) {
+                        if (!util.isNonNullObject(table)) {
+                            console.log(`Batteries Modbus/TCP: Imported config battery_modes[${i}] is not an object`);
+                            return null;
+                        }
+
+                        table[1].battery_modes[i] = import_custom_table(new_config[1].table[1].battery_modes[i]);
+
+                        if (!util.hasValue(table[1].battery_modes[i])) {
+                            return null;
+                        }
                     }
                 }
                 else {
@@ -699,7 +845,7 @@ export function init() {
 
                 return clone;
             },
-            get_edit_children: (config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
+            get_edit_children: (battery_slot: number, config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
                 let edit_children = [
                     <FormRow label={__("batteries_modbus_tcp.content.display_name")}>
                         <InputText
@@ -751,42 +897,32 @@ export function init() {
                     </FormRow>,
                 ];
 
+                let battery_mode_names = [
+                    __("batteries_modbus_tcp.content.battery_mode_disable"),
+                    __("batteries_modbus_tcp.content.battery_mode_normal"),
+                    __("batteries_modbus_tcp.content.battery_mode_charge_from_excess"),
+                    __("batteries_modbus_tcp.content.battery_mode_charge_from_grid"),
+                    __("batteries_modbus_tcp.content.battery_mode_discharge_to_load"),
+                    __("batteries_modbus_tcp.content.battery_mode_discharge_to_grid"),
+                ];
+
+                let battery_mode_order = [
+                    BatteryMode.Normal,
+                    BatteryMode.ChargeFromExcess,
+                    BatteryMode.DischargeToLoad,
+                    BatteryMode.Disable,
+                    BatteryMode.DischargeToGrid,
+                    BatteryMode.ChargeFromGrid,
+                ];
+
+                let battery_mode_items = battery_mode_order.map(mode => [mode, battery_mode_names[mode]]);
+
                 if (util.hasValue(config[1].table)
                  && (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX
                   || config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter)) {
-                    let extra_values = undefined;
-
-                    if (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX) {
-                        extra_values = {
-                            grid_draw_setpoint_charge: config[1].table[1].grid_draw_setpoint_charge,
-                            grid_draw_setpoint_default: config[1].table[1].grid_draw_setpoint_default,
-                        };
-                    }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter) {
-                        extra_values = {
-                            max_soc: config[1].table[1].max_soc,
-                            min_soc: config[1].table[1].min_soc,
-                            max_discharge_current: config[1].table[1].max_discharge_current,
-                            max_charge_current: config[1].table[1].max_charge_current,
-                        };
-                    }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
-                        extra_values = {
-                            max_soc: config[1].table[1].max_soc,
-                            min_soc: config[1].table[1].min_soc,
-                        };
-                    }
-                    else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
-                        extra_values = {
-                            grid_charge_power: config[1].table[1].grid_charge_power,
-                            max_discharge_power: config[1].table[1].max_discharge_power,
-                            max_charge_power: config[1].table[1].max_charge_power,
-                        };
-                    }
-
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
                             <InputNumber
@@ -797,176 +933,201 @@ export function init() {
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
-                        </FormRow>,
+                        </FormRow>);
 
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
-                            {config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX ?
-                                <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_charge")}>
-                                    <InputNumber
-                                        required
-                                        min={-2147483648}
-                                        max={2147483647}
-                                        unit="W"
-                                        value={config[1].table[1].grid_draw_setpoint_charge}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
-                                    <InputNumber
-                                        required
-                                        min={0}
-                                        max={100}
-                                        unit="%"
-                                        value={config[1].table[1].max_soc}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
-                                    <InputFloat
-                                        required
-                                        digits={3}
-                                        min={0}
-                                        max={65535}
-                                        unit="kW"
-                                        value={config[1].table[1].grid_charge_power}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.PermitGridCharge} extra_values={extra_values} />
-                        </CollapsedSection>,
+                    let extra_values = undefined;
 
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
-                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
-                                    <InputNumber
-                                        required
-                                        min={0}
-                                        max={100}
-                                        unit="%"
-                                        value={config[1].table[1].min_soc}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX ?
-                                <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_default")}>
-                                    <InputNumber
-                                        required
-                                        min={-2147483648}
-                                        max={2147483647}
-                                        unit="W"
-                                        value={config[1].table[1].grid_draw_setpoint_default}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_default: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeGridChargeOverride} extra_values={extra_values} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidDischarge} extra_values={extra_values} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
-                            {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.max_discharge_current")}>
-                                    <InputNumber
-                                        required
-                                        min={0}
-                                        max={185}
-                                        unit="A"
-                                        value={config[1].table[1].max_discharge_current}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_current: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
-                                    <InputNumber
-                                        required
-                                        min={0}
-                                        max={100}
-                                        unit="%"
-                                        value={config[1].table[1].min_soc}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
-                                <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
-                                    <InputFloat
-                                        required
-                                        digits={2}
-                                        min={1}
-                                        max={65535}
-                                        unit="kW"
-                                        value={config[1].table[1].max_discharge_power}
-                                        onValue={(v) => {
-                                            on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
-                                        }} />
-                                </FormRow> : undefined}
-                            <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeDischargeOverride} extra_values={extra_values} />
-                        </CollapsedSection>,
-                    );
-
-                    // FIXME: no support for forbid-charge and revoke-charge-override for Alpha ESS and Hailei
-                    if (config[1].table[0] != BatteryModbusTCPTableID.AlphaESSHybridInverter && config[1].table[0] != BatteryModbusTCPTableID.HaileiHybridInverter) {
+                    if (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX) {
                         edit_children.push(
-                            <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
-                                <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.ForbidCharge} extra_values={extra_values} />
-                            </CollapsedSection>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_normal")}>
+                                <InputNumber
+                                    required
+                                    min={-2147483648}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].grid_draw_setpoint_normal}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_normal: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_charge")}>
+                                <InputNumber
+                                    required
+                                    min={-2147483648}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].grid_draw_setpoint_charge}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_discharge")}>
+                                <InputNumber
+                                    required
+                                    min={-2147483648}
+                                    max={2147483647}
+                                    unit="W"
+                                    value={config[1].table[1].grid_draw_setpoint_discharge}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_discharge: v})}));
+                                    }} />
+                            </FormRow>);
 
-                            <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
-                                {config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter ?
-                                    <FormRow label={__("batteries_modbus_tcp.content.max_charge_current")}>
-                                        <InputNumber
-                                            required
-                                            min={0}
-                                            max={185}
-                                            unit="A"
-                                            value={config[1].table[1].max_charge_current}
-                                            onValue={(v) => {
-                                                on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_current: v})}));
-                                            }} />
-                                    </FormRow> : undefined}
-                                {config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter ?
-                                    <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
-                                        <InputFloat
-                                            required
-                                            digits={2}
-                                            min={1}
-                                            max={65535}
-                                            unit="kW"
-                                            value={config[1].table[1].max_charge_power}
-                                            onValue={(v) => {
-                                                on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
-                                            }} />
-                                    </FormRow> : undefined}
-                                <Executor label={__("batteries_modbus_tcp.content.action")} host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} action={BatteryAction.RevokeChargeOverride} extra_values={extra_values} />
-                            </CollapsedSection>,
-                        );
+                        extra_values = {
+                            grid_draw_setpoint_normal: config[1].table[1].grid_draw_setpoint_normal,
+                            grid_draw_setpoint_charge: config[1].table[1].grid_draw_setpoint_charge,
+                            grid_draw_setpoint_discharge: config[1].table[1].grid_draw_setpoint_discharge,
+                        };
                     }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.max_charge_current")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={185}
+                                    unit="A"
+                                    value={config[1].table[1].max_charge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_discharge_current")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={185}
+                                    unit="A"
+                                    value={config[1].table[1].max_discharge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].min_soc}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].max_soc}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            max_charge_current: config[1].table[1].max_charge_current,
+                            max_discharge_current: config[1].table[1].max_discharge_current,
+                            min_soc: config[1].table[1].min_soc,
+                            max_soc: config[1].table[1].max_soc,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
+                          || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].max_soc}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            max_soc: config[1].table[1].max_soc,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={3}
+                                    min={0}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].grid_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_discharge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={3}
+                                    min={0}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].grid_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_discharge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={2}
+                                    min={1}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].max_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={2}
+                                    min={1}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].max_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            grid_charge_power: config[1].table[1].grid_charge_power,
+                            grid_discharge_power: config[1].table[1].grid_discharge_power,
+                            max_charge_power: config[1].table[1].max_charge_power,
+                            max_discharge_power: config[1].table[1].max_discharge_power,
+                        };
+                    }
+
+                    edit_children.push(
+                        <TestRunner
+                            slot={battery_slot}
+                            host={config[1].host}
+                            port={config[1].port}
+                            table_id={config[1].table[0]}
+                            device_address={config[1].table[1].device_address}
+                            modes={battery_mode_items as [number, string][]}
+                            extra_values={extra_values} />);
                 }
                 else if (util.hasValue(config[1].table)
                       && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
-                    let total_values_count_permit_grid_charge = get_total_values_count(config[1].table[1].permit_grid_charge);
-                    let total_values_count_revoke_grid_charge_override = get_total_values_count(config[1].table[1].revoke_grid_charge_override);
-                    let total_values_count_forbid_discharge = get_total_values_count(config[1].table[1].forbid_discharge);
-                    let total_values_count_revoke_discharge_override = get_total_values_count(config[1].table[1].revoke_discharge_override);
-                    let total_values_count_forbid_charge = get_total_values_count(config[1].table[1].forbid_charge);
-                    let total_values_count_revoke_charge_override = get_total_values_count(config[1].table[1].revoke_charge_override);
+                    let total_values_count = 0;
 
-                    let total_values_count = total_values_count_permit_grid_charge
-                                           + total_values_count_revoke_grid_charge_override
-                                           + total_values_count_forbid_discharge
-                                           + total_values_count_revoke_discharge_override
-                                           + total_values_count_forbid_charge
-                                           + total_values_count_revoke_charge_override;
+                    for (let i = 0; i < 6; ++i) {
+                        total_values_count += get_total_values_count(config[1].table[1].battery_modes[i]);
+                    }
 
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
@@ -979,7 +1140,17 @@ export function init() {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
                         </FormRow>,
-
+                        <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
+                            <InputNumber
+                                required
+                                unit={"s"}
+                                min={0}
+                                max={65535}
+                                value={config[1].table[1].repeat_interval}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {repeat_interval: v})}));
+                                }} />
+                        </FormRow>,
                         <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
                             <InputSelect
                                 required
@@ -992,140 +1163,31 @@ export function init() {
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {...(config[1].table as TableConfigCustom)[1], register_address_mode: parseInt(v)})}));
                                 }} />
-                        </FormRow>,
+                        </FormRow>);
 
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].permit_grid_charge.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_permit_grid_charge}
-                                    table={config[1].table[1].permit_grid_charge}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].permit_grid_charge.register_blocks} />
-                        </CollapsedSection>,
+                    for (let i = 0; i < 6; ++i) {
+                        let mode = battery_mode_order[i];
 
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].revoke_grid_charge_override.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_revoke_grid_charge_override}
-                                    table={config[1].table[1].revoke_grid_charge_override}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].revoke_grid_charge_override.register_blocks} />
-                        </CollapsedSection>,
+                        edit_children.push(
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_prefix") + battery_mode_names[mode]} modal={true}>
 
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].forbid_discharge.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_forbid_discharge}
-                                    table={config[1].table[1].forbid_discharge}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].forbid_discharge.register_blocks} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].revoke_discharge_override.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_revoke_discharge_override}
-                                    table={config[1].table[1].revoke_discharge_override}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].revoke_discharge_override.register_blocks} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_charge")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].forbid_charge.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: {...(config[1].table as TableConfigCustom)[1].forbid_charge, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_forbid_charge}
-                                    table={config[1].table[1].forbid_charge}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].forbid_charge.register_blocks} />
-                        </CollapsedSection>,
-
-                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_charge_override")} modal={true}>
-                            <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
-                                <InputNumber
-                                    required
-                                    unit={"s"}
-                                    min={0}
-                                    max={65535}
-                                    value={config[1].table[1].revoke_charge_override.repeat_interval}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_charge_override, repeat_interval: v}})}));
-                                    }} />
-                            </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
-                                <RegisterEditor
-                                    register_address_mode={config[1].table[1].register_address_mode}
-                                    other_total_values_count={total_values_count - total_values_count_revoke_charge_override}
-                                    table={config[1].table[1].revoke_charge_override}
-                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: table})}))} />
-                            </FormRow>
-                            <Executor host={config[1].host} port={config[1].port} table_id={config[1].table[0]} device_address={config[1].table[1].device_address} register_blocks={config[1].table[1].revoke_charge_override.register_blocks} />
-                        </CollapsedSection>,
-                    );
+                                <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
+                                    <RegisterEditor
+                                        register_address_mode={config[1].table[1].register_address_mode}
+                                        other_total_values_count={total_values_count - get_total_values_count(config[1].table[1].battery_modes[mode])}
+                                        table={config[1].table[1].battery_modes[mode]}
+                                        on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {battery_modes:(config[1].table as TableConfigCustom)[1].battery_modes.map((battery_mode, k) => k == mode ? table : battery_mode)})}))} />
+                                </FormRow>
+                                <TestRunner
+                                    slot={battery_slot}
+                                    host={config[1].host}
+                                    port={config[1].port}
+                                    table_id={config[1].table[0]}
+                                    device_address={config[1].table[1].device_address}
+                                    repeat_interval={config[1].table[1].repeat_interval}
+                                    register_blocks={config[1].table[1].battery_modes[mode].register_blocks} />
+                            </CollapsedSection>);
+                    }
                 }
 
                 return edit_children;

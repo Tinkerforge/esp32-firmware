@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 #include "battery_class_id.enum.h"
-#include "battery_action.enum.h"
+#include "battery_mode.enum.h"
 #include "config.h"
 
 #define printfln_battery(fmt, ...) printfln("Battery %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)
@@ -41,7 +41,6 @@ public:
     virtual void register_events()                     {}
     virtual void pre_reboot()                          {}
 
-    virtual void get_repeat_intervals(uint16_t intervals_s[6]) const; // No default implementation, to force a deliberate decision.
-    virtual bool supports_action(BatteryAction action) const                                        {return false;}
-    virtual void start_action(BatteryAction action, std::function<void(bool)> &&callback = nullptr) {}
+    virtual bool supports_mode(BatteryMode mode) const {return false;} // FIXME: extend this to "no", "partial", "fully"
+    virtual void set_mode(BatteryMode mode)            {}
 };

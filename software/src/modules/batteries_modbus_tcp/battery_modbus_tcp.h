@@ -24,9 +24,10 @@
 #include <TFModbusTCPClientPool.h>
 
 #include "config.h"
-#include "batteries_modbus_tcp.h"
+#include "options.h"
 #include "battery_modbus_tcp_table_id.enum.h"
 #include "modules/batteries/ibattery.h"
+#include "modules/modbus_tcp_client/modbus_function_code.enum.h"
 #include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
 
 class BatteryModbusTCP final : protected GenericTCPClientPoolConnector, public IBattery
@@ -40,13 +41,28 @@ public:
     };
 
     struct TableSpec {
-        uint16_t repeat_interval;
         RegisterBlockSpec *register_blocks;
         size_t register_blocks_count;
     };
 
-    static TableSpec *load_custom_table(const Config *config, bool load_repeat_interval = true);
+    typedef std::function<void(const char *fmt, va_list args)> TableWriterVLogFLnFunction;
+
+    struct TableWriter {
+        TFModbusTCPSharedClient *client = nullptr;
+        uint8_t device_address = 0;
+        uint16_t repeat_interval; // seconds
+        TableSpec *table = nullptr;
+        size_t repeat_count = 0;
+        size_t index = 0;
+        uint64_t task_id = 0;
+        TableWriterVLogFLnFunction vlogfln;
+    };
+
+    static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
+
+    static TableWriter *create_table_writer(TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln);
+    static void destroy_table_writer(TableWriter *writer);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
         GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
@@ -56,23 +72,27 @@ public:
     void register_events() override;
     void pre_reboot() override;
 
-    void get_repeat_intervals(uint16_t intervals_s[6]) const override;
-    bool supports_action(BatteryAction action) const override;
-    void start_action(BatteryAction action, std::function<void(bool)> &&callback = nullptr) override;
+    bool supports_mode(BatteryMode mode) const override;
+    void set_mode(BatteryMode mode) override;
 
-    typedef std::function<void(const char *error)> ExecuteCallback;
-
-    static void execute(TFModbusTCPSharedClient *client, uint8_t device_address, TableSpec *table, ExecuteCallback &&callback);
+    void set_paused(bool paused);
 
 private:
     void connect_callback() override;
     void disconnect_callback() override;
+    void set_active_mode(BatteryMode mode);
 
     uint32_t slot;
     Config *state;
     Config *errors;
 
     BatteryModbusTCPTableID table_id;
+    // FIXME: might be allocated. leaking if allocated, because as of right now battery instances don't get destroyed
     TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     uint8_t device_address;
+    uint16_t repeat_interval; // seconds
+    BatteryMode requested_mode = BatteryMode::None;
+    BatteryMode active_mode = BatteryMode::None;
+    bool paused = false;
+    TableWriter *active_writer = nullptr;
 };

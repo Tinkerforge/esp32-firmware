@@ -4,16 +4,19 @@ table_prototypes = [
     ('Victron Energy GX', [
         'device_address',
         {
-            'action': 'Permit Grid Charge',
+            'name': 'grid_draw_setpoint_normal',  # positive = draw, negative = feed
+            'type': 'Int32',
+            'default': 50,  # W
+        },
+        {
             'name': 'grid_draw_setpoint_charge',  # positive = draw, negative = feed
             'type': 'Int32',
             'default': 1000,  # W
         },
         {
-            'action': 'Revoke Grid Charge Override',
-            'name': 'grid_draw_setpoint_default',  # positive = draw, negative = feed
+            'name': 'grid_draw_setpoint_discharge',  # positive = draw, negative = feed
             'type': 'Int32',
-            'default': 50,  # W
+            'default': 1000,  # W
         },
     ]),
 ]
@@ -22,48 +25,33 @@ default_device_addresses = [
     ('Victron Energy GX', 100),
 ]
 
+repeat_intervals = [
+    ('Victron Energy GX', 60),
+]
+
 specs = [
     {
         'group': 'Victron Energy GX',
-        'action': 'Permit Grid Charge',
-        'repeat_interval': 60,
+        'mode': 'Disable',
+        'actions': ('Disable', 'Disable'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    0,
+                    0,
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) & 0xFFFF);',
             },
-        ],
-    },
-    {
-        'group': 'Victron Energy GX',
-        'action': 'Revoke Grid Charge Override',
-        'repeat_interval': 60,
-        'register_blocks': [
             {
-                'description': 'AC grid setpoint override [W]',
+                'description': 'DVCC system max charge current [A]',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 2716,  # S32BE
+                'start_address': 2705,  # S16
                 'values': [
-                    None,
-                    None,
+                    0,
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_default) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_default) & 0xFFFF);',
             },
-        ],
-    },
-    {
-        'group': 'Victron Energy GX',
-        'action': 'Forbid Discharge',
-        'repeat_interval': 60,
-        'register_blocks': [
             {
                 'description': 'ESS max discharge power [0.1 W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -76,9 +64,28 @@ specs = [
     },
     {
         'group': 'Victron Energy GX',
-        'action': 'Revoke Discharge Override',
-        'repeat_interval': 60,
+        'mode': 'Normal',
+        'actions': ('Normal', 'Normal'),
         'register_blocks': [
+            {
+                'description': 'AC grid setpoint override [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2716,  # S32BE
+                'values': [
+                    None,
+                    None,
+                ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
+            },
+            {
+                'description': 'DVCC system max charge current [A]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2705,  # S16
+                'values': [
+                    65535,  # -1 = no limit
+                ],
+            },
             {
                 'description': 'ESS max discharge power [0.1 W]',
                 'function_code': 'WriteMultipleRegisters',
@@ -91,13 +98,32 @@ specs = [
     },
     {
         'group': 'Victron Energy GX',
-        'action': 'Forbid Charge',
-        'repeat_interval': 60,
+        'mode': 'Charge From Excess',
+        'actions': ('Normal', 'Disable'),
         'register_blocks': [
+            {
+                'description': 'AC grid setpoint override [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2716,  # S32BE
+                'values': [
+                    None,
+                    None,
+                ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
+            },
             {
                 'description': 'DVCC system max charge current [A]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2705,  # S16
+                'values': [
+                    65535,  # -1 = no limit
+                ],
+            },
+            {
+                'description': 'ESS max discharge power [0.1 W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2704,  # S16
                 'values': [
                     0,
                 ],
@@ -106,13 +132,100 @@ specs = [
     },
     {
         'group': 'Victron Energy GX',
-        'action': 'Revoke Charge Override',
-        'repeat_interval': 60,
+        'mode': 'Charge From Grid',
+        'actions': ('Force', 'Disable'),
         'register_blocks': [
+            {
+                'description': 'AC grid setpoint override [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2716,  # S32BE
+                'values': [
+                    None,
+                    None,
+                ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) & 0xFFFF);',
+            },
             {
                 'description': 'DVCC system max charge current [A]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2705,  # S16
+                'values': [
+                    65535,  # -1 = no limit
+                ],
+            },
+            {
+                'description': 'ESS max discharge power [0.1 W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2704,  # S16
+                'values': [
+                    0,
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Victron Energy GX',
+        'mode': 'Discharge To Load',
+        'actions': ('Disable', 'Normal'),
+        'register_blocks': [
+            {
+                'description': 'AC grid setpoint override [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2716,  # S32BE
+                'values': [
+                    None,
+                    None,
+                ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
+            },
+            {
+                'description': 'DVCC system max charge current [A]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2705,  # S16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'ESS max discharge power [0.1 W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2704,  # S16
+                'values': [
+                    65535,  # -1 = no limit
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Victron Energy GX',
+        'mode': 'Discharge To Grid',
+        'actions': ('Disable', 'Force'),
+        'register_blocks': [
+            {
+                'description': 'AC grid setpoint override [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2716,  # S32BE
+                'values': [
+                    None,
+                    None,
+                ],
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_discharge) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_discharge) & 0xFFFF);',
+            },
+            {
+                'description': 'DVCC system max charge current [A]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2705,  # S16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'ESS max discharge power [0.1 W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 2704,  # S16
                 'values': [
                     65535,  # -1 = no limit
                 ],

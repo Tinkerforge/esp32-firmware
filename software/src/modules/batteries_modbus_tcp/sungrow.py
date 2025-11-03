@@ -2,22 +2,24 @@ table_prototypes = [
     ('Sungrow Hybrid Inverter', [
         'device_address',
         {
-            'action': 'Permit Grid Charge',
             'name': 'grid_charge_power',
-            'type': 'Uint16',
+            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
             'default': 1000,  # W
         },
         {
-            'action': 'Revoke Discharge Override',
-            'name': 'max_discharge_power',
-            'type': 'Uint16',  # FIXME: add range limit to [1..65535]
-            'default': 1500,  # 0.01 kW
+            'name': 'grid_discharge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
+            'default': 1000,  # W
         },
         {
-            'action': 'Revoke Charge Override',
             'name': 'max_charge_power',
             'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 3000,  # 0.01 kW
+        },
+        {
+            'name': 'max_discharge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [1..65535]
+            'default': 1500,  # 0.01 kW
         },
     ]),
 ]
@@ -26,11 +28,159 @@ default_device_addresses = [
     ('Sungrow Hybrid Inverter', 1),
 ]
 
+repeat_intervals = [
+    ('Sungrow Hybrid Inverter', 60),
+]
+
 specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
-        'action': 'Permit Grid Charge',
-        'repeat_interval': 60,
+        'mode': 'Disable',
+        'actions': ('Disable', 'Disable'),
+        'register_blocks': [
+            {
+                'description': 'EMS mode selection',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13050,  # U16
+                'values': [
+                    2,  # forced
+                ],
+            },
+            {
+                'description': 'Charge/discharge command',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13051,  # U16
+                'values': [
+                    0xCC,  # stop
+                ],
+            },
+            {
+                'description': 'Charge/discharge power [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13052,  # U16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    1,  # FIXME: apparently the minimum value is 1, this has not been verified
+                ],
+            },
+            {
+                'description': 'Maximum discharge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33048,
+                'values': [
+                    1,  # FIXME: apparently the minimum value is 1, this has not been verified
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Sungrow Hybrid Inverter',
+        'mode': 'Normal',
+        'actions': ('Normal', 'Normal'),
+        'register_blocks': [
+            {
+                'description': 'EMS mode selection',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13050,  # U16
+                'values': [
+                    0,  # self
+                ],
+            },
+            {
+                'description': 'Charge/discharge command',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13051,  # U16
+                'values': [
+                    0xCC,  # stop
+                ],
+            },
+            {
+                'description': 'Charge/discharge power [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13052,  # U16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    None,
+                ],
+                'mapping': 'values[0] = max_charge_power;',
+            },
+            {
+                'description': 'Maximum discharge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33048,
+                'values': [
+                    None,
+                ],
+                'mapping': 'values[0] = max_discharge_power;',
+            },
+        ],
+    },
+    {
+        'group': 'Sungrow Hybrid Inverter',
+        'mode': 'Charge From Excess',
+        'actions': ('Normal', 'Disable'),
+        'register_blocks': [
+            {
+                'description': 'EMS mode selection',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13050,  # U16
+                'values': [
+                    0,  # self
+                ],
+            },
+            {
+                'description': 'Charge/discharge command',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13051,  # U16
+                'values': [
+                    0xCC,  # stop
+                ],
+            },
+            {
+                'description': 'Charge/discharge power [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13052,  # U16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    None,
+                ],
+                'mapping': 'values[0] = max_charge_power;',
+            },
+            {
+                'description': 'Maximum discharge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33048,
+                'values': [
+                    0,
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Sungrow Hybrid Inverter',
+        'mode': 'Charge From Grid',
+        'actions': ('Force', 'Disable'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -57,12 +207,29 @@ specs = [
                 ],
                 'mapping': 'values[0] = grid_charge_power;',
             },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    None,
+                ],
+                'mapping': 'values[0] = max_charge_power;',
+            },
+            {
+                'description': 'Maximum discharge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33048,
+                'values': [
+                    0,
+                ],
+            },
         ],
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'action': 'Revoke Grid Charge Override',
-        'repeat_interval': 60,
+        'mode': 'Discharge To Load',
+        'actions': ('Disable', 'Normal'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -80,32 +247,26 @@ specs = [
                     0xCC,  # stop
                 ],
             },
-        ],
-    },
-    {
-        'group': 'Sungrow Hybrid Inverter',
-        'action': 'Forbid Discharge',
-        'repeat_interval': 60,
-        'register_blocks': [
+            {
+                'description': 'Charge/discharge power [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13052,  # U16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    0,
+                ],
+            },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
-                'values': [
-                    1,  # apparently the minimum value is 1, this has not been verified
-                ],
-            },
-        ],
-    },
-    {
-        'group': 'Sungrow Hybrid Inverter',
-        'action': 'Revoke Discharge Override',
-        'repeat_interval': 60,
-        'register_blocks': [
-            {
-                'description': 'Maximum discharge power [0.01 kW]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_number': 33048,  # U16
                 'values': [
                     None,
                 ],
@@ -115,32 +276,50 @@ specs = [
     },
     {
         'group': 'Sungrow Hybrid Inverter',
-        'action': 'Forbid Charge',
-        'repeat_interval': 60,
+        'mode': 'Discharge To Grid',
+        'actions': ('Disable', 'Force'),
         'register_blocks': [
             {
-                'description': 'Maximum charge power [0.01 kW]',
+                'description': 'EMS mode selection',
                 'function_code': 'WriteMultipleRegisters',
-                'start_number': 33047,  # U16
+                'start_number': 13050,  # U16
                 'values': [
-                    1,  # apparently the minimum value is 1, this has not been verified
+                    2,  # forced
                 ],
             },
-        ],
-    },
-    {
-        'group': 'Sungrow Hybrid Inverter',
-        'action': 'Revoke Charge Override',
-        'repeat_interval': 60,
-        'register_blocks': [
             {
-                'description': 'Maximum charge power [0.01 kW]',
+                'description': 'Charge/discharge command',
                 'function_code': 'WriteMultipleRegisters',
-                'start_number': 33047,  # U16
+                'start_number': 13051,  # U16
+                'values': [
+                    0xBB,  # discharge
+                ],
+            },
+            {
+                'description': 'Charge/discharge power [W]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 13052,  # U16
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_power;',
+                'mapping': 'values[0] = grid_discharge_power;',
+            },
+            {
+                'description': 'Maximum charge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33047,  # U16
+                'values': [
+                    0,
+                ],
+            },
+            {
+                'description': 'Maximum discharge power [0.01 kW]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_number': 33048,
+                'values': [
+                    None,
+                ],
+                'mapping': 'values[0] = max_discharge_power;',
             },
         ],
     },

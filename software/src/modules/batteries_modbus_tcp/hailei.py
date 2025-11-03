@@ -4,16 +4,9 @@ table_prototypes = [
     ('Hailei Hybrid Inverter', [
         'device_address',
         {
-            'action': 'Permit Grid Charge',
             'name': 'max_soc',
             'type': 'Uint8',  # FIXME: add range limit to [0..100]
             'default': 100,  # %
-        },
-        {
-            'action': 'Revoke Discharge Override',
-            'name': 'min_soc',
-            'type': 'Uint8',  # FIXME: add range limit to [0..100]
-            'default': 10,  # %
         },
     ]),
 ]
@@ -22,11 +15,145 @@ default_device_addresses = [
     ('Hailei Hybrid Inverter', 85),
 ]
 
+repeat_intervals = [
+    ('Hailei Hybrid Inverter', 60),
+]
+
 specs = [
     {
         'group': 'Hailei Hybrid Inverter',
-        'action': 'Permit Grid Charge',
-        'repeat_interval': 60,
+        'mode': 'Disable',
+        #            Disable
+        'actions': ('Normal', 'Disable'),  # FIXME: cannot fully disable charge
+        'register_blocks': [
+            {
+                'description': 'Time discharge start hours',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0851,  # U16
+                'values': [
+                    0,
+                    23,
+                    23,
+                    23,
+                ],
+            },
+            {
+                'description': 'Time discharge start minutes',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x085A,  # U16
+                'values': [
+                    0,
+                    59,
+                    59,
+                    59,
+                ],
+            },
+            {
+                'description': 'UPS reserve SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0850,  # U16
+                'values': [
+                    100,
+                ],
+            },
+            {
+                'description': 'UPS reserve enable',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0862,  # U16
+                'values': [
+                    1,  # enable UPS reserve
+                ],
+            },
+            {
+                'description': 'Time period control flag',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    2,  # enable discharge time period control
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Hailei Hybrid Inverter',
+        'mode': 'Normal',
+        'actions': ('Normal', 'Normal'),
+        'register_blocks': [
+            {
+                'description': 'Time period control flag',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    0,  # disable time period control
+                ],
+            },
+            {
+                'description': 'UPS reserve enable',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0862,  # U16
+                'values': [
+                    0,  # disable UPS reserve
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Hailei Hybrid Inverter',
+        'mode': 'Charge From Excess',
+        'actions': ('Normal', 'Disable'),
+        'register_blocks': [
+            {
+                'description': 'Time discharge start hours',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0851,  # U16
+                'values': [
+                    0,
+                    23,
+                    23,
+                    23,
+                ],
+            },
+            {
+                'description': 'Time discharge start minutes',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x085A,  # U16
+                'values': [
+                    0,
+                    59,
+                    59,
+                    59,
+                ],
+            },
+            {
+                'description': 'UPS reserve SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0850,  # U16
+                'values': [
+                    100,
+                ],
+            },
+            {
+                'description': 'UPS reserve enable',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0862,  # U16
+                'values': [
+                    1,  # enable UPS reserve
+                ],
+            },
+            {
+                'description': 'Time period control flag',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    2,  # enable discharge time period control
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Hailei Hybrid Inverter',
+        'mode': 'Charge From Grid',
+        'actions': ('Force', 'Disable'),
         'register_blocks': [
             {
                 'description': 'Time charge start hours',
@@ -51,11 +178,25 @@ specs = [
                 ],
             },
             {
-                'description': 'Time period control flag',
-                'function_code': 'MaskWriteRegister',
-                'start_address': 0x084F,  # U16
+                'description': 'Time discharge start hours',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0851,  # U16
                 'values': [
-                    0b10, 0b01  # leave bit 1 unchanged, set bit 0 to enable charge time period control
+                    0,
+                    23,
+                    23,
+                    23,
+                ],
+            },
+            {
+                'description': 'Time discharge start minutes',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x085A,  # U16
+                'values': [
+                    0,
+                    59,
+                    59,
+                    59,
                 ],
             },
             {
@@ -67,66 +208,6 @@ specs = [
                 ],
                 'mapping': 'values[0] = max_soc;',
             },
-        ],
-    },
-    {
-        'group': 'Hailei Hybrid Inverter',
-        'action': 'Revoke Grid Charge Override',
-        'repeat_interval': 60,
-        'register_blocks': [
-            {
-                'description': 'Time period control flag',
-                'function_code': 'MaskWriteRegister',
-                'start_address': 0x084F,  # U16
-                'values': [
-                    0b10, 0b00  # leave bit 1 unchanged, clear bit 0 to disable charge time period control
-                ],
-            },
-        ],
-    },
-    {
-        'group': 'Hailei Hybrid Inverter',
-        'action': 'Forbid Discharge',
-        'repeat_interval': 60,
-        'register_blocks': [
-            {
-                'description': 'Time charge start hours',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0856,  # U16
-                'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time charge start minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085E,  # U16
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
-            },
-            {
-                'description': 'Time period control flag',
-                'function_code': 'MaskWriteRegister',
-                'start_address': 0x084F,  # U16
-                'values': [
-                    0b01, 0b10  # leave bit 0 unchanged, set bit 1 to enable discharge time period control
-                ],
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    1,  # enable
-                ],
-            },
             {
                 'description': 'UPS reserve SOC [%]',
                 'function_code': 'WriteMultipleRegisters',
@@ -135,19 +216,36 @@ specs = [
                     100,
                 ],
             },
+            {
+                'description': 'UPS reserve enable',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0862,  # U16
+                'values': [
+                    1,  # enable UPS reserve
+                ],
+            },
+            {
+                'description': 'Time period control flag',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    3,  # enable charge and discharge time period control
+                ],
+            },
         ],
     },
     {
         'group': 'Hailei Hybrid Inverter',
-        'action': 'Revoke Discharge Override',
-        'repeat_interval': 60,
+        'mode': 'Discharge To Load',
+        #            Disable
+        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully disable charge
         'register_blocks': [
             {
                 'description': 'Time period control flag',
-                'function_code': 'MaskWriteRegister',
+                'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x084F,  # U16
                 'values': [
-                    0b01, 0b00  # leave bit 0 unchanged, clear bit 1 to disable discharge time period control
+                    0,  # disable time period control
                 ],
             },
             {
@@ -155,34 +253,33 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0862,  # U16
                 'values': [
-                    0,  # disable
+                    0,  # disable UPS reserve
+                ],
+            },
+        ],
+    },
+    {
+        'group': 'Hailei Hybrid Inverter',
+        'mode': 'Discharge To Grid',
+        #            Disable   Force
+        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully disable charge and cannot force discharge
+        'register_blocks': [
+            {
+                'description': 'Time period control flag',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x084F,  # U16
+                'values': [
+                    0,  # disable time period control
                 ],
             },
             {
-                'description': 'UPS reserve SOC [%]',
+                'description': 'UPS reserve enable',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
+                'start_address': 0x0862,  # U16
                 'values': [
-                    None,
+                    0,  # disable UPS reserve
                 ],
-                'mapping': 'values[0] = min_soc;',
             },
-        ],
-    },
-    {
-        'group': 'Hailei Hybrid Inverter',
-        'action': 'Forbid Charge',
-        'repeat_interval': 60,
-        'register_blocks': [
-            # FIXME
-        ],
-    },
-    {
-        'group': 'Hailei Hybrid Inverter',
-        'action': 'Revoke Charge Override',
-        'repeat_interval': 60,
-        'register_blocks': [
-            # FIXME
         ],
     },
 ]
