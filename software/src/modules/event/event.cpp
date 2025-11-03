@@ -26,7 +26,7 @@
 #include "tools/malloc.h"
 #include "tools/memory.h"
 
-static constexpr const size_t INITIAL_STATE_RESERVE = 192;
+static constexpr const size_t INITIAL_STATE_RESERVE = 224;
 
 void Event::pre_setup()
 {
