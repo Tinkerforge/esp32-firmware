@@ -299,7 +299,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
-    ETH.setTaskStackSize(2048);
+    ETH.setTaskStackSize(2304);
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
