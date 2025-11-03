@@ -154,7 +154,7 @@ void MetersSunSpec::loop()
         return;
     }
 
-    if (scan->printfln_buffer_used > 0 && deadline_elapsed(scan->printfln_last_flush + 2_s)) {
+    if (scan->printfln_buffer_used > 0 && deadline_elapsed(scan->printfln_last_flush + 500_ms)) {
         scan_flush_log();
     }
 
