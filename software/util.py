@@ -27,9 +27,14 @@ def log(*args, **kwargs):
 
 class FlavoredName:
     def __init__(self, name):
+        name_to_check = name
+
+        if name_to_check.endswith(' mA'):
+            name_to_check = name_to_check[:-3]
+
         last_c = None
 
-        for c in name:
+        for c in name_to_check:
             if last_c != None and last_c.islower() and c.isupper():
                 raise Exception(f'{c} cannot follow {last_c} in {name}')
 
