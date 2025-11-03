@@ -108,8 +108,8 @@ let x = {
             "debug_stop": "Stop + Download"
         },
         "uplot": {
-            "fullscreen": "Fullscreen",
-            "fullscreen_chart": "Fullscreen Chart"
+            "fullscreen": "Full screen",
+            "fullscreen_chart": "Full screen Chart"
         }
     },
     "util": {

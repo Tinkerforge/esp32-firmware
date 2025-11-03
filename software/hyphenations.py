@@ -969,7 +969,35 @@ de_hyph = [
     "ge-wünsch-ter",
     "Pro-gno-se-ser-ver",
     "Un-gül-ti-ger",
-    "Über-tra-gung"
+    "Über-tra-gung",
+    "ge-tes-te-ten",
+    "funk-tio-niert",
+    "Kom-pa-ti-bi-li-tät",
+    "Fern-zu-griffs-be-nut-zer",
+    "Ver-sand-kon-fi-gu-ra-ti-on",
+    "Mög-lich-keit",
+    "Tech-ni-scher",
+    "Ein-schrän-kun-gen",
+    "Al-lo-ka-ti-on",
+    "Ent-schei-dung",
+    "über-las-tet",
+    "Will-kom-mens-la-dung",
+    "auf-zu-we-cken",
+    "kürz-li-cher",
+    "de-tek-tiert",
+    "Mi-ni-mal-strom",
+    "Ein-schalt-strom",
+    "Pha-sen-limit",
+    "Fahr-zeu-gli-mit",
+    "Ga-ran-tier-te",
+    "Wall-box-li-mit",
+    "Schlüs-sel-paar",
+    "ge-ne-rie-ren",
+    "Ge-ne-rie-ren",
+    "fort-ge-schrit-te-ne",
+    "Ex-plo-rie-ren",
+    "Zeit-syn-chro-ni-sa-ti-on",
+    "ord-nungs-ge-mä-ße",
 ]
 
 en_hyph = [
@@ -1233,6 +1261,15 @@ en_hyph = [
     "Pri-or-i-tize",
     "pri-or-i-tized",
     "dec-li-na-tion",
+    "re-con-nect-ing",
+    "com-pat-i-bi-li-ty",
+    "lim-i-ta-tions",
+    "al-lo-ca-tion",
+    "De-ac-ti-vat-ing",
+    "over-load-ed",
+    "At-tempt-ing",
+    "Pre-fer-ring",
+    "Guar-an-teed",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -1345,5 +1382,7 @@ allowed_missing = set([
     "installed_version",
     'meter_all_values',
     "chargemanagement",
-    "DMED341MID7ER"
+    "DMED341MID7ER",
+    "EVSEUnreachable",
+    "EVSENonreactive",
 ])
