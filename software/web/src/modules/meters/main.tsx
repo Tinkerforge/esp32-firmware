@@ -1580,7 +1580,7 @@ util.addApiEventListener_unchecked('evse/meter_config', () => {
         let voltage_l2_n = values[value_ids.indexOf(MeterValueID.VoltageL2N)];
         let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
 
-        if (util.hasValue(voltage_l1_n) && voltage_l1_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+        if (util.hasValue(voltage_l1_n) && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
             voltages_out_of_range.push(['L1', voltage_l1_n]);
         }
 
