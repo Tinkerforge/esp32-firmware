@@ -200,7 +200,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
         let mode_list: StringStringTuple[] = [[ConfigChargeMode.Default.toString(), __("power_manager.content.default_mode_persist")]]
 
-        mode_list.concat(get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
+        mode_list = mode_list.concat(get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
                                              .map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)]));
 
         let meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
