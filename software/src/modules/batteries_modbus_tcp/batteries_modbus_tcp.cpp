@@ -293,8 +293,6 @@ void BatteriesModbusTCP::loop()
 
     switch (test->state) {
     case TestState::Connect:
-        logger.printfln_debug("loop: Connect");
-
         if (test->stop) {
             test->state = TestState::Done;
             break;
@@ -334,8 +332,6 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::Disconnect:
-        logger.printfln_debug("loop: Disconnect");
-
         if (test->client != nullptr) {
             modbus_tcp_client.get_pool()->release(test->client);
         }
@@ -346,8 +342,6 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::Done: {
-        logger.printfln_debug("loop: Done");
-
             test_printfln(test->stop ? "Test stopped" : "Test finished");
             test_flush_log();
 
@@ -372,8 +366,6 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::CreateTableWriter:
-        logger.printfln_debug("loop: CreateTableWriter");
-
         if (test->stop) {
             test->state = TestState::Disconnect;
             break;
@@ -497,8 +489,6 @@ void BatteriesModbusTCP::test_flush_log()
     if (test == nullptr) {
         return;
     }
-
-    logger.printfln_debug("test_flush_log");
 
 #if MODULE_WS_AVAILABLE()
     char buf[1024];
