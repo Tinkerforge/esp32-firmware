@@ -69,8 +69,8 @@ private:
     String formatCSVLine(const String (&fields)[9], size_t field_count, CSVFlavor flavor);
     String formatTimestamp(uint32_t timestamp_min, Language language);
     String formatDuration(uint32_t duration_seconds);
-    String formatEnergy(float energy_kwh);
-    String formatPrice(float price_euros);
+    String formatEnergy(float energy_kwh, Language language);
+    String formatPrice(float price_euros, Language language);
 
     bool isUserFiltered(uint8_t user_id, int user_filter);
     String getUserDisplayName(uint8_t user_id, Language language);

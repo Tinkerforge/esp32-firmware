@@ -138,24 +138,38 @@ String CSVChargeLogGenerator::formatDuration(uint32_t duration_seconds) {
     return String(duration_seconds);
 }
 
-String CSVChargeLogGenerator::formatEnergy(float energy_kwh) {
+
+
+String CSVChargeLogGenerator::formatEnergy(float energy_kwh, Language language) {
     if (std::isnan(energy_kwh) || energy_kwh < 0) {
         return "N/A";
     }
 
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%.3f", energy_kwh);
-    return String(buf);
+    StringBuilder energy = StringBuilder(16);
+    energy.printf("%.3f", energy_kwh);
+
+    String energy_str = energy.toString();
+    if (language == Language::German) {
+        energy_str.replace('.', ',');
+    }
+
+    return energy_str;
 }
 
-String CSVChargeLogGenerator::formatPrice(float price_euros) {
+String CSVChargeLogGenerator::formatPrice(float price_euros, Language language) {
     if (std::isnan(price_euros) || price_euros < 0) {
         return "N/A";
     }
 
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%.2f", price_euros);
-    return String(buf);
+    StringBuilder price = StringBuilder(16);
+    price.printf("%.2f", price_euros);
+
+    String price_str = price.toString();
+    if (language == Language::German) {
+        price_str.replace('.', ',');
+    }
+
+    return price_str;
 }
 
 bool CSVChargeLogGenerator::isUserFiltered(uint8_t user_id, int user_filter) {
@@ -219,7 +233,13 @@ String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& param
         float price_per_kwh = params.electricity_price / 10000.0f;
         snprintf(price_header, sizeof(price_header), "%s %.2f ct/kWh",
                 CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
-        headers[8] = String(price_header);
+
+        String price_header_str = String(price_header);
+        if (params.language == Language::German) {
+            price_header_str.replace('.', ',');
+        }
+
+        headers[8] = price_header_str;
         field_count = 9;
     }
 
@@ -382,14 +402,14 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             get_display_name(record->cs.user_id, display_name, display_name_cache);
             fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
             fields[1] = display_name;
-            fields[2] = formatEnergy(energy_charged);
+            fields[2] = formatEnergy(energy_charged, params.language);
             fields[3] = formatDuration(record->ce.charge_duration);
-            fields[5] = formatEnergy(record->cs.meter_start);
-            fields[6] = formatEnergy(record->ce.meter_end);
+            fields[5] = formatEnergy(record->cs.meter_start, params.language);
+            fields[6] = formatEnergy(record->ce.meter_end, params.language);
             fields[7] = display_name;
 
             if (params.electricity_price > 0) {
-                fields[8] = formatPrice(price_euros);
+                fields[8] = formatPrice(price_euros, params.language);
                 field_count = 9;
             }
 
