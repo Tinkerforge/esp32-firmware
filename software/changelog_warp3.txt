@@ -391,3 +391,8 @@
 - Support Iskra WM3M4C (through EVSE 2.0 Bricklet firmware 2.2.17)
 - Fix spuriously reported error state 5 (through EVSE 2.0 Bricklet firmware 2.2.17)
 - Improve phase switch robustness (through EVSE 2.0 Bricklet firmware 2.2.17)
+
+2025-11-04: 2.8.12 (<unknown>)
+- Fix language specific decimal separator in CSV charge log
+- Fix publishing deprecated object_id on Home Assistant MQTT discovery topics
+- Increase default phase switch wait time to 60 seconds (through EVSE 2.0 Bricklet firmware 2.2.18)
