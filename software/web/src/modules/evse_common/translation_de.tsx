@@ -107,7 +107,7 @@ let x = {
             "button_configuration": "Tastereinstellung",
             "phase_switch_wait_time": "Wartezeit bei Phasenumschaltung",
             "phase_switch_wait_time_help": "Eine Phasenumschaltung täuscht immer das Abziehen und Anstecken des Ladekabels durch Trennen des CP-Signals vor. Manche Fahrzeuge benötigen eine längere Wartezeit, bevor das Ladekabel wieder verbunden wird. Der Standardwert ist die minimale Zeit, die mit allen von uns getesteten Fahrzeugen funktioniert. Ein künftiges Firmware-Update kann diese Zeit für bessere Kompatibilität anpassen.",
-            "phase_switch_wait_time_default": "Standard (45 Sekunden)",
+            "phase_switch_wait_time_default": "Standard (60 Sekunden)",
             "seconds": "Sekunden",
 
             "auto_start_description": "Manuelle Ladefreigabe",

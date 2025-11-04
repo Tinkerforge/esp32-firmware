@@ -107,7 +107,7 @@ let x = {
             "button_configuration": "Button configuration",
             "phase_switch_wait_time": "Phase switch wait time",
             "phase_switch_wait_time_help": "A phase switch always fakes un- and re-plugging the charge cable by disconnecting the CP signal. Some vehicles require a longer wait time before reconnecting the cable. The default value is the minimum time that works with all vehicles we have tested. A future firmware update may adjust this time for better compatibility.",
-            "phase_switch_wait_time_default": "Default (45 seconds)",
+            "phase_switch_wait_time_default": "Default (60 seconds)",
             "seconds": "seconds",
 
             "auto_start_description": "Manual charge release",
