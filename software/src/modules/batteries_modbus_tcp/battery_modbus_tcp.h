@@ -56,6 +56,8 @@ public:
         size_t index = 0;
         uint64_t task_id = 0;
         TableWriterVLogFLnFunction vlogfln;
+        bool transact_pending = false;
+        bool delete_requested = false;
     };
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
