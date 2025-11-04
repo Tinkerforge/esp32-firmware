@@ -341,7 +341,13 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
 
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
-            table_writer_logfln(writer, "Setting mode (%s)", writer->repeat_interval > 0 ? "first" : "once");
+            if (writer->repeat_interval > 0) {
+                table_writer_logfln(writer, "Setting mode now (will repeat in %u second%s)", writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
+            }
+            else {
+                table_writer_logfln(writer, "Setting mode now (once)");
+            }
+
             next_table_writer_step(writer);
         });
     }
