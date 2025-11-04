@@ -488,6 +488,7 @@ extern Arena psram_arena;
 
 void Debug::register_urls()
 {
+#ifdef DEBUG_FS_ENABLE
     task_scheduler.scheduleOnce([](){
         dram_arena.print_statistics();
         iram_arena.print_statistics();
@@ -495,6 +496,7 @@ void Debug::register_urls()
         psram_arena.print_statistics();
 #endif
     }, 10_s);
+#endif
 
     api.addState("debug/state_static", &state_static);
     api.addState("debug/state_fast", &state_fast);
