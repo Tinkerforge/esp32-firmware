@@ -571,7 +571,6 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                 (table[1] as any)["register_blocks"] = this.props.register_blocks;
             }
 
-            // FIXME: convert mode and extra values into a union with mode as the union tag
             if (util.hasValue(mode)) {
                 (table[1] as any)["mode"] = mode;
             }
@@ -1170,7 +1169,6 @@ export function init() {
 
                         edit_children.push(
                             <CollapsedSection heading={__("batteries_modbus_tcp.content.register_prefix") + battery_mode_names[mode]} modal={true}>
-
                                 <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                     <RegisterEditor
                                         register_address_mode={config[1].table[1].register_address_mode}
