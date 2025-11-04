@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-11-14.      #
+# This file was automatically generated on 2025-11-04.      #
 #                                                           #
-# Python Bindings Version 2.1.31                            #
+# Python Bindings Version 2.1.32                            #
 #                                                           #
 # If you have a bugfix for this file and want to commit it, #
 # please fix the bug in the generator. You can find a link  #
@@ -23,7 +23,7 @@ except (ValueError, ImportError):
 
 GetRGBValue = namedtuple('RGBValue', ['r', 'g', 'b'])
 GetEnergyMeterValues = namedtuple('EnergyMeterValues', ['power', 'current'])
-GetEnergyMeterDetailedValuesLowLevel = namedtuple('EnergyMeterDetailedValuesLowLevel', ['values_chunk_offset', 'values_chunk_data'])
+GetEnergyMeterDetailedValuesLowLevel = namedtuple('EnergyMeterDetailedValuesLowLevel', ['values_length', 'values_chunk_offset', 'values_chunk_data'])
 GetEnergyMeterState = namedtuple('EnergyMeterState', ['energy_meter_type', 'error_count'])
 GetAllData1 = namedtuple('AllData1', ['contactor_value', 'r', 'g', 'b', 'power', 'current', 'energy_meter_type', 'error_count', 'input', 'output', 'voltage', 'contactor_check_state', 'uptime'])
 GetSDInformation = namedtuple('SDInformation', ['sd_status', 'lfs_status', 'sector_size', 'sector_count', 'card_type', 'product_rev', 'product_name', 'manufacturer_id'])
@@ -104,6 +104,9 @@ class BrickletWARPEnergyManager(Device):
     ENERGY_METER_TYPE_SDM630MCTV2 = 5
     ENERGY_METER_TYPE_DSZ15DZMOD = 6
     ENERGY_METER_TYPE_DEM4A = 7
+    ENERGY_METER_TYPE_DMED341MID7ER = 8
+    ENERGY_METER_TYPE_DSZ16DZE = 9
+    ENERGY_METER_TYPE_WM3M4C = 10
     DATA_STATUS_OK = 0
     DATA_STATUS_SD_ERROR = 1
     DATA_STATUS_LFS_ERROR = 2
@@ -251,7 +254,7 @@ class BrickletWARPEnergyManager(Device):
         """
         self.check_validity()
 
-        return GetEnergyMeterDetailedValuesLowLevel(*self.ipcon.send_request(self, BrickletWARPEnergyManager.FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL, (), '', 70, 'H 15f'))
+        return GetEnergyMeterDetailedValuesLowLevel(*self.ipcon.send_request(self, BrickletWARPEnergyManager.FUNCTION_GET_ENERGY_METER_DETAILED_VALUES_LOW_LEVEL, (), '', 72, 'H H 15f'))
 
     def get_energy_meter_state(self):
         r"""
@@ -701,27 +704,22 @@ class BrickletWARPEnergyManager(Device):
         r"""
         TBD
         """
-        values_length = 88
-
         with self.stream_lock:
             ret = self.get_energy_meter_detailed_values_low_level()
-
-            if ret.values_chunk_offset == (1 << 16) - 1: # maximum chunk offset -> stream has no data
-                values_length = 0
-                values_out_of_sync = False
-                values_data = ()
-            else:
-                values_out_of_sync = ret.values_chunk_offset != 0
-                values_data = ret.values_chunk_data
+            values_length = ret.values_length
+            values_out_of_sync = ret.values_chunk_offset != 0
+            values_data = ret.values_chunk_data
 
             while not values_out_of_sync and len(values_data) < values_length:
                 ret = self.get_energy_meter_detailed_values_low_level()
+                values_length = ret.values_length
                 values_out_of_sync = ret.values_chunk_offset != len(values_data)
                 values_data += ret.values_chunk_data
 
             if values_out_of_sync: # discard remaining stream to bring it back in-sync
                 while ret.values_chunk_offset + 15 < values_length:
                     ret = self.get_energy_meter_detailed_values_low_level()
+                    values_length = ret.values_length
 
                 raise Error(Error.STREAM_OUT_OF_SYNC, 'Values stream is out-of-sync')
 

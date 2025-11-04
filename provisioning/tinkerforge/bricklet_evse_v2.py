@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2025-08-28.      #
+# This file was automatically generated on 2025-11-04.      #
 #                                                           #
-# Python Bindings Version 2.1.31                            #
+# Python Bindings Version 2.1.32                            #
 #                                                           #
 # If you have a bugfix for this file and want to commit it, #
 # please fix the bug in the generator. You can find a link  #
@@ -28,14 +28,20 @@ GetChargingSlot = namedtuple('ChargingSlot', ['max_current', 'active', 'clear_on
 GetAllChargingSlots = namedtuple('AllChargingSlots', ['max_current', 'active_and_clear_on_disconnect'])
 GetChargingSlotDefault = namedtuple('ChargingSlotDefault', ['max_current', 'active', 'clear_on_disconnect'])
 GetEnergyMeterValues = namedtuple('EnergyMeterValues', ['power', 'current', 'phases_active', 'phases_connected'])
-GetAllEnergyMeterValuesLowLevel = namedtuple('AllEnergyMeterValuesLowLevel', ['values_chunk_offset', 'values_chunk_data'])
+GetAllEnergyMeterValuesLowLevel = namedtuple('AllEnergyMeterValuesLowLevel', ['values_length', 'values_chunk_offset', 'values_chunk_data'])
 GetGPIOConfiguration = namedtuple('GPIOConfiguration', ['shutdown_input_configuration', 'input_configuration', 'output_configuration'])
 GetIndicatorLED = namedtuple('IndicatorLED', ['indication', 'duration', 'color_h', 'color_s', 'color_v'])
 GetButtonState = namedtuple('ButtonState', ['button_press_time', 'button_release_time', 'button_pressed'])
 GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'dc_fault_current_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'energy_meter_type', 'power', 'current', 'phases_active', 'phases_connected', 'error_count'])
-GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled', 'phases_connected'])
+GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled', 'phases_connected', 'enumerate_value', 'enumerate_value_change_time', 'phase_switch_wait_time'])
 GetPhaseControl = namedtuple('PhaseControl', ['phases_current', 'phases_requested', 'phases_state', 'phases_info'])
 GetChargingProtocol = namedtuple('ChargingProtocol', ['charging_protocol', 'cp_duty_cycle'])
+GetEichrechtGeneralInformation = namedtuple('EichrechtGeneralInformation', ['gateway_identification', 'gateway_serial'])
+GetEichrechtUserAssignment = namedtuple('EichrechtUserAssignment', ['identification_status', 'identification_flags', 'identification_type', 'identification_data'])
+GetEichrechtChargePoint = namedtuple('EichrechtChargePoint', ['identification_type', 'identification'])
+GetEichrechtTransaction = namedtuple('EichrechtTransaction', ['transaction', 'transaction_state', 'transaction_inner_state', 'measurement_status', 'signature_status', 'eichrecht_state'])
+GetEnumerateConfiguration = namedtuple('EnumerateConfiguration', ['enumerator_h', 'enumerator_s', 'enumerator_v'])
+GetEnumerateValue = namedtuple('EnumerateValue', ['value', 'value_change_time'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 
@@ -49,7 +55,11 @@ class BrickletEVSEV2(Device):
     DEVICE_URL_PART = 'evse_v2' # internal
 
     CALLBACK_ENERGY_METER_VALUES = 45
+    CALLBACK_EICHRECHT_DATASET_LOW_LEVEL = 57
+    CALLBACK_EICHRECHT_SIGNATURE_LOW_LEVEL = 58
 
+    CALLBACK_EICHRECHT_DATASET = -57
+    CALLBACK_EICHRECHT_SIGNATURE = -58
 
     FUNCTION_GET_STATE = 1
     FUNCTION_GET_HARDWARE_CONFIGURATION = 2
@@ -97,6 +107,21 @@ class BrickletEVSEV2(Device):
     FUNCTION_GET_PHASES_CONNECTED = 44
     FUNCTION_SET_CHARGING_PROTOCOL = 46
     FUNCTION_GET_CHARGING_PROTOCOL = 47
+    FUNCTION_SET_EICHRECHT_GENERAL_INFORMATION = 48
+    FUNCTION_GET_EICHRECHT_GENERAL_INFORMATION = 49
+    FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT = 50
+    FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT = 51
+    FUNCTION_SET_EICHRECHT_CHARGE_POINT = 52
+    FUNCTION_GET_EICHRECHT_CHARGE_POINT = 53
+    FUNCTION_SET_EICHRECHT_TRANSACTION = 54
+    FUNCTION_GET_EICHRECHT_TRANSACTION = 55
+    FUNCTION_GET_EICHRECHT_PUBLIC_KEY = 56
+    FUNCTION_SET_ENUMERATE_CONFIGURATION = 59
+    FUNCTION_GET_ENUMERATE_CONFIGURATION = 60
+    FUNCTION_SET_ENUMERATE_VALUE = 61
+    FUNCTION_GET_ENUMERATE_VALUE = 62
+    FUNCTION_SET_PHASE_SWITCH_WAIT_TIME = 63
+    FUNCTION_GET_PHASE_SWITCH_WAIT_TIME = 64
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -167,6 +192,7 @@ class BrickletEVSEV2(Device):
     BUTTON_CONFIGURATION_START_CHARGING = 1
     BUTTON_CONFIGURATION_STOP_CHARGING = 2
     BUTTON_CONFIGURATION_START_AND_STOP_CHARGING = 3
+    BUTTON_CONFIGURATION_ENUMERATE = 4
     CONTROL_PILOT_DISCONNECTED = 0
     CONTROL_PILOT_CONNECTED = 1
     CONTROL_PILOT_AUTOMATIC = 2
@@ -180,6 +206,7 @@ class BrickletEVSEV2(Device):
     ENERGY_METER_TYPE_DEM4A = 7
     ENERGY_METER_TYPE_DMED341MID7ER = 8
     ENERGY_METER_TYPE_DSZ16DZE = 9
+    ENERGY_METER_TYPE_WM3M4C = 10
     INPUT_UNCONFIGURED = 0
     INPUT_ACTIVE_LOW_MAX_0A = 1
     INPUT_ACTIVE_LOW_MAX_6A = 2
@@ -199,6 +226,111 @@ class BrickletEVSEV2(Device):
     INPUT_ACTIVE_HIGH_MAX_25A = 16
     CHARGING_PROTOCOL_IEC61851 = 0
     CHARGING_PROTOCOL_ISO15118 = 1
+    EICHRECHT_STATE_OK = 0
+    EICHRECHT_STATE_NOT_ALL_INFO_SET = 1
+    EICHRECHT_STATE_BUSY = 2
+    EICHRECHT_STATE_NOT_SUPPORTED = 3
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_NONE = 0
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_PLAIN = 1
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_RELATED = 2
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_RFID_PSK = 3
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_NONE = 4
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_RS = 5
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_AUTH = 6
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_RS_TLS = 7
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_AUTH_TLS = 8
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_CACHE = 9
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_WHITELIST = 10
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_OCPP_CERTIFIED = 11
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_ISO15118_NONE = 12
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_ISO15118_PNC = 13
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_NONE = 14
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_RING = 15
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_PLMN_SMS = 16
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_FLAG_NOT_SET = 17
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_NONE = 0
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_DENIED = 1
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_UNDEFINED = 2
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO14443 = 3
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO15693 = 4
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EMAID = 5
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EVCCID = 6
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_EVCOID = 7
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_ISO7812 = 8
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CARD_TXN_NR = 9
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL = 10
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL_1 = 11
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_CENTRAL_2 = 12
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL = 13
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL_1 = 14
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_LOCAL_2 = 15
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_PHONE_NUMBER = 16
+    EICHRECHT_USER_ASSIGNMENT_IDENTIFICATION_TYPE_KEY_CODE = 17
+    EICHRECHT_CHARGE_POINT_IDENTIFICATION_TYPE_EVSEID = 0
+    EICHRECHT_CHARGE_POINT_IDENTIFICATION_TYPE_CBIDC = 1
+    EICHRECHT_SIGNATURE_STATUS_NOT_INITIALISED = 0
+    EICHRECHT_SIGNATURE_STATUS_IDLE = 1
+    EICHRECHT_SIGNATURE_STATUS_SIGNATURE_IN_PROGRESS = 2
+    EICHRECHT_SIGNATURE_STATUS_SIGNATURE_OK = 15
+    EICHRECHT_SIGNATURE_STATUS_INVALID_DATE_TIME = 128
+    EICHRECHT_SIGNATURE_STATUS_CHECKSUM_ERROR = 129
+    EICHRECHT_SIGNATURE_STATUS_INVALID_COMMAND = 130
+    EICHRECHT_SIGNATURE_STATUS_INVALID_STATE = 131
+    EICHRECHT_SIGNATURE_STATUS_INVALID_MEASUREMENT = 132
+    EICHRECHT_SIGNATURE_STATUS_TEST_MODE_ERROR = 133
+    EICHRECHT_SIGNATURE_STATUS_VERIFY_STATE_ERROR = 243
+    EICHRECHT_SIGNATURE_STATUS_SIGNATURE_STATE_ERROR = 244
+    EICHRECHT_SIGNATURE_STATUS_KEYPAIR_GENERATION = 245
+    EICHRECHT_SIGNATURE_STATUS_SHA_FAILED = 246
+    EICHRECHT_SIGNATURE_STATUS_INIT_FAILED = 247
+    EICHRECHT_SIGNATURE_STATUS_DATA_NOT_LOCKED = 248
+    EICHRECHT_SIGNATURE_STATUS_CONFIG_NOT_LOCKED = 249
+    EICHRECHT_SIGNATURE_STATUS_VERIFY_ERROR = 250
+    EICHRECHT_SIGNATURE_STATUS_PUBLIC_KEY_ERROR = 251
+    EICHRECHT_SIGNATURE_STATUS_INVALID_MESSAGE_FORMAT = 252
+    EICHRECHT_SIGNATURE_STATUS_INVALID_MESSAGE_SIZE = 253
+    EICHRECHT_SIGNATURE_STATUS_SIGNATURE_ERROR = 254
+    EICHRECHT_SIGNATURE_STATUS_UNDEFINED_ERROR = 255
+    EICHRECHT_SIGNATURE_FORMAT_ASN1 = 0
+    EICHRECHT_SIGNATURE_FORMAT_BASE64 = 1
+    EICHRECHT_MEASUREMENT_STATUS_IDLE = 0
+    EICHRECHT_MEASUREMENT_STATUS_ACTIVE = 1
+    EICHRECHT_MEASUREMENT_STATUS_ACTIVE_AFTER_POWER_FAILURE = 2
+    EICHRECHT_MEASUREMENT_STATUS_ACTIVE_AFTER_RESET = 3
+    EICHRECHT_MEASUREMENT_STATUS_INVALID_DATE_TIME = 128
+    EICHRECHT_TRANSACTION_COMMAND_BEGIN = 'B'
+    EICHRECHT_TRANSACTION_COMMAND_END = 'E'
+    EICHRECHT_TRANSACTION_COMMAND_INTERMEDIATE = 'C'
+    EICHRECHT_TRANSACTION_COMMAND_EXCEPTION = 'X'
+    EICHRECHT_TRANSACTION_COMMAND_TARIFF_CHANGE = 'T'
+    EICHRECHT_TRANSACTION_COMMAND_SUSPENDED = 'S'
+    EICHRECHT_TRANSACTION_COMMAND_END_WITH_BEGIN = 'r'
+    EICHRECHT_TRANSACTION_COMMAND_FISCAL_READING = 'f'
+    EICHRECHT_TRANSACTION_COMMAND_HOLD_COMMAND = 'h'
+    EICHRECHT_TRANSACTION_COMMAND_LAST_CHARGE_READING = 'i'
+    PHASE_SWITCH_WAIT_TIME_DEFAULT = 0
+    PHASE_SWITCH_WAIT_TIME_15_SECONDS = 1
+    PHASE_SWITCH_WAIT_TIME_20_SECONDS = 2
+    PHASE_SWITCH_WAIT_TIME_25_SECONDS = 3
+    PHASE_SWITCH_WAIT_TIME_30_SECONDS = 4
+    PHASE_SWITCH_WAIT_TIME_35_SECONDS = 5
+    PHASE_SWITCH_WAIT_TIME_40_SECONDS = 6
+    PHASE_SWITCH_WAIT_TIME_45_SECONDS = 7
+    PHASE_SWITCH_WAIT_TIME_50_SECONDS = 8
+    PHASE_SWITCH_WAIT_TIME_55_SECONDS = 9
+    PHASE_SWITCH_WAIT_TIME_60_SECONDS = 10
+    PHASE_SWITCH_WAIT_TIME_65_SECONDS = 11
+    PHASE_SWITCH_WAIT_TIME_70_SECONDS = 12
+    PHASE_SWITCH_WAIT_TIME_75_SECONDS = 13
+    PHASE_SWITCH_WAIT_TIME_80_SECONDS = 14
+    PHASE_SWITCH_WAIT_TIME_85_SECONDS = 15
+    PHASE_SWITCH_WAIT_TIME_90_SECONDS = 16
+    PHASE_SWITCH_WAIT_TIME_95_SECONDS = 17
+    PHASE_SWITCH_WAIT_TIME_100_SECONDS = 18
+    PHASE_SWITCH_WAIT_TIME_105_SECONDS = 19
+    PHASE_SWITCH_WAIT_TIME_110_SECONDS = 20
+    PHASE_SWITCH_WAIT_TIME_115_SECONDS = 21
+    PHASE_SWITCH_WAIT_TIME_120_SECONDS = 22
     BOOTLOADER_MODE_BOOTLOADER = 0
     BOOTLOADER_MODE_FIRMWARE = 1
     BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT = 2
@@ -270,6 +402,21 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASES_CONNECTED] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_CHARGING_PROTOCOL] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_CHARGING_PROTOCOL] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_EICHRECHT_GENERAL_INFORMATION] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_EICHRECHT_GENERAL_INFORMATION] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_EICHRECHT_CHARGE_POINT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_EICHRECHT_CHARGE_POINT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_EICHRECHT_TRANSACTION] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_EICHRECHT_TRANSACTION] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_EICHRECHT_PUBLIC_KEY] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_ENUMERATE_CONFIGURATION] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_ENUMERATE_CONFIGURATION] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_ENUMERATE_VALUE] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_ENUMERATE_VALUE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_PHASE_SWITCH_WAIT_TIME] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASE_SWITCH_WAIT_TIME] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -284,7 +431,11 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_IDENTITY] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
 
         self.callback_formats[BrickletEVSEV2.CALLBACK_ENERGY_METER_VALUES] = (26, 'f 3f 3! 3!')
+        self.callback_formats[BrickletEVSEV2.CALLBACK_EICHRECHT_DATASET_LOW_LEVEL] = (72, 'H H 60c')
+        self.callback_formats[BrickletEVSEV2.CALLBACK_EICHRECHT_SIGNATURE_LOW_LEVEL] = (72, 'H H 60c')
 
+        self.high_level_callbacks[BrickletEVSEV2.CALLBACK_EICHRECHT_DATASET] = [('stream_length', 'stream_chunk_offset', 'stream_chunk_data'), {'fixed_length': None, 'single_chunk': False}, None]
+        self.high_level_callbacks[BrickletEVSEV2.CALLBACK_EICHRECHT_SIGNATURE] = [('stream_length', 'stream_chunk_offset', 'stream_chunk_data'), {'fixed_length': None, 'single_chunk': False}, None]
         ipcon.add_device(self)
 
     def get_state(self):
@@ -421,7 +572,7 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetAllEnergyMeterValuesLowLevel(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_ENERGY_METER_VALUES_LOW_LEVEL, (), '', 70, 'H 15f'))
+        return GetAllEnergyMeterValuesLowLevel(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_ENERGY_METER_VALUES_LOW_LEVEL, (), '', 72, 'H H 15f'))
 
     def get_energy_meter_errors(self):
         r"""
@@ -588,7 +739,7 @@ class BrickletEVSEV2(Device):
         """
         self.check_validity()
 
-        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 40, 'B B B h H H B B B I I ! ! ! ! h B B B B ! B'))
+        return GetAllData2(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ALL_DATA_2, (), '', 46, 'B B B h H H B B B I I ! ! ! ! h B B B B ! B B I B'))
 
     def factory_reset(self, password):
         r"""
@@ -728,6 +879,150 @@ class BrickletEVSEV2(Device):
         self.check_validity()
 
         return GetChargingProtocol(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_CHARGING_PROTOCOL, (), '', 11, 'B H'))
+
+    def set_eichrecht_general_information(self, gateway_identification, gateway_serial):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        gateway_identification = create_char_list(gateway_identification)
+        gateway_serial = create_char_list(gateway_serial)
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_EICHRECHT_GENERAL_INFORMATION, (gateway_identification, gateway_serial), '32c 32c', 9, 'B')
+
+    def get_eichrecht_general_information(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEichrechtGeneralInformation(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_EICHRECHT_GENERAL_INFORMATION, (), '', 72, '32c 32c'))
+
+    def set_eichrecht_user_assignment(self, identification_status, identification_flags, identification_type, identification_data):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        identification_status = bool(identification_status)
+        identification_flags = list(map(int, identification_flags))
+        identification_type = int(identification_type)
+        identification_data = create_char_list(identification_data)
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT, (identification_status, identification_flags, identification_type, identification_data), '! 4B B 40c', 9, 'B')
+
+    def get_eichrecht_user_assignment(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEichrechtUserAssignment(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT, (), '', 54, '! 4B B 40c'))
+
+    def set_eichrecht_charge_point(self, identification_type, identification):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        identification_type = int(identification_type)
+        identification = create_char_list(identification)
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_EICHRECHT_CHARGE_POINT, (identification_type, identification), 'B 20c', 9, 'B')
+
+    def get_eichrecht_charge_point(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEichrechtChargePoint(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_EICHRECHT_CHARGE_POINT, (), '', 29, 'B 20c'))
+
+    def set_eichrecht_transaction(self, transaction, unix_time, utc_time_offset, signature_format):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        transaction = create_char(transaction)
+        unix_time = int(unix_time)
+        utc_time_offset = int(utc_time_offset)
+        signature_format = int(signature_format)
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_EICHRECHT_TRANSACTION, (transaction, unix_time, utc_time_offset, signature_format), 'c I h H', 9, 'B')
+
+    def get_eichrecht_transaction(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEichrechtTransaction(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_EICHRECHT_TRANSACTION, (), '', 16, 'c B B H H B'))
+
+    def get_eichrecht_public_key(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_EICHRECHT_PUBLIC_KEY, (), '', 72, '64B')
+
+    def set_enumerate_configuration(self, enumerator_h, enumerator_s, enumerator_v):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        enumerator_h = list(map(int, enumerator_h))
+        enumerator_s = list(map(int, enumerator_s))
+        enumerator_v = list(map(int, enumerator_v))
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_ENUMERATE_CONFIGURATION, (enumerator_h, enumerator_s, enumerator_v), '8H 8B 8B', 0, '')
+
+    def get_enumerate_configuration(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEnumerateConfiguration(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ENUMERATE_CONFIGURATION, (), '', 40, '8H 8B 8B'))
+
+    def set_enumerate_value(self, value):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        value = int(value)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_ENUMERATE_VALUE, (value,), 'B', 0, '')
+
+    def get_enumerate_value(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetEnumerateValue(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_ENUMERATE_VALUE, (), '', 13, 'B I'))
+
+    def set_phase_switch_wait_time(self, phase_switch_wait_time):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        phase_switch_wait_time = int(phase_switch_wait_time)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_PHASE_SWITCH_WAIT_TIME, (phase_switch_wait_time,), 'B', 0, '')
+
+    def get_phase_switch_wait_time(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASE_SWITCH_WAIT_TIME, (), '', 9, 'B')
 
     def get_spitfp_error_count(self):
         r"""
@@ -897,27 +1192,22 @@ class BrickletEVSEV2(Device):
         r"""
         TBD
         """
-        values_length = 88
-
         with self.stream_lock:
             ret = self.get_all_energy_meter_values_low_level()
-
-            if ret.values_chunk_offset == (1 << 16) - 1: # maximum chunk offset -> stream has no data
-                values_length = 0
-                values_out_of_sync = False
-                values_data = ()
-            else:
-                values_out_of_sync = ret.values_chunk_offset != 0
-                values_data = ret.values_chunk_data
+            values_length = ret.values_length
+            values_out_of_sync = ret.values_chunk_offset != 0
+            values_data = ret.values_chunk_data
 
             while not values_out_of_sync and len(values_data) < values_length:
                 ret = self.get_all_energy_meter_values_low_level()
+                values_length = ret.values_length
                 values_out_of_sync = ret.values_chunk_offset != len(values_data)
                 values_data += ret.values_chunk_data
 
             if values_out_of_sync: # discard remaining stream to bring it back in-sync
                 while ret.values_chunk_offset + 15 < values_length:
                     ret = self.get_all_energy_meter_values_low_level()
+                    values_length = ret.values_length
 
                 raise Error(Error.STREAM_OUT_OF_SYNC, 'Values stream is out-of-sync')
 

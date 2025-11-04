@@ -70,6 +70,11 @@ except (ValueError, ImportError):
     from brick_stepper import BrickStepper
 
 try:
+    from .brick_unknown_v2 import BrickUnknownV2
+except (ValueError, ImportError):
+    from brick_unknown_v2 import BrickUnknownV2
+
+try:
     from .bricklet_accelerometer import BrickletAccelerometer
 except (ValueError, ImportError):
     from bricklet_accelerometer import BrickletAccelerometer
@@ -130,6 +135,11 @@ except (ValueError, ImportError):
     from bricklet_analog_out_v3 import BrickletAnalogOutV3
 
 try:
+    from .bricklet_arinc429 import BrickletARINC429
+except (ValueError, ImportError):
+    from bricklet_arinc429 import BrickletARINC429
+
+try:
     from .bricklet_barometer import BrickletBarometer
 except (ValueError, ImportError):
     from bricklet_barometer import BrickletBarometer
@@ -168,6 +178,11 @@ try:
     from .bricklet_color_v2 import BrickletColorV2
 except (ValueError, ImportError):
     from bricklet_color_v2 import BrickletColorV2
+
+try:
+    from .bricklet_common_test import BrickletCommonTest
+except (ValueError, ImportError):
+    from bricklet_common_test import BrickletCommonTest
 
 try:
     from .bricklet_compass import BrickletCompass
@@ -243,6 +258,16 @@ try:
     from .bricklet_energy_monitor import BrickletEnergyMonitor
 except (ValueError, ImportError):
     from bricklet_energy_monitor import BrickletEnergyMonitor
+
+try:
+    from .bricklet_evse import BrickletEVSE
+except (ValueError, ImportError):
+    from bricklet_evse import BrickletEVSE
+
+try:
+    from .bricklet_evse_v2 import BrickletEVSEV2
+except (ValueError, ImportError):
+    from bricklet_evse_v2 import BrickletEVSEV2
 
 try:
     from .bricklet_gps import BrickletGPS
@@ -485,6 +510,11 @@ except (ValueError, ImportError):
     from bricklet_motorized_linear_poti import BrickletMotorizedLinearPoti
 
 try:
+    from .bricklet_multi_io import BrickletMultiIO
+except (ValueError, ImportError):
+    from bricklet_multi_io import BrickletMultiIO
+
+try:
     from .bricklet_multi_touch import BrickletMultiTouch
 except (ValueError, ImportError):
     from bricklet_multi_touch import BrickletMultiTouch
@@ -538,6 +568,11 @@ try:
     from .bricklet_performance_dc import BrickletPerformanceDC
 except (ValueError, ImportError):
     from bricklet_performance_dc import BrickletPerformanceDC
+
+try:
+    from .bricklet_performance_stepper import BrickletPerformanceStepper
+except (ValueError, ImportError):
+    from bricklet_performance_stepper import BrickletPerformanceStepper
 
 try:
     from .bricklet_piezo_buzzer import BrickletPiezoBuzzer
@@ -680,6 +715,11 @@ except (ValueError, ImportError):
     from bricklet_sound_pressure_level import BrickletSoundPressureLevel
 
 try:
+    from .bricklet_stream_test import BrickletStreamTest
+except (ValueError, ImportError):
+    from bricklet_stream_test import BrickletStreamTest
+
+try:
     from .bricklet_temperature import BrickletTemperature
 except (ValueError, ImportError):
     from bricklet_temperature import BrickletTemperature
@@ -720,6 +760,11 @@ except (ValueError, ImportError):
     from bricklet_tilt import BrickletTilt
 
 try:
+    from .bricklet_unknown import BrickletUnknown
+except (ValueError, ImportError):
+    from bricklet_unknown import BrickletUnknown
+
+try:
     from .bricklet_uv_light import BrickletUVLight
 except (ValueError, ImportError):
     from bricklet_uv_light import BrickletUVLight
@@ -745,9 +790,49 @@ except (ValueError, ImportError):
     from bricklet_voltage_current_v2 import BrickletVoltageCurrentV2
 
 try:
+    from .bricklet_warp_energy_manager import BrickletWARPEnergyManager
+except (ValueError, ImportError):
+    from bricklet_warp_energy_manager import BrickletWARPEnergyManager
+
+try:
+    from .bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
+except (ValueError, ImportError):
+    from bricklet_warp_energy_manager_v2 import BrickletWARPEnergyManagerV2
+
+try:
+    from .bricklet_warp_front_panel import BrickletWARPFrontPanel
+except (ValueError, ImportError):
+    from bricklet_warp_front_panel import BrickletWARPFrontPanel
+
+try:
     from .bricklet_xmc1400_breakout import BrickletXMC1400Breakout
 except (ValueError, ImportError):
     from bricklet_xmc1400_breakout import BrickletXMC1400Breakout
+
+try:
+    from .tng_ai_4u_4i import TNGAI4U4I
+except (ValueError, ImportError):
+    from tng_ai_4u_4i import TNGAI4U4I
+
+try:
+    from .tng_ao_4u_4i import TNGAO4U4I
+except (ValueError, ImportError):
+    from tng_ao_4u_4i import TNGAO4U4I
+
+try:
+    from .tng_di8 import TNGDI8
+except (ValueError, ImportError):
+    from tng_di8 import TNGDI8
+
+try:
+    from .tng_do8 import TNGDO8
+except (ValueError, ImportError):
+    from tng_do8 import TNGDO8
+
+try:
+    from .tng_unknown import TNGUnknown
+except (ValueError, ImportError):
+    from tng_unknown import TNGUnknown
 
 
 DEVICE_CLASSES = {
@@ -763,6 +848,7 @@ DEVICE_CLASSES = {
     BrickServo.DEVICE_IDENTIFIER: BrickServo,
     BrickSilentStepper.DEVICE_IDENTIFIER: BrickSilentStepper,
     BrickStepper.DEVICE_IDENTIFIER: BrickStepper,
+    BrickUnknownV2.DEVICE_IDENTIFIER: BrickUnknownV2,
     BrickletAccelerometer.DEVICE_IDENTIFIER: BrickletAccelerometer,
     BrickletAccelerometerV2.DEVICE_IDENTIFIER: BrickletAccelerometerV2,
     BrickletAirQuality.DEVICE_IDENTIFIER: BrickletAirQuality,
@@ -775,6 +861,7 @@ DEVICE_CLASSES = {
     BrickletAnalogOut.DEVICE_IDENTIFIER: BrickletAnalogOut,
     BrickletAnalogOutV2.DEVICE_IDENTIFIER: BrickletAnalogOutV2,
     BrickletAnalogOutV3.DEVICE_IDENTIFIER: BrickletAnalogOutV3,
+    BrickletARINC429.DEVICE_IDENTIFIER: BrickletARINC429,
     BrickletBarometer.DEVICE_IDENTIFIER: BrickletBarometer,
     BrickletBarometerV2.DEVICE_IDENTIFIER: BrickletBarometerV2,
     BrickletCAN.DEVICE_IDENTIFIER: BrickletCAN,
@@ -783,6 +870,7 @@ DEVICE_CLASSES = {
     BrickletCO2V2.DEVICE_IDENTIFIER: BrickletCO2V2,
     BrickletColor.DEVICE_IDENTIFIER: BrickletColor,
     BrickletColorV2.DEVICE_IDENTIFIER: BrickletColorV2,
+    BrickletCommonTest.DEVICE_IDENTIFIER: BrickletCommonTest,
     BrickletCompass.DEVICE_IDENTIFIER: BrickletCompass,
     BrickletCurrent12.DEVICE_IDENTIFIER: BrickletCurrent12,
     BrickletCurrent25.DEVICE_IDENTIFIER: BrickletCurrent25,
@@ -798,6 +886,8 @@ DEVICE_CLASSES = {
     BrickletDustDetector.DEVICE_IDENTIFIER: BrickletDustDetector,
     BrickletEPaper296x128.DEVICE_IDENTIFIER: BrickletEPaper296x128,
     BrickletEnergyMonitor.DEVICE_IDENTIFIER: BrickletEnergyMonitor,
+    BrickletEVSE.DEVICE_IDENTIFIER: BrickletEVSE,
+    BrickletEVSEV2.DEVICE_IDENTIFIER: BrickletEVSEV2,
     BrickletGPS.DEVICE_IDENTIFIER: BrickletGPS,
     BrickletGPSV2.DEVICE_IDENTIFIER: BrickletGPSV2,
     BrickletGPSV3.DEVICE_IDENTIFIER: BrickletGPSV3,
@@ -846,6 +936,7 @@ DEVICE_CLASSES = {
     BrickletMotionDetector.DEVICE_IDENTIFIER: BrickletMotionDetector,
     BrickletMotionDetectorV2.DEVICE_IDENTIFIER: BrickletMotionDetectorV2,
     BrickletMotorizedLinearPoti.DEVICE_IDENTIFIER: BrickletMotorizedLinearPoti,
+    BrickletMultiIO.DEVICE_IDENTIFIER: BrickletMultiIO,
     BrickletMultiTouch.DEVICE_IDENTIFIER: BrickletMultiTouch,
     BrickletMultiTouchV2.DEVICE_IDENTIFIER: BrickletMultiTouchV2,
     BrickletNFC.DEVICE_IDENTIFIER: BrickletNFC,
@@ -857,6 +948,7 @@ DEVICE_CLASSES = {
     BrickletOutdoorWeather.DEVICE_IDENTIFIER: BrickletOutdoorWeather,
     BrickletParticulateMatter.DEVICE_IDENTIFIER: BrickletParticulateMatter,
     BrickletPerformanceDC.DEVICE_IDENTIFIER: BrickletPerformanceDC,
+    BrickletPerformanceStepper.DEVICE_IDENTIFIER: BrickletPerformanceStepper,
     BrickletPiezoBuzzer.DEVICE_IDENTIFIER: BrickletPiezoBuzzer,
     BrickletPiezoSpeaker.DEVICE_IDENTIFIER: BrickletPiezoSpeaker,
     BrickletPiezoSpeakerV2.DEVICE_IDENTIFIER: BrickletPiezoSpeakerV2,
@@ -885,6 +977,7 @@ DEVICE_CLASSES = {
     BrickletSolidStateRelayV2.DEVICE_IDENTIFIER: BrickletSolidStateRelayV2,
     BrickletSoundIntensity.DEVICE_IDENTIFIER: BrickletSoundIntensity,
     BrickletSoundPressureLevel.DEVICE_IDENTIFIER: BrickletSoundPressureLevel,
+    BrickletStreamTest.DEVICE_IDENTIFIER: BrickletStreamTest,
     BrickletTemperature.DEVICE_IDENTIFIER: BrickletTemperature,
     BrickletTemperatureIR.DEVICE_IDENTIFIER: BrickletTemperatureIR,
     BrickletTemperatureIRV2.DEVICE_IDENTIFIER: BrickletTemperatureIRV2,
@@ -893,12 +986,21 @@ DEVICE_CLASSES = {
     BrickletThermocouple.DEVICE_IDENTIFIER: BrickletThermocouple,
     BrickletThermocoupleV2.DEVICE_IDENTIFIER: BrickletThermocoupleV2,
     BrickletTilt.DEVICE_IDENTIFIER: BrickletTilt,
+    BrickletUnknown.DEVICE_IDENTIFIER: BrickletUnknown,
     BrickletUVLight.DEVICE_IDENTIFIER: BrickletUVLight,
     BrickletUVLightV2.DEVICE_IDENTIFIER: BrickletUVLightV2,
     BrickletVoltage.DEVICE_IDENTIFIER: BrickletVoltage,
     BrickletVoltageCurrent.DEVICE_IDENTIFIER: BrickletVoltageCurrent,
     BrickletVoltageCurrentV2.DEVICE_IDENTIFIER: BrickletVoltageCurrentV2,
+    BrickletWARPEnergyManager.DEVICE_IDENTIFIER: BrickletWARPEnergyManager,
+    BrickletWARPEnergyManagerV2.DEVICE_IDENTIFIER: BrickletWARPEnergyManagerV2,
+    BrickletWARPFrontPanel.DEVICE_IDENTIFIER: BrickletWARPFrontPanel,
     BrickletXMC1400Breakout.DEVICE_IDENTIFIER: BrickletXMC1400Breakout,
+    TNGAI4U4I.DEVICE_IDENTIFIER: TNGAI4U4I,
+    TNGAO4U4I.DEVICE_IDENTIFIER: TNGAO4U4I,
+    TNGDI8.DEVICE_IDENTIFIER: TNGDI8,
+    TNGDO8.DEVICE_IDENTIFIER: TNGDO8,
+    TNGUnknown.DEVICE_IDENTIFIER: TNGUnknown,
 }
 
 def get_device_class(device_identifier):
