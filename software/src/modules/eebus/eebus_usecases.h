@@ -48,6 +48,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
+#define EEBUS_LPC_AWAIT_HEARTBEAT false
 
 // Feature Addresses for the different features in the usecases. Addresses can repeat accross entities but we make sure they are unique for simplicity
 enum FeatureAddresses : uint8_t

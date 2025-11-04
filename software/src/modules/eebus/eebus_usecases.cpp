@@ -1572,6 +1572,9 @@ LpcUsecase::LpcUsecase()
 
                                     // Initialize DeviceDiagnosis feature
                                     task_scheduler.scheduleUncancelable([this]() {
+                                                                              if constexpr (EEBUS_LPC_AWAIT_HEARTBEAT) {
+                                                                                  return;
+                                                                              }
                                                                               DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
                                                                               outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
                                                                               outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
@@ -2115,7 +2118,7 @@ void LpcUsecase::update_api()
 
 void LpcUsecase::handle_heartbeat_timeout()
 {
-    if (heartbeat_received)
+    if (heartbeat_received || !EEBUS_LPC_AWAIT_HEARTBEAT)
         return;
     eebus.trace_fmtln("Usecase: LPC: Heartbeat Timeout");
     if (lpc_state != LPCState::Failsafe && lpc_state != LPCState::UnlimitedAutonomous)
