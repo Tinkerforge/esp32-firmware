@@ -46,6 +46,7 @@ public:
     };
 
     typedef std::function<void(const char *fmt, va_list args)> TableWriterVLogFLnFunction;
+    typedef std::function<void(void)> TableWriterFinishedFunction;
 
     struct TableWriter {
         TFModbusTCPSharedClient *client = nullptr;
@@ -56,6 +57,7 @@ public:
         size_t index = 0;
         uint64_t task_id = 0;
         TableWriterVLogFLnFunction vlogfln;
+        TableWriterFinishedFunction finished;
         bool transact_pending = false;
         bool delete_requested = false;
     };
@@ -63,7 +65,8 @@ public:
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
 
-    static TableWriter *create_table_writer(TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln);
+    static TableWriter *create_table_writer(TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
+                                            TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished);
     static void destroy_table_writer(TableWriter *writer);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
