@@ -31,4 +31,5 @@ export interface RuleConfig {
     time_start:    number; // minutes since midnight
     time_end:      number; // minutes since midnight
     fast_chg_cond: number;
+    action:        number;
 }
