@@ -64,16 +64,16 @@ void BatteryControl::pre_setup()
         {"time_start",    Config::Uint16(0)}, // in minutes since midnight
         {"time_end",      Config::Uint16(0)}, // in minutes since midnight
         {"fast_chg_cond", Config::Enum  (RuleCondition::Ignore)},
+        {"action",        Config::Enum  (RuleAction::Normal)},
     });
 
-    rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
-    rules_forbid_discharge   = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
-    rules_forbid_charge      = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
+    rules_charge    = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
+    rules_discharge = Config::Array({}, &rule_prototype, 0, OPTIONS_BATTERY_CONTROL_MAX_RULES_PER_TYPE(), Config::type_id<Config::ConfObject>());
 
     state = Config::Object({
-        {"grid_charge_permitted", Config::Bool(false)},
-        {"discharge_forbidden",   Config::Bool(false)},
-        {"charge_forbidden",      Config::Bool(false)},
+        {"mode",                  Config::Enum(BatteryMode::None)},
+        {"active_charge_rule",    Config::Uint8(255)},
+        {"active_discharge_rule", Config::Uint8(255)},
     });
 }
 
@@ -93,10 +93,9 @@ static size_t count_enabled_rules(const Config &cfg)
 
 void BatteryControl::setup()
 {
-    api.restorePersistentConfig("battery_control/config",                   &config);
-    api.restorePersistentConfig("battery_control/rules_permit_grid_charge", &rules_permit_grid_charge);
-    api.restorePersistentConfig("battery_control/rules_forbid_discharge",   &rules_forbid_discharge);
-    api.restorePersistentConfig("battery_control/rules_forbid_charge",      &rules_forbid_charge);
+    api.restorePersistentConfig("battery_control/config",          &config);
+    api.restorePersistentConfig("battery_control/rules_charge",    &rules_charge);
+    api.restorePersistentConfig("battery_control/rules_discharge", &rules_discharge);
 
     initialized = true;
 
@@ -127,41 +126,14 @@ void BatteryControl::setup()
     data = new(ptr) typeof(*data); // Use placement new to initialize member variables.
 
     data->max_used_batteries = max_used_batteries;
-    data->battery_repeats = static_cast<battery_repeat_data *>(malloc(max_used_batteries * sizeof(battery_repeat_data)));
-
-    if (data->battery_repeats == nullptr) {
-        logger.printfln("No memory for battery repeats. Module disabled.");
-        return;
-    }
-
-    for (size_t battery_i = 0; battery_i < max_used_batteries; battery_i++) {
-        const IBattery *battery = batteries.get_battery(battery_i);
-        uint16_t intervals_s[6];
-
-        battery->get_repeat_intervals(intervals_s);
-
-        battery_repeat_data *repeat_data = data->battery_repeats + battery_i;
-
-        for (size_t action_i = 0; action_i < ARRAY_SIZE(intervals_s); action_i++) {
-            const uint16_t interval_s = intervals_s[action_i];
-
-            if (interval_s != 0) {
-                data->must_repeat = true;
-            }
-
-            repeat_data->repeat_interval[action_i]    = seconds_t{interval_s};
-            repeat_data->next_action_update[action_i] = 0_us;
-        }
-    }
 
     for (size_t i = 0; i < ARRAY_SIZE(data->soc_cache); i++) {
         data->soc_cache[i] = std::numeric_limits<uint8_t>::max();
     }
 
-    const size_t permit_grid_charge_rules_cnt = count_enabled_rules(rules_permit_grid_charge);
-    const size_t forbid_discharge_rules_cnt   = count_enabled_rules(rules_forbid_discharge);
-    const size_t forbid_charge_rules_cnt      = count_enabled_rules(rules_forbid_charge);
-    const size_t total_rules_cnt = permit_grid_charge_rules_cnt + forbid_discharge_rules_cnt + forbid_charge_rules_cnt;
+    const size_t charge_rules_cnt    = count_enabled_rules(rules_charge);
+    const size_t discharge_rules_cnt = count_enabled_rules(rules_discharge);
+    const size_t total_rules_cnt = charge_rules_cnt + discharge_rules_cnt;
 
     if (total_rules_cnt > 0) {
         control_rule *rules = static_cast<decltype(rules)>(malloc_psram_or_dram(total_rules_cnt * sizeof(*rules))); // Not large but rarely accessed, so it can live in PSRAM.
@@ -170,28 +142,20 @@ void BatteryControl::setup()
             return;
         }
 
-        control_rule *pgc_rules = rules;
-        if (permit_grid_charge_rules_cnt > 0) {
-            data->permit_grid_charge_rules       = pgc_rules;
-            data->permit_grid_charge_rules_count = static_cast<uint8_t>(permit_grid_charge_rules_cnt);
+        control_rule *chg_rules = rules;
+        if (charge_rules_cnt > 0) {
+            data->charge_rules       = chg_rules;
+            data->charge_rules_count = static_cast<uint8_t>(charge_rules_cnt);
 
-            preprocess_rules(&rules_permit_grid_charge, pgc_rules);
+            preprocess_rules(&rules_charge, chg_rules);
         }
 
-        control_rule *fd_rules = pgc_rules + data->permit_grid_charge_rules_count;
-        if (forbid_discharge_rules_cnt > 0) {
-            data->forbid_discharge_rules       = fd_rules;
-            data->forbid_discharge_rules_count = static_cast<uint8_t>(forbid_discharge_rules_cnt);
+        control_rule *dchg_rules = chg_rules + data->charge_rules_count;
+        if (discharge_rules_cnt > 0) {
+            data->discharge_rules       = dchg_rules;
+            data->discharge_rules_count = static_cast<uint8_t>(discharge_rules_cnt);
 
-            preprocess_rules(&rules_forbid_discharge, fd_rules);
-        }
-
-        control_rule *fc_rules = fd_rules + data->forbid_discharge_rules_count;
-        if (forbid_charge_rules_cnt > 0) {
-            data->forbid_charge_rules       = fc_rules;
-            data->forbid_charge_rules_count = static_cast<uint8_t>(forbid_charge_rules_cnt);
-
-            preprocess_rules(&rules_forbid_charge, fc_rules);
+            preprocess_rules(&rules_discharge, dchg_rules);
         }
     }
 
@@ -216,10 +180,9 @@ void BatteryControl::setup()
 
 void BatteryControl::register_urls()
 {
-    api.addPersistentConfig("battery_control/config",                   &config);
-    api.addPersistentConfig("battery_control/rules_permit_grid_charge", &rules_permit_grid_charge);
-    api.addPersistentConfig("battery_control/rules_forbid_discharge",   &rules_forbid_discharge);
-    api.addPersistentConfig("battery_control/rules_forbid_charge",      &rules_forbid_charge);
+    api.addPersistentConfig("battery_control/config",          &config);
+    api.addPersistentConfig("battery_control/rules_charge",    &rules_charge);
+    api.addPersistentConfig("battery_control/rules_discharge", &rules_discharge);
     api.addState("battery_control/state", &state);
 }
 
@@ -229,13 +192,13 @@ void BatteryControl::register_events()
         return;
     }
 
-    const size_t total_rules_cnt = static_cast<size_t>(data->permit_grid_charge_rules_count) + static_cast<size_t>(data->forbid_discharge_rules_count) + static_cast<size_t>(data->forbid_charge_rules_count);
+    const size_t total_rules_cnt = static_cast<size_t>(data->charge_rules_count) + static_cast<size_t>(data->discharge_rules_count);
 
     if (total_rules_cnt == 0) {
         return;
     }
 
-    if (data->have_fast_chg_rule || data->must_repeat) {
+    if (data->have_fast_chg_rule) {
 #if MODULE_NETWORK_AVAILABLE()
         network.on_network_connected([this](const Config *connected) {
             if (!connected->asBool()) {
@@ -243,14 +206,14 @@ void BatteryControl::register_events()
             }
 
             task_scheduler.scheduleUncancelable([this]() {
-                this->periodic_update();
+                this->fast_charge_update();
             }, 5_s, 1_s);
 
             return EventResult::Deregister;
         });
 #else
         task_scheduler.scheduleUncancelable([this]() {
-            this->periodic_update();
+            this->fast_charge_update();
         }, 10_s, 1_s);
 #endif
     }
@@ -418,6 +381,7 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         rule->time_start_s  = rule_config->get("time_start"   )->asUint16() * 60UL;
         rule->time_end_s    = rule_config->get("time_end"     )->asUint16() * 60UL;
         rule->fast_chg_cond = rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
+        rule->action        = rule_config->get("action"       )->asEnum<RuleAction>();
 
         if (rule->soc_cond      != RuleCondition::Ignore        ) data->have_soc_rule             = true;
         if (rule->price_cond    != RuleCondition::Ignore        ) data->have_price_rule           = true;
@@ -601,8 +565,6 @@ void BatteryControl::schedule_evaluation()
 
             this->evaluate_all_rules();
         }
-
-        this->evaluate_summary();
     });
 }
 
@@ -666,7 +628,7 @@ static bool time_rule_condition_failed(const RuleCondition cond, const uint32_t 
     return !inside_time_window; // intentionally negated
 }
 
-TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s)
+RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s, uint8_t *active_rule_out)
 {
     for (size_t i = 0; i < rules_count; i++) {
         const control_rule *rule = rules + i;
@@ -680,10 +642,11 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
 
         // Complete rule matches.
         logger.tracefln(this->trace_buffer_idx, "%s rule %zu matches", rules_type_name, i);
-        return TristateBool::True;
+        *active_rule_out = static_cast<uint8_t>(i);
+        return rule->action;
     }
 
-    return TristateBool::False;
+    return RuleAction::Normal;
 }
 
 void BatteryControl::evaluate_all_rules()
@@ -700,161 +663,87 @@ void BatteryControl::evaluate_all_rules()
         time_since_midnight_s = 0;
     }
 
-    data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules = evaluate_rules(data->permit_grid_charge_rules, data->permit_grid_charge_rules_count, "Permit grid charge", time_since_midnight_s);
-    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules = evaluate_rules(data->forbid_discharge_rules,   data->forbid_discharge_rules_count,   "Forbid discharge",   time_since_midnight_s);
-    data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules = evaluate_rules(data->forbid_charge_rules,      data->forbid_charge_rules_count,      "Forbid charge",      time_since_midnight_s);
+    RuleAction charge_action;
+    RuleAction discharge_action;
+    BatteryMode new_mode;
+    uint8_t active_charge_rule    = std::numeric_limits<uint8_t>::max();
+    uint8_t active_discharge_rule = std::numeric_limits<uint8_t>::max();
 
-    logger.tracefln(this->trace_buffer_idx, "Rules: PChg=%u FDis=%u FChg=%u",
-                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::PermitGridCharge)].activated_by_rules),
-                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidDischarge )].activated_by_rules),
-                    static_cast<unsigned>(data->action_influence_active[static_cast<size_t>(ActionPair::ForbidCharge    )].activated_by_rules));
-}
+    do {
+        charge_action = evaluate_rules(data->charge_rules, data->charge_rules_count, "Charge", time_since_midnight_s, &active_charge_rule);
 
-void BatteryControl::evaluate_summary()
-{
-    evaluate_action_pair(ActionPair::PermitGridCharge);
-    evaluate_action_pair(ActionPair::ForbidDischarge);
-    evaluate_action_pair(ActionPair::ForbidCharge);
-}
-
-void BatteryControl::evaluate_action_pair(ActionPair action_pair)
-{
-    action_influence_data *action_influence = data->action_influence_active + static_cast<size_t>(action_pair);
-
-    if (action_influence->activated != action_influence->activated_by_rules) {
-        action_influence->activated  = action_influence->activated_by_rules;
-
-        update_batteries_and_state(action_pair, true);
-    }
-}
-
-void BatteryControl::periodic_update()
-{
-    if (data->have_fast_chg_rule) {
-        const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
-
-        if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
-            logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
-            data->fast_charger_in_c_cache = fast_charger_in_c_cm;
-
-            data->evaluation_must_check_rules = true;
-            schedule_evaluation();
+        // Forced charging overrides everything.
+        if (charge_action == RuleAction::Force) {
+            new_mode = BatteryMode::ChargeFromGrid;
+            discharge_action = static_cast<RuleAction>(std::numeric_limits<std::underlying_type<RuleAction>::type>::max());
+            break;
         }
-    }
 
-    if (data->must_repeat) {
-        const micros_t now = now_us();
+        discharge_action = evaluate_rules(data->discharge_rules, data->discharge_rules_count, "Discharge", time_since_midnight_s, &active_discharge_rule);
 
-        for (size_t action_pair_i = 0; action_pair_i < ARRAY_SIZE(data->action_influence_active); action_pair_i++) {
-            const action_influence_data *action_influence = data->action_influence_active + action_pair_i;
-            const bool influence_active = action_influence->activated == TristateBool::True;
-            const size_t active_action_num = action_pair_i * 2 + (influence_active ? 0 : 1);
+        // Forced discharge overrides normal mode.
+        if (discharge_action == RuleAction::Force) {
+            new_mode = BatteryMode::DischargeToGrid;
+            break;
+        }
 
-            for (uint8_t battery_i = 0; battery_i < data->max_used_batteries; battery_i++) {
-                if (now >= data->battery_repeats[battery_i].next_action_update[active_action_num]) {
-                    update_batteries_and_state(static_cast<ActionPair>(action_pair_i), false, battery_i);
-                }
+        // Check normal or blocking actions
+        if (charge_action == RuleAction::Normal) {
+            if (discharge_action == RuleAction::Normal) {
+                new_mode = BatteryMode::Normal;
+            } else { // block discharge
+                new_mode = BatteryMode::ChargeFromExcess;
+            }
+        } else { // block charge
+            if (discharge_action == RuleAction::Normal) {
+                new_mode = BatteryMode::DischargeToLoad;
+            } else { // block discharge
+                new_mode = BatteryMode::Disable;
             }
         }
-    }
+    } while (false);
+
+    logger.tracefln(this->trace_buffer_idx, "Rules: Chg=%u Dis=%u Mode=%u",
+                    static_cast<unsigned>(charge_action),
+                    static_cast<unsigned>(discharge_action),
+                    static_cast<unsigned>(new_mode));
+
+    state.get("active_charge_rule"   )->updateUint(active_charge_rule);
+    state.get("active_discharge_rule")->updateUint(active_discharge_rule);
+
+    set_mode(new_mode);
 }
 
-struct battery_control_action_info {
-    BatteryAction influence_start_action;
-    BatteryAction influence_end_action;
-    const char *influence_start_msg;
-    const char *influence_end_msg;
-    const char *state_name;
-};
-
-const battery_control_action_info action_infos[] = {
-    {
-        BatteryAction::PermitGridCharge,
-        BatteryAction::RevokeGridChargeOverride,
-        "Permit grid charge",
-        "Revoke grid charge override",
-        "grid_charge_permitted",
-    },
-    {
-        BatteryAction::ForbidDischarge,
-        BatteryAction::RevokeDischargeOverride,
-        "Forbid discharge",
-        "Revoke discharge override",
-        "discharge_forbidden",
-    },
-    {
-        BatteryAction::ForbidCharge,
-        BatteryAction::RevokeChargeOverride,
-        "Forbid charge",
-        "Revoke charge override",
-        "charge_forbidden",
-    },
-};
-
-void BatteryControl::update_batteries_and_state(ActionPair action_pair, bool changed, uint32_t battery_slot)
+void BatteryControl::set_mode(BatteryMode new_mode)
 {
-    const size_t action_pair_num = static_cast<size_t>(action_pair);
-    const battery_control_action_info *action_info = action_infos + action_pair_num;
-
-    const bool influence_active = data->action_influence_active[action_pair_num].activated == TristateBool::True;
-
-    this->state.get(action_info->state_name)->updateBool(influence_active);
-
-    BatteryAction action_to_start;
-
-    if (influence_active) {
-        if (changed) {
-            logger.tracefln(trace_buffer_idx, "%s", action_info->influence_start_msg);
-            logger.printfln("%s", action_info->influence_start_msg);
-        }
-        action_to_start = action_info->influence_start_action;
-    } else {
-        if (changed) {
-            logger.tracefln(trace_buffer_idx, "%s", action_info->influence_end_msg);
-            logger.printfln("%s", action_info->influence_end_msg);
-        }
-        action_to_start = action_info->influence_end_action;
+    if (new_mode == data->last_mode) {
+        return;
     }
 
-    //logger.printfln("Starting action %u on battery slot %i", static_cast<unsigned>(action_to_start), static_cast<int>(battery_slot));
+    data->last_mode = new_mode;
+    state.get("mode")->updateEnum(new_mode);
 
-    uint32_t battery_i_start;
-    uint32_t battery_i_end;
-
-    if (battery_slot == std::numeric_limits<decltype(battery_slot)>::max()) {
-        battery_i_start = 0;
-        battery_i_end   = data->max_used_batteries;
-    } else {
-        battery_i_start = battery_slot;
-        battery_i_end   = battery_slot + 1;
-    }
-
-    for (uint32_t battery_i = battery_i_start; battery_i < battery_i_end; battery_i++) {
+    for (uint32_t battery_i = 0; battery_i < data->max_used_batteries; battery_i++) {
         IBattery *battery = batteries.get_battery(battery_i);
 
         if (battery == nullptr) {
-            logger.printfln("Cannot execute action on non-existing battery slot %lu", battery_i);
-        } else {
-            battery_repeat_data *battery_repeat = data->battery_repeats + battery_i;
-
-            static_assert(OPTIONS_BATTERIES_MAX_SLOTS() < std::numeric_limits<uint16_t>::max());
-            const uint16_t battery_i_capture = static_cast<uint16_t>(battery_i);
-            const uint8_t  action_num        = static_cast<std::underlying_type<decltype(action_to_start)>::type>(action_to_start);
-
-            battery->start_action(action_to_start, [battery_repeat, battery_i_capture, action_num](bool success) {
-                micros_t next_update = now_us();
-
-                if (success) {
-                    next_update += battery_repeat->repeat_interval[action_num];
-                } else {
-                    next_update += 5_s;
-
-                    const uint32_t slot = battery_i_capture; // printfln_battery expects a variable named "slot".
-                    logger.printfln_battery("Failed to start action %hhu", action_num);
-                }
-
-                battery_repeat->next_action_update[action_num] = next_update;
-            });
+            logger.printfln("Cannot set mode on non-existing battery slot %lu", battery_i);
+            continue;
         }
+
+        battery->set_mode(new_mode);
+    }
+}
+
+void BatteryControl::fast_charge_update()
+{
+    const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
+
+    if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
+        logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
+        data->fast_charger_in_c_cache = fast_charger_in_c_cm;
+
+        data->evaluation_must_check_rules = true;
+        schedule_evaluation();
     }
 }

@@ -1,20 +1,16 @@
 import { RuleConfig } from "./types";
+import { BatteryMode } from "../batteries/battery_mode.enum";
 
 export interface config {
     cheap_tariff_quarters: number;
     expensive_tariff_quarters: number;
 }
 
-export type rules_permit_grid_charge = RuleConfig[];
-export type rules_forbid_discharge   = RuleConfig[];
-export type rules_forbid_charge      = RuleConfig[];
-
-export interface low_level_config {
-    rewrite_period: number;
-}
+export type rules_charge    = RuleConfig[];
+export type rules_discharge = RuleConfig[];
 
 export interface state {
-    grid_charge_permitted: boolean;
-    discharge_forbidden:   boolean;
-    charge_forbidden:      boolean;
+    mode: BatteryMode;
+    active_charge_rule: number;
+    active_discharge_rule: number;
 }
