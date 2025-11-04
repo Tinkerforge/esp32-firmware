@@ -215,22 +215,26 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
 
                 payload.concat("{\"name\":\"");
                 payload.concat(name);
+
                 payload.concat("\",\"unique_id\":\"");
                 payload.concat(client_name);
                 payload.concat('-');
                 payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
+
                 payload.concat("\",\"default_entity_id\":\"");
                 payload.concat(mqtt_discovery_topic_infos[topic_num].component);
                 payload.concat('.');
                 payload.concat(client_name);
                 payload.concat('-');
                 payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
+
                 // object_id is deprecated but still allowed if default_entity_id is also set: https://github.com/home-assistant/core/pull/151996
                 payload.concat("\",\"object_id\":\"");
                 payload.concat(client_name);
                 payload.concat('-');
                 payload.concat(mqtt_discovery_topic_infos[topic_num].object_id);
                 payload.concat("\",");
+
                 switch (mqtt_discovery_topic_infos[topic_num].type) {
                     case MqttDiscoveryType::StateAndUpdate:
                         payload.concat("\"command_topic\":\"");
