@@ -166,6 +166,9 @@ static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool s
             next_table_writer_step(writer);
         }, delay);
     }
+    else {
+        writer->finished();
+    }
 }
 
 static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
@@ -329,7 +332,8 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
                                                                      uint8_t device_address,
                                                                      uint16_t repeat_interval, // seconds
                                                                      TableSpec *table,
-                                                                     TableWriterVLogFLnFunction &&vlogfln)
+                                                                     TableWriterVLogFLnFunction &&vlogfln,
+                                                                     TableWriterFinishedFunction &&finished)
 {
     TableWriter *writer = new TableWriter;
 
@@ -338,6 +342,7 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
     writer->repeat_interval = repeat_interval;
     writer->table = table;
     writer->vlogfln = std::move(vlogfln);
+    writer->finished = std::move(finished);
 
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
@@ -527,6 +532,10 @@ void BatteryModbusTCP::set_active_mode(BatteryMode mode)
 
                     vsnprintf(message, sizeof(message), fmt, args);
                     logger.printfln_battery("%s", message);
+                },
+                [this]() {
+                    destroy_table_writer(active_writer);
+                    active_writer = nullptr;
                 });
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop

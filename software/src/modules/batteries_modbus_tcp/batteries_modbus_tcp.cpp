@@ -375,6 +375,8 @@ void BatteriesModbusTCP::loop()
             instances[test->slot]->set_paused(true);
         }
 
+        test->state = TestState::TableWriting;
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
@@ -382,12 +384,13 @@ void BatteriesModbusTCP::loop()
         test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->table,
         [this](const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
+        },
+        [this]() {
+            test->state = TestState::DestroyTableWriter;
         });
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
-
-        test->state = TestState::TableWriting;
 
         break;
 
