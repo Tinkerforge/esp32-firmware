@@ -41,7 +41,7 @@
 
 #define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
-#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
+//#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
 class EEBus final : public IModule
 {
@@ -104,4 +104,12 @@ public:
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
      */
     void update_peers_config();
+
+    bool is_enabled() const
+    {
+        return module_enabled;
+    }
+
+private:
+    bool module_enabled = false;
 };

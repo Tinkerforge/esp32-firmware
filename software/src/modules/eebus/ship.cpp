@@ -73,7 +73,7 @@ void Ship::disable_ship()
 
 void Ship::setup_wss()
 {
-    eebus.trace_fmtln("setup_wss_server start"); // TODO Move to tracelog
+    eebus.trace_fmtln("setup_wss_server start");
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.
@@ -168,17 +168,19 @@ void Ship::setup_wss()
         config.prvtkey_len = cert->key_length;
     }
 
+    cert->log(); // TODO: remove before release as otherwise the private key gets logged
     // Start HTTPS server
     esp_err_t ret = httpd_ssl_start(&httpd, &config);
-
     if (ESP_OK != ret) {
         logger.printfln("Error starting EEBUS HTTPS server: %d", ret);
     }
 
+    // Websocket initial connection handler
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
         if (!eebus.config.get("enable")->asBool()) {
             return false;
         }
+
         sockaddr_in6 addr;
         socklen_t addr_len = sizeof(addr);
         getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
@@ -211,8 +213,11 @@ void Ship::setup_wss()
         return true;
     });
 
+    // Websocket data received handler
     web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
-        if (!eebus.config.get("enable")->asBool()) {
+        if (!eebus.is_enabled()) {
+            eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
+
             return;
         }
         for (auto &ship_connection : ship_connections) {

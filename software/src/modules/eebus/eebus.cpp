@@ -288,11 +288,14 @@ void EEBus::toggle_module()
     api.writeConfig("eebus/config", &config);
 
     if (config.get("enable")->asBool()) {
+        module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.setup();
         logger.printfln("EEBUS Module enabled");
+
     } else {
+        module_enabled = false;
         usecases = nullptr;
         data_handler = nullptr;
         ship.disable_ship();
