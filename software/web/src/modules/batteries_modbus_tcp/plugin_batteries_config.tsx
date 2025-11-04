@@ -456,8 +456,6 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         util.addApiEventListener('batteries_modbus_tcp/test_log', () => {
             let test_log = API.get('batteries_modbus_tcp/test_log');
 
-            console.log("test_log", JSON.stringify(test_log))
-
             if (!this.state.running || test_log.cookie !== this.state.cookie) {
                 return;
             }
@@ -471,8 +469,6 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
 
         util.addApiEventListener('batteries_modbus_tcp/test_done', () => {
             let test_done = API.get('batteries_modbus_tcp/test_done');
-
-            console.log("test_done", JSON.stringify(test_done))
 
             if (!this.state.running || test_done.cookie !== this.state.cookie) {
                 return;
