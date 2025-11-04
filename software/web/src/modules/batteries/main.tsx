@@ -40,7 +40,9 @@ import { Switch } from "../../ts/components/switch";
 import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
+import { BatteryMode } from "./battery_mode.enum";
 import { RuleConfig } from "../battery_control/types";
+import { RuleAction } from "../battery_control/rule_action.enum";
 import { RuleCondition } from "../battery_control/rule_condition.enum";
 import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
 //#endif
@@ -146,6 +148,16 @@ function get_column_fast_chg_cond(cond: number) {
     return '???';
 }
 
+function get_column_action(action: number) {
+    switch (action) {
+        case RuleAction.Normal: return '';
+        case RuleAction.Block:  return __("batteries.content.rule_action_block");
+        case RuleAction.Force:  return __("batteries.content.rule_action_force");
+    }
+
+    return '???';
+}
+
 class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
     constructor(props: RulesEditorProps) {
         super(props);
@@ -159,7 +171,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
     render() {
         return <Table
-            columnNames={[__("batteries.content.table_rule_enabled"), __("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg")]}
+            columnNames={[__("batteries.content.table_rule_enabled"), __("batteries.content.table_rule_desc"), __("batteries.content.table_rule_time"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule"), __("batteries.content.table_rule_fast_chg"), __("batteries.content.table_rule_action")]}
             rows={this.props.rules.map((rule_config, i) => {
                 return {
                     columnValues: [
@@ -174,6 +186,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         get_column_cond(rule_config.forecast_cond, `${rule_config.forecast_th} kWh`),
                         get_column_schedule_cond(rule_config.schedule_cond),
                         get_column_fast_chg_cond(rule_config.fast_chg_cond),
+                        get_column_action(rule_config.action),
                     ],
                     editTitle: __("batteries.content.edit_rule_title"),
                     onEditShow: async () => {
@@ -414,6 +427,25 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                     }}
                                     value={this.state.edit_rule_config.fast_chg_cond.toString()} />
                             </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_action")}>
+                                <InputSelect
+                                    required
+                                    placeholder={__("select")}
+                                    items={[
+                                        [RuleAction.Block.toString(), __("batteries.content.rule_action_block")],
+                                        [RuleAction.Force.toString(), __("batteries.content.rule_action_force")],
+                                    ]}
+                                    onValue={(v) => {
+                                        let action = parseInt(v);
+
+                                        if (action != RuleAction.Normal) {
+                                            this.setState({all_conditions_ignored: false});
+                                        }
+
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, action: action}});
+                                    }}
+                                    value={this.state.edit_rule_config.action.toString()} />
+                            </FormRow>,
                             <Collapse in={this.state.all_conditions_ignored}>
                                 <div>
                                     <Alert variant="danger">
@@ -429,7 +461,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                             this.state.edit_rule_config.price_cond    == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.forecast_cond == RuleCondition.Ignore &&
                                             this.state.edit_rule_config.schedule_cond == ScheduleRuleCondition.Ignore &&
-                                            this.state.edit_rule_config.fast_chg_cond == RuleCondition.Ignore;
+                                            this.state.edit_rule_config.fast_chg_cond == RuleCondition.Ignore &&
+                                            this.state.edit_rule_config.action        == RuleAction.Normal;
 
                         return new Promise<boolean>((resolve) => {
                             this.setState({all_conditions_ignored: all_ignored}, () => resolve(!all_ignored));
@@ -464,6 +497,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     time_start: 0,
                     time_end: 0,
                     fast_chg_cond: ScheduleRuleCondition.Ignore,
+                    action: RuleAction.Normal,
                 };
 
                 this.setState({add_rule_config: rule_config, all_conditions_ignored: false});
@@ -703,6 +737,25 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             }}
                             value={this.state.add_rule_config.fast_chg_cond.toString()} />
                     </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_action")}>
+                        <InputSelect
+                            required
+                            placeholder={__("select")}
+                            items={[
+                                [RuleAction.Block.toString(), __("batteries.content.rule_action_block")],
+                                [RuleAction.Force.toString(), __("batteries.content.rule_action_force")],
+                            ]}
+                            onValue={(v) => {
+                                let action = parseInt(v);
+
+                                if (action != RuleAction.Normal) {
+                                    this.setState({all_conditions_ignored: false});
+                                }
+
+                                this.setState({add_rule_config: {...this.state.add_rule_config, action: action}});
+                            }}
+                            value={this.state.add_rule_config.action.toString()} />
+                    </FormRow>,
                     <Collapse in={this.state.all_conditions_ignored}>
                         <div>
                             <Alert variant="danger">
@@ -746,9 +799,8 @@ interface BatteriesState {
     edit_battery_config: BatteryConfig;
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
     battery_control_config: API.getType['battery_control/config'];
-    rules_permit_grid_charge: RuleConfig[];
-    rules_forbid_discharge: RuleConfig[];
-    rules_forbid_charge: RuleConfig[];
+    rules_charge: RuleConfig[];
+    rules_discharge: RuleConfig[];
 //#endif
 }
 
@@ -767,9 +819,8 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                   edit_battery_config: [BatteryClassID.None, null],
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
                   battery_control_config: null,
-                  rules_permit_grid_charge: null,
-                  rules_forbid_discharge: null,
-                  rules_forbid_charge: null,
+                  rules_charge: null,
+                  rules_discharge: null,
 //#endif
               });
 
@@ -795,21 +846,15 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             }
         });
 
-        util.addApiEventListener('battery_control/rules_permit_grid_charge', () => {
+        util.addApiEventListener('battery_control/rules_charge', (ev) => {
             if (!this.isDirty()) {
-                this.setState({rules_permit_grid_charge: API.get('battery_control/rules_permit_grid_charge') as RuleConfig[] /* FIXME */});
+                this.setState({rules_charge: API.get('battery_control/rules_charge') as RuleConfig[] /* FIXME */});
             }
         });
 
-        util.addApiEventListener('battery_control/rules_forbid_discharge', () => {
+        util.addApiEventListener('battery_control/rules_discharge', (ev) => {
             if (!this.isDirty()) {
-                this.setState({rules_forbid_discharge: API.get('battery_control/rules_forbid_discharge') as RuleConfig[] /* FIXME */});
-            }
-        });
-
-        util.addApiEventListener('battery_control/rules_forbid_charge', () => {
-            if (!this.isDirty()) {
-                this.setState({rules_forbid_charge: API.get('battery_control/rules_forbid_charge') as RuleConfig[] /* FIXME */});
+                this.setState({rules_discharge: API.get('battery_control/rules_discharge') as RuleConfig[] /* FIXME */});
             }
         });
 
@@ -839,18 +884,13 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                        () => __("batteries.script.save_failed"));
 
         // FIXME: API.save() cannot handle top-level array
-        await API.save_unchecked('battery_control/rules_permit_grid_charge',
-                       this.state.rules_permit_grid_charge,
+        await API.save_unchecked('battery_control/rules_charge',
+                       this.state.rules_charge,
                        () => __("batteries.script.save_failed"));
 
         // FIXME: API.save() cannot handle top-level array
-        await API.save_unchecked('battery_control/rules_forbid_discharge',
-                       this.state.rules_forbid_discharge,
-                       () => __("batteries.script.save_failed"));
-
-        // FIXME: API.save() cannot handle top-level array
-        await API.save_unchecked('battery_control/rules_forbid_charge',
-                       this.state.rules_forbid_charge,
+        await API.save_unchecked('battery_control/rules_discharge',
+                       this.state.rules_discharge,
                        () => __("batteries.script.save_failed"));
 //#endif
 
@@ -864,9 +904,8 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
         await API.reset('battery_control/config');
-        await API.reset('battery_control/rules_permit_grid_charge', this.error_string);
-        await API.reset('battery_control/rules_forbid_discharge', this.error_string);
-        await API.reset('battery_control/rules_forbid_charge', this.error_string);
+        await API.reset('battery_control/rules_charge',    this.error_string);
+        await API.reset('battery_control/rules_discharge', this.error_string);
 //#endif
 
         await super.sendReset(topic);
@@ -884,15 +923,11 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             return true;
         }
 
-        if (API.is_modified('battery_control/rules_permit_grid_charge')) {
+        if (API.is_modified('battery_control/rules_charge')) {
             return true;
         }
 
-        if (API.is_modified('battery_control/rules_forbid_discharge')) {
-            return true;
-        }
-
-        if (API.is_modified('battery_control/rules_forbid_charge')) {
+        if (API.is_modified('battery_control/rules_discharge')) {
             return true;
         }
 //#endif
@@ -1075,7 +1110,39 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             return <SubPage name="batteries" />;
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
-        const bc_state = API.get("battery_control/state");
+        const battery_control_state = API.get("battery_control/state");
+        let mode_group1: number;
+        let mode_group2: number;
+
+        switch (battery_control_state.mode) {
+            case BatteryMode.Disable:
+                mode_group1 = 0;
+                mode_group2 = -1;
+                break;
+            case BatteryMode.Normal:
+                mode_group1 = -1;
+                mode_group2 = 1;
+                break;
+            case BatteryMode.ChargeFromExcess:
+                mode_group1 = 1;
+                mode_group2 = -1;
+                break;
+            case BatteryMode.ChargeFromGrid:
+                mode_group1 = 2;
+                mode_group2 = -1;
+                break;
+            case BatteryMode.DischargeToLoad:
+                mode_group1 = -1;
+                mode_group2 = 0;
+                break;
+            case BatteryMode.DischargeToGrid:
+                mode_group1 = -1;
+                mode_group2 = 2;
+                break;
+            default:
+                mode_group1 = -1;
+                mode_group2 = -1;
+        }
 //#endif
 
         let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
@@ -1084,36 +1151,27 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             <SubPage name="batteries">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 {/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
-                    <FormRow label={__("batteries.content.grid_charge_permitted")}>
+                    <FormRow label={__("batteries.content.battery_mode")} class="mb-0">
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
-                            value={bc_state.grid_charge_permitted ? 1 : 0}
+                            value={mode_group1}
                             items={[
-                                ["success", __("batteries.content.permitted_no")],
-                                ["warning", __("batteries.content.permitted_yes")],
+                                ["danger",  __("batteries.content.battery_mode_disable")],
+                                ["warning", __("batteries.content.battery_mode_charge_from_excess")],
+                                ["warning", __("batteries.content.battery_mode_charge_from_grid")],
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("batteries.content.discharge_forbidden")}>
+                    <FormRow label="">
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
-                            value={bc_state.discharge_forbidden ? 1 : 0}
+                            value={mode_group2}
                             items={[
-                                ["success", __("batteries.content.forbidden_no")],
-                                ["warning", __("batteries.content.forbidden_yes")],
-                            ]}/>
-                    </FormRow>
-
-                    <FormRow label={__("batteries.content.charge_forbidden")}>
-                        <IndicatorGroup
-                            style="width: 100%"
-                            class="flex-wrap"
-                            value={bc_state.charge_forbidden ? 1 : 0}
-                            items={[
-                                ["success", __("batteries.content.forbidden_no")],
-                                ["warning", __("batteries.content.forbidden_yes")],
+                                ["warning", __("batteries.content.battery_mode_discharge_to_load")],
+                                ["success", __("batteries.content.battery_mode_normal")],
+                                ["warning", __("batteries.content.battery_mode_discharge_to_grid")],
                             ]}/>
                     </FormRow>
 {/*#endif*/}
@@ -1361,29 +1419,22 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                     </FormRow>
 {/*#endif*/}
 
-                    <FormSeparator heading={__("batteries.content.rules_permit_grid_charge")} />
+                    <FormSeparator heading={__("batteries.content.rules_charge")} />
                     <div class="form-group">
-                        <RulesEditor rules={this.state.rules_permit_grid_charge} on_rules={(rules: RuleConfig[]) => {
-                            this.setState({rules_permit_grid_charge: rules});
+                        <RulesEditor rules={this.state.rules_charge} on_rules={(rules: RuleConfig[]) => {
+                            this.setState({rules_charge: rules});
                             this.setDirty(true);
                         }} />
                     </div>
 
-                    <FormSeparator heading={__("batteries.content.rules_forbid_discharge")} />
+                    <FormSeparator heading={__("batteries.content.rules_discharge")} />
                     <div class="form-group">
-                        <RulesEditor rules={this.state.rules_forbid_discharge} on_rules={(rules: RuleConfig[]) => {
-                            this.setState({rules_forbid_discharge: rules});
+                        <RulesEditor rules={this.state.rules_discharge} on_rules={(rules: RuleConfig[]) => {
+                            this.setState({rules_discharge: rules});
                             this.setDirty(true);
                         }} />
                     </div>
 
-                    <FormSeparator heading={__("batteries.content.rules_forbid_charge")} />
-                    <div class="form-group">
-                        <RulesEditor rules={this.state.rules_forbid_charge} on_rules={(rules: RuleConfig[]) => {
-                            this.setState({rules_forbid_charge: rules});
-                            this.setDirty(true);
-                        }} />
-                    </div>
 {/*#endif*/}
                 </ConfigForm>
             </SubPage>

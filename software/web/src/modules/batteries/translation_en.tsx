@@ -10,14 +10,13 @@ let x = {
         "content": {
             "batteries": "Battery Control",
 
-            "permitted_no": "Not permitted",
-            "permitted_yes": "Permitted",
-            "forbidden_no": "Not forbidden",
-            "forbidden_yes": "Forbidden",
-
-            "grid_charge_permitted": "Charge from grid",
-            "discharge_forbidden": "Battery discharge",
-            "charge_forbidden": "Battery charge",
+            "battery_mode": "Battery mode",
+            "battery_mode_disable": "No charge or discharge",
+            "battery_mode_normal": "Normal",
+            "battery_mode_charge_from_excess": "No discharge",
+            "battery_mode_charge_from_grid": "Charge from grid",
+            "battery_mode_discharge_to_load": "No charge",
+            "battery_mode_discharge_to_grid": "Discharge to grid",
 
             "dynamic_tariff_schedule": "Dynamic tariff schedule",
             "schedule_cheap_hours": "Cheap hours",
@@ -27,9 +26,6 @@ let x = {
             "schedule_hours_muted": "in 0.25 h steps",
             "schedule_graph": "Schedule",
             "schedule_graph_muted": "intervals from 20:00 to 20:00",
-
-            "forbid_discharge_during_fast_charge": "Forbid discharge during fast charge",
-            "forbid_discharge_during_fast_charge_desc": "Will forbid the battery to discharge while a vehicle is fast charging or is allowed to do so by its Eco charge plan.",
 
             "managed_batteries": "Managed battery storages",
 
@@ -53,9 +49,8 @@ let x = {
             "battery_import_error_config_malformed": "Config is malformed.",
             "battery_export_basename": "battery-storage-config",
 
-            "rules_permit_grid_charge": "Rules for charge from grid permission",
-            "rules_forbid_discharge": "Rules for battery discharge forbiddance",
-            "rules_forbid_charge": "Rules for battery charge forbiddance",
+            "rules_charge": "Rules for charging",
+            "rules_discharge": "Rules for discharging",
 
             "table_rule_enabled": "Enabled",
             "table_rule_desc": "Description",
@@ -65,6 +60,7 @@ let x = {
             "table_rule_forecast": "PV-forecast",
             "table_rule_schedule": "Tariff schedule",
             "table_rule_fast_chg": "Fast charge",
+            "table_rule_action": "Action",
 
             "table_rule_fast_chg_not_active": "Not active",
             "table_rule_fast_chg_active": "Active",
@@ -81,6 +77,7 @@ let x = {
             "add_rule_forecast": "Solar forecast",
             "add_rule_schedule": "Dynamic tariff schedule",
             "add_rule_fast_chg": "Vehicle fast charge",
+            "add_rule_action": "Action",
 
             "edit_rule_title": "Edit rule",
             "edit_rule_desc": "Description",
@@ -93,6 +90,7 @@ let x = {
             "edit_rule_forecast": "Solar forecast",
             "edit_rule_schedule": "Dynamic tariff schedule",
             "edit_rule_fast_chg": "Vehicle fast charge",
+            "edit_rule_action": "Action",
 
             "condition_ignore": "Is ignored",
             "condition_below": "Smaller than",
@@ -114,6 +112,9 @@ let x = {
 
             "condition_fast_chg_inactive": "No fast charge active",
             "condition_fast_chg_active": "Fast charge active",
+
+            "rule_action_block": "Block",
+            "rule_action_force": "Force",
 
             "invalid_feedback_all_ignored": "Cannot ignore all conditions at the same time."
         },

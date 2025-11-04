@@ -26,8 +26,10 @@
 #include "options.h"
 #include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
+#include "rule_action.enum.h"
 #include "rule_condition.enum.h"
 #include "schedule_rule_condition.enum.h"
+#include "../batteries/battery_mode.enum.h"
 
 #define BC_SCHEDULE_CHEAP_POS      (0)
 #define BC_SCHEDULE_CHEAP_MASK     (1 << BC_SCHEDULE_CHEAP_POS)
@@ -57,22 +59,7 @@ private:
         ScheduleRuleCondition schedule_cond;
         RuleCondition time_cond;
         RuleCondition fast_chg_cond;
-    };
-
-    struct battery_repeat_data {
-        micros_t repeat_interval[6];
-        micros_t next_action_update[6];
-    };
-
-    struct action_influence_data {
-        TristateBool activated_by_rules = TristateBool::Undefined;
-        TristateBool activated          = TristateBool::Undefined;
-    };
-
-    enum class ActionPair {
-        PermitGridCharge = 0,
-        ForbidDischarge  = 1,
-        ForbidCharge     = 2,
+        RuleAction    action;
     };
 
     void preprocess_rules(const Config *rules_config, control_rule *rules);
@@ -82,18 +69,14 @@ private:
     void evaluate_tariff_schedule();
     void update_solar_forecast(int localtime_hour_now, const Config *state);
     void schedule_evaluation();
-    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s);
+    RuleAction evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s, uint8_t *active_rule_out);
     void evaluate_all_rules();
-    void evaluate_summary();
-    void evaluate_action_pair(ActionPair action_pair);
-    void periodic_update();
-
-    void update_batteries_and_state(ActionPair action_pair, bool changed, uint32_t battery_slot = std::numeric_limits<uint32_t>::max());
+    void set_mode(BatteryMode new_mode);
+    void fast_charge_update();
 
     ConfigRoot config;
-    ConfigRoot rules_permit_grid_charge;
-    ConfigRoot rules_forbid_discharge;
-    ConfigRoot rules_forbid_charge;
+    ConfigRoot rules_charge;
+    ConfigRoot rules_discharge;
     ConfigRoot state;
 
     Config rule_prototype;
@@ -103,12 +86,10 @@ private:
     struct battery_control_data {
         uint64_t evaluation_task_id = 0;
 
-        const control_rule *permit_grid_charge_rules = nullptr;
-        const control_rule *forbid_discharge_rules   = nullptr;
-        const control_rule *forbid_charge_rules      = nullptr;
-        uint8_t permit_grid_charge_rules_count = 0;
-        uint8_t forbid_discharge_rules_count   = 0;
-        uint8_t forbid_charge_rules_count      = 0;
+        const control_rule *charge_rules    = nullptr;
+        const control_rule *discharge_rules = nullptr;
+        uint8_t charge_rules_count    = 0;
+        uint8_t discharge_rules_count = 0;
 
         bool evaluation_must_update_soc = false;
         bool evaluation_must_check_rules = false;
@@ -131,11 +112,9 @@ private:
         uint8_t tariff_schedule[24 * 4] = {0};
         uint8_t tariff_schedule_cache = 0;
 
-        battery_repeat_data *battery_repeats = nullptr;
-        uint8_t max_used_batteries           = 0;
-        bool must_repeat                     = false;
+        uint8_t max_used_batteries = 0;
 
-        action_influence_data action_influence_active[3];
+        BatteryMode last_mode = BatteryMode::None;
     };
 
     battery_control_data *data = nullptr;

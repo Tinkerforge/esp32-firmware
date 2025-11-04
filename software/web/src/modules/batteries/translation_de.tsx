@@ -10,14 +10,13 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
-            "permitted_no": "Nicht erlaubt",
-            "permitted_yes": "Erlaubt",
-            "forbidden_no": "Nicht verboten",
-            "forbidden_yes": "Verboten",
-
-            "grid_charge_permitted": "Ladung vom Netz",
-            "discharge_forbidden": "Batterieentladung",
-            "charge_forbidden": "Batterieladung",
+            "battery_mode": "Speichermodus",
+            "battery_mode_disable": "Weder laden noch entladen",
+            "battery_mode_normal": "Normal",
+            "battery_mode_charge_from_excess": "Nicht entladen",
+            "battery_mode_charge_from_grid": "Vom Netz laden",
+            "battery_mode_discharge_to_load": "Nicht laden",
+            "battery_mode_discharge_to_grid": "Ins Netz entladen",
 
             "dynamic_tariff_schedule": "Zeitplan für dynamischen Strompreis",
             "schedule_cheap_hours": "Günstige Stunden",
@@ -27,9 +26,6 @@ let x = {
             "schedule_hours_muted": "in 0,25 h-Schritten",
             "schedule_graph": "Zeitplan",
             "schedule_graph_muted": "jeweils von 20:00 bis 20:00",
-
-            "forbid_discharge_during_fast_charge": "Batterieentladung beim Schnellladen verbieten",
-            "forbid_discharge_during_fast_charge_desc": "Verbietet dem Speicher, sich zu entladen, während ein Fahrzeug schnell lädt oder sein Eco-Ladeplan es erlaubt.",
 
             "managed_batteries": "Kontrollierte Batteriespeicher",
 
@@ -53,9 +49,8 @@ let x = {
             "battery_import_error_config_malformed": "Das Konfigurations-Format ist beschädigt.",
             "battery_export_basename": "Batteriespeicher-Konfiguration",
 
-            "rules_permit_grid_charge": "Regeln für Ladung-vom-Netz-Erlaubnis",
-            "rules_forbid_discharge": "Regeln für Batterieentladungs-Verbot",
-            "rules_forbid_charge": "Regeln für Batterieladungs-Verbot",
+            "rules_charge": "Laderegeln",
+            "rules_discharge": "Entladeregeln",
 
             "table_rule_enabled": "Aktiv",
             "table_rule_desc": "Beschreibung",
@@ -65,6 +60,7 @@ let x = {
             "table_rule_forecast": "PV-Ertrag",
             "table_rule_schedule": "Strompreisplan",
             "table_rule_fast_chg": "Schnelladung",
+            "table_rule_action": "Aktion",
 
             "table_rule_fast_chg_not_active": "Nicht aktiv",
             "table_rule_fast_chg_active": "Aktiv",
@@ -81,6 +77,7 @@ let x = {
             "add_rule_forecast": "PV-Ertragsprognose",
             "add_rule_schedule": "Dynamischer Strompreisplan",
             "add_rule_fast_chg": "Fahrzeug-Schnellladung",
+            "add_rule_action": "Aktion",
 
             "edit_rule_title": "Regel bearbeiten",
             "edit_rule_desc": "Beschreibung",
@@ -93,6 +90,7 @@ let x = {
             "edit_rule_forecast": "PV-Ertragsprognose",
             "edit_rule_schedule": "Dynamischer Strompreisplan",
             "edit_rule_fast_chg": "Fahrzeug-Schnelladung",
+            "edit_rule_action": "Aktion",
 
             "condition_ignore": "Wird ignoriert",
             "condition_below": "Kleiner als",
@@ -114,6 +112,9 @@ let x = {
 
             "condition_fast_chg_inactive": "Keine Schnellladung aktiv",
             "condition_fast_chg_active": "Schnellladung aktiv",
+
+            "rule_action_block": "Blockieren",
+            "rule_action_force": "Erzwingen",
 
             "invalid_feedback_all_ignored": "Es können nicht alle Bedingungen gleichzeitig ignoriert werden."
         },
