@@ -143,13 +143,18 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer);
 
 static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool success)
 {
+    task_scheduler.cancel(writer->task_id);
+
+    if (writer->delete_requested) {
+        delete writer;
+        return;
+    }
+
     millis_t delay = 5_s;
 
     if (success) {
         delay = seconds_t{writer->repeat_interval};
     }
-
-    task_scheduler.cancel(writer->task_id);
 
     ++writer->repeat_count;
     writer->task_id = 0;
@@ -167,6 +172,11 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
 {
     if (writer->index >= writer->table->register_blocks_count) {
         last_table_writer_step(writer, true);
+        return;
+    }
+
+    if (writer->delete_requested) {
+        last_table_writer_step(writer, false);
         return;
     }
 
@@ -232,6 +242,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
         return;
     }
 
+    writer->transact_pending = true;
+
     static_cast<TFModbusTCPSharedClient *>(writer->client)->transact(writer->device_address,
                                                                      function_code,
                                                                      register_block->start_address,
@@ -240,7 +252,6 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                      2_s,
     [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            free(buffer_to_free);
             table_writer_logfln(writer,
                                 "Setting mode failed at %zu of %zu: %s (%d)%s%s",
                                 writer->index + 1, writer->table->register_blocks_count,
@@ -249,6 +260,9 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                 error_message != nullptr ? " / " : "",
                                 error_message != nullptr ? error_message : "");
 
+            writer->transact_pending = false;
+
+            free(buffer_to_free);
             last_table_writer_step(writer, false);
             return;
         }
@@ -279,7 +293,6 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                              2_s,
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    free(buffer_to_free);
                     table_writer_logfln(writer,
                                         "Setting mode (step 2) failed at %zu of %zu: %s (%d)%s%s",
                                         writer->index + 1, writer->table->register_blocks_count,
@@ -288,11 +301,15 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                         step2_error_message != nullptr ? " / " : "",
                                         step2_error_message != nullptr ? step2_error_message : "");
 
+                    writer->transact_pending = false;
+
+                    free(buffer_to_free);
                     last_table_writer_step(writer, false);
                     return;
                 }
 
                 ++writer->index;
+                writer->transact_pending = false;
 
                 free(buffer_to_free);
                 next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
@@ -300,6 +317,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
         }
         else {
             ++writer->index;
+            writer->transact_pending = false;
 
             free(buffer_to_free);
             next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
@@ -334,6 +352,11 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
 void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *writer)
 {
     if (writer == nullptr) {
+        return;
+    }
+
+    if (writer->transact_pending) {
+        writer->delete_requested = true;
         return;
     }
 
