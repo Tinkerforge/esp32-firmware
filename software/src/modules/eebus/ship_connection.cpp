@@ -79,7 +79,7 @@ ShipConnection::ShipConnection(WebSocketsClient ws_client, CoolString ski) :
     spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
-
+    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as server", peer_ski.c_str());
     state_machine_next_step();
 }
 
@@ -93,6 +93,7 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
     message_outgoing = make_unique_psram<Message>();
 
     ws_server = tf_websocket_client_init(&ws_config);
+    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_ski.c_str());
 
     tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
     esp_err_t err = tf_websocket_client_start(ws_server);
