@@ -427,6 +427,7 @@ interface TestRunnerProps {
 
 interface TestRunnerState {
     table_id: number;
+    mode: [number, string];
     running: boolean;
     cookie: number;
     aborted: boolean;
@@ -444,6 +445,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
 
         this.state = {
             table_id: null,
+            mode: null,
             running: false,
             cookie: null,
             aborted: false,
@@ -548,13 +550,14 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         }
     }
 
-    async start_mode(mode?: number) {
+    async start_mode(mode?: [number, string]) {
         let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
         this.pending_log = '';
 
         this.setState({
             table_id: this.props.table_id,
+            mode: mode,
             running: true,
             cookie: cookie,
             aborted: false,
@@ -572,7 +575,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             }
 
             if (util.hasValue(mode)) {
-                (table[1] as any)["mode"] = mode;
+                (table[1] as any)["mode"] = mode[0];
             }
 
             if (util.hasValue(this.props.extra_values)) {
@@ -630,7 +633,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                                 <Dropdown.Item
                                     as="button"
                                     className="py-2"
-                                    onClick={async () => await this.start_mode(mode[0])}>
+                                    onClick={async () => await this.start_mode(mode)}>
                                     {mode[1]}
                                 </Dropdown.Item>)}
                         </Dropdown.Menu>
@@ -647,7 +650,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                         className="form-control"
                         onClick={async () => await this.abort_test()}
                         disabled={this.state.aborted}>
-                    {__("batteries_modbus_tcp.content.test_abort")}
+                    {__("batteries_modbus_tcp.content.test_abort")(util.hasValue(this.state.mode) ? this.state.mode[1] : null)}
                 </Button>}
             </FormRow>
 
@@ -1168,7 +1171,7 @@ export function init() {
                         let mode = battery_mode_order[i];
 
                         edit_children.push(
-                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_prefix") + battery_mode_names[mode]} modal={true}>
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode])} modal={true}>
                                 <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                     <RegisterEditor
                                         register_address_mode={config[1].table[1].register_address_mode}
