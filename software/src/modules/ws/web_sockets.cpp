@@ -105,7 +105,7 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
         }
 
         if (httpd_ws_send_frame_async(this->httpd, wi->fds[i], &ws_pkt) != ESP_OK) {
-            this->keepAliveCloseDead(wi->fds[i]);
+            this->keepAliveCloseDead_HTTPThread(wi->fds[i]);
             result = false;
         }
     }
@@ -222,6 +222,10 @@ void WebSockets::keepAliveAdd(int fd)
 
 void WebSockets::keepAliveRemove(int fd)
 {
+    if (fd < 0) {
+        return;
+    }
+
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
@@ -242,17 +246,43 @@ void WebSockets::keepAliveRemove(int fd)
     }
 }
 
-void WebSockets::keepAliveCloseDead(int fd)
+void WebSockets::keepAliveCloseDead_async(int fd)
 {
+    if (fd < 0) {
+        return;
+    }
+
     this->keepAliveRemove(fd);
+
     // Don't kill this socket if it is a HTTP socket:
     // Sometimes a fd is reused so fast that the keep alive does not notice
     // the closed fd before it is reopened as normal HTTP connection.
-    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP)
+    // This should probably be removed because it should be called from the HTTP thread only.
+    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP) {
+        logger.printfln("keepAliveCloseDead_async encountered fd reused for HTTP");
         return;
+    }
 
     httpd_sess_trigger_close(httpd, fd);
+}
 
+void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
+{
+    if (fd < 0) {
+        return;
+    }
+
+    this->keepAliveRemove(fd);
+
+    // Don't kill this socket if it is a HTTP socket:
+    // Sometimes a fd is reused so fast that the keep alive does not notice
+    // the closed fd before it is reopened as normal HTTP connection.
+    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP) {
+        logger.printfln("keepAliveCloseDead_HTTPThread encountered fd reused for HTTP");
+        return;
+    }
+
+    // This old comment might not be relevant anymore:
     // Seems like we have to do everything by ourselves...
     // In the case that the client is really dead (for example: someone pulled the ethernet cable)
     // We manually have to delete the session, thus closing the fd.
@@ -264,20 +294,9 @@ void WebSockets::keepAliveCloseDead(int fd)
     // Unfortunately there is no API to throw away a web socket connection, so
     // we have to poke around in the internal structures here.
     struct httpd_data *hd = static_cast<struct httpd_data *>(httpd);
+    struct sock_db *session = httpd_sess_get(hd, fd);
 
-    struct sock_db *current = hd->hd_sd;
-    struct sock_db *end = hd->hd_sd + hd->config.max_open_sockets - 1;
-
-    while (current <= end) {
-        if (current->fd == fd) {
-            httpd_sess_delete(hd, current);
-            break;
-        }
-        current++;
-    }
-
-    // Sometimes the deletion is not complete, but leaves an invalid socket. Also remove those.
-    httpd_sess_delete_invalid(hd);
+    httpd_sess_delete(hd, session);
 }
 
 void WebSockets::pingActiveClients()
@@ -308,24 +327,38 @@ void WebSockets::checkActiveClients()
         if (keep_alive_fds[i] == -1)
             continue;
 
-        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET || deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
-            this->keepAliveCloseDead(keep_alive_fds[i]);
+        // This should probably be removed because it should be called from the HTTP thread only.
+        // Alternative: Move this check to the HTTP thread and call httpd_sess_delete_invalid there as well.
+        // The timeout check below can then run only once a second.
+        const httpd_ws_client_info_t type = httpd_ws_get_fd_info(httpd, keep_alive_fds[i]);
+
+        if  (type != HTTPD_WS_CLIENT_WEBSOCKET) {
+            logger.printfln("checkActiveClients encountered fd reused for HTTP, type %u", static_cast<unsigned>(type));
+            this->keepAliveCloseDead_async(keep_alive_fds[i]);
+            continue;
+        }
+
+        if (deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
+            this->keepAliveCloseDead_async(keep_alive_fds[i]);
         }
     }
 }
 
-void WebSockets::closeLRUClient()
+void WebSockets::closeLRUClient_HTTPThread()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == -1)
             return; //Found free slot
 
-        if (httpd_ws_get_fd_info(httpd, keep_alive_fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        const httpd_ws_client_info_t type = httpd_ws_get_fd_info(httpd, keep_alive_fds[i]);
+
+        if  (type != HTTPD_WS_CLIENT_WEBSOCKET) {
             // Found non-websocket fd.
             // Probably was a websocket, was then closed
             // and re-opened as non-websocket-fd.
-            this->keepAliveCloseDead(keep_alive_fds[i]);
+            logger.printfln("closeLRUClient_HTTPThread encountered fd reused for HTTP, type %u", static_cast<unsigned>(type));
+            this->keepAliveCloseDead_HTTPThread(keep_alive_fds[i]);
             return;
         }
     }
@@ -337,7 +370,7 @@ void WebSockets::closeLRUClient()
         }
     }
 
-    this->keepAliveCloseDead(keep_alive_fds[min_fd_idx]);
+    this->keepAliveCloseDead_HTTPThread(keep_alive_fds[min_fd_idx]);
 }
 
 void WebSockets::receivedPong(int fd)
@@ -633,7 +666,7 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
             }
 
             if (!this->haveFreeSlot()) {
-                this->closeLRUClient();
+                this->closeLRUClient_HTTPThread();
             }
 
             const esp_err_t ret = httpd_ws_respond_server_handshake(req, supported_subprotocol);
@@ -740,10 +773,10 @@ void WebSockets::stop() {
     // Disconnect clients
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] != -1)
+        if (keep_alive_fds[i] == -1)
             continue;
 
-        this->keepAliveCloseDead(keep_alive_fds[i]);
+        this->keepAliveCloseDead_async(keep_alive_fds[i]);
     }
 
 #if MODULE_WATCHDOG_AVAILABLE()

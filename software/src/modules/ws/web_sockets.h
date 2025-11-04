@@ -73,7 +73,7 @@ private:
     bool haveFreeSlot();
     void pingActiveClients();
     void checkActiveClients();
-    void closeLRUClient();
+    void closeLRUClient_HTTPThread();
     void receivedPong(int fd);
 
     void cleanUpQueue();
@@ -89,7 +89,8 @@ private:
 
     void keepAliveAdd(int fd);
     void keepAliveRemove(int fd);
-    void keepAliveCloseDead(int fd);
+    void keepAliveCloseDead_async(int fd);
+    void keepAliveCloseDead_HTTPThread(int fd);
 
     void updateDebugState();
 

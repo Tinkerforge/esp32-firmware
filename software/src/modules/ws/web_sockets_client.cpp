@@ -38,7 +38,7 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
 
 void WebSocketsClient::close_HTTPThread()
 {
-    ws->keepAliveCloseDead(fd);
+    ws->keepAliveCloseDead_HTTPThread(fd);
 }
 
 void *WebSocketsClient::setCtx(void *ctx_)
