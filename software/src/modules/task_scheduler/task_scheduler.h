@@ -109,9 +109,9 @@ public:
 
     uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
-    [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later")]]
+    [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later. Cast to void if you intend to write a self-canceling task that will use task_scheduler.currentTaskId()")]]
     inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), 0_ms, delay_ms, src_location);}
-    [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later")]]
+    [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later. Cast to void if you intend to write a self-canceling task that will use task_scheduler.currentTaskId()")]]
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
 
     inline void scheduleUncancelable(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {this->scheduleUncancelable(std::move(fn), 0_ms, delay_ms, src_location);}
