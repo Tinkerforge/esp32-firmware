@@ -114,7 +114,7 @@ void BatteriesModbusTCP::pre_setup()
         {"cookie", Config::Uint32(0)},
     })};
 
-    test_abort_config = test_continue_config;
+    test_stop_config = test_continue_config;
 }
 
 void BatteriesModbusTCP::register_urls()
@@ -256,19 +256,19 @@ void BatteriesModbusTCP::register_urls()
         test->last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("batteries_modbus_tcp/test_abort", &test_abort_config, {}, [this](String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_stop", &test_stop_config, {}, [this](String &errmsg) {
         if (test == nullptr) {
             return;
         }
 
-        uint32_t cookie = test_abort_config.get("cookie")->asUint();
+        uint32_t cookie = test_stop_config.get("cookie")->asUint();
 
         if (cookie != test->cookie) {
-            errmsg = "Cannot abort another test";
+            errmsg = "Cannot stop another test";
             return;
         }
 
-        test->abort = true;
+        test->stop = true;
     }, true);
 }
 
@@ -282,20 +282,20 @@ void BatteriesModbusTCP::loop()
         test_flush_log();
     }
 
-    if (!test->abort && deadline_elapsed(test->last_keep_alive + 10_s)) {
-        const char *message = "Aborting test because no continue call was received for more than 10 seconds";
+    if (!test->stop && deadline_elapsed(test->last_keep_alive + 10_s)) {
+        const char *message = "Stopping test because no continue call was received for more than 10 seconds";
 
         logger.printfln("%s", message);
         test_printfln("%s", message);
 
-        test->abort = true;
+        test->stop = true;
     }
 
     switch (test->state) {
     case TestState::Connect:
         logger.printfln_debug("loop: Connect");
 
-        if (test->abort) {
+        if (test->stop) {
             test->state = TestState::Done;
             break;
         }
@@ -348,7 +348,7 @@ void BatteriesModbusTCP::loop()
     case TestState::Done: {
         logger.printfln_debug("loop: Done");
 
-            test_printfln("Test finished");
+            test_printfln(test->stop ? "Test stopped" : "Test finished");
             test_flush_log();
 
 #if MODULE_WS_AVAILABLE()
@@ -374,7 +374,7 @@ void BatteriesModbusTCP::loop()
     case TestState::CreateTableWriter:
         logger.printfln_debug("loop: CreateTableWriter");
 
-        if (test->abort) {
+        if (test->stop) {
             test->state = TestState::Disconnect;
             break;
         }
@@ -420,7 +420,7 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::TableWriting:
-        if (test->abort) {
+        if (test->stop) {
             test->state = TestState::DestroyTableWriter;
         }
 

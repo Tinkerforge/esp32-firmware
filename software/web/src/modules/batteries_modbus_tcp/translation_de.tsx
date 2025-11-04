@@ -13,7 +13,7 @@ let x = {
             "test_muted": "",
             "test_mode": "Für Speichermodus",
             "test_start": "Starten",
-            "test_abort": /*SFN*/(mode: string) => mode ? "Stoppen: " + mode : "Stoppen"/*NF*/,
+            "test_stop": /*SFN*/(mode: string) => mode ? "Stoppen: " + mode : "Stoppen"/*NF*/,
             "display_name": "Anzeigename",
             "host": "Host",
             "host_invalid": "Host ist ungültig",

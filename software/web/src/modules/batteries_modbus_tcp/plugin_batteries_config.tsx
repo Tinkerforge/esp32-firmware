@@ -430,7 +430,7 @@ interface TestRunnerState {
     mode: [number, string];
     running: boolean;
     cookie: number;
-    aborted: boolean;
+    stopped: boolean;
     log: string;
     show_log: boolean;
 }
@@ -448,7 +448,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             mode: null,
             running: false,
             cookie: null,
-            aborted: false,
+            stopped: false,
             log: '',
             show_log: false,
         } as any;
@@ -505,30 +505,30 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         this.setState({log: log});
     }
 
-    async abort_test() {
-        if (!this.state.running || this.state.aborted) {
+    async stop_test() {
+        if (!this.state.running || this.state.stopped) {
             return;
         }
 
         let result;
 
         try {
-            result = await (await util.put('/batteries_modbus_tcp/test_abort', {cookie: this.state.cookie})).text();
+            result = await (await util.put('/batteries_modbus_tcp/test_stop', {cookie: this.state.cookie})).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
         }
 
         if (result.length > 0) {
-            this.update_log("Error while aborting test: " + result + "\n");
+            this.update_log("Error while stopping test: " + result + "\n");
         }
         else {
-            this.setState({aborted: true});
+            this.setState({stopped: true});
         }
     }
 
     override async componentWillUnmount() {
-        await this.abort_test();
+        await this.stop_test();
     }
 
     async test_continue() {
@@ -560,7 +560,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             mode: mode,
             running: true,
             cookie: cookie,
-            aborted: false,
+            stopped: false,
             show_log: true,
             log: '',
         }, async () => {
@@ -645,12 +645,12 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                             disabled={start_button_disabled}>
                         {__("batteries_modbus_tcp.content.test_start")}
                     </Button>) :
-                <Button key="test_abort"
+                <Button key="test_stop"
                         variant="primary"
                         className="form-control"
-                        onClick={async () => await this.abort_test()}
-                        disabled={this.state.aborted}>
-                    {__("batteries_modbus_tcp.content.test_abort")(util.hasValue(this.state.mode) ? this.state.mode[1] : null)}
+                        onClick={async () => await this.stop_test()}
+                        disabled={this.state.stopped}>
+                    {__("batteries_modbus_tcp.content.test_stop")(util.hasValue(this.state.mode) ? this.state.mode[1] : null)}
                 </Button>}
             </FormRow>
 

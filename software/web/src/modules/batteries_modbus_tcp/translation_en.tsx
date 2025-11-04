@@ -13,7 +13,7 @@ let x = {
             "test_muted": "",
             "test_mode": "For battery mode",
             "test_start": "Start",
-            "test_abort": /*SFN*/(mode: string) => mode ? "Stop: " + mode : "Stop"/*NF*/,
+            "test_stop": /*SFN*/(mode: string) => mode ? "Stop: " + mode : "Stop"/*NF*/,
             "display_name": "Display name",
             "host": "Host",
             "host_invalid": "Host is invalid",
