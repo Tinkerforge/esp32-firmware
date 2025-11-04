@@ -72,7 +72,7 @@ private:
     ConfigRoot test_config;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> test_table_prototypes;
     ConfigRoot test_continue_config;
-    ConfigRoot test_abort_config;
+    ConfigRoot test_stop_config;
 
     struct Test {
         TFGenericTCPSharedClient *client = nullptr;
@@ -89,7 +89,7 @@ private:
         char printfln_buffer[512] = "";
         micros_t printfln_last_flush = 0_us;
         size_t printfln_buffer_used = 0;
-        bool abort = false;
+        bool stop = false;
     };
 
     Test *test = nullptr;
