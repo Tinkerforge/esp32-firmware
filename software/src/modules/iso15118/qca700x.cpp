@@ -260,6 +260,13 @@ void QCA700x::setup_netif()
         },
         .driver_free_rx_buffer = [](void *handle, void *buffer) {
             free(buffer);
+        },
+        .driver_set_mac_filter = [](void *handle, const uint8_t *mac, size_t mac_len, bool add) {
+            logger.printfln("driver_set_mac_filter called with handle %p; add %d; mac: ", handle, add);
+            for (size_t i = 0; i < mac_len; ++i) {
+                logger.printfln_continue("%x", mac[i]);
+            }
+            return ESP_OK;
         }
     };
 
