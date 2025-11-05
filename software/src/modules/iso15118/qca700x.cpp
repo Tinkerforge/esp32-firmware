@@ -262,10 +262,16 @@ void QCA700x::setup_netif()
             free(buffer);
         },
         .driver_set_mac_filter = [](void *handle, const uint8_t *mac, size_t mac_len, bool add) {
-            logger.printfln("driver_set_mac_filter called with handle %p; add %d; mac: ", handle, add);
+            char mac_str[40];
+            StringWriter sw(mac_str, std::size(mac_str));
+
             for (size_t i = 0; i < mac_len; ++i) {
-                logger.printfln_continue("%x", mac[i]);
+                sw.printf(":%02x", mac[i]);
             }
+            mac_str[0] = ' '; // Replace leading colon.
+
+            logger.printfln("driver_set_mac_filter called with handle %p; add %d; mac:%s", handle, add, mac_str);
+
             return ESP_OK;
         }
     };
