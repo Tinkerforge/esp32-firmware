@@ -353,10 +353,6 @@ void EEBus::update_peers_config()
         peer->get("mode_type")->updateString(node.txt_type);
         peer->get("state")->updateEnum(node.state);
     }
-    auto last_peer = config.get("peers")->count() - 1;
-    if (last_peer>0) {
-        config.get("peers")->removeLast();
-    }
     api.writeConfig("eebus/config", &config);
 }
 

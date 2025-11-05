@@ -168,7 +168,6 @@ void Ship::setup_wss()
         config.prvtkey_len = cert->key_length;
     }
 
-    cert->log(); // TODO: remove before release as otherwise the private key gets logged
     // Start HTTPS server
     esp_err_t ret = httpd_ssl_start(&httpd, &config);
     if (ESP_OK != ret) {

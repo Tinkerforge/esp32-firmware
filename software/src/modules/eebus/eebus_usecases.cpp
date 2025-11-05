@@ -2383,7 +2383,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     }
     if (send_response != CmdClassifierType::EnumUndefined) {
         eebus.trace_fmtln("Usecases: Sending response");
-        if (header.ackRequest.has_value() && header.ackRequest.get() && send_response != CmdClassifierType::result) {
+        if (header.ackRequest.has_value() && header.ackRequest.get() && send_response != CmdClassifierType::result && header.cmdClassifier != CmdClassifierType::read) {
 
             eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response));
         }
