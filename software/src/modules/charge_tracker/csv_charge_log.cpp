@@ -232,7 +232,7 @@ String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& param
         char price_header[64];
         float price_per_kwh = params.electricity_price / 10000.0f;
         snprintf(price_header, sizeof(price_header), "%s %.2f ct/kWh",
-                CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
+        CSVTranslations::getHeaderPrice(params.language), price_per_kwh * 100);
 
         String price_header_str = String(price_header);
         if (params.language == Language::German) {
