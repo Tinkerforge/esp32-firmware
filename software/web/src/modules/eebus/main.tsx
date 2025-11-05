@@ -101,7 +101,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 __("eebus.content.peer_info.dns_name"),
                                 __("eebus.content.peer_info.state")]}
                             rows={
-                                state.config.peers.map((peer) => {
+                                state.config.peers
+                                    .filter(peer => (peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1))
+                                    .map((peer) => {
                                     return {
                                         columnValues: [
                                             peer.model_model,
