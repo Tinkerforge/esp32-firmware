@@ -340,15 +340,21 @@ enum class DirectControlActivityStateEnumType
 
 /**
  * Convert the enum DirectControlActivityStateEnumType to its String representation
- * @param src The source DirectControlActivityStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DirectControlActivityStateEnumType &src);
+
+/**
+ * Convert the enum DirectControlActivityStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DirectControlActivityStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DirectControlActivityStateEnumType.
+ * Convert a string to a DirectControlActivityStateEnumType
+ */
+void convertFromString(const String &src, DirectControlActivityStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DirectControlActivityStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnumType &dst);
 
@@ -369,15 +375,21 @@ enum class RecurringIntervalEnumType
 
 /**
  * Convert the enum RecurringIntervalEnumType to its String representation
- * @param src The source RecurringIntervalEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const RecurringIntervalEnumType &src);
+
+/**
+ * Convert the enum RecurringIntervalEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a RecurringIntervalEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination RecurringIntervalEnumType.
+ * Convert a string to a RecurringIntervalEnumType
+ */
+void convertFromString(const String &src, RecurringIntervalEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a RecurringIntervalEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst);
 
@@ -403,15 +415,21 @@ enum class MonthType
 
 /**
  * Convert the enum MonthType to its String representation
- * @param src The source MonthType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MonthType &src);
+
+/**
+ * Convert the enum MonthType to JSON (uses convertToString)
  */
 bool convertToJson(const MonthType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MonthType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MonthType.
+ * Convert a string to a MonthType
+ */
+void convertFromString(const String &src, MonthType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MonthType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MonthType &dst);
 
@@ -432,15 +450,21 @@ enum class DayOfWeekType
 
 /**
  * Convert the enum DayOfWeekType to its String representation
- * @param src The source DayOfWeekType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DayOfWeekType &src);
+
+/**
+ * Convert the enum DayOfWeekType to JSON (uses convertToString)
  */
 bool convertToJson(const DayOfWeekType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DayOfWeekType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DayOfWeekType.
+ * Convert a string to a DayOfWeekType
+ */
+void convertFromString(const String &src, DayOfWeekType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DayOfWeekType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DayOfWeekType &dst);
 
@@ -459,15 +483,21 @@ enum class OccurrenceEnumType
 
 /**
  * Convert the enum OccurrenceEnumType to its String representation
- * @param src The source OccurrenceEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const OccurrenceEnumType &src);
+
+/**
+ * Convert the enum OccurrenceEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a OccurrenceEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination OccurrenceEnumType.
+ * Convert a string to a OccurrenceEnumType
+ */
+void convertFromString(const String &src, OccurrenceEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a OccurrenceEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst);
 
@@ -492,15 +522,21 @@ enum class CommodityTypeEnumType
 
 /**
  * Convert the enum CommodityTypeEnumType to its String representation
- * @param src The source CommodityTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const CommodityTypeEnumType &src);
+
+/**
+ * Convert the enum CommodityTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a CommodityTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination CommodityTypeEnumType.
+ * Convert a string to a CommodityTypeEnumType
+ */
+void convertFromString(const String &src, CommodityTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a CommodityTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst);
 
@@ -516,15 +552,21 @@ enum class EnergyDirectionEnumType
 
 /**
  * Convert the enum EnergyDirectionEnumType to its String representation
- * @param src The source EnergyDirectionEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const EnergyDirectionEnumType &src);
+
+/**
+ * Convert the enum EnergyDirectionEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a EnergyDirectionEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination EnergyDirectionEnumType.
+ * Convert a string to a EnergyDirectionEnumType
+ */
+void convertFromString(const String &src, EnergyDirectionEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a EnergyDirectionEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst);
 
@@ -542,15 +584,21 @@ enum class EnergyModeEnumType
 
 /**
  * Convert the enum EnergyModeEnumType to its String representation
- * @param src The source EnergyModeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const EnergyModeEnumType &src);
+
+/**
+ * Convert the enum EnergyModeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const EnergyModeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a EnergyModeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination EnergyModeEnumType.
+ * Convert a string to a EnergyModeEnumType
+ */
+void convertFromString(const String &src, EnergyModeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a EnergyModeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, EnergyModeEnumType &dst);
 
@@ -658,15 +706,21 @@ enum class UnitOfMeasurementEnumType
 
 /**
  * Convert the enum UnitOfMeasurementEnumType to its String representation
- * @param src The source UnitOfMeasurementEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const UnitOfMeasurementEnumType &src);
+
+/**
+ * Convert the enum UnitOfMeasurementEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a UnitOfMeasurementEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination UnitOfMeasurementEnumType.
+ * Convert a string to a UnitOfMeasurementEnumType
+ */
+void convertFromString(const String &src, UnitOfMeasurementEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a UnitOfMeasurementEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst);
 
@@ -858,15 +912,21 @@ enum class CurrencyEnumType
 
 /**
  * Convert the enum CurrencyEnumType to its String representation
- * @param src The source CurrencyEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const CurrencyEnumType &src);
+
+/**
+ * Convert the enum CurrencyEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a CurrencyEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination CurrencyEnumType.
+ * Convert a string to a CurrencyEnumType
+ */
+void convertFromString(const String &src, CurrencyEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a CurrencyEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst);
 
@@ -966,15 +1026,21 @@ enum class ScopeTypeEnumType
 
 /**
  * Convert the enum ScopeTypeEnumType to its String representation
- * @param src The source ScopeTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ScopeTypeEnumType &src);
+
+/**
+ * Convert the enum ScopeTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ScopeTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ScopeTypeEnumType.
+ * Convert a string to a ScopeTypeEnumType
+ */
+void convertFromString(const String &src, ScopeTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ScopeTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst);
 
@@ -991,15 +1057,21 @@ enum class RoleType
 
 /**
  * Convert the enum RoleType to its String representation
- * @param src The source RoleType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const RoleType &src);
+
+/**
+ * Convert the enum RoleType to JSON (uses convertToString)
  */
 bool convertToJson(const RoleType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a RoleType 
- * @param src The JSON variant containing the string.
- * @param dst The destination RoleType.
+ * Convert a string to a RoleType
+ */
+void convertFromString(const String &src, RoleType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a RoleType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, RoleType &dst);
 
@@ -1027,15 +1099,21 @@ enum class DeviceTypeEnumType
 
 /**
  * Convert the enum DeviceTypeEnumType to its String representation
- * @param src The source DeviceTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DeviceTypeEnumType &src);
+
+/**
+ * Convert the enum DeviceTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DeviceTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DeviceTypeEnumType.
+ * Convert a string to a DeviceTypeEnumType
+ */
+void convertFromString(const String &src, DeviceTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DeviceTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst);
 
@@ -1097,15 +1175,21 @@ enum class EntityTypeEnumType
 
 /**
  * Convert the enum EntityTypeEnumType to its String representation
- * @param src The source EntityTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const EntityTypeEnumType &src);
+
+/**
+ * Convert the enum EntityTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a EntityTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination EntityTypeEnumType.
+ * Convert a string to a EntityTypeEnumType
+ */
+void convertFromString(const String &src, EntityTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a EntityTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst);
 
@@ -1151,15 +1235,21 @@ enum class FeatureTypeEnumType
 
 /**
  * Convert the enum FeatureTypeEnumType to its String representation
- * @param src The source FeatureTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureTypeEnumType &src);
+
+/**
+ * Convert the enum FeatureTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureTypeEnumType.
+ * Convert a string to a FeatureTypeEnumType
+ */
+void convertFromString(const String &src, FeatureTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst);
 
@@ -1175,15 +1265,21 @@ enum class FeatureDirectControlSpecificUsageEnumType
 
 /**
  * Convert the enum FeatureDirectControlSpecificUsageEnumType to its String representation
- * @param src The source FeatureDirectControlSpecificUsageEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureDirectControlSpecificUsageEnumType &src);
+
+/**
+ * Convert the enum FeatureDirectControlSpecificUsageEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureDirectControlSpecificUsageEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureDirectControlSpecificUsageEnumType.
+ * Convert a string to a FeatureDirectControlSpecificUsageEnumType
+ */
+void convertFromString(const String &src, FeatureDirectControlSpecificUsageEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureDirectControlSpecificUsageEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureDirectControlSpecificUsageEnumType &dst);
 
@@ -1199,15 +1295,21 @@ enum class FeatureHvacSpecificUsageEnumType
 
 /**
  * Convert the enum FeatureHvacSpecificUsageEnumType to its String representation
- * @param src The source FeatureHvacSpecificUsageEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureHvacSpecificUsageEnumType &src);
+
+/**
+ * Convert the enum FeatureHvacSpecificUsageEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureHvacSpecificUsageEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureHvacSpecificUsageEnumType.
+ * Convert a string to a FeatureHvacSpecificUsageEnumType
+ */
+void convertFromString(const String &src, FeatureHvacSpecificUsageEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureHvacSpecificUsageEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureHvacSpecificUsageEnumType &dst);
 
@@ -1227,15 +1329,21 @@ enum class FeatureMeasurementSpecificUsageEnumType
 
 /**
  * Convert the enum FeatureMeasurementSpecificUsageEnumType to its String representation
- * @param src The source FeatureMeasurementSpecificUsageEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureMeasurementSpecificUsageEnumType &src);
+
+/**
+ * Convert the enum FeatureMeasurementSpecificUsageEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureMeasurementSpecificUsageEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureMeasurementSpecificUsageEnumType.
+ * Convert a string to a FeatureMeasurementSpecificUsageEnumType
+ */
+void convertFromString(const String &src, FeatureMeasurementSpecificUsageEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureMeasurementSpecificUsageEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureMeasurementSpecificUsageEnumType &dst);
 
@@ -1255,15 +1363,21 @@ enum class FeatureSetpointSpecificUsageEnumType
 
 /**
  * Convert the enum FeatureSetpointSpecificUsageEnumType to its String representation
- * @param src The source FeatureSetpointSpecificUsageEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureSetpointSpecificUsageEnumType &src);
+
+/**
+ * Convert the enum FeatureSetpointSpecificUsageEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureSetpointSpecificUsageEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureSetpointSpecificUsageEnumType.
+ * Convert a string to a FeatureSetpointSpecificUsageEnumType
+ */
+void convertFromString(const String &src, FeatureSetpointSpecificUsageEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureSetpointSpecificUsageEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureSetpointSpecificUsageEnumType &dst);
 
@@ -1281,15 +1395,21 @@ enum class FeatureSmartEnergyManagementPsSpecificUsageEnumType
 
 /**
  * Convert the enum FeatureSmartEnergyManagementPsSpecificUsageEnumType to its String representation
- * @param src The source FeatureSmartEnergyManagementPsSpecificUsageEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src);
+
+/**
+ * Convert the enum FeatureSmartEnergyManagementPsSpecificUsageEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FeatureSmartEnergyManagementPsSpecificUsageEnumType.
+ * Convert a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType
+ */
+void convertFromString(const String &src, FeatureSmartEnergyManagementPsSpecificUsageEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FeatureSmartEnergyManagementPsSpecificUsageEnumType &dst);
 
@@ -1445,15 +1565,21 @@ enum class FunctionEnumType
 
 /**
  * Convert the enum FunctionEnumType to its String representation
- * @param src The source FunctionEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const FunctionEnumType &src);
+
+/**
+ * Convert the enum FunctionEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const FunctionEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a FunctionEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination FunctionEnumType.
+ * Convert a string to a FunctionEnumType
+ */
+void convertFromString(const String &src, FunctionEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a FunctionEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst);
 
@@ -1479,15 +1605,21 @@ enum class PowerTimeSlotValueTypeEnumType
 
 /**
  * Convert the enum PowerTimeSlotValueTypeEnumType to its String representation
- * @param src The source PowerTimeSlotValueTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const PowerTimeSlotValueTypeEnumType &src);
+
+/**
+ * Convert the enum PowerTimeSlotValueTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a PowerTimeSlotValueTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination PowerTimeSlotValueTypeEnumType.
+ * Convert a string to a PowerTimeSlotValueTypeEnumType
+ */
+void convertFromString(const String &src, PowerTimeSlotValueTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a PowerTimeSlotValueTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType &dst);
 
@@ -1504,15 +1636,21 @@ enum class PowerSequenceScopeEnumType
 
 /**
  * Convert the enum PowerSequenceScopeEnumType to its String representation
- * @param src The source PowerSequenceScopeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const PowerSequenceScopeEnumType &src);
+
+/**
+ * Convert the enum PowerSequenceScopeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a PowerSequenceScopeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination PowerSequenceScopeEnumType.
+ * Convert a string to a PowerSequenceScopeEnumType
+ */
+void convertFromString(const String &src, PowerSequenceScopeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a PowerSequenceScopeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &dst);
 
@@ -1534,15 +1672,21 @@ enum class PowerSequenceStateEnumType
 
 /**
  * Convert the enum PowerSequenceStateEnumType to its String representation
- * @param src The source PowerSequenceStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const PowerSequenceStateEnumType &src);
+
+/**
+ * Convert the enum PowerSequenceStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a PowerSequenceStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination PowerSequenceStateEnumType.
+ * Convert a string to a PowerSequenceStateEnumType
+ */
+void convertFromString(const String &src, PowerSequenceStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a PowerSequenceStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &dst);
 
@@ -1598,15 +1742,21 @@ enum class MeasurementTypeEnumType
 
 /**
  * Convert the enum MeasurementTypeEnumType to its String representation
- * @param src The source MeasurementTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MeasurementTypeEnumType &src);
+
+/**
+ * Convert the enum MeasurementTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MeasurementTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MeasurementTypeEnumType.
+ * Convert a string to a MeasurementTypeEnumType
+ */
+void convertFromString(const String &src, MeasurementTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MeasurementTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst);
 
@@ -1625,15 +1775,21 @@ enum class MeasurementValueTypeEnumType
 
 /**
  * Convert the enum MeasurementValueTypeEnumType to its String representation
- * @param src The source MeasurementValueTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MeasurementValueTypeEnumType &src);
+
+/**
+ * Convert the enum MeasurementValueTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MeasurementValueTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MeasurementValueTypeEnumType.
+ * Convert a string to a MeasurementValueTypeEnumType
+ */
+void convertFromString(const String &src, MeasurementValueTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MeasurementValueTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst);
 
@@ -1650,15 +1806,21 @@ enum class MeasurementValueSourceEnumType
 
 /**
  * Convert the enum MeasurementValueSourceEnumType to its String representation
- * @param src The source MeasurementValueSourceEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MeasurementValueSourceEnumType &src);
+
+/**
+ * Convert the enum MeasurementValueSourceEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MeasurementValueSourceEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MeasurementValueSourceEnumType.
+ * Convert a string to a MeasurementValueSourceEnumType
+ */
+void convertFromString(const String &src, MeasurementValueSourceEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MeasurementValueSourceEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst);
 
@@ -1675,15 +1837,21 @@ enum class MeasurementValueTendencyEnumType
 
 /**
  * Convert the enum MeasurementValueTendencyEnumType to its String representation
- * @param src The source MeasurementValueTendencyEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MeasurementValueTendencyEnumType &src);
+
+/**
+ * Convert the enum MeasurementValueTendencyEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MeasurementValueTendencyEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MeasurementValueTendencyEnumType.
+ * Convert a string to a MeasurementValueTendencyEnumType
+ */
+void convertFromString(const String &src, MeasurementValueTendencyEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MeasurementValueTendencyEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst);
 
@@ -1700,15 +1868,21 @@ enum class MeasurementValueStateEnumType
 
 /**
  * Convert the enum MeasurementValueStateEnumType to its String representation
- * @param src The source MeasurementValueStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MeasurementValueStateEnumType &src);
+
+/**
+ * Convert the enum MeasurementValueStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MeasurementValueStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MeasurementValueStateEnumType.
+ * Convert a string to a MeasurementValueStateEnumType
+ */
+void convertFromString(const String &src, MeasurementValueStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MeasurementValueStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst);
 
@@ -1732,15 +1906,21 @@ enum class ThresholdTypeEnumType
 
 /**
  * Convert the enum ThresholdTypeEnumType to its String representation
- * @param src The source ThresholdTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ThresholdTypeEnumType &src);
+
+/**
+ * Convert the enum ThresholdTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ThresholdTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ThresholdTypeEnumType.
+ * Convert a string to a ThresholdTypeEnumType
+ */
+void convertFromString(const String &src, ThresholdTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ThresholdTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst);
 
@@ -1755,15 +1935,21 @@ enum class BillTypeEnumType
 
 /**
  * Convert the enum BillTypeEnumType to its String representation
- * @param src The source BillTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const BillTypeEnumType &src);
+
+/**
+ * Convert the enum BillTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a BillTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination BillTypeEnumType.
+ * Convert a string to a BillTypeEnumType
+ */
+void convertFromString(const String &src, BillTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a BillTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst);
 
@@ -1779,15 +1965,21 @@ enum class BillPositionTypeEnumType
 
 /**
  * Convert the enum BillPositionTypeEnumType to its String representation
- * @param src The source BillPositionTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const BillPositionTypeEnumType &src);
+
+/**
+ * Convert the enum BillPositionTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a BillPositionTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination BillPositionTypeEnumType.
+ * Convert a string to a BillPositionTypeEnumType
+ */
+void convertFromString(const String &src, BillPositionTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a BillPositionTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst);
 
@@ -1806,15 +1998,21 @@ enum class BillCostTypeEnumType
 
 /**
  * Convert the enum BillCostTypeEnumType to its String representation
- * @param src The source BillCostTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const BillCostTypeEnumType &src);
+
+/**
+ * Convert the enum BillCostTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a BillCostTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination BillCostTypeEnumType.
+ * Convert a string to a BillCostTypeEnumType
+ */
+void convertFromString(const String &src, BillCostTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a BillCostTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst);
 
@@ -1831,15 +2029,21 @@ enum class IdentificationTypeEnumType
 
 /**
  * Convert the enum IdentificationTypeEnumType to its String representation
- * @param src The source IdentificationTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const IdentificationTypeEnumType &src);
+
+/**
+ * Convert the enum IdentificationTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a IdentificationTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination IdentificationTypeEnumType.
+ * Convert a string to a IdentificationTypeEnumType
+ */
+void convertFromString(const String &src, IdentificationTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a IdentificationTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst);
 
@@ -1855,15 +2059,21 @@ enum class SetpointTypeEnumType
 
 /**
  * Convert the enum SetpointTypeEnumType to its String representation
- * @param src The source SetpointTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const SetpointTypeEnumType &src);
+
+/**
+ * Convert the enum SetpointTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const SetpointTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a SetpointTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination SetpointTypeEnumType.
+ * Convert a string to a SetpointTypeEnumType
+ */
+void convertFromString(const String &src, SetpointTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a SetpointTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, SetpointTypeEnumType &dst);
 
@@ -1880,15 +2090,21 @@ enum class TimeSlotTimeModeEnumType
 
 /**
  * Convert the enum TimeSlotTimeModeEnumType to its String representation
- * @param src The source TimeSlotTimeModeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const TimeSlotTimeModeEnumType &src);
+
+/**
+ * Convert the enum TimeSlotTimeModeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a TimeSlotTimeModeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination TimeSlotTimeModeEnumType.
+ * Convert a string to a TimeSlotTimeModeEnumType
+ */
+void convertFromString(const String &src, TimeSlotTimeModeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a TimeSlotTimeModeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, TimeSlotTimeModeEnumType &dst);
 
@@ -1938,15 +2154,21 @@ enum class SensingStateEnumType
 
 /**
  * Convert the enum SensingStateEnumType to its String representation
- * @param src The source SensingStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const SensingStateEnumType &src);
+
+/**
+ * Convert the enum SensingStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const SensingStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a SensingStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination SensingStateEnumType.
+ * Convert a string to a SensingStateEnumType
+ */
+void convertFromString(const String &src, SensingStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a SensingStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, SensingStateEnumType &dst);
 
@@ -1976,15 +2198,21 @@ enum class SensingTypeEnumType
 
 /**
  * Convert the enum SensingTypeEnumType to its String representation
- * @param src The source SensingTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const SensingTypeEnumType &src);
+
+/**
+ * Convert the enum SensingTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const SensingTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a SensingTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination SensingTypeEnumType.
+ * Convert a string to a SensingTypeEnumType
+ */
+void convertFromString(const String &src, SensingTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a SensingTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, SensingTypeEnumType &dst);
 
@@ -2001,15 +2229,21 @@ enum class ActuatorSwitchFctEnumType
 
 /**
  * Convert the enum ActuatorSwitchFctEnumType to its String representation
- * @param src The source ActuatorSwitchFctEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ActuatorSwitchFctEnumType &src);
+
+/**
+ * Convert the enum ActuatorSwitchFctEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ActuatorSwitchFctEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ActuatorSwitchFctEnumType.
+ * Convert a string to a ActuatorSwitchFctEnumType
+ */
+void convertFromString(const String &src, ActuatorSwitchFctEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ActuatorSwitchFctEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst);
 
@@ -2027,15 +2261,21 @@ enum class NetworkManagementFeatureSetType
 
 /**
  * Convert the enum NetworkManagementFeatureSetType to its String representation
- * @param src The source NetworkManagementFeatureSetType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const NetworkManagementFeatureSetType &src);
+
+/**
+ * Convert the enum NetworkManagementFeatureSetType to JSON (uses convertToString)
  */
 bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a NetworkManagementFeatureSetType 
- * @param src The JSON variant containing the string.
- * @param dst The destination NetworkManagementFeatureSetType.
+ * Convert a string to a NetworkManagementFeatureSetType
+ */
+void convertFromString(const String &src, NetworkManagementFeatureSetType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a NetworkManagementFeatureSetType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst);
 
@@ -2052,15 +2292,21 @@ enum class NetworkManagementProcessStateStateType
 
 /**
  * Convert the enum NetworkManagementProcessStateStateType to its String representation
- * @param src The source NetworkManagementProcessStateStateType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const NetworkManagementProcessStateStateType &src);
+
+/**
+ * Convert the enum NetworkManagementProcessStateStateType to JSON (uses convertToString)
  */
 bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a NetworkManagementProcessStateStateType 
- * @param src The JSON variant containing the string.
- * @param dst The destination NetworkManagementProcessStateStateType.
+ * Convert a string to a NetworkManagementProcessStateStateType
+ */
+void convertFromString(const String &src, NetworkManagementProcessStateStateType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a NetworkManagementProcessStateStateType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateStateType &dst);
 
@@ -2077,15 +2323,21 @@ enum class NetworkManagementStateChangeType
 
 /**
  * Convert the enum NetworkManagementStateChangeType to its String representation
- * @param src The source NetworkManagementStateChangeType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const NetworkManagementStateChangeType &src);
+
+/**
+ * Convert the enum NetworkManagementStateChangeType to JSON (uses convertToString)
  */
 bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a NetworkManagementStateChangeType 
- * @param src The JSON variant containing the string.
- * @param dst The destination NetworkManagementStateChangeType.
+ * Convert a string to a NetworkManagementStateChangeType
+ */
+void convertFromString(const String &src, NetworkManagementStateChangeType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a NetworkManagementStateChangeType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst);
 
@@ -2105,15 +2357,21 @@ enum class SupplyConditionEventTypeEnumType
 
 /**
  * Convert the enum SupplyConditionEventTypeEnumType to its String representation
- * @param src The source SupplyConditionEventTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const SupplyConditionEventTypeEnumType &src);
+
+/**
+ * Convert the enum SupplyConditionEventTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a SupplyConditionEventTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination SupplyConditionEventTypeEnumType.
+ * Convert a string to a SupplyConditionEventTypeEnumType
+ */
+void convertFromString(const String &src, SupplyConditionEventTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a SupplyConditionEventTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, SupplyConditionEventTypeEnumType &dst);
 
@@ -2132,15 +2390,21 @@ enum class SupplyConditionOriginatorEnumType
 
 /**
  * Convert the enum SupplyConditionOriginatorEnumType to its String representation
- * @param src The source SupplyConditionOriginatorEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const SupplyConditionOriginatorEnumType &src);
+
+/**
+ * Convert the enum SupplyConditionOriginatorEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a SupplyConditionOriginatorEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination SupplyConditionOriginatorEnumType.
+ * Convert a string to a SupplyConditionOriginatorEnumType
+ */
+void convertFromString(const String &src, SupplyConditionOriginatorEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a SupplyConditionOriginatorEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, SupplyConditionOriginatorEnumType &dst);
 
@@ -2159,15 +2423,21 @@ enum class GridConditionEnumType
 
 /**
  * Convert the enum GridConditionEnumType to its String representation
- * @param src The source GridConditionEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const GridConditionEnumType &src);
+
+/**
+ * Convert the enum GridConditionEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const GridConditionEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a GridConditionEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination GridConditionEnumType.
+ * Convert a string to a GridConditionEnumType
+ */
+void convertFromString(const String &src, GridConditionEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a GridConditionEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, GridConditionEnumType &dst);
 
@@ -2184,15 +2454,21 @@ enum class AlarmTypeEnumType
 
 /**
  * Convert the enum AlarmTypeEnumType to its String representation
- * @param src The source AlarmTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const AlarmTypeEnumType &src);
+
+/**
+ * Convert the enum AlarmTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a AlarmTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination AlarmTypeEnumType.
+ * Convert a string to a AlarmTypeEnumType
+ */
+void convertFromString(const String &src, AlarmTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a AlarmTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst);
 
@@ -2210,15 +2486,21 @@ enum class HvacOverrunStatusEnumType
 
 /**
  * Convert the enum HvacOverrunStatusEnumType to its String representation
- * @param src The source HvacOverrunStatusEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const HvacOverrunStatusEnumType &src);
+
+/**
+ * Convert the enum HvacOverrunStatusEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a HvacOverrunStatusEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination HvacOverrunStatusEnumType.
+ * Convert a string to a HvacOverrunStatusEnumType
+ */
+void convertFromString(const String &src, HvacOverrunStatusEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a HvacOverrunStatusEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst);
 
@@ -2238,15 +2520,21 @@ enum class LoadControlEventStateEnumType
 
 /**
  * Convert the enum LoadControlEventStateEnumType to its String representation
- * @param src The source LoadControlEventStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const LoadControlEventStateEnumType &src);
+
+/**
+ * Convert the enum LoadControlEventStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a LoadControlEventStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination LoadControlEventStateEnumType.
+ * Convert a string to a LoadControlEventStateEnumType
+ */
+void convertFromString(const String &src, LoadControlEventStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a LoadControlEventStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType &dst);
 
@@ -2263,15 +2551,21 @@ enum class TaskManagementJobSourceEnumType
 
 /**
  * Convert the enum TaskManagementJobSourceEnumType to its String representation
- * @param src The source TaskManagementJobSourceEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const TaskManagementJobSourceEnumType &src);
+
+/**
+ * Convert the enum TaskManagementJobSourceEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a TaskManagementJobSourceEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination TaskManagementJobSourceEnumType.
+ * Convert a string to a TaskManagementJobSourceEnumType
+ */
+void convertFromString(const String &src, TaskManagementJobSourceEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a TaskManagementJobSourceEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobSourceEnumType &dst);
 
@@ -2289,15 +2583,21 @@ enum class HvacSystemFunctionTypeEnumType
 
 /**
  * Convert the enum HvacSystemFunctionTypeEnumType to its String representation
- * @param src The source HvacSystemFunctionTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const HvacSystemFunctionTypeEnumType &src);
+
+/**
+ * Convert the enum HvacSystemFunctionTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a HvacSystemFunctionTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination HvacSystemFunctionTypeEnumType.
+ * Convert a string to a HvacSystemFunctionTypeEnumType
+ */
+void convertFromString(const String &src, HvacSystemFunctionTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a HvacSystemFunctionTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionTypeEnumType &dst);
 
@@ -2315,15 +2615,21 @@ enum class HvacOperationModeTypeEnumType
 
 /**
  * Convert the enum HvacOperationModeTypeEnumType to its String representation
- * @param src The source HvacOperationModeTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const HvacOperationModeTypeEnumType &src);
+
+/**
+ * Convert the enum HvacOperationModeTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a HvacOperationModeTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination HvacOperationModeTypeEnumType.
+ * Convert a string to a HvacOperationModeTypeEnumType
+ */
+void convertFromString(const String &src, HvacOperationModeTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a HvacOperationModeTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, HvacOperationModeTypeEnumType &dst);
 
@@ -2347,15 +2653,21 @@ enum class HvacOverrunTypeEnumType
 
 /**
  * Convert the enum HvacOverrunTypeEnumType to its String representation
- * @param src The source HvacOverrunTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const HvacOverrunTypeEnumType &src);
+
+/**
+ * Convert the enum HvacOverrunTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a HvacOverrunTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination HvacOverrunTypeEnumType.
+ * Convert a string to a HvacOverrunTypeEnumType
+ */
+void convertFromString(const String &src, HvacOverrunTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a HvacOverrunTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, HvacOverrunTypeEnumType &dst);
 
@@ -2375,15 +2687,21 @@ enum class LoadControlEventActionEnumType
 
 /**
  * Convert the enum LoadControlEventActionEnumType to its String representation
- * @param src The source LoadControlEventActionEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const LoadControlEventActionEnumType &src);
+
+/**
+ * Convert the enum LoadControlEventActionEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a LoadControlEventActionEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination LoadControlEventActionEnumType.
+ * Convert a string to a LoadControlEventActionEnumType
+ */
+void convertFromString(const String &src, LoadControlEventActionEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a LoadControlEventActionEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, LoadControlEventActionEnumType &dst);
 
@@ -2400,15 +2718,21 @@ enum class LoadControlLimitTypeEnumType
 
 /**
  * Convert the enum LoadControlLimitTypeEnumType to its String representation
- * @param src The source LoadControlLimitTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const LoadControlLimitTypeEnumType &src);
+
+/**
+ * Convert the enum LoadControlLimitTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a LoadControlLimitTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination LoadControlLimitTypeEnumType.
+ * Convert a string to a LoadControlLimitTypeEnumType
+ */
+void convertFromString(const String &src, LoadControlLimitTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a LoadControlLimitTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst);
 
@@ -2425,15 +2749,21 @@ enum class LoadControlCategoryEnumType
 
 /**
  * Convert the enum LoadControlCategoryEnumType to its String representation
- * @param src The source LoadControlCategoryEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const LoadControlCategoryEnumType &src);
+
+/**
+ * Convert the enum LoadControlCategoryEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a LoadControlCategoryEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination LoadControlCategoryEnumType.
+ * Convert a string to a LoadControlCategoryEnumType
+ */
+void convertFromString(const String &src, LoadControlCategoryEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a LoadControlCategoryEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst);
 
@@ -2452,15 +2782,21 @@ enum class PowerSourceEnumType
 
 /**
  * Convert the enum PowerSourceEnumType to its String representation
- * @param src The source PowerSourceEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const PowerSourceEnumType &src);
+
+/**
+ * Convert the enum PowerSourceEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a PowerSourceEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination PowerSourceEnumType.
+ * Convert a string to a PowerSourceEnumType
+ */
+void convertFromString(const String &src, PowerSourceEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a PowerSourceEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst);
 
@@ -2482,15 +2818,21 @@ enum class ActuatorLevelFctEnumType
 
 /**
  * Convert the enum ActuatorLevelFctEnumType to its String representation
- * @param src The source ActuatorLevelFctEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ActuatorLevelFctEnumType &src);
+
+/**
+ * Convert the enum ActuatorLevelFctEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ActuatorLevelFctEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ActuatorLevelFctEnumType.
+ * Convert a string to a ActuatorLevelFctEnumType
+ */
+void convertFromString(const String &src, ActuatorLevelFctEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ActuatorLevelFctEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst);
 
@@ -2511,15 +2853,21 @@ enum class TimeSeriesTypeEnumType
 
 /**
  * Convert the enum TimeSeriesTypeEnumType to its String representation
- * @param src The source TimeSeriesTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const TimeSeriesTypeEnumType &src);
+
+/**
+ * Convert the enum TimeSeriesTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a TimeSeriesTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination TimeSeriesTypeEnumType.
+ * Convert a string to a TimeSeriesTypeEnumType
+ */
+void convertFromString(const String &src, TimeSeriesTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a TimeSeriesTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst);
 
@@ -2539,15 +2887,21 @@ enum class MessagingTypeEnumType
 
 /**
  * Convert the enum MessagingTypeEnumType to its String representation
- * @param src The source MessagingTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const MessagingTypeEnumType &src);
+
+/**
+ * Convert the enum MessagingTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a MessagingTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination MessagingTypeEnumType.
+ * Convert a string to a MessagingTypeEnumType
+ */
+void convertFromString(const String &src, MessagingTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a MessagingTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst);
 
@@ -2564,15 +2918,21 @@ enum class TierBoundaryTypeEnumType
 
 /**
  * Convert the enum TierBoundaryTypeEnumType to its String representation
- * @param src The source TierBoundaryTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const TierBoundaryTypeEnumType &src);
+
+/**
+ * Convert the enum TierBoundaryTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a TierBoundaryTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination TierBoundaryTypeEnumType.
+ * Convert a string to a TierBoundaryTypeEnumType
+ */
+void convertFromString(const String &src, TierBoundaryTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a TierBoundaryTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst);
 
@@ -2588,15 +2948,21 @@ enum class TierTypeEnumType
 
 /**
  * Convert the enum TierTypeEnumType to its String representation
- * @param src The source TierTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const TierTypeEnumType &src);
+
+/**
+ * Convert the enum TierTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a TierTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination TierTypeEnumType.
+ * Convert a string to a TierTypeEnumType
+ */
+void convertFromString(const String &src, TierTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a TierTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst);
 
@@ -2614,15 +2980,21 @@ enum class IncentiveTypeEnumType
 
 /**
  * Convert the enum IncentiveTypeEnumType to its String representation
- * @param src The source IncentiveTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const IncentiveTypeEnumType &src);
+
+/**
+ * Convert the enum IncentiveTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a IncentiveTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination IncentiveTypeEnumType.
+ * Convert a string to a IncentiveTypeEnumType
+ */
+void convertFromString(const String &src, IncentiveTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a IncentiveTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst);
 
@@ -2640,15 +3012,21 @@ enum class IncentiveValueTypeEnumType
 
 /**
  * Convert the enum IncentiveValueTypeEnumType to its String representation
- * @param src The source IncentiveValueTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const IncentiveValueTypeEnumType &src);
+
+/**
+ * Convert the enum IncentiveValueTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a IncentiveValueTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination IncentiveValueTypeEnumType.
+ * Convert a string to a IncentiveValueTypeEnumType
+ */
+void convertFromString(const String &src, IncentiveValueTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a IncentiveValueTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst);
 
@@ -2675,15 +3053,21 @@ enum class StateInformationFunctionalityEnumType
 
 /**
  * Convert the enum StateInformationFunctionalityEnumType to its String representation
- * @param src The source StateInformationFunctionalityEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const StateInformationFunctionalityEnumType &src);
+
+/**
+ * Convert the enum StateInformationFunctionalityEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a StateInformationFunctionalityEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination StateInformationFunctionalityEnumType.
+ * Convert a string to a StateInformationFunctionalityEnumType
+ */
+void convertFromString(const String &src, StateInformationFunctionalityEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a StateInformationFunctionalityEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, StateInformationFunctionalityEnumType &dst);
 
@@ -2715,15 +3099,21 @@ enum class StateInformationFailureEnumType
 
 /**
  * Convert the enum StateInformationFailureEnumType to its String representation
- * @param src The source StateInformationFailureEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const StateInformationFailureEnumType &src);
+
+/**
+ * Convert the enum StateInformationFailureEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a StateInformationFailureEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination StateInformationFailureEnumType.
+ * Convert a string to a StateInformationFailureEnumType
+ */
+void convertFromString(const String &src, StateInformationFailureEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a StateInformationFailureEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, StateInformationFailureEnumType &dst);
 
@@ -2739,15 +3129,21 @@ enum class StateInformationCategoryEnumType
 
 /**
  * Convert the enum StateInformationCategoryEnumType to its String representation
- * @param src The source StateInformationCategoryEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const StateInformationCategoryEnumType &src);
+
+/**
+ * Convert the enum StateInformationCategoryEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a StateInformationCategoryEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination StateInformationCategoryEnumType.
+ * Convert a string to a StateInformationCategoryEnumType
+ */
+void convertFromString(const String &src, StateInformationCategoryEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a StateInformationCategoryEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, StateInformationCategoryEnumType &dst);
 
@@ -2766,15 +3162,21 @@ enum class ElectricalConnectionMeasurandVariantEnumType
 
 /**
  * Convert the enum ElectricalConnectionMeasurandVariantEnumType to its String representation
- * @param src The source ElectricalConnectionMeasurandVariantEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionMeasurandVariantEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionMeasurandVariantEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionMeasurandVariantEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionMeasurandVariantEnumType.
+ * Convert a string to a ElectricalConnectionMeasurandVariantEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionMeasurandVariantEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionMeasurandVariantEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst);
 
@@ -2790,15 +3192,21 @@ enum class ElectricalConnectionVoltageTypeEnumType
 
 /**
  * Convert the enum ElectricalConnectionVoltageTypeEnumType to its String representation
- * @param src The source ElectricalConnectionVoltageTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionVoltageTypeEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionVoltageTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionVoltageTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionVoltageTypeEnumType.
+ * Convert a string to a ElectricalConnectionVoltageTypeEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionVoltageTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionVoltageTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst);
 
@@ -2816,15 +3224,21 @@ enum class ElectricalConnectionAcMeasurementTypeEnumType
 
 /**
  * Convert the enum ElectricalConnectionAcMeasurementTypeEnumType to its String representation
- * @param src The source ElectricalConnectionAcMeasurementTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionAcMeasurementTypeEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionAcMeasurementTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionAcMeasurementTypeEnumType.
+ * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionAcMeasurementTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
 
@@ -2848,15 +3262,21 @@ enum class ElectricalConnectionPhaseNameEnumType
 
 /**
  * Convert the enum ElectricalConnectionPhaseNameEnumType to its String representation
- * @param src The source ElectricalConnectionPhaseNameEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionPhaseNameEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionPhaseNameEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionPhaseNameEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionPhaseNameEnumType.
+ * Convert a string to a ElectricalConnectionPhaseNameEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionPhaseNameEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionPhaseNameEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst);
 
@@ -2875,15 +3295,21 @@ enum class ElectricalConnectionConnectionPointType
 
 /**
  * Convert the enum ElectricalConnectionConnectionPointType to its String representation
- * @param src The source ElectricalConnectionConnectionPointType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionConnectionPointType &src);
+
+/**
+ * Convert the enum ElectricalConnectionConnectionPointType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionConnectionPointType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionConnectionPointType.
+ * Convert a string to a ElectricalConnectionConnectionPointType
+ */
+void convertFromString(const String &src, ElectricalConnectionConnectionPointType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionConnectionPointType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionConnectionPointType &dst);
 
@@ -2902,15 +3328,21 @@ enum class ElectricalConnectionCharacteristicContextEnumType
 
 /**
  * Convert the enum ElectricalConnectionCharacteristicContextEnumType to its String representation
- * @param src The source ElectricalConnectionCharacteristicContextEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionCharacteristicContextEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionCharacteristicContextEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionCharacteristicContextEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionCharacteristicContextEnumType.
+ * Convert a string to a ElectricalConnectionCharacteristicContextEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionCharacteristicContextEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionCharacteristicContextEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst);
 
@@ -2937,15 +3369,21 @@ enum class ElectricalConnectionCharacteristicTypeEnumType
 
 /**
  * Convert the enum ElectricalConnectionCharacteristicTypeEnumType to its String representation
- * @param src The source ElectricalConnectionCharacteristicTypeEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const ElectricalConnectionCharacteristicTypeEnumType &src);
+
+/**
+ * Convert the enum ElectricalConnectionCharacteristicTypeEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination ElectricalConnectionCharacteristicTypeEnumType.
+ * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType
+ */
+void convertFromString(const String &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a ElectricalConnectionCharacteristicTypeEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
 
@@ -2969,15 +3407,21 @@ enum class DeviceDiagnosisOperatingStateEnumType
 
 /**
  * Convert the enum DeviceDiagnosisOperatingStateEnumType to its String representation
- * @param src The source DeviceDiagnosisOperatingStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DeviceDiagnosisOperatingStateEnumType &src);
+
+/**
+ * Convert the enum DeviceDiagnosisOperatingStateEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DeviceDiagnosisOperatingStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DeviceDiagnosisOperatingStateEnumType.
+ * Convert a string to a DeviceDiagnosisOperatingStateEnumType
+ */
+void convertFromString(const String &src, DeviceDiagnosisOperatingStateEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DeviceDiagnosisOperatingStateEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst);
 
@@ -2996,15 +3440,21 @@ enum class PowerSupplyConditionEnumType
 
 /**
  * Convert the enum PowerSupplyConditionEnumType to its String representation
- * @param src The source PowerSupplyConditionEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const PowerSupplyConditionEnumType &src);
+
+/**
+ * Convert the enum PowerSupplyConditionEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a PowerSupplyConditionEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination PowerSupplyConditionEnumType.
+ * Convert a string to a PowerSupplyConditionEnumType
+ */
+void convertFromString(const String &src, PowerSupplyConditionEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a PowerSupplyConditionEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst);
 
@@ -3055,15 +3505,21 @@ enum class DeviceConfigurationKeyNameEnumType
 
 /**
  * Convert the enum DeviceConfigurationKeyNameEnumType to its String representation
- * @param src The source DeviceConfigurationKeyNameEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DeviceConfigurationKeyNameEnumType &src);
+
+/**
+ * Convert the enum DeviceConfigurationKeyNameEnumType to JSON (uses convertToString)
  */
 bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DeviceConfigurationKeyNameEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DeviceConfigurationKeyNameEnumType.
+ * Convert a string to a DeviceConfigurationKeyNameEnumType
+ */
+void convertFromString(const String &src, DeviceConfigurationKeyNameEnumType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DeviceConfigurationKeyNameEnumType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst);
 
@@ -3085,15 +3541,21 @@ enum class DeviceConfigurationKeyValueTypeType
 
 /**
  * Convert the enum DeviceConfigurationKeyValueTypeType to its String representation
- * @param src The source DeviceConfigurationKeyValueTypeType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const DeviceConfigurationKeyValueTypeType &src);
+
+/**
+ * Convert the enum DeviceConfigurationKeyValueTypeType to JSON (uses convertToString)
  */
 bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a DeviceConfigurationKeyValueTypeType 
- * @param src The JSON variant containing the string.
- * @param dst The destination DeviceConfigurationKeyValueTypeType.
+ * Convert a string to a DeviceConfigurationKeyValueTypeType
+ */
+void convertFromString(const String &src, DeviceConfigurationKeyValueTypeType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a DeviceConfigurationKeyValueTypeType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst);
 
@@ -3113,15 +3575,21 @@ enum class CmdClassifierType
 
 /**
  * Convert the enum CmdClassifierType to its String representation
- * @param src The source CmdClassifierType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
+ */
+String convertToString(const CmdClassifierType &src);
+
+/**
+ * Convert the enum CmdClassifierType to JSON (uses convertToString)
  */
 bool convertToJson(const CmdClassifierType &src, JsonVariant &dst);
+
 /**
- * Convert a string to a CmdClassifierType 
- * @param src The JSON variant containing the string.
- * @param dst The destination CmdClassifierType.
+ * Convert a string to a CmdClassifierType
+ */
+void convertFromString(const String &src, CmdClassifierType &dst);
+
+/**
+ * Convert a JSON variant containing a string to a CmdClassifierType (uses convertFromString)
  */
 void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst);
 

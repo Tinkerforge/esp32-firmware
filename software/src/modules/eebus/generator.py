@@ -551,34 +551,65 @@ def process_schema(xml_schema):
                 new_type = Spine_type("enum", enum_type_name, "")
                 # create enum and function headers
                 new_type.code = f"/**\n* Datatype {enum_type_name} as defined in {simple_type.schema.name}\n*/\nenum class {enum_type_name} {{\n"
-                new_type.to_json_code = f"""bool convertToJson(const {enum_type_name} &src, JsonVariant& dst) {{\n\tString enumName;\n\tswitch(src) {{\n"""
-                new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst) {{\n"""
-
+                # Prepare enumeration list and ensure undefined entry
                 enum_variable_name = ""
                 enum_list = simple_type.enumeration
                 enum_undefined_name = "EnumUndefined"
                 enum_list.append(enum_undefined_name)
                 enum_list = list(dict.fromkeys(enum_list))
 
+                # Build enum members and implementors
+                # We'll generate:
+                # - String convertToString(const Enum &src);
+                # - bool convertToJson(const Enum &src, JsonVariant& dst);  // uses convertToString
+                # - void convertFromString(const String &src, Enum &dst);
+                # - void convertFromJson(const JsonVariantConst& src, Enum &dst); // uses convertFromString
+
+                # Build the enum members
                 for enumeration in enum_list:
                     enum_string_name = str(enumeration)
                     enum_variable_name = make_variable_name(enum_string_name)
                     if enum_string_name == enum_undefined_name:
                         new_type.code += "\t" + enum_variable_name + ", // This is not part of the spec but its needed for error handling\n"
-                        new_type.to_json_code += f"""\tdefault:\n\t\t enumName = "{enum_string_name}";\n\t\tbreak;\n"""
-                        new_type.from_json_code += f"""\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn; \n\t}}\n"""
-
                     else:
                         new_type.code += "\t" + enum_variable_name + ",\n"
-                        new_type.to_json_code += f"""\tcase {enum_type_name}::{enum_variable_name}:\n\t\t enumName = "{enum_string_name}";\n\t\tbreak;\n"""
-                        new_type.from_json_code += f"""\tif (src == "{enum_string_name}") {{\n\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn;\n\t}}\n"""
 
-                new_type.to_json_code += "\t} \n\treturn dst.set(enumName);\n}\n"
-                #new_type.from_json_code += f"""\t return;\n}}\n"""
                 new_type.code += "};\n"
-                new_type.code += f"""/**\n * Convert the enum {enum_type_name} to its String representation\n * @param src The source {enum_type_name} value to convert.\n * @param dst The destination JsonVariant where the string will be stored.\n * @return true if the conversion was successful, false otherwise.\n */\nbool convertToJson(const {enum_type_name} &src, JsonVariant& dst);\n"""
-                new_type.code += f"""/**\n * Convert a string to a {enum_type_name} \n * @param src The JSON variant containing the string.\n * @param dst The destination {enum_type_name}.\n */\nvoid convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);\n\n"""
+
+                # Prototypes (header)
+                new_type.code += f"""/**\n * Convert the enum {enum_type_name} to its String representation\n */\nString convertToString(const {enum_type_name} &src);\n\n/**\n * Convert the enum {enum_type_name} to JSON (uses convertToString)\n */\nbool convertToJson(const {enum_type_name} &src, JsonVariant& dst);\n\n/**\n * Convert a string to a {enum_type_name}\n */\nvoid convertFromString(const String &src, {enum_type_name} &dst);\n\n/**\n * Convert a JSON variant containing a string to a {enum_type_name} (uses convertFromString)\n */\nvoid convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);\n\n"""
+
+                # Implementation: convertToString + convertToJson
+                to_string_impl = f"String convertToString(const {enum_type_name} &src) {{\n\tswitch(src) {{\n"
+                for enumeration in enum_list:
+                    enum_string_name = str(enumeration)
+                    enum_variable_name = make_variable_name(enum_string_name)
+                    if enum_string_name == enum_undefined_name:
+                        # default handled after loop
+                        continue
+                    to_string_impl += f"\tcase {enum_type_name}::{enum_variable_name}:\n\t\treturn \"{enum_string_name}\";\n"
+                # default -> EnumUndefined
+                undefined_var = make_variable_name(enum_undefined_name)
+                to_string_impl += f"\tdefault:\n\t\treturn \"{enum_undefined_name}\";\n\t}}\n}}\n\n"
+                to_json_impl = f"bool convertToJson(const {enum_type_name} &src, JsonVariant& dst) {{\n\treturn dst.set(convertToString(src));\n}}\n\n"
+                new_type.to_json_code = to_string_impl + to_json_impl
+
+                # Implementation: convertFromString + convertFromJson
+                from_string_impl = f"void convertFromString(const String &src, {enum_type_name} &dst) {{\n"
+                for enumeration in enum_list:
+                    enum_string_name = str(enumeration)
+                    enum_variable_name = make_variable_name(enum_string_name)
+                    if enum_string_name == enum_undefined_name:
+                        continue
+                    from_string_impl += f"\tif (src == \"{enum_string_name}\") {{\n\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn;\n\t}}\n"
+                # fallback -> EnumUndefined
+                from_string_impl += f"\tdst = {enum_type_name}::{undefined_var};\n}}\n\n"
+                # convertFromJson uses as<const char*> to get string and then calls convertFromString
+                from_json_impl = f"void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst) {{\n\tString s = src.as<const char*>();\n\tconvertFromString(s, dst);\n}}\n\n"
+                new_type.from_json_code = from_string_impl + from_json_impl
+
                 cpp_datatypes.append(new_type)
+
             # Using
             elif hasattr(simple_type, 'base_type'):
                 new_type = Spine_type("using", remove_namespace(simple_type.name), "")
