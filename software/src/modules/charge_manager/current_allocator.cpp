@@ -409,6 +409,13 @@ void sort_chargers_impl(group_fn group, compare_fn compare, const StageContext &
 }
 
 GridPhase get_phase(PhaseRotation rot, ChargerPhase phase) {
+    if (rot == PhaseRotation::Unknown) {
+#ifdef DEBUG_FS_ENABLE
+        esp_system_abort("Attempted to get phase from unknown rotation");
+#endif
+        logger.printfln("BUG: Attempted to get phase from unknown rotation");
+        return (GridPhase)phase;
+    }
     return (GridPhase)(((int)rot >> (6 - 2 * (int)phase)) & 0x3);
 }
 
@@ -1824,11 +1831,11 @@ static int current_capacity(const StageContext &sc, const CurrentLimits *limits,
 
     if (allocated_phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
         min_phase = limits->raw.min_phase();
-    }
-
-    for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
-        auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
-        min_phase = std::min(min_phase, limits->raw[phase]);
+    } else {
+        for (size_t i = (size_t)ChargerPhase::P1; i < (size_t)ChargerPhase::P1 + allocated_phases; ++i) {
+            auto phase = get_phase(state->phase_rotation, (ChargerPhase)i);
+            min_phase = std::min(min_phase, limits->raw[phase]);
+        }
     }
 
     if (min_phase < capacity) {
