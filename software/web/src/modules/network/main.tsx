@@ -260,6 +260,25 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
         const cert_state = API.get_unchecked('certs/state');
         const certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name] as [string, string]);
 
+        let show_transport_mode;
+//#if OPTIONS_WEB_SERVER_HTTPS_ENABLED
+//#if OPTIONS_WEB_SERVER_HTTP_ENABLED
+        // Both enabled
+        show_transport_mode = true;
+//#else
+        // HTTPS on, HTTP off
+        show_transport_mode = state.transport_mode != TransportMode.Secure;
+//#endif
+//#else
+//#if OPTIONS_WEB_SERVER_HTTP_ENABLED
+        // HTTPS off, HTTP on
+        show_transport_mode = state.transport_mode != TransportMode.Insecure;
+//#else
+        // HTTPS off, HTTP off (can't happen)
+        show_transport_mode = false;
+//#endif
+//#endif
+
         return (
             <SubPage name="network">
                 <ConfigForm id="network_config_form"
@@ -285,21 +304,19 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
                                 onClick={this.toggle('enable_mdns')}/>
                     </FormRow>
 
-{/*#if OPTIONS_WEB_SERVER_HTTPS_ENABLED*/}
-{/*#if OPTIONS_WEB_SERVER_HTTP_ENABLED*/}
-                    <FormRow label={__("network.content.transport_mode")}>
-                        <InputSelect
-                            items={[
-                                [TransportMode.Insecure.toString(),          __("network.content.insecure")],
-                                [TransportMode.Secure.toString(),            __("network.content.secure")],
-                                [TransportMode.InsecureAndSecure.toString(), __("network.content.insecure_and_secure")],
-                            ]}
-                            value={state.transport_mode}
-                            onValue={(v) => this.setState({transport_mode: parseInt(v)})}
-                        />
-                    </FormRow>
-{/*#endif*/}
-{/*#endif*/}
+                    {show_transport_mode ?
+                        <FormRow label={__("network.content.transport_mode")}>
+                            <InputSelect
+                                items={[
+                                    [TransportMode.Insecure.toString(),          __("network.content.insecure")],
+                                    [TransportMode.Secure.toString(),            __("network.content.secure")],
+                                    [TransportMode.InsecureAndSecure.toString(), __("network.content.insecure_and_secure")],
+                                ]}
+                                value={state.transport_mode}
+                                onValue={(v) => this.setState({transport_mode: parseInt(v)})}
+                            />
+                        </FormRow>
+                    : undefined}
 
                     <Collapse in={state.transport_mode != TransportMode.Secure}>
                         <div>
