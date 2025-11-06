@@ -84,6 +84,7 @@ static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
 #endif
 }
 
+#if HTTPS_AVAILABLE()
 static bool load_certs_with_fallback(httpd_ssl_config_t *ssl_config, const cert_load_info *load_info, Cert *cert)
 {
     if (!cert->load_external_with_internal_fallback(load_info)) {
@@ -97,6 +98,7 @@ static bool load_certs_with_fallback(httpd_ssl_config_t *ssl_config, const cert_
 
     return true;
 }
+#endif
 
 void WebServer::post_setup()
 {
@@ -188,7 +190,6 @@ void WebServer::post_setup()
         listen_port_handlers[ssl_configs_used] = default_handlers;
         ssl_configs_used++;
     }
-#endif // HTTPS_AVAILABLE()
 
     while (extra_ports != nullptr) {
         WebServerExtraPortData *extra_port = extra_ports;
@@ -204,7 +205,6 @@ void WebServer::post_setup()
                     ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
                     ssl_config->port_insecure = extra_port->port;
                 } else {
-#if HTTPS_AVAILABLE()
                     ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
                     ssl_config->port_secure = extra_port->port;
 
@@ -212,10 +212,6 @@ void WebServer::post_setup()
                         logger.printfln("Cannot listen on extra port %hu: Failed to load certificate", extra_port->port);
                         break;
                     }
-#else
-                    logger.printfln("Cannot listen on extra port %hu: HTTPS requested but not available", extra_port->port);
-                    break;
-#endif
                 }
 
                 listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
@@ -237,6 +233,9 @@ void WebServer::post_setup()
         extra_port->next = nullptr;
         free(extra_port);
     }
+#else // HTTPS_AVAILABLE()
+    listen_port_handlers[0] = default_handlers;
+#endif // HTTPS_AVAILABLE()
 
     // === Basic httpd config ===
 
