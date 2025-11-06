@@ -661,7 +661,7 @@ export function timestamp_sec_to_date(timestamp_seconds: number, unsynced_string
     return timestamp_to_date(timestamp_seconds * 1000, {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 
-export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
+export function upload(data: Blob | ArrayBuffer, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
     const xhr = new XMLHttpRequest();
     progress(0);
 

@@ -105,7 +105,9 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
 
     async checkFirmware(f: File) {
         try {
-            await util.upload(f.slice(0xd000 - 0x1000, 0xd000), "check_firmware", () => {})
+            // The arrayBuffer function needs to be called to get a deep copy of the file data
+            // since Safari sends the unsliced buffer to the ServiceWorker of the remote-access otherwise.
+            await util.upload(await f.slice(0xd000 - 0x1000, 0xd000).arrayBuffer(), "check_firmware", () => {});
         }
         catch (error) {
             let message = "";
