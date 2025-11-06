@@ -27,14 +27,12 @@
 #include <esp_http_server.h>
 #include <TFJson.h>
 
-#include "tools/malloc.h"
 #include "cert.h"
+#include "transport_mode.enum.h"
 
 #include "module.h"
+#include "tools/malloc.h"
 #include "tools/string_builder.h"
-
-// The enum from the header can be used even if the Network module is not included.
-#include "modules/network/transport_mode.enum.h"
 
 constexpr size_t WEB_SERVER_MAX_PORTS = 3;
 static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);

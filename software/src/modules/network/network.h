@@ -22,7 +22,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/event/event_result.h"
-#include "transport_mode.enum.h"
+#include "../web_server/transport_mode.enum.h"
 
 class Network final : public IModule
 {

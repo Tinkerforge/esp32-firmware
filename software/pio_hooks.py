@@ -1077,7 +1077,7 @@ def main():
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)
 
-    frontend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
+    frontend_modules = [util.FlavoredName(x).get() for x in ['Web Server'] + env.GetProjectOption("custom_frontend_modules").splitlines()]
 
     if nightly:
         for frontend_module in frontend_modules:

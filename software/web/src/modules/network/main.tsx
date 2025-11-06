@@ -36,7 +36,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Collapse } from "react-bootstrap";
 import { Settings } from "react-feather";
 import { useEffect } from "preact/hooks";
-import { TransportMode } from "./transport_mode.enum";
+import { TransportMode } from "../web_server/transport_mode.enum";
 
 export function NetworkNavbar() {
     return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Settings />} />;

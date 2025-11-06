@@ -30,6 +30,7 @@
 
 #include "gcc_warnings.h"
 
+#if MODULE_CERTS_AVAILABLE()
 bool Cert::load_external(const cert_load_info *load_info)
 {
     if (load_info->cert_id < 0 || load_info->cert_id > std::numeric_limits<uint8_t>::max() ||
@@ -37,7 +38,6 @@ bool Cert::load_external(const cert_load_info *load_info)
             return false;
     }
 
-#if MODULE_CERTS_AVAILABLE()
     size_t cert_crt_len = 0;
     crt = certs.get_cert(static_cast<uint8_t>(load_info->cert_id), &cert_crt_len);
     if (crt == nullptr) {
@@ -58,10 +58,14 @@ bool Cert::load_external(const cert_load_info *load_info)
     key_length = static_cast<uint16_t>(cert_key_len);
 
     return true;
-#else
-    return false;
-#endif
 }
+#else
+[[gnu::const]]
+bool Cert::load_external(const cert_load_info *load_info)
+{
+    return false;
+}
+#endif
 
 bool Cert::load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, uint16_t *length)
 {
