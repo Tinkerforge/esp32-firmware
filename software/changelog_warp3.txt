@@ -397,6 +397,6 @@
 - Fix publishing deprecated object_id on Home Assistant MQTT discovery topics
 - Increase default phase switch wait time to 60 seconds (through EVSE 2.0 Bricklet firmware 2.2.18)
 
-2025-11-06: 2.8.13 (<unknown>)
+2025-11-06: 2.8.13 (1a602778)
 - Fix wrong charge manager allocations when phase rotation is not configured
 - Work around Safari bug breaking firmware updates via remote access
