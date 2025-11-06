@@ -1,0 +1,57 @@
+From c3e3a66cf6573a9a05a5dc4f2dfbee085e964ed3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Thu, 16 Oct 2025 19:49:49 +0200
+Subject: [PATCH] mbedtls: Replace #include_next with relative paths
+
+The GCC extension #include_next will always cause a warning that cannot be suppressed, so any build using -Werror will fail.
+Replace all #include_next and instead of searching for the next occurrence of the desired header, include it directly via a relative path.
+
+This might not be portable, but it works reliable for our use-case.
+---
+ components/mbedtls/port/include/mbedtls/bignum.h | 2 +-
+ components/mbedtls/port/include/mbedtls/ecp.h    | 2 +-
+ components/mbedtls/port/include/mbedtls/gcm.h    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/components/mbedtls/port/include/mbedtls/bignum.h b/components/mbedtls/port/include/mbedtls/bignum.h
+index 4f84bed740..59c48340f5 100644
+--- a/components/mbedtls/port/include/mbedtls/bignum.h
++++ b/components/mbedtls/port/include/mbedtls/bignum.h
+@@ -5,7 +5,7 @@
+  */
+ #pragma once
+ 
+-#include_next "mbedtls/bignum.h"
++#include "../../../mbedtls/include/mbedtls/bignum.h"
+ #include "sdkconfig.h"
+ 
+ /**
+diff --git a/components/mbedtls/port/include/mbedtls/ecp.h b/components/mbedtls/port/include/mbedtls/ecp.h
+index 28ccd5c79c..a9d24efbe2 100644
+--- a/components/mbedtls/port/include/mbedtls/ecp.h
++++ b/components/mbedtls/port/include/mbedtls/ecp.h
+@@ -5,7 +5,7 @@
+  */
+ #pragma once
+ 
+-#include_next "mbedtls/ecp.h"
++#include "../../../mbedtls/include/mbedtls/ecp.h"
+ #include "sdkconfig.h"
+ 
+ #ifdef __cplusplus
+diff --git a/components/mbedtls/port/include/mbedtls/gcm.h b/components/mbedtls/port/include/mbedtls/gcm.h
+index d50527d4df..e5af895edc 100644
+--- a/components/mbedtls/port/include/mbedtls/gcm.h
++++ b/components/mbedtls/port/include/mbedtls/gcm.h
+@@ -5,7 +5,7 @@
+  */
+ #pragma once
+ 
+-#include_next "mbedtls/gcm.h"
++#include "../../../mbedtls/include/mbedtls/gcm.h"
+ #include "sdkconfig.h"
+ 
+ #ifdef __cplusplus
+-- 
+2.47.3
+

@@ -51,12 +51,12 @@ index b35d8c1b3e..4b3cbb0216 100644
 -    { 0x3FFF0000, 0x8000, SOC_MEMORY_TYPE_DIRAM,    0x400A8000,true},  //pool 7 <- can be used for MAC dump
 -    { 0x3FFF8000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0x400A4000,true},  //pool 6 blk 1 <- can be used as trace memory
 -    { 0x3FFFC000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0x400A0000,true},  //pool 6 blk 0 <- can be used as trace memory
-+    { 0x3FFE0000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 9 blk 1
-+    { 0x3FFE4000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 9 blk 0
-+    { 0x3FFE8000, 0x8000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 8 <- can be remapped to ROM, used for MAC dump
-+    { 0x3FFF0000, 0x8000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 7 <- can be used for MAC dump
-+    { 0x3FFF8000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 6 blk 1 <- can be used as trace memory
-+    { 0x3FFFC000, 0x4000, SOC_MEMORY_TYPE_DIRAM,    0,         true},  //pool 6 blk 0 <- can be used as trace memory
++    { 0x3FFE0000, 0x4000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 9 blk 1
++    { 0x3FFE4000, 0x4000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 9 blk 0
++    { 0x3FFE8000, 0x8000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 8 <- can be remapped to ROM, used for MAC dump
++    { 0x3FFF0000, 0x8000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 7 <- can be used for MAC dump
++    { 0x3FFF8000, 0x4000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 6 blk 1 <- can be used as trace memory
++    { 0x3FFFC000, 0x4000, SOC_MEMORY_TYPE_DRAM,     0,         true},  //pool 6 blk 0 <- can be used as trace memory
      { 0x40070000, 0x8000, SOC_MEMORY_TYPE_IRAM,     0,         false}, //pool 0
      { 0x40078000, 0x8000, SOC_MEMORY_TYPE_IRAM,     0,         false}, //pool 1
      { 0x40080000, 0x2000, SOC_MEMORY_TYPE_IRAM,     0,         false}, //pool 2-5, mmu page 0

@@ -1,7 +1,7 @@
 From bd46e676148d743e5f61addd7db5d2a63be53d65 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
 Date: Thu, 10 Oct 2024 16:18:04 +0200
-Subject: [PATCH] dns: Enforce a minimum TTL of 30s
+Subject: [PATCH] dns: Enforce a minimum TTL of 5s
 
 ---
  src/core/dns.c | 20 ++++++++------------
@@ -27,12 +27,12 @@ index 7afeb489..2be6e374 100644
 -      /* entry reused during callback? */
 -      ip_addr_set_zero(&entry->ipaddr[i]);
 -      entry->ipaddr_cnt--;
-+  /* Enforce a minimum TTL of 30s to avoid excessive DNS queries in certain
-+     workloads. This is not recommended in RFC 1035, but 30s should be
++  /* Enforce a minimum TTL of 5s to avoid excessive DNS queries in certain
++     workloads. This is not recommended in RFC 1035, but 5s should be
 +     short enough for this to be safe. */
 +  for (i=0; i<entry->ipaddr_cnt; i++) {
-+    if (entry->ttl[i] < 30) {
-+      entry->ttl[i] = 30;
++    if (entry->ttl[i] < 5) {
++      entry->ttl[i] = 5;
      }
    }
  

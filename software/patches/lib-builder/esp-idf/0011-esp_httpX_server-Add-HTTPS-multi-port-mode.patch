@@ -1,0 +1,636 @@
+From c84ea413be0eea4ae98c535596cf883c0fc46cf7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Thu, 6 Nov 2025 16:44:15 +0100
+Subject: [PATCH] esp_httpX_server: Add HTTPS multi-port mode
+
+---
+ .../esp_http_server/include/esp_http_server.h |   9 +-
+ .../esp_http_server/src/esp_httpd_priv.h      |   5 +-
+ components/esp_http_server/src/httpd_main.c   | 172 +++++++++++-------
+ components/esp_http_server/src/httpd_sess.c   |  19 +-
+ .../include/esp_https_server.h                |  11 +-
+ .../esp_https_server/src/https_server.c       | 138 +++++++++-----
+ 6 files changed, 233 insertions(+), 121 deletions(-)
+
+diff --git a/components/esp_http_server/include/esp_http_server.h b/components/esp_http_server/include/esp_http_server.h
+index 708dd019c0..baf1f4a3b6 100644
+--- a/components/esp_http_server/include/esp_http_server.h
++++ b/components/esp_http_server/include/esp_http_server.h
+@@ -22,6 +22,7 @@ extern "C" {
+ #endif
+ 
+ #define ESP_HTTPD_DEF_CTRL_PORT         (32768)    /*!< HTTP Server control socket port*/
++#define ESP_HTTPD_LISTEN_PORTS          (3)
+ 
+ ESP_EVENT_DECLARE_BASE(ESP_HTTP_SERVER_EVENT);
+ 
+@@ -51,6 +52,7 @@ note: esp_https_server.h includes a customized copy of this
+ initializer that should be kept in sync
+ */
+ #define HTTPD_DEFAULT_CONFIG() {                        \
++        .server_ports       = {},                       \
+         .task_priority      = tskIDLE_PRIORITY+5,       \
+         .stack_size         = 4096,                     \
+         .core_id            = tskNO_AFFINITY,           \
+@@ -134,8 +136,9 @@ typedef void (*httpd_free_ctx_fn_t)(void *ctx);
+  *  - ESP_OK   : On success
+  *  - Any value other than ESP_OK will signal the server to close the socket immediately
+  */
+-typedef esp_err_t (*httpd_open_func_t)(httpd_handle_t hd, int sockfd);
++typedef esp_err_t (*httpd_open_func_t)(httpd_handle_t hd, int sockfd, size_t listen_index);
+ 
++struct sock_db;
+ /**
+  * @brief  Function prototype for closing a session.
+  *
+@@ -145,7 +148,7 @@ typedef esp_err_t (*httpd_open_func_t)(httpd_handle_t hd, int sockfd);
+  * @param[in] hd   server instance
+  * @param[in] sockfd   session socket file descriptor
+  */
+-typedef void (*httpd_close_func_t)(httpd_handle_t hd, int sockfd);
++typedef void (*httpd_close_func_t)(httpd_handle_t hd, struct sock_db *session);
+ 
+ /**
+  * @brief  Function prototype for URI matching.
+@@ -170,6 +173,8 @@ typedef bool (*httpd_uri_match_func_t)(const char *reference_uri,
+  *          specifically determined by the use case.
+  */
+ typedef struct httpd_config {
++    uint16_t    server_ports[ESP_HTTPD_LISTEN_PORTS];
++
+     unsigned    task_priority;      /*!< Priority of FreeRTOS task which runs the server */
+     size_t      stack_size;         /*!< The maximum stack size allowed for the server task */
+     BaseType_t  core_id;            /*!< The core the HTTP server task will run on */
+diff --git a/components/esp_http_server/src/esp_httpd_priv.h b/components/esp_http_server/src/esp_httpd_priv.h
+index 54c6923c6d..15eaf315f8 100644
+--- a/components/esp_http_server/src/esp_httpd_priv.h
++++ b/components/esp_http_server/src/esp_httpd_priv.h
+@@ -79,6 +79,7 @@ struct sock_db {
+     httpd_pending_func_t pending_fn;        /*!< Pending function for this socket */
+     uint64_t lru_counter;                   /*!< LRU Counter indicating when the socket was last used */
+     bool lru_socket;                        /*!< Flag indicating LRU socket */
++    size_t listen_port_index;
+     char pending_data[PARSER_BLOCK_SIZE];   /*!< Buffer for pending data to be received */
+     size_t pending_len;                     /*!< Length of pending data to be received */
+     bool for_async_req;                     /*!< If true, the socket will not be LRU purged */
+@@ -127,7 +128,7 @@ struct httpd_req_aux {
+  */
+ struct httpd_data {
+     httpd_config_t config;                  /*!< HTTPD server configuration */
+-    int listen_fd;                          /*!< Server listener FD */
++    int listen_fds[ESP_HTTPD_LISTEN_PORTS]; /*!< Server listener FD */
+     int ctrl_fd;                            /*!< Ctrl message receiver FD */
+ #if CONFIG_HTTPD_QUEUE_WORK_BLOCKING
+     SemaphoreHandle_t ctrl_sock_semaphore;  /*!< Ctrl socket semaphore */
+@@ -218,7 +219,7 @@ void httpd_sess_init(struct httpd_data *hd);
+  *  - ESP_OK   : on successfully queuing the work
+  *  - ESP_FAIL : in case of control socket error while sending
+  */
+-esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd);
++esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd, int listen_fd);
+ 
+ /**
+  * @brief   Processes incoming HTTP requests
+diff --git a/components/esp_http_server/src/httpd_main.c b/components/esp_http_server/src/httpd_main.c
+index 943075317f..3720f67d0f 100644
+--- a/components/esp_http_server/src/httpd_main.c
++++ b/components/esp_http_server/src/httpd_main.c
+@@ -121,7 +121,7 @@ static esp_err_t httpd_accept_conn(struct httpd_data *hd, int listen_fd)
+         }
+ #endif // __APPLE__
+     }
+-    if (ESP_OK != httpd_sess_new(hd, new_fd)) {
++    if (ESP_OK != httpd_sess_new(hd, new_fd, listen_fd)) {
+         ESP_LOGE(TAG, LOG_FMT("session creation failed"));
+         goto exit;
+     }
+@@ -267,19 +267,29 @@ static esp_err_t httpd_server(struct httpd_data *hd)
+ {
+     fd_set read_set;
+     FD_ZERO(&read_set);
++
++    FD_SET(hd->ctrl_fd, &read_set);
++    int maxfd = hd->ctrl_fd;
++
+     if (hd->config.lru_purge_enable || httpd_is_sess_available(hd)) {
+         /* Only listen for new connections if server has capacity to
+          * handle more (or when LRU purge is enabled, in which case
+          * older connections will be closed) */
+-        FD_SET(hd->listen_fd, &read_set);
++
++        for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++            const int listen_fd = hd->listen_fds[i];
++
++            if (listen_fd >= 0) {
++                FD_SET(listen_fd, &read_set);
++
++                maxfd = MAX(maxfd, listen_fd);
++            }
++        }
+     }
+-    FD_SET(hd->ctrl_fd, &read_set);
+ 
+-    int tmp_max_fd;
+-    httpd_sess_set_descriptors(hd, &read_set, &tmp_max_fd);
+-    int maxfd = MAX(hd->listen_fd, tmp_max_fd);
+-    tmp_max_fd = maxfd;
+-    maxfd = MAX(hd->ctrl_fd, tmp_max_fd);
++    int sess_max_fd;
++    httpd_sess_set_descriptors(hd, &read_set, &sess_max_fd);
++    maxfd = MAX(maxfd, sess_max_fd);
+ 
+     ESP_LOGD(TAG, LOG_FMT("doing select maxfd+1 = %d"), maxfd + 1);
+     int active_cnt = select(maxfd + 1, &read_set, NULL, NULL, NULL);
+@@ -309,10 +319,16 @@ static esp_err_t httpd_server(struct httpd_data *hd)
+ 
+     /* Case2: Do we have any incoming connection requests to
+      * process? */
+-    if (FD_ISSET(hd->listen_fd, &read_set)) {
+-        ESP_LOGD(TAG, LOG_FMT("processing listen socket %d"), hd->listen_fd);
+-        if (httpd_accept_conn(hd, hd->listen_fd) != ESP_OK) {
+-            ESP_LOGW(TAG, LOG_FMT("error accepting new connection"));
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        const int listen_fd = hd->listen_fds[i];
++
++        if (listen_fd >= 0) {
++            if (FD_ISSET(listen_fd, &read_set)) {
++                ESP_LOGD(TAG, LOG_FMT("processing listen socket %d"), listen_fd);
++                if (httpd_accept_conn(hd, listen_fd) != ESP_OK) {
++                    ESP_LOGW(TAG, LOG_FMT("error accepting new connection"));
++                }
++            }
+         }
+     }
+     return ESP_OK;
+@@ -337,80 +353,114 @@ static void httpd_thread(void *arg)
+     close(hd->msg_fd);
+     cs_free_ctrl_sock(hd->ctrl_fd);
+     httpd_sess_close_all(hd);
+-    close(hd->listen_fd);
++
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        int listen_fd = hd->listen_fds[i];
++
++        if (listen_fd >= 0) {
++            close(listen_fd);
++        }
++    }
++
+     hd->hd_td.status = THREAD_STOPPED;
+     httpd_os_thread_delete();
+ }
+ 
+ static esp_err_t httpd_server_init(struct httpd_data *hd)
+ {
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        hd->listen_fds[i] = -1;
++    }
++    hd->ctrl_fd = -1;
++    hd->msg_fd = -1;
++
++    if (hd->config.server_port != 0) {
++        hd->config.server_ports[0] = hd->config.server_port;
++        hd->config.server_port = 0;
++
++        for (size_t i = 1; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++            hd->config.server_ports[i] = 0;
++        }
++    }
++
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        const uint16_t server_port = hd->config.server_ports[i];
++
++        if (server_port == 0) {
++            continue;
++        }
+ #if CONFIG_LWIP_IPV6
+-    int fd = socket(PF_INET6, SOCK_STREAM, 0);
++        int fd = socket(PF_INET6, SOCK_STREAM, 0);
+ #else
+-    int fd = socket(PF_INET, SOCK_STREAM, 0);
++        int fd = socket(PF_INET, SOCK_STREAM, 0);
+ #endif
+-    if (fd < 0) {
+-        ESP_LOGE(TAG, LOG_FMT("error in socket (%d)"), errno);
+-        return ESP_FAIL;
+-    }
+-#if CONFIG_LWIP_IPV6
+-    struct in6_addr inaddr_any = IN6ADDR_ANY_INIT;
+-    struct sockaddr_in6 serv_addr = {
+-        .sin6_family  = PF_INET6,
+-        .sin6_addr    = inaddr_any,
+-        .sin6_port    = htons(hd->config.server_port)
+-    };
++        if (fd < 0) {
++            ESP_LOGE(TAG, LOG_FMT("error in socket (%d)"), errno);
++            goto err_out;
++        }
++        hd->listen_fds[i] = fd;
++
++        #if CONFIG_LWIP_IPV6
++        struct in6_addr inaddr_any = IN6ADDR_ANY_INIT;
++        struct sockaddr_in6 serv_addr = {
++            .sin6_family  = PF_INET6,
++            .sin6_addr    = inaddr_any,
++            .sin6_port    = htons(server_port)
++        };
+ #else
+-    struct sockaddr_in serv_addr = {
+-        .sin_family   = PF_INET,
+-        .sin_addr     = {
+-            .s_addr = htonl(INADDR_ANY)
+-        },
+-        .sin_port     = htons(hd->config.server_port)
+-    };
++        struct sockaddr_in serv_addr = {
++            .sin_family   = PF_INET,
++            .sin_addr     = {
++                .s_addr = htonl(INADDR_ANY)
++            },
++            .sin_port     = htons(hd->config.server_port)
++        };
+ #endif
+-    /* Enable SO_REUSEADDR to allow binding to the same
+-     * address and port when restarting the server */
+-    int enable = 1;
+-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
+-        /* This will fail if CONFIG_LWIP_SO_REUSE is not enabled. But
+-         * it does not affect the normal working of the HTTP Server */
+-        ESP_LOGW(TAG, LOG_FMT("error in setsockopt SO_REUSEADDR (%d)"), errno);
+-    }
+-
+-    int ret = bind(fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+-    if (ret < 0) {
+-        ESP_LOGE(TAG, LOG_FMT("error in bind (%d)"), errno);
+-        close(fd);
+-        return ESP_FAIL;
+-    }
++        /* Enable SO_REUSEADDR to allow binding to the same
++        * address and port when restarting the server */
++        int enable = 1;
++        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
++            /* This will fail if CONFIG_LWIP_SO_REUSE is not enabled. But
++            * it does not affect the normal working of the HTTP Server */
++            ESP_LOGW(TAG, LOG_FMT("error in setsockopt SO_REUSEADDR (%d)"), errno);
++        }
+ 
+-    ret = listen(fd, hd->config.backlog_conn);
+-    if (ret < 0) {
+-        ESP_LOGE(TAG, LOG_FMT("error in listen (%d)"), errno);
+-        close(fd);
+-        return ESP_FAIL;
++        int ret = bind(fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
++        if (ret < 0) {
++            ESP_LOGE(TAG, LOG_FMT("error in bind (%d)"), errno);
++            goto err_out;
++        }
++
++        ret = listen(fd, hd->config.backlog_conn);
++        if (ret < 0) {
++            ESP_LOGE(TAG, LOG_FMT("error in listen (%d)"), errno);
++            goto err_out;
++        }
+     }
+ 
+     int ctrl_fd = cs_create_ctrl_sock(hd->config.ctrl_port);
+     if (ctrl_fd < 0) {
+         ESP_LOGE(TAG, LOG_FMT("error in creating ctrl socket (%d)"), errno);
+-        close(fd);
+-        return ESP_FAIL;
++        goto err_out;
+     }
++    hd->ctrl_fd = ctrl_fd;
+ 
+     int msg_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+     if (msg_fd < 0) {
+         ESP_LOGE(TAG, LOG_FMT("error in creating msg socket (%d)"), errno);
+-        close(fd);
+-        close(ctrl_fd);
+-        return ESP_FAIL;
++        goto err_out;
+     }
+-
+-    hd->listen_fd = fd;
+-    hd->ctrl_fd = ctrl_fd;
+     hd->msg_fd  = msg_fd;
+     return ESP_OK;
++
++err_out:
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        if (hd->listen_fds[i] != -1) close(hd->listen_fds[i]);
++    }
++    if (hd->ctrl_fd != -1) close(hd->ctrl_fd);
++    if (hd->msg_fd  != -1) close(hd->msg_fd);
++
++    return ESP_FAIL;
+ }
+ 
+ static struct httpd_data *httpd_create(const httpd_config_t *config)
+diff --git a/components/esp_http_server/src/httpd_sess.c b/components/esp_http_server/src/httpd_sess.c
+index eaeaee7c1a..b673120ddb 100644
+--- a/components/esp_http_server/src/httpd_sess.c
++++ b/components/esp_http_server/src/httpd_sess.c
+@@ -186,7 +186,7 @@ struct sock_db *httpd_sess_get(struct httpd_data *hd, int sockfd)
+     return context.session;
+ }
+ 
+-esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd)
++esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd, int listen_fd)
+ {
+     ESP_LOGD(TAG, LOG_FMT("fd = %d"), newfd);
+ 
+@@ -214,7 +214,20 @@ esp_err_t httpd_sess_new(struct httpd_data *hd, int newfd)
+ 
+     // Call user-defined session opening function
+     if (hd->config.open_fn) {
+-        esp_err_t ret = hd->config.open_fn(hd, session->fd);
++        size_t listen_index = SIZE_MAX;
++
++        for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++            if (hd->listen_fds[i] == listen_fd) {
++                listen_index = i;
++                break;
++            }
++        }
++
++        assert(listen_index != SIZE_MAX);
++
++        session->listen_port_index = listen_index;
++
++        esp_err_t ret = hd->config.open_fn(hd, session->fd, listen_index);
+         if (ret != ESP_OK) {
+             httpd_sess_delete(hd, session);
+             ESP_LOGD(TAG, LOG_FMT("open_fn failed for fd = %d"), newfd);
+@@ -371,7 +384,7 @@ void httpd_sess_delete(struct httpd_data *hd, struct sock_db *session)
+ 
+     // Call close function if defined
+     if (hd->config.close_fn) {
+-        hd->config.close_fn(hd, session->fd);
++        hd->config.close_fn(hd, session);
+     } else {
+         close(session->fd);
+     }
+diff --git a/components/esp_https_server/include/esp_https_server.h b/components/esp_https_server/include/esp_https_server.h
+index 6f4e59f1b2..04b4d86bb0 100644
+--- a/components/esp_https_server/include/esp_https_server.h
++++ b/components/esp_https_server/include/esp_https_server.h
+@@ -77,7 +77,7 @@ struct httpd_ssl_config {
+      *
+      * Parameters like task stack size and priority can be adjusted here.
+      */
+-    httpd_config_t httpd;
++    //httpd_config_t httpd;
+ 
+     /** Server certificate */
+     const uint8_t *servercert;
+@@ -147,8 +147,8 @@ typedef struct httpd_ssl_config httpd_ssl_config_t;
+  * - SSL sockets are usually long-lived, closing LRU prevents pool exhaustion DOS
+  * - Stack size may need adjustments depending on the user application
+  */
+-#define HTTPD_SSL_CONFIG_DEFAULT() {              \
+-    .httpd = {                                    \
++#define HTTPD_SSL_BASE_CONFIG_DEFAULT() {         \
++        .server_ports       = {},                 \
+         .task_priority      = tskIDLE_PRIORITY+5, \
+         .stack_size         = 10240,              \
+         .core_id            = tskNO_AFFINITY,     \
+@@ -177,7 +177,9 @@ typedef struct httpd_ssl_config httpd_ssl_config_t;
+         .open_fn = NULL,                          \
+         .close_fn = NULL,                         \
+         .uri_match_fn = NULL                      \
+-    },                                            \
++}
++
++#define HTTPD_SSL_PORT_CONFIG_DEFAULT() {         \
+     .servercert = NULL,                           \
+     .servercert_len = 0,                          \
+     .cacert_pem = NULL,                           \
+@@ -207,6 +209,7 @@ typedef struct httpd_ssl_config httpd_ssl_config_t;
+  * @return success
+  */
+ esp_err_t httpd_ssl_start(httpd_handle_t *handle, httpd_ssl_config_t *config);
++esp_err_t httpd_ssl_start_multi(httpd_handle_t *handle, httpd_config_t *httpd_config, httpd_ssl_config_t *ssl_config, size_t ssl_config_count);
+ 
+ /**
+  * Stop the server. Blocks until the server is shut down.
+diff --git a/components/esp_https_server/src/https_server.c b/components/esp_https_server/src/https_server.c
+index b3d22e5346..32715b1bcc 100644
+--- a/components/esp_https_server/src/https_server.c
++++ b/components/esp_https_server/src/https_server.c
+@@ -159,13 +159,20 @@ static int httpd_ssl_send(httpd_handle_t server, int sockfd, const char *buf, si
+  * @param sockfd - raw socket fd
+  * @return success
+  */
+-static esp_err_t httpd_ssl_open(httpd_handle_t server, int sockfd)
++static esp_err_t httpd_ssl_open(httpd_handle_t server, int sockfd, size_t listen_index)
+ {
+     assert(server != NULL);
+ 
+     // Retrieve the SSL context from the global context field (set in config)
+-    httpd_ssl_ctx_t *global_ctx = httpd_get_global_transport_ctx(server);
+-    assert(global_ctx != NULL);
++    httpd_ssl_ctx_t *global_ctxs = httpd_get_global_transport_ctx(server);
++    assert(global_ctxs != NULL);
++
++    httpd_ssl_ctx_t *global_ctx = global_ctxs + listen_index; // retrieve port-specific "global" context
++
++    if (!global_ctx->tls_cfg) {
++        // No TLS config for this port, so this is a plain TCP session.
++        return ESP_OK;
++    }
+ 
+     esp_tls_t *tls = esp_tls_init();
+     if (!tls) {
+@@ -206,7 +213,7 @@ static esp_err_t httpd_ssl_open(httpd_handle_t server, int sockfd)
+     ESP_LOGD(TAG, "Secure socket open");
+ 
+     if (global_ctx->open_fn) {
+-        (global_ctx->open_fn)(server, sockfd);
++        (global_ctx->open_fn)(server, sockfd, listen_index);
+     }
+ 
+     if (global_ctx->user_cb) {
+@@ -239,19 +246,29 @@ static void free_secure_context(void *ctx)
+ {
+     assert(ctx != NULL);
+     httpd_ssl_ctx_t *ssl_ctx = ctx;
+-    esp_tls_cfg_server_t *cfg = ssl_ctx->tls_cfg;
++
+     ESP_LOGI(TAG, "Server shuts down, releasing SSL context");
+-    if (cfg->cacert_buf) {
+-        free((void *)cfg->cacert_buf);
+-    }
+-    if (cfg->servercert_buf) {
+-        free((void *)cfg->servercert_buf);
+-    }
+-    if (cfg->serverkey_buf) {
+-        free((void *)cfg->serverkey_buf);
++
++    for (size_t i = 0; i < ESP_HTTPD_LISTEN_PORTS; i++) {
++        esp_tls_cfg_server_t *cfg = ssl_ctx[i].tls_cfg;
++
++        if (cfg) {
++            if (cfg->cacert_buf) {
++                free((void *)cfg->cacert_buf);
++            }
++            if (cfg->servercert_buf) {
++                free((void *)cfg->servercert_buf);
++            }
++            if (cfg->serverkey_buf) {
++                free((void *)cfg->serverkey_buf);
++            }
++            esp_tls_cfg_server_session_tickets_free(cfg);
++            free(cfg);
++
++            ssl_ctx[i].tls_cfg = NULL;
++        }
+     }
+-    esp_tls_cfg_server_session_tickets_free(cfg);
+-    free(cfg);
++
+     free(ssl_ctx);
+ }
+ 
+@@ -288,7 +305,7 @@ static esp_err_t create_secure_context(const struct httpd_ssl_config *config, ht
+ 
+ /* cacert = CA which signs client cert, or client cert itself */
+     if (config->cacert_pem != NULL && config->cacert_len > 0) {
+-        cfg->cacert_buf = (unsigned char *)malloc(config->cacert_len);
++        cfg->cacert_buf = (unsigned char *)heap_caps_malloc_prefer(config->cacert_len, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+ 
+         if (cfg->cacert_buf) {
+             memcpy((char *) cfg->cacert_buf, config->cacert_pem, config->cacert_len);
+@@ -302,7 +319,7 @@ static esp_err_t create_secure_context(const struct httpd_ssl_config *config, ht
+ 
+ /* servercert = cert of server itself */
+     if (config->servercert != NULL && config->servercert_len > 0) {
+-        cfg->servercert_buf = (unsigned char *)malloc(config->servercert_len);
++        cfg->servercert_buf = (unsigned char *)heap_caps_malloc_prefer(config->servercert_len, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+ 
+         if (cfg->servercert_buf) {
+             memcpy((char *) cfg->servercert_buf, config->servercert, config->servercert_len);
+@@ -339,7 +356,7 @@ static esp_err_t create_secure_context(const struct httpd_ssl_config *config, ht
+             goto exit;
+ #endif
+         } else if (config->prvtkey_pem != NULL && config->prvtkey_len > 0) {
+-            cfg->serverkey_buf = malloc(config->prvtkey_len);
++            cfg->serverkey_buf = heap_caps_malloc_prefer(config->prvtkey_len, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+ 
+             if (cfg->serverkey_buf) {
+                 memcpy((char *) cfg->serverkey_buf, config->prvtkey_pem, config->prvtkey_len);
+@@ -380,58 +397,81 @@ exit:
+ /** Start the server */
+ esp_err_t httpd_ssl_start(httpd_handle_t *pHandle, struct httpd_ssl_config *config)
+ {
+-    assert(config != NULL);
++    httpd_config_t httpd_config = HTTPD_SSL_BASE_CONFIG_DEFAULT();
++    return httpd_ssl_start_multi(pHandle, &httpd_config, config, 1);
++}
++
++esp_err_t httpd_ssl_start_multi(httpd_handle_t *pHandle, httpd_config_t *httpd_config, httpd_ssl_config_t *ssl_config, size_t ssl_config_count)
++{
++    assert(httpd_config != NULL);
+     assert(pHandle != NULL);
+ 
++    if (ssl_config == NULL || ssl_config_count == 0 || ssl_config_count > ESP_HTTPD_LISTEN_PORTS) {
++        return ESP_ERR_INVALID_ARG;
++    }
++
+     ESP_LOGI(TAG, "Starting server");
+ 
+     esp_err_t ret = ESP_OK;
+-    httpd_ssl_ctx_t *ssl_ctx = NULL;
+ 
+-    if (HTTPD_SSL_TRANSPORT_SECURE == config->transport_mode) {
+-        ssl_ctx = calloc(1, sizeof(httpd_ssl_ctx_t));
+-        if (!ssl_ctx) {
+-            return ESP_ERR_NO_MEM;
+-        }
++    httpd_ssl_ctx_t *ssl_ctxs = calloc(ESP_HTTPD_LISTEN_PORTS, sizeof(httpd_ssl_ctx_t));
++    if (!ssl_ctxs) {
++        ret = ESP_ERR_NO_MEM;
++        goto err_out;
++    }
+ 
+-        ret = create_secure_context(config, &ssl_ctx);
+-        if (ret != ESP_OK) {
+-            free(ssl_ctx);
+-            return ret;
+-        }
++    for (size_t i = 0; i < ssl_config_count; i++) {
++        httpd_ssl_config_t *config = ssl_config + i;
+ 
+-        ESP_LOGD(TAG, "SSL context ready");
++        if (HTTPD_SSL_TRANSPORT_SECURE == config->transport_mode) {
++            httpd_ssl_ctx_t *ssl_ctx = ssl_ctxs + i;
+ 
+-        // set SSL specific config
+-        config->httpd.global_transport_ctx = ssl_ctx;
+-        config->httpd.global_transport_ctx_free_fn = free_secure_context;
+-        if (config->httpd.open_fn) {
+-            // since the httpd's open_fn is used for opening the SSL session, we save the configured
+-            // user pointer and call it upon opening the ssl socket
+-            ssl_ctx->open_fn = config->httpd.open_fn;
+-        }
+-        config->httpd.open_fn = httpd_ssl_open; // the open function configures the created SSL sessions
++            ret = create_secure_context(config, &ssl_ctx);
++            if (ret != ESP_OK) {
++                goto err_out;
++            }
+ 
+-        config->httpd.server_port = config->port_secure;
+-    } else {
+-        ESP_LOGD(TAG, "SSL disabled, using plain HTTP");
+-        config->httpd.server_port = config->port_insecure;
++            ESP_LOGD(TAG, "SSL context ready");
++
++            if (httpd_config->open_fn) {
++                // since the httpd's open_fn is used for opening the SSL session, we save the configured
++                // user pointer and call it upon opening the ssl socket
++                ssl_ctx->open_fn = httpd_config->open_fn;
++            }
++
++            httpd_config->server_ports[i] = config->port_secure;
++        } else {
++            httpd_config->server_ports[i] = config->port_insecure;
++        }
+     }
+ 
++    // Disable single port to switch over to using server_ports.
++    httpd_config->server_port = 0;
++
++    // set SSL specific config
++    httpd_config->global_transport_ctx = ssl_ctxs;
++    httpd_config->global_transport_ctx_free_fn = free_secure_context;
++    httpd_config->open_fn = httpd_ssl_open; // the open function configures the created SSL sessions
++
+     httpd_handle_t handle = NULL;
+ 
+-    ret = httpd_start(&handle, &config->httpd);
++    ret = httpd_start(&handle, httpd_config);
+     if (ret != ESP_OK) {
+-        free(ssl_ctx);
+-        ssl_ctx = NULL;
+-        return ret;
++        goto err_out;
+     }
+ 
+     *pHandle = handle;
+ 
+-    ESP_LOGI(TAG, "Server listening on port %d", config->httpd.server_port);
+     http_dispatch_event_to_event_loop(HTTPS_SERVER_EVENT_START, NULL, 0);
+     return ESP_OK;
++
++err_out:
++    if (ssl_ctxs != NULL) {
++        free_secure_context(ssl_ctxs);
++        ssl_ctxs = NULL;
++    }
++
++    return ret;
+ }
+ 
+ /** Stop the server */
+-- 
+2.47.3
+

@@ -14,19 +14,15 @@ errno == EAGAIN in case not all promised data has been received.
  1 file changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/components/esp_http_client/esp_http_client.c b/components/esp_http_client/esp_http_client.c
-index 9e7cb0fa28..d3545196b7 100644
+index 911202dbca..c060fa59f6 100644
 --- a/components/esp_http_client/esp_http_client.c
 +++ b/components/esp_http_client/esp_http_client.c
-@@ -1200,9 +1200,21 @@ esp_err_t esp_http_client_perform(esp_http_client_handle_t client)
-                     }
-                 }
+@@ -1474,8 +1474,18 @@ esp_err_t esp_http_client_perform(esp_http_client_handle_t client)
                  while (client->response->data_process < client->response->content_length) {
--                    if (esp_http_client_get_data(client) <= 0) {
+                     int ret = esp_http_client_get_data(client);
+                     if (ret <= 0) {
 -                        if (client->is_async && errno == EAGAIN) {
 -                            return ESP_ERR_HTTP_EAGAIN;
-+                    int ret = esp_http_client_get_data(client);
-+
-+                    if (ret <= 0) {
 +                        if (client->is_async) {
 +                            if (errno == EAGAIN) {
 +                                return ESP_ERR_HTTP_EAGAIN;
@@ -40,8 +36,8 @@ index 9e7cb0fa28..d3545196b7 100644
 +                                return ESP_ERR_HTTP_EAGAIN;
 +                            }
                          }
-                         ESP_LOGD(TAG, "Read finish or server requests close");
-                         break;
+                         if (client->connection_info.method != HTTP_METHOD_HEAD && client->response->data_process < client->response->content_length) {
+                             ESP_LOGE(TAG, "Incomlete data received, ret=%d, %"PRId64"/%"PRId64" bytes", ret, client->response->data_process, client->response->content_length);
 -- 
 2.34.1
 
