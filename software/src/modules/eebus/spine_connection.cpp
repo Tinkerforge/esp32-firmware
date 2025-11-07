@@ -64,7 +64,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 
 void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, const bool require_ack)
 {
-    eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
+    eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %s, Content:", convertToString(cmd_classifier).c_str());
     eebus.trace_jsonln(payload);
     // so i spent 4 hours on this and for some reason the pointers to sender and receivers seem to be nullpointers in about 1/5 restarts but if i print them here its fine mostly.
     logger.printfln("SPINE Connection: This needs to be here otherwise it crashes sometimes. Pointer sender: %p, Pointer Receiver: %p", &sender, &receiver);
@@ -82,8 +82,9 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 
     header.addressDestination = receiver;
     header.msgCounter = msg_counter++;
-    header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
-
+    if (cmd_classifier == CmdClassifierType::reply || cmd_classifier == CmdClassifierType::result) {
+        header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
+    }
     response_doc["datagram"][0]["header"] = header;
     if (!response_doc["datagram"][1]["payload"]["cmd"][0].set(payload)) {
         eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");

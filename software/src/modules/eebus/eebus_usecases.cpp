@@ -32,6 +32,213 @@
 #include "ocpp/Types.h"
 
 
+bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
+{
+    for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
+        if (binding.clientAddress && binding.serverAddress) {
+            if (binding.clientAddress->device.get() == client.device.get() && binding.serverAddress->device.get() == server.device.get() && binding.clientAddress->entity.get() == client.entity.get() && binding.serverAddress->entity.get() == server.entity.get() && binding.clientAddress->feature.get() == client.feature.get() && binding.serverAddress->feature.get() == server.feature.get()) {
+                return true; // The client is bound to the server
+            }
+        }
+    }
+    return false;
+}
+
+UseCaseInformationDataType NodeManagementEntity::get_usecase_information()
+{
+    return {};
+    // This should never be used as the NodeManagementUsecase has no usecase information
+}
+
+CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+{
+    if (header.addressDestination->feature.get() != FeatureAddresses::nodemgmt_feature_address)
+        return CmdClassifierType::EnumUndefined;
+    const String cmd_classifier = convertToString(header.cmdClassifier.get());
+    data->function_to_string(data->last_cmd);
+    switch (data->last_cmd) {
+        case SpineDataTypeHandler::Function::nodeManagementUseCaseData:
+            eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData with a %s command", cmd_classifier.c_str());
+            switch (header.cmdClassifier.get()) {
+                case CmdClassifierType::read:
+                    response["nodeManagementUseCaseData"] = get_usecase_data();
+                    return CmdClassifierType::reply;
+                default:
+                    eebus.trace_fmtln("NodeManagementUsecase: NodeManagementUsecaseData does not support a %s command", cmd_classifier.c_str());
+                    return CmdClassifierType::EnumUndefined;
+            }
+
+        case SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData:
+            eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData with a %s command", cmd_classifier.c_str());
+            switch (header.cmdClassifier.get()) {
+                case CmdClassifierType::read:
+                    response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
+                    send_detailed_discovery_read(header.addressSource.get());
+                    return CmdClassifierType::reply;
+                case CmdClassifierType::reply:
+                    eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
+                    return CmdClassifierType::reply;
+                default:
+                    eebus.trace_fmtln("NodeManagementUsecase: NodeManagementDetailedDiscoveryData does not support a %s command", cmd_classifier.c_str());
+                    return CmdClassifierType::EnumUndefined;
+            }
+
+        case SpineDataTypeHandler::Function::nodeManagementSubscriptionData:
+        case SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall:
+        case SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall:
+            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
+            return handle_subscription(header, data, response);
+
+        case SpineDataTypeHandler::Function::nodeManagementBindingData:
+        case SpineDataTypeHandler::Function::nodeManagementBindingRequestCall:
+        case SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall:
+            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Binding handling");
+            return handle_binding(header, data, response);
+        default:
+            return CmdClassifierType::EnumUndefined;
+    }
+}
+
+void NodeManagementEntity::detailed_discovery_update()
+{
+    auto detailed_data = get_detailed_discovery_data();
+    this->inform_subscribers(entity_address, nodemgmt_feature_address, detailed_data, "nodeManagementDetailedDiscoveryData");
+}
+
+NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
+{
+    NodeManagementUseCaseDataType node_management_usecase_data;
+    for (EebusUsecase *uc : usecase_interface->entity_list) {
+        if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
+            node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
+        }
+    }
+    return node_management_usecase_data;
+}
+
+NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_discovery_data() const
+{
+    // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
+    NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
+    node_management_detailed_data.specificationVersionList->specificationVersion->emplace_back(SUPPORTED_SPINE_VERSION);
+
+    node_management_detailed_data.deviceInformation->description->description = std::string(OPTIONS_PRODUCT_NAME()) + " by " + OPTIONS_MANUFACTURER_FULL(); // Optional. Shall not be longer than 4096 characters.
+    node_management_detailed_data.deviceInformation->description->label = OPTIONS_PRODUCT_NAME();
+    // Optional. Shall not be longer than 256 characters.
+    node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
+    // Only simple operation is supported. We dont act as a SPINE router or anything like that.
+    node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
+#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
+    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::EnergyManagementSystem; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
+#endif
+    for (EebusUsecase *uc : usecase_interface->entity_list) {
+        if (!uc->isActive()) {
+            continue;
+        }
+        bool add_entity_info = true;
+        auto entity_info = uc->get_detailed_discovery_entity_information();
+        for (auto &existing_entity_info : *(node_management_detailed_data.entityInformation)) {
+            // If the entity type matches, we do not add it again and if it has no entity type defined it is inactive
+            if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get()) {
+                add_entity_info = false;
+                break;
+            }
+        }
+
+        if (add_entity_info && entity_info.description->entityType.has_value()) {
+            node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
+        }
+        auto features = uc->get_detailed_discovery_feature_information();
+        node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
+    }
+    return node_management_detailed_data;
+
+}
+
+CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+{
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
+        if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
+            EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
+                                                     "Subscription request failed, no or invalid subscription request data provided");
+            return CmdClassifierType::result;
+        }
+        NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
+        SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
+        //TODO: Implement and check trust level of the client
+        entry.clientAddress = request.subscriptionRequest->clientAddress;
+        entry.serverAddress = request.subscriptionRequest->serverAddress;
+        subscription_data.subscriptionEntry->push_back(entry);
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
+                                                 "Subscription request was successful");
+        return CmdClassifierType::result;
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
+        response["nodeManagementSubscriptionData"] = subscription_data;
+        return CmdClassifierType::reply;;
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
+        NodeManagementSubscriptionDeleteCallType subscription_delete_call = data->nodemanagementsubscriptiondeletecalltype.get();
+        std::vector<size_t> to_delete_indices{};
+
+        // Iterate throught the list of subscriptions and find the ones that match the delete request
+        for (size_t i = 0; i < subscription_data.subscriptionEntry.get().size(); ++i) {
+            SubscriptionManagementEntryDataType entry = subscription_data.subscriptionEntry->at(i);
+
+            // Compares two optionals. If the one has no value, its considered a wildcard and matches anything in the second. If both have value, they are compared and the result returnd
+            auto optional_equal_or_undefined = [](const auto &a, const auto &b) {
+                if (!a.has_value() || !b.has_value())
+                    return true;
+                return *a == *b;
+            };
+
+            // We handle cases where the client or server address is not set which is allowed
+            FeatureAddressType client_address = subscription_delete_call.subscriptionDelete->clientAddress.get();
+            FeatureAddressType server_address = subscription_delete_call.subscriptionDelete->serverAddress.get();
+            if (!subscription_delete_call.subscriptionDelete->clientAddress->device && subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                // This implies the client is referencing its own and the servers name as device names
+                client_address.device = header.addressSource->device.get();
+                server_address.device = header.addressDestination->device.get();
+            } else if (subscription_delete_call.subscriptionDelete->clientAddress->device && !subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                server_address.device = header.addressSource->device.get();
+            } else if (!subscription_delete_call.subscriptionDelete->clientAddress->device && subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                client_address.device = header.addressDestination->device.get();
+            }
+            // If the device does not match to the entry we skip it
+            if (client_address.device.get() != entry.clientAddress->device.get() && server_address.device.get() != entry.serverAddress->device.get()) {
+                continue;
+            }
+
+            // This handles all the cases.
+            // If a value of client_address or server_address is empty it is considered a wildcard and anything matches, if it has a value it is compared
+            if (optional_equal_or_undefined(client_address.entity, entry.clientAddress->entity) && optional_equal_or_undefined(server_address.entity, entry.serverAddress->entity) && optional_equal_or_undefined(client_address.feature, entry.clientAddress->feature) && optional_equal_or_undefined(server_address.feature, entry.serverAddress->feature)) {
+                to_delete_indices.push_back(i);
+                continue;
+            }
+        }
+
+        // delete all the found entries
+        std::sort(to_delete_indices.rbegin(), to_delete_indices.rend()); // sort descending
+        for (size_t i : to_delete_indices) {
+            if (i < subscription_data.subscriptionEntry.get().size()) {
+                // remove the element at i starting from the back. Always do it relative to the beginning so the indices stay valid
+                subscription_data.subscriptionEntry.get().erase(
+                    subscription_data.subscriptionEntry.get().begin() + i);
+            }
+        }
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
+                                                 "Removed Subscriptions successfully");
+        return CmdClassifierType::reply;
+    }
+
+    return CmdClassifierType::reply;
+}
+
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
 
@@ -138,192 +345,27 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
     return CmdClassifierType::EnumUndefined;
 }
 
-bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
+void NodeManagementEntity::send_detailed_discovery_read(FeatureAddressType &target) const
 {
-    for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
-        if (binding.clientAddress && binding.serverAddress) {
-            if (binding.clientAddress->device.get() == client.device.get() && binding.serverAddress->device.get() == server.device.get() && binding.clientAddress->entity.get() == client.entity.get() && binding.serverAddress->entity.get() == server.entity.get() && binding.clientAddress->feature.get() == client.feature.get() && binding.serverAddress->feature.get() == server.feature.get()) {
-                return true; // The client is bound to the server
-            }
-        }
-    }
-    return false;
-}
+    task_scheduler.scheduleOnce([this, target]() {
+                                    eebus.trace_fmtln("Reading detailed discovery data from NodeManagementEntity for target device %s", target.device.get().c_str());
+                                    NodeManagementDetailedDiscoveryDataType detailed_data{};
+                                    BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
+                                    JsonObject dst = message.to<JsonObject>();
+                                    dst["nodeManagementDetailedDiscoveryData"] = detailed_data;
+                                    FeatureAddressType sender{};
+                                    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+                                    sender.entity = this->entity_address;
+                                    sender.feature = nodemgmt_feature_address;
+                                    usecase_interface->send_spine_message(target,
+                                                                          sender,
+                                                                          message.as<JsonVariantConst>(),
+                                                                          CmdClassifierType::read,
+                                                                          true);
 
-UseCaseInformationDataType NodeManagementEntity::get_usecase_information()
-{
-    return {};
-    // This should never be used as the NodeManagementUsecase has no usecase information
-}
+                                },
+                                1_s);
 
-CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
-{
-    if (header.addressDestination->feature == FeatureAddresses::nodemgmt_feature_address) {
-        eebus.trace_fmtln("NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
-                          static_cast<int>(header.cmdClassifier.get()),
-                          data->function_to_string(data->last_cmd).c_str());
-        if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData");
-            response["nodeManagementUseCaseData"] = get_usecase_data();
-            return CmdClassifierType::reply;
-
-        }
-        if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData");
-            response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
-            return handle_subscription(header, data, response, connection);
-        }
-
-        if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
-            eebus.trace_fmtln("NodeManagementUsecase: Command identified as Binding handling");
-            return handle_binding(header, data, response);
-        }
-    }
-    return CmdClassifierType::EnumUndefined;
-}
-
-void NodeManagementEntity::detailed_discovery_update()
-{
-    auto detailed_data = get_detailed_discovery_data();
-    this->inform_subscribers(entity_address, nodemgmt_feature_address, detailed_data, "nodeManagementDetailedDiscoveryData");
-}
-
-NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
-{
-    NodeManagementUseCaseDataType node_management_usecase_data;
-    for (EebusUsecase *uc : usecase_interface->entity_list) {
-        if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
-            node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
-        }
-    }
-    return node_management_usecase_data;
-}
-
-NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_discovery_data() const
-{
-    // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
-    NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
-    node_management_detailed_data.specificationVersionList->specificationVersion->emplace_back(SUPPORTED_SPINE_VERSION);
-
-    node_management_detailed_data.deviceInformation->description->description = std::string(OPTIONS_PRODUCT_NAME()) + " by " + OPTIONS_MANUFACTURER_FULL(); // Optional. Shall not be longer than 4096 characters.
-    node_management_detailed_data.deviceInformation->description->label = OPTIONS_PRODUCT_NAME();
-    // Optional. Shall not be longer than 256 characters.
-    node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
-    // Only simple operation is supported. We dont act as a SPINE router or anything like that.
-    node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
-    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
-#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
-    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::EnergyManagementSystem; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
-#endif
-    for (EebusUsecase *uc : usecase_interface->entity_list) {
-        if (!uc->isActive()) {
-            continue;
-        }
-        bool add_entity_info = true;
-        auto entity_info = uc->get_detailed_discovery_entity_information();
-        for (auto &existing_entity_info : *(node_management_detailed_data.entityInformation)) {
-            // If the entity type matches, we do not add it again and if it has no entity type defined it is inactive
-            if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get()) {
-                add_entity_info = false;
-                break;
-            }
-        }
-
-        if (add_entity_info && entity_info.description->entityType.has_value()) {
-            node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
-        }
-        auto features = uc->get_detailed_discovery_feature_information();
-        node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
-    }
-    return node_management_detailed_data;
-
-}
-
-CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
-{
-    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
-        if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
-            EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                     "Subscription request failed, no or invalid subscription request data provided");
-            return CmdClassifierType::result;
-        }
-        NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
-        SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
-        //TODO: Implement and check trust level of the client
-        entry.clientAddress = request.subscriptionRequest->clientAddress;
-        entry.serverAddress = request.subscriptionRequest->serverAddress;
-        subscription_data.subscriptionEntry->push_back(entry);
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                 "Subscription request was successful");
-        return CmdClassifierType::result;
-    }
-    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
-        response["nodeManagementSubscriptionData"] = subscription_data;
-        return CmdClassifierType::reply;;
-    }
-    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
-        NodeManagementSubscriptionDeleteCallType subscription_delete_call = data->nodemanagementsubscriptiondeletecalltype.get();
-        std::vector<size_t> to_delete_indices{};
-
-        // Iterate throught the list of subscriptions and find the ones that match the delete request
-        for (size_t i = 0; i < subscription_data.subscriptionEntry.get().size(); ++i) {
-            SubscriptionManagementEntryDataType entry = subscription_data.subscriptionEntry->at(i);
-
-            // Compares two optionals. If the one has no value, its considered a wildcard and matches anything in the second. If both have value, they are compared and the result returnd
-            auto optional_equal_or_undefined = [](const auto &a, const auto &b) {
-                if (!a.has_value() || !b.has_value())
-                    return true;
-                return *a == *b;
-            };
-
-            // We handle cases where the client or server address is not set which is allowed
-            FeatureAddressType client_address = subscription_delete_call.subscriptionDelete->clientAddress.get();
-            FeatureAddressType server_address = subscription_delete_call.subscriptionDelete->serverAddress.get();
-            if (!subscription_delete_call.subscriptionDelete->clientAddress->device && subscription_delete_call.subscriptionDelete->serverAddress->device) {
-                // This implies the client is referencing its own and the servers name as device names
-                client_address.device = header.addressSource->device.get();
-                server_address.device = header.addressDestination->device.get();
-            } else if (subscription_delete_call.subscriptionDelete->clientAddress->device && !subscription_delete_call.subscriptionDelete->serverAddress->device) {
-                server_address.device = header.addressSource->device.get();
-            } else if (!subscription_delete_call.subscriptionDelete->clientAddress->device && subscription_delete_call.subscriptionDelete->serverAddress->device) {
-                client_address.device = header.addressDestination->device.get();
-            }
-            // If the device does not match to the entry we skip it
-            if (client_address.device.get() != entry.clientAddress->device.get() && server_address.device.get() != entry.serverAddress->device.get()) {
-                continue;
-            }
-
-            // This handles all the cases.
-            // If a value of client_address or server_address is empty it is considered a wildcard and anything matches, if it has a value it is compared
-            if (optional_equal_or_undefined(client_address.entity, entry.clientAddress->entity) && optional_equal_or_undefined(server_address.entity, entry.serverAddress->entity) && optional_equal_or_undefined(client_address.feature, entry.clientAddress->feature) && optional_equal_or_undefined(server_address.feature, entry.serverAddress->feature)) {
-                to_delete_indices.push_back(i);
-                continue;
-            }
-        }
-
-        // delete all the found entries
-        std::sort(to_delete_indices.rbegin(), to_delete_indices.rend()); // sort descending
-        for (size_t i : to_delete_indices) {
-            if (i < subscription_data.subscriptionEntry.get().size()) {
-                // remove the element at i starting from the back. Always do it relative to the beginning so the indices stay valid
-                subscription_data.subscriptionEntry.get().erase(
-                    subscription_data.subscriptionEntry.get().begin() + i);
-            }
-        }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                 "Removed Subscriptions successfully");
-        return CmdClassifierType::reply;
-    }
-
-    return CmdClassifierType::reply;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
@@ -473,10 +515,10 @@ UseCaseInformationDataType EvcsUsecase::get_usecase_information()
     return evcs_usecase;
 }
 
-CmdClassifierType EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == bill_feature_address) {
-        return bill_feature(header, data, response, connection);
+        return bill_feature(header, data, response);
     }
 
     return CmdClassifierType::EnumUndefined;
@@ -611,7 +653,7 @@ BillListDataType EvcsUsecase::get_bill_list_data() const
     return bill_list_data;
 }
 
-CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     //TODO: Support writes and deletes
     if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData && header.cmdClassifier == CmdClassifierType::read) {
@@ -694,7 +736,7 @@ EvcemUsecase::EvcemUsecase()
 #endif
 }
 
-CmdClassifierType EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::measurementDescriptionListData) {
@@ -1033,7 +1075,7 @@ UseCaseInformationDataType EvccUsecase::get_usecase_information()
     return evcc_usecase;
 }
 
-CmdClassifierType EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
@@ -1431,7 +1473,7 @@ EvseccUsecase::EvseccUsecase()
 #endif
 }
 
-CmdClassifierType EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
@@ -1625,19 +1667,19 @@ UseCaseInformationDataType LpcUsecase::get_usecase_information()
     return lpc_usecase;
 }
 
-CmdClassifierType LpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType LpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == loadControl_feature_address) {
-        return load_control_feature(header, data, response, connection);
+        return load_control_feature(header, data, response);
     }
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceConfiguration_feature_address) {
-        return deviceConfiguration_feature(header, data, response, connection);
+        return deviceConfiguration_feature(header, data, response);
     }
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceDiagnosis_feature_address) {
-        return device_diagnosis_feature(header, data, response, connection);
+        return device_diagnosis_feature(header, data, response);
     }
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == electricalConnection_feature_address) {
-        return electricalConnection_feature(header, data, response, connection);
+        return electricalConnection_feature(header, data, response);
     }
 
     return CmdClassifierType::EnumUndefined;
@@ -1862,7 +1904,7 @@ bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t end
     return limit_accepted;
 }
 
-CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
@@ -1896,7 +1938,7 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
@@ -1922,7 +1964,7 @@ CmdClassifierType LpcUsecase::deviceConfiguration_feature(HeaderType &header, Sp
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
@@ -1997,7 +2039,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
     return CmdClassifierType::EnumUndefined;
 }
 
-CmdClassifierType LpcUsecase::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType LpcUsecase::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
         response["electricalConnectionCharacteristicListData"] = electrical_connection_characteristic_list;
@@ -2129,7 +2171,7 @@ CevcUsecase::CevcUsecase()
 {
 }
 
-CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
@@ -2364,7 +2406,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     bool found_dest_entity = false;
     for (EebusUsecase *entity : entity_list) {
         if (header.addressDestination->entity.has_value() && entity->matches_entity_address(header.addressDestination->entity.get()) && !found_dest_entity) {
-            send_response = entity->handle_message(header, data, responseObj, connection);
+            send_response = entity->handle_message(header, data, responseObj);
             if (send_response != CmdClassifierType::EnumUndefined) {
                 found_dest_entity = true;
                 eebus.trace_fmtln("Usecases: Found entity: %s", entity->get_entity_name().c_str());
@@ -2381,7 +2423,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
                                                  "Unknown entity requested");
         send_response = CmdClassifierType::result; // We always send a response if we do not know the entity
     }
-    if (send_response != CmdClassifierType::EnumUndefined) {
+    if (send_response != CmdClassifierType::EnumUndefined && header.cmdClassifier != CmdClassifierType::reply) {
         eebus.trace_fmtln("Usecases: Sending response");
         if (header.ackRequest.has_value() && header.ackRequest.get() && send_response != CmdClassifierType::result && header.cmdClassifier != CmdClassifierType::read) {
 
