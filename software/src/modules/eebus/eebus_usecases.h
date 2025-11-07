@@ -123,10 +123,9 @@ public:
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
+    virtual CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) = 0;
 
     /**
      * Returns the usecase information for this entity. This gives information about which usecases this entity belongs to. Multiple entities may belong to the same usecase.
@@ -152,17 +151,7 @@ public:
     NodeManagementEntity();
     void set_usecaseManager(EEBusUseCases *usecases);
 
-    /**
-    * Handles a binding request for a usecase.
-    * @param header SPINE header of the message. Might be required for releasing of bindings.
-    * @param data The SpineDataTypeHandler that contains the command.
-    * @param response The JsonObject to write the response to. This should be filled with the response data.
-    * @return true if a response was generated and needs to be sent, false if no response is needed.
-    */
-    CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-    // The list of bindings for this usecase.
-    // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
-    BindingManagementEntryListDataType binding_management_entry_list_{};
+
     /**
      * Checks if the given client is bound to the given server entity and feature.
      * @param client The client FeatureAddressType to check.
@@ -180,7 +169,7 @@ public:
     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
@@ -225,9 +214,21 @@ private:
     NodeManagementUseCaseDataType get_usecase_data() const;
     NodeManagementDetailedDiscoveryDataType get_detailed_discovery_data() const;
 
-    CmdClassifierType handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
+    // The list of bindings for this usecase.
+    // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
+    BindingManagementEntryListDataType binding_management_entry_list_{};
+    /**
+    * Handles a binding request for a usecase.
+    * @param header SPINE header of the message. Might be required for releasing of bindings.
+    * @param data The SpineDataTypeHandler that contains the command.
+    * @param response The JsonObject to write the response to. This should be filled with the response data.
+    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    */
+    CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
+    void send_detailed_discovery_read(FeatureAddressType &target) const;
 };
 
 /**
@@ -252,10 +253,9 @@ public:
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call and data of the message.
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
@@ -316,7 +316,7 @@ private:
      * @param connection
      * @return
      */
-    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     void update_api() const;
 };
@@ -342,7 +342,7 @@ public:
         return "EvcemUsecase";
     }
 
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     UseCaseInformationDataType get_usecase_information() override;
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
@@ -435,10 +435,9 @@ public:
     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
     * @param data The actual Function call and data of the message.
     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     /**
      * The entity information as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1. 3.2.1.
      * @return The entity information.
@@ -573,7 +572,7 @@ public:
         return "EvseccUsecase";
     }
 
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.0. 3.1.2.
     * @return
@@ -627,10 +626,9 @@ public:
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call and data of the message.
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
@@ -687,7 +685,7 @@ private:
      * Supports subscriptions.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.1 and 3.4.1
      */
-    CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Device Configuration feature as required for Scenario 2 - Failsafe Values.
@@ -695,7 +693,7 @@ private:
      * A failsafe value is the maximum power that can be consumed if no contact to the energy guard can be established and always comes with a duration for which the failsafe will be active.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.2 and 3.4.2
      */
-    CmdClassifierType deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
@@ -703,7 +701,7 @@ private:
      * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
      */
-    CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Electrical Connection feature as required for Scenario 4 - Constraints.
@@ -711,7 +709,7 @@ private:
      * Constraints are the maximum power the system is capable of consuming.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
      */
-    CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
@@ -781,10 +779,9 @@ public:
     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
     * @param data The actual Function call and data of the message.
     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.0. 3.1.2.
