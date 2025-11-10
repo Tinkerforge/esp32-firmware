@@ -23,7 +23,7 @@
 #include "module.h"
 #include "config.h"
 #include "mdns.h"
-#include "cert.h"
+#include "modules/web_server/cert.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
 #include "ship_discovery_state.enum.h"
@@ -33,7 +33,6 @@
 
 struct ShipNode
 {
-
     // Basic information about the node
     String ip_address;
     uint16_t port = 0;
@@ -119,6 +118,7 @@ public:
     void pre_setup();
     void setup();
 
+    void enable_ship();
     void disable_ship();
 
     void remove(const ShipConnection &ship_connection);
@@ -144,7 +144,6 @@ private:
     void setup_wss();
 
     WebSockets web_sockets;
-    unique_ptr_any<Cert> cert = nullptr;
-    httpd_handle_t httpd = nullptr;
-
+    Cert cert;
+    bool wss_registered = false;
 };

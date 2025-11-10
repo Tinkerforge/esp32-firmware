@@ -72,7 +72,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     }
 }
 
-ShipConnection::ShipConnection(WebSocketsClient ws_client, CoolString ski) :
+ShipConnection::ShipConnection(WebSocketsClient *ws_client, CoolString ski) :
     ws_client(ws_client), peer_ski(std::move(ski))
 {
     role = Role::Server;
@@ -142,7 +142,10 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
             logger.printfln("Closing connections to %s", peer_ski.c_str());
             // Close socket and
             if (role == Role::Server) {
-                ws_client.close_HTTPThread();
+                if (ws_client != nullptr) {
+                    ws_client->setCtx(nullptr); // Remove ourselves from the client context before closing the connection.
+                    ws_client->close_HTTPThread();
+                }
             } else if (role == Role::Client) {
                 tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS));
                 tf_websocket_client_destroy(ws_server);
@@ -157,7 +160,11 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 {
     char payload[2] = {static_cast<char>(type), static_cast<char>(value)};
     if (role == Role::Server) {
-        ws_client.sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
+        if (ws_client == nullptr) {
+            logger.printfln("Attempted send_cmi on closed connection");
+        } else {
+            ws_client->sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
+        }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server,
                                      payload,
@@ -187,7 +194,11 @@ void ShipConnection::send_current_outgoing_message()
 
     log_message("send_current_outgoing", message_outgoing.get());
     if (role == Role::Server) {
-        ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+        if (ws_client == nullptr) {
+            logger.printfln("Attempted send_current_outgoing on closed connection");
+        } else {
+            ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+        }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server,
                                      reinterpret_cast<const char *>(message_outgoing->data),
@@ -218,7 +229,11 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     buffer[0] = static_cast<char>(msg_classifier);
     memcpy(buffer + 1, str, length);
     if (role == Role::Server) {
-        ws_client.sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+        if (ws_client == nullptr) {
+            logger.printfln("Attempted send_string on closed connection");
+        } else {
+            ws_client->sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+        }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server,
                                      buffer,

@@ -19,14 +19,15 @@
 #include "ship.h"
 
 #include <esp_crt_bundle.h>
-#include <esp_https_server.h>
+#include <esp_http_server.h>
 
 #include "build.h"
-#include "esp_transport_ssl.h"
 #include "event_log_prefix.h"
 
+#include "cert_generator.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/net.h"
 
 static constexpr uint16_t SHIP_PORT = 4712;
 
@@ -36,6 +37,28 @@ void Ship::pre_setup()
 }
 
 void Ship::setup()
+{
+    // The extra port for SHIP connections must always be registered during setup, whether or not EEBUS is enabled.
+    // This means that a restart is required to change the EEBUS certificate.
+
+    WebServerExtraPortData *extra_ship_port = static_cast<WebServerExtraPortData *>(malloc(sizeof(WebServerExtraPortData)));
+    *extra_ship_port = {
+        .port = SHIP_PORT,
+        .transport_mode = TransportMode::Secure,
+        .cert_info = {
+            .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
+            .key_id  = static_cast<int16_t>(eebus.config.get("key_id" )->asInt()),
+            .cert_path = "/eebus/cert",
+            .key_path  = "/eebus/key",
+            .generator_fn = eebus_ship_certificate_generator_fn,
+        },
+        .next = nullptr,
+    };
+
+    server.register_extra_port(extra_ship_port);
+}
+
+void Ship::enable_ship()
 {
     if (eebus.config.get("enable")->asBool()) {
         setup_wss();
@@ -59,178 +82,96 @@ void Ship::disable_ship()
         ship_connection->schedule_close(0_ms);
     }
     mdns_service_remove("_ship", "_tcp");
-    // Delay closing the socket and httpd server so the connections can all be closed
-    task_scheduler.scheduleOnce(
-        [this]() {
-            web_sockets.stop();
-            httpd_ssl_stop(httpd);
-            httpd = nullptr;
-        },
-        100_ms);
+
+    // TODO: Close all client and server WebSockets.
 
     eebus.trace_fmtln("disable_ship end");
 }
 
 void Ship::setup_wss()
 {
-    eebus.trace_fmtln("setup_wss_server start");
-
-    // HTTPS server configuration.
-    // This HTTPS server is just used to provide the send/recv for a secure websocket.
-    httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-
-    // HTTPD config
-    // config.httpd.stack_size           = TODO;
-    // config.httpd.max_uri_handlers     = TODO;
-    config.httpd.lru_purge_enable = true;
-    config.httpd.global_user_ctx = this;
-    // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
-    config.httpd.global_user_ctx_free_fn = [](void *foo) {
-    };
-    config.httpd.max_open_sockets = 3;
-    config.httpd.enable_so_linger = true;
-    config.httpd.linger_timeout = 100;
-    // TODO: We could implement a mechanism that makes sure the ctrl ports are unique.
-    //       By default, the ctrl port is 32768. If we have multiple instances of the
-    //       httpd server running, we need to increment the ctrl port each time.
-    config.httpd.ctrl_port = 32769;
-
-    // SSL config
-    config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
-    config.port_secure = SHIP_PORT;
-    config.port_insecure = 0;
-
-    // Lambda to parse the X509 certificate
-    auto parse_x509_crt = [](const unsigned char *buf, size_t buflen) -> int {
-        mbedtls_x509_crt x509_crt;
-        mbedtls_x509_crt_init(&x509_crt);
-        int ret = mbedtls_x509_crt_parse(&x509_crt, buf, buflen);
-        if (ret != 0) {
-            logger.printfln(" An error occurred while setting up the SHIP Websocket. EEBUS Failed to start");
-            eebus.trace_fmtln("mbedtls_x509_crt_parse failed: 0x%04x", ret);
-        } else {
-            char ship_ski[64] = {0};
-            for (size_t i = 0; i < x509_crt.subject_key_id.len; i++) {
-                sprintf(&ship_ski[i * 2], "%02x", x509_crt.subject_key_id.p[i]);
-            }
-            eebus.state.get("ski")->updateString(ship_ski);
-        }
-
-        return ret;
-    };
-
-    const int32_t cert_id = eebus.config.get("cert_id")->asInt();
-    const int32_t key_id = eebus.config.get("key_id")->asInt();
-
-    // If both cert and key are set externally, we use them.
-    // Oterwise we generate and use a self-signed certificate.
-    if (cert_id != -1 && key_id != -1) {
-        size_t cert_crt_len = 0;
-        auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
-        if (cert_crt == nullptr) {
-            logger.printfln("Certificate with ID %ld is not available", cert_id);
-            return;
-        }
-
-        size_t cert_key_len = 0;
-        auto cert_key = certs.get_cert(key_id, &cert_key_len);
-        if (cert_key == nullptr) {
-            logger.printfln("Certificate with ID %ld is not available", key_id);
-            return;
-        }
-
-        if (!parse_x509_crt(cert_crt.get(), cert_crt_len + 1)) {
-            return;
-        }
-
-        config.servercert = cert_crt.release();
-        config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-        config.prvtkey_pem = cert_key.release();
-        config.prvtkey_len = cert_key_len + 1; // +1 since the length must include the null terminator
-    } else {
-        if (cert == nullptr) {
-            cert = make_unique_psram<Cert>();
-        }
-        if (!cert->read()) {
-            logger.printfln("Failed to read self-signed certificate");
-            return;
-        }
-
-        if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
-            logger.printfln("An error occured while starting EEBUS SHIP Server");
-            eebus.trace_fmtln("parse_x509_crt != 0");
-            return;
-        }
-
-        config.servercert = cert->crt;
-        config.servercert_len = cert->crt_length;
-        config.prvtkey_pem = cert->key;
-        config.prvtkey_len = cert->key_length;
+    if (wss_registered) {
+        return;
     }
 
-    // Start HTTPS server
-    esp_err_t ret = httpd_ssl_start(&httpd, &config);
-    if (ESP_OK != ret) {
-        logger.printfln("Error starting EEBUS HTTPS server: %d", ret);
+    eebus.trace_fmtln("setup_wss_server start");
+
+    if (!cert.is_loaded()) {
+        const cert_load_info cert_info = {
+            .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
+            .key_id  = static_cast<int16_t>(eebus.config.get("key_id" )->asInt()),
+            .cert_path = "/eebus/cert",
+            .key_path  = "/eebus/key",
+            .generator_fn = eebus_ship_certificate_generator_fn,
+        };
+        cert.load_external_with_internal_fallback(&cert_info);
     }
 
     // Websocket initial connection handler
-    web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
-        if (!eebus.config.get("enable")->asBool()) {
+    web_sockets.onConnect_HTTPThread([this](WebSocketsClient *ws_client) {
+        if (!eebus.is_enabled()) {
             return false;
         }
 
-        sockaddr_in6 addr;
-        socklen_t addr_len = sizeof(addr);
-        getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
-
-        char client_ip[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, &addr.sin6_addr, client_ip, sizeof(client_ip));
-
+        const String peer_ip = tf_peer_address_of_sockfd(ws_client->getFd()).toString();
         CoolString peer_ski = "unknown";
-        std::string peer_ip = client_ip;
-        // need to strip out the IPv6 prefix if present
-        std::string ip_ip6_start = "::FFFF:";
-        auto peer_ip_pos = peer_ip.find(ip_ip6_start);
-        if (peer_ip_pos != std::string::npos) {
-            peer_ip = peer_ip.erase(peer_ip_pos, ip_ip6_start.length());
-        }
 
-        auto node = peer_handler.get_peer_by_ip(peer_ip.c_str());
+        auto node = peer_handler.get_peer_by_ip(peer_ip);
         if (node != nullptr) {
             peer_ski = node->txt_ski;
         } else {
             eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s", peer_ip.c_str());
-            peer_handler.update_dns_name_by_ip(peer_ip.c_str(), peer_ip.c_str());
+            peer_handler.update_dns_name_by_ip(peer_ip, peer_ip);
         }
-        peer_handler.update_state_by_ip(peer_ip.c_str(), NodeState::Connected);
-        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s", peer_ip.c_str(), ntohs(addr.sin6_port), peer_ski.c_str());
+        peer_handler.update_state_by_ip(peer_ip, NodeState::Connected);
+        eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", peer_ip.c_str(), peer_ski.c_str());
 
         ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, peer_ski)));
         logger.printfln("New SHIP Client connected from %s", peer_ip.c_str());
 
+        if (ws_client->setCtx(ship_connections.back().get()) != nullptr) {
+            esp_system_abort("Clobbered previously set WebSocketsClient context");
+        }
+
         return true;
     });
 
+    web_sockets.onDisconnect_HTTPThread([this](WebSocketsClient *client, bool /*clean_close*/) {
+        ShipConnection *ship_connection = static_cast<ShipConnection *>(client->getCtx());
+
+        if (ship_connection == nullptr) {
+            // Connection closed by us, ship connection context already gone.
+            return;
+        }
+
+        client->setCtx(nullptr);
+        ship_connection->ws_client = nullptr; // Connection already closed, can't use it anymore.
+        ship_connection->schedule_close(0_ms);
+    });
+
     // Websocket data received handler
-    web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
+    web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
         if (!eebus.is_enabled()) {
             eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
 
             return;
         }
-        for (auto &ship_connection : ship_connections) {
-            if (ship_connection->ws_client.fd == fd) {
-                ship_connection->frame_received(ws_pkt);
-                return;
-            }
+
+        ShipConnection *ship_connection = static_cast<ShipConnection *>(client->getCtx());
+
+        if (ship_connection == nullptr) {
+            eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection attached to WS client with fd %d", client->getFd());
+            return;
         }
-        eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection found for fd %d", fd);
+
+        ship_connection->frame_received(ws_pkt);
     });
 
     // Start websocket on the HTTPS server
-    web_sockets.start("/ship/", nullptr, httpd, "ship");
+    web_sockets.start("/ship/", "/eebus/ws", "ship", SHIP_PORT);
     logger.printfln("EEBUS SHIP started up and accepting connections");
+
+    wss_registered = true;
 }
 
 void Ship::connect_trusted_peers()
@@ -258,10 +199,9 @@ void Ship::connect_trusted_peers()
             websocket_cfg.cert_pem = nullptr;
 
             // The pointer is stored and not the data so the data needs to be valid for the duration of the connection.
-            websocket_cfg.client_cert = reinterpret_cast<const char *>(cert->crt);
-            websocket_cfg.client_cert_len = cert->crt_length;
-            websocket_cfg.client_key = reinterpret_cast<const char *>(cert->key);
-            websocket_cfg.client_key_len = cert->key_length;
+            cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len,
+                          reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key),  &websocket_cfg.client_key_len);
+
             websocket_cfg.disable_auto_reconnect = true;
 
             websocket_cfg.subprotocol = "ship"; // SHIP 10.2
