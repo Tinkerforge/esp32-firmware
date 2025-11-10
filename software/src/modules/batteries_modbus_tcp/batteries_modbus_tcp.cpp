@@ -381,7 +381,7 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->table,
+        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, BatteryMode::None, test->table,
         [this](const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },

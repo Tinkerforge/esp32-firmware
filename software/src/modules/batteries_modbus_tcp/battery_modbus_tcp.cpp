@@ -162,7 +162,7 @@ static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool s
 
     if (delay != 0_s) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
-            table_writer_logfln(writer, "Setting mode (repeat %zu)", writer->repeat_count);
+            //table_writer_logfln(writer, "Setting mode %i (repeat %zu)", static_cast<int>(writer->mode), writer->repeat_count); // TODO: Print to trace log instead of flooding the event log?
             next_table_writer_step(writer);
         }, delay);
     }
@@ -256,7 +256,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
     [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             table_writer_logfln(writer,
-                                "Setting mode failed at %zu of %zu: %s (%d)%s%s",
+                                "Setting mode %i failed at %zu of %zu: %s (%d)%s%s",
+                                static_cast<int>(writer->mode),
                                 writer->index + 1, writer->table->register_blocks_count,
                                 get_tf_modbus_tcp_client_transaction_result_name(result),
                                 static_cast<int>(result),
@@ -297,7 +298,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
                     table_writer_logfln(writer,
-                                        "Setting mode (step 2) failed at %zu of %zu: %s (%d)%s%s",
+                                        "Setting mode %i (step 2) failed at %zu of %zu: %s (%d)%s%s",
+                                        static_cast<int>(writer->mode),
                                         writer->index + 1, writer->table->register_blocks_count,
                                         get_tf_modbus_tcp_client_transaction_result_name(step2_result),
                                         static_cast<int>(step2_result),
@@ -331,6 +333,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
 BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCPSharedClient *client,
                                                                      uint8_t device_address,
                                                                      uint16_t repeat_interval, // seconds
+                                                                     BatteryMode mode,
                                                                      TableSpec *table,
                                                                      TableWriterVLogFLnFunction &&vlogfln,
                                                                      TableWriterFinishedFunction &&finished)
@@ -340,6 +343,7 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
     writer->client = client;
     writer->device_address = device_address;
     writer->repeat_interval = repeat_interval;
+    writer->mode = mode;
     writer->table = table;
     writer->vlogfln = std::move(vlogfln);
     writer->finished = std::move(finished);
@@ -347,10 +351,10 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
             if (writer->repeat_interval > 0) {
-                table_writer_logfln(writer, "Setting mode now (will repeat in %u second%s)", writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
+                table_writer_logfln(writer, "Setting mode %i now (will repeat in %u second%s)", static_cast<int>(writer->mode), writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
             }
             else {
-                table_writer_logfln(writer, "Setting mode now (once)");
+                table_writer_logfln(writer, "Setting mode %i now (once)", static_cast<int>(writer->mode));
             }
 
             next_table_writer_step(writer);
@@ -526,7 +530,7 @@ void BatteryModbusTCP::set_active_mode(BatteryMode mode)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-                active_writer = create_table_writer(static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, table,
+                active_writer = create_table_writer(static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, mode, table,
                 [this](const char *fmt, va_list args) {
                     char message[256];
 

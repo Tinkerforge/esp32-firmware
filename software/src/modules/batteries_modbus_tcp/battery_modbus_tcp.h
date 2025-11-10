@@ -49,13 +49,14 @@ public:
     typedef std::function<void(void)> TableWriterFinishedFunction;
 
     struct TableWriter {
+        uint64_t task_id = 0;
         TFModbusTCPSharedClient *client = nullptr;
         uint8_t device_address = 0;
+        BatteryMode mode = BatteryMode::None;
         uint16_t repeat_interval; // seconds
         TableSpec *table = nullptr;
         size_t repeat_count = 0;
         size_t index = 0;
-        uint64_t task_id = 0;
         TableWriterVLogFLnFunction vlogfln;
         TableWriterFinishedFunction finished;
         bool transact_pending = false;
@@ -66,7 +67,7 @@ public:
     static void free_table(TableSpec *table);
 
     static TableWriter *create_table_writer(TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
-                                            TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished);
+                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished);
     static void destroy_table_writer(TableWriter *writer);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
