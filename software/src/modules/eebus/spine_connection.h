@@ -107,9 +107,15 @@ public:
 
     time_t last_received_time = 0;
     // The last time a message was received from the peer. This is used to detect if the peer is still alive.
+
 private:
+    // This is to hold the state of the connection regarding discovery and usecase information.
+    NodeManagementDetailedDiscoveryDataType detailed_discovery_data{};
+    bool subscribed_to_detailed_discovery = false;
+    NodeManagementUseCaseDataType use_case_data{};
 
     std::vector<FeatureAddressType> known_addresses;
     uint16_t msg_counter_error_count =
         0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
+    static bool validate_header(HeaderType &header);
 };
