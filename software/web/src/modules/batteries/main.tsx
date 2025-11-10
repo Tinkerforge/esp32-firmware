@@ -1148,7 +1148,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
 
         return (
-            <SubPage name="batteries">
+            <SubPage name="batteries" colClasses="col-xl-10">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 {/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
                     <FormRow label={__("batteries.content.battery_mode")} class="mb-0">
