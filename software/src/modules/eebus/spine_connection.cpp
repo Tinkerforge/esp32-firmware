@@ -34,17 +34,12 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     received_header = datagram["datagram"]["header"];
     received_payload = datagram["datagram"]["payload"]["cmd"][0];
 
-    if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
-        eebus.trace_fmtln("SPINE: ERROR: No datagram header or payload found");
-        if (!received_header.cmdClassifier) {
-            eebus.trace_fmtln("SPINE: ERROR: No cmdClassifier found in the received header");
-        }
-        if (!received_header.addressSource) {
-            eebus.trace_fmtln("SPINE: ERROR: No addressSource found in the received header");
-        }
-        if (received_payload.isNull()) {
-            eebus.trace_fmtln("SPINE: ERROR: No payload found in the received datagram");
-        }
+    if (validate_header(received_header)) {
+        eebus.trace_fmtln("SPINE: ERROR: Received datagram header is invalid");
+        return false;
+    }
+    if (received_payload.isNull()) {
+        eebus.trace_fmtln("SPINE: ERROR: No payload found in the received datagram");
         return false;
     }
     if (!check_known_address(received_header.addressSource.get())) {
@@ -120,4 +115,23 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
         }
     }
     return false;
+}
+
+bool SpineConnection::validate_header(HeaderType &header)
+{
+    bool error_found = false;
+    if (header.cmdClassifier.isNull()) {
+        eebus.trace_fmtln("SPINE: ERROR: No cmdClassifier found in the received header");
+        error_found = true;
+    }
+    if (header.addressSource.isNull() || header.addressSource->feature.isNull() || header.addressSource->entity.isNull() || header.addressSource->entity->empty()) {
+        eebus.trace_fmtln("SPINE: ERROR: No addressSource found in the received header or existing addressSource is invalid");
+        error_found = true;
+    }
+    if (header.addressDestination.isNull() || header.addressDestination->feature.isNull() || header.addressDestination->entity.isNull() || header.addressDestination->entity->empty()) {
+        eebus.trace_fmtln("SPINE: ERROR: No addressDestination found in the received header or existing addressDestination is invalid");
+        error_found = true;
+    }
+
+    return error_found;
 }
