@@ -303,20 +303,11 @@ private:
         uint8_t self_produced_cost_percent;
     };
 
-    uint8_t bill_feature_address = FeatureAddresses::chargingsummary_bill;
 
     BillEntry bill_entries[8]{};
 
     [[nodiscard]] BillListDataType get_bill_list_data() const;
-    /**
-     * Handle the Bill Feature.
-     * @param header
-     * @param data
-     * @param response
-     * @param connection
-     * @return
-     */
-    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+
 
     void update_api() const;
 };
@@ -376,10 +367,6 @@ public:
     void update_constraints(int amps_min, int amps_max, int amps_stepsize, int power_min, int power_max, int power_stepsize, int energy_min, int energy_max, int energy_stepsize);
 
 private:
-    // Feature Addresses
-    uint8_t feature_address_measurement = FeatureAddresses::chargerate_measurement;
-    uint8_t feature_address_electrical_connection = FeatureAddresses::chargerate_electrical_connection;
-
     // Data held about the current charge
     int amps_draw_phase[3]; // Amp draw per phase
     int power_draw_phase[3]; // Power per phase
@@ -497,7 +484,7 @@ public:
      */
     void update_operating_state(bool standby);
 
-    String get_entity_name() const override
+    [[nodiscard]] String get_entity_name() const override
     {
         return "EvccUsecase";
     };
@@ -510,12 +497,6 @@ public:
 private:
     void update_api() const;
     bool ev_connected = false;
-
-    uint8_t feature_address_device_configuration = FeatureAddresses::ev_device_configuration;
-    uint8_t feature_address_identification = FeatureAddresses::ev_identification;
-    uint8_t feature_address_device_classification = FeatureAddresses::ev_device_classification;
-    uint8_t feature_address_electrical_connection = FeatureAddresses::ev_electrical_connection;
-    uint8_t feature_address_device_diagnosis = FeatureAddresses::ev_device_diagnosis;
 
     // Server Data
     //DeviceDiagnosis
@@ -724,11 +705,6 @@ private:
 
     void update_api();
 
-    // These can be freely assigned but need to be unique within the entity.
-    int loadControl_feature_address = FeatureAddresses::lpc_loadcontrol;
-    int deviceConfiguration_feature_address = FeatureAddresses::lpc_device_configuration;
-    int deviceDiagnosis_feature_address = FeatureAddresses::lpc_device_diagnosis;
-    int electricalConnection_feature_address = FeatureAddresses::lpc_electrical_connection;
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -829,22 +805,23 @@ public:
     };
 
 private:
+    /*
     // Feature Addresses
     uint8_t feature_address_timeseries = FeatureAddresses::cevc_timeseries;
     uint8_t feature_address_incentive_table = FeatureAddresses::cevc_incentive_table;
-
+*/
     // Functions
     // Timeseries Feature
     [[nodiscard]] TimeSeriesDescriptionListDataType read_time_series_description() const;
     [[nodiscard]] TimeSeriesConstraintsListDataType read_time_series_constraints() const;
     [[nodiscard]] TimeSeriesListDataType read_time_series_list() const;
-    CmdClassifierType write_time_series_list(HeaderType &header, TimeSeriesListDataType data, JsonObject response);
+    CmdClassifierType write_time_series_list(HeaderType &header, SpineOptional<TimeSeriesListDataType> data, JsonObject response);
     // IncentiveTable Feature
     [[nodiscard]] IncentiveTableDescriptionDataType read_incentive_table_description() const;
-    CmdClassifierType write_incentive_table_description(HeaderType &header, IncentiveTableDataType data, JsonObject response);
+    CmdClassifierType write_incentive_table_description(HeaderType &header, SpineOptional<IncentiveTableDescriptionDataType> data, JsonObject response);
     [[nodiscard]] IncentiveTableConstraintsDataType read_incentive_table_constraints() const;
     [[nodiscard]] IncentiveTableDataType read_incentive_table_data() const;
-    CmdClassifierType write_incentive_table_data(HeaderType &header, IncentiveTableDataType data, JsonObject response);
+    CmdClassifierType write_incentive_table_data(HeaderType &header, SpineOptional<IncentiveTableDataType> data, JsonObject response);
 
     // Data held and transmitted
     time_t arrival_time{};
@@ -895,6 +872,14 @@ public:
      * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
      */
     bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+
+
+    /**
+     * Get a SpineConnection for a given spine address.
+     * @param spine_address
+     * @return Pointer to the spine connection. nullptr if no connection exists.
+     */
+    static SpineConnection *get_spine_connection(const FeatureAddressType &spine_address);
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data

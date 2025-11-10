@@ -347,25 +347,20 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
 
 void NodeManagementEntity::send_detailed_discovery_read(FeatureAddressType &target) const
 {
-    task_scheduler.scheduleOnce([this, target]() {
-                                    eebus.trace_fmtln("Reading detailed discovery data from NodeManagementEntity for target device %s", target.device.get().c_str());
-                                    NodeManagementDetailedDiscoveryDataType detailed_data{};
-                                    BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
-                                    JsonObject dst = message.to<JsonObject>();
-                                    dst["nodeManagementDetailedDiscoveryData"] = detailed_data;
-                                    FeatureAddressType sender{};
-                                    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-                                    sender.entity = this->entity_address;
-                                    sender.feature = nodemgmt_feature_address;
-                                    usecase_interface->send_spine_message(target,
-                                                                          sender,
-                                                                          message.as<JsonVariantConst>(),
-                                                                          CmdClassifierType::read,
-                                                                          true);
-
-                                },
-                                1_s);
-
+    eebus.trace_fmtln("Reading detailed discovery data from NodeManagementEntity for target device %s", target.device.get().c_str());
+    NodeManagementDetailedDiscoveryDataType detailed_data{};
+    BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
+    JsonObject dst = message.to<JsonObject>();
+    dst["nodeManagementDetailedDiscoveryData"] = detailed_data;
+    FeatureAddressType sender{};
+    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    sender.entity = this->entity_address;
+    sender.feature = nodemgmt_feature_address;
+    usecase_interface->send_spine_message(target,
+                                          sender,
+                                          message.as<JsonVariantConst>(),
+                                          CmdClassifierType::read,
+                                          true);
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
@@ -517,8 +512,71 @@ UseCaseInformationDataType EvcsUsecase::get_usecase_information()
 
 CmdClassifierType EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == bill_feature_address) {
-        return bill_feature(header, data, response);
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == FeatureAddresses::chargingsummary_bill) {
+        switch (data->last_cmd) {
+            // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
+            case SpineDataTypeHandler::Function::billDescriptionListData: {
+                switch (header.cmdClassifier.get()) {
+                    case CmdClassifierType::read: {
+
+                        BillDescriptionListDataType billDescriptionListData{};
+                        billDescriptionListData.billDescriptionData.emplace();
+                        for (BillEntry bill_entry : bill_entries) {
+                            BillDescriptionDataType billDescriptionData{};
+                            billDescriptionData.billWriteable = false; // No bill is writeable for now
+                            billDescriptionData.billId = bill_entry.id;
+                            billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
+                            billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
+
+                        }
+                        response["billDescriptionListData"] = billDescriptionListData;
+                        return CmdClassifierType::reply;
+                    }
+                    default:
+                        return CmdClassifierType::EnumUndefined;
+                }
+            }
+            // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
+            case SpineDataTypeHandler::Function::billConstraintsListData: {
+                switch (header.cmdClassifier.get()) {
+                    case CmdClassifierType::read: {
+                        BillConstraintsListDataType billConstraintsListData{};
+                        billConstraintsListData.billConstraintsData.emplace();
+                        for (BillEntry bill_entry : bill_entries) {
+                            BillConstraintsDataType billConstraintsData{};
+                            billConstraintsData.billId = bill_entry.id;
+                            billConstraintsData.positionCountMin = "0";
+                            billConstraintsData.positionCountMax = std::to_string(2);
+                            billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
+                        }
+                        response["billConstraintsListData"] = billConstraintsListData;
+                        return CmdClassifierType::reply;
+                    }
+                    default:
+                        return CmdClassifierType::EnumUndefined;
+                }
+            }
+            case SpineDataTypeHandler::Function::billListData: {
+                switch (header.cmdClassifier.get()) {
+                    case CmdClassifierType::read: {
+                        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
+                        response["billListData"] = get_bill_list_data();
+                        return CmdClassifierType::reply;
+                    }
+                    case CmdClassifierType::write: {
+                        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
+                        //TODO: Implement write for EV CHarging Summary BillListData
+                        // Need partial write as well as its mandatory
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Writing billing data is not yet supported");
+                        return CmdClassifierType::result;
+                    }
+                    default:
+                        return CmdClassifierType::EnumUndefined;
+                }
+            }
+            default:
+                return CmdClassifierType::EnumUndefined;
+        }
     }
 
     return CmdClassifierType::EnumUndefined;
@@ -542,7 +600,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcsUsecase::
     NodeManagementDetailedDiscoveryFeatureInformationType feature{};
 
     feature.description->featureAddress->entity = entity_address;
-    feature.description->featureAddress->feature = 1; // Feature 1 is the Bill feature
+    feature.description->featureAddress->feature = FeatureAddresses::chargingsummary_bill;
 
     feature.description->featureType = FeatureTypeEnumType::Bill;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
@@ -594,7 +652,7 @@ void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
     auto bill_list_data = get_bill_list_data();
-    eebus.usecases->inform_subscribers(this->entity_address, this->bill_feature_address, bill_list_data, "billListData");
+    eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::chargingsummary_bill, bill_list_data, "billListData");
     update_api();
 }
 
@@ -653,54 +711,6 @@ BillListDataType EvcsUsecase::get_bill_list_data() const
     return bill_list_data;
 }
 
-CmdClassifierType EvcsUsecase::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
-{
-    //TODO: Support writes and deletes
-    if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData && header.cmdClassifier == CmdClassifierType::read) {
-        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
-        BillDescriptionListDataType billDescriptionListData{};
-        billDescriptionListData.billDescriptionData.emplace();
-        for (BillEntry bill_entry : bill_entries) {
-            BillDescriptionDataType billDescriptionData{};
-            billDescriptionData.billWriteable = false; // No bill is writeable for now
-            billDescriptionData.billId = bill_entry.id;
-            billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
-            billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
-
-        }
-        response["billDescriptionListData"] = billDescriptionListData;
-        return CmdClassifierType::reply;
-    }
-    if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData && header.cmdClassifier == CmdClassifierType::read) {
-        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
-        BillConstraintsListDataType billConstraintsListData{};
-        billConstraintsListData.billConstraintsData.emplace();
-        for (BillEntry bill_entry : bill_entries) {
-            BillConstraintsDataType billConstraintsData{};
-            billConstraintsData.billId = bill_entry.id;
-            billConstraintsData.positionCountMin = "0";
-            billConstraintsData.positionCountMax = std::to_string(2);
-            billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
-        }
-        response["billConstraintsListData"] = billConstraintsListData;
-        return CmdClassifierType::reply;
-
-    }
-    if (data->last_cmd == SpineDataTypeHandler::Function::billListData && header.cmdClassifier == CmdClassifierType::read) {
-        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
-        response["billListData"] = get_bill_list_data();
-        return CmdClassifierType::reply;
-    }
-    if (data->last_cmd == SpineDataTypeHandler::Function::billListData && header.cmdClassifier == CmdClassifierType::write) {
-        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
-        //response["billListData"] = get_bill_list_data();
-        //TODO: Implement write on this feature
-        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Writing billing data is not yet supported");
-        return CmdClassifierType::result;
-    }
-    return CmdClassifierType::EnumUndefined;
-}
-
 void EvcsUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("charging_summary");
@@ -738,27 +748,39 @@ EvcemUsecase::EvcemUsecase()
 
 CmdClassifierType EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::measurementDescriptionListData) {
-            response["measurementDescriptionListData"] = generate_measurement_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::measurementConstraintsListData) {
-            response["measurementConstraintsListData"] = generate_measurement_constraints();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::measurementListData) {
-            response["measurementListData"] = generate_measurement_list();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionListData) {
-            response["electricalConnectionDescriptionListData"] = generate_electrical_connection_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
-            response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_parameters();
-            return CmdClassifierType::reply;
-        }
+    AddressFeatureType feature_address = header.addressDestination->feature.get();
+    switch (data->last_cmd) {
+        case SpineDataTypeHandler::Function::measurementDescriptionListData:
+            if (feature_address == FeatureAddresses::chargerate_measurement) {
+                response["measurementDescriptionListData"] = generate_measurement_description();
+                return CmdClassifierType::reply;
+            }
+            break;
+        case SpineDataTypeHandler::Function::measurementConstraintsListData:
+            if (feature_address == FeatureAddresses::chargerate_measurement) {
+                response["measurementConstraintsListData"] = generate_measurement_constraints();
+                return CmdClassifierType::reply;
+            }
+            break;
+        case SpineDataTypeHandler::Function::measurementListData:
+            if (feature_address == FeatureAddresses::chargerate_measurement) {
+                response["measurementListData"] = generate_measurement_list();
+                return CmdClassifierType::reply;
+            }
+            break;
+        case SpineDataTypeHandler::Function::electricalConnectionDescriptionListData:
+            if (feature_address == FeatureAddresses::chargerate_electrical_connection) {
+                response["electricalConnectionDescriptionListData"] = generate_electrical_connection_description();
+                return CmdClassifierType::reply;
+            }
+            break;
+        case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
+            if (feature_address == FeatureAddresses::chargerate_electrical_connection) {
+                response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_parameters();
+                return CmdClassifierType::reply;
+            }
+            break;
+        default: ;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -808,7 +830,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
 
     NodeManagementDetailedDiscoveryFeatureInformationType measurement_feature{};
     measurement_feature.description->featureAddress->entity = entity_address;
-    measurement_feature.description->featureAddress->feature = feature_address_measurement;
+    measurement_feature.description->featureAddress->feature = FeatureAddresses::chargerate_measurement;
     measurement_feature.description->featureType = FeatureTypeEnumType::Measurement;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     measurement_feature.description->role = RoleType::server;
@@ -834,7 +856,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
 
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnection_feature{};
     electricalConnection_feature.description->featureAddress->entity = entity_address;
-    electricalConnection_feature.description->featureAddress->feature = feature_address_electrical_connection;
+    electricalConnection_feature.description->featureAddress->feature = FeatureAddresses::chargerate_electrical_connection;
     electricalConnection_feature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     electricalConnection_feature.description->role = RoleType::server;
@@ -867,7 +889,7 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
     power_charged_measured = charged_measured;
 
     auto measurement_list_data = generate_measurement_list();
-    eebus.usecases->inform_subscribers(this->entity_address, this->feature_address_measurement, measurement_list_data, "measurementListData");
+    eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::chargerate_measurement, measurement_list_data, "measurementListData");
     update_api();
 }
 
@@ -884,7 +906,7 @@ void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, co
     measurement_limit_energy_stepsize = energy_stepsize;
 
     auto constraints = generate_measurement_constraints();
-    eebus.usecases->inform_subscribers(this->entity_address, this->feature_address_measurement, constraints, "measurementConstraintsListData");
+    eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::chargerate_measurement, constraints, "measurementConstraintsListData");
 
     update_api();
 }
@@ -1077,41 +1099,53 @@ UseCaseInformationDataType EvccUsecase::get_usecase_information()
 
 CmdClassifierType EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
+    AddressFeatureType feature_address = header.addressDestination->feature.get();
     if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
-            response["deviceConfigurationKeyValueDescriptionListData"] = generate_device_config_description();
-            return CmdClassifierType::reply;
+        switch (data->last_cmd) {
+            case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
+                if (feature_address == FeatureAddresses::ev_device_configuration) {
+                    response["deviceConfigurationKeyValueDescriptionListData"] = generate_device_config_description();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
+                if (feature_address == FeatureAddresses::ev_device_configuration) {
+                    response["deviceConfigurationKeyValueListData"] = generate_device_config_list();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::identificationListData:
+                if (feature_address == FeatureAddresses::ev_identification) {
+                    response["identificationListData"] = generate_identification_description();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
+                if (feature_address == FeatureAddresses::ev_device_classification) {
+                    response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
+                if (feature_address == FeatureAddresses::ev_electrical_connection) {
+                    response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_description();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData:
+                if (feature_address == FeatureAddresses::ev_electrical_connection) {
+                    response["electricalConnectionPermittedValueSetListData"] = generate_electrical_connection_values();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
+                if (feature_address == FeatureAddresses::ev_device_diagnosis) {
+                    response["deviceDiagnosisStateData"] = generate_state();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            default: ;
         }
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
-            response["deviceConfigurationKeyValueListData"] = generate_device_config_list();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::identificationListData) {
-            response["identificationListData"] = generate_identification_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
-            response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
-            response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData) {
-            response["electricalConnectionPermittedValueSetListData"] = generate_electrical_connection_values();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
-            response["deviceDiagnosisStateData"] = generate_state();
-            return CmdClassifierType::reply;
-        }
-
-    } else if (header.cmdClassifier == CmdClassifierType::write || header.cmdClassifier == CmdClassifierType::call) {
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                 "Only Reads supported on this entity");
-        return CmdClassifierType::reply;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -1140,11 +1174,11 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     if (!ev_connected)
         return features;
 
-    // The following functions are needed by the DeviceDiagnosis Feature Type
+    // The following functions are needed by the first DeviceDiagnosis Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType device_configuration_feature{};
     device_configuration_feature.description->featureAddress->entity = entity_address;
-    device_configuration_feature.description->featureAddress->feature = feature_address_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
-    device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
+    device_configuration_feature.description->featureAddress->feature = FeatureAddresses::ev_device_configuration; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    device_configuration_feature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
     device_configuration_feature.description->role = RoleType::server;
 
     // deviceConfigurationKeyValueDescriptionListData
@@ -1164,7 +1198,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     // The following functions are needed by the Identification Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType identification_feature{};
     identification_feature.description->featureAddress->entity = entity_address;
-    identification_feature.description->featureAddress->feature = feature_address_identification;
+    identification_feature.description->featureAddress->feature = FeatureAddresses::ev_identification;
     identification_feature.description->featureType = FeatureTypeEnumType::Identification;
     identification_feature.description->role = RoleType::server;
 
@@ -1179,7 +1213,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     // The following functions are needed by the DeviceDiagnosis Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType device_classification_feature{};
     device_classification_feature.description->featureAddress->entity = entity_address;
-    device_classification_feature.description->featureAddress->feature = feature_address_device_classification;
+    device_classification_feature.description->featureAddress->feature = FeatureAddresses::ev_device_classification;
     device_classification_feature.description->featureType = FeatureTypeEnumType::DeviceClassification;
     device_classification_feature.description->role = RoleType::server;
 
@@ -1193,7 +1227,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
     electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = feature_address_electrical_connection;
+    electricalConnectionFeature.description->featureAddress->feature = FeatureAddresses::ev_electrical_connection;
     electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
     electricalConnectionFeature.description->role = RoleType::server;
 
@@ -1213,7 +1247,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     // The following functions are needed by the DeviceDiagnosis Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
     deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-    deviceDiagnosisFeature.description->featureAddress->feature = feature_address_device_diagnosis;
+    deviceDiagnosisFeature.description->featureAddress->feature = FeatureAddresses::ev_device_diagnosis;
     deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
     deviceDiagnosisFeature.description->role = RoleType::server;
 
@@ -1245,8 +1279,8 @@ void EvccUsecase::update_device_config(const String &comm_standard, bool asym_su
     }
     auto generate_dev_desc = generate_device_config_description();
     auto generate_dev_list = generate_device_config_list();
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_configuration, generate_dev_list, "deviceConfigurationKeyValueListData");
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_device_configuration, generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_device_configuration, generate_dev_list, "deviceConfigurationKeyValueListData");
 
     update_api();
 }
@@ -1256,7 +1290,8 @@ void EvccUsecase::update_identification(String mac, IdentificationTypeEnumType t
     mac_address = std::move(mac);
     mac_type = type;
     auto identification_desc = generate_identification_description();
-    eebus.usecases->inform_subscribers(entity_address, feature_address_identification, identification_desc, "identificationListData");
+
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_identification, identification_desc, "identificationListData");
     update_api();
 }
 
@@ -1286,7 +1321,7 @@ void EvccUsecase::update_manufacturer(String name, String code, String serial, S
     manufacturer_description.shrinkToFit();
 
     auto manufacturer_desc = generate_manufacturer_description();
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_classification, manufacturer_desc, "deviceClassificationManufacturerData");
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_device_classification, manufacturer_desc, "deviceClassificationManufacturerData");
     update_api();
 }
 
@@ -1297,8 +1332,8 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
     standby_power = stby_power;
     auto electrical_connection_desc = generate_electrical_connection_description();
     auto electrical_connection_values = generate_electrical_connection_values();
-    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_desc, "electricalConnectionParameterDescriptionListData");
-    eebus.usecases->inform_subscribers(entity_address, feature_address_electrical_connection, electrical_connection_values, "electricalConnectionPermittedValueSetListData");
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_electrical_connection, electrical_connection_desc, "electricalConnectionParameterDescriptionListData");
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_electrical_connection, electrical_connection_values, "electricalConnectionPermittedValueSetListData");
 
     update_api();
 }
@@ -1307,7 +1342,8 @@ void EvccUsecase::update_operating_state(bool standby)
 {
     standby_mode = standby;
     auto state = generate_state();
-    eebus.usecases->inform_subscribers(entity_address, feature_address_device_diagnosis, state, "deviceDiagnosisStateData");
+
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::ev_device_diagnosis, state, "deviceDiagnosisStateData");
     update_api();
 }
 
@@ -1475,24 +1511,25 @@ EvseccUsecase::EvseccUsecase()
 
 CmdClassifierType EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
+    AddressFeatureType feature_address = header.addressDestination->feature.get();
     if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
-            response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
-            return CmdClassifierType::reply;
+        switch (data->last_cmd) {
+            case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
+                if (feature_address == feature_address_device_classification) {
+                    response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
+                if (feature_address == feature_address_device_diagnosis) {
+                    response["deviceDiagnosisStateData"] = generate_state();
+                    return CmdClassifierType::reply;
+                }
+                break;
+            default: ;
         }
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
-            response["deviceDiagnosisStateData"] = generate_state();
-            return CmdClassifierType::reply;
-        }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
-                                                 "Command not supported on this entity");
-        return CmdClassifierType::result;
     }
-    EEBUS_USECASE_HELPERS::build_result_data(response,
-                                             EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                             "Only Reads supported on this entity");
-    return CmdClassifierType::result;
+    return CmdClassifierType::EnumUndefined;
 }
 
 UseCaseInformationDataType EvseccUsecase::get_usecase_information()
@@ -1624,7 +1661,7 @@ LpcUsecase::LpcUsecase()
 
                                                                               eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
                                                                               eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                                                                              if (eebus.usecases->inform_subscribers(this->entity_address, this->deviceDiagnosis_feature_address, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
+                                                                              if (eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_device_diagnosis, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
                                                                                   heartbeatCounter++;
                                                                               }
                                                                               if (!heartbeat_received) {
@@ -1669,19 +1706,17 @@ UseCaseInformationDataType LpcUsecase::get_usecase_information()
 
 CmdClassifierType LpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == loadControl_feature_address) {
-        return load_control_feature(header, data, response);
+    switch (header.addressDestination->feature.get()) {
+        case FeatureAddresses::lpc_loadcontrol:
+            return load_control_feature(header, data, response);
+        case FeatureAddresses::lpc_device_configuration:
+            return deviceConfiguration_feature(header, data, response);
+        case FeatureAddresses::lpc_device_diagnosis:
+            return device_diagnosis_feature(header, data, response);
+        case FeatureAddresses::lpc_electrical_connection:
+            return electricalConnection_feature(header, data, response);
+        default: ;
     }
-    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceConfiguration_feature_address) {
-        return deviceConfiguration_feature(header, data, response);
-    }
-    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceDiagnosis_feature_address) {
-        return device_diagnosis_feature(header, data, response);
-    }
-    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == electricalConnection_feature_address) {
-        return electricalConnection_feature(header, data, response);
-    }
-
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -1702,12 +1737,12 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
 
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
 
-    // See EEBUS UC TS LimitationOfPowerConsum ption v1.0.0.pdf 3.2.2.2.1
+    // See EEBUS UC TS LimitationOfPowerConsumption v1.0.0.pdf 3.2.2.2.1
 
     // The following functions are needed by the LoadControl Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature{};
     loadControlFeature.description->featureAddress->entity = entity_address;
-    loadControlFeature.description->featureAddress->feature = loadControl_feature_address; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    loadControlFeature.description->featureAddress->feature = FeatureAddresses::lpc_loadcontrol; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
     loadControlFeature.description->featureType = FeatureTypeEnumType::LoadControl;
     loadControlFeature.description->role = RoleType::server;
 
@@ -1729,7 +1764,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     // The following functions are needed by the DeviceConfiguration Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigurationFeature{};
     deviceConfigurationFeature.description->featureAddress->entity = entity_address;
-    deviceConfigurationFeature.description->featureAddress->feature = deviceConfiguration_feature_address;
+    deviceConfigurationFeature.description->featureAddress->feature = FeatureAddresses::lpc_device_configuration;
     deviceConfigurationFeature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
     deviceConfigurationFeature.description->role = RoleType::server;
 
@@ -1746,10 +1781,10 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     deviceConfigurationFeature.description->supportedFunction->push_back(deviceConfigurationKeyValueListData);
     features.push_back(deviceConfigurationFeature);
 
-    // The following functions are needed by the DeviceDiagnosis Feature Type
+    // The following functions are needed by the DeviceDiagnosis Server Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
     deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-    deviceDiagnosisFeature.description->featureAddress->feature = deviceDiagnosis_feature_address;
+    deviceDiagnosisFeature.description->featureAddress->feature = FeatureAddresses::lpc_device_diagnosis;
     deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
     deviceDiagnosisFeature.description->role = RoleType::server;
 
@@ -1760,10 +1795,24 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
     features.push_back(deviceDiagnosisFeature);
 
+    // The following functions are needed by the DeviceDiagnosis Client Feature Type
+    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisClientFeature{};
+    deviceDiagnosisClientFeature.description->featureAddress->entity = entity_address;
+    deviceDiagnosisClientFeature.description->featureAddress->feature = FeatureAddresses::lpc_device_diagnosis;
+    deviceDiagnosisClientFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    deviceDiagnosisClientFeature.description->role = RoleType::client;
+
+    //deviceDiagnosisHeartBeatData
+    FunctionPropertyType deviceDiagnosisClientHeartBeatData{};
+    deviceDiagnosisClientHeartBeatData.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
+    deviceDiagnosisClientHeartBeatData.possibleOperations->read = PossibleOperationsReadType{};
+    deviceDiagnosisClientFeature.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
+    features.push_back(deviceDiagnosisClientFeature);
+
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
     electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = electricalConnection_feature_address;
+    electricalConnectionFeature.description->featureAddress->feature = FeatureAddresses::lpc_electrical_connection;
     electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
     electricalConnectionFeature.description->role = RoleType::server;
 
@@ -1898,8 +1947,8 @@ bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t end
         switch_state(LPCState::UnlimitedControlled);
     }
 
-    eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_description_list, "loadControlLimitDescriptionListData");
-    eebus.usecases->inform_subscribers(this->entity_address, this->loadControl_feature_address, load_control_limit_list, "loadControlLimitListData");
+    eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_loadcontrol, load_control_limit_description_list, "loadControlLimitDescriptionListData");
+    eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_loadcontrol, load_control_limit_list, "loadControlLimitListData");
 
     return limit_accepted;
 }
@@ -1919,7 +1968,7 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
     if (header.cmdClassifier == CmdClassifierType::write) {
         FeatureAddressType feature_address{};
         feature_address.entity = entity_address;
-        feature_address.feature = loadControl_feature_address;
+        feature_address.feature = FeatureAddresses::lpc_loadcontrol;
         feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
 
         if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
@@ -1985,7 +2034,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
             FeatureAddressType read_destination = header.addressSource.get();
             task_scheduler.scheduleOnce([this, read_destination, obj]() {
                                             FeatureAddressType read_source{};
-                                            read_source.feature = deviceDiagnosis_feature_address;
+                                            read_source.feature = FeatureAddresses::lpc_device_diagnosis;
                                             read_source.entity = entity_address;
                                             eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
                                         },
@@ -2003,7 +2052,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
                                             NodeManagementSubscriptionRequestCallType subscription_request_call{};
                                             subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
                                             subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
-                                            subscription_request_call.subscriptionRequest->clientAddress->feature = deviceDiagnosis_feature_address;
+                                            subscription_request_call.subscriptionRequest->clientAddress->feature = FeatureAddresses::lpc_device_diagnosis;
 
                                             subscription_request_call.subscriptionRequest->serverAddress = header.addressSource.get();
                                             subscription_request_call.subscriptionRequest->serverFeatureType = FeatureTypeEnumType::DeviceDiagnosis;
@@ -2173,33 +2222,68 @@ CevcUsecase::CevcUsecase()
 
 CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
-            response["timeSeriesDescriptionListData"] = read_time_series_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListData) {
-            response["timeSeriesConstraintsListData"] = read_time_series_constraints();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::timeSeriesListData) {
-            response["timeSeriesListData"] = read_time_series_list();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableDescriptionData) {
-            response["incentiveTableDescriptionData"] = read_incentive_table_description();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsData) {
-            response["incentiveTableConstraintsData"] = read_incentive_table_constraints();
-            return CmdClassifierType::reply;
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::incentiveTableData) {
-            response["incentiveTableData"] = read_incentive_table_data();;
-            return CmdClassifierType::reply;
-        }
+    CmdClassifierType cmd = header.cmdClassifier.get();
+    switch (data->last_cmd) {
+        case SpineDataTypeHandler::Function::timeSeriesDescriptionListData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["timeSeriesDescriptionListData"] = read_time_series_description();
+                    return CmdClassifierType::reply;
+                default:
+                    break;
+            }
+            break;
+        case SpineDataTypeHandler::Function::timeSeriesConstraintsListData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["timeSeriesConstraintsListData"] = read_time_series_constraints();
+                    return CmdClassifierType::reply;
+                default:
+                    break;
+            }
+            break;
+        case SpineDataTypeHandler::Function::timeSeriesListData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["timeSeriesListData"] = read_time_series_list();
+                    return CmdClassifierType::reply;
+                case CmdClassifierType::write:
+                    return write_time_series_list(header, data->timeserieslistdatatype, response);
+                default:
+                    break;
+            }
+            break;
+        case SpineDataTypeHandler::Function::incentiveTableDescriptionData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["incentiveTableDescriptionData"] = read_incentive_table_description();
+                    return CmdClassifierType::reply;
+                default:
+                    break;
+            }
+            break;
+        case SpineDataTypeHandler::Function::incentiveTableConstraintsData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["incentiveTableConstraintsData"] = read_incentive_table_constraints();
+                    return CmdClassifierType::reply;
+                default:
+                    break;
+            }
+            break;
+        case SpineDataTypeHandler::Function::incentiveTableData:
+            switch (cmd) {
+                case CmdClassifierType::read:
+                    response["incentiveTableData"] = read_incentive_table_data();;
+                    return CmdClassifierType::reply;
+                case CmdClassifierType::write:
+                    return write_incentive_table_data(header, data->incentivetabledatatype, response);
+                default:
+                    break;
+            }
+            break;
+        default: ;
     }
-    // TODO: Implement the rest of this usecase
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -2252,7 +2336,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
     // The following functions are needed by the TimeSeries Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType timeseries_feature{};
     timeseries_feature.description->featureAddress->entity = entity_address;
-    timeseries_feature.description->featureAddress->feature = feature_address_timeseries; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    timeseries_feature.description->featureAddress->feature = FeatureAddresses::cevc_timeseries;
     timeseries_feature.description->featureType = FeatureTypeEnumType::TimeSeries;
     timeseries_feature.description->role = RoleType::server;
 
@@ -2278,7 +2362,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
 
     NodeManagementDetailedDiscoveryFeatureInformationType incentive_table_feature{};
     incentive_table_feature.description->featureAddress->entity = entity_address;
-    incentive_table_feature.description->featureAddress->feature = feature_address_incentive_table;
+    incentive_table_feature.description->featureAddress->feature = FeatureAddresses::cevc_incentive_table;
     incentive_table_feature.description->featureType = FeatureTypeEnumType::IncentiveTable;
     incentive_table_feature.description->role = RoleType::server;
 
@@ -2325,7 +2409,7 @@ TimeSeriesListDataType CevcUsecase::read_time_series_list() const
     return {};
 }
 
-CmdClassifierType CevcUsecase::write_time_series_list(HeaderType &header, TimeSeriesListDataType data, JsonObject response)
+CmdClassifierType CevcUsecase::write_time_series_list(HeaderType &header, SpineOptional<TimeSeriesListDataType> data, JsonObject response)
 {
     // TODO: Implement write_time_series_list
     return CmdClassifierType::EnumUndefined;
@@ -2337,7 +2421,7 @@ IncentiveTableDescriptionDataType CevcUsecase::read_incentive_table_description(
     return {};
 }
 
-CmdClassifierType CevcUsecase::write_incentive_table_description(HeaderType &header, IncentiveTableDataType data, JsonObject response)
+CmdClassifierType CevcUsecase::write_incentive_table_description(HeaderType &header, SpineOptional<IncentiveTableDescriptionDataType> data, JsonObject response)
 {
     // TODO: Implement write_incentive_table_description
     return CmdClassifierType::EnumUndefined;
@@ -2355,7 +2439,7 @@ IncentiveTableDataType CevcUsecase::read_incentive_table_data() const
     return {};
 }
 
-CmdClassifierType CevcUsecase::write_incentive_table_data(HeaderType &header, IncentiveTableDataType data, JsonObject response)
+CmdClassifierType CevcUsecase::write_incentive_table_data(HeaderType &header, SpineOptional<IncentiveTableDataType> data, JsonObject response)
 {
     // TODO: Implement write_incentive_table_data
     return CmdClassifierType::EnumUndefined;
@@ -2466,13 +2550,22 @@ bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, Fe
         sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     }
     bool message_sent = false;
+    if (SpineConnection *spine_conn = get_spine_connection(destination)) {
+        spine_conn->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
+        message_sent = true;
+    }
+
+    return message_sent;
+}
+
+SpineConnection *EEBusUseCases::get_spine_connection(const FeatureAddressType &spine_address)
+{
     for (auto &ship_connection : eebus.ship.ship_connections) {
-        if (ship_connection && ship_connection->spine->check_known_address(destination)) {
-            ship_connection->spine->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
-            message_sent = true;
+        if (ship_connection && ship_connection->spine->check_known_address(spine_address)) {
+            return ship_connection->spine.get();
         }
     }
-    return message_sent;
+    return nullptr;
 }
 
 namespace EEBUS_USECASE_HELPERS
