@@ -104,10 +104,10 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> incoming_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
 
-    WebSocketsClient ws_client;
+    WebSocketsClient *ws_client = nullptr;
     tf_websocket_client_handle_t ws_server;
     Role role;
-    CoolString peer_ski = "";
+    CoolString peer_ski{};
     unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
 
@@ -117,7 +117,7 @@ public:
      * @param ws_client The incoming connection from the WebSocketsClient
      * @param ski the SKI
      */
-    ShipConnection(WebSocketsClient ws_client, CoolString ski);
+    ShipConnection(WebSocketsClient *ws_client, CoolString ski);
     /**
      * New ShipConnection where we act as a Client
      * @param ws_config The WebSocket server handle to connect to

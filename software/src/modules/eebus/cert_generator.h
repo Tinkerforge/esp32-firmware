@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025 Mattias Schäffersmann <mattias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,23 +19,8 @@
 
 #pragma once
 
-#include <cstdint>
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/x509_crt.h"
 
-class Cert
-{
-private:
-    bool generate();
-
-public:
-    Cert()
-    {
-    };
-
-    bool read();
-    void log();
-
-    unsigned char crt[512];
-    unsigned char key[256];
-    uint16_t crt_length = 0;
-    uint16_t key_length = 0;
-};
+bool eebus_ship_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);

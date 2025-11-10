@@ -186,7 +186,7 @@ void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
 
-    toggle_module();
+    ship.setup();
     update_peers_config();
 
     initialized = true;
@@ -277,6 +277,9 @@ void EEBus::register_urls()
             return "scan done";
         },
         true);
+
+    // toggle_module will register URI handlers and cannot be started during the setup stage.
+    toggle_module();
 }
 
 void EEBus::toggle_module()
@@ -291,7 +294,7 @@ void EEBus::toggle_module()
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
         data_handler = make_unique_psram<SpineDataTypeHandler>();
-        ship.setup();
+        ship.enable_ship();
         logger.printfln("EEBUS Module enabled");
 
     } else {
