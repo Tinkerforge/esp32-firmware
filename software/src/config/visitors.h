@@ -1229,7 +1229,7 @@ struct from_update {
 
         uint64_t new_value = 0;
         if (!extract_int<uint64_t>(update, &new_value, 0, 9007199254740991l)) // FIXME: those are +-2^53! Maybe remove ConfUint53 and change ConfInt52 to 53
-            return {"ConfUpdate node was not a signed integer.", false};
+            return {"ConfUpdate node was not an unsigned integer.", false};
 
         bool changed = *x.getVal() != new_value;
         *x.getVal() = new_value;
@@ -1281,7 +1281,7 @@ struct from_update {
 
         int16_t new_value = 0;
         if (!extract_int<int16_t>(update, &new_value))
-            return {"ConfUpdate node was not an unsigned integer.", false};
+            return {"ConfUpdate node was not a signed integer.", false};
 
         bool changed = *x.getVal() != new_value;
         *x.getVal() = new_value;
