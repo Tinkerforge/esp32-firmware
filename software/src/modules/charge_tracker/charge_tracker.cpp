@@ -212,7 +212,7 @@ bool ChargeTracker::repair_last(float meter_start)
 
     File r_file = LittleFS.open(chargeRecordFilename(last_charge_record), "r+");
     if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
-        logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Offset is %u bytes. Expected 0", r_file.size() % CHARGE_RECORD_SIZE);
+        logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", r_file.size(), r_file.size() % CHARGE_RECORD_SIZE);
         // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
         return false;
     }
@@ -226,7 +226,7 @@ bool ChargeTracker::repair_last(float meter_start)
             File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1));
             auto tmp_size = tmp.size();
             if (tmp_size % CHARGE_RECORD_SIZE != 0 || tmp_size < sizeof(Charge) * 2) {
-                logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Offset is %u bytes. Expected 0", tmp_size % CHARGE_RECORD_SIZE);
+                logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", tmp_size, tmp_size % CHARGE_RECORD_SIZE);
                 return false;
             }
             tmp.seek(tmp.size() - sizeof(Charge) * 2);
@@ -300,7 +300,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     {
         File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a");
         if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
-            logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Offset is %u bytes. Expected %u", file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
+            logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected %u", file.size() , file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
             // TODO: How to handle this case? Add a charge start with the same meter value as the last end?
             // This would also mean that all the size checks of startCharge have to be duplicated!
             // If we check in ::setup() whether a charge is running, this can never happen.
