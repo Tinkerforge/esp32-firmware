@@ -44,8 +44,8 @@ public:
     bool load_internal(const cert_load_info *load_info);
     bool load_external_with_internal_fallback(const cert_load_info *load_info);
 
-    void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out);
-    bool is_loaded();
+    void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out) const;
+    bool is_loaded() const;
     void free();
 
     static bool default_cert_fill_fn(mbedtls_x509write_cert *mbed_cert);

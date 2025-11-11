@@ -27,6 +27,7 @@
 #include "cert_generator.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/hexdump.h"
 #include "tools/net.h"
 
 static constexpr uint16_t SHIP_PORT = 4712;
@@ -88,6 +89,52 @@ void Ship::disable_ship()
     eebus.trace_fmtln("disable_ship end");
 }
 
+static const char cert_begin[] = "-----BEGIN CERTIFICATE-----";
+
+// Don't inline, keep buffers from hogging the stack.
+[[gnu::noinline]]
+static String extract_subject_key_id_hex(const Cert &crt) {
+    if (!crt.is_loaded()) {
+        logger.printfln("Cannot extract subject key: Certificate not loaded");
+        return String{};
+    }
+
+    const uint8_t *crt_data;
+    size_t crt_len;
+    const  uint8_t *key_data;
+    size_t key_len;
+
+    crt.get_data(&crt_data, &crt_len, &key_data, &key_len);
+
+    if (crt_len > std::size(cert_begin) && strncmp(reinterpret_cast<const char *>(crt_data), cert_begin, std::size(cert_begin) - 1) == 0) {
+        crt_len++; // Include null-termination of PEM certificate
+    }
+
+    mbedtls_x509_crt x509_crt;
+
+    mbedtls_x509_crt_init(&x509_crt);
+
+    char ship_ski[41];
+    size_t ship_ski_len;
+
+    const int ret = mbedtls_x509_crt_parse(&x509_crt, crt_data, crt_len);
+    if (ret != 0) {
+        logger.printfln(  "Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
+        eebus.trace_fmtln("Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
+        ship_ski_len = 0;
+    } else {
+        ship_ski_len = hexdump(x509_crt.subject_key_id.p, x509_crt.subject_key_id.len, ship_ski, std::size(ship_ski), HexdumpCase::Lower);
+
+        if (ship_ski_len != 40) {
+            logger.printfln("SKI from certificate has unexpected length: %zu", ship_ski_len);
+        }
+    }
+
+    mbedtls_x509_crt_free(&x509_crt);
+
+    return String{ship_ski, ship_ski_len};
+}
+
 void Ship::setup_wss()
 {
     if (wss_registered) {
@@ -105,6 +152,14 @@ void Ship::setup_wss()
             .generator_fn = eebus_ship_certificate_generator_fn,
         };
         cert.load_external_with_internal_fallback(&cert_info);
+
+        const String ship_ski = extract_subject_key_id_hex(cert);
+
+        if (ship_ski.isEmpty()) {
+            return;
+        }
+
+        eebus.set_own_ski(ship_ski);
     }
 
     // Websocket initial connection handler
