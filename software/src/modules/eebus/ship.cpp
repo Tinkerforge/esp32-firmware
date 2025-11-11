@@ -80,7 +80,7 @@ void Ship::disable_ship()
 {
     eebus.trace_fmtln("disable_ship start");
     for (auto &ship_connection : eebus.ship.ship_connections) {
-        ship_connection->schedule_close(0_ms);
+        ship_connection->schedule_close(0_ms, "EEBUS disabled");
     }
     mdns_service_remove("_ship", "_tcp");
 
@@ -201,7 +201,7 @@ void Ship::setup_wss()
 
         client->setCtx(nullptr);
         ship_connection->ws_client = nullptr; // Connection already closed, can't use it anymore.
-        ship_connection->schedule_close(0_ms);
+        ship_connection->schedule_close(0_ms, "Websocket disconnected");
     });
 
     // Websocket data received handler
