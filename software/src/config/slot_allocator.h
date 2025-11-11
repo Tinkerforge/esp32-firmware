@@ -29,8 +29,8 @@ template<typename ConfigT>
 struct SlotConfig;
 
 template<> struct SlotConfig<Config::ConfUint> {
-    static constexpr const size_t slots_per_superblock  = 2048;
-    static constexpr const size_t slots_per_block       =  256;
+    static constexpr const size_t slots_per_superblock  = 128;
+    static constexpr const size_t slots_per_block       =  16;
     static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
 
     static_assert(slots_per_superblock % slots_per_block == 0);
@@ -38,8 +38,8 @@ template<> struct SlotConfig<Config::ConfUint> {
 };
 
 template<> struct SlotConfig<Config::ConfInt> {
-    static constexpr const size_t slots_per_superblock  = 512;
-    static constexpr const size_t slots_per_block       =  64;
+    static constexpr const size_t slots_per_superblock  = 128;
+    static constexpr const size_t slots_per_block       =  16;
     static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
 
     static_assert(slots_per_superblock % slots_per_block == 0);
@@ -47,8 +47,8 @@ template<> struct SlotConfig<Config::ConfInt> {
 };
 
 template<> struct SlotConfig<Config::ConfUint32> {
-    static constexpr const size_t slots_per_superblock  = 2048;
-    static constexpr const size_t slots_per_block       =  256;
+    static constexpr const size_t slots_per_superblock  = 512;
+    static constexpr const size_t slots_per_block       =  64;
     static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
 
     static_assert(slots_per_superblock % slots_per_block == 0);
