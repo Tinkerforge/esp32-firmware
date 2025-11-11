@@ -31,13 +31,13 @@ typedef union {
     uint32_t u;
 } float_uint;
 
-bool Config::ConfFloat::slotEmpty(const Slot *slot) {
+bool Config::ConfFloat::slotEmpty(const Slot *slot, size_t slotIdx) {
     float_uint v;
     v.f = Config::ConfFloat::Slot::MARKER;
     return slot->val == v.u;
 }
 
-void Config::ConfFloat::slotDebugHook(const Slot *slot) {
+void Config::ConfFloat::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

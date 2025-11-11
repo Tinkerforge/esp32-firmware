@@ -23,12 +23,12 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfString::slotEmpty(const Slot *slot)
+bool Config::ConfString::slotEmpty(const Slot *slot, size_t slotIdx)
 {
     return !slot->val;
 }
 
-void Config::ConfString::slotDebugHook(const Slot *slot) {
+void Config::ConfString::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

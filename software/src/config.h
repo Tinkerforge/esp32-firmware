@@ -91,8 +91,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfString";
         [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
@@ -122,8 +122,8 @@ struct Config {
         const Slot *getSlot() const;
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfFloat";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -149,8 +149,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfInt";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -177,8 +177,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfUint";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -205,8 +205,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfInt52";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -233,8 +233,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfUint53";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -298,8 +298,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfArray";
         [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
@@ -329,8 +329,8 @@ struct Config {
         uint16_t idx;
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfObject";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -359,8 +359,8 @@ struct Config {
         Slot *getSlot();
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfUnion";
         [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 
@@ -389,8 +389,8 @@ struct Config {
         uint16_t idx;
 
     public:
-        static bool slotEmpty(const Slot *slot);
-        static void slotDebugHook(const Slot *slot);
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
         static constexpr const char *variantName = "ConfTuple";
         [[gnu::malloc]] static Slot *allocSlotBuf(size_t elements);
 

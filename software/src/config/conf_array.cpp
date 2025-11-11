@@ -26,12 +26,12 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfArray::slotEmpty(const Slot *slot)
+bool Config::ConfArray::slotEmpty(const Slot *slot, size_t slotIdx)
 {
     return slot->minElements > slot->maxElements;
 }
 
-void Config::ConfArray::slotDebugHook(const Slot *slot) {
+void Config::ConfArray::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

@@ -26,12 +26,12 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfUint::slotEmpty(const Slot *slot) {
+bool Config::ConfUint::slotEmpty(const Slot *slot, size_t slotIdx) {
     return slot->min == std::numeric_limits<decltype(slot->min)>::max()
         && slot->max == 0;
 }
 
-void Config::ConfUint::slotDebugHook(const Slot *slot) {
+void Config::ConfUint::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

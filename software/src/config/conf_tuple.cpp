@@ -26,12 +26,12 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfTuple::slotEmpty(const Slot *slot)
+bool Config::ConfTuple::slotEmpty(const Slot *slot, size_t slotIdx)
 {
     return slot->length == std::numeric_limits<size_t>::max();
 }
 
-void Config::ConfTuple::slotDebugHook(const Slot *slot) {
+void Config::ConfTuple::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

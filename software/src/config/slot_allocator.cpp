@@ -108,8 +108,8 @@ uint16_t nextSlot()
             }
 
             for (; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
-                if (ConfigT::slotEmpty(block + slot_i)) {
-                    uint16_t idx = static_cast<uint16_t>(superblock_offset * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i);
+                const uint16_t idx = static_cast<uint16_t>(superblock_offset * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i);
+                if (ConfigT::slotEmpty(block + slot_i, idx)) {
                     RootBlock<ConfigT>::first_free_slot = idx + 1;
 
 #if MODULE_DEBUG_AVAILABLE()
@@ -193,6 +193,7 @@ static void check_slot_accounting()
 {
     size_t last_idx = RootBlock<ConfigT>::first_free_slot;
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
+    size_t superblock_idx = 0;
 
 #if MODULE_DEBUG_AVAILABLE()
     size_t used_slots = 0;
@@ -206,14 +207,16 @@ static void check_slot_accounting()
             }
 
             for (size_t slot_i = 0; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
-                if (!ConfigT::slotEmpty(block + slot_i)) {
-                    ConfigT::slotDebugHook(block + slot_i);
+                auto abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::blocks_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
+                if (!ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
+                    ConfigT::slotDebugHook(block + slot_i, abs_slot_idx);
                     used_slots++;
                 }
             }
         }
 
         superblock = superblock->next_superblock;
+        superblock_idx++;
     }
 
     if (used_slots != RootBlock<ConfigT>::used_slots) {
@@ -224,6 +227,7 @@ static void check_slot_accounting()
 #endif
 
     superblock = RootBlock<ConfigT>::first_superblock;
+    superblock_idx = 0;
 
     while (true) {
         if (superblock == nullptr) {
@@ -253,7 +257,9 @@ static void check_slot_accounting()
                 if (slot_i >= last_idx) {
                     return;
                 }
-                if (ConfigT::slotEmpty(block + slot_i)) {
+
+                auto abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::blocks_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
+                if (ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     if (slot_i != last_idx) {
                         logger.printfln("First free slot mismatch. Expected %zu but found %zu in block %zu for %s.", last_idx, slot_i, block_i, ConfigT::variantName);
                     }
@@ -266,6 +272,7 @@ static void check_slot_accounting()
         }
 
         superblock = superblock->next_superblock;
+        superblock_idx++;
     }
 
 }

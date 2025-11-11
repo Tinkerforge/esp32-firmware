@@ -158,13 +158,13 @@ extern template uint16_t nextSlot<Config::ConfTuple>();
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
-size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_check)
+size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_check, size_t superblock_idx)
 {
     if (last_slot_to_check >= SlotConfig<ConfigT>::slots_per_superblock) {
-        size_t last_slot = find_last_used_slot(superblock->next_superblock, last_slot_to_check - SlotConfig<ConfigT>::slots_per_superblock);
+        size_t last_slot = find_last_used_slot(superblock->next_superblock, last_slot_to_check - SlotConfig<ConfigT>::slots_per_superblock, superblock_idx + 1);
 
         if (last_slot < std::numeric_limits<size_t>::max()) {
-            return last_slot + SlotConfig<ConfigT>::slots_per_superblock;
+            return last_slot;
         }
 
         // Nothing in next superblock, start checking from the end of the current superblock.
@@ -178,8 +178,9 @@ size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_
         typename ConfigT::Slot *block = superblock->blocks[last_block_idx];
 
         while (true) {
-            if (!ConfigT::slotEmpty(block + last_slot_idx)) {
-                return last_slot_idx + last_block_idx * SlotConfig<ConfigT>::slots_per_block;
+            auto abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + last_block_idx * SlotConfig<ConfigT>::slots_per_block + last_slot_idx;
+            if (!ConfigT::slotEmpty(block + last_slot_idx, abs_slot_idx)) {
+                return abs_slot_idx;
             }
 
             if (last_slot_idx == 0) {
@@ -215,7 +216,7 @@ inline void notify_free_slot(uint16_t idx)
 #endif
 
     if (idx == RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot > 0) {
-        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u);
+        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u, 0);
 
         if (last_used == std::numeric_limits<size_t>::max()) { // All unused
             RootBlock<ConfigT>::last_used_slot = 0;

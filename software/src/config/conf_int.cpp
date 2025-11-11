@@ -24,13 +24,13 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfInt::slotEmpty(const Slot *slot)
+bool Config::ConfInt::slotEmpty(const Slot *slot, size_t slotIdx)
 {
     return slot->min == 0
         && slot->max == -1;
 }
 
-void Config::ConfInt::slotDebugHook(const Slot *slot) {
+void Config::ConfInt::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 

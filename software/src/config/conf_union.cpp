@@ -23,12 +23,12 @@
 
 #include "gcc_warnings.h"
 
-bool Config::ConfUnion::slotEmpty(const Slot *slot)
+bool Config::ConfUnion::slotEmpty(const Slot *slot, size_t slotIdx)
 {
     return slot->prototypes == nullptr;
 }
 
-void Config::ConfUnion::slotDebugHook(const Slot *slot) {
+void Config::ConfUnion::slotDebugHook(const Slot *slot, size_t slotIdx) {
 
 }
 
