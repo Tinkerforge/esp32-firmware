@@ -105,6 +105,8 @@ public:
      */
     void update_peers_config();
 
+    void set_own_ski(const String &ski);
+
     bool is_enabled() const
     {
         return module_enabled;

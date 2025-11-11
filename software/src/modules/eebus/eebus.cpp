@@ -396,3 +396,8 @@ void EEBus::trace_fmtln(const char *fmt, ...)
     va_end(args);
 #endif
 }
+
+void EEBus::set_own_ski(const String &ski)
+{
+    state.get("ski")->updateString(ski);
+}

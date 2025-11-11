@@ -131,7 +131,7 @@ bool Cert::load_external_with_internal_fallback(const cert_load_info *load_info)
     return load_internal(load_info);
 }
 
-void Cert::get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out)
+void Cert::get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out) const
 {
     if (crt == nullptr) {
         *crt_out     = nullptr;
@@ -150,7 +150,7 @@ void Cert::get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t 
     }
 }
 
-bool Cert::is_loaded()
+bool Cert::is_loaded() const
 {
     return key_length != 0;
 }
