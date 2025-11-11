@@ -46,6 +46,24 @@ template<> struct SlotConfig<Config::ConfInt> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+template<> struct SlotConfig<Config::ConfUint32> {
+    static constexpr const size_t slots_per_superblock  = 2048;
+    static constexpr const size_t slots_per_block       =  256;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+
+template<> struct SlotConfig<Config::ConfInt32> {
+    static constexpr const size_t slots_per_superblock  = 512;
+    static constexpr const size_t slots_per_block       =  64;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+
 template<> struct SlotConfig<Config::ConfFloat> {
     static constexpr const size_t slots_per_superblock  = 1024;
     static constexpr const size_t slots_per_block       =  128;
@@ -147,6 +165,8 @@ uint16_t nextSlot();
 
 extern template uint16_t nextSlot<Config::ConfUint>();
 extern template uint16_t nextSlot<Config::ConfInt>();
+extern template uint16_t nextSlot<Config::ConfUint32>();
+extern template uint16_t nextSlot<Config::ConfInt32>();
 extern template uint16_t nextSlot<Config::ConfFloat>();
 extern template uint16_t nextSlot<Config::ConfString>();
 extern template uint16_t nextSlot<Config::ConfArray>();
@@ -232,6 +252,8 @@ typename ConfigT::Slot *get_slot(uint16_t idx);
 
 extern template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
 extern template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
+extern template Config::ConfUint32::Slot *get_slot<Config::ConfUint32>(uint16_t idx);
+extern template Config::ConfInt32::Slot  *get_slot<Config::ConfInt32>(uint16_t idx);
 extern template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
 extern template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
 extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);

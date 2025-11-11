@@ -43,6 +43,8 @@ export interface state_slow {
     min_free_psram: number;
     conf_uint_buf_size: number;
     conf_int_buf_size: number;
+    conf_uint32_buf_size: number;
+    conf_int32_buf_size: number;
     conf_float_buf_size: number;
     conf_string_buf_size: number;
     conf_array_buf_size: number;

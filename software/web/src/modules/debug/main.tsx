@@ -62,6 +62,8 @@ export class Debug extends Component {
         const config_type_names = [
             __("debug.content.conf_uint_buf"),
             __("debug.content.conf_int_buf"),
+            __("debug.content.conf_uint32_buf"),
+            __("debug.content.conf_int32_buf"),
             __("debug.content.conf_float_buf"),
             __("debug.content.conf_string_buf"),
             __("debug.content.conf_array_buf"),
@@ -171,6 +173,12 @@ export class Debug extends Component {
 
                 <Row label={__("debug.content.conf_int_buf")}
                      c={<OutputFloat value={state_slow.conf_int_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_uint32_buf")}
+                     c={<OutputFloat value={state_slow.conf_uint32_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_int32_buf")}
+                     c={<OutputFloat value={state_slow.conf_int32_buf_size} digits={0} scale={0} unit="B"/>}/>
 
                 <Row label={__("debug.content.conf_float_buf")}
                      c={<OutputFloat value={state_slow.conf_float_buf_size} digits={0} scale={0} unit="B"/>}/>

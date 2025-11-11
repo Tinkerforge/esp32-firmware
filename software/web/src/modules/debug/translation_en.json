@@ -29,6 +29,8 @@
             "config_buffers": "Config buffers",
             "conf_uint_buf": "ConfUint",
             "conf_int_buf": "ConfInt",
+            "conf_uint32_buf": "ConfUint32",
+            "conf_int32_buf": "ConfInt32",
             "conf_float_buf": "ConfFloat",
             "conf_string_buf": "ConfString",
             "conf_array_buf": "ConfArray",

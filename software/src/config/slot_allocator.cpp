@@ -27,6 +27,8 @@
 
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfUint>   first_superblock_ConfUint;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfInt>    first_superblock_ConfInt;
+[[gnu::section(".iram.data")]] static Superblock<Config::ConfUint32> first_superblock_ConfUint32;
+[[gnu::section(".iram.data")]] static Superblock<Config::ConfInt32>  first_superblock_ConfInt32;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfFloat>  first_superblock_ConfFloat;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfString> first_superblock_ConfString;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfArray>  first_superblock_ConfArray;
@@ -38,6 +40,8 @@
 
 template<> Superblock<Config::ConfUint>   *RootBlock<Config::ConfUint>::first_superblock   = &first_superblock_ConfUint;
 template<> Superblock<Config::ConfInt>    *RootBlock<Config::ConfInt>::first_superblock    = &first_superblock_ConfInt;
+template<> Superblock<Config::ConfUint32> *RootBlock<Config::ConfUint32>::first_superblock = &first_superblock_ConfUint32;
+template<> Superblock<Config::ConfInt32>  *RootBlock<Config::ConfInt32>::first_superblock  = &first_superblock_ConfInt32;
 template<> Superblock<Config::ConfFloat>  *RootBlock<Config::ConfFloat>::first_superblock  = &first_superblock_ConfFloat;
 template<> Superblock<Config::ConfString> *RootBlock<Config::ConfString>::first_superblock = &first_superblock_ConfString;
 template<> Superblock<Config::ConfArray>  *RootBlock<Config::ConfArray>::first_superblock  = &first_superblock_ConfArray;
@@ -151,6 +155,8 @@ uint16_t nextSlot()
 
 template uint16_t nextSlot<Config::ConfUint>();
 template uint16_t nextSlot<Config::ConfInt>();
+template uint16_t nextSlot<Config::ConfUint32>();
+template uint16_t nextSlot<Config::ConfInt32>();
 template uint16_t nextSlot<Config::ConfFloat>();
 template uint16_t nextSlot<Config::ConfString>();
 template uint16_t nextSlot<Config::ConfArray>();
@@ -178,6 +184,8 @@ typename ConfigT::Slot *get_slot(uint16_t idx)
 
 template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
 template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
+template Config::ConfUint32::Slot *get_slot<Config::ConfUint32>(uint16_t idx);
+template Config::ConfInt32::Slot  *get_slot<Config::ConfInt32>(uint16_t idx);
 template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
 template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
 template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);
@@ -284,6 +292,8 @@ void config_post_setup()
     task_scheduler.scheduleUncancelable([]() {
         check_slot_accounting<Config::ConfUint>();
         check_slot_accounting<Config::ConfInt>();
+        check_slot_accounting<Config::ConfUint32>();
+        check_slot_accounting<Config::ConfInt32>();
         check_slot_accounting<Config::ConfFloat>();
         check_slot_accounting<Config::ConfString>();
         check_slot_accounting<Config::ConfArray>();

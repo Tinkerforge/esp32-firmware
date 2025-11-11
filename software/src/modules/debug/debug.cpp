@@ -78,11 +78,13 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
     }
 }
 
-static constexpr int CONFIG_TYPES = 10;
+static constexpr int CONFIG_TYPES = 12;
 
 static void (*const slot_debug_info_fns[CONFIG_TYPES])(SlotDebugInfo *slot_info) = {
     &get_slot_debug_info<Config::ConfUint>,
     &get_slot_debug_info<Config::ConfInt>,
+    &get_slot_debug_info<Config::ConfUint32>,
+    &get_slot_debug_info<Config::ConfInt32>,
     &get_slot_debug_info<Config::ConfFloat>,
     &get_slot_debug_info<Config::ConfString>,
     &get_slot_debug_info<Config::ConfArray>,
@@ -162,6 +164,8 @@ void Debug::pre_setup()
         {"min_free_psram", Config::Uint32(0)},
         {"conf_uint_buf_size", Config::Uint32(0)},
         {"conf_int_buf_size", Config::Uint32(0)},
+        {"conf_uint32_buf_size", Config::Uint32(0)},
+        {"conf_int32_buf_size", Config::Uint32(0)},
         {"conf_float_buf_size", Config::Uint32(0)},
         {"conf_string_buf_size", Config::Uint32(0)},
         {"conf_array_buf_size", Config::Uint32(0)},
@@ -233,6 +237,8 @@ void Debug::setup()
 
         state_slow.get("conf_uint_buf_size"  )->updateUint(get_allocated_slot_memory<Config::ConfUint>());
         state_slow.get("conf_int_buf_size"   )->updateUint(get_allocated_slot_memory<Config::ConfInt>());
+        state_slow.get("conf_uint32_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfUint32>());
+        state_slow.get("conf_int32_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfInt32>());
         state_slow.get("conf_float_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfFloat>());
         state_slow.get("conf_string_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfString>());
         state_slow.get("conf_array_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfArray>());

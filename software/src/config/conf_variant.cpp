@@ -34,6 +34,8 @@ Config::ConfVariant::ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF)
 Config::ConfVariant::ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF), val() {new(&val.un)  ConfUnion{un};}
 Config::ConfVariant::ConfVariant(ConfInt52 i)  : tag(Tag::INT64),  updated(0xFF), val() {new(&val.i64) ConfInt52{i};}
 Config::ConfVariant::ConfVariant(ConfUint53 u) : tag(Tag::UINT64), updated(0xFF), val() {new(&val.u64) ConfUint53{u};}
+Config::ConfVariant::ConfVariant(ConfUint32 u) : tag(Tag::UINT32), updated(0xFF), val() {new(&val.u32) ConfUint32{u};}
+Config::ConfVariant::ConfVariant(ConfInt32 u)  : tag(Tag::INT32),  updated(0xFF), val() {new(&val.i32) ConfInt32{u};}
 Config::ConfVariant::ConfVariant(ConfUint16 u) : tag(Tag::UINT16), updated(0xFF), val() {new(&val.u16) ConfUint16{u};}
 Config::ConfVariant::ConfVariant(ConfInt16 u)  : tag(Tag::INT16),  updated(0xFF), val() {new(&val.i16) ConfInt16{u};}
 Config::ConfVariant::ConfVariant(ConfUint8 u)  : tag(Tag::UINT8),  updated(0xFF), val() {new(&val.u8)  ConfUint8{u};}
@@ -77,6 +79,12 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy) : tag(cpy.tag), updated
             break;
         case ConfVariant::Tag::UINT64:
             new(&val.u64) ConfUint53(cpy.val.u64);
+            break;
+        case ConfVariant::Tag::UINT32:
+            new(&val.u32) ConfUint32(cpy.val.u32);
+            break;
+        case ConfVariant::Tag::INT32:
+            new(&val.i32) ConfInt32(cpy.val.i32);
             break;
         case ConfVariant::Tag::UINT16:
             new(&val.u16) ConfUint16(cpy.val.u16);
@@ -144,6 +152,12 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         case ConfVariant::Tag::UINT64:
             new(&val.u64) ConfUint53(cpy.val.u64);
             break;
+        case ConfVariant::Tag::UINT32:
+            new(&val.u32) ConfUint32(cpy.val.u32);
+            break;
+        case ConfVariant::Tag::INT32:
+            new(&val.i32) ConfInt32(cpy.val.i32);
+            break;
         case ConfVariant::Tag::UINT16:
             new(&val.u16) ConfUint16(cpy.val.u16);
             break;
@@ -202,6 +216,12 @@ void Config::ConfVariant::destroyUnionMember()
         case ConfVariant::Tag::UINT64:
             val.u64.~ConfUint53();
             break;
+        case ConfVariant::Tag::UINT32:
+            val.u32.~ConfUint32();
+            break;
+        case ConfVariant::Tag::INT32:
+            val.i32.~ConfInt32();
+            break;
         case ConfVariant::Tag::UINT16:
             val.u16.~ConfUint16();
             break;
@@ -252,6 +272,10 @@ const char *Config::ConfVariant::getVariantName() const
             return val.i64.variantName;
         case ConfVariant::Tag::UINT64:
             return val.u64.variantName;
+        case ConfVariant::Tag::UINT32:
+            return val.u32.variantName;
+        case ConfVariant::Tag::INT32:
+            return val.i32.variantName;
         case ConfVariant::Tag::UINT16:
             return val.u16.variantName;
         case ConfVariant::Tag::INT16:
@@ -302,6 +326,12 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) : tag(cpy.tag), updated(cpy.
             break;
         case ConfVariant::Tag::UINT64:
             new(&val.u64) ConfUint53(std::move(cpy.val.u64));
+            break;
+        case ConfVariant::Tag::UINT32:
+            new(&val.u32) ConfUint32(std::move(cpy.val.u32));
+            break;
+        case ConfVariant::Tag::INT32:
+            new(&val.i32) ConfInt32(std::move(cpy.val.i32));
             break;
         case ConfVariant::Tag::UINT16:
             new(&val.u16) ConfUint16(std::move(cpy.val.u16));
@@ -366,6 +396,12 @@ Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy)
             break;
         case ConfVariant::Tag::UINT64:
             new(&val.u64) ConfUint53(std::move(cpy.val.u64));
+            break;
+        case ConfVariant::Tag::UINT32:
+            new(&val.u32) ConfUint32(std::move(cpy.val.u32));
+            break;
+        case ConfVariant::Tag::INT32:
+            new(&val.i32) ConfInt32(std::move(cpy.val.i32));
             break;
         case ConfVariant::Tag::UINT16:
             new(&val.u16) ConfUint16(std::move(cpy.val.u16));

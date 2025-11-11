@@ -52,6 +52,15 @@ struct ConfUintSlot {
     uint32_t max = 0;
 };
 
+// No empty marker here: conf_(u)int32.cpp each contain a static vector that keeps track of filled/empty slots.
+struct ConfInt32Slot {
+    int32_t val = 0;
+};
+
+struct ConfUint32Slot {
+    uint32_t val = 0;
+};
+
 struct ConfArraySlot {
     std::vector<Config> val;
     const Config *prototype;

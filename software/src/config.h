@@ -58,6 +58,8 @@ struct ConfStringSlot;
 struct ConfFloatSlot;
 struct ConfIntSlot;
 struct ConfUintSlot;
+struct ConfInt32Slot;
+struct ConfUint32Slot;
 struct ConfArraySlot;
 struct ConfObjectSlot;
 struct ConfUnionSlot;
@@ -194,6 +196,62 @@ struct Config {
 
         ConfUint(ConfUint &&cpy);
         ConfUint &operator=(ConfUint &&cpy);
+    };
+
+    struct ConfInt32 {
+        friend struct api_info;
+        using Slot = ConfInt32Slot;
+
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
+        static constexpr const char *variantName = "ConfInt32";
+        static Slot *allocSlotBuf(size_t elements);
+
+        int32_t *getVal();
+        const int32_t *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfInt32(int32_t val);
+        ConfInt32(const ConfInt32 &cpy);
+        ~ConfInt32();
+
+        ConfInt32 &operator=(const ConfInt32 &cpy);
+
+        ConfInt32(ConfInt32 &&cpy);
+        ConfInt32 &operator=(ConfInt32 &&cpy);
+    };
+
+    struct ConfUint32 {
+        friend struct api_info;
+        using Slot = ConfUint32Slot;
+
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(const Slot *slot, size_t slotIdx);
+        static void slotDebugHook(const Slot *slot, size_t slotIdx);
+        static constexpr const char *variantName = "ConfUint32";
+        static Slot *allocSlotBuf(size_t elements);
+
+        uint32_t *getVal();
+        const uint32_t *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfUint32(uint32_t val);
+        ConfUint32(const ConfUint32 &cpy);
+        ~ConfUint32();
+
+        ConfUint32 &operator=(const ConfUint32 &cpy);
+
+        ConfUint32(ConfUint32 &&cpy);
+        ConfUint32 &operator=(ConfUint32 &&cpy);
     };
 
     struct ConfInt52 {
@@ -469,6 +527,8 @@ struct Config {
             UNION,
             INT64,
             UINT64,
+            UINT32,
+            INT32,
             UINT16,
             INT16,
             UINT8,
@@ -490,6 +550,8 @@ struct Config {
             ConfUnion un;
             ConfInt52 i64;
             ConfUint53 u64;
+            ConfUint32 u32;
+            ConfInt32 i32;
             ConfUint16 u16;
             ConfInt16 i16;
             ConfUint8 u8;
@@ -508,6 +570,8 @@ struct Config {
         ConfVariant(ConfUnion un);
         ConfVariant(ConfInt52 i52);
         ConfVariant(ConfUint53 u53);
+        ConfVariant(ConfUint32 u32);
+        ConfVariant(ConfInt32 i32);
         ConfVariant(ConfUint16 u16);
         ConfVariant(ConfInt16 i16);
         ConfVariant(ConfUint8 u8);
@@ -556,6 +620,10 @@ struct Config {
                 return visitor(v.val.i64);
             case ConfVariant::Tag::UINT64:
                 return visitor(v.val.u64);
+            case ConfVariant::Tag::UINT32:
+                return visitor(v.val.u32);
+            case ConfVariant::Tag::INT32:
+                return visitor(v.val.i32);
             case ConfVariant::Tag::UINT16:
                 return visitor(v.val.u16);
             case ConfVariant::Tag::INT16:
@@ -596,6 +664,10 @@ struct Config {
                 return visitor(v.val.i64);
             case ConfVariant::Tag::UINT64:
                 return visitor(v.val.u64);
+            case ConfVariant::Tag::UINT32:
+                return visitor(v.val.u32);
+            case ConfVariant::Tag::INT32:
+                return visitor(v.val.i32);
             case ConfVariant::Tag::UINT16:
                 return visitor(v.val.u16);
             case ConfVariant::Tag::INT16:
@@ -641,6 +713,10 @@ struct Config {
             return (int)ConfVariant::Tag::INT64;
         if (std::is_same<T, ConfUint53>())
             return (int)ConfVariant::Tag::UINT64;
+        if (std::is_same<T, ConfUint32>())
+            return (int)ConfVariant::Tag::UINT32;
+        if (std::is_same<T, ConfInt32>())
+            return (int)ConfVariant::Tag::INT32;
         if (std::is_same<T, ConfUint16>())
             return (int)ConfVariant::Tag::UINT16;
         if (std::is_same<T, ConfInt16>())
@@ -896,6 +972,8 @@ public:
     int8_t asInt8() const;
     uint16_t asUint16() const;
     int16_t asInt16() const;
+    uint32_t asUint32() const;
+    int32_t asInt32() const;
 
     millis_t asUptime() const { return millis_t{this->asInt52()}; }
 
@@ -905,6 +983,12 @@ public:
             return (T) this->asUint();
         }
         if (this->is<ConfInt>()) {
+            return (T) this->asInt();
+        }
+        if (this->is<ConfUint32>()) {
+            return (T) this->asUint();
+        }
+        if (this->is<ConfInt32>()) {
             return (T) this->asInt();
         }
         if (this->is<ConfUint16>()) {
@@ -929,6 +1013,12 @@ public:
             return (std::underlying_type_t<T>) this->asUint();
         }
         if (this->is<ConfInt>()) {
+            return (std::underlying_type_t<T>) this->asInt();
+        }
+        if (this->is<ConfUint32>()) {
+            return (std::underlying_type_t<T>) this->asUint();
+        }
+        if (this->is<ConfInt32>()) {
             return (std::underlying_type_t<T>) this->asInt();
         }
         if (this->is<ConfUint16>()) {
@@ -991,6 +1081,12 @@ public:
             return updateUint(static_cast<uint32_t>(value));
         }
         if (this->is<ConfInt>()) {
+            return updateInt(static_cast<int32_t>(value));
+        }
+        if (this->is<ConfUint32>()) {
+            return updateUint(static_cast<uint32_t>(value));
+        }
+        if (this->is<ConfInt32>()) {
             return updateInt(static_cast<int32_t>(value));
         }
         if (this->is<ConfUint16>()) {
