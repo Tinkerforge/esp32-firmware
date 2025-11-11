@@ -100,15 +100,12 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
     if (err == ESP_OK) {
         state_machine_next_step();
     } else {
-        logger.printfln("Error connecting to peer");
-        schedule_close(0_ms);
+        schedule_close(0_ms, "Error connecting to peer");
     }
 }
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
-
-    // TODO: Does the ws_client implement some kind of keepalive? Like sending ping/pong frames? Otherwise we need to implement something like that here
     if (ws_pkt->fragmented) {
         eebus.trace_fmtln("ShipConnection fragmented ws_frame_received from: %s", peer_ski.c_str());
 
@@ -130,10 +127,13 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
     state_machine_next_step();
 }
 
-void ShipConnection::schedule_close(const millis_t delay_ms)
+void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
 {
-    logger.printfln("Close requested for SHIP Connection");
-
+    if (reason.length() > 0)
+        logger.printfln("Close requested for SHIP Connection: %s", reason.c_str());
+    else {
+        logger.printfln("Close requested for SHIP Connection");
+    }
     task_scheduler.cancel(timeout_task);
     timeout_task = 0;
 
@@ -488,7 +488,7 @@ void ShipConnection::state_cme_init_start()
             set_state(ShipConnectionState::CmiServerWait);
             timeout_task = task_scheduler.scheduleOnce(
                 [this]() {
-                    schedule_close(0_ms);
+                    schedule_close(0_ms, "Timeout during connection initialization. No CMI message received.");
                 },
                 SHIP_CONNECTION_CMI_TIMEOUT);
             break;
@@ -503,7 +503,7 @@ void ShipConnection::state_cmi_client_send()
     set_state(ShipConnectionState::CmiClientWait);
     timeout_task = task_scheduler.scheduleOnce(
         [this]() {
-            schedule_close(0_ms);
+            schedule_close(0_ms, "Timeout during connection initialization. No CMI response received.");
         },
         SHIP_CONNECTION_CMI_TIMEOUT);
 }
@@ -525,7 +525,7 @@ void ShipConnection::state_cmi_client_evaluate()
         set_and_schedule_state(ShipConnectionState::SmeConnectionDataPreparation);
     } else {
         // SHIP 13.4.3 3.2.1 and 3.2.3
-        schedule_close(0_ms);
+        schedule_close(0_ms, "CMI negotiation failed. Received invalid message from server.");
     }
 }
 
@@ -550,7 +550,7 @@ void ShipConnection::state_cmi_server_evaluate()
         } else {
             // SHIP 13.4.3 2.2.1 and 2.2.3
             send_cmi_message(0, 0);
-            schedule_close(0_ms);
+            schedule_close(0_ms, "CMI negotiation failed. Received invalid message from client .");
         }
     }
 }
@@ -824,7 +824,7 @@ void ShipConnection::state_sme_hello_abort()
 
 void ShipConnection::state_sme_hello_abort_done()
 {
-    schedule_close(0_ms);
+    schedule_close(0_ms, "SHIP Hello aborted.");
 }
 
 void ShipConnection::state_sme_hello_remote_abort_done()
@@ -1130,7 +1130,7 @@ void ShipConnection::state_done()
             memcpy(&message_outgoing->data[1], output.c_str(), output.length());
             message_outgoing->length = output.length() + 1;
             send_current_outgoing_message();
-            schedule_close(0_ms);
+            schedule_close(0_ms, "SHIP Connection closed by peer request.");
         }
         default:
             break;
@@ -1144,7 +1144,7 @@ void ShipConnection::state_is_not_implemented()
                       get_ship_connection_state_name(state),
                       static_cast<std::underlying_type<ShipConnectionState>::type>(state));
 
-    schedule_close(0_ms);
+    schedule_close(0_ms, "Invalid state reached.");
 }
 
 void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connection_hello)
@@ -1283,7 +1283,7 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
 
     eebus.trace_fmtln("T2J ProtocolHandshakeError json: %s", &message_outgoing->data[1]);
     send_current_outgoing_message();
-    schedule_close(0_ms);
+    schedule_close(0_ms, "SHIP Protocol Handshake aborted. ");
 }
 
 void ShipConnection::to_json_access_methods_type()
