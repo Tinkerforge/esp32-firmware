@@ -105,7 +105,7 @@ void WS::register_urls()
                 return false;
             }
 
-            if (sb.getLength() == 0) {
+            if (!done && sb.getLength() == 0) {
                 client->close_HTTPThread();
                 return false;
             }
