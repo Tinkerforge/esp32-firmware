@@ -32,6 +32,53 @@
 
 static constexpr uint16_t SHIP_PORT = 4712;
 
+static const char cert_begin[] = "-----BEGIN CERTIFICATE-----";
+
+// Don't inline, keep buffers from hogging the stack.
+[[gnu::noinline]]
+static String extract_subject_key_id_hex(const Cert &crt)
+{
+    if (!crt.is_loaded()) {
+        logger.printfln("Cannot extract subject key: Certificate not loaded");
+        return String{};
+    }
+
+    const uint8_t *crt_data;
+    size_t crt_len;
+    const uint8_t *key_data;
+    size_t key_len;
+
+    crt.get_data(&crt_data, &crt_len, &key_data, &key_len);
+
+    if (crt_len > std::size(cert_begin) && strncmp(reinterpret_cast<const char *>(crt_data), cert_begin, std::size(cert_begin) - 1) == 0) {
+        crt_len++; // Include null-termination of PEM certificate
+    }
+
+    mbedtls_x509_crt x509_crt;
+
+    mbedtls_x509_crt_init(&x509_crt);
+
+    char ship_ski[41];
+    size_t ship_ski_len;
+
+    const int ret = mbedtls_x509_crt_parse(&x509_crt, crt_data, crt_len);
+    if (ret != 0) {
+        logger.printfln("Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
+        eebus.trace_fmtln("Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
+        ship_ski_len = 0;
+    } else {
+        ship_ski_len = hexdump(x509_crt.subject_key_id.p, x509_crt.subject_key_id.len, ship_ski, std::size(ship_ski), HexdumpCase::Lower);
+
+        if (ship_ski_len != 40) {
+            logger.printfln("SKI from certificate has unexpected length: %zu", ship_ski_len);
+        }
+    }
+
+    mbedtls_x509_crt_free(&x509_crt);
+
+    return String{ship_ski, ship_ski_len};
+}
+
 void Ship::pre_setup()
 {
     web_sockets.pre_setup();
@@ -46,13 +93,14 @@ void Ship::setup()
     *extra_ship_port = {
         .port = SHIP_PORT,
         .transport_mode = TransportMode::Secure,
-        .cert_info = {
-            .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
-            .key_id  = static_cast<int16_t>(eebus.config.get("key_id" )->asInt()),
-            .cert_path = "/eebus/cert",
-            .key_path  = "/eebus/key",
-            .generator_fn = eebus_ship_certificate_generator_fn,
-        },
+        .cert_info =
+            {
+                .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
+                .key_id = static_cast<int16_t>(eebus.config.get("key_id")->asInt()),
+                .cert_path = "/eebus/cert",
+                .key_path = "/eebus/key",
+                .generator_fn = eebus_ship_certificate_generator_fn,
+            },
         .next = nullptr,
     };
 
@@ -84,55 +132,7 @@ void Ship::disable_ship()
     }
     mdns_service_remove("_ship", "_tcp");
 
-    // TODO: Close all client and server WebSockets.
-
     eebus.trace_fmtln("disable_ship end");
-}
-
-static const char cert_begin[] = "-----BEGIN CERTIFICATE-----";
-
-// Don't inline, keep buffers from hogging the stack.
-[[gnu::noinline]]
-static String extract_subject_key_id_hex(const Cert &crt) {
-    if (!crt.is_loaded()) {
-        logger.printfln("Cannot extract subject key: Certificate not loaded");
-        return String{};
-    }
-
-    const uint8_t *crt_data;
-    size_t crt_len;
-    const  uint8_t *key_data;
-    size_t key_len;
-
-    crt.get_data(&crt_data, &crt_len, &key_data, &key_len);
-
-    if (crt_len > std::size(cert_begin) && strncmp(reinterpret_cast<const char *>(crt_data), cert_begin, std::size(cert_begin) - 1) == 0) {
-        crt_len++; // Include null-termination of PEM certificate
-    }
-
-    mbedtls_x509_crt x509_crt;
-
-    mbedtls_x509_crt_init(&x509_crt);
-
-    char ship_ski[41];
-    size_t ship_ski_len;
-
-    const int ret = mbedtls_x509_crt_parse(&x509_crt, crt_data, crt_len);
-    if (ret != 0) {
-        logger.printfln(  "Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
-        eebus.trace_fmtln("Failed to parse certificate to retrieve SKI: -0x%04x", static_cast<unsigned>(-ret));
-        ship_ski_len = 0;
-    } else {
-        ship_ski_len = hexdump(x509_crt.subject_key_id.p, x509_crt.subject_key_id.len, ship_ski, std::size(ship_ski), HexdumpCase::Lower);
-
-        if (ship_ski_len != 40) {
-            logger.printfln("SKI from certificate has unexpected length: %zu", ship_ski_len);
-        }
-    }
-
-    mbedtls_x509_crt_free(&x509_crt);
-
-    return String{ship_ski, ship_ski_len};
 }
 
 void Ship::setup_wss()
@@ -146,9 +146,9 @@ void Ship::setup_wss()
     if (!cert.is_loaded()) {
         const cert_load_info cert_info = {
             .cert_id = static_cast<int16_t>(eebus.config.get("cert_id")->asInt()),
-            .key_id  = static_cast<int16_t>(eebus.config.get("key_id" )->asInt()),
+            .key_id = static_cast<int16_t>(eebus.config.get("key_id")->asInt()),
             .cert_path = "/eebus/cert",
-            .key_path  = "/eebus/key",
+            .key_path = "/eebus/key",
             .generator_fn = eebus_ship_certificate_generator_fn,
         };
         cert.load_external_with_internal_fallback(&cert_info);
@@ -176,7 +176,7 @@ void Ship::setup_wss()
             peer_ski = node->txt_ski;
         } else {
             eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s", peer_ip.c_str());
-            peer_handler.update_dns_name_by_ip(peer_ip, peer_ip);
+            peer_handler.update_ip_by_ip(peer_ip, peer_ip);
         }
         peer_handler.update_state_by_ip(peer_ip, NodeState::Connected);
         eebus.trace_fmtln("WebSocketsClient connected from %s with SKI %s", peer_ip.c_str(), peer_ski.c_str());
@@ -254,8 +254,7 @@ void Ship::connect_trusted_peers()
             websocket_cfg.cert_pem = nullptr;
 
             // The pointer is stored and not the data so the data needs to be valid for the duration of the connection.
-            cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len,
-                          reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key),  &websocket_cfg.client_key_len);
+            cert.get_data(reinterpret_cast<const uint8_t **>(&websocket_cfg.client_cert), &websocket_cfg.client_cert_len, reinterpret_cast<const uint8_t **>(&websocket_cfg.client_key), &websocket_cfg.client_key_len);
 
             websocket_cfg.disable_auto_reconnect = true;
 
@@ -265,7 +264,6 @@ void Ship::connect_trusted_peers()
 
             // An error still occurs here because something is wrong with the cert
             ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, peer_ski)));
-
         }
     }
     logger.printfln("EEBUS SHIP: %d trusted peers configured", trusted_peer_count);
@@ -282,9 +280,11 @@ void Ship::setup_mdns()
     // Mandatory Fields
     mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
 
-    mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str()); // ManufaturerName-Model-UniqueID (max 63 bytes)
+    mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str());
+    // ManufaturerName-Model-UniqueID (max 63 bytes)
     mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
-    mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
+    mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr());
+    // 40 byte hexadecimal digits representing the 160 bit SKI value
 
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
@@ -293,7 +293,6 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
     eebus.trace_fmtln("setup_mdns() done");
-
 }
 
 ShipDiscoveryState Ship::discover_ship_peers()
@@ -311,10 +310,78 @@ ShipDiscoveryState Ship::discover_ship_peers()
     eebus.trace_fmtln("discover_ship_peers start");
     logger.printfln("EEBUS MDNS Discovery started");
 
+    auto ip_to_string = [](const esp_ip_addr_t &ip) -> String {
+        char buf[80];
+        if (ip.type == ESP_IPADDR_TYPE_V4) {
+            snprintf(buf, sizeof(buf), IPSTR, IP2STR(&ip.u_addr.ip4));
+        } else {
+            const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&ip.u_addr.ip6);
+            uint16_t hextets[8];
+            for (int i = 0; i < 8; ++i) {
+                hextets[i] = (static_cast<uint16_t>(bytes[2 * i]) << 8) | bytes[2 * i + 1];
+            }
+
+            // Find longest sequence of zero hextets (for :: compression)
+            int best_start = -1;
+            int best_len = 0;
+            for (int i = 0; i < 8;) {
+                if (hextets[i] == 0) {
+                    int j = i;
+                    while (j < 8 && hextets[j] == 0)
+                        ++j;
+                    int len = j - i;
+                    if (len > best_len) {
+                        best_start = i;
+                        best_len = len;
+                    }
+                    i = j;
+                } else {
+                    ++i;
+                }
+            }
+            if (best_len < 2) {
+                best_start = -1; // do not compress sequences shorter than 2
+                best_len = 0;
+            }
+
+            // Build shortened IPv6 string
+            char *p = buf;
+            size_t left = sizeof(buf);
+            for (int i = 0; i < 8; ++i) {
+                if (i == best_start) {
+                    int n = snprintf(p, left, "::");
+                    if (n < 0)
+                        break;
+                    p += n;
+                    left = (left > (size_t)n ? left - n : 0);
+                    i += best_len - 1;
+                    continue;
+                }
+
+                int n = snprintf(p, left, "%x", hextets[i]); // no leading zeros, lowercase
+                if (n < 0)
+                    break;
+                p += n;
+                left = (left > (size_t)n ? left - n : 0);
+
+                // Append ':' if not at end and next part isn't the compressed block
+                if (i != 7 && !(best_start != -1 && i + 1 == best_start)) {
+                    if (left > 1) {
+                        *p = ':';
+                        ++p;
+                        --left;
+                    }
+                }
+            }
+            buf[sizeof(buf) - 1] = '\0';
+        }
+        return String(buf);
+    };
+
     const char *service = "_ship";
     const char *proto = "_tcp";
     mdns_result_t *results = NULL;
-    esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
+    esp_err_t err = mdns_query_ptr(service, proto, 1000, 20, &results);
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed.");
         eebus.trace_fmtln("EEBUS MDNS Query Failed. Error %d", err);
@@ -328,28 +395,38 @@ ShipDiscoveryState Ship::discover_ship_peers()
         return discovery_state;
     }
     while (results) {
-        //ShipNode ship_node;
-        //ship_node.dns_name = results->hostname;
-        //ship_node.port = results->port;
-        String ip_address{};
+        String ip_address = "";
+        String first_ip = "";
         while (results->addr) {
-            if (ip_address.length() > 0) {
-                eebus.trace_fmtln("Error in EEBUS MDNS: More than one IP Address found, this might cause issues.");
+            ip_address = ip_to_string(results->addr->addr);
+            if (first_ip.length() < 1) {
+                first_ip = ip_address;
             }
-            esp_ip_addr_t ip = results->addr->addr;
-            if (ip.type == IPADDR_TYPE_V4) {
-                ip_address = IPAddress(ip.u_addr.ip4.addr).toString().c_str();
+            peer_handler.update_ip_by_ip(first_ip, ip_address);
+            /*
+            if (existing_node == nullptr) {
+                existing_node = peer_handler.get_peer_by_ip(ip_address);
+                logger.printfln("found existing node: %d", existing_node == nullptr);
+                if (existing_node == nullptr) {
+                    peer_handler.new_peer_from_ip(ip_address);
+                    existing_node = peer_handler.get_peer_by_ip(ip_address);
+                } else {
+                    existing_node->ip_address.push_back(ip_address);
+                }
             } else {
-                eebus.trace_fmtln("MDNS returned ipv6 address");
-                //ship_node.ip_address.push_back(IPAddress(ip.u_addr.ip6.addr));
-                // TODO: Add IPv6 support. Convert the IP type from esp_ip6_addr to IPAddress
-            }
+                if (!existing_node->contains_ip(ip_address)) {
+                    existing_node->ip_address.push_back(ip_address);
+                }
+            }*/
+
             results->addr = results->addr->next;
         }
-        if (ip_address.length() < 1) {
+        ShipNode *existing_node = peer_handler.get_peer_by_ip(ip_address);
+        if (ip_address.length() < 1 || existing_node == nullptr) {
+            results = results->next;
             continue;
         }
-        // TODO: Maybe make some security checks? So no harmful data is ingested. Or does mdns library sanizite the data?
+
         for (int i = 0; i < results->txt_count; i++) {
             mdns_txt_item_t *txt = &results->txt[i];
             if (txt->key == NULL || txt->value == NULL) {
@@ -357,29 +434,43 @@ ShipDiscoveryState Ship::discover_ship_peers()
             }
             // mandatory fields
             if (strcmp(txt->key, "txtvers") == 0) {
-                peer_handler.update_vers_by_ip(ip_address, txt->value);
+                existing_node->txt_vers = txt->value;
+                //peer_handler.update_vers_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "id") == 0) {
-                peer_handler.update_id_by_ip(ip_address, txt->value);
+                existing_node->txt_id = txt->value;
+                //peer_handler.update_id_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "path") == 0) {
-                peer_handler.update_id_by_ip(ip_address, txt->value);
+                existing_node->txt_wss_path = txt->value;
+                //peer_handler.update_wss_path_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "ski") == 0) {
-                peer_handler.update_ski_by_ip(ip_address, txt->value);
+                existing_node->txt_ski = txt->value;
+                //peer_handler.update_ski_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "register") == 0) {
-                peer_handler.update_autoregister_by_ip(ip_address, strcmp(txt->value, "true") == 0);
+                existing_node->txt_autoregister = strcmp(txt->value, "true") == 0;
+                // peer_handler.update_autoregister_by_ip(ip_address, strcmp(txt->value, "true") == 0);
                 // Optional Fields
             } else if (strcmp(txt->key, "brand") == 0) {
-                peer_handler.update_brand_by_ip(ip_address, txt->value);
+                existing_node->txt_brand = txt->value;
+                //peer_handler.update_brand_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "model") == 0) {
-                peer_handler.update_model_by_ip(ip_address, txt->value);
+                existing_node->txt_model = txt->value;
+                //peer_handler.update_model_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "type") == 0) {
-                peer_handler.update_type_by_ip(ip_address, txt->value);
+                existing_node->txt_type = txt->value;
+                //peer_handler.update_type_by_ip(ip_address, txt->value);
             }
-            if (peer_handler.get_peer_by_ip(ip_address)->state != NodeState::Connected)
-                peer_handler.update_state_by_ip(ip_address, NodeState::Discovered);
+            if (peer_handler.get_peer_by_ip(ip_address)->state != NodeState::Connected) {
+                existing_node->state = NodeState::Discovered;
+                //peer_handler.update_state_by_ip(ip_address, NodeState::Discovered);
+            }
         }
+        if (existing_node->txt_model.length() <1)
+            existing_node->txt_model = results->instance_name;
+        existing_node->dns_name = String(results->hostname) + ".local";
+        existing_node->port = results->port;
+
         results = results->next;
     }
-
     logger.printfln("EEBUS MDNS Discovery: Found %zu results", peer_handler.get_peers().size());
 
     mdns_query_results_free(results);
@@ -396,20 +487,15 @@ void Ship::print_skis(StringBuilder *sb)
     }
 }
 
-
 void Ship::remove(const ShipConnection &ship_connection)
 {
     // ship_connections is a vector of unique_ptr, so comparing with a reference won't work directly.
-    ship_connections.erase(
-        std::remove_if(
-            ship_connections.begin(),
-            ship_connections.end(),
-            [&ship_connection](const unique_ptr_any<ShipConnection> &ptr) {
-                return ptr.get() == &ship_connection;
-            }
-            ),
-        ship_connections.end()
-        );
+    ship_connections.erase(std::remove_if(ship_connections.begin(),
+                                          ship_connections.end(),
+                                          [&ship_connection](const unique_ptr_any<ShipConnection> &ptr) {
+                                              return ptr.get() == &ship_connection;
+                                          }),
+                           ship_connections.end());
     // The unique_ptr will be destroyed here and the memory will be freed.
 }
 
@@ -428,9 +514,25 @@ void ShipNode::as_json(StringBuilder *sb)
     json.addMemberBoolean("trusted", trusted);
     json.addMemberNumber("port", port);
     json.addMemberNumber("state", (uint8_t)state);
-    json.addMemberString("ip_address", ip_address.c_str());
+    String ip_concat = "";
+    for (const String &ip : ip_address) {
+        ip_concat += ip + ";";
+    }
+    json.addMemberString("ip_address", ip_concat.c_str());
     json.end();
     sb->puts(json_buf);
+}
+
+String ShipNode::ip_address_as_string() const
+{
+    String ip_concat;
+    for (size_t i = 0; i < ip_address.size(); ++i) {
+        if (i > 0) {
+            ip_concat += ";";
+        }
+        ip_concat += ip_address[i];
+    }
+    return ip_concat;
 }
 
 ShipPeerHandler::ShipPeerHandler()
@@ -440,11 +542,9 @@ ShipPeerHandler::ShipPeerHandler()
 
 ShipNode *ShipPeerHandler::get_peer_by_ski(const String &ski)
 {
-    auto it = std::find_if(peers.begin(),
-                           peers.end(),
-                           [&ski](const ShipNode &n) {
-                               return n.txt_ski == ski;
-                           });
+    auto it = std::find_if(peers.begin(), peers.end(), [&ski](const ShipNode &n) {
+        return n.txt_ski == ski;
+    });
     if (it != peers.end())
         return &*it;
     return nullptr;
@@ -452,18 +552,19 @@ ShipNode *ShipPeerHandler::get_peer_by_ski(const String &ski)
 
 void ShipPeerHandler::remove_peer_by_ski(const String &ski)
 {
-    peers.erase(
-        std::ranges::remove_if(peers,
-                               [&ski](const ShipNode &n) {
-                                   return n.txt_ski == ski;
-                               }).begin(),
-        peers.end());
+    peers.erase(std::ranges::remove_if(peers,
+                                       [&ski](const ShipNode &n) {
+                                           return n.txt_ski == ski;
+                                       })
+                    .begin(),
+                peers.end());
 }
 
 void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip)
 {
     if (const auto peer = get_peer_by_ski(ski)) {
-        peer->ip_address = ip;
+        if (!peer->contains_ip(ip))
+            peer->ip_address.push_back(ip);
     } else {
         new_peer_from_ski(ski);
         update_ip_by_ski(ski, ip);
@@ -492,11 +593,11 @@ void ShipPeerHandler::update_trusted_by_ski(const String &ski, bool trusted)
 
 ShipNode *ShipPeerHandler::get_peer_by_ip(const String &ip)
 {
-    auto it = std::find_if(peers.begin(),
-                           peers.end(),
-                           [&ip](const ShipNode &n) {
-                               return n.ip_address == ip;
-                           });
+    auto it = std::find_if(peers.begin(), peers.end(), [&ip](const ShipNode &n) {
+        return std::any_of(n.ip_address.begin(), n.ip_address.end(), [&ip](const String &s) {
+            return s == ip;
+        });
+    });
     if (it != peers.end())
         return &*it;
     return nullptr;
@@ -504,12 +605,14 @@ ShipNode *ShipPeerHandler::get_peer_by_ip(const String &ip)
 
 void ShipPeerHandler::remove_peer_by_ip(const String &ip)
 {
-    peers.erase(
-        std::ranges::remove_if(peers,
-                               [&ip](const ShipNode &n) {
-                                   return n.ip_address == ip;
-                               }).begin(),
-        peers.end());
+    peers.erase(std::ranges::remove_if(peers,
+                                       [&ip](const ShipNode &n) {
+                                           return std::any_of(n.ip_address.begin(), n.ip_address.end(), [&ip](const String &s) {
+                                               return s == ip;
+                                           });
+                                       })
+                    .begin(),
+                peers.end());
 }
 
 /* --- update by ski --- */
@@ -723,6 +826,17 @@ void ShipPeerHandler::update_type_by_ip(const String &ip, const String &type)
         update_type_by_ip(ip, type);
     }
 }
+void ShipPeerHandler::update_ip_by_ip(const String &ip, const String &new_ip)
+{
+    if (const auto peer = get_peer_by_ip(ip)) {
+        if (!peer->contains_ip(new_ip)) {
+            peer->ip_address.push_back(new_ip);
+        }
+    } else {
+        new_peer_from_ip(ip);
+        update_ip_by_ip(ip, new_ip);
+    }
+}
 
 void ShipPeerHandler::new_peer_from_ski(const String &ski)
 {
@@ -734,6 +848,6 @@ void ShipPeerHandler::new_peer_from_ski(const String &ski)
 void ShipPeerHandler::new_peer_from_ip(const String &ip)
 {
     ShipNode node = {};
-    node.ip_address = ip;
+    node.ip_address.push_back(ip);
     peers.push_back(node);
 }

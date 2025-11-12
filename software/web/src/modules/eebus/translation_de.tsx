@@ -49,8 +49,8 @@ let x = {
             "add_peers": "SKI Hinzufügen",
             "peer_info": {
                 "peers": "EEBUS-Partner",
-                "dns_name": "DNS Addresse",
-                "device_ip": "IP Addresse",
+                "dns_name": "DNS Adresse",
+                "device_ip": "Adressen",
                 "device_port": "Port",
                 "device_trusted": "Verbindung erlauben",
                 "model_brand": "Hersteller",

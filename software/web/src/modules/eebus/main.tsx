@@ -40,6 +40,29 @@ import {CollapsedSection} from "../../ts/components/collapsed_section";
 import {FormSeparator} from "../../ts/components/form_separator";
 import {LPCState} from "./lpc_state.enum";
 import {usecases} from "./api";
+import {useState} from "preact/hooks";
+
+function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
+    const [expanded, setExpanded] = useState(false);
+    const ipLines = (ip || "").split(";").map(s => s.trim()).filter(Boolean);
+    const hasDns = (dns || "").length >= 2;
+    const topLine = hasDns ? dns : (ipLines[0] ?? "");
+    const lines = hasDns ? [dns, ...ipLines] : ipLines;
+
+    return (
+        <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setExpanded(!expanded)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") setExpanded(!expanded);
+            }}
+            style={{cursor: "pointer", whiteSpace: "pre-line"}}
+        >
+            {expanded ? lines.join("\n") : topLine + "..."}
+        </div>
+    );
+}
 
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
@@ -104,161 +127,162 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 state.config.peers
                                     .filter(peer => (peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1))
                                     .map((peer) => {
-                                    return {
-                                        columnValues: [
-                                            peer.model_model,
-                                            peer.model_brand,
-                                            (peer.dns_name && peer.dns_name.length >= 2) ? peer.dns_name : peer.ip,
-                                            peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
-                                        fieldValues: [
-                                            peer.model_model,
-                                            peer.model_brand,
-                                            peer.dns_name,
-                                            peer.state
-                                        ],
-                                        editTitle: __("eebus.content.peer_info.edit_peer_title"),
-                                        onEditShow: async () => this.setState({
-                                            add: {
-                                                ski: peer.ski,
-                                                trusted: peer.trusted,
-                                                ip: peer.ip,
-                                                port: peer.port,
-                                                dns_name: peer.dns_name,
-                                                wss_path: peer.wss_path
-                                            }
-                                        }),
-                                        onEditGetChildren: () => [
-                                            <>
-                                                <FormRow label={__("eebus.content.ski")}>
-                                                    <InputText
-                                                        value={state.add.ski}
-                                                        onValue={(v) => this.setState({
-                                                            add: {
-                                                                ...state.add,
-                                                                ski: v
-                                                            }
-                                                        })}
-                                                        required
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.device_trusted")}>
-                                                    <InputSelect items={[
-                                                        ["0", __("eebus.content.peer_info.trusted_no")],
-                                                        ["1", __("eebus.content.peer_info.trusted_yes")]
-                                                    ]}
-                                                                 value={state.add.trusted ? "1" : "0"}
-                                                                 onValue={(v) => this.setState({
-                                                                     add: {
-                                                                         ...state.add,
-                                                                         trusted: v == "1"
-                                                                     }
-                                                                 })}/>
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.device_ip") + "*"}>
-                                                    <InputText
-                                                        value={state.add.ip}
-                                                        onValue={(v) => this.setState({
-                                                            add: {
-                                                                ...state.add,
-                                                                ip: v
-                                                            }
-                                                        })}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.device_port") + "*"}>
-                                                    <InputText
-                                                        value={state.add.port}
-                                                        onValue={(v) => this.setState({
-                                                            add: {
-                                                                ...state.add,
-                                                                port: parseInt(v)
-                                                            }
-                                                        })}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.dns_name") + "*"}>
-                                                    <InputText
-                                                        value={state.add.dns_name}
-                                                        onValue={(v) => this.setState({
-                                                            add: {
-                                                                ...state.add,
-                                                                dns_name: v
-                                                            }
-                                                        })}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.wss_path") + "*"}>
-                                                    <InputText
-                                                        value={state.add.wss_path}
-                                                        onValue={(v) => this.setState({
-                                                            add: {
-                                                                ...state.add,
-                                                                wss_path: v
-                                                            }
-                                                        })}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.autoregister")}>
-                                                    <InputSelect items={[
-                                                        ["0", __("eebus.content.peer_info.trusted_no")],
-                                                        ["1", __("eebus.content.peer_info.trusted_yes")]
-                                                    ]}
-                                                                 value={peer.autoregister ? "1" : "0"}
-                                                                 disabled={true}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.model_type")}>
-                                                    <InputText
-                                                        value={peer.model_type}
-                                                        disabled={true}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.model_model")}>
-                                                    <InputText
-                                                        value={peer.model_model}
-                                                        disabled={true}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.model_brand")}>
-                                                    <InputText
-                                                        value={peer.model_brand}
-                                                        disabled={true}
-                                                    />
-                                                </FormRow>
-                                                <FormRow label={__("eebus.content.peer_info.state")}>
-                                                    <InputSelect items={[
-                                                        ["0", __("eebus.content.peer_info.state_disconnected")],
-                                                        ["1", __("eebus.content.peer_info.state_discovered")],
-                                                        ["2", __("eebus.content.peer_info.state_connected")]
-                                                    ]}
-                                                                 value={peer.state.toString()}
-                                                                 disabled={true}
-                                                    />
-                                                </FormRow>
-                                                *{__("eebus.content.peer_info.overwrite_notice")}
-                                            </>
-                                        ],
-                                        onEditSubmit: async () => {
-                                            let peer = state.add;
-                                            await API.call('eebus/add', peer);
-                                            this.setState({
+                                        return {
+                                            columnValues: [
+                                                peer.model_model,
+                                                peer.model_brand,
+                                                <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
+                                                peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
+                                            fieldValues: [
+                                                peer.model_model,
+                                                peer.model_brand,
+                                                peer.dns_name,
+                                                peer.state
+                                            ],
+                                            editTitle: __("eebus.content.peer_info.edit_peer_title"),
+                                            onEditShow: async () => this.setState({
                                                 add: {
-                                                    ski: "",
-                                                    trusted: true,
-                                                    ip: "",
-                                                    port: 4815,
-                                                    dns_name: "",
-                                                    wss_path: "/ship/"
+                                                    ski: peer.ski,
+                                                    trusted: peer.trusted,
+                                                    ip: peer.ip,
+                                                    port: peer.port,
+                                                    dns_name: peer.dns_name,
+                                                    wss_path: peer.wss_path
                                                 }
-                                            });
-                                        },
-                                        onRemoveClick: async () => {
-                                            await API.call('eebus/remove', {ski: peer.ski});
-                                            return true;
-                                        }
+                                            }),
+                                            onEditGetChildren: () => [
+                                                <>
+                                                    <FormRow label={__("eebus.content.ski")}>
+                                                        <InputText
+                                                            value={state.add.ski}
+                                                            onValue={(v) => this.setState({
+                                                                add: {
+                                                                    ...state.add,
+                                                                    ski: v
+                                                                }
+                                                            })}
+                                                            required
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.device_trusted")}>
+                                                        <InputSelect items={[
+                                                            ["0", __("eebus.content.peer_info.trusted_no")],
+                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
+                                                        ]}
+                                                                     value={state.add.trusted ? "1" : "0"}
+                                                                     onValue={(v) => this.setState({
+                                                                         add: {
+                                                                             ...state.add,
+                                                                             trusted: v == "1"
+                                                                         }
+                                                                     })}/>
+                                                    </FormRow>
+                                                    <FormRow label={"IP "+ __("eebus.content.peer_info.device_ip") + "*"}>
+                                                        <InputText
+                                                            value={state.add.ip}
+                                                            onValue={(v) => this.setState({
+                                                                add: {
+                                                                    ...state.add,
+                                                                    ip: v
+                                                                }
+                                                            })}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.device_port") + "*"}>
+                                                        <InputText
+                                                            value={state.add.port}
+                                                            onValue={(v) => this.setState({
+                                                                add: {
+                                                                    ...state.add,
+                                                                    port: parseInt(v)
+                                                                }
+                                                            })}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow
+                                                        label={__("eebus.content.peer_info.dns_name") + "*"}>
+                                                        <InputText
+                                                            value={state.add.dns_name}
+                                                            onValue={(v) => this.setState({
+                                                                add: {
+                                                                    ...state.add,
+                                                                    dns_name: v
+                                                                }
+                                                            })}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.wss_path") + "*"}>
+                                                        <InputText
+                                                            value={state.add.wss_path}
+                                                            onValue={(v) => this.setState({
+                                                                add: {
+                                                                    ...state.add,
+                                                                    wss_path: v
+                                                                }
+                                                            })}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.autoregister")}>
+                                                        <InputSelect items={[
+                                                            ["0", __("eebus.content.peer_info.trusted_no")],
+                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
+                                                        ]}
+                                                                     value={peer.autoregister ? "1" : "0"}
+                                                                     disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.model_type")}>
+                                                        <InputText
+                                                            value={peer.model_type}
+                                                            disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.model_model")}>
+                                                        <InputText
+                                                            value={peer.model_model}
+                                                            disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.model_brand")}>
+                                                        <InputText
+                                                            value={peer.model_brand}
+                                                            disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.state")}>
+                                                        <InputSelect items={[
+                                                            ["0", __("eebus.content.peer_info.state_disconnected")],
+                                                            ["1", __("eebus.content.peer_info.state_discovered")],
+                                                            ["2", __("eebus.content.peer_info.state_connected")]
+                                                        ]}
+                                                                     value={peer.state.toString()}
+                                                                     disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    *{__("eebus.content.peer_info.overwrite_notice")}
+                                                </>
+                                            ],
+                                            onEditSubmit: async () => {
+                                                let peer = state.add;
+                                                await API.call('eebus/add', peer);
+                                                this.setState({
+                                                    add: {
+                                                        ski: "",
+                                                        trusted: true,
+                                                        ip: "",
+                                                        port: 4815,
+                                                        dns_name: "",
+                                                        wss_path: "/ship/"
+                                                    }
+                                                });
+                                            },
+                                            onRemoveClick: async () => {
+                                                await API.call('eebus/remove', {ski: peer.ski});
+                                                return true;
+                                            }
 
-                                    }
-                                })
+                                        }
+                                    })
                             }
                             addEnabled={state.enable}
                             addTitle={__("eebus.content.add_peers")}
