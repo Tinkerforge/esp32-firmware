@@ -28,6 +28,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "tools/string_builder.h"
 #include "options.h"
 
 static constexpr const char DATA_NOT_FOUND_RESPONSE[] = "{\"error\":\"Data not found\"}";

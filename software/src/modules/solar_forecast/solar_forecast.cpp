@@ -27,6 +27,8 @@
 #include "build.h"
 #include "options.h"
 
+#include "tools/string_builder.h"
+
 #include "gcc_warnings.h"
 
 #if !BUILD_IS_SIGNED()

@@ -32,7 +32,6 @@
 
 #include "cool_string.h"
 #include "tools.h"
-#include "tools/string_builder.h"
 
 struct Config;
 
@@ -49,7 +48,7 @@ struct Config;
 #define ASSERT_MAIN_THREAD() do {} while (0)
 #endif
 
-class StringBuilder;
+class StringWriter;
 
 void config_post_setup();
 
@@ -1170,7 +1169,7 @@ public:
     String to_string() const;
 
     String to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
-    void to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringBuilder *sb) const;
+    void to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringWriter *sw) const;
 
     [[gnu::const]] static const Config *get_prototype_float_nan();
     [[gnu::const]] static const Config *get_prototype_int16_0();

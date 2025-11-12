@@ -24,6 +24,7 @@
 #include "header_logger.h"
 #include "tools.h"
 #include "tools/float.h"
+#include "tools/string_builder.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

@@ -23,6 +23,7 @@
 #include "gcc_warnings.h"
 
 #include "tools/malloc.h"
+#include "tools/string_builder.h"
 
 ConfigRoot::ConfigRoot() : validator(nullptr) {}
 
