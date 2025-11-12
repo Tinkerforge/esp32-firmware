@@ -34,6 +34,8 @@
 #include "lwip/ip_addr.h"
 #include "bindings/hal_common.h"
 
+#include "tools/string_builder.h"
+
 #define QCA700X_SPI_CHIP_SELECT_PIN 4
 #define QCA700X_SPI_MISO_PIN 39 // SENSOR_VN
 #define QCA700X_SPI_MOSI_PIN 15
