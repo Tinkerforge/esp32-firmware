@@ -50,7 +50,7 @@ let x = {
             "peer_info": {
                 "peers": "EEBUS-Peer",
                 "dns_name": "DNS Address",
-                "device_ip": "IP Address",
+                "device_ip": "Addresses",
                 "device_port": "Port",
                 "device_trusted": "Allow Connection",
                 "model_brand": "Manufacturer",

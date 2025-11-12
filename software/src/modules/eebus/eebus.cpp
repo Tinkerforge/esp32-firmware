@@ -35,7 +35,7 @@ void EEBus::pre_setup()
 
     // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
-        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"ip", Config::Str("", 7, 1000)}, // Long string as all IPs the device has will be saved. TODO: Do this another way
         {"port", Config::Uint16(0)},
         {"trusted", Config::Bool(false)},
         {"dns_name", Config::Str("", 0, 63)},
@@ -175,7 +175,7 @@ void EEBus::pre_setup()
             {"evse_commissioning_and_configuration", Config::Object({
                  {"evse_failure", Config::Bool(false)},
                  {"evse_failure_description", Config::Str("", 0, 64)}
-             })}
+             })},
         }
         );
 
@@ -324,7 +324,7 @@ String EEBus::get_eebus_name()
     sw.putc('-');
     sw.puts(uid);
 
-    return String(buffer, sw.getLength());
+    return {buffer, sw.getLength()};
 }
 
 int EEBus::get_state_connection_id_by_ski(const String &ski)
@@ -343,7 +343,7 @@ void EEBus::update_peers_config()
     auto peers = ship.peer_handler.get_peers();
     for (const ShipNode &node : peers) {
         auto peer = config.get("peers")->add();
-        peer->get("ip")->updateString(node.ip_address.c_str());
+        peer->get("ip")->updateString(node.ip_address_as_string());
         peer->get("port")->updateUint(node.port);
         peer->get("trusted")->updateBool(node.trusted);
         peer->get("dns_name")->updateString(node.dns_name);

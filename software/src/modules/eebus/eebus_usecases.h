@@ -368,9 +368,9 @@ public:
 
 private:
     // Data held about the current charge
-    int amps_draw_phase[3]; // Amp draw per phase
-    int power_draw_phase[3]; // Power per phase
-    int power_charged_wh; // Total charged into the ev during the current session in wh
+    int amps_draw_phase[3]{}; // Amp draw per phase
+    int power_draw_phase[3]{}; // Power per phase
+    int power_charged_wh = 0; // Total charged into the ev during the current session in wh
     bool power_charged_measured = false;
 
     // Constraints
@@ -694,7 +694,7 @@ private:
 
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
-    LPCState lpc_state;
+    LPCState lpc_state = LPCState::Init;
     uint64_t state_change_timeout = 0;
     bool switch_state(LPCState state);
     bool init_state();
@@ -805,11 +805,6 @@ public:
     };
 
 private:
-    /*
-    // Feature Addresses
-    uint8_t feature_address_timeseries = FeatureAddresses::cevc_timeseries;
-    uint8_t feature_address_incentive_table = FeatureAddresses::cevc_incentive_table;
-*/
     // Functions
     // Timeseries Feature
     [[nodiscard]] TimeSeriesDescriptionListDataType read_time_series_description() const;

@@ -34,7 +34,7 @@
 struct ShipNode
 {
     // Basic information about the node
-    String ip_address;
+    std::vector<String> ip_address{};
     uint16_t port = 0;
     bool trusted = false;
     NodeState state = NodeState::Unknown;
@@ -53,6 +53,16 @@ struct ShipNode
     // TODO Add more stuff that might be relevant like last seen, features, etc.
 
     void as_json(StringBuilder *sb); /* */
+    [[nodiscard]] String ip_address_as_string() const;
+    [[nodiscard]] bool contains_ip(const String &ip) const
+    {
+        for (const String &addr : ip_address) {
+            if (addr == ip) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 class ShipPeerHandler
@@ -100,12 +110,14 @@ public:
     void update_brand_by_ip(const String &ip, const String &brand);
     void update_model_by_ip(const String &ip, const String &model);
     void update_type_by_ip(const String &ip, const String &type);
+    void update_ip_by_ip(const String &ip, const String &new_ip);
 
-private:
-    std::vector<ShipNode> peers{};
+
     void new_peer_from_ski(const String &ski);
     void new_peer_from_ip(const String &ip);
 
+private:
+    std::vector<ShipNode> peers{};
 };
 
 class Ship
