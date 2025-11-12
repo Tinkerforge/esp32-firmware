@@ -573,6 +573,77 @@ bool API::dump_all_registrations(WebServerRequest &request, StringWriter &sw, co
 }
 #endif
 
+// TODO: Merge this function and the very similar implementation of the first websocket frame in ws.cpp
+template<typename T>
+static bool print_regs_to_debug_report(std::span<T> regs, StringWriter &sw, WebServerRequest &request, const char *terminator) { // Dump states
+    constexpr const char *prefix = ",\n \"";
+    constexpr const char *infix = "\": ";
+    constexpr const char *suffix = "";
+    constexpr size_t prefix_len = strlen(prefix);
+    constexpr size_t infix_len = strlen(infix);
+    constexpr size_t suffix_len = strlen(suffix);
+    size_t terminator_len = terminator == nullptr ? 0 : strlen(terminator);
+
+    size_t i = 0;
+    bool done = false;
+
+    while (!done) {
+        auto result = task_scheduler.await([regs, &i, &done, &sw, terminator_len]() {
+            for (; i < regs.size(); ++i) {
+                auto &reg = regs[i];
+                auto path = reg.path;
+                auto path_len = reg.get_path_len();
+                auto config_len = reg.config->string_length();
+                size_t req = prefix_len + path_len + infix_len + config_len + suffix_len + terminator_len;
+
+                if (sw.getRemainingLength() < req) {
+                    done = false;
+
+                    if (req > sw.getCapacity()) {
+                        logger.printfln("API %s exceeds max debug report buffer capacity! Required %u, buffer capacity %u", path, req, sw.getCapacity());
+                    }
+
+                    return;
+                }
+
+                sw.puts(prefix, prefix_len);
+                sw.puts(path, path_len);
+                sw.puts(infix, infix_len);
+
+                reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len(), &sw);
+
+                sw.puts(suffix, suffix_len);
+            }
+
+            done = true;
+        });
+
+        if (result != TaskScheduler::AwaitResult::Done) {
+            request.sendChunk("Failed to generate debug report: task timed out");
+            request.endChunkedResponse();
+            return false;
+        }
+
+        if (!done && sw.getLength() == 0) {
+            request.sendChunk("Failed to generate debug report: truncated");
+            request.endChunkedResponse();
+            return false;
+        }
+
+        if (terminator != nullptr)
+            sw.puts(terminator, terminator_len);
+
+        if (request.sendChunk(sw.getPtr(), sw.getLength()) != ESP_OK) {
+            request.endChunkedResponse();
+            return false;
+        }
+
+        sw.clear();
+    }
+    return true;
+}
+
+
 void API::register_urls()
 {
 #ifdef DEBUG_FS_ENABLE
@@ -717,71 +788,96 @@ void API::register_urls()
     });
 #endif
 
-    server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
-        String result = "{\"uptime\": ";
-        result += String(now_us().to<millis_t>().as<uint32_t>());
-        result += ",\n \"free_heap_bytes\": ";
-        result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        result += ",\n \"largest_free_heap_block\": ";
-        result += heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        result += ",\n \"devices\": [";
+    server.on_HTTPThread("/debug_report", HTTP_GET, [this](WebServerRequest request) {
+        constexpr size_t BUF_SIZE = OPTIONS_API_JSON_MAX_LENGTH() + 1024;
+        auto buf = heap_alloc_array<char>(BUF_SIZE);
 
-        uint16_t i = 0;
-        char uid_str[7] = {0};
-        char port_name;
-        uint16_t device_id;
+        if (buf == nullptr)
+            return request.send_plain(500, "Failed to allocate buffer");
 
-        while (tf_hal_get_device_info(&hal, i, uid_str, &port_name, &device_id) == TF_E_OK) {
-            char buf[100] = {0};
+        {
+            TFJsonSerializer json{buf.get(), BUF_SIZE};
+            json.addObject();
+            json.addMemberNumber("uptime", now_us().to<millis_t>().as<int64_t>());
 
-            snprintf(buf, sizeof(buf), "%s{\"UID\":\"%s\",\"DID\":%u,\"port\":\"%c\"}", i == 0 ? "" : ",", uid_str, device_id, port_name);
-            result += buf;
-            ++i;
-        }
+            constexpr struct {
+                const char *name;
+                uint32_t caps;
+            } ram_info[3] = {
+                {"dram", MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT},
+                {"iram", MALLOC_CAP_IRAM},
+                {"psram", MALLOC_CAP_SPIRAM},
+            };
 
-        result += "]";
-        result += ",\n \"error_counters\": [";
+            for (size_t i = 0; i < std::size(ram_info); ++i) {
+                multi_heap_info_t info;
+                heap_caps_get_info(&info, ram_info[i].caps);
 
-        for (char c = 'A'; c <= 'F'; ++c) {
-            uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
-            char buf[100] = {0};
+                json.addMemberObject(ram_info[i].name);
+                json.addMemberNumber("free", static_cast<uint32_t>(info.total_free_bytes));
+                json.addMemberNumber("largest_free_block", static_cast<uint32_t>(info.largest_free_block));
+                json.addMemberNumber("min_free", static_cast<uint32_t>(info.minimum_free_bytes));
+                json.endObject();
+            }
 
-            tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
-            snprintf(buf, sizeof(buf), "%s{\"port\":\"%c\",\"SpiTfpChecksum\":%lu,\"SpiTfpFrame\":%lu,\"TfpFrame\":%lu,\"TfpUnexpected\":%lu}", c == 'A' ? "" : ",", c,
-                     spitfp_checksum,
-                     spitfp_frame,
-                     tfp_frame,
-                     tfp_unexpected);
+            task_scheduler.await([&json](){
+                uint16_t i = 0;
+                char uid_str[7] = {0};
+                // We need a string below. tf_hal_get_device_info will only write the first char.
+                char port_name[2] = {0, 0};
+                uint16_t device_id;
 
-            result += buf;
-        }
+                json.addMemberArray("devices");
 
-        result += "]";
+                while (tf_hal_get_device_info(&hal, i, uid_str, port_name, &device_id) == TF_E_OK) {
+                    json.addObject();
+                    json.addMemberString("UID", uid_str);
+                    json.addMemberNumber("DID", device_id);
+                    json.addMemberString("port", port_name);
+                    json.endObject();
 
-        for (auto &reg : states) {
-            result += ",\n \"";
-            result += reg.path;
-            result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len());
-        }
+                    ++i;
+                }
 
-        for (auto &reg : commands) {
-            result += ",\n \"";
-            result += reg.path;
-            result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len());
-        }
+                json.endArray();
+            });
 
-        for (auto &reg : responses) {
-            result += ",\n \"";
-            result += reg.path;
-            result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.keys_to_censor_in_debug_report_len);
-        }
+            task_scheduler.await([&json](){
+                json.addMemberArray("error_counters");
+                for (char c = 'A'; c <= 'F'; ++c) {
+                    uint32_t spitfp_checksum, spitfp_frame, tfp_frame, tfp_unexpected;
 
-        result += "}";
+                    tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
 
-        return request.send_json(200, result);
+                    // We need a string below.
+                    char port_string[2] = {c, 0};
+
+                    json.addObject();
+                    json.addMemberString("port", port_string);
+                    json.addMemberNumber("SpiTfpChecksum", spitfp_checksum);
+                    json.addMemberNumber("SpiTfpFrame", spitfp_frame);
+                    json.addMemberNumber("TfpFrame", tfp_frame);
+                    json.addMemberNumber("TfpUnexpected", tfp_unexpected);
+                    json.endObject();
+                }
+
+                json.endArray();
+            });
+
+            // Don't end the root object: APIs will be added below
+            // json.endObject();
+            size_t to_send = json.end();
+            request.beginChunkedResponse_json(200);
+            request.sendChunk(buf.get(), to_send);
+        } // Drop JsonSerializer to prevent accidentially using it below.
+
+        StringWriter sw{buf.get(), BUF_SIZE};
+
+        print_regs_to_debug_report(this->states, sw, request, nullptr);
+        print_regs_to_debug_report(this->commands, sw, request, nullptr);
+        print_regs_to_debug_report(this->responses, sw, request, "}");
+
+        return request.endChunkedResponse();
     });
 
     this->addState("info/features", &features);

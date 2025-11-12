@@ -48,6 +48,7 @@ void WS::setup()
 
 void WS::register_urls()
 {
+    // TODO: Merge this and the very similar function print_regs_to_debug_report in api.cpp
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient *client) {
         // Max payload size is OPTIONS_API_JSON_MAX_LENGTH.
         // The framing needs 10 + 12 + 3 bytes (with the second \n to mark the end of the API dump)
