@@ -604,28 +604,12 @@ void WebSockets::updateDebugState()
             state_keep_alive_pongs->get(i)->updateUptime(keep_alive_last_pong[i]);
 
             if (keep_alive_fds[i] == -1) {
-                state_keep_alive_peers->get(i)->updateString("not connected");
+                state_keep_alive_peers->get(i)->updateString("NC");
                 continue;
             }
 
-            char ip_str[INET6_ADDRSTRLEN];
-            struct sockaddr_storage addr;
-            socklen_t len = sizeof(addr);
-            if (getpeername(keep_alive_fds[i], reinterpret_cast<sockaddr *>(&addr), &len) != 0) {
-                state_keep_alive_peers->get(i)->updateString(strerror(errno));
-                continue;
-            }
-
-            // TODO: There is ipaddr_ntoa_r but we have to get a ip_addr_t from a sockaddr_storage somehow.
-            if (addr.ss_family == AF_INET) {
-                tf_ip4addr_ntoa(&addr, ip_str, ARRAY_SIZE(ip_str));
-            } else if (addr.ss_family == AF_INET6) {
-                ip6addr_ntoa_r(reinterpret_cast<const ip6_addr_t *>(& reinterpret_cast<const struct sockaddr_in6 *>(&addr)->sin6_addr), ip_str, ARRAY_SIZE(ip_str));
-            } else {
-                snprintf(ip_str, ARRAY_SIZE(ip_str), "unknown ss_family %u", addr.ss_family);
-            }
-
-            state_keep_alive_peers->get(i)->updateString(ip_str);
+            const IPAddress peer_address = tf_peer_address_of_sockfd(keep_alive_fds[i]);
+            state_keep_alive_peers->get(i)->updateString(peer_address.toString());
         }
     }
 }
