@@ -808,6 +808,17 @@ void EvseCommon::register_events()
             return EventResult::OK;
         });
     }
+
+    if (!automation.has_task_with_action(AutomationActionID::SetCurrent)) {
+        bool slot_enabled = false;
+
+        backend->get_charging_slot(CHARGING_SLOT_AUTOMATION, nullptr, &slot_enabled, nullptr);
+
+        if (slot_enabled) {
+            logger.printfln("Clearing leftover limit from automation slot");
+            backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, true);
+        }
+    }
 #endif
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
