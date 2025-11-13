@@ -2201,16 +2201,40 @@ int RemoteAccess::stop_ping() {
     return 0;
 }
 
-bool RemoteAccess::is_connected_local_ip(const IPAddress &ip) {
-    if (connection_state.count() < static_cast<size_t>(ip[2] + 1)) {
+bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip) {
+    if (!done) {
         return false;
     }
 
-    if (connection_state.get(ip[2])->get("state")->asUint8() == 2 && ip[0] == 10 && ip[1] == 123 && ip[3] == 3) {
-        return true;
+    const uint32_t ip = static_cast<uint32_t>(local_ip);
+    const uint32_t masked_ip = ip & 0xFF00FFFFul;
+    constexpr uint32_t expected_masked_ip = ntohl((10u << 24) + (123u << 16) + (0u << 8) + (2u << 0)); // 10.123.x.2
+
+    if (masked_ip != expected_masked_ip) {
+        return false;
     }
 
+    const uint8_t conn_id = (ip >> 16) & 0xFF;
+    size_t conn_idx;
+
+    for (size_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
+        if (remote_connections[i].id == conn_id) {
+            conn_idx = i;
+            goto conn_idx_found;
+        }
+    }
+
+    logger.printfln("Local IP query couldn't find connection ID %hhu", conn_id);
     return false;
+
+conn_idx_found:
+    const uint8_t conn_state = connection_state.get(conn_idx + 1)->get("state")->asUint8();
+
+    if (conn_state != 2) {
+        return false;
+    }
+
+    return true;
 }
 
 [[gnu::const]]
