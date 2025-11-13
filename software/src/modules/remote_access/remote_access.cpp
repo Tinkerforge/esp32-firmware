@@ -187,7 +187,7 @@ void RemoteAccess::pre_setup()
         {"relay_host", Config::Str(OPTIONS_REMOTE_ACCESS_HOST(), 0, 64)},
         {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)},
-        // a mtu of 1280 should be allways safe
+        // a mtu of 1280 should be always safe
         {"mtu", Config::Uint16(1280)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
