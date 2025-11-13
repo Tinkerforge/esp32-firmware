@@ -1852,7 +1852,8 @@ void RemoteAccess::connect_management()
                       false,
                       psk,
                       &management_filter_in,
-                      &management_filter_out);
+                      &management_filter_out,
+                      config.get("mtu")->asUint16());
 
     task_scheduler.scheduleUncancelable(
         [this]() {
