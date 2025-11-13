@@ -390,12 +390,25 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
     auto request = WebServerRequest{req};
 
     if (server->auth_fn && !server->auth_fn(request)) {
-        if (server->on_not_authorized) {
-            server->on_not_authorized(request);
-            return ESP_OK;
+        bool auth_by_remote_access = false;
+
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+        const IPAddress local_address = request.getLocalAddress();
+
+        // If this times out, it will probably unpredictably overwrite something on the stack.
+        task_scheduler.await([&local_address, &auth_by_remote_access]() {
+            auth_by_remote_access = remote_access.is_connected_local_ip(local_address);
+        });
+#endif
+
+        if (!auth_by_remote_access) {
+            if (server->on_not_authorized) {
+                const WebServerRequestReturnProtect ret = server->on_not_authorized(request);
+                return ret.error;
+            }
+            const WebServerRequestReturnProtect ret = request.requestAuthentication();
+            return ret.error;
         }
-        request.requestAuthentication();
-        return ESP_OK;
     }
 
     const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
