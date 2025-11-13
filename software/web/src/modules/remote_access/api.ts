@@ -7,6 +7,7 @@ export interface config {
     relay_host: string,
     relay_port: number,
     cert_id: number,
+    mtu: number,
     users: user[],
 }
 
@@ -65,6 +66,7 @@ interface registration_config {
     relay_port: number,
     email: string,
     cert_id: number,
+    mtu: number,
 }
 
 export interface ping_state {

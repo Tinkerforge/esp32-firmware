@@ -444,6 +444,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             relay_port: this.state.relay_port,
             email: this.state.addUser.email,
             cert_id: this.state.cert_id,
+            mtu: this.state.mtu,
         }
 
         let secret_key_string = undefined;
@@ -605,6 +606,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             relay_port: this.state.relay_port,
             email: "",
             cert_id: this.state.cert_id,
+            mtu: this.state.mtu,
         }
         API.call("remote_access/config_update", config, () => __("remote_access.script.save_failed"), () => __("remote_access.script.reboot_content_changed"));
     }
@@ -804,6 +806,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                         relay_host: this.state.relay_host,
                                         relay_port: this.state.relay_port,
                                         cert_id: this.state.cert_id,
+                                        mtu: this.state.mtu,
                                     };
                                     await this.registerCharger(config);
                                 } else {
@@ -829,6 +832,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                             <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
                                 this.setState({cert_id: parseInt(v)});
                             }}/>
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.mtu")} label_muted={__("remote_access.content.mtu_desc")}>
+                            <InputNumber required
+                                        min={576}
+                                        max={1500}
+                                        value={this.state.mtu}
+                                        onValue={v => this.setState({mtu: v})} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.ping")}>
                             <div class="input-group">

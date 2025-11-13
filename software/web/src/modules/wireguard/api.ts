@@ -12,6 +12,7 @@ export interface config {
     preshared_key: string;
     allowed_ip: string;
     allowed_subnet: string;
+    mtu: number;
 }
 
 export interface state {

@@ -187,6 +187,8 @@ void RemoteAccess::pre_setup()
         {"relay_host", Config::Str(OPTIONS_REMOTE_ACCESS_HOST(), 0, 64)},
         {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)},
+        // a mtu of 1280
+        {"mtu", Config::Uint16(1280)},
         {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
 
@@ -196,6 +198,7 @@ void RemoteAccess::pre_setup()
         {"relay_port", Config::Uint16(443)},
         {"email", Config::Str("", 0, 64)},
         {"cert_id", Config::Int8(-1)},
+        {"mtu", Config::Uint16(1280)},
     });
 
     ping_state = Config::Object({
@@ -340,6 +343,7 @@ void RemoteAccess::register_urls()
             config.get("relay_host")->updateString(registration_config.get("relay_host")->asString());
             config.get("relay_port")->updateUint(registration_config.get("relay_port")->asUint());
             config.get("cert_id")->updateInt(registration_config.get("cert_id")->asInt());
+            config.get("mtu")->updateUint(registration_config.get("mtu")->asUint());
             api.writeConfig("remote_access/config", &config);
         },
         false);
@@ -1471,6 +1475,7 @@ void RemoteAccess::parse_registration(const Config &user_config, std::queue<WgKe
     this->config.get("relay_port")->updateUint(user_config.get("relay_port")->asUint());
     this->config.get("enable")->updateBool(user_config.get("enable")->asBool());
     this->config.get("cert_id")->updateInt(user_config.get("cert_id")->asInt());
+    this->config.get("mtu")->updateUint(user_config.get("mtu")->asUint());
     this->config.get("password")->updateString(charger_password);
     this->config.get("uuid")->updateString(resp_doc["charger_uuid"]);
 
@@ -1560,6 +1565,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberObject("V1");
         serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", build_version_full_str());
+        serializer.addMemberNumber("mtu", config.get("mtu")->asUint());
         serializer.addMemberArray("configured_connections");
         for (const auto &user : config.get("users")) {
             uint8_t user_id = user.get("id")->asUint8() - 1;
@@ -1578,6 +1584,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", build_version_full_str());
+        serializer.addMemberNumber("mtu", config.get("mtu")->asUint());
         serializer.addMemberArray("configured_users");
         for (const auto &user : config.get("users")) {
             serializer.addObject();
@@ -1906,7 +1913,10 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    allowed_ip,
                    allowed_subnet,
                    false,
-                   psk);
+                   psk,
+                   nullptr,
+                   nullptr,
+                   config.get("mtu")->asUint16());
 
     update_connection_state(conn_idx, user_id, conn_id, 1);
 }

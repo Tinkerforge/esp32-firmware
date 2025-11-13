@@ -54,7 +54,9 @@ let x = {
             "stop_ping_failed": "Stopping ping failed",
             "packets_sent": "Packets sent",
             "packets_received": "Packets received",
-            "time_elapsed": "Elapsed time"
+            "time_elapsed": "Elapsed time",
+            "mtu": "MTU",
+            "mtu_desc": "Maximum Transmission Unit for WireGuard tunnel (bytes)"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

@@ -61,7 +61,9 @@ void Wireguard::pre_setup()
         {"preshared_key",     Config::Str("", 0, 44)},
 
         {"allowed_ip",     Config::Str("0.0.0.0", 7, 15)},
-        {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)}
+        {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)},
+
+        {"mtu", Config::Uint16(1420)}
     }), [](Config &cfg, ConfigSource source) -> String {
         IPAddress unused;
 
@@ -157,7 +159,10 @@ void Wireguard::connect_wireguard()
         {config.get("allowed_ip"            )->asUnsafeCStr()},
          config.get("allowed_subnet"        )->asUnsafeCStr(),
          config.get("make_default_interface")->asBool(),
-         psk.isEmpty() ? nullptr : psk.c_str()
+         psk.isEmpty() ? nullptr : psk.c_str(),
+         nullptr,
+         nullptr,
+         config.get("mtu"                   )->asUint16()
     );
 
     if (!success) {

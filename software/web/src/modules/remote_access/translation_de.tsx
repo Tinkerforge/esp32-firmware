@@ -54,7 +54,9 @@ let x = {
             "stop_ping_failed": "Ping stoppen fehlgeschlagen",
             "packets_sent": "Gesendete Pakete",
             "packets_received": "Empfangene Pakete",
-            "time_elapsed": "Verstrichene Zeit"
+            "time_elapsed": "Verstrichene Zeit",
+            "mtu": "MTU",
+            "mtu_desc": "Maximum Transmission Unit für WireGuard-Tunnel (Bytes)"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

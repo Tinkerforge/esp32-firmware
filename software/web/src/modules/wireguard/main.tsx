@@ -213,6 +213,14 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                             placeholder={__("component.ip_configuration.subnet_placeholder")}
                         />
                     </FormRow>
+
+                    <FormRow label={__("wireguard.content.mtu")} label_muted={__("wireguard.content.mtu_muted")}>
+                        <InputNumber required
+                                     min={1280}
+                                     max={1500}
+                                     value={state.mtu}
+                                     onValue={this.set("mtu")}/>
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         )
