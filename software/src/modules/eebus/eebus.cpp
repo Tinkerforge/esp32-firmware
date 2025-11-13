@@ -18,13 +18,13 @@
  */
 #include "eebus.h"
 
+#include "build.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
-#include "ship_connection_state.enum.h"
-#include "ship_discovery_state.enum.h"
 #include "node_state.enum.h"
 #include "ship.h"
+#include "ship_connection_state.enum.h"
+#include "ship_discovery_state.enum.h"
 #include <LittleFS.h>
 #include <TFJson.h>
 
@@ -43,7 +43,7 @@ void EEBus::pre_setup()
         {"id", Config::Str("", 0, 63)},
         // [SHIP 7.3.2] The value of the id key contains a globally unique ID of the SHIP node and has a maximum length of 63 bytes
         {"wss_path", Config::Str("", 0, 32)}, // [SHIP 7.3.2] The maximum length of the path value will be 32 bytes
-        {"ski", Config::Str("", 0, 40)}, // [RFC 5280, §4.2.1.2] Subject Key Identifier uses 40 hex characters
+        {"ski", Config::Str("", 0, 40)},      // [RFC 5280, §4.2.1.2] Subject Key Identifier uses 40 hex characters
         {"autoregister", Config::Bool(false)},
         {"model_brand", Config::Str("", 0, 32)},
         // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
@@ -51,133 +51,86 @@ void EEBus::pre_setup()
         {"mode_type", Config::Str("", 0, 32)},
         {"state", Config::Enum(NodeState::Unknown)},
     });
-    state_connections_prototype = Config::Object({
-        {"ski", Config::Str("", 0, 40)},
-        {"ship_state", Config::Enum(ShipConnectionState::CmiInitStart)},
-    });
 
-    config = ConfigRoot{
-        Config::Object({
-            {"enable", Config::Bool(false)},
-            {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
-            {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
-            {
-                "peers",
-                Config::Array({config_peers_prototype},
-                              &config_peers_prototype,
-                              0,
-                              MAX_PEER_REMEMBERED,
-                              Config::type_id<Config::ConfObject>())
-            },
-        }),
-        [this](Config &update, ConfigSource source) -> String {
-            if (boot_stage == BootStage::LOOP) {
-                if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
-                    task_scheduler.scheduleOnce([this]() {
-                        this->toggle_module();
-                    });
-                }
-            }
+    config = ConfigRoot{Config::Object({
+                            {"enable", Config::Bool(false)},
+                            {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+                            {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
+                            {"peers", Config::Array({config_peers_prototype}, &config_peers_prototype, 0, MAX_PEER_REMEMBERED, Config::type_id<Config::ConfObject>())},
+                        }),
+                        [this](Config &update, ConfigSource source) -> String {
+                            if (boot_stage == BootStage::LOOP) {
+                                if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
+                                    task_scheduler.scheduleOnce([this]() {
+                                        this->toggle_module();
+                                    });
+                                }
+                            }
 
-            return "";
-        }
-    };
-    add_peer = ConfigRoot{
-        Config::Object({
-            {"ip", Config::Str("0.0.0.0", 7, 15)},
-            {"port", Config::Uint16(0)},
-            {"trusted", Config::Bool(false)},
-            {"dns_name", Config::Str("", 0, 63)},
-            {"wss_path", Config::Str("", 0, 32)},
-            {"ski", Config::Str("", 0, 40)}
-        }),
-        [this](Config &add_peer, ConfigSource source) -> String {
-            if (add_peer.get("ski")->asString().isEmpty()) {
-                return "Can't add peer. Ski is missing.";
-            }
-            if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
-                return "Can't add peer. Already have the maximum number of peers.";
-            }
-            return "";
-        }
-    };
+                            return "";
+                        }};
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 15)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}}), [this](Config &add_peer, ConfigSource source) -> String {
+                              if (add_peer.get("ski")->asString().isEmpty()) {
+                                  return "Can't add peer. Ski is missing.";
+                              }
+                              if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
+                                  return "Can't add peer. Already have the maximum number of peers.";
+                              }
+                              return "";
+                          }};
 
     add_peer.set_permit_null_updates(false);
 
-    remove_peer = ConfigRoot{
-        Config::Object({{"ski", Config::Str("", 0, 40)}}), [this](Config &remove_peer, ConfigSource source) -> String {
-            if (remove_peer.get("ski")->asString().isEmpty()) {
-                return "Can't remove peer. Ski is missing.";
-            }
-            return "";
-        }
-    };
+    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 40)}}), [this](Config &remove_peer, ConfigSource source) -> String {
+                                 if (remove_peer.get("ski")->asString().isEmpty()) {
+                                     return "Can't remove peer. Ski is missing.";
+                                 }
+                                 return "";
+                             }};
     scan_command = ConfigRoot(Config::Object({}));
 
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
-        {
-            // TODO: Are these connections still neccessary? Or shall they just be in config
-            "connections",
-            Config::Array({},
-                          &state_connections_prototype,
-                          0,
-                          MAX_PEER_REMEMBERED,
-                          Config::type_id<Config::ConfObject>())
-        },
-
     });
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy
-    charges_prototype = Config::Object({
-        {"id", Config::Uint16(0)},
-        {"charged_kwh", Config::Float(0)},
-        {"start_time", Config::Uint32(0)},
-        {"duration", Config::Uint16(0)},
-        {"cost", Config::Float(0)},
-        {"percent_self_produced_energy", Config::Uint16(0)},
-        {"percent_self_produced_cost", Config::Uint16(0)}
-    });
+    charges_prototype = Config::Object({{"id", Config::Uint16(0)}, {"charged_kwh", Config::Float(0)}, {"start_time", Config::Uint32(0)}, {"duration", Config::Uint16(0)}, {"cost", Config::Float(0)}, {"percent_self_produced_energy", Config::Uint16(0)}, {"percent_self_produced_cost", Config::Uint16(0)}});
 
     // Currently eebus state and eebus config are one config. Maybe split them?
     eebus_usecase_state = Config::Object({
-            {"commands_received", Config::Uint16(0)},
-            {"commands_sent", Config::Uint16(0)},
-            {"charging_summary", Config::Array({
-                                                   // Read/Write
-                                                   // Usecase EV Charging summary
-                                                   charges_prototype},
-                                               &charges_prototype,
-                                               0,
-                                               8,
-                                               Config::type_id<Config::ConfObject>())
-            },
-            {"power_consumption_limitation", Config::Object({
-                 // Usecase Limitation of power consumption
-                 {"usecase_state", Config::Enum(LPCState::Init)},
-                 {"limit_active", Config::Bool(false)},
-                 {"current_limit", Config::Uint16(0)},
-                 {"failsafe_limit_power_w", Config::Uint16(0)}, // The limit which may have been set by the energy guard
-                 {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
-                 {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
-             })},
-            {"ev_commissioning_and_configuration", Config::Object({
-                 {"ev_connected", Config::Bool(false)},
-                 {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
-                 {"asymmetric_charging_supported", Config::Bool(false)},
-                 {"mac_address", Config::Str("", 0, 64)},
-                 {"minimum_power", Config::Uint16(0)},
-                 {"maximum_power", Config::Uint16(0)},
-                 {"standby_power", Config::Uint16(0)},
-                 {"standby_mode", Config::Bool(false)}
-             })},
-            {"evse_commissioning_and_configuration", Config::Object({
-                 {"evse_failure", Config::Bool(false)},
-                 {"evse_failure_description", Config::Str("", 0, 64)}
-             })},
-        }
-        );
+        {"commands_received", Config::Uint16(0)},
+        {"commands_sent", Config::Uint16(0)},
+        {"charging_summary",
+         Config::Array(
+             {// Read/Write
+              // Usecase EV Charging summary
+              charges_prototype},
+             &charges_prototype,
+             0,
+             8,
+             Config::type_id<Config::ConfObject>())},
+        {"power_consumption_limitation",
+         Config::Object({
+             // Usecase Limitation of power consumption
+             {"usecase_state", Config::Enum(LPCState::Init)},
+             {"limit_active", Config::Bool(false)},
+             {"current_limit", Config::Uint16(0)},
+             {"failsafe_limit_power_w", Config::Uint16(0)},    // The limit which may have been set by the energy guard
+             {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
+             {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
+         })},
+        {"ev_commissioning_and_configuration",
+         Config::Object({{"ev_connected", Config::Bool(false)},
+                         {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
+                         {"asymmetric_charging_supported", Config::Bool(false)},
+                         {"mac_address", Config::Str("", 0, 64)},
+                         {"minimum_power", Config::Uint16(0)},
+                         {"maximum_power", Config::Uint16(0)},
+                         {"standby_power", Config::Uint16(0)},
+                         {"standby_mode", Config::Bool(false)}})},
+        {"evse_commissioning_and_configuration", Config::Object({{"evse_failure", Config::Bool(false)}, {"evse_failure_description", Config::Str("", 0, 64)}})},
+    });
 
     ship.pre_setup();
 }
@@ -256,8 +209,7 @@ void EEBus::register_urls()
             if (ship.discovery_state == ShipDiscoveryState::Scanning) {
                 return "scan in progress";
             }
-            if (ship.discovery_state == ShipDiscoveryState::Ready || ship.discovery_state ==
-                ShipDiscoveryState::ScanDone) {
+            if (ship.discovery_state == ShipDiscoveryState::Ready || ship.discovery_state == ShipDiscoveryState::ScanDone) {
                 state.get("discovery_state")->updateEnum(ShipDiscoveryState::Scanning);
 
                 task_scheduler.scheduleOnce(
