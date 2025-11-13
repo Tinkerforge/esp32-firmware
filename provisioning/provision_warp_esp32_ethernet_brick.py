@@ -314,6 +314,9 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
 
     test_rtc_time(ethernet_ip, wait_for_ntp=True)
 
+    # Wait to be sure the ESP has updated the RTC
+    time.sleep(2)
+
     print("Testing RTC supercap")
 
     req = urllib.request.Request(f"http://{ethernet_ip}/ntp/config_update",
