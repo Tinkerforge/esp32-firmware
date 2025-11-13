@@ -417,7 +417,10 @@ IQR_UID_BLACKLIST = [
     "2dVX",
     "2bnK",
     "2bmW",
-    "2bmU"
+    "2bmU",
+    "2dVY",
+    "RNW",
+    "RVG"
 ]
 
 def ansi_escape_to_html(s):
