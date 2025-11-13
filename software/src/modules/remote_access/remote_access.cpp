@@ -1967,11 +1967,7 @@ uint8_t RemoteAccess::get_connection(int32_t conn_id)
         }
     }
 
-    if (first_free_idx != 255) {
-        return first_free_idx;
-    } else {
-        return 255;
-    }
+    return first_free_idx;
 }
 
 void RemoteAccess::run_management()
