@@ -51,7 +51,6 @@ export interface ChargeProcesses {
 export interface state {
     ski: string;
     discovery_state: number;
-    connections: Connection[];
 }
 
 export interface usecases {
