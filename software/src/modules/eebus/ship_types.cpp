@@ -36,9 +36,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
         incoming_data_str = EEBUSJsonToJson(incoming_data_str);
     }
     int nesting_limit = 20;
-    DeserializationError error = deserializeJson(doc,
-                                                 incoming_data_str,
-                                                 DeserializationOption::NestingLimit(nesting_limit));
+    DeserializationError error = deserializeJson(doc, incoming_data_str, DeserializationOption::NestingLimit(nesting_limit));
     if (error) {
         eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s; Error occurred when parsing JSON Doc: ", error.c_str());
         eebus.trace_jsonln(doc);
@@ -148,12 +146,12 @@ String ShipMessageDataType::type_to_json()
             }
         }
         String message_outgoing_data;
-        message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
+        message_outgoing_data.reserve(measureJson(destination_doc) + 1);
         serializeJson(destination_doc, message_outgoing_data);
         return message_outgoing_data;
     } else {
         String message_outgoing_data;
-        message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
+        message_outgoing_data.reserve(measureJson(doc) + 1);
         serializeJson(doc, message_outgoing_data);
         return message_outgoing_data;
     }
@@ -225,11 +223,7 @@ String EEBUSJsonToJson(String json_in)
     return json_in;
 }
 
-template <typename T>
-void DeserializeOptionalField(JsonObject *data,
-                              const char *field_name,
-                              bool *field_valid,
-                              std::vector<T> *field_value)
+template <typename T> void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value)
 {
     if (data->containsKey(field_name)) {
         for (JsonVariant value : (*data)[field_name].as<JsonArray>()) {
@@ -244,19 +238,17 @@ void DeserializeOptionalField(JsonObject *data,
 DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *data, size_t length)
 
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+    DynamicJsonDocument doc{length * 2};
     eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest json: %s", data);
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s",
-                          error.c_str());
+        eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s", error.c_str());
         return DeserializationResult::ERROR;
     }
     JsonObject accessMethodsRequest = doc["accessMethodsRequest"];
     if (accessMethodsRequest.isNull()) {
-        eebus.trace_fmtln(
-            "J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
+        eebus.trace_fmtln("J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
         return DeserializationResult::ERROR;
     }
     request = accessMethodsRequest["request"].as<String>();
@@ -265,7 +257,7 @@ DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *dat
 
 String ShipMessageAccessMethodsRequest::type_to_json()
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+    DynamicJsonDocument doc{256};
     JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
     accessMethodsRequest["request"] = request;
     String output;
@@ -277,13 +269,11 @@ String ShipMessageAccessMethodsRequest::type_to_json()
 
 DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size_t length)
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+    DynamicJsonDocument doc{length * 2}; // TODO: Use a global json Doc
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s",
-                          error.c_str(),
-                          data);
+        eebus.trace_fmtln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s", error.c_str(), data);
         return DeserializationResult::ERROR;
     }
     JsonObject accessMethods = doc["accessMethods"];
@@ -300,7 +290,7 @@ DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size
 
 String ShipMessageAccessMethods::type_to_json()
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+    DynamicJsonDocument doc{256};
     JsonArray json_am = doc.createNestedArray("accessMethods");
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = id;

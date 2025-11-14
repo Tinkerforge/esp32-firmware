@@ -27,7 +27,7 @@
 #include "spine_types.h"
 #include <TFJson.h>
 
-#define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
+#define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // 8192 should be enough for a start
 #define SPINE_CONNECTION_MAX_DEPTH 30       // Maximum depth of serialization of a json document
 
 class ShipConnection; // Need to forward declare this here so it can be included in ship_connection.h
@@ -95,11 +95,6 @@ public:
     */
     JsonVariant received_payload;
 
-    /**
-    * The JSON Document used for holding the response
-    */
-    //BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
-    //DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // TODO: Maybe allocate this in PSRAM
     /**
     * The response datagram to be retrieved by the SPINE Connection and sent back to the peer.
     */

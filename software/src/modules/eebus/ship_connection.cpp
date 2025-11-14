@@ -32,7 +32,6 @@
 
 extern EEBus eebus;
 
-
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     const tf_websocket_event_data_t *data = static_cast<tf_websocket_event_data_t *>(event_data);
@@ -72,8 +71,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     }
 }
 
-ShipConnection::ShipConnection(WebSocketsClient *ws_client, CoolString ski) :
-    ws_client(ws_client), peer_ski(std::move(ski))
+ShipConnection::ShipConnection(WebSocketsClient *ws_client, CoolString ski) : ws_client(ws_client), peer_ski(std::move(ski))
 {
     role = Role::Server;
     spine = make_unique_psram<SpineConnection>(this);
@@ -85,7 +83,6 @@ ShipConnection::ShipConnection(WebSocketsClient *ws_client, CoolString ski) :
 
 ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski)
 {
-
     peer_ski = std::move(ski);
     role = Role::Client;
     spine = make_unique_psram<SpineConnection>(this);
@@ -120,11 +117,27 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_ski.c_str());
     }
 
-    // Copy new message and trigger next SHIP state machine step
-    memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
-    memcpy(message_incoming->data, ws_pkt->payload, ws_pkt->len);
-    message_incoming->length = ws_pkt->len;
-    state_machine_next_step();
+    if (ws_pkt->len > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
+        eebus.trace_fmtln("ERROR: SHIP Packet larger than the buffer size. This will likely cause parsing errors. Max buffer size: %d, Incoming websocket packet size: %d", SHIP_CONNECTION_MAX_BUFFER_SIZE, ws_pkt->len);
+    }
+
+    // Copy new message, await further parts if its not final and trigger next SHIP state machine step
+    if (message_incoming->multipart_index == SIZE_MAX) {
+        memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
+        message_incoming->multipart_index = 0;
+        message_incoming->length = 0;
+    }
+    memcpy(message_incoming->data + sizeof(uint8_t) * (message_incoming->multipart_index), ws_pkt->payload, ws_pkt->len);
+
+    message_incoming->length += ws_pkt->len;
+    message_incoming->multipart_index += ws_pkt->len;
+
+    if (ws_pkt->final) {
+        message_incoming->multipart_index = SIZE_MAX;
+        state_machine_next_step();
+    } else {
+        eebus.trace_fmtln("Non-final ws_pkt received. Awaiting further parts");
+    }
 }
 
 void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
@@ -143,7 +156,8 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
             // Close socket and
             if (role == Role::Server) {
                 if (ws_client != nullptr) {
-                    ws_client->setCtx(nullptr); // Remove ourselves from the client context before closing the connection.
+                    ws_client->setCtx(nullptr);
+                    // Remove ourselves from the client context before closing the connection.
                     ws_client->close_HTTPThread();
                 }
             } else if (role == Role::Client) {
@@ -166,11 +180,7 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
             ws_client->sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server,
-                                     payload,
-                                     2,
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, payload, 2, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
     }
 }
 
@@ -185,9 +195,7 @@ void ShipConnection::send_current_outgoing_message()
         return;
     }
     if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
-        eebus.trace_fmtln("Error: Message being sent exceeds maximum buffer size of %d bytes: %d bytes",
-                          SHIP_CONNECTION_MAX_BUFFER_SIZE,
-                          message_outgoing->length);
+        eebus.trace_fmtln("Error: Message being sent exceeds maximum buffer size of %d bytes: %d bytes", SHIP_CONNECTION_MAX_BUFFER_SIZE, message_outgoing->length);
         logger.printfln("an error occurred while sending a message. Check tracelog for details.");
         return;
     }
@@ -200,11 +208,7 @@ void ShipConnection::send_current_outgoing_message()
             ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server,
-                                     reinterpret_cast<const char *>(message_outgoing->data),
-                                     message_outgoing->length,
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
         //TODO: What are good timeouts here?
     }
 }
@@ -212,8 +216,8 @@ void ShipConnection::send_current_outgoing_message()
 void ShipConnection::send_string(const char *str, const int length, const int msg_classifier)
 {
     if (!message_outgoing) {
-        message_outgoing = make_unique_psram<
-            Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
+        message_outgoing = make_unique_psram<Message>();
+        // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
         eebus.trace_fmtln("ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
     }
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
@@ -235,11 +239,7 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
             ws_client->sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
         }
     } else if (role == Role::Client) {
-        tf_websocket_client_send_bin(ws_server,
-                                     buffer,
-                                     length + 1,
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
-                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        tf_websocket_client_send_bin(ws_server, buffer, length + 1, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
     }
     delete[] buffer;
 
@@ -309,11 +309,7 @@ void ShipConnection::set_state(ShipConnectionState state)
         return;
     }
     ShipConnectionState old_state = this->state;
-    eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)",
-                      get_ship_connection_state_name(old_state),
-                      static_cast<std::underlying_type<ShipConnectionState>::type>(old_state),
-                      get_ship_connection_state_name(state),
-                      static_cast<std::underlying_type<ShipConnectionState>::type>(state));
+    eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)", get_ship_connection_state_name(old_state), static_cast<std::underlying_type<ShipConnectionState>::type>(old_state), get_ship_connection_state_name(state), static_cast<std::underlying_type<ShipConnectionState>::type>(state));
 
     this->previous_state = old_state;
     this->state = state;
@@ -656,7 +652,6 @@ void ShipConnection::state_sme_hello_ready_init()
 
 void ShipConnection::state_sme_hello_ready_listen()
 {
-
     json_to_type_connection_hello(&peer_hello_phase);
 
     // SHIP 13.4.4.1.3 Sub-state SME_HELLO_STATE_READY_LISTEN
@@ -715,7 +710,6 @@ void ShipConnection::state_sme_hello_pending_listen()
             }
             // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 2.
             if (peer_hello_phase.waiting_valid) {
-
                 // Peer is still waiting for us
                 task_scheduler.cancel(hello_wait_for_ready_timer);
                 task_scheduler.cancel(hello_send_prolongation_reply_timer);
@@ -770,7 +764,6 @@ void ShipConnection::state_sme_hello_pending_timeout()
 {
     // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 2.
     if (hello_timer_expiry == 2) {
-
         this_hello_phase.phase = ConnectionHelloPhase::Type::Pending;
         this_hello_phase.waiting_valid = false;
         this_hello_phase.prolongation_request = true;
@@ -787,7 +780,6 @@ void ShipConnection::state_sme_hello_pending_timeout()
             },
             millis_t(waiting_time));
         set_state(this->previous_state);
-
     } else {
         // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 1.
         // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 3.
@@ -855,9 +847,7 @@ void ShipConnection::state_sme_protocol_handshake_server_init()
 void ShipConnection::state_sme_protocol_handshake_client_init()
 {
     // SHIP 13.4.4.2.3 State SME_PROT_H_STATE_CLIENT_INIT
-    ProtocolHandshakeType handshake = {.handshakeType = ProtocolHandshake::Type::AnnounceMax,
-                                       .version_major = protocol_handshake_version_major,
-                                       .version_minor = protocol_handshake_version_minor};
+    ProtocolHandshakeType handshake = {.handshakeType = ProtocolHandshake::Type::AnnounceMax, .version_major = protocol_handshake_version_major, .version_minor = protocol_handshake_version_minor};
     type_to_json_handshake_type(&handshake);
     send_current_outgoing_message();
     set_state(ShipConnectionState::SmeProtocolHandshakeClientListenChoice);
@@ -870,10 +860,7 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
 
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 {
-    eebus.trace_fmtln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s",
-                      message_incoming->data[0],
-                      message_incoming->length,
-                      &message_incoming->data[1]);
+    eebus.trace_fmtln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
 
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_PROPOSAL"
     auto handshake = ProtocolHandshakeType();
@@ -885,9 +872,7 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
             protocol_handshake_version_selected[0] = min(protocol_handshake_version_major, handshake.version_major);
             protocol_handshake_version_selected[1] = min(protocol_handshake_version_minor, handshake.version_minor);
             // We always select 1.0 as the protocol version. JSON-UTF8 has to be supported by all participants so its always selected by default.
-            ProtocolHandshakeType hst = {.handshakeType = ProtocolHandshake::Type::Select,
-                                         .version_major = protocol_handshake_version_selected[0],
-                                         .version_minor = protocol_handshake_version_selected[1]};
+            ProtocolHandshakeType hst = {.handshakeType = ProtocolHandshake::Type::Select, .version_major = protocol_handshake_version_selected[0], .version_minor = protocol_handshake_version_selected[1]};
 
             type_to_json_handshake_type(&hst);
             set_state(ShipConnectionState::SmeProtocolHandshakeServerListenConfirm);
@@ -1025,10 +1010,7 @@ void ShipConnection::state_sme_pin_ask_ok()
 
 void ShipConnection::state_sme_access_method_request()
 {
-    eebus.trace_fmtln("state_sme_access_method_request: %d (len %d)-> %s",
-                      message_incoming->data[0],
-                      message_incoming->length,
-                      &message_incoming->data[1]);
+    eebus.trace_fmtln("state_sme_access_method_request: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
     auto protocol_state = get_protocol_state();
     if (protocol_state == ProtocolState::AccessMethodsRequest) {
         to_json_access_methods_type();
@@ -1060,9 +1042,7 @@ void ShipConnection::state_done()
 
     // Update frontend and config to inform it of the new connection state. Add it if its unknown
     if (!connection_established) {
-
         if (!update_config_state(NodeState::Connected)) {
-
             // Run MDNS discovery so we can figure out who connected to us. This might take a second
             task_scheduler.scheduleOnce(
                 [this]() {
@@ -1115,7 +1095,6 @@ void ShipConnection::state_done()
             break;
         }
         case ProtocolState::AccessMethods: {
-
             break;
         }
         case ProtocolState::Terminate: {
@@ -1143,9 +1122,7 @@ void ShipConnection::state_done()
 
 void ShipConnection::state_is_not_implemented()
 {
-    eebus.trace_fmtln("State %s(%d) was triggered, but is not implemented yet",
-                      get_ship_connection_state_name(state),
-                      static_cast<std::underlying_type<ShipConnectionState>::type>(state));
+    eebus.trace_fmtln("State %s(%d) was triggered, but is not implemented yet", get_ship_connection_state_name(state), static_cast<std::underlying_type<ShipConnectionState>::type>(state));
 
     schedule_close(0_ms, "Invalid state reached.");
 }
@@ -1179,18 +1156,12 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
             }
         }
 
-        eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
-                          static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
-                          connection_hello->waiting,
-                          connection_hello->waiting_valid,
-                          connection_hello->prolongation_request,
-                          connection_hello->prolongation_request_valid);
+        eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'", static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase), connection_hello->waiting, connection_hello->waiting_valid, connection_hello->prolongation_request, connection_hello->prolongation_request_valid);
     }
 }
 
 void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connection_hello)
 {
-
     outgoing_json_doc.clear();
     JsonArray json_hello = outgoing_json_doc.createNestedArray("connectionHello");
 
@@ -1235,10 +1206,7 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
                 }
             }
         }
-        eebus.trace_fmtln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
-                          static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
-                          handshake_type->version_major,
-                          handshake_type->version_minor);
+        eebus.trace_fmtln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld", static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType), handshake_type->version_major, handshake_type->version_minor);
     }
 }
 
