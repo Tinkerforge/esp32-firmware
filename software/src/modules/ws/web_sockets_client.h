@@ -35,6 +35,8 @@ public:
     inline void *getCtx() {return ctx;};
     inline int getFd() {return fd;};
 
+    httpd_ws_type_t last_received_frame_type = HTTPD_WS_TYPE_CONTINUE;
+
 private:
     int fd;
     WebSockets *ws;
