@@ -117,8 +117,10 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_ski.c_str());
     }
 
-    if (ws_pkt->len > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
-        eebus.trace_fmtln("ERROR: SHIP Packet larger than the buffer size. This will likely cause parsing errors. Max buffer size: %d, Incoming websocket packet size: %d", SHIP_CONNECTION_MAX_BUFFER_SIZE, ws_pkt->len);
+    // TODO: Remove this once we can handle multipart messages
+    if (!ws_pkt->final) {
+        eebus.trace_fmtln("Received non final ws frame. This is currently not supported");
+        return;
     }
 
     // Copy new message, await further parts if its not final and trigger next SHIP state machine step
@@ -126,6 +128,9 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
         message_incoming->multipart_index = 0;
         message_incoming->length = 0;
+    }
+    if (message_incoming->multipart_index + ws_pkt->len >= SHIP_CONNECTION_MAX_BUFFER_SIZE ) {
+        eebus.trace_fmtln("frame_received: ws frame too big for the buffer. Current index: %zu, incoming length: %d, max buffer size: %d", message_incoming->multipart_index, ws_pkt->len, SHIP_CONNECTION_MAX_BUFFER_SIZE);
     }
     memcpy(message_incoming->data + sizeof(uint8_t) * (message_incoming->multipart_index), ws_pkt->payload, ws_pkt->len);
 
@@ -142,13 +147,18 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
 void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
 {
+    if (closing_scheduled) return;
+    closing_scheduled = true;
     if (reason.length() > 0)
         logger.printfln("Close requested for SHIP Connection: %s", reason.c_str());
     else {
         logger.printfln("Close requested for SHIP Connection");
     }
     task_scheduler.cancel(timeout_task);
-    timeout_task = 0;
+    task_scheduler.cancel(hello_wait_for_ready_timer);
+    task_scheduler.cancel(hello_send_prolongation_request_timer);
+    task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    task_scheduler.cancel(protocol_handshake_timer);
 
     task_scheduler.scheduleOnce(
         [this]() {
@@ -175,7 +185,7 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
     char payload[2] = {static_cast<char>(type), static_cast<char>(value)};
     if (role == Role::Server) {
         if (ws_client == nullptr) {
-            logger.printfln("Attempted send_cmi on closed connection");
+            eebus.trace_fmtln("Attempted send_cmi on closed connection");
         } else {
             ws_client->sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
         }
@@ -203,7 +213,7 @@ void ShipConnection::send_current_outgoing_message()
     log_message("send_current_outgoing", message_outgoing.get());
     if (role == Role::Server) {
         if (ws_client == nullptr) {
-            logger.printfln("Attempted send_current_outgoing on closed connection");
+            eebus.trace_fmtln("Attempted send_current_outgoing on closed connection");
         } else {
             ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
         }
@@ -234,7 +244,7 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     memcpy(buffer + 1, str, length);
     if (role == Role::Server) {
         if (ws_client == nullptr) {
-            logger.printfln("Attempted send_string on closed connection");
+            eebus.trace_fmtln("Attempted send_string on closed connection");
         } else {
             ws_client->sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
         }
@@ -1070,11 +1080,11 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-            DynamicJsonDocument dynamic_json_document{8192}; //TESTING MEMORY STUFF
+            DynamicJsonDocument dynamic_json_document{SHIP_CONNECTION_MAX_JSON_SIZE}; //TESTING MEMORY STUFF
             if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 spine->process_datagram(data.payload);
             } else {
-                logger.printfln("Received a Data Message but encountered an error while trying to deserialize the message");
+                eebus.trace_fmtln("Received a Data Message but encountered an error while trying to deserialize the message");
             }
             break;
         }

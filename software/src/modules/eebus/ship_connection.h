@@ -113,6 +113,7 @@ public:
     CoolString peer_ski{};
     unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
+    bool closing_scheduled = false;
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     /**
@@ -309,7 +310,7 @@ public:
     uint64_t hello_send_prolongation_request_timer = 0;
     uint64_t hello_send_prolongation_reply_timer = 0;
 
-    /// @brief Which timer expire. 1=wait_for_ready, 2=prolongation_request, 3=prolongation_reply
+    /// @brief Which timer expired. 1=wait_for_ready, 2=prolongation_request, 3=prolongation_reply
     uint8_t hello_timer_expiry = 0;
 
     // Current Peer Hello Phase
