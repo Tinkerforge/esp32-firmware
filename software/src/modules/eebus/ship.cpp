@@ -208,10 +208,8 @@ void Ship::setup_wss()
     web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
         if (!eebus.is_enabled()) {
             eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
-
             return;
         }
-
         ShipConnection *ship_connection = static_cast<ShipConnection *>(client->getCtx());
 
         if (ship_connection == nullptr) {
