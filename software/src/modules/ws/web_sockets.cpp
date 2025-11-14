@@ -161,26 +161,35 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         }
     }
 
-    if (ws_pkt.type == HTTPD_WS_TYPE_PING) {
+    WebSocketsClient *client = static_cast<WebSocketsClient *>(req->sess_ctx);
+    httpd_ws_type_t frame_type;
+
+    if (ws_pkt.type == HTTPD_WS_TYPE_CONTINUE) {
+        frame_type = client->last_received_frame_type;
+    } else {
+        frame_type = ws_pkt.type;
+        client->last_received_frame_type = frame_type;
+    }
+
+    if (frame_type == HTTPD_WS_TYPE_PING) {
         // We use a patched version of esp-idf that does not handle ping frames in a strange way.
         // We have to send the pong ourselves.
         ws_pkt.type = HTTPD_WS_TYPE_PONG;
         httpd_ws_send_frame(req, &ws_pkt);
-    } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
+    } else if (frame_type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->receivedPong(httpd_req_to_sockfd(req));
-    } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
+    } else if (frame_type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
         logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
         // FIXME: input handling
-    } else if (ws_pkt.type == HTTPD_WS_TYPE_BINARY) {
+    } else if (frame_type == HTTPD_WS_TYPE_BINARY) {
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         if (ws->on_binary_data_received_fn != nullptr) {
-            WebSocketsClient *client = static_cast<WebSocketsClient *>(req->sess_ctx);
             ws->on_binary_data_received_fn(client, &ws_pkt);
         }
-    } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
+    } else if (frame_type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->keepAliveRemove(httpd_req_to_sockfd(req));
@@ -191,10 +200,12 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         aux->sd->ws_control_frames = false;
 
         if (ws->on_client_disconnect_fn != nullptr) {
-            WebSocketsClient *client = static_cast<WebSocketsClient *>(req->sess_ctx);
             ws->on_client_disconnect_fn(client, true);
         }
+    } else {
+        logger.printfln("Received unexpected frame type=%u final=%i len=%zu", static_cast<unsigned>(ws_pkt.type), ws_pkt.final, ws_pkt.len);
     }
+
     free(buf);
     return ESP_OK;
 }
