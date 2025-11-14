@@ -1130,18 +1130,29 @@ private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
         // Asserts checked in ::is.
-        if (!this->is<ConfArray>()) {
-            esp_system_abort("Can't fill array, Config is not an array");
+        if (this->is<ConfArray>()) {
+            const ConfArray &confArr = this->value.val.a;
+            const size_t toWrite = std::min(confArr.getVal()->size(), elements);
+
+            for (size_t i = 0; i < toWrite; ++i) {
+                arr[i] = *confArr.get(i)->get<ConfigT>()->getVal();
+            }
+
+            return toWrite;
         }
 
-        const ConfArray &confArr = this->value.val.a;
-        size_t toWrite = std::min(confArr.getVal()->size(), elements);
+        if (this->is<ConfTuple>()) {
+            const ConfTuple &confTuple = this->value.val.t;
+            const size_t toWrite = std::min(confTuple.getSize(), elements);
 
-        for (size_t i = 0; i < toWrite; ++i) {
-            arr[i] = *confArr.get(i)->get<ConfigT>()->getVal();
+            for (size_t i = 0; i < toWrite; ++i) {
+                arr[i] = *confTuple.get(i)->get<ConfigT>()->getVal();
+            }
+
+            return toWrite;
         }
 
-        return toWrite;
+        esp_system_abort("Can't fill array, Config is not an array or tuple");
     }
 
     DynamicJsonDocument to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const;

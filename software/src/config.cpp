@@ -789,22 +789,37 @@ inline bool Config::update_value<float, Config::ConfFloat>(float val, const char
 template<>
 inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t elements) {
     // Asserts checked in ::is.
-    if (!this->is<ConfArray>()) {
-        esp_system_abort("Can't fill array, Config is not an array");
-    }
+    if (this->is<ConfArray>()) {
+        const ConfArray &confArr = this->value.val.a;
+        const size_t toWrite = std::min(confArr.getVal()->size(), elements);
 
-    const ConfArray &confArr = this->value.val.a;
-    size_t toWrite = std::min(confArr.getVal()->size(), elements);
-
-    for (size_t i = 0; i < toWrite; ++i) {
-        const Config *entry = confArr.get(i);
-        if (!entry->is<Config::ConfFloat>()) {
-            esp_system_abort("Config entry has wrong type.");
+        for (size_t i = 0; i < toWrite; ++i) {
+            const Config *entry = confArr.get(i);
+            if (!entry->is<Config::ConfFloat>()) {
+                esp_system_abort("Config entry has wrong type.");
+            }
+            arr[i] = entry->get<Config::ConfFloat>()->getVal();
         }
-        arr[i] = entry->get<Config::ConfFloat>()->getVal();
+
+        return toWrite;
     }
 
-    return toWrite;
+    if (this->is<ConfTuple>()) {
+        const ConfTuple &confTuple = this->value.val.t;
+        const size_t toWrite = std::min(confTuple.getSize(), elements);
+
+        for (size_t i = 0; i < toWrite; ++i) {
+            const Config *entry = confTuple.get(i);
+            if (!entry->is<Config::ConfFloat>()) {
+                esp_system_abort("Config entry has wrong type.");
+            }
+            arr[i] = entry->get<Config::ConfFloat>()->getVal();
+        }
+
+        return toWrite;
+    }
+
+    esp_system_abort("Can't fill array, Config is not an array or tuple");
 }
 
 bool Config::updateString(const String &val)
@@ -890,37 +905,37 @@ size_t Config::fillFloatArray(float *arr, size_t elements)
 size_t Config::fillUint8Array(uint8_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<uint8_t, Config::ConfUint>(arr, elements);
+    return fillArray<uint8_t, Config::ConfUint8>(arr, elements);
 }
 
 size_t Config::fillInt8Array(int8_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<int8_t, Config::ConfInt>(arr, elements);
+    return fillArray<int8_t, Config::ConfInt8>(arr, elements);
 }
 
 size_t Config::fillUint16Array(uint16_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<uint16_t, Config::ConfUint>(arr, elements);
+    return fillArray<uint16_t, Config::ConfUint16>(arr, elements);
 }
 
 size_t Config::fillInt16Array(int16_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<int16_t, Config::ConfInt>(arr, elements);
+    return fillArray<int16_t, Config::ConfInt16>(arr, elements);
 }
 
 size_t Config::fillUint32Array(uint32_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<uint32_t, Config::ConfUint>(arr, elements);
+    return fillArray<uint32_t, Config::ConfUint32>(arr, elements);
 }
 
 size_t Config::fillInt32Array(int32_t *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.
-    return fillArray<int32_t, Config::ConfInt>(arr, elements);
+    return fillArray<int32_t, Config::ConfInt32>(arr, elements);
 }
 
 size_t Config::json_size(bool zero_copy) const
