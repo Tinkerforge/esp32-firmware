@@ -2470,7 +2470,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
     eebus_commands_received++;
     eebus.eebus_usecase_state.get("commands_received")->updateUint(eebus_commands_received);
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_TYPES_MAX_JSON_SIZE};
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
     JsonObject responseObj = response_doc.to<JsonObject>();
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
     String entity_name = "Unknown";

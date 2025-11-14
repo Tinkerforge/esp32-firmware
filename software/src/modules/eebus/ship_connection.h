@@ -43,32 +43,35 @@
 #define SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT 10_s
 
 // Buffers
-#define SHIP_CONNECTION_MAX_JSON_SIZE 8192          // TODO: What is a sane value here? Not that important since it now lives in PSRAM
-#define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024 * 10) // TODO: What is a sane value here? Not that important since it now lives in PSRAM
+#define SHIP_CONNECTION_MAX_JSON_SIZE (8192 * 2)
+#define SHIP_CONNECTION_MAX_BUFFER_SIZE SHIP_CONNECTION_MAX_JSON_SIZE
 
 // Client Timeouts. These are only needed for when we are and using websockets as a client
 #define SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS 100
 #define SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS 1000
 
-
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
 
-
 //static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
-
 
 class ShipConnection
 {
 public:
     // SHIP 13.4.1
-    enum class Role : uint8_t { Client, Server };
+    enum class Role : uint8_t {
+        Client,
+        Server,
+    };
 
     // SHIP 13.4.4.1.3
-    enum class SubState : uint8_t { Init, Listen, Timeout };
+    enum class SubState : uint8_t {
+        Init,
+        Listen,
+        Timeout,
+    };
 
-    enum class ProtocolState : uint16_t
-    {
+    enum class ProtocolState : uint16_t {
         ConnectionHello,
         MessageProtocolHandshake,
         ConnectionPinState,
@@ -77,25 +80,25 @@ public:
         Data,
         Terminate,
         None,
-        Unknown
+        Unknown,
     };
 
-    struct CMIMessage
-    {
+    struct CMIMessage {
         bool valid;
         uint8_t type;
         uint8_t value;
     };
 
-    // With SHIP/EEBus we will alays only have to hold at most one incoming and one outgoing message
+    // With SHIP/EEBus we will always only have to hold at most one incoming and one outgoing message
     // For now we just use a fixed size buffer for the messages for each connection
     // This could probably be done more dynamic, but with the heap_caps_calloc_prefer we put it
     // in PSRAM (which we have plenty of) and with the uinque_ptr we make sure that it is automatically
     // freed as soon as it is removed from the ShipConnection list in Ship.
-    struct Message
-    {
+    struct Message {
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE];
         size_t length;
+        // If the message is in multiple parts use this
+        size_t multipart_index;
     };
 
     unique_ptr_any<Message> message_incoming;
@@ -118,14 +121,17 @@ public:
      * @param ski the SKI
      */
     ShipConnection(WebSocketsClient *ws_client, CoolString ski);
+
     /**
      * New ShipConnection where we act as a Client
      * @param ws_config The WebSocket server handle to connect to
      * @param ski
      */
     ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski);
+
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
+
     const ShipConnection &operator=(const ShipConnection &other) = delete;
 
     ShipConnectionState state = ShipConnectionState::CmiInitStart;
@@ -135,61 +141,109 @@ public:
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
 
-    void schedule_close(millis_t delay_ms, const String& reason = "");
+    void schedule_close(millis_t delay_ms, const String &reason = "");
+
     void send_cmi_message(uint8_t type, uint8_t value);
+
     void send_current_outgoing_message();
+
     void send_string(const char *str, int length, int msg_classifier = 1);
+
     void send_data_message(JsonVariant payload);
 
     CMIMessage get_cmi_message();
+
     ProtocolState get_protocol_state();
 
     // State machine functions
     void set_state(ShipConnectionState state);
+
     void set_and_schedule_state(ShipConnectionState state);
+
     void set_and_schedule_state(ShipConnectionState state, millis_t delay_ms);
+
     void state_machine_next_step();
+
     void schedule_state_machine_next_step();
 
     void state_cme_init_start();
+
     void state_cmi_client_send();
+
     void state_cmi_client_wait();
+
     void state_cmi_client_evaluate();
+
     void state_cmi_server_wait();
+
     void state_cmi_server_evaluate();
+
     void state_sme_connection_data_preparation();
+
     void state_sme_hello();
+
     void state_sme_hello_ready_init();
+
     void state_sme_hello_ready_listen();
+
     void state_sme_hello_ready_timeout();
+
     void state_sme_hello_pending_init();
+
     void state_sme_hello_pending_listen();
+
     void state_sme_hello_pending_timeout();
+
     void state_sme_hello_ok();
+
     void state_sme_hello_abort();
+
     void state_sme_hello_abort_done();
+
     void state_sme_hello_remote_abort_done();
+
     void state_sme_hello_rejected();
+
     void state_sme_protocol_handshake_server_init();
+
     void state_sme_protocol_handshake_client_init();
+
     void state_sme_protocol_handshake_server_listen_proposal();
+
     void state_sme_protocol_handshake_server_listen_confirm();
+
     void state_sme_protocol_handshake_client_listen_choice();
+
     void state_sme_protocol_handshake_timeout();
+
     void state_sme_protocol_handshake_client_ok();
+
     void state_sme_protocol_handshake_server_ok();
+
     void state_sme_pin_check_init();
+
     void state_sme_pin_check_listen();
+
     void state_sme_pin_check_error();
+
     void state_sme_pin_check_busy_init();
+
     void state_sme_pin_check_busy_wait();
+
     void state_sme_pin_check_ok();
+
     void state_sme_pin_ask_init();
+
     void state_sme_pin_ask_process();
+
     void state_sme_pin_ask_restricted();
+
     void state_sme_pin_ask_ok();
+
     void state_sme_access_method_request();
+
     bool update_config_state(NodeState state);
+
     void state_done();
 
     void state_is_not_implemented();
@@ -203,7 +257,12 @@ public:
     class ConnectionHelloPhase
     {
     public:
-        enum Type : uint8_t { Pending = 0, Ready = 1, Aborted = 2, Unknown = 255 };
+        enum Type : uint8_t {
+            Pending = 0,
+            Ready = 1,
+            Aborted = 2,
+            Unknown = 255,
+        };
 
         static Type from_str(const char *str)
         {
@@ -233,8 +292,7 @@ public:
         }
     };
 
-    struct ConnectionHelloType
-    {
+    struct ConnectionHelloType {
         ConnectionHelloPhase::Type phase;
         uint32_t waiting;
         bool waiting_valid;
@@ -243,6 +301,7 @@ public:
     };
 
     void json_to_type_connection_hello(ConnectionHelloType *connection_hello);
+
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
 
     uint64_t hello_wait_for_ready_timer = 0;
@@ -259,7 +318,9 @@ public:
     ConnectionHelloType this_hello_phase = {};
 
     void hello_send_sme_update();
+
     void hello_set_wait_for_ready_timer(ShipConnectionState target);
+
     void hello_decide_prolongation();
 
     //--------------------------------------------------------------------------------
@@ -276,7 +337,11 @@ public:
     class ProtocolHandshake
     {
     public:
-        enum Type : uint8_t { AnnounceMax = 0, Select = 1, Unknown = 255 };
+        enum Type : uint8_t {
+            AnnounceMax = 0,
+            Select = 1,
+            Unknown = 255,
+        };
 
         static Type from_str(const char *str)
         {
@@ -302,8 +367,7 @@ public:
         }
     };
 
-    struct ProtocolHandshakeType
-    {
+    struct ProtocolHandshakeType {
         ProtocolHandshake::Type handshakeType;
         uint32_t version_major;
         uint32_t version_minor;
@@ -312,9 +376,15 @@ public:
     };
 
     void json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
+
     void type_to_json_handshake_type(ProtocolHandshakeType *handshake_type);
 
-    enum ProtocolAbortReason : uint8_t { Timeout = 1, UnexpectedMessage = 2, SelectionMismatch = 3, RFU };
+    enum ProtocolAbortReason : uint8_t {
+        Timeout = 1,
+        UnexpectedMessage = 2,
+        SelectionMismatch = 3,
+        RFU,
+    };
 
     void sme_protocol_abort_procedure(ProtocolAbortReason reason);
 

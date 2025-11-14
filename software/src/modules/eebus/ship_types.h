@@ -22,28 +22,16 @@
 #include "config.h"
 #include "module.h"
 #include "ship_connection.h"
-
 #include <TFJson.h>
-#include "ship_connection.h"
-
-
-#define SHIP_TYPES_MAX_JSON_SIZE 16384 // TODO: What is a sane value here? 16k is minimum otherwise it already causes problems with nodemanagement
-
 
 namespace SHIP_TYPES
 {
 // SHIP Datatypes as defined in SHIP .xsd
-enum DeserializationResult
-{
-    SUCCESS,
-    ERROR,
-    NOT_IMPLEMENTED
-};
+enum DeserializationResult { SUCCESS, ERROR, NOT_IMPLEMENTED };
 
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value);
 
-template <typename T>
-void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value);
+template <typename T> void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value);
 
 static constexpr uint16_t JSON_TO_EEBUS_MAX_DEPTH = 32;
 /**
@@ -60,8 +48,7 @@ void JsonToEEBusJson(JsonVariantConst src, JsonVariant dst, uint16_t depth = 0);
  */
 String EEBUSJsonToJson(String json_in);
 
-struct ShipMessageDataType
-{
+struct ShipMessageDataType {
     // SHIP 13.4.5.2.1
     // Mandatory
     bool valid = false;
@@ -84,15 +71,13 @@ struct ShipMessageDataType
     String type_to_json();
 };
 
-struct ShipMessageAccessMethodsRequest
-{
+struct ShipMessageAccessMethodsRequest {
     String request; // There is no datatype defined for this yet
     DeserializationResult json_to_type(uint8_t *data, size_t length);
     String type_to_json();
 };
 
-struct ShipMessageAccessMethods
-{
+struct ShipMessageAccessMethods {
     String id;
     std::vector<String> dns_sd_mdns;
     bool dns_sd_mdns_valid = false;
@@ -100,7 +85,6 @@ struct ShipMessageAccessMethods
     bool dns_valid = false;
     String dns_uri{};
     bool dns_uri_valid = false;
-
 
     DeserializationResult json_to_type(uint8_t *data, size_t length);
     String type_to_json();
