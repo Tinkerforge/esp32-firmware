@@ -407,12 +407,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({control_period: parseInt(v)}, this.update_uplot)}
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.extended_logging")} label_muted={__("heating.content.extended_logging_description")}>
-                        <Switch desc={__("heating.content.extended_logging_enabled")}
-                                checked={state.extended_logging}
-                                onClick={this.toggle('extended_logging')}
-                        />
-                    </FormRow>
                     <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
                     <FormRow label={__("heating.content.pv_excess_control")}
                              error={__("heating.content.meter_needs_activation")}

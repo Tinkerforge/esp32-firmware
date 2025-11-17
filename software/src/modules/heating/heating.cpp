@@ -32,13 +32,6 @@ static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
 #define HEATING_SG_READY_ACTIVE_OPEN   1
 
-#define extended_logging(fmt, ...) \
-    do { \
-        if (extended_logging) { \
-            logger.tracefln(this->trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
-        } \
-    } while (0)
-
 void Heating::pre_setup()
 {
     this->trace_buffer_index = logger.alloc_trace_buffer("heating", 1 << 18);
@@ -49,7 +42,7 @@ void Heating::pre_setup()
         {"min_hold_time", Config::Uint(15, 10, 60)},
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
-        {"extended_logging", Config::Bool(false)},
+        {"extended_logging", Config::Bool(false)}, // Obsolete. Logging to trace log is now always on.
         {"yield_forecast", Config::Bool(false)},
         {"yield_forecast_threshold", Config::Uint16(0)},
         {"extended", Config::Bool(false)},
@@ -194,12 +187,11 @@ Heating::Status Heating::get_status()
 
 void Heating::update()
 {
-    const bool extended_logging = config.get("extended_logging")->asBool();
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;
     if (!rtc.clock_synced(&tv_now)) {
         state.get("next_update")->updateUint(0);
-        extended_logging("Clock not synced. Skipping update.");
+        logger.tracefln(this->trace_buffer_index, "Clock not synced. Skipping update.");
         return;
     }
 
@@ -226,7 +218,7 @@ void Heating::update()
     // If it is not triggered it depends on the heating controller if it should be on or off.
     if (p14enwg_on) {
         state.get("p14enwg")->updateBool(true);
-        extended_logging("§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+        logger.tracefln(this->trace_buffer_index, "§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     } else {
         state.get("p14enwg")->updateBool(false);
@@ -249,7 +241,7 @@ void Heating::update()
     }
 
     if (remaining_holding_time > 0) {
-        extended_logging("Minimum control holding time not reached. Current time: %limin, last change: %limin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
+        logger.tracefln(this->trace_buffer_index, "Minimum control holding time not reached. Current time: %limin, last change: %limin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
         return;
     }
 
@@ -270,7 +262,7 @@ void Heating::update()
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
 
     if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
-        extended_logging("No control active.");
+        logger.tracefln(this->trace_buffer_index, "No control active.");
     } else {
         const time_t now = time(NULL);
         struct tm current_time;
@@ -278,7 +270,7 @@ void Heating::update()
 
         const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
         if (minutes_since_midnight >= 24*60) {
-            extended_logging("Too many minutes since midnight: %d.", minutes_since_midnight);
+            logger.tracefln(this->trace_buffer_index, "Too many minutes since midnight: %d.", minutes_since_midnight);
             return;
         }
 
@@ -290,17 +282,17 @@ void Heating::update()
             float watt_current = 0;
             MeterValueAvailability meter_availability = meters.get_power(meter_slot_grid_power, &watt_current);
             if (meter_availability != MeterValueAvailability::Fresh) {
-                extended_logging("Meter value not available (meter %lu has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
+                logger.tracefln(this->trace_buffer_index, "Meter value not available (meter %lu has availability %d). Ignoring PV excess control.", meter_slot_grid_power, static_cast<std::underlying_type<MeterValueAvailability>::type>(meter_availability));
             } else {
                 const bool active_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
                 if (sg_ready_output_1 == active_value) {
                     if ((-watt_current) > 0) {
-                        extended_logging("Current PV excess is above threshold. Current PV excess: %dW, threshold: 0W (sgr1 is active).", (int)watt_current);
+                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %dW, threshold: 0W (sgr1 is active).", (int)watt_current);
                         sg_ready1_on |= true;
                     }
                 } else {
                     if ((-watt_current) > pv_excess_control_threshold) {
-                        extended_logging("Current PV excess is above threshold. Current PV excess: %iW, threshold: %luW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
+                        logger.tracefln(this->trace_buffer_index, "Current PV excess is above threshold. Current PV excess: %iW, threshold: %luW. (sgr1 is not active)", (int)watt_current, pv_excess_control_threshold);
                         sg_ready1_on |= true;
                     }
                 }
@@ -318,7 +310,7 @@ void Heating::update()
                 for (int i = 0; i < duration*4; i++) {
                     buffer[i] = hours[i] ? '1' : '0';
                 }
-                extended_logging("%s: %s", name, buffer);
+                logger.tracefln(this->trace_buffer_index, "%s: %s", name, buffer);
             };
 
             uint8_t duration = 0;
@@ -356,14 +348,14 @@ void Heating::update()
             if (handle_extended) {
                 const bool data_available = day_ahead_prices.get_cheap_1h(start_time, duration, extended_hours, data);
                 if (!data_available) {
-                    extended_logging("Cheap hours not available. Ignoring extended control.");
+                    logger.tracefln(this->trace_buffer_index, "Cheap hours not available. Ignoring extended control.");
                 } else {
                     print_hours_today("Cheap hours", data, duration);
                     if (data[current_index]) {
-                        extended_logging("Current time is in cheap hours.");
+                        logger.tracefln(this->trace_buffer_index, "Current time is in cheap hours.");
                         sg_ready1_on |= true;
                     } else {
-                        extended_logging("Current time is not in cheap hours.");
+                        logger.tracefln(this->trace_buffer_index, "Current time is not in cheap hours.");
                         sg_ready1_on |= false;
                     }
                 }
@@ -371,14 +363,14 @@ void Heating::update()
             if (handle_blocking) {
                 const bool data_available = day_ahead_prices.get_expensive_1h(start_time, duration, blocking_hours, data);
                 if (!data_available) {
-                    extended_logging("Expensive hours not available. Ignoring blocking control.");
+                    logger.tracefln(this->trace_buffer_index, "Expensive hours not available. Ignoring blocking control.");
                 } else {
                     print_hours_today("Expensive hours", data, duration);
                     if (data[current_index]) {
-                        extended_logging("Current time is in expensive hours.");
+                        logger.tracefln(this->trace_buffer_index, "Current time is in expensive hours.");
                         sg_ready0_on |= true;
                     } else {
-                        extended_logging("Current time is not in expensive hours.");
+                        logger.tracefln(this->trace_buffer_index, "Current time is not in expensive hours.");
                         sg_ready0_on |= false;
                     }
                 }
@@ -388,20 +380,20 @@ void Heating::update()
         auto is_expected_yield_high = [&] () {
             // we check the expected pv excess and unblock if it is below the threshold.
             if (!yield_forecast) {
-                extended_logging("Yield forecast is inactive.");
+                logger.tracefln(this->trace_buffer_index, "Yield forecast is inactive.");
                 return false;
             }
 
-            extended_logging("Yield forecast is active.");
+            logger.tracefln(this->trace_buffer_index, "Yield forecast is active.");
             uint32_t wh_expected;
 
             if(!solar_forecast.get_wh_today().try_unwrap(&wh_expected)) {
-                extended_logging("Expected PV yield not available. Ignoring yield forecast.");
+                logger.tracefln(this->trace_buffer_index, "Expected PV yield not available. Ignoring yield forecast.");
             } else {
                 if (wh_expected/1000 < yield_forecast_threshold) {
-                    extended_logging("Expected PV yield %lukWh is below threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
+                    logger.tracefln(this->trace_buffer_index, "Expected PV yield %lukWh is below threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
                 } else {
-                    extended_logging("Expected PV yield %lukWh is above or equal to threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
+                    logger.tracefln(this->trace_buffer_index, "Expected PV yield %lukWh is above or equal to threshold of %lukWh.", wh_expected/1000, yield_forecast_threshold);
                     return true;
                 }
             }
@@ -411,7 +403,7 @@ void Heating::update()
 
         const bool pv_yield_high = is_expected_yield_high();
         if (pv_yield_high) {
-            extended_logging("Day ahead prices are ignored for cheap hours because of expected PV yield.");
+            logger.tracefln(this->trace_buffer_index, "Day ahead prices are ignored for cheap hours because of expected PV yield.");
             handle_dynamic_price(false, blocking);
         } else {
             handle_dynamic_price(extended, blocking);
@@ -430,7 +422,7 @@ void Heating::update()
 
     if (sg_ready1_on) {
         state.get("sgr_extended")->updateBool(true);
-        extended_logging("Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+        logger.tracefln(this->trace_buffer_index, "Heating decision: Turning on SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         const bool new_value = sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED;
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
@@ -439,7 +431,7 @@ void Heating::update()
         }
     } else {
         state.get("sgr_extended")->updateBool(false);
-        extended_logging("Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+        logger.tracefln(this->trace_buffer_index, "Heating decision: Turning off SG Ready output 1 (%s).", sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         const bool new_value = sg_ready1_type != HEATING_SG_READY_ACTIVE_CLOSED;
         if (sg_ready_output_1 != new_value) {
             em_v2.set_sg_ready_output(1, new_value);
@@ -452,10 +444,10 @@ void Heating::update()
     if (override_until > 0) {
         uint32_t now = rtc.timestamp_minutes();
         if (now >= override_until) {
-            extended_logging("Override time is over. Resetting override.");
+            logger.tracefln(this->trace_buffer_index, "Override time is over. Resetting override.");
             sgr_blocking_override.get("override_until")->updateUint(0);
         } else {
-            extended_logging("Override time is active. Current time: %limin, override until: %limin.", now, override_until);
+            logger.tracefln(this->trace_buffer_index, "Override time is active. Current time: %limin, override until: %limin.", now, override_until);
             sg_ready0_on = false;
         }
     }
@@ -465,7 +457,7 @@ void Heating::update()
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         if (sg_ready0_on) {
             state.get("sgr_blocking")->updateBool(true);
-            extended_logging("Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+            logger.tracefln(this->trace_buffer_index, "Heating decision: Turning on SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             const bool new_value = sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED;
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
@@ -474,7 +466,7 @@ void Heating::update()
             }
         } else {
             state.get("sgr_blocking")->updateBool(false);
-            extended_logging("Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
+            logger.tracefln(this->trace_buffer_index, "Heating decision: Turning off SG Ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
             const bool new_value = sg_ready0_type != HEATING_SG_READY_ACTIVE_CLOSED;
             if (sg_ready_output_0 != new_value) {
                 em_v2.set_sg_ready_output(0, new_value);
