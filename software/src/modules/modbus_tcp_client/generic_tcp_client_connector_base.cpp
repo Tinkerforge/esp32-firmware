@@ -203,7 +203,7 @@ void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientD
         break;
 
     case  TFGenericTCPClientPoolShareLevel::Secondary:
-        shared = "Unshared exising connection to";
+        shared = "Unshared existing connection to";
         break;
 
     default:
