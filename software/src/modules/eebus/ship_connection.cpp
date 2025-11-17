@@ -19,9 +19,6 @@
 
 #include "ship_connection.h"
 
-#include <esp_https_server.h>
-#include <time.h>
-
 #include "build.h"
 #include "eebus.h"
 #include "event_log_prefix.h"
@@ -29,6 +26,8 @@
 #include "ship_types.h"
 #include "spine_connection.h"
 #include "tools.h"
+#include <esp_https_server.h>
+#include <utility>
 
 extern EEBus eebus;
 
@@ -65,32 +64,32 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             break;
         }
         default:
-            //TODO: Handle the other events cleanly
-            eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_ski.c_str());
+            eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_node->ip_address_as_string().c_str());
             return; // Ignore other events for now
     }
 }
 
-ShipConnection::ShipConnection(WebSocketsClient *ws_client, CoolString ski) : ws_client(ws_client), peer_ski(std::move(ski))
+ShipConnection::ShipConnection(WebSocketsClient *ws_client, std::shared_ptr<ShipNode> node) : ws_client(ws_client)
 {
     role = Role::Server;
+    peer_node = std::move(node);
     spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
-    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as server", peer_ski.c_str());
+    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as server", peer_node->node_name().c_str());
     state_machine_next_step();
 }
 
-ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski)
+ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node)
 {
-    peer_ski = std::move(ski);
+    peer_node = std::move(node);
     role = Role::Client;
     spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
 
     ws_server = tf_websocket_client_init(&ws_config);
-    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_ski.c_str());
+    eebus.trace_fmtln("New Shipconnection created for peer %s where we act as client", peer_node->node_name().c_str());
 
     tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
     esp_err_t err = tf_websocket_client_start(ws_server);
@@ -103,18 +102,12 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
-    if (ws_pkt->fragmented) {
-        eebus.trace_fmtln("ShipConnection fragmented ws_frame_received from: %s", peer_ski.c_str());
-
-        return;
-    }
-
     if (ws_pkt->len < 2) {
         eebus.trace_fmtln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
         return;
     }
     if (state != ShipConnectionState::Done) {
-        eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_ski.c_str());
+        eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_node->node_name().c_str());
     }
 
     // TODO: Remove this once we can handle multipart messages
@@ -129,7 +122,7 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         message_incoming->multipart_index = 0;
         message_incoming->length = 0;
     }
-    if (message_incoming->multipart_index + ws_pkt->len >= SHIP_CONNECTION_MAX_BUFFER_SIZE ) {
+    if (message_incoming->multipart_index + ws_pkt->len >= SHIP_CONNECTION_MAX_BUFFER_SIZE) {
         eebus.trace_fmtln("frame_received: ws frame too big for the buffer. Current index: %zu, incoming length: %d, max buffer size: %d", message_incoming->multipart_index, ws_pkt->len, SHIP_CONNECTION_MAX_BUFFER_SIZE);
     }
     memcpy(message_incoming->data + sizeof(uint8_t) * (message_incoming->multipart_index), ws_pkt->payload, ws_pkt->len);
@@ -147,7 +140,8 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
 void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
 {
-    if (closing_scheduled) return;
+    if (closing_scheduled)
+        return;
     closing_scheduled = true;
     if (reason.length() > 0)
         logger.printfln("Close requested for SHIP Connection: %s", reason.c_str());
@@ -162,7 +156,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
 
     task_scheduler.scheduleOnce(
         [this]() {
-            logger.printfln("Closing connections to %s", peer_ski.c_str());
+            logger.printfln("Closing connections to %s", peer_node->node_name().c_str());
             // Close socket and
             if (role == Role::Server) {
                 if (ws_client != nullptr) {
@@ -227,7 +221,6 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
 {
     if (!message_outgoing) {
         message_outgoing = make_unique_psram<Message>();
-        // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
         eebus.trace_fmtln("ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
     }
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
@@ -486,7 +479,7 @@ void ShipConnection::state_machine_next_step()
 
 void ShipConnection::state_cme_init_start()
 {
-    eebus.trace_fmtln("Starting SHIP Connection Mode Initialisation (CMI) for %s", peer_ski.c_str());
+    eebus.trace_fmtln("Starting SHIP Connection Mode Initialisation (CMI) for %s", peer_node->node_name().c_str());
     // SHIP 13.4.3
     switch (role) {
         case Role::Client: {
@@ -1032,15 +1025,10 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
-bool ShipConnection::update_config_state(NodeState state)
+void ShipConnection::update_config_state(NodeState state) const
 {
-    for (int i = 0; i < eebus.config.get("peers")->count(); i++) {
-        if (eebus.config.get("peers")->get(i)->get("ski")->asString() == peer_ski) {
-            eebus.config.get("peers")->get(i)->get("state")->updateEnum(state);
-            return true;
-        }
-    }
-    return false;
+    peer_node->state = state;
+    eebus.update_peers_config();
 }
 
 void ShipConnection::state_done()
@@ -1050,27 +1038,9 @@ void ShipConnection::state_done()
     // and the SME Access Method Request. In that case we jump to the corresponding state,
     // which will then come back here.
 
-    // Update frontend and config to inform it of the new connection state. Add it if its unknown
+    // Update frontend and config to inform it of the new connection state
     if (!connection_established) {
-        if (!update_config_state(NodeState::Connected)) {
-            // Run MDNS discovery so we can figure out who connected to us. This might take a second
-            task_scheduler.scheduleOnce(
-                [this]() {
-                    eebus.ship.discover_ship_peers();
-                    eebus.update_peers_config();
-                    task_scheduler.scheduleOnce(
-                        [this]() {
-                            if (!update_config_state(NodeState::Connected)) {
-                                auto peer = eebus.config.get("peers")->add();
-                                peer->get("ski")->updateString(peer_ski); // Peer SKI might be unknown at this point
-                                peer->get("state")->updateEnum(NodeState::Connected);
-                                peer->get("model_model")->updateString("Unknown Device");
-                            }
-                        },
-                        100_ms);
-                },
-                0_ms);
-        }
+        update_config_state(NodeState::Connected);
     }
     connection_established = true;
 

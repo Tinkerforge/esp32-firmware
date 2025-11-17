@@ -52,6 +52,7 @@
 
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
+struct ShipNode;      // Forward declaration to avoid circular dependency
 
 //static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
 
@@ -110,7 +111,7 @@ public:
     WebSocketsClient *ws_client = nullptr;
     tf_websocket_client_handle_t ws_server;
     Role role;
-    CoolString peer_ski{};
+    std::shared_ptr<ShipNode> peer_node;
     unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
     bool closing_scheduled = false;
@@ -119,20 +120,19 @@ public:
     /**
      * New ShipConnection where we act as a Server
      * @param ws_client The incoming connection from the WebSocketsClient
-     * @param ski the SKI
+     * @param node The ShipNode representing the peer we are connected to
      */
-    ShipConnection(WebSocketsClient *ws_client, CoolString ski);
+    ShipConnection(WebSocketsClient *ws_client, std::shared_ptr<ShipNode> node);
 
     /**
      * New ShipConnection where we act as a Client
      * @param ws_config The WebSocket server handle to connect to
-     * @param ski
+     * @param node The ShipNode representing the peer we are connecting to
      */
-    ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski);
+    ShipConnection(const tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node);
 
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
-
     const ShipConnection &operator=(const ShipConnection &other) = delete;
 
     ShipConnectionState state = ShipConnectionState::CmiInitStart;
@@ -243,7 +243,7 @@ public:
 
     void state_sme_access_method_request();
 
-    bool update_config_state(NodeState state);
+    void update_config_state(NodeState state) const;
 
     void state_done();
 

@@ -19,20 +19,19 @@
 
 #pragma once
 
-#include <vector>
-#include "module.h"
 #include "config.h"
+#include "malloc.h"
 #include "mdns.h"
+#include "module.h"
 #include "modules/web_server/cert.h"
 #include "modules/ws/web_sockets.h"
+#include "node_state.enum.h"
 #include "ship_connection.h"
 #include "ship_discovery_state.enum.h"
-#include "node_state.enum.h"
 #include <TFJson.h>
-//#include "string_builder.h"
+#include <vector>
 
-struct ShipNode
-{
+struct ShipNode {
     // Basic information about the node
     std::vector<String> ip_address{};
     uint16_t port = 0;
@@ -63,13 +62,16 @@ struct ShipNode
         }
         return false;
     }
+    [[nodiscard]] String node_name() const;
 };
+
+class ShipConnection;
 
 class ShipPeerHandler
 {
 public:
     ShipPeerHandler();
-    std::vector<ShipNode> get_peers()
+    std::vector<std::shared_ptr<ShipNode>> get_peers()
     {
         return peers;
     }
@@ -80,7 +82,7 @@ public:
     }
 
     /* Updates identified by SKI (txt_ski). Will add a new peer if no existing one was found with the ip */
-    ShipNode *get_peer_by_ski(const String &ski);
+    std::shared_ptr<ShipNode> get_peer_by_ski(const String &ski);
     void remove_peer_by_ski(const String &ski);
     void update_ip_by_ski(const String &ski, const String &ip);
     void update_port_by_ski(const String &ski, uint16_t port);
@@ -96,7 +98,7 @@ public:
     void update_type_by_ski(const String &ski, const String &type);
 
     /* Updates identified by IP (matches any entry in ShipNode::ip_address). Return true on success. */
-    ShipNode *get_peer_by_ip(const String &ip);
+    std::shared_ptr<ShipNode> get_peer_by_ip(const String &ip);
     void remove_peer_by_ip(const String &ip);
     void update_port_by_ip(const String &ip, uint16_t port);
     void update_trusted_by_ip(const String &ip, bool trusted);
@@ -112,20 +114,17 @@ public:
     void update_type_by_ip(const String &ip, const String &type);
     void update_ip_by_ip(const String &ip, const String &new_ip);
 
-
     void new_peer_from_ski(const String &ski);
     void new_peer_from_ip(const String &ip);
 
 private:
-    std::vector<ShipNode> peers{};
+    std::vector<std::shared_ptr<ShipNode>> peers{};
 };
 
 class Ship
 {
 public:
-    Ship()
-    {
-    }
+    Ship() = default;
 
     void pre_setup();
     void setup();
@@ -147,9 +146,9 @@ public:
 
     ShipPeerHandler peer_handler{};
     //std::vector<ShipNode> ship_nodes_discovered;
-    ShipDiscoveryState discovery_state;
+    ShipDiscoveryState discovery_state = ShipDiscoveryState::Ready;
     std::vector<unique_ptr_any<ShipConnection>> ship_connections;
-    bool is_enabled;
+    bool is_enabled{};
 
 private:
     static void setup_mdns();
