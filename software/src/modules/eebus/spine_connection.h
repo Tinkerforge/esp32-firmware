@@ -103,6 +103,8 @@ public:
     time_t last_received_time = 0;
     // The last time a message was received from the peer. This is used to detect if the peer is still alive.
 
+    void eebus_active(bool active) const;
+
 private:
     // This is to hold the state of the connection regarding discovery and usecase information.
     NodeManagementDetailedDiscoveryDataType detailed_discovery_data{};

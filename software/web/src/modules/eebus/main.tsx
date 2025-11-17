@@ -132,7 +132,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 peer.model_model,
                                                 peer.model_brand,
                                                 <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
-                                                peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
+                                                peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected"): __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model,
                                                 peer.model_brand,
@@ -253,7 +253,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         <InputSelect items={[
                                                             ["0", __("eebus.content.peer_info.state_disconnected")],
                                                             ["1", __("eebus.content.peer_info.state_discovered")],
-                                                            ["2", __("eebus.content.peer_info.state_connected")]
+                                                            ["2", __("eebus.content.peer_info.state_connected")],
+                                                            ["3", __("eebus.content.peer_info.state_eebus_connected")]
                                                         ]}
                                                                      value={peer.state.toString()}
                                                                      disabled={true}

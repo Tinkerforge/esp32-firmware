@@ -187,6 +187,12 @@ void Ship::setup_wss()
         if (ws_client->setCtx(ship_connections.back().get()) != nullptr) {
             esp_system_abort("Clobbered previously set WebSocketsClient context");
         }
+         task_scheduler.scheduleOnce(
+                        []() {
+                            eebus.ship.discover_ship_peers();
+                            eebus.update_peers_config();
+                        },
+                        2_s);
 
         return true;
     });

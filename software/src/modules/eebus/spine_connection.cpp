@@ -114,6 +114,18 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
     return false;
 }
 
+void SpineConnection::eebus_active(bool active) const
+{
+    if (active) {
+        if (ship_connection->peer_node->state != NodeState::EEBUSActive) {
+            logger.printfln("Full EEBUS connection established to %s", ship_connection->peer_node->node_name().c_str());
+        }
+        ship_connection->peer_node->state = NodeState::EEBUSActive;
+    } else {
+        ship_connection->peer_node->state = NodeState::Connected;
+    }
+    eebus.update_peers_config();
+}
 bool SpineConnection::validate_header(HeaderType &header)
 {
     bool error_found = false;

@@ -19,18 +19,16 @@
 
 #include "eebus_usecases.h"
 
-
+#include "eebus.h"
 #include "event_log_prefix.h"
+#include "lib/libiso8601/iso8601.h"
 #include "module_dependencies.h"
+#include "ocpp/Types.h"
 #include "ship_types.h"
 #include "tools.h"
-#include "eebus.h"
 #include <chrono>
 #include <regex>
 #include <utility>
-#include "lib/libiso8601/iso8601.h"
-#include "ocpp/Types.h"
-
 
 bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
 {
@@ -77,6 +75,12 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
                     return CmdClassifierType::reply;
                 case CmdClassifierType::reply:
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
+                    task_scheduler.scheduleOnce(
+                        [this, header]() {
+                            EEBusUseCases::get_spine_connection(header.addressSource.get())->eebus_active(true);
+                        },
+                        5_s);
+
                     return CmdClassifierType::reply;
                 default:
                     eebus.trace_fmtln("NodeManagementUsecase: NodeManagementDetailedDiscoveryData does not support a %s command", cmd_classifier.c_str());
@@ -154,16 +158,13 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
         node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
     }
     return node_management_detailed_data;
-
 }
 
 CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
         if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
-            EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                     "Subscription request failed, no or invalid subscription request data provided");
+            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Subscription request failed, no or invalid subscription request data provided");
             return CmdClassifierType::result;
         }
         NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
@@ -172,14 +173,13 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
         entry.clientAddress = request.subscriptionRequest->clientAddress;
         entry.serverAddress = request.subscriptionRequest->serverAddress;
         subscription_data.subscriptionEntry->push_back(entry);
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                 "Subscription request was successful");
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Subscription request was successful");
         return CmdClassifierType::result;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
         response["nodeManagementSubscriptionData"] = subscription_data;
-        return CmdClassifierType::reply;;
+        return CmdClassifierType::reply;
+        ;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
         NodeManagementSubscriptionDeleteCallType subscription_delete_call = data->nodemanagementsubscriptiondeletecalltype.get();
@@ -226,13 +226,10 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
         for (size_t i : to_delete_indices) {
             if (i < subscription_data.subscriptionEntry.get().size()) {
                 // remove the element at i starting from the back. Always do it relative to the beginning so the indices stay valid
-                subscription_data.subscriptionEntry.get().erase(
-                    subscription_data.subscriptionEntry.get().begin() + i);
+                subscription_data.subscriptionEntry.get().erase(subscription_data.subscriptionEntry.get().begin() + i);
             }
         }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                 "Removed Subscriptions successfully");
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed Subscriptions successfully");
         return CmdClassifierType::reply;
     }
 
@@ -244,9 +241,7 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
 
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
-        if (data->nodemanagementbindingrequestcalltype && data->nodemanagementbindingrequestcalltype->bindingRequest
-            && data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress
-            && data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress) {
+        if (data->nodemanagementbindingrequestcalltype && data->nodemanagementbindingrequestcalltype->bindingRequest && data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress && data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress) {
             BindingManagementEntryDataType binding_entry;
             binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
@@ -259,15 +254,11 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
                 binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
             }
-            EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                     "Binding request was successful");
+            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Binding request was successful");
             return CmdClassifierType::reply;
         }
         eebus.trace_fmtln("Binding requested but failed");
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                 "Binding request failed");
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Binding request failed");
         return CmdClassifierType::reply;
     }
     // Binding Data as defined in EEBus SPINE TS ProtocolSpecification 7.3.3
@@ -280,13 +271,9 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
     }
     // Binding Release as defined in EEBus SPINE TS ProtocolSpecification 7.3.4
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
-        if (!data->nodemanagementbindingdeletecalltype && data->nodemanagementbindingdeletecalltype->bindingDelete
-            && data->nodemanagementbindingdeletecalltype->bindingDelete->clientAddress
-            && data->nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
+        if (!data->nodemanagementbindingdeletecalltype && data->nodemanagementbindingdeletecalltype->bindingDelete && data->nodemanagementbindingdeletecalltype->bindingDelete->clientAddress && data->nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
             eebus.trace_fmtln("A binding release was requested but no binding delete information was provided or request was malformed");
-            EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                     "Binding release failed");
+            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Binding release failed");
             return CmdClassifierType::reply;
         };
 
@@ -336,9 +323,7 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
                 binding_management_entry_list_.bindingManagementEntryData.get().erase(binding_management_entry_list_.bindingManagementEntryData.get().begin() + i);
             }
         }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                 "Removed bindings successfully");
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Removed bindings successfully");
         return CmdClassifierType::reply;
     }
 
@@ -356,11 +341,7 @@ void NodeManagementEntity::send_detailed_discovery_read(FeatureAddressType &targ
     sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     sender.entity = this->entity_address;
     sender.feature = nodemgmt_feature_address;
-    usecase_interface->send_spine_message(target,
-                                          sender,
-                                          message.as<JsonVariantConst>(),
-                                          CmdClassifierType::read,
-                                          true);
+    usecase_interface->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
@@ -438,8 +419,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
     return features;
 }
 
-template <typename T>
-size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
+template <typename T> size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
 {
     eebus.trace_fmtln("EEBUS: Informing subscribers of %s", function_name);
     if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
@@ -475,18 +455,17 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
     usecase_interface = new_usecase_interface;
 }
 
-
 EvcsUsecase::EvcsUsecase()
 {
     update_api();
 #ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating ChargingSummary");
-                                    update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
-                                    update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
-
-                                },
-                                30_s);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            logger.printfln("EEBUS Usecase test enabled. Updating ChargingSummary");
+            update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
+            update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
+        },
+        30_s);
 #endif
 }
 
@@ -527,7 +506,6 @@ CmdClassifierType EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeH
                             billDescriptionData.billId = bill_entry.id;
                             billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
                             billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
-
                         }
                         response["billDescriptionListData"] = billDescriptionListData;
                         return CmdClassifierType::reply;
@@ -656,7 +634,6 @@ void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time
     update_api();
 }
 
-
 BillListDataType EvcsUsecase::get_bill_list_data() const
 {
     BillListDataType bill_list_data{};
@@ -730,19 +707,19 @@ void EvcsUsecase::update_api() const
 
         api_bill_entry->get("percent_self_produced_energy")->updateUint(bill_entry.self_produced_energy_percent);
         api_bill_entry->get("percent_self_produced_cost")->updateUint(bill_entry.self_produced_cost_percent);
-
     }
 }
 
 EvcemUsecase::EvcemUsecase()
 {
 #ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleUncancelable([this]() {
-                                              logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
-                                              update_measurements(32, 32, 32, 7000, 7000, 7000, this->power_charged_wh + 100);
-                                          },
-                                          60_s,
-                                          60_s);
+    task_scheduler.scheduleUncancelable(
+        [this]() {
+            logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
+            update_measurements(32, 32, 32, 7000, 7000, 7000, this->power_charged_wh + 100);
+        },
+        60_s,
+        60_s);
 #endif
 }
 
@@ -780,7 +757,7 @@ CmdClassifierType EvcemUsecase::handle_message(HeaderType &header, SpineDataType
                 return CmdClassifierType::reply;
             }
             break;
-        default: ;
+        default:;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -1012,8 +989,8 @@ ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_elec
     ElectricalConnectionParameterDescriptionListDataType electrical_connection_parameters{};
     for (uint8_t i = 0; i < 7; i++) {
         ElectricalConnectionParameterDescriptionDataType connection_parameters_data{};
-        connection_parameters_data.parameterId = i + 1; // This is a new ID
-        connection_parameters_data.measurementId = i + 1; // This should be the same as the measurement IDs in other function
+        connection_parameters_data.parameterId = i + 1;        // This is a new ID
+        connection_parameters_data.measurementId = i + 1;      // This should be the same as the measurement IDs in other function
         connection_parameters_data.electricalConnectionId = 1; // This refers to the electrical connection in the connection description function
         if (i < 6) {
             switch (i) {
@@ -1045,7 +1022,6 @@ ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_elec
             connection_parameters_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
             connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc;
             connection_parameters_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
-
         }
         electrical_connection_parameters.electricalConnectionParameterDescriptionData->push_back(connection_parameters_data);
     }
@@ -1061,19 +1037,18 @@ EvccUsecase::EvccUsecase()
 {
     entity_active = false; // Disable entity until an EV is connected
 #ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating EvccUsecase");
-                                    ev_connected_state(true);
-                                    update_device_config("iso15118-2ed1", true);
-                                    update_identification("12:34:56:78:9a:bc");
-                                    update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
-                                    update_electrical_connection(0, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
-                                    update_operating_state(false);
-
-                                },
-                                40_s);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            logger.printfln("EEBUS Usecase test enabled. Updating EvccUsecase");
+            ev_connected_state(true);
+            update_device_config("iso15118-2ed1", true);
+            update_identification("12:34:56:78:9a:bc");
+            update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
+            update_electrical_connection(0, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
+            update_operating_state(false);
+        },
+        40_s);
 #endif
-
 }
 
 UseCaseInformationDataType EvccUsecase::get_usecase_information()
@@ -1144,7 +1119,7 @@ CmdClassifierType EvccUsecase::handle_message(HeaderType &header, SpineDataTypeH
                     return CmdClassifierType::reply;
                 }
                 break;
-            default: ;
+            default:;
         }
     }
     return CmdClassifierType::EnumUndefined;
@@ -1347,7 +1322,6 @@ void EvccUsecase::update_operating_state(bool standby)
     update_api();
 }
 
-
 void EvccUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("ev_commissioning_and_configuration");
@@ -1361,7 +1335,6 @@ void EvccUsecase::update_api() const
         api_entry->get("standby_power")->updateUint(standby_power);
         api_entry->get("standby_mode")->updateBool(standby_mode);
     }
-
 }
 
 DeviceConfigurationKeyValueDescriptionListDataType EvccUsecase::generate_device_config_description() const
@@ -1412,7 +1385,6 @@ IdentificationListDataType EvccUsecase::generate_identification_description() co
     return identification_data;
 }
 
-
 DeviceClassificationManufacturerDataType EvccUsecase::generate_manufacturer_description() const
 {
     DeviceClassificationManufacturerDataType manufacturer_data{};
@@ -1451,7 +1423,6 @@ ElectricalConnectionParameterDescriptionListDataType EvccUsecase::generate_elect
     power_description.scopeType = ScopeTypeEnumType::acPowerTotal;
     electrical_connection_description.electricalConnectionParameterDescriptionData->push_back(power_description);
     return electrical_connection_description;
-
 }
 
 ElectricalConnectionPermittedValueSetListDataType EvccUsecase::generate_electrical_connection_values() const
@@ -1494,18 +1465,18 @@ DeviceDiagnosisStateDataType EvccUsecase::generate_state() const
 EvseccUsecase::EvseccUsecase()
 {
 #ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase with a test error");
-                                    update_operating_state(true, "This is a test error message");
-
-                                },
-                                50_s);
-    task_scheduler.scheduleOnce([this]() {
-                                    logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
-                                    update_operating_state(false, "This is a test error message. It should not be shown");
-
-                                },
-                                200_s);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase with a test error");
+            update_operating_state(true, "This is a test error message");
+        },
+        50_s);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
+            update_operating_state(false, "This is a test error message. It should not be shown");
+        },
+        200_s);
 #endif
 }
 
@@ -1526,7 +1497,7 @@ CmdClassifierType EvseccUsecase::handle_message(HeaderType &header, SpineDataTyp
                     return CmdClassifierType::reply;
                 }
                 break;
-            default: ;
+            default:;
         }
     }
     return CmdClassifierType::EnumUndefined;
@@ -1645,40 +1616,41 @@ void EvseccUsecase::update_api() const
 
 LpcUsecase::LpcUsecase()
 {
-    task_scheduler.scheduleOnce([this]() {
-                                    // Initialize DeviceConfiguration feature
-                                    update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            // Initialize DeviceConfiguration feature
+            update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
 
-                                    // Initialize DeviceDiagnosis feature
-                                    task_scheduler.scheduleUncancelable([this]() {
-                                                                              if constexpr (EEBUS_LPC_AWAIT_HEARTBEAT) {
-                                                                                  return;
-                                                                              }
-                                                                              DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-                                                                              outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                                                                              outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-                                                                              outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
+            // Initialize DeviceDiagnosis feature
+            task_scheduler.scheduleUncancelable(
+                [this]() {
+                    if constexpr (EEBUS_LPC_AWAIT_HEARTBEAT) {
+                        return;
+                    }
+                    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+                    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+                    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
+                    outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
 
-                                                                              eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
-                                                                              eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                                                                              if (eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_device_diagnosis, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
-                                                                                  heartbeatCounter++;
-                                                                              }
-                                                                              if (!heartbeat_received) {
-                                                                                  handle_heartbeat_timeout();
-                                                                              }
-                                                                              heartbeat_received = false;
-                                                                          },
-                                                                          120_s,
-                                                                          60_s);
-                                    // Initialize ElectricalConnection feature
-                                    update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
-                                    update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
-                                    lpc_state = LPCState::Init;
-                                    switch_state(LPCState::Init);
-                                },
-                                1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
-
+                    eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
+                    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+                    if (eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_device_diagnosis, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
+                        heartbeatCounter++;
+                    }
+                    if (!heartbeat_received) {
+                        handle_heartbeat_timeout();
+                    }
+                    heartbeat_received = false;
+                },
+                120_s,
+                60_s);
+            // Initialize ElectricalConnection feature
+            update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
+            update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
+            lpc_state = LPCState::Init;
+            switch_state(LPCState::Init);
+        },
+        1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
 }
 
 UseCaseInformationDataType LpcUsecase::get_usecase_information()
@@ -1715,7 +1687,7 @@ CmdClassifierType LpcUsecase::handle_message(HeaderType &header, SpineDataTypeHa
             return device_diagnosis_feature(header, data, response);
         case FeatureAddresses::lpc_electrical_connection:
             return electricalConnection_feature(header, data, response);
-        default: ;
+        default:;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -1885,7 +1857,6 @@ void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consu
     contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
     contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
-
 }
 
 bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
@@ -1977,11 +1948,8 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
             }
             return CmdClassifierType::result;
-
         }
-        EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired,
-                                                 "Load Control requires binding");
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired, "Load Control requires binding");
         return CmdClassifierType::result;
     }
     return CmdClassifierType::EnumUndefined;
@@ -2003,9 +1971,7 @@ CmdClassifierType LpcUsecase::deviceConfiguration_feature(HeaderType &header, Sp
         // We only accept writes from nodes we are bound to and we only do full writes
         if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
             device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
-            EEBUS_USECASE_HELPERS::build_result_data(response,
-                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
-                                                     "Configuration updated successfully");
+            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Configuration updated successfully");
             update_api();
             return CmdClassifierType::result;
         }
@@ -2032,42 +1998,43 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
             JsonObject obj = doc.to<JsonObject>();
             obj["deviceDiagnosisHeartbeatData"] = read_heartbeat;
             FeatureAddressType read_destination = header.addressSource.get();
-            task_scheduler.scheduleOnce([this, read_destination, obj]() {
-                                            FeatureAddressType read_source{};
-                                            read_source.feature = FeatureAddresses::lpc_device_diagnosis;
-                                            read_source.entity = entity_address;
-                                            eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
-                                        },
-                                        100_ms);
+            task_scheduler.scheduleOnce(
+                [this, read_destination, obj]() {
+                    FeatureAddressType read_source{};
+                    read_source.feature = FeatureAddresses::lpc_device_diagnosis;
+                    read_source.entity = entity_address;
+                    eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
+                },
+                100_ms);
             if (heartbeat_timeout_task) {
                 heartbeat_timeout_task = task_scheduler.scheduleOnce(
                     [this]() {
                         this->handle_heartbeat_timeout();
                     },
                     60_s);
-
             }
             // If we get a read from someone we just try to subscribe to them. They can then deny or accept it. Should be able to handle double requests.
-            task_scheduler.scheduleOnce([this, header, obj]() {
-                                            NodeManagementSubscriptionRequestCallType subscription_request_call{};
-                                            subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-                                            subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
-                                            subscription_request_call.subscriptionRequest->clientAddress->feature = FeatureAddresses::lpc_device_diagnosis;
+            task_scheduler.scheduleOnce(
+                [this, header, obj]() {
+                    NodeManagementSubscriptionRequestCallType subscription_request_call{};
+                    subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+                    subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
+                    subscription_request_call.subscriptionRequest->clientAddress->feature = FeatureAddresses::lpc_device_diagnosis;
 
-                                            subscription_request_call.subscriptionRequest->serverAddress = header.addressSource.get();
-                                            subscription_request_call.subscriptionRequest->serverFeatureType = FeatureTypeEnumType::DeviceDiagnosis;
+                    subscription_request_call.subscriptionRequest->serverAddress = header.addressSource.get();
+                    subscription_request_call.subscriptionRequest->serverFeatureType = FeatureTypeEnumType::DeviceDiagnosis;
 
-                                            FeatureAddressType subscription_request_destination = header.addressDestination.get();
-                                            subscription_request_destination.entity = {0};
-                                            subscription_request_destination.feature = 0;
-                                            FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
+                    FeatureAddressType subscription_request_destination = header.addressDestination.get();
+                    subscription_request_destination.entity = {0};
+                    subscription_request_destination.feature = 0;
+                    FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
 
-                                            BasicJsonDocument<ArduinoJsonPsramAllocator> subscription_request_doc(2048);
-                                            JsonObject sub_obj = subscription_request_doc.to<JsonObject>();
-                                            obj["subscriptionRequestCall"] = subscription_request_call;
-                                            eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, sub_obj, CmdClassifierType::call);
-                                        },
-                                        200_ms);
+                    BasicJsonDocument<ArduinoJsonPsramAllocator> subscription_request_doc(2048);
+                    JsonObject sub_obj = subscription_request_doc.to<JsonObject>();
+                    obj["subscriptionRequestCall"] = subscription_request_call;
+                    eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, sub_obj, CmdClassifierType::call);
+                },
+                200_ms);
             heartbeatEnabled = true;
             heartbeat_received = true;
             return CmdClassifierType::reply;
@@ -2082,7 +2049,6 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
                 },
                 60_s);
         }
-
     }
 
     return CmdClassifierType::EnumUndefined;
@@ -2121,7 +2087,6 @@ bool LpcUsecase::switch_state(LPCState state)
         update_api();
     } else {
         eebus.trace_fmtln("Usecases: LPC: Illegal state change request. From %d to %d", lpc_state, state);
-
     }
     return state_chaged;
 }
@@ -2137,7 +2102,6 @@ bool LpcUsecase::init_state()
     limit_engaged = false;
     current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     return true;
-
 }
 
 bool LpcUsecase::unlimited_controlled_state()
@@ -2204,7 +2168,6 @@ void LpcUsecase::update_api()
     api_entry->get("failsafe_limit_duration_s")->updateUint(EEBUS_USECASE_HELPERS::iso_duration_to_seconds(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(1).value->duration.get()).as<uint64_t>());
     api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
     //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
-
 }
 
 void LpcUsecase::handle_heartbeat_timeout()
@@ -2274,7 +2237,8 @@ CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeH
         case SpineDataTypeHandler::Function::incentiveTableData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    response["incentiveTableData"] = read_incentive_table_data();;
+                    response["incentiveTableData"] = read_incentive_table_data();
+                    ;
                     return CmdClassifierType::reply;
                 case CmdClassifierType::write:
                     return write_incentive_table_data(header, data->incentivetabledatatype, response);
@@ -2282,7 +2246,7 @@ CmdClassifierType CevcUsecase::handle_message(HeaderType &header, SpineDataTypeH
                     break;
             }
             break;
-        default: ;
+        default:;
     }
     return CmdClassifierType::EnumUndefined;
 }
@@ -2445,7 +2409,6 @@ CmdClassifierType CevcUsecase::write_incentive_table_data(HeaderType &header, Sp
     return CmdClassifierType::EnumUndefined;
 }
 
-
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses should be consistent so all actors are under the same entity
@@ -2502,9 +2465,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
     if (!found_dest_entity) {
         eebus.trace_fmtln("Usecases: Received message for unknown entity");
-        EEBUS_USECASE_HELPERS::build_result_data(responseObj,
-                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                 "Unknown entity requested");
+        EEBUS_USECASE_HELPERS::build_result_data(responseObj, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Unknown entity requested");
         send_response = CmdClassifierType::result; // We always send a response if we do not know the entity
     }
     if (send_response != CmdClassifierType::EnumUndefined && header.cmdClassifier != CmdClassifierType::reply) {
@@ -2526,8 +2487,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     data->reset();
 }
 
-template <typename T>
-size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char *function_name)
+template <typename T> size_t EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char *function_name)
 {
     if (initialized && EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS)
         return node_management.inform_subscribers(entity, feature, data, function_name);
