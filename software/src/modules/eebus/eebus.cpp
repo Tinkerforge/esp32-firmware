@@ -49,7 +49,7 @@ void EEBus::pre_setup()
         // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
         {"model_model", Config::Str("", 0, 32)},
         {"mode_type", Config::Str("", 0, 32)},
-        {"state", Config::Enum(NodeState::Unknown)},
+        {"state", Config::Enum(NodeState::Disconnected)},
     });
 
     config = ConfigRoot{Config::Object({
@@ -238,7 +238,7 @@ void EEBus::toggle_module()
 {
     // All peers are unknown when its either toggled or at startup
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        config.get("peers")->get(i)->get("state")->updateEnum(NodeState::Unknown);
+        config.get("peers")->get(i)->get("state")->updateEnum(NodeState::Disconnected);
     }
     api.writeConfig("eebus/config", &config);
 

@@ -148,6 +148,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
     task_scheduler.cancel(protocol_handshake_timer);
 
+    peer_node->state = NodeState::Disconnected;
     task_scheduler.scheduleOnce(
         [this]() {
             logger.printfln("Closing connections to %s", peer_node->node_name().c_str());
@@ -164,6 +165,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
             }
             // remove this ShipConnection from vector of ShipConnections in Ship
             eebus.ship.remove(*this);
+            eebus.update_peers_config();
         },
         delay_ms);
 }

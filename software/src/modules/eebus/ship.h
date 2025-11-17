@@ -36,7 +36,7 @@ struct ShipNode {
     std::vector<String> ip_address{};
     uint16_t port = 0;
     bool trusted = false;
-    NodeState state = NodeState::Unknown;
+    NodeState state = NodeState::Disconnected;
     // Stuff that is Mandatory in the TXT record
     String dns_name = "";
     String txt_vers = "";
