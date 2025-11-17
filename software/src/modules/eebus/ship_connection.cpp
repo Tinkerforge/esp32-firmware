@@ -110,12 +110,6 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         eebus.trace_fmtln("ShipConnection frame received from %s during connection establishment. ", peer_node->node_name().c_str());
     }
 
-    // TODO: Remove this once we can handle multipart messages
-    if (!ws_pkt->final) {
-        eebus.trace_fmtln("Received non final ws frame. This is currently not supported");
-        return;
-    }
-
     // Copy new message, await further parts if its not final and trigger next SHIP state machine step
     if (message_incoming->multipart_index == SIZE_MAX) {
         memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
