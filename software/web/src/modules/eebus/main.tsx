@@ -132,7 +132,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 peer.model_model,
                                                 peer.model_brand,
                                                 <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
-                                                peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected"): __("eebus.content.peer_info.state_eebus_connected")],
+                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected"): __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model,
                                                 peer.model_brand,

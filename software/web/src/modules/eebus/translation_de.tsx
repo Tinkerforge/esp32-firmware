@@ -63,7 +63,7 @@ let x = {
                 "state": "Status",
                 "state_connected": "Verbunden",
                 "state_eebus_connected": "EEBUS Aktiv",
-                "state_disconnected": "Unbekannt",
+                "state_disconnected": "Getrennt",
                 "state_discovered": "Entdeckt",
                 "autoregister": "Autoregistrierung aktiv",
                 "overwrite_notice": "Diese Einstellungen werden überschrieben wenn ein EEBUS Gerät mit der SKI gefunden wird."
