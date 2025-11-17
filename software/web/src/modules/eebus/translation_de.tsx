@@ -62,6 +62,7 @@ let x = {
                 "wss_path": "WSS Pfad",
                 "state": "Status",
                 "state_connected": "Verbunden",
+                "state_eebus_connected": "EEBUS Aktiv",
                 "state_disconnected": "Unbekannt",
                 "state_discovered": "Entdeckt",
                 "autoregister": "Autoregistrierung aktiv",
