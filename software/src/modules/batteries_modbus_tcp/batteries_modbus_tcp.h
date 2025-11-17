@@ -81,6 +81,7 @@ private:
         String host;
         uint16_t port;
         uint32_t cookie;
+        BatteryMode mode;
         uint8_t device_address;
         uint16_t repeat_interval; // seconds
         BatteryModbusTCP::TableSpec *table;

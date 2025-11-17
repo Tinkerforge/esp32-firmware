@@ -148,8 +148,6 @@ void BatteriesModbusTCP::register_urls()
         test->last_keep_alive = now_us();
         test->state = TestState::Done;
 
-        BatteryMode mode;
-
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
             test_printfln("No table");
@@ -158,6 +156,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::Custom:
             test->device_address = table_config->get("device_address")->asUint8();
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
+            test->mode = BatteryMode::None;
 
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
 
@@ -170,12 +169,12 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::VictronEnergyGX:
             test->device_address = table_config->get("device_address")->asUint8();
-            mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-            load_victron_energy_gx_table(&test->table, &test->repeat_interval, mode, table_config);
+            load_victron_energy_gx_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Victron Energy GX mode: %u", static_cast<uint8_t>(mode));
+                test_printfln("Unknown Victron Energy GX mode: %u", static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -183,12 +182,12 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::DeyeHybridInverter:
             test->device_address = table_config->get("device_address")->asUint8();
-            mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-            load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+            load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Deye Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                test_printfln("Unknown Deye Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -196,12 +195,12 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::AlphaESSHybridInverter:
             test->device_address = table_config->get("device_address")->asUint8();
-            mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-            load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+            load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Alpha ESS Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                test_printfln("Unknown Alpha ESS Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -209,12 +208,12 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::HaileiHybridInverter:
             test->device_address = table_config->get("device_address")->asUint8();
-            mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-            load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+            load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Hailei Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                test_printfln("Unknown Hailei Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -222,12 +221,12 @@ void BatteriesModbusTCP::register_urls()
 
         case BatteryModbusTCPTableID::SungrowHybridInverter:
             test->device_address = table_config->get("device_address")->asUint8();
-            mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
 
-            load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, mode, table_config);
+            load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Sungrow Hybrid Inverter mode: %u", static_cast<uint8_t>(mode));
+                test_printfln("Unknown Sungrow Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -381,7 +380,7 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, BatteryMode::None, test->table,
+        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->mode, test->table,
         [this](const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
