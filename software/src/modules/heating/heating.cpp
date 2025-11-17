@@ -28,6 +28,7 @@
 #include "control_period.enum.h"
 
 static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
+static constexpr auto MAX_STARTUP_DELAY = 1_min;
 
 #define HEATING_SG_READY_ACTIVE_CLOSED 0
 #define HEATING_SG_READY_ACTIVE_OPEN   1
@@ -79,6 +80,36 @@ void Heating::setup()
     api.restorePersistentConfig("heating/config", &config);
 
     initialized = true;
+
+    if (must_delay_startup()) {
+        logger.tracefln(this->trace_buffer_index, "Startup delay started");
+
+        startup_delay_task_id = task_scheduler.scheduleOnce([this]() {
+            logger.tracefln(this->trace_buffer_index, "Startup delay expired");
+
+            // Mark end of startup delay by resetting the stored task ID.
+            this->startup_delay_task_id = 0;
+
+            this->update();
+        }, MAX_STARTUP_DELAY);
+    }
+}
+
+void Heating::register_events()
+{
+    if (startup_delay_task_id != 0) {
+        if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
+            event.registerEvent("day_ahead_prices/state", {}, [this](const Config * /*cfg*/) {
+                return this->check_startup_delay_event();
+            });
+        }
+
+        if (config.get("yield_forecast")->asBool()) {
+            event.registerEvent("solar_forecast/state", {}, [this](const Config * /*cfg*/) {
+                return this->check_startup_delay_event();
+            });
+        }
+    }
 }
 
 void Heating::register_urls()
@@ -195,6 +226,11 @@ void Heating::update()
         return;
     }
 
+    if (startup_delay_task_id != 0) {
+        logger.tracefln(this->trace_buffer_index, "Startup delay active. Skipping update.");
+        return;
+    }
+
     // TODO: Does §14 EnWG need a smaller update interval or is it enough to check it every minute?
     const bool     p14enwg        = config.get("p14enwg")->asBool();
     const uint32_t p14enwg_input  = config.get("p14enwg_input")->asUint();
@@ -235,12 +271,12 @@ void Heating::update()
         }
     }
 
-    if (state.get("next_update")->asUint() == 0) {
-        state.get("next_update")->updateUint(rtc.timestamp_minutes() + remaining_holding_time);
-        return;
-    }
-
     if (remaining_holding_time > 0) {
+        if (state.get("next_update")->asUint() == 0) {
+            state.get("next_update")->updateUint(rtc.timestamp_minutes() + remaining_holding_time);
+            return;
+        }
+
         logger.tracefln(this->trace_buffer_index, "Minimum control holding time not reached. Current time: %limin, last change: %limin, minimum holding time: %hhumin.", minutes, last_sg_ready_change, min_hold_time);
         return;
     }
@@ -475,4 +511,48 @@ void Heating::update()
             }
         }
     }
+}
+
+bool Heating::must_delay_startup()
+{
+    if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
+        auto current_price_net = day_ahead_prices.get_current_price_net();
+        if (current_price_net.is_none()) {
+            return true;
+        }
+    }
+
+    if (config.get("yield_forecast")->asBool()) {
+        if (solar_forecast.get_cached_wh_today() < 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+EventResult Heating::check_startup_delay_event()
+{
+    // Startup delay already over
+    if (startup_delay_task_id == 0) {
+        logger.tracefln(this->trace_buffer_index, "Startup delay already over");
+        return EventResult::Deregister;
+    }
+
+    // Continue startup delay
+    if (must_delay_startup()) {
+        logger.tracefln(this->trace_buffer_index, "Continue startup delay");
+        return EventResult::OK;
+    }
+
+    // Cancel startup delay
+    logger.tracefln(this->trace_buffer_index, "Cancel startup delay");
+    task_scheduler.cancel(startup_delay_task_id);
+    startup_delay_task_id = 0;
+
+    task_scheduler.scheduleOnce([this]() {
+        this->update();
+    });
+
+    return EventResult::Deregister;
 }
