@@ -1828,7 +1828,8 @@ void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
     device_configuration_key_value_description_list.deviceConfigurationKeyValueDescriptionData->push_back(failsafeDurationMinimumDescription);
     device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeConsumptionActivePowerLimit);
     device_configuration_key_value_list.deviceConfigurationKeyValueData->push_back(failsafeDurationMinimum);
-    // TODO: Inform Subscribers
+
+    eebus.usecases->inform_subscribers(entity_address, FeatureAddresses::lpc_device_configuration, device_configuration_key_value_description_list, "deviceConfigurationKeyValueDescriptionListData");
 }
 
 void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)

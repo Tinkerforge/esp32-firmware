@@ -269,7 +269,7 @@ String ShipMessageAccessMethodsRequest::type_to_json()
 
 DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size_t length)
 {
-    DynamicJsonDocument doc{length * 2}; // TODO: Use a global json Doc
+    DynamicJsonDocument doc{length * 2};
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
@@ -305,7 +305,7 @@ for (const auto &value : dns) {
     access_methods["dns"].add(value);
 }
 JsonObject uri = dns.createNestedObject();
-uri["uri"] =  dns_uri; //"wss://192.168.0.33:4712/ship/"; // TODO
+uri["uri"] =  dns_uri; //"wss://192.168.0.33:4712/ship/";
 */
     String output;
     //doc.shrinkToFit();
