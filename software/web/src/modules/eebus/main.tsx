@@ -132,7 +132,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 peer.model_model,
                                                 peer.model_brand,
                                                 <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
-                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected"): __("eebus.content.peer_info.state_eebus_connected")],
+                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model,
                                                 peer.model_brand,
@@ -177,7 +177,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                          }
                                                                      })}/>
                                                     </FormRow>
-                                                    <FormRow label={"IP "+ __("eebus.content.peer_info.device_ip") + "*"}>
+                                                    <FormRow
+                                                        label={"IP " + __("eebus.content.peer_info.device_ip") + "*"}>
                                                         <InputText
                                                             value={state.add.ip}
                                                             onValue={(v) => this.setState({
@@ -452,6 +453,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         <td>Failsafe Limit Duration (s)</td>
                                         <td>{state.usecases.power_consumption_limitation.failsafe_limit_duration_s} s</td>
                                     </tr>
+                                    <tr>
+                                        <td>Constraints Power Maximum (W)</td>
+                                        <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </td>
@@ -504,6 +509,59 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
                                                     ? __("eebus.content.yes")
                                                     : __("eebus.content.no")}</td>
+                                            </tr>
+                                        </>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>EV Charging Electricity Measurement</td>
+                            <td>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td>EV Connected</td>
+                                        <td>
+                                            {state.usecases.ev_commissioning_and_configuration.ev_connected
+                                                ? __("eebus.content.yes")
+                                                : __("eebus.content.no")}
+                                        </td>
+                                    </tr>
+                                    {state.usecases.ev_commissioning_and_configuration.ev_connected && (
+                                        <>
+                                            <tr>
+                                                <td>Amps Phase 1</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_1} A</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Amps Phase 2</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_2} A</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Amps Phase 3</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_3} A</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Power Phase 1</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_1} W</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Power Phase 2</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_2} W</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Power Phase 3</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_3} W</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Charged Wh</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.charged_wh} Wh</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Method of obtaining charged Wh</td>
+                                                <td>{state.usecases.ev_charging_electricity_measurement.charged_valuesource_measured ? "Measured" : "Calculated"}</td>
                                             </tr>
                                         </>
                                     )}
@@ -572,11 +630,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 </table>
                             </td>
                         </tr>
+
                         </tbody>
                     </table>
                 </CollapsedSection>
             </SubPage>
-        );
+        )
+            ;
     }
 }
 

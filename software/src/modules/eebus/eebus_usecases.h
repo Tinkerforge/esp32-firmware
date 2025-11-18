@@ -1,4 +1,4 @@
-/* esp32-firmware
+    /* esp32-firmware
  * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 /*
 This file contains the definitions of the EEBUS Usecases as defined in the EEBUS Usecase Technical Specifications.
 The usecase names may have been shortened and the spec is referred to as much as possible:
@@ -35,10 +34,10 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "build.h"
 
 #include "config.h"
-#include "spine_connection.h"
-#include "spine_types.h"
 #include "lpc_state.enum.h"
 #include "options.h"
+#include "spine_connection.h"
+#include "spine_types.h"
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 5
@@ -51,8 +50,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_LPC_AWAIT_HEARTBEAT false
 
 // Feature Addresses for the different features in the usecases. Addresses can repeat accross entities but we make sure they are unique for simplicity
-enum FeatureAddresses : uint8_t
-{
+enum FeatureAddresses : uint8_t {
     nodemgmt_feature_address = 0,
     chargingsummary_bill,
     chargerate_measurement,
@@ -72,21 +70,9 @@ enum FeatureAddresses : uint8_t
     cevc_incentive_table,
 };
 
-
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
-enum class UseCaseType : uint8_t
-{
-    NodeManagement,
-    ChargingSummary,
-    LimitationOfActivePowerConsumption,
-    CoordinatedEvCharging,
-    EvCommissioningAndConfiguration,
-    EvseCommissioningAndConfiguration,
-    LimitationOfPowerProduction,
-    EvChargingElectricityMeasurement,
-    MonitoringOfPowerConsumption
-};
+enum class UseCaseType : uint8_t { NodeManagement, ChargingSummary, LimitationOfActivePowerConsumption, CoordinatedEvCharging, EvCommissioningAndConfiguration, EvseCommissioningAndConfiguration, LimitationOfPowerProduction, EvChargingElectricityMeasurement, MonitoringOfPowerConsumption };
 
 /**
  * The basic Framework of a EEBUS Usecase.
@@ -151,7 +137,6 @@ public:
     NodeManagementEntity();
     void set_usecaseManager(EEBusUseCases *usecases);
 
-
     /**
      * Checks if the given client is bound to the given server entity and feature.
      * @param client The client FeatureAddressType to check.
@@ -191,8 +176,7 @@ public:
      * @param function_name Name of the function that is informing the subscribers.
      * @return The number of subscribers that have been informed. 0 if no subscribers have been found.
      */
-    template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, const char *function_name);
+    template <typename T> size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, const char *function_name);
 
     String get_entity_name() const override
     {
@@ -257,7 +241,6 @@ public:
      */
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::ChargingSummary;
@@ -290,8 +273,7 @@ public:
     };
 
 private:
-    struct BillEntry
-    {
+    struct BillEntry {
         uint8_t id = 0; // ID of the bill entry. 0 means unused entry
         time_t start_time;
         time_t end_time;
@@ -303,11 +285,9 @@ private:
         uint8_t self_produced_cost_percent;
     };
 
-
     BillEntry bill_entries[8]{};
 
     [[nodiscard]] BillListDataType get_bill_list_data() const;
-
 
     void update_api() const;
 };
@@ -338,7 +318,6 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
-
     /**
      * Update the measurements. This will inform all subscribers of the new measurements.
      * @param amps_phase_1 Amps on phase a
@@ -368,21 +347,21 @@ public:
 
 private:
     // Data held about the current charge
-    int amps_draw_phase[3]{}; // Amp draw per phase
-    int power_draw_phase[3]{}; // Power per phase
-    int power_charged_wh = 0; // Total charged into the ev during the current session in wh
+    uint16_t amps_draw_phase[3]{};  // Amp draw per phase
+    uint16_t power_draw_phase[3]{}; // Power per phase
+    uint32_t power_charged_wh = 0;  // Total charged into the ev during the current session in wh
     bool power_charged_measured = false;
 
     // Constraints
-    int measurement_limit_amps_min = 0;
-    int measurement_limit_amps_max = 32;
-    int measurement_limit_amps_stepsize = 1;
-    int measurement_limit_power_min = 0;
-    int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    int measurement_limit_power_stepsize = 10;
-    int measurement_limit_energy_min = 0;
-    int measurement_limit_energy_max = 1000000;
-    int measurement_limit_energy_stepsize = 10;
+    uint16_t measurement_limit_amps_min = 0;
+    uint16_t measurement_limit_amps_max = 32;
+    uint16_t measurement_limit_amps_stepsize = 1;
+    uint16_t measurement_limit_power_min = 0;
+    uint16_t measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    uint16_t measurement_limit_power_stepsize = 10;
+    uint32_t measurement_limit_energy_min = 0;
+    uint32_t measurement_limit_energy_max = 1000000;
+    uint32_t measurement_limit_energy_stepsize = 10;
 
     // Generators for data types
     [[nodiscard]] MeasurementDescriptionListDataType generate_measurement_description() const;
@@ -529,7 +508,6 @@ private:
     //DeviceDiagnosis
     bool standby_mode = false;
     [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
-
 };
 
 /**
@@ -583,7 +561,6 @@ private:
     void update_api() const;
 };
 
-
 /**
  * The LpcUsecase as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
  * This should have the same entity address as other entities with the Controllable System actor <br>
@@ -611,7 +588,6 @@ public:
      */
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::LimitationOfActivePowerConsumption;
@@ -627,7 +603,6 @@ public:
      * @return a list of the supported features.
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
-
 
     /**
      * Update the limit the system is supposed to be consuming.
@@ -705,7 +680,6 @@ private:
 
     void update_api();
 
-
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     bool limit_engaged = false;
@@ -713,7 +687,6 @@ private:
     // Device Configuration Data as required for Scenario 2 - Device Configuration
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
-
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
     bool heartbeatEnabled = false;
@@ -767,12 +740,10 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
-
     /**
      * A charging Plan entry as needed to communicate the EV charging demands.
      */
-    struct ChargingPlanEntry
-    {
+    struct ChargingPlanEntry {
         seconds_t duration;
         int max_power_expected;
         int min_power_expected;
@@ -787,13 +758,11 @@ public:
     /**
      * The Incentive Slot entry as needed to communicate the incentive slots to the EV.
      */
-    struct IncentiveSlotEntry
-    {
+    struct IncentiveSlotEntry {
         /**
          * The tier of the incentive.
          */
-        struct IncentiveTier
-        {
+        struct IncentiveTier {
             int lower_boundary_w;
             int upper_boundary_w;
             float incentive_value;
@@ -827,7 +796,6 @@ private:
     std::vector<ChargingPlanEntry> charging_plan{};
     std::vector<PowerLimitEntry> power_limits{};
     std::vector<IncentiveSlotEntry> incentives_available{};
-
 };
 
 /**
@@ -855,8 +823,7 @@ public:
      * @param function_name Name of the function this is notifying about. Must be the spine datatype name
      * @return The number of subscribers that have been informed. 0 if no subscribers were informed.
      */
-    template <typename T>
-    size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char *function_name);
+    template <typename T> size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T &data, const char *function_name);
 
     /**
      * Send a message to a spine destination.
@@ -868,7 +835,6 @@ public:
      */
     bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
-
     /**
      * Get a SpineConnection for a given spine address.
      * @param spine_address
@@ -877,7 +843,7 @@ public:
     static SpineConnection *get_spine_connection(const FeatureAddressType &spine_address);
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE};           // The response document to be filled with the response data
 
     NodeManagementEntity node_management{};
 #if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
@@ -888,22 +854,11 @@ public:
     CevcUsecase coordinate_ev_charging{};
     EvcemUsecase ev_charging_electricity_measurement{};
 
-    std::vector<EebusUsecase *> entity_list{
-        &node_management,
-        &charging_summary,
-        &limitation_of_power_consumption,
-        &ev_commissioning_and_configuration,
-        &evse_commissioning_and_configuration,
-        &coordinate_ev_charging,
-        &ev_charging_electricity_measurement
-    };
+    std::vector<EebusUsecase *> entity_list{&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration, &coordinate_ev_charging, &ev_charging_electricity_measurement};
 #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
     // TODO: Implement the power production limitation usecase
 
-    std::vector<EebusUsecase *> entity_list{
-        &node_management,
-        &limitation_of_power_production
-    };
+    std::vector<EebusUsecase *> entity_list{&node_management, &limitation_of_power_production};
 #endif
 
 private:
@@ -919,19 +874,7 @@ const char *get_spine_device_name();
 /**
 * The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19
 */
-enum class ResultErrorNumber
-{
-    NoError = 0,
-    GeneralError,
-    Timeout,
-    Overload,
-    DestinationUnknown,
-    DestinationUnreachable,
-    CommandNotSupported,
-    CommandRejected,
-    RestrictedFunctionExchangeCombinationNotSupported,
-    BindingRequired
-};
+enum class ResultErrorNumber { NoError = 0, GeneralError, Timeout, Overload, DestinationUnknown, DestinationUnreachable, CommandNotSupported, CommandRejected, RestrictedFunctionExchangeCombinationNotSupported, BindingRequired };
 
 String get_result_error_number_string(int error_number);
 

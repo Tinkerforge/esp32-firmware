@@ -716,7 +716,7 @@ EvcemUsecase::EvcemUsecase()
     task_scheduler.scheduleUncancelable(
         [this]() {
             logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
-            update_measurements(32, 32, 32, 7000, 7000, 7000, this->power_charged_wh + 100);
+            update_measurements(10, 20, 30, 1000, 2000, 3000, this->power_charged_wh + 100);
         },
         60_s,
         60_s);
@@ -1030,7 +1030,15 @@ ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_elec
 
 void EvcemUsecase::update_api() const
 {
-    // TODO: Update API
+    auto api_entry = eebus.eebus_usecase_state.get("ev_charging_electricity_measurement");
+    api_entry->get("amps_phase_1")->updateUint(amps_draw_phase[0]);
+    api_entry->get("amps_phase_2")->updateUint(amps_draw_phase[1]);
+    api_entry->get("amps_phase_3")->updateUint(amps_draw_phase[2]);
+    api_entry->get("power_phase_1")->updateUint(power_draw_phase[0]);
+    api_entry->get("power_phase_2")->updateUint(power_draw_phase[1]);
+    api_entry->get("power_phase_3")->updateUint(power_draw_phase[2]);
+    api_entry->get("charged_wh")->updateUint(power_charged_wh);
+    api_entry->get("charged_valuesource_measured")->updateBool(power_charged_measured);
 }
 
 EvccUsecase::EvccUsecase()

@@ -129,7 +129,22 @@ void EEBus::pre_setup()
                          {"maximum_power", Config::Uint16(0)},
                          {"standby_power", Config::Uint16(0)},
                          {"standby_mode", Config::Bool(false)}})},
-        {"evse_commissioning_and_configuration", Config::Object({{"evse_failure", Config::Bool(false)}, {"evse_failure_description", Config::Str("", 0, 64)}})},
+        {"evse_commissioning_and_configuration",
+         Config::Object({
+             {"evse_failure", Config::Bool(false)},
+             {"evse_failure_description", Config::Str("", 0, 64)},
+         })},
+        {"ev_charging_electricity_measurement",
+         Config::Object({
+             {"amps_phase_1", Config::Uint16(0)},
+             {"amps_phase_2", Config::Uint16(0)},
+             {"amps_phase_3", Config::Uint16(0)},
+             {"power_phase_1", Config::Uint16(0)},
+             {"power_phase_2", Config::Uint16(0)},
+             {"power_phase_3", Config::Uint16(0)},
+             {"charged_wh", Config::Uint32(0)},
+             {"charged_valuesource_measured", Config::Bool(false)},
+         })},
     });
 
     ship.pre_setup();
