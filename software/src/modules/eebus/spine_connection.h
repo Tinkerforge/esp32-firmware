@@ -26,6 +26,7 @@
 #include "ship_connection.h"
 #include "spine_types.h"
 #include <TFJson.h>
+#include <map>
 
 #define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // 8192 should be enough for a start
 #define SPINE_CONNECTION_MAX_DEPTH 30       // Maximum depth of serialization of a json document
@@ -37,10 +38,7 @@ class SpineConnection
 public:
     ShipConnection *ship_connection = nullptr;
 
-    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection)
-    {
-    };
-
+    explicit SpineConnection(ShipConnection *ship_connection);
 
     // Disallow copying of SpineConnection
     SpineConnection(const SpineConnection &other) = delete;
@@ -61,11 +59,7 @@ public:
      * @param receiver The FeatureAddressType of the destination of the datagram.
      * @param require_ack Request an acknowledgement for the datagram. This is used to ensure that the peer received the datagram and can be used to detect if the peer is still alive.
      */
-    void send_datagram(JsonVariantConst payload,
-                       CmdClassifierType cmd_classifier,
-                       const FeatureAddressType &sender,
-                       const FeatureAddressType &receiver,
-                       bool require_ack = false);
+    void send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, bool require_ack = false);
 
     /**
     * Check if the message counter is correct and log it if it isnt. Its not actually a problem if the message counter is lower than expected but indicates that the peer might have technical issues or has been rebooted.
@@ -82,7 +76,7 @@ public:
     // SPINE TS 5.2.3.1
     // Specification recommends these be stored in non-volatile memory
     // But for now we dont do that as it is not needed
-    int msg_counter = 0; // Our message counter
+    int msg_counter = 0;          // Our message counter
     int msg_counter_received = 0; // The message counter of the last received datagram
 
     /**
@@ -112,7 +106,11 @@ private:
     NodeManagementUseCaseDataType use_case_data{};
 
     std::vector<FeatureAddressType> known_addresses;
-    uint16_t msg_counter_error_count =
-        0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
+    uint16_t msg_counter_error_count = 0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
     static bool validate_header(HeaderType &header);
+
+    // <message_counter, timestamp_minutees>
+    std::map<int, unsigned long> ack_waiting{};
+    void check_ack_expired();
+    uint64_t ack_check_timer = 0;
 };

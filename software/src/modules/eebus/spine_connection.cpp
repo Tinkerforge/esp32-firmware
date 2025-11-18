@@ -25,6 +25,15 @@
 #include "ship_types.h"
 #include "tools.h"
 
+SpineConnection::SpineConnection(ShipConnection *ship_conn)
+{
+    ship_connection = ship_conn;
+    ack_check_timer = task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            check_ack_expired();
+        },
+        60_s);
+}
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
     eebus.trace_fmtln("SPINE: Processing datagram:");
@@ -64,6 +73,10 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
     // so i spent 4 hours on this and for some reason the pointers to sender and receivers seem to be nullpointers in about 1/5 restarts but if i print them here its fine mostly.
     //logger.printfln("SPINE Connection: This needs to be here otherwise it crashes sometimes. Pointer sender: %p, Pointer Receiver: %p", &sender, &receiver);
 
+    if (require_ack) {
+        ack_waiting[msg_counter] = millis();
+    }
+
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{payload.memoryUsage() + 512}; // Payload size + header size + some slack as recommended by arduinojson assistant
     HeaderType header{};
     header.ackRequest = require_ack;
@@ -90,11 +103,13 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 #else
     eebus.trace_fmtln("Sending SPINE messages is disabled. No message sent");
 #endif
-    // TODO: Handle acknowledge request. Some messages require acknowledgement from the other side. If we send one of those we need to handle this
 }
 
 void SpineConnection::check_message_counter()
 {
+    if (received_header.msgCounterReference.has_value()) {
+        ack_waiting.erase(received_header.msgCounterReference.get());
+    }
     if (received_header.msgCounter && received_header.msgCounter.get() < msg_counter_received) {
         eebus.trace_fmtln("SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
         msg_counter_received = received_header.msgCounter.get();
@@ -143,4 +158,13 @@ bool SpineConnection::validate_header(HeaderType &header)
     }
 
     return error_found;
+}
+void SpineConnection::check_ack_expired()
+{
+    for (const auto &[key, value] : ack_waiting) {
+        if (millis() - value > 60000) { //30 seconds timeout
+            eebus.trace_fmtln("SPINE: WARNING: Acknowledgement for message counter %d not received within 30 seconds", key);
+            ack_waiting.erase(key);
+        }
+    }
 }
