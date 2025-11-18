@@ -49,7 +49,7 @@ struct ShipNode {
     String txt_model = "";
     String txt_type = "";
 
-    // TODO Add more stuff that might be relevant like last seen, features, etc.
+    // Can add more stuff here that might be relevant like last seen, features, etc.
 
     void as_json(StringBuilder *sb); /* */
     [[nodiscard]] String ip_address_as_string() const;

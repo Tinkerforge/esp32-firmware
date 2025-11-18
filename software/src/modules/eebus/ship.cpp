@@ -505,26 +505,37 @@ void Ship::remove(const ShipConnection &ship_connection)
 
 void ShipNode::as_json(StringBuilder *sb)
 {
-    char json_buf[1024]; //TODO: Use 1024 for now, change later to dynamic size depending on struct size
-    TFJsonSerializer json(json_buf, sizeof(json_buf));
-    json.addMemberString("name", dns_name.c_str());
-    json.addMemberString("id", txt_id.c_str());
-    json.addMemberString("ws_path", txt_wss_path.c_str());
-    json.addMemberString("ski", txt_ski.c_str());
-    json.addMemberBoolean("allow_autoregister", txt_autoregister);
-    json.addMemberString("device_manufacturer", txt_brand.c_str());
-    json.addMemberString("device_model", txt_model.c_str());
-    json.addMemberString("device_type", txt_type.c_str());
-    json.addMemberBoolean("trusted", trusted);
-    json.addMemberNumber("port", port);
-    json.addMemberNumber("state", (uint8_t)state);
-    String ip_concat = "";
+    size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length()
+                    + txt_brand.length() + txt_model.length() + txt_type.length();
+    size_t ips_len = 0;
     for (const String &ip : ip_address) {
-        ip_concat += ip + ";";
+        ips_len += ip.length();
     }
-    json.addMemberString("ip_address", ip_concat.c_str());
-    json.end();
-    sb->puts(json_buf);
+    const size_t capacity = JSON_OBJECT_SIZE(12) + JSON_ARRAY_SIZE(ip_address.size()) + strs_len + ips_len + 128;
+    DynamicJsonDocument doc(capacity);
+    doc["name"] = dns_name.c_str();
+    doc["id"] = txt_id.c_str();
+    doc["ws_path"] = txt_wss_path.c_str();
+    doc["ski"] = txt_ski.c_str();
+    doc["allow_autoregister"] = txt_autoregister;
+    doc["device_manufacturer"] = txt_brand.c_str();
+    doc["device_model"] = txt_model.c_str();
+    doc["device_type"] = txt_type.c_str();
+    doc["trusted"] = trusted;
+    doc["port"] = port;
+    doc["state"] = static_cast<uint8_t>(state);
+
+    JsonArray arr = doc.createNestedArray("ip_address");
+    for (const String &ip : ip_address) {
+        arr.add(ip.c_str());
+    }
+
+    size_t len = measureJson(doc);
+    char *buf = new char[len + 1];
+    serializeJson(doc, buf, len + 1);
+
+    sb->puts(buf);
+    delete[] buf;
 }
 
 String ShipNode::ip_address_as_string() const
