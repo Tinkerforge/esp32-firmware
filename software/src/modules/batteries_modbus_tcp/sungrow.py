@@ -67,7 +67,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    1,  # FIXME: apparently the minimum value is 1, this has not been verified
+                    1,  # The minimum value is 1. This has been verified by one user.
                 ],
             },
             {
@@ -75,7 +75,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    1,  # FIXME: apparently the minimum value is 1, this has not been verified
+                    1,  # The minimum value is 1. This has been verified by one user.
                 ],
             },
         ],
@@ -172,7 +172,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    0,
+                    1,  # minimum
                 ],
             },
         ],
@@ -221,7 +221,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    0,
+                    1,  # minimum
                 ],
             },
         ],
@@ -260,7 +260,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    0,
+                    1,  # minimum
                 ],
             },
             {
@@ -309,7 +309,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    0,
+                    1,  # minimum
                 ],
             },
             {
