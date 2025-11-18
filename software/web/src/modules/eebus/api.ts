@@ -74,11 +74,21 @@ export interface usecases {
         maximum_power: number;
         standby_power: number;
         standby_mode: number;
-    }
+    };
     evse_commissioning_and_configuration: {
         evse_failure: boolean;
         evse_failure_description: string;
     }
+    ev_charging_electricity_measurement: {
+        amps_phase_1: number;
+        amps_phase_2: number;
+        amps_phase_3: number;
+        power_phase_1: number;
+        power_phase_2: number;
+        power_phase_3: number;
+        charged_wh: number;
+        charged_valuesource_measured: boolean;
+    };
 
 }
 
