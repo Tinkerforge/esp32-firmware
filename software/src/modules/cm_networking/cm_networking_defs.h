@@ -24,6 +24,7 @@
 
 #include "client_error.enum.h"
 #include "config_charge_mode.enum.h"
+#include "module_available.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64
@@ -35,8 +36,8 @@
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
 // Increment when changing packet structs
-#define CM_COMMAND_VERSION 3
-#define CM_STATE_VERSION 4
+#define CM_COMMAND_VERSION 4
+#define CM_STATE_VERSION 5
 
 // Minimum protocol version supported
 #define CM_COMMAND_VERSION_MIN 1
@@ -86,6 +87,16 @@ struct cm_command_v3 {
     uint8_t _padding;
 };
 
+struct cm_command_v4 {
+    /**
+     * 0 = no feedback
+     * 1 = unauthorized
+     * 2 = authorized
+     */
+    uint8_t auth_feedback;
+    uint8_t _padding[3];
+};
+
 // Before adding cm_command_v4: Check whether more (supported) charge modes are to be added in the foreseeable future!
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
@@ -101,6 +112,9 @@ static_assert(CM_COMMAND_V3_LENGTH == 4, "Unexpected CM_COMMAND_V3_LENGTH");
 static_assert(to_underlying(ConfigChargeMode::_max) == 9);
 #define CM_COMMAND_V3_MAX_CONFIG_CHARGE_MODE 9
 
+#define CM_COMMAND_V4_LENGTH (sizeof(cm_command_v4))
+static_assert(CM_COMMAND_V4_LENGTH == 4, "Unexpected CM_COMMAND_V4_LENGTH");
+
 struct cm_command_packet {
     cm_packet_header header;
     union {
@@ -108,10 +122,11 @@ struct cm_command_packet {
         cm_command_v2 v2;
     };
     cm_command_v3 v3;
+    cm_command_v4 v4;
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
-static_assert(CM_COMMAND_PACKET_LENGTH == 16, "Unexpected CM_COMMAND_PACKET_LENGTH");
+static_assert(CM_COMMAND_PACKET_LENGTH == 20, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS 7
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_MASK (1u << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS)
@@ -238,10 +253,28 @@ static_assert(CM_STATE_V3_LENGTH == 4, "Unexpected CM_STATE_V3_LENGTH");
 
 struct cm_state_v4 {
     uint8_t requested_charge_mode;
+    uint8_t _padding[3];
 };
 
 #define CM_STATE_V4_LENGTH (sizeof(cm_state_v4))
-static_assert(CM_STATE_V4_LENGTH == 1, "Unexpected CM_STATE_V4_LENGTH");
+static_assert(CM_STATE_V4_LENGTH == 4, "Unexpected CM_STATE_V4_LENGTH");
+struct cm_state_v5 {
+    /**
+     * 0 = no authentication
+     * 1 = NFC
+     */
+    uint32_t nfc_last_seen;
+    uint8_t nfc_tag_id[30];
+    uint8_t auth_type;
+    uint8_t nfc_tag_type;
+};
+
+#define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
+static_assert(CM_STATE_V5_LENGTH == 36, "Unexpected CM_STATE_V5_LENGTH");
+
+// #if MODULE_NFC_AVAILABLE()
+//     static_assert(NFC_TAG_ID_STRING_LENGTH + 1 == sizeof(cm_state_v5::nfc_tag_id), "NFC_TAG_ID_STRING_LENGTH does not match cm_state_v5::nfc_tag_id size");
+// #endif
 
 struct cm_state_packet {
     cm_packet_header header;
@@ -249,8 +282,10 @@ struct cm_state_packet {
     cm_state_v2 v2;
     cm_state_v3 v3;
     cm_state_v4 v4;
-    uint8_t _padding[3];
+    cm_state_v5 v5;
 };
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 92, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 128, "Unexpected CM_STATE_PACKET_LENGTH");
+
+#include "module_available_end.h"
