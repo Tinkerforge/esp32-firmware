@@ -84,6 +84,7 @@ static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 or v2.
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v4),
 };
 static_assert(ARRAY_SIZE(cm_command_packet_length_versions) == (CM_COMMAND_VERSION + 1), "Unexpected amount of command packet length versions.");
 
@@ -93,6 +94,7 @@ static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v3),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v4) + sizeof(struct cm_state_v5),
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
@@ -208,7 +210,7 @@ static void manager_task(void *arg)
 
 void CMNetworking::register_manager(const char *const *const hosts,
                                     size_t device_count,
-                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &client_update_received_cb,
+                                    const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *, cm_state_v5 *)> &client_update_received_cb,
                                     const std::function<void(uint8_t, ClientError)> &client_error_cb)
 {
     const size_t sz = offsetof(struct manager_data_t, managed_devices) + sizeof(manager_data->managed_devices[0]) * device_count;
@@ -404,7 +406,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 #endif
 
             if (client_update_received_cb) {
-                client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr);
+                client_update_received_cb(charger_idx, &state_pkt.v1, state_pkt.header.version >= 2 ? &state_pkt.v2 : nullptr, state_pkt.header.version >= 3 ? &state_pkt.v3 : nullptr, state_pkt.header.version >= 4 ? &state_pkt.v4 : nullptr, state_pkt.header.version >= 5 ? &state_pkt.v5 : nullptr);
             } else {
                 this->send_state_packet(&state_pkt);
             }
@@ -651,6 +653,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     bool has_meter_values = api.hasFeature("meter_all_values");
     bool has_meter_phases = api.hasFeature("meter_phases");
     bool has_meter        = api.hasFeature("meter");
+    bool has_nfc          = api.hasFeature("nfc");
 
     state_pkt.v1.feature_flags = 0
         | has_phase_switch                          << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS
@@ -731,6 +734,15 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     state_pkt.v3.phases |= can_switch_phases_now << CM_STATE_V3_CAN_PHASE_SWITCH_BIT_POS;
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
+
+    if (has_nfc) {
+        auto last_seen_tag = api.getState("nfc/seen_tags")->get(0);
+        state_pkt.v5.auth_type = 1;
+        state_pkt.v5.nfc_last_seen = last_seen_tag->get("last_seen")->asUint();
+        state_pkt.v5.nfc_tag_type = last_seen_tag->get("tag_type")->asUint8();
+        auto tag_id_str = last_seen_tag->get("tag_id")->asString();
+        memcpy(state_pkt.v5.nfc_tag_id, tag_id_str.c_str(), sizeof(state_pkt.v5.nfc_tag_id) - 1);
+    }
 
     return send_state_packet(&state_pkt);
 }
