@@ -347,21 +347,21 @@ public:
 
 private:
     // Data held about the current charge
-    uint16_t amps_draw_phase[3]{};  // Amp draw per phase
-    uint16_t power_draw_phase[3]{}; // Power per phase
-    uint32_t power_charged_wh = 0;  // Total charged into the ev during the current session in wh
+    int amps_draw_phase[3]{};  // Amp draw per phase
+    int power_draw_phase[3]{}; // Power per phase
+    int power_charged_wh = 0;  // Total charged into the ev during the current session in wh
     bool power_charged_measured = false;
 
     // Constraints
-    uint16_t measurement_limit_amps_min = 0;
-    uint16_t measurement_limit_amps_max = 32;
-    uint16_t measurement_limit_amps_stepsize = 1;
-    uint16_t measurement_limit_power_min = 0;
-    uint16_t measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    uint16_t measurement_limit_power_stepsize = 10;
-    uint32_t measurement_limit_energy_min = 0;
-    uint32_t measurement_limit_energy_max = 1000000;
-    uint32_t measurement_limit_energy_stepsize = 10;
+    int measurement_limit_amps_min = 0;
+    int measurement_limit_amps_max = 32;
+    int measurement_limit_amps_stepsize = 1;
+    int measurement_limit_power_min = 0;
+    int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int measurement_limit_power_stepsize = 10;
+    int measurement_limit_energy_min = 0;
+    int measurement_limit_energy_max = 1000000;
+    int measurement_limit_energy_stepsize = 10;
 
     // Generators for data types
     [[nodiscard]] MeasurementDescriptionListDataType generate_measurement_description() const;

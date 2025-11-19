@@ -145,7 +145,7 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
         auto entity_info = uc->get_detailed_discovery_entity_information();
         for (auto &existing_entity_info : *(node_management_detailed_data.entityInformation)) {
             // If the entity type matches, we do not add it again and if it has no entity type defined it is inactive
-            if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get()) {
+            if (entity_info.description->entityType.has_value() && existing_entity_info.description->entityType == entity_info.description->entityType.get() && entity_info.description->entityAddress->entity.get() == existing_entity_info.description->entityAddress->entity) {
                 add_entity_info = false;
                 break;
             }
@@ -422,6 +422,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
 template <typename T> size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
 {
     eebus.trace_fmtln("EEBUS: Informing subscribers of %s", function_name);
+    logger.printfln("inform_subscribers");
     if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
         return 0;
     }
@@ -429,15 +430,27 @@ template <typename T> size_t NodeManagementEntity::inform_subscribers(const std:
     size_t error_count = 0;
     BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
     JsonObject dst = response.to<JsonObject>();
-
     dst[function_name] = data;
+
+    auto vec_to_string = [](const std::vector<int> &v) -> std::string {
+        std::ostringstream oss;
+        oss << "[";
+        for (size_t i = 0; i < v.size(); ++i) {
+            if (i)
+                oss << ", ";
+            oss << v[i];
+        }
+        oss << "]";
+        return oss.str();
+    };
+
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
+        logger.printfln("Comparing: subscription to entity %s feature %d with target entity %s feature %d. Is equal: %d", vec_to_string(subscription.serverAddress->entity.get()).c_str(), subscription.serverAddress->feature.get(), vec_to_string(entity).c_str(), feature, subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature);
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
             if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonVariantConst>(), CmdClassifierType::notify, false)) {
                 sent_count++;
             } else {
                 error_count++;
-                // TODO: If sending fails, we should remove the subscription after a number of failed attempts as the connection is likely dead
             }
         }
     }
@@ -1775,20 +1788,6 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
     features.push_back(deviceDiagnosisFeature);
 
-    // The following functions are needed by the DeviceDiagnosis Client Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisClientFeature{};
-    deviceDiagnosisClientFeature.description->featureAddress->entity = entity_address;
-    deviceDiagnosisClientFeature.description->featureAddress->feature = FeatureAddresses::lpc_device_diagnosis;
-    deviceDiagnosisClientFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    deviceDiagnosisClientFeature.description->role = RoleType::client;
-
-    //deviceDiagnosisHeartBeatData
-    FunctionPropertyType deviceDiagnosisClientHeartBeatData{};
-    deviceDiagnosisClientHeartBeatData.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
-    deviceDiagnosisClientHeartBeatData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceDiagnosisClientFeature.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
-    features.push_back(deviceDiagnosisClientFeature);
-
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
     electricalConnectionFeature.description->featureAddress->entity = entity_address;
@@ -2438,8 +2437,6 @@ EEBusUseCases::EEBusUseCases()
 
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
-    //TODO: Implement a mutex with waiting so only one message can be processed at a time
-
     eebus_commands_received++;
     eebus.eebus_usecase_state.get("commands_received")->updateUint(eebus_commands_received);
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
