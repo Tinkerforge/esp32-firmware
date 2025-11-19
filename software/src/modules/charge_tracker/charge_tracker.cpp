@@ -354,6 +354,17 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
         last_record = this->last_charge_record;
     }
 
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    if (directory != nullptr) {
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            logger.printfln("Can't track end of charge: Directory %s doesn't exist", directory);
+            return;
+        }
+    } else {
+        last_record = this->last_charge_record;
+    }
+
     {
         File file = LittleFS.open(chargeRecordFilename(last_record, directory), "a");
         if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
@@ -1234,22 +1245,6 @@ void ChargeTracker::repair_charges()
                 break;
             }
 
-            // Capture the oldest charge from the first file on first iteration
-            if (i == first_record && read >= static_cast<int>(CHARGE_RECORD_SIZE)) {
-                ChargeStart cs;
-                ChargeEnd ce;
-                memcpy(&cs, &buf[1].cs, sizeof(cs));
-                memcpy(&ce, &buf[1].ce, sizeof(ce));
-
-                ChargeWithLocation oldest_charge;
-                oldest_charge.charge.cs = cs;
-                oldest_charge.charge.ce = ce;
-                oldest_charge.directory = directory ? String(directory) : String("");
-                oldest_charge.file_index = first_record;
-                oldest_charge.prev_known_timestamp_minutes = 0;
-
-                oldest_charges_per_directory.push_back(oldest_charge);
-            }
 
             for (int a = 1; a < read / sizeof(Charge); a++) {
                 if (repair_logic(&buf[a])) {
