@@ -182,7 +182,7 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (frame_type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
-        logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
+        logger.printfln("Ignoring received packet with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
         // FIXME: input handling
     } else if (frame_type == HTTPD_WS_TYPE_BINARY) {
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
