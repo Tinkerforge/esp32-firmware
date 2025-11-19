@@ -46,8 +46,8 @@ public:
     uint32_t first_charge_record;
     uint32_t last_charge_record;
 
-    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info);
-    void endCharge(uint32_t charge_duration_seconds, float meter_end);
+    bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info, const char *directory = nullptr);
+    void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     void removeOldRecords();
     bool setupRecords();
     void updateState();
@@ -55,6 +55,9 @@ public:
 
     size_t completeRecordsInLastFile();
     bool currentlyCharging();
+    bool currentlyCharging(const char *directory);
+
+    bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
     void readNRecords(File *f, size_t records_to_read);
 
@@ -66,6 +69,7 @@ public:
 
     ConfigRoot last_charges;
     ConfigRoot current_charge;
+    ConfigRoot current_charges;
     ConfigRoot state;
 
     ConfigRoot config;
@@ -80,6 +84,7 @@ private:
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
 
     Config last_charges_prototype;
+    Config current_charge_prototype;
     Config charge_log_send_prototype;
 };
 
