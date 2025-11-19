@@ -1,4 +1,4 @@
-    /* esp32-firmware
+/* esp32-firmware
  * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -834,6 +834,8 @@ public:
      * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
      */
     bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
+
+    template <typename T> bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack = false);
 
     /**
      * Get a SpineConnection for a given spine address.

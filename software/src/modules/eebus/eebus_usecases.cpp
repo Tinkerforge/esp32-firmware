@@ -422,32 +422,14 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
 template <typename T> size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)
 {
     eebus.trace_fmtln("EEBUS: Informing subscribers of %s", function_name);
-    logger.printfln("inform_subscribers");
     if (!EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS || subscription_data.subscriptionEntry.isNull() || subscription_data.subscriptionEntry.get().empty()) {
         return 0;
     }
     size_t sent_count = 0;
     size_t error_count = 0;
-    BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
-    JsonObject dst = response.to<JsonObject>();
-    dst[function_name] = data;
-
-    auto vec_to_string = [](const std::vector<int> &v) -> std::string {
-        std::ostringstream oss;
-        oss << "[";
-        for (size_t i = 0; i < v.size(); ++i) {
-            if (i)
-                oss << ", ";
-            oss << v[i];
-        }
-        oss << "]";
-        return oss.str();
-    };
-
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
-        logger.printfln("Comparing: subscription to entity %s feature %d with target entity %s feature %d. Is equal: %d", vec_to_string(subscription.serverAddress->entity.get()).c_str(), subscription.serverAddress->feature.get(), vec_to_string(entity).c_str(), feature, subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature);
         if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
-            if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonVariantConst>(), CmdClassifierType::notify, false)) {
+            if (usecase_interface->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), data, CmdClassifierType::notify, function_name, false)) {
                 sent_count++;
             } else {
                 error_count++;
@@ -2002,16 +1984,13 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
 
             // Initialize  read on their heartbeat
             DeviceDiagnosisHeartbeatDataType read_heartbeat{};
-            DynamicJsonDocument doc{256};
-            JsonObject obj = doc.to<JsonObject>();
-            obj["deviceDiagnosisHeartbeatData"] = read_heartbeat;
             FeatureAddressType read_destination = header.addressSource.get();
             task_scheduler.scheduleOnce(
-                [this, read_destination, obj]() {
+                [this, read_destination, read_heartbeat]() {
                     FeatureAddressType read_source{};
                     read_source.feature = FeatureAddresses::lpc_device_diagnosis;
                     read_source.entity = entity_address;
-                    eebus.usecases->send_spine_message(read_destination, read_source, obj, CmdClassifierType::read, false);
+                    eebus.usecases->send_spine_message(read_destination, read_source, read_heartbeat, CmdClassifierType::read, "deviceDiagnosisHeartbeatData",false);
                 },
                 100_ms);
             if (heartbeat_timeout_task) {
@@ -2023,7 +2002,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
             }
             // If we get a read from someone we just try to subscribe to them. They can then deny or accept it. Should be able to handle double requests.
             task_scheduler.scheduleOnce(
-                [this, header, obj]() {
+                [this, header]() {
                     NodeManagementSubscriptionRequestCallType subscription_request_call{};
                     subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
                     subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
@@ -2037,10 +2016,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
                     subscription_request_destination.feature = 0;
                     FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
 
-                    BasicJsonDocument<ArduinoJsonPsramAllocator> subscription_request_doc(2048);
-                    JsonObject sub_obj = subscription_request_doc.to<JsonObject>();
-                    obj["subscriptionRequestCall"] = subscription_request_call;
-                    eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, sub_obj, CmdClassifierType::call);
+                    eebus.usecases->send_spine_message(subscription_request_destination,subscription_request_source, subscription_request_call, CmdClassifierType::call, "subscriptionRequestCall");
                 },
                 200_ms);
             heartbeatEnabled = true;
@@ -2503,6 +2479,13 @@ template <typename T> size_t EEBusUseCases::inform_subscribers(const std::vector
         eebus.trace_fmtln("Attempted to inform subscribers about a change in %s while subscriptions are disabled", function_name);
     return 0;
 }
+template <typename T> bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, T payload, CmdClassifierType cmd_classifier, const char *function_name, bool want_ack)
+{
+    BasicJsonDocument<ArduinoJsonPsramAllocator> doc{SPINE_CONNECTION_MAX_JSON_SIZE};
+    JsonObject obj = doc.to<JsonObject>();
+    obj[function_name] = payload;
+    return send_spine_message(destination, sender, obj, cmd_classifier, want_ack);
+}
 
 bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
 {
@@ -2511,6 +2494,10 @@ bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, Fe
     if (sender.feature.isNull() || sender.entity.isNull()) {
         eebus.trace_fmtln("Usecases: Cannot send spine message, sender entity or feature is null");
         return false;
+    }
+    if (payload.isNull()) {
+        eebus.trace_fmtln("Usecases: Payload is null");
+        logger.printfln("payload is null");
     }
     if (sender.device.isNull()) {
         sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
