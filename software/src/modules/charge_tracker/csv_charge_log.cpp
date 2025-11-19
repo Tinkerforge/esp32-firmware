@@ -257,7 +257,7 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
 
     uint8_t buffer[sizeof(Charge)];
     for (uint32_t file_idx = first_record; file_idx <= last_record; file_idx++) {
-        String filename = chargeRecordFilename(file_idx);
+        String filename = chargeRecordFilename(file_idx, nullptr);
 
         if (!LittleFS.exists(filename)) {
             continue;

@@ -54,4 +54,4 @@ struct display_name_entry {
 };
 
 size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language);
-String chargeRecordFilename(uint32_t i);
+String chargeRecordFilename(uint32_t i, const char *directory);
