@@ -100,11 +100,15 @@ static int read_letterhead_lines(char *letterhead) {
     return letterhead_lines;
 }
 
-String chargeRecordFilename(uint32_t i)
+String chargeRecordFilename(uint32_t i, const char *directory)
 {
     char buf[64];
     StringWriter sw(buf, sizeof(buf));
-    sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
+    if (directory == nullptr) {
+        sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
+    } else {
+        sw.printf(CHARGE_RECORD_FOLDER "/%s/charge-record-%lu.bin", directory, i);
+    }
     return String(buf, sw.getLength());
 }
 
@@ -209,10 +213,10 @@ bool ChargeTracker::repair_last(float meter_start)
     charges[0].ce.meter_end = NAN;
     charges[2].cs.meter_start = meter_start;
 
-    if (!file_exists(LittleFS, chargeRecordFilename(last_charge_record)))
+    if (!file_exists(LittleFS, chargeRecordFilename(last_charge_record, nullptr)))
         return true;
 
-    File r_file = LittleFS.open(chargeRecordFilename(last_charge_record), "r+");
+    File r_file = LittleFS.open(chargeRecordFilename(last_charge_record, nullptr), "r+");
     if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
         logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", r_file.size(), r_file.size() % CHARGE_RECORD_SIZE);
         // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
@@ -225,7 +229,7 @@ bool ChargeTracker::repair_last(float meter_start)
     }
     else if (r_file.size() == sizeof(Charge)) {
         if (last_charge_record > 1) {
-            File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1));
+            File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1, nullptr), "r");
             auto tmp_size = tmp.size();
             if (tmp_size % CHARGE_RECORD_SIZE != 0 || tmp_size < sizeof(Charge) * 2) {
                 logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", tmp_size, tmp_size % CHARGE_RECORD_SIZE);
@@ -247,10 +251,11 @@ bool ChargeTracker::repair_last(float meter_start)
     return true;
 }
 
-bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info) {
+bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info, const char *directory) {
 #if MODULE_REQUIRE_METER_AVAILABLE()
-    if (!require_meter.allow_charging(meter_start))
+    if (!require_meter.allow_charging(meter_start) && directory == nullptr) {
         return false;
+    }
 #endif
 
     std::lock_guard<std::mutex> lock{records_mutex};
@@ -260,11 +265,11 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     }
 
     ChargeStart cs;
-    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a", true);
+    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory), "a", true);
 
     if (file.size() == CHARGE_RECORD_MAX_FILE_SIZE) {
         ++this->last_charge_record;
-        String new_file_name = chargeRecordFilename(this->last_charge_record);
+        String new_file_name = chargeRecordFilename(this->last_charge_record, directory);
         logger.printfln("Last charge record file %s is full. Creating the new file %s", file.name(), new_file_name.c_str());
         file.close();
 
@@ -283,6 +288,10 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
 
     file.write(buf, sizeof(cs));
     logger.printfln("Tracked start of charge.");
+    if (directory != nullptr) {
+        logger.printfln("Charge record saved in directory: %s", directory);
+        return true;
+    }
 
     current_charge.get("user_id")->updateInt(user_id);
     current_charge.get("meter_start")->updateFloat(meter_start);
@@ -294,13 +303,13 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     return true;
 }
 
-void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
+void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory)
 {
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeEnd ce;
 
     {
-        File file = LittleFS.open(chargeRecordFilename(this->last_charge_record), "a");
+        File file = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory), "a");
         if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
             logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected %u", file.size() , file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
             // TODO: How to handle this case? Add a charge start with the same meter value as the last end?
@@ -323,7 +332,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end)
     if (last_charges.count() == CHARGE_RECORD_LAST_CHARGES_SIZE)
         last_charges.remove(0);
 
-    File f = LittleFS.open(chargeRecordFilename(this->last_charge_record));
+    File f = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory));
     f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
     this->readNRecords(&f, 1);
 
@@ -342,7 +351,7 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
     const size_t user_id_offset = offsetof(ChargeStart, user_id);
 
     for (int file = this->first_charge_record; file <= this->last_charge_record; ++file) {
-        File f = LittleFS.open(chargeRecordFilename(file));
+        File f = LittleFS.open(chargeRecordFilename(file, nullptr));
         size_t size = f.size();
         // LittleFS caches internally, so we can read single bytes without a huge performance loss.
         for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
@@ -365,7 +374,7 @@ void ChargeTracker::removeOldRecords()
     bool have_user_to_delete = false;
 
     while (this->last_charge_record - this->first_charge_record >= 30) {
-        String name = chargeRecordFilename(this->first_charge_record);
+        String name = chargeRecordFilename(this->first_charge_record, nullptr);
         logger.printfln("Got %lu charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
         {
             File f = LittleFS.open(name, "r");
@@ -392,7 +401,7 @@ void ChargeTracker::removeOldRecords()
     //users_to_delete has now set a bit for every user_id that was used in the deleted charge records.
     //Clear this bit for every user that is still used in the current charge records.
     for (int file = this->first_charge_record; file < this->last_charge_record; ++file) {
-        File f = LittleFS.open(chargeRecordFilename(file));
+        File f = LittleFS.open(chargeRecordFilename(file, nullptr));
         size_t size = f.size();
         // LittleFS caches internally, so we can read single bytes without a huge performance loss.
         for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
@@ -477,7 +486,7 @@ bool ChargeTracker::setupRecords()
             return false;
         }
 
-        const String fname = chargeRecordFilename(found_blobs[i]);
+        const String fname = chargeRecordFilename(found_blobs[i], nullptr);
         const size_t fsize = file_size(LittleFS, fname);
         if (fsize != CHARGE_RECORD_MAX_FILE_SIZE) {
             logger.printfln("Charge record %s doesn't have max size: %u bytes", fname.c_str(), fsize);
@@ -485,7 +494,7 @@ bool ChargeTracker::setupRecords()
         }
     }
 
-    const String last_file_name = chargeRecordFilename(found_blobs[found_blob_counter - 1]);
+    const String last_file_name = chargeRecordFilename(found_blobs[found_blob_counter - 1], nullptr);
     const size_t last_file_size = file_size(LittleFS, last_file_name);
     logger.printfln("Last charge record size is %u (%u, %u)", last_file_size, last_file_size / CHARGE_RECORD_SIZE, (last_file_size % CHARGE_RECORD_SIZE));
     if (last_file_size > CHARGE_RECORD_MAX_FILE_SIZE) {
@@ -501,14 +510,67 @@ bool ChargeTracker::setupRecords()
 
 size_t ChargeTracker::completeRecordsInLastFile()
 {
-    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record));
+    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, nullptr));
     return fsize / CHARGE_RECORD_SIZE;
 }
 
 bool ChargeTracker::currentlyCharging()
 {
-    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record));
+    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, nullptr));
     return (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
+}
+
+bool ChargeTracker::currentlyCharging(const char *directory)
+{
+    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, directory));
+    return (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
+}
+
+bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record)
+{
+    if (directory == nullptr)
+        return false;
+
+    char folder_path[96];
+    snprintf(folder_path, sizeof(folder_path), CHARGE_RECORD_FOLDER "/%s", directory);
+
+    if (!LittleFS.exists(folder_path))
+        return false;
+
+    File folder = LittleFS.open(folder_path);
+    if (!folder || !folder.isDirectory())
+        return false;
+
+    uint32_t found_blobs[CHARGE_RECORD_FILE_COUNT + 2] = {0};
+    int found_blob_counter = 0;
+
+    while (File f = folder.openNextFile()) {
+        String name{f.name()};
+        if (f.isDirectory())
+            continue;
+
+        if (!name.startsWith("charge-record-") || !name.endsWith(".bin"))
+            continue;
+
+        long suffix = name.substring(14, name.length() - 4).toInt();
+        if (suffix == 0)
+            continue;
+
+        if (found_blob_counter >= ARRAY_SIZE(found_blobs))
+            break;
+
+        found_blobs[found_blob_counter] = suffix;
+        ++found_blob_counter;
+    }
+
+    if (found_blob_counter == 0)
+        return false;
+
+    std::sort(found_blobs, found_blobs + found_blob_counter);
+
+    *first_record = found_blobs[0];
+    *last_record = found_blobs[found_blob_counter - 1];
+    return true;
 }
 
 bool charged_invalid(ChargeStart cs, ChargeEnd ce)
@@ -542,7 +604,7 @@ void ChargeTracker::updateState()
     auto records = this->last_charge_record - this->first_charge_record + 1;
     state.get("tracked_charges")->updateUint((records - 1) * (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE) + completeRecordsInLastFile());
 
-    File f = LittleFS.open(chargeRecordFilename(this->first_charge_record));
+    File f = LittleFS.open(chargeRecordFilename(this->first_charge_record, nullptr));
     ChargeStart cs;
     if (f.size() >= sizeof(cs)) {
         uint8_t buf[sizeof(cs)];
@@ -564,7 +626,7 @@ void ChargeTracker::setup()
 
     last_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
 
-    const String last_file_name = chargeRecordFilename(this->last_charge_record);
+    const String last_file_name = chargeRecordFilename(this->last_charge_record, nullptr);
     if (!file_exists(LittleFS, last_file_name))
         LittleFS.open(last_file_name, "w", true);
 
@@ -577,7 +639,7 @@ void ChargeTracker::setup()
     bool charging = currentlyCharging();
     size_t records_in_last_file = completeRecordsInLastFile();
 
-    const String penultimate_file_name = chargeRecordFilename(this->last_charge_record - 1);
+    const String penultimate_file_name = chargeRecordFilename(this->last_charge_record - 1, nullptr);
     if (records_in_last_file < CHARGE_RECORD_LAST_CHARGES_SIZE && file_exists(LittleFS, penultimate_file_name)) {
         size_t records_to_read = CHARGE_RECORD_LAST_CHARGES_SIZE - records_in_last_file;
         File f = LittleFS.open(penultimate_file_name);
@@ -802,9 +864,9 @@ void ChargeTracker::repair_charges()
         bool file_needs_repair = false;
         memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
 
-        File f = LittleFS.open(chargeRecordFilename(i));
+        File f = LittleFS.open(chargeRecordFilename(i, nullptr));
         if (i < this->last_charge_record) {
-            File next_f = LittleFS.open(chargeRecordFilename(i + 1));
+            File next_f = LittleFS.open(chargeRecordFilename(i + 1, nullptr));
             int read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
             if (read != sizeof(Charge))
                 buf[257].cs.meter_start = NAN;
@@ -824,7 +886,7 @@ void ChargeTracker::repair_charges()
             }
         }
         if (file_needs_repair) {
-            File write_f = LittleFS.open(chargeRecordFilename(i), "w");
+            File write_f = LittleFS.open(chargeRecordFilename(i, nullptr), "w");
             write_f.write(reinterpret_cast<uint8_t *>(&buf[1]), read);
         }
         buf[0] = buf[256];
@@ -854,7 +916,7 @@ void ChargeTracker::register_urls()
             return request.send_plain(507);
         }
 
-        const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record));
+        const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, nullptr));
         const size_t file_size = (this->last_charge_record - this->first_charge_record) * CHARGE_RECORD_MAX_FILE_SIZE + fsize;
 
         // Don't do a chunked response without any chunk. The webserver does strange things in this case
@@ -864,7 +926,7 @@ void ChargeTracker::register_urls()
 
         request.beginChunkedResponse_bytes(200);
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
-            File f = LittleFS.open(chargeRecordFilename(i));
+            File f = LittleFS.open(chargeRecordFilename(i, nullptr));
             int read = f.read((uint8_t *)url_buf.get(), CHARGE_RECORD_MAX_FILE_SIZE);
             int trunc = read - (read % CHARGE_RECORD_SIZE);
             SEND_CHUNK_OR_FAIL_LEN(request, url_buf.get(), trunc);
@@ -874,6 +936,7 @@ void ChargeTracker::register_urls()
 
     api.addState("charge_tracker/last_charges", &last_charges);
     api.addState("charge_tracker/current_charge", &current_charge, {}, {"tag_id", "tag_type"});
+    api.addState("charge_tracker/current_charges", &current_charges, {}, {"tag_id", "tag_type"});
     api.addState("charge_tracker/state", &state);
 
     api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](Language /*language*/, String &errmsg) {
@@ -1679,7 +1742,7 @@ int ChargeTracker::generate_pdf(
         ChargeStart cs;
         ChargeEnd ce;
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
-            File f = LittleFS.open(chargeRecordFilename(i));
+            File f = LittleFS.open(chargeRecordFilename(i, nullptr));
             for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
                 if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
                     goto search_done;
@@ -1842,7 +1905,7 @@ search_done:
                 current_charge = 0;
             }
             if (!f) {
-                f =  LittleFS.open(chargeRecordFilename(current_file));
+                f =  LittleFS.open(chargeRecordFilename(current_file, nullptr));
                 f.seek(CHARGE_RECORD_SIZE * current_charge);
             }
             for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
