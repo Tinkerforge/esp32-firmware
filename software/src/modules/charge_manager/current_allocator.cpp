@@ -29,9 +29,13 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools/printf.h"
+#include "bindings/base58.h"
+
+extern char local_uid_str[32];
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
+#include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
 
 #include "cas_error.enum.h"
 
@@ -76,12 +80,55 @@ static CASState get_charge_state(uint8_t charger_state, uint16_t supported_curre
     return CASState::Error;
 }
 
+// Returns true if 'ts' lies within +/- 'tolerance' around 'center'.
+// Boundaries are inclusive.
+static inline bool micros_in_range(micros_t ts, micros_t center, micros_t tolerance) {
+    if (tolerance < 0_us) {
+        tolerance = -tolerance;
+    }
+    return (ts >= center) ? ((ts - center) <= tolerance)
+                          : ((center - ts) <= tolerance);
+}
+
+// Check if the charger is authorized based on NFC tag information.
+static inline bool charger_authorized(ChargerState &state) {
+#if MODULE_NFC_AVAILABLE()
+    // Check if authorization is required
+    const Config *user_slot = (const Config *)api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
+    if (!user_slot->get("active")->asBool()) {
+        return true;
+    }
+
+    if (!micros_in_range(state.nfc_last_seen, now_us(), 30_s)) {
+        return false;
+    }
+
+    // Check if the NFC tag is authorized by comparing against local NFC config
+    NFC::tag_info_t tag_info;
+    tag_info.tag_type = state.nfc_tag_type;
+    tag_info.last_seen = 0; // Not used for authorization check
+
+    static_assert(sizeof(tag_info.tag_id) == sizeof(state.nfc_tag_id), "Tag ID size mismatch");
+    memcpy(tag_info.tag_id, state.nfc_tag_id, sizeof(state.nfc_tag_id));
+
+    uint8_t tag_idx = 0;
+    uint8_t user_id = nfc.get_user_id(&tag_info, &tag_idx);
+
+    return user_id != 0;
+#else
+    // If NFC module is not available but auth_type indicates NFC was used,
+    // we should authorize to avoid blocking charges (fail-open behavior)
+    return true;
+#endif
+}
+
 bool update_from_client_packet(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v2 *v2,
     cm_state_v3 *v3,
     cm_state_v4 *v4,
+    cm_state_v5 *v5,
     const CurrentAllocatorConfig *cfg,
     ChargerState *charger_state,
     ChargerAllocationState *charger_allocation_state,
@@ -113,6 +160,36 @@ bool update_from_client_packet(
     target.uid = v1->esp32_uid;
     target.uptime = v1->evse_uptime;
 
+    // Populate first and last tracked charge when we first see this charger
+    if (target.last_update == 0_us && target.uid != 0) {
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        char uid_str[32];
+        tf_base58_encode(target.uid, uid_str);
+        if (!charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
+            // No existing records for this charger
+            target.first_tracked_charge = 0;
+            target.last_tracked_charge = 0;
+        }
+
+        // If the charger is currently charging when first seen, end that charge
+        // since we don't know when it started
+        if (charge_tracker.currentlyCharging(uid_str)) {
+            charge_tracker.endCharge(
+                0, // Unknown duration
+                v1->energy_abs,
+                uid_str);
+
+            // Update tracked charges after ending the charge
+            if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
+                // TODO: Update when we have a way to communicate this to the frontend
+            }
+        }
+#else
+        target.first_tracked_charge = 0;
+        target.last_tracked_charge = 0;
+#endif
+    }
+
     // If we've just resolved this charger but the charger did not reboot
     // we can receive a packet before successfully sending the first one
     // If the allocation algorithm runs between receiving the first packet
@@ -128,17 +205,30 @@ bool update_from_client_packet(
         firmware_update.vehicle_connected = true;
 #endif
 
+    // Update NFC state
+    if (v5 != nullptr && v5->nfc_last_seen != 0 && v5->nfc_last_seen <= 5000) {
+        micros_t nfc_timestamp = now - micros_t{v5->nfc_last_seen * 1000};
+        target.nfc_last_seen = nfc_timestamp;
+        memcpy(target.nfc_tag_id, v5->nfc_tag_id, ARRAY_SIZE(cm_state_v5::nfc_tag_id));
+        target.auth_type = v5->auth_type;
+        target.nfc_tag_type = v5->nfc_tag_type;
+
+        target.authorized = charger_authorized(target);
+    }
+
     // A charger wants to charge if:
     // the charging time is 0 (it has not charged this vehicle yet), no other slot blocks
     //     AND we are still in charger state 1 (i.e. blocked by a slot, so the charge management slot)
     //         or 2 (i.e. already have current allocated)
     // OR the charger is already charging
-    bool wants_to_charge = (v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3;
+    // AND the charger is authorized
+    bool wants_to_charge = ((v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3) && target.authorized;
     target.wants_to_charge = wants_to_charge;
 
     // A charger wants to charge and has low priority if it has already charged this vehicle
     // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
-    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2);
+    // AND the charger is authorized
+    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2) && target.authorized;
 
     if (!target.wants_to_charge_low_priority && low_prio)
         target.last_wakeup = now - cfg->wakeup_time;
@@ -155,9 +245,19 @@ bool update_from_client_packet(
         target.allocated_average_power = 0;
         target_alloc.allocated_current = 0;
         target_alloc.allocated_phases = 0;
+        target.authorized = false; // Reset authorization state when no car is connected
+        target.nfc_last_seen = 0_us;
+        target.nfc_tag_type = 0;
+        memset(target.nfc_tag_id, 0, sizeof(target.nfc_tag_id));
     }
 
-    target.allowed_current = v1->allowed_charging_current;
+    // Set allowed_current to 0 if not authorized to prevent current allocation
+    // Allow charging to continue if already in state 3 (charging) to avoid interrupting active sessions
+    if (!target.authorized) {
+        target.allowed_current = 0;
+    } else {
+        target.allowed_current = v1->allowed_charging_current;
+    }
 
     if (target.supported_current != v1->supported_current)
         trace("RECV %d: supported %u -> %u mA", client_id, target.supported_current, v1->supported_current);
@@ -172,7 +272,36 @@ bool update_from_client_packet(
         // Only set the timestamp if plug_in_time is != 0: This feature is deactivated if the time is set to 0.
         if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
             target.just_plugged_in_timestamp = now;
+
+        target.authorized = charger_authorized(target);
     }
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    if (target.charger_state != CHARGER_STATE_CHARGING && v1->charger_state == CHARGER_STATE_CHARGING && target.authorized) {
+        char uid_str[32];
+        tf_base58_encode(target.uid, uid_str);
+
+        if (!charge_tracker.currentlyCharging(uid_str)) {
+            uint32_t charge_start = 0;
+            timeval _timeval;
+            if (rtc.clock_synced(&_timeval))
+                charge_start = rtc.timestamp_minutes();
+
+            charge_tracker.startCharge(charge_start,
+                                       v1->energy_abs,
+                                       0,
+                                       v1->evse_uptime,
+                                       USERS_AUTH_TYPE_NONE,
+                                       Config::ConfVariant(),
+                                       uid_str);
+
+            // Update last_tracked_charge when a new charge is started
+            if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
+                // Records exist and were updated
+            }
+        }
+    }
+#endif
 
     // If this charger just switched to state C (i.e. the contactor switched on)
     // set last_phase_switch to now to make sure we don't immediately switch again.
@@ -187,6 +316,24 @@ bool update_from_client_packet(
         target.time_in_state_c = 0_us;
         target.last_plug_in = 0_us;
         target.last_switch_on = 0_us;
+
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+        char uid_str[32];
+        tf_base58_encode(target.uid, uid_str);
+
+        if (charge_tracker.currentlyCharging(uid_str)) {
+            charge_tracker.endCharge(
+                micros_t{now} .as<uint32_t>() / 1'000'000 - target.last_plug_in.as<uint32_t>() / 1'000'000,
+                v1->energy_abs,
+                uid_str);
+
+            // Update tracked charges after ending a charge
+            if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
+                // TODO: Update when we have a way to communicate this to the frontend
+            }
+        }
+#endif
     }
 
     target.charger_state = v1->charger_state;
@@ -244,11 +391,18 @@ bool update_from_client_packet(
         target_alloc.error = CASError::OK;
     }
 
-    if (target_alloc.error == CASError::OK || target_alloc.error >= CASError::ClientErrorOK)
+    if (target_alloc.error == CASError::OK || target_alloc.error >= CASError::ClientErrorOK) {
         target_alloc.state = get_charge_state(v1->charger_state,
                                               v1->supported_current,
                                               v1->car_stopped_charging,
                                               target_alloc.allocated_current);
+
+        // Override with UserBlocked if the charger has an unauthorized NFC tag and is not yet actively charging
+        // This prevents unauthorized users from starting a charge session
+        if (!target.authorized && v1->charger_state != 0) {
+            target_alloc.state = CASState::Unauthorized;
+        }
+    }
 
     if (v3 != nullptr) {
         uint8_t new_phases = CM_STATE_V3_PHASES_CONNECTED_GET(v3->phases);

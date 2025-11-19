@@ -158,6 +158,17 @@ struct ChargerState {
     bool observe_pv_limit;
     bool eco_fast;
     int guaranteed_pv_current;
+
+    uint32_t first_tracked_charge;
+    uint32_t last_tracked_charge;
+
+    micros_t nfc_last_seen;
+    uint8_t nfc_tag_id[30];
+    uint8_t auth_type;
+    uint8_t nfc_tag_type;
+
+    // Authorization state: true if authorized to charge, false if blocked by authorization
+    bool authorized;
 };
 
 struct ChargerAllocationState {

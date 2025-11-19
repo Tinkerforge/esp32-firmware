@@ -6,6 +6,7 @@ import { CurrentDecision } from "./current_decision.union";
 
 import { CASState } from "./cas_state.enum";
 import { CASError } from "./cas_error.enum";
+import { CASAuthState } from "./cas_auth_state.enum";
 
 type ChargerState = {
     /** state */
@@ -30,6 +31,8 @@ type ChargerState = {
     d1: OnePhaseDecision,
     d3: ThreePhaseDecision,
     dc: CurrentDecision,
+    /** auth_state */
+    a: CASAuthState,
 };
 
 interface ServCharger {

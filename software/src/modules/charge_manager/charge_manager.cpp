@@ -37,6 +37,7 @@
 #include "three_phase_decision.union.h"
 #include "current_decision.union.h"
 #include "modules/cm_networking/client_error.enum.h"
+#include "cas_auth_state.enum.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
@@ -86,6 +87,7 @@ void ChargeManager::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
+        {"enable_central_auth", Config::Bool(false)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
         {"maximum_available_current", Config::Uint(0, 0, 32000 * MAX_CONTROLLED_CHARGERS)},
@@ -170,7 +172,8 @@ void ChargeManager::pre_setup()
         {"d0", ZeroPhaseDecision::getUnion()},
         {"d1", OnePhaseDecision::getUnion()},
         {"d3", ThreePhaseDecision::getUnion()},
-        {"dc", CurrentDecision::getUnion()}
+        {"dc", CurrentDecision::getUnion()},
+        {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -304,7 +307,7 @@ void ChargeManager::start_manager_task()
 {
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
-    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4) mutable {
+    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4, cm_state_v5 *v5) mutable {
             auto old_charger_state = charger_state[client_id].charger_state;
 
             if (update_from_client_packet(
@@ -313,6 +316,7 @@ void ChargeManager::start_manager_task()
                     v2,
                     v3,
                     v4,
+                    v5,
                     this->ca_config,
                     this->charger_state,
                     this->charger_allocation_state,
@@ -944,6 +948,13 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
     charger_cfg->get("lu")->updateUptime(charger.last_update);
     charger_cfg->get("u")->updateUint(charger.uid);
+    
+    // Update authorization state based on charger state
+    CASAuthState auth_state = CASAuthState::None;
+    if (charger.charger_state != 0) { // If a car is connected
+        auth_state = charger.authorized ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
+    }
+    charger_cfg->get("a")->updateEnum(auth_state);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);
@@ -983,6 +994,31 @@ const ChargerState *ChargeManager::get_charger_state(uint8_t idx)
 ChargerState *ChargeManager::get_mutable_charger_state(uint8_t idx)
 {
     return this->charger_state == nullptr ? nullptr : &this->charger_state[idx];
+}
+
+ChargerState *ChargeManager::find_charger_state(uint32_t uid)
+{
+    if (this->charger_state == nullptr)
+        return nullptr;
+
+    for (size_t i = 0; i < this->charger_count; ++i) {
+        if (this->charger_state[i].uid == uid)
+            return &this->charger_state[i];
+    }
+
+    return nullptr;
+}
+
+int8_t ChargeManager::get_charger_state_index(const ChargerState *state)
+{
+    if (this->charger_state == nullptr || state == nullptr)
+        return -1;
+
+    // Check if the pointer is within the array bounds
+    if (state < this->charger_state || state >= this->charger_state + this->charger_count)
+        return -1;
+
+    return static_cast<int8_t>(state - this->charger_state);
 }
 
 void ChargeManager::enable_fast_single_charger_mode()
