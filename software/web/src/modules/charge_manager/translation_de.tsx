@@ -173,6 +173,7 @@ let x = {
                     case CASState.Charging: return "Lädt";
                     case CASState.Error: return "Fehler";
                     case CASState.Charged: return "Laden abgeschlossen";
+                    case CASState.Unauthorized: return "Nicht autorisiert";
                 }
             }/*NF*/,
 

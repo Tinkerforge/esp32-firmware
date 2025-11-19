@@ -197,6 +197,7 @@ let x = {
                     case CASState.Charging: return "Charging";
                     case CASState.Error: return "Error";
                     case CASState.Charged: return "Charging done";
+                    case CASState.Unauthorized: return "Unauthorized";
                 }
             }/*NF*/,
 

@@ -96,6 +96,9 @@ public:
     const ChargerState *get_charger_state(uint8_t idx);
     ChargerState *get_mutable_charger_state(uint8_t idx);
 
+    ChargerState *find_charger_state(uint32_t uid);
+    int8_t get_charger_state_index(const ChargerState *state);
+
     size_t trace_buffer_index;
 
     uint8_t config_cm_to_cm(ConfigChargeMode power_manager_charge_mode);
