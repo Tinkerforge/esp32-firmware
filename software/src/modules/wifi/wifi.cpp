@@ -703,8 +703,11 @@ void Wifi::setup()
 
         WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
                 wifi_ap_record_t wifi_info;
+                char bssid_str[18];
+
                 if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
                     logger.printfln("Connected to WiFi");
+                    bssid_str[0] = 0;
                 } else {
                     char buf[128];
                     StringWriter sw(buf, ARRAY_SIZE(buf));
@@ -752,6 +755,8 @@ void Wifi::setup()
                             wifi_info.rssi,
                             wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
 
+                    snprintf(bssid_str, std::size(bssid_str), "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX", wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+
                     logger.printfln("Connected to WiFi: %s", buf);
                 }
 
@@ -760,7 +765,8 @@ void Wifi::setup()
                 const micros_t now = now_us();
                 this->runtime_sta->last_connected = now;
 
-                task_scheduler.scheduleOnce([this, now]() {
+                task_scheduler.scheduleOnce([this, bssid_str, now]() {
+                    state.get("sta_bssid")->updateString(bssid_str);
                     state.get("connection_start")->updateUptime(now);
                 });
             },
@@ -773,15 +779,21 @@ void Wifi::setup()
                 // or else MQTT will never attempt to connect.
                 this->runtime_sta->was_connected = true;
 
-                auto ip = WiFi.localIP().toString();
-                auto subnet = WiFi.subnetMask();
+                const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
+                char ip_str[16];
+                tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
+                char gw_str[16];
+                tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
+                const uint32_t subnet = ip_info.netmask.addr;
 
-                logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
+                logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
 
-                task_scheduler.scheduleOnce([this, ip, subnet](){
-                    state.get("sta_ip")->updateString(ip);
-                    state.get("sta_subnet")->updateString(subnet.toString());
-                    state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
+                task_scheduler.scheduleOnce([this, ip_str, subnet](){
+                    char subnet_str[16];
+                    tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
+
+                    state.get("sta_ip")->updateString(ip_str);
+                    state.get("sta_subnet")->updateString(subnet_str);
                 });
             },
             ARDUINO_EVENT_WIFI_STA_GOT_IP);
