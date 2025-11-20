@@ -671,8 +671,22 @@ void Wifi::setup()
                     logger.printfln("Failed to connect to WiFi: %s (%u)", reason, reason_code);
                 } else {
                     const micros_t now = now_us();
-                    const uint64_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint64_t>();
-                    logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %llu seconds.", reason, reason_code, connected_for_s);
+                    const uint32_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
+
+                    if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
+                        String last_ip{};
+
+                        task_scheduler.await([this, &last_ip](){
+                            last_ip = state.get("sta_ip")->asString();
+                        });
+
+                        if (last_ip == "0.0.0.0") {
+                            reason = "No IP received via DHCP";
+                            reason_code = 0;
+                        }
+                    }
+
+                    logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %lu seconds.", reason, reason_code, connected_for_s);
 
                     task_scheduler.scheduleOnce([this, now](){
                         state.get("connection_end")->updateUptime(now);
