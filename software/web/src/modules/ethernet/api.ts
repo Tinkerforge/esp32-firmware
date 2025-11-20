@@ -11,6 +11,7 @@ export interface state {
     connection_state: number;
     connection_start: number;
     connection_end: number;
+    mac: string;
     ip: string;
     subnet: string;
     full_duplex: boolean;

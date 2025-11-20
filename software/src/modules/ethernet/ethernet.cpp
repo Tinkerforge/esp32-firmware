@@ -86,6 +86,7 @@ void Ethernet::pre_setup()
         {"connection_state", Config::Enum(EthernetState::NotConfigured)},
         {"connection_start", Config::Uptime()},
         {"connection_end", Config::Uptime()},
+        {"mac", Config::Str("", 0, 17)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
@@ -158,7 +159,16 @@ void Ethernet::setup()
 
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
-            task_scheduler.scheduleOnce([this]() {
+            uint8_t mac[6];
+            if (ETH.macAddress(mac) == nullptr) {
+                memset(mac, 0, std::size(mac));
+            }
+
+            task_scheduler.scheduleOnce([this, mac]() {
+                char mac_str[18];
+                const size_t len = snprintf_u(mac_str, std::size(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+                state.get("mac")->updateString(String{mac_str, len});
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
             });
         },
@@ -183,16 +193,11 @@ void Ethernet::setup()
                 ETH.config();
             }
 
-            uint8_t mac[6];
-            if (!ETH.macAddress(mac)) {
-                memset(mac, 0, sizeof(mac));
-            }
             const bool full_duplex = ETH.fullDuplex();
 
-            logger.printfln("Connected: %hu Mbps %s Duplex, MAC: %02X:%02X:%02X:%02X:%02X:%02X",
+            logger.printfln("Connected: %hu Mbps, %s Duplex",
                             link_speed,
-                            full_duplex ? "Full" : "Half",
-                            mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+                            full_duplex ? "Full" : "Half");
 
             this->runtime_data->connection_state = EthernetState::Connecting;
 

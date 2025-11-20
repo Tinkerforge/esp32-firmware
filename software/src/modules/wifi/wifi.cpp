@@ -85,12 +85,13 @@ void Wifi::pre_setup()
         {"connection_start", Config::Uptime()},
         {"connection_end", Config::Uptime()},
         {"ap_state", Config::Uint8(0)},
-        {"ap_bssid", Config::Str("", 0, 20)},
+        {"ap_bssid", Config::Str("", 0, 17)},
         {"ap_sta_count", Config::Uint8(0)},
+        {"sta_mac", Config::Str("", 0, 17)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(-127)},
-        {"sta_bssid", Config::Str("", 0, 20)}
+        {"sta_bssid", Config::Str("", 0, 17)}
     });
 
     eap_config_prototypes[0] = {EapConfigID::None, *Config::Null()};
@@ -299,17 +300,14 @@ void Wifi::apply_soft_ap_config_and_start()
     WiFi.setSleep(false);
 
     uint8_t bssid[6];
-    if (!WiFi.AP.macAddress(bssid)) {
-        memset(bssid, 0, sizeof(bssid));
-    }
-    char bssid_str[18];
-    const size_t bssid_strlen = snprintf_u(bssid_str, sizeof(bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
+    if (WiFi.AP.macAddress(bssid) != nullptr) {
+        char bssid_str[18];
+        const size_t bssid_strlen = snprintf_u(bssid_str, sizeof(bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
 
-    state.get("ap_bssid")->updateString(String{bssid_str, bssid_strlen});
+        state.get("ap_bssid")->updateString(String{bssid_str, bssid_strlen});
+    }
 
     logger.printfln("Soft AP started");
-    logger.printfln_continue("SSID: %s", runtime_ap->ip_ssid_passphrase + runtime_ap->ssid_offset);
-    logger.printfln_continue("IP address: %s", runtime_ap->ip_ssid_passphrase);
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -777,7 +775,9 @@ void Wifi::setup()
 
                 auto ip = WiFi.localIP().toString();
                 auto subnet = WiFi.subnetMask();
-                logger.printfln("Got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
+
+                logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
+
                 task_scheduler.scheduleOnce([this, ip, subnet](){
                     state.get("sta_ip")->updateString(ip);
                     state.get("sta_subnet")->updateString(subnet.toString());
@@ -1073,7 +1073,7 @@ void Wifi::start_scan()
 
 void Wifi::register_urls()
 {
-    api.addState("wifi/state", &state, {}, {"sta_bssid", "ap_bssid"});
+    api.addState("wifi/state", &state, {}, {"sta_mac", "sta_bssid", "ap_bssid"});
 
     api.addCommand("wifi/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
         start_scan();
@@ -1103,6 +1103,15 @@ void Wifi::register_urls()
 
     api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"}, {"ssid", "bssid"});
     api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"});
+
+    // By now, the STA interface is up and the MAC can be queried.
+    uint8_t mac[6];
+    if (WiFi.STA.macAddress(mac) != nullptr) {
+        char mac_str[18];
+        const size_t len = snprintf_u(mac_str, std::size(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+        state.get("sta_mac")->updateString(String{mac_str, len});
+    }
 }
 
 WifiState Wifi::get_connection_state() const

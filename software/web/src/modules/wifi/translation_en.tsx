@@ -22,6 +22,9 @@ let x = {
         },
         "content": {
             "sta_settings": "WiFi Connection",
+            "sta_mac": "Device MAC address",
+            "sta_connected_bssid": "Connected BSSID",
+            "sta_connected_bssid_none": "Not connected",
             "sta_enable_sta": "WiFi connection enabled",
             "sta_enable_sta_desc": <>Automatically connects to the configured network on start-up.</>,
             "sta_ssid": "Network name (SSID)",
@@ -35,6 +38,8 @@ let x = {
             "sta_passphrase": "Passphrase",
 
             "ap_settings": "WiFi Access Point",
+            "ap_bssid": "BSSID",
+            "ap_bssid_none": "Access point not active",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>
@@ -74,7 +79,9 @@ let x = {
             "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
                 return <a href="#certs">Add {is_key ? "key" : "certificate"}</a>
             } /*NF*/,
-            "optional": "optional"
+            "optional": "optional",
+
+            "settings_separator": "Settings"
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",

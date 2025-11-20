@@ -74,6 +74,7 @@ export interface state {
     connection_end: number;
     ap_state: number;
     ap_bssid: string;
+    sta_mac: string;
     sta_ip: string;
     sta_subnet: string;
     sta_rssi: number;

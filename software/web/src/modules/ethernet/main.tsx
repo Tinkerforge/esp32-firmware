@@ -24,7 +24,9 @@ import { h, Fragment, Component, RefObject } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
+import { FormSeparator   } from "../../ts/components/form_separator";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
+import { InputText       } from "../../ts/components/input_text";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage } from "../../ts/components/sub_page";
@@ -61,6 +63,8 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
         if (!util.render_allowed())
             return <SubPage name="ethernet" />;
 
+        const eth_state = API.get("ethernet/state");
+
         return (
             <SubPage name="ethernet">
                 <ConfigForm id="ethernet_config_form"
@@ -70,6 +74,16 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
+
+                    <FormRow label={__("ethernet.content.mac")}>
+                        <InputText
+                            value={eth_state.mac.length == 0 ? __("ethernet.content.mac_none") : eth_state.mac}
+                            style={eth_state.mac.length == 0 ? undefined : "font-family:monospace"}
+                        />
+                    </FormRow>
+
+                    <FormSeparator heading={__("ethernet.content.settings_separator")} />
+
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}
                                 checked={state.enable_ethernet}

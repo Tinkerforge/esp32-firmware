@@ -26,6 +26,7 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Button, Modal } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
@@ -58,6 +59,8 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
         if (!util.render_allowed())
             return <SubPage name="wifi_ap" />;
 
+        const wifi_state = API.get("wifi/state");
+
         return (
             <SubPage name="wifi_ap">
                 <ConfigForm id="wifi_ap_config_form"
@@ -67,6 +70,16 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
+
+                    <FormRow label={__("wifi.content.ap_bssid")}>
+                        <InputText
+                            value={wifi_state.ap_bssid.length == 0 ? __("wifi.content.ap_bssid_none") : wifi_state.ap_bssid}
+                            style={wifi_state.ap_bssid.length == 0 ? undefined : "font-family:monospace"}
+                        />
+                    </FormRow>
+
+                    <FormSeparator heading={__("wifi.content.settings_separator")} />
+
                     <FormRow label={__("wifi.content.ap_enable")} help={__("wifi.content.ap_enable_help")}>
                         <InputSelect
                             value={

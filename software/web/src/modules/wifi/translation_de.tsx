@@ -22,6 +22,9 @@ let x = {
         },
         "content": {
             "sta_settings": "WLAN-Verbindung",
+            "sta_mac": "Geräte-MAC-Adresse",
+            "sta_connected_bssid": "Verbundene BSSID",
+            "sta_connected_bssid_none": "Nicht verbunden",
             "sta_enable_sta": "WLAN-Verbindung aktiviert",
             "sta_enable_sta_desc": <>{__("The_device")} verbindet sich beim Start automatisch zum konfigurierten Netzwerk.</>,
             "sta_ssid": "Netzwerkname (SSID)",
@@ -35,6 +38,8 @@ let x = {
             "sta_passphrase": "Passphrase",
 
             "ap_settings": "WLAN-Access-Point",
+            "ap_bssid": "BSSID",
+            "ap_bssid_none": "Access-Point nicht aktiv",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>
@@ -74,7 +79,9 @@ let x = {
             "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
                 return <a href="#certs">{is_key ? "Schlüssel" : "Zertifikat"} hinzufügen</a>
             } /*NF*/,
-            "optional": "optional"
+            "optional": "optional",
+
+            "settings_separator": "Einstellungen"
         },
         "script": {
             "scan_wifi_init_failed": "Suche nach Netzwerken fehlgeschlagen. Konnte Scan nicht starten.",

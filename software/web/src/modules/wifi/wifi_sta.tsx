@@ -26,6 +26,7 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -346,6 +347,8 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         if (!util.render_allowed())
             return <SubPage name="wifi_sta" />;
 
+        const wifi_state = API.get("wifi/state");
+
         return (
             <SubPage name="wifi_sta">
                 <ConfigForm id="wifi_sta_config_form"
@@ -355,6 +358,23 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
+
+                    <FormRow label={__("wifi.content.sta_mac")}>
+                        <InputText
+                            value={wifi_state.sta_mac}
+                            style="font-family:monospace"
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("wifi.content.sta_connected_bssid")}>
+                        <InputText
+                            value={wifi_state.sta_bssid.length == 0 ? __("wifi.content.sta_connected_bssid_none") : wifi_state.sta_bssid}
+                            style={wifi_state.sta_bssid.length == 0 ? undefined : "font-family:monospace"}
+                        />
+                    </FormRow>
+
+                    <FormSeparator heading={__("wifi.content.settings_separator")} />
+
                     <FormRow label={__("wifi.content.sta_enable_sta")}>
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}
                                 checked={state.enable_sta}
@@ -378,6 +398,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                    value={this.bssid_to_string(state.bssid)}
                                    onValue={(v) => this.setState({bssid: this.string_to_bssid(v)})}
                                    invalidFeedback={__("wifi.content.sta_bssid_invalid")}
+                                   style="font-family:monospace"
                                    />
                     </FormRow>
 
