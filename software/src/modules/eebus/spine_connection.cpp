@@ -34,6 +34,10 @@ SpineConnection::SpineConnection(ShipConnection *ship_conn)
         },
         60_s);
 }
+SpineConnection::~SpineConnection()
+{
+    task_scheduler.cancel(ack_check_timer);
+}
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
     eebus.trace_fmtln("SPINE: Processing datagram:");
@@ -161,6 +165,8 @@ bool SpineConnection::validate_header(HeaderType &header)
 }
 void SpineConnection::check_ack_expired()
 {
+    if (ack_waiting.empty())
+        return;
     for (const auto &[key, value] : ack_waiting) {
         if (millis() - value > 60000) { //30 seconds timeout
             eebus.trace_fmtln("SPINE: WARNING: Acknowledgement for message counter %d not received within 30 seconds", key);

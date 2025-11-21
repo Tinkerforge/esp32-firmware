@@ -105,6 +105,14 @@ public:
     }
 
     /**
+     * Sends a full read to the given receiver for the given feature and function. Make sure the feature can handle the response.
+     * @param sending_feature
+     * @param receiver
+     * @param function
+     */
+    void send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const;
+
+    /**
      * \brief Handles a message for a usecase.
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call
@@ -118,6 +126,8 @@ public:
      * @return The UseCaseInformationDataType that contains the information about the usecase.
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
+
+
 
     [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
     [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
@@ -212,7 +222,6 @@ private:
     */
     CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
-    void send_detailed_discovery_read(FeatureAddressType &target) const;
 };
 
 /**
@@ -692,6 +701,7 @@ private:
     bool heartbeatEnabled = false;
     uint64_t heartbeatCounter = 0;
     uint64_t heartbeat_timeout_task = 0;
+    void broadcast_heartbeat();
     void handle_heartbeat_timeout();
     bool heartbeat_received = false;
 
@@ -905,4 +915,5 @@ time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
 
 String unix_to_iso_timestamp(time_t unix_time);
 
+String spine_address_to_string(const FeatureAddressType &address);
 } // namespace EEBUS_USECASE_HELPERS
