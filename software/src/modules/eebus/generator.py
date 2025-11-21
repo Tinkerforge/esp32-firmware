@@ -529,7 +529,7 @@ def process_complex_type(complex_type):
 
         new_type.to_json_code += "\n\treturn true;\n}\n"
 
-        
+
 
         new_type.from_json_code += "\n}\n"
         cpp_datatypes.append(new_type)
@@ -711,9 +711,9 @@ class SpineDataTypeHandler {{
         Function last_cmd;
         
         Type type_from_function(Function function);
-        Function function_from_string(const String function_name);
+        static Function function_from_string(const String function_name);
         Function handle_cmd(JsonObjectConst obj);
-        String function_to_string(Function function);
+        static String function_to_string(Function function);
         void last_cmd_to_json(JsonVariant &dst);
         void reset();
 }};
