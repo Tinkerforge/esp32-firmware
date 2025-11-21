@@ -30,6 +30,21 @@
 #include <regex>
 #include <utility>
 
+void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const
+{
+    String function_name = SpineDataTypeHandler::function_to_string(function);
+    FeatureAddressType sender{};
+    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    sender.entity = this->entity_address;
+    sender.feature = sending_feature;
+    eebus.trace_fmtln("%s sent read of %s to target device %s", EEBUS_USECASE_HELPERS::spine_address_to_string(sender).c_str(), function_name.c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(receiver).c_str());
+    ElementTagType data{};
+    BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
+    JsonObject dst = message.to<JsonObject>();
+    JsonObject func = dst.createNestedObject(function_name);
+    eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
+}
+
 bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
 {
     for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
@@ -71,7 +86,8 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
             switch (header.cmdClassifier.get()) {
                 case CmdClassifierType::read:
                     response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
-                    send_detailed_discovery_read(header.addressSource.get());
+                    send_full_read(FeatureAddresses::nodemgmt_feature_address, header.addressSource.get(), SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
+                    //send_detailed_discovery_read(header.addressSource.get());
                     return CmdClassifierType::reply;
                 case CmdClassifierType::reply:
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
@@ -169,11 +185,11 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
         }
         NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
         SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
-        //TODO: Implement and check trust level of the client
         entry.clientAddress = request.subscriptionRequest->clientAddress;
         entry.serverAddress = request.subscriptionRequest->serverAddress;
         subscription_data.subscriptionEntry->push_back(entry);
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Subscription request was successful");
+        logger.printfln("%s successfully subscribed to %s. Featuretype: %s", EEBUS_USECASE_HELPERS::spine_address_to_string(entry.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(entry.serverAddress.get()).c_str(), convertToString(request.subscriptionRequest->serverFeatureType.get()).c_str());
         return CmdClassifierType::result;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
@@ -328,20 +344,6 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
     }
 
     return CmdClassifierType::EnumUndefined;
-}
-
-void NodeManagementEntity::send_detailed_discovery_read(FeatureAddressType &target) const
-{
-    eebus.trace_fmtln("Reading detailed discovery data from NodeManagementEntity for target device %s", target.device.get().c_str());
-    NodeManagementDetailedDiscoveryDataType detailed_data{};
-    BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
-    JsonObject dst = message.to<JsonObject>();
-    dst["nodeManagementDetailedDiscoveryData"] = detailed_data;
-    FeatureAddressType sender{};
-    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    sender.entity = this->entity_address;
-    sender.feature = nodemgmt_feature_address;
-    usecase_interface->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
@@ -1627,23 +1629,7 @@ LpcUsecase::LpcUsecase()
             // Initialize DeviceDiagnosis feature
             task_scheduler.scheduleUncancelable(
                 [this]() {
-                    if constexpr (EEBUS_LPC_AWAIT_HEARTBEAT) {
-                        return;
-                    }
-                    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-                    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-                    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-                    outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes() * 60);
-
-                    eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
-                    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-                    if (eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_device_diagnosis, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
-                        heartbeatCounter++;
-                    }
-                    if (!heartbeat_received) {
-                        handle_heartbeat_timeout();
-                    }
-                    heartbeat_received = false;
+                    broadcast_heartbeat();
                 },
                 120_s,
                 60_s);
@@ -1948,7 +1934,7 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
 CmdClassifierType LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
+        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
             response["deviceConfigurationKeyValueDescriptionListData"] = device_configuration_key_value_description_list;
             return CmdClassifierType::reply;
         }
@@ -1990,10 +1976,10 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
                     FeatureAddressType read_source{};
                     read_source.feature = FeatureAddresses::lpc_device_diagnosis;
                     read_source.entity = entity_address;
-                    eebus.usecases->send_spine_message(read_destination, read_source, read_heartbeat, CmdClassifierType::read, "deviceDiagnosisHeartbeatData",false);
+                    eebus.usecases->send_spine_message(read_destination, read_source, read_heartbeat, CmdClassifierType::read, "deviceDiagnosisHeartbeatData", false);
                 },
-                100_ms);
-            if (heartbeat_timeout_task) {
+                0_ms);
+            if (!heartbeat_timeout_task) {
                 heartbeat_timeout_task = task_scheduler.scheduleOnce(
                     [this]() {
                         this->handle_heartbeat_timeout();
@@ -2016,7 +2002,7 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
                     subscription_request_destination.feature = 0;
                     FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
 
-                    eebus.usecases->send_spine_message(subscription_request_destination,subscription_request_source, subscription_request_call, CmdClassifierType::call, "subscriptionRequestCall");
+                    eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, subscription_request_call, CmdClassifierType::call, "subscriptionRequestCall");
                 },
                 200_ms);
             heartbeatEnabled = true;
@@ -2154,6 +2140,26 @@ void LpcUsecase::update_api()
     //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
 }
 
+void LpcUsecase::broadcast_heartbeat()
+{
+    if constexpr (!EEBUS_LPC_AWAIT_HEARTBEAT) {
+        return;
+    }
+    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
+    outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(rtc.timestamp_minutes() * 60).c_str();
+
+    eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
+    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+    if (eebus.usecases->inform_subscribers(this->entity_address, FeatureAddresses::lpc_device_diagnosis, outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
+        heartbeatCounter++;
+    }
+    if (!heartbeat_received) {
+        handle_heartbeat_timeout();
+    }
+    heartbeat_received = false;
+}
 void LpcUsecase::handle_heartbeat_timeout()
 {
     if (heartbeat_received || !EEBUS_LPC_AWAIT_HEARTBEAT)
@@ -2642,5 +2648,33 @@ String unix_to_iso_timestamp(time_t unix_time)
     char buf[OCPP_ISO_8601_MAX_LEN];
     strftime(buf, OCPP_ISO_8601_MAX_LEN, "%FT%TZ", &t);
     return buf;
+}
+String spine_address_to_string(const FeatureAddressType &address)
+{
+    std::string out;
+    if (address.device.has_value()) {
+        out += address.device.get();
+    }
+    if (address.entity.has_value()) {
+        if (!out.empty()) {
+            out += "/";
+        }
+        out += "[";
+        const auto &entities = address.entity.get();
+        for (size_t i = 0; i < entities.size(); ++i) {
+            out += std::to_string(entities[i]);
+            if (i + 1 < entities.size()) {
+                out += ",";
+            }
+        }
+        out += "]";
+    }
+    if (address.feature.has_value()) {
+        if (!out.empty()) {
+            out += "/";
+        }
+        out += std::to_string(address.feature.get());
+    }
+    return String(out.c_str());
 }
 } // namespace EEBUS_USECASE_HELPERS

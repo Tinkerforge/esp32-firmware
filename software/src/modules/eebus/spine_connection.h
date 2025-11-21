@@ -39,6 +39,7 @@ public:
     ShipConnection *ship_connection = nullptr;
 
     explicit SpineConnection(ShipConnection *ship_connection);
+    ~SpineConnection();
 
     // Disallow copying of SpineConnection
     SpineConnection(const SpineConnection &other) = delete;
