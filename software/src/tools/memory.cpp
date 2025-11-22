@@ -19,6 +19,8 @@
 
 #include "memory.h"
 
+#include <stdint.h>
+
 #include "header_logger.h"
 
 // The memory areas can't be checked with static asserts at compile time
@@ -32,4 +34,7 @@ void check_memory_assumptions()
     if (&_rodata_end > &_heap_start       ) header_printfln("memory_tools", "_rodata_end after _heap_start");
     if (&_rodata_end > &_iram_start       ) header_printfln("memory_tools", "_rodata_end after _iram_start");
     if (&_rodata_end > &_text_start       ) header_printfln("memory_tools", "_rodata_end after _text_start");
+
+    if (reinterpret_cast<uintptr_t>(&_rodata_start) >> 24 != 0x3F) header_printfln("memory_tools", "_rodata_start highest byte is not 0x3F. This will break ConfObject schemas!");
+    if (reinterpret_cast<uintptr_t>(&_rodata_end)   >> 24 != 0x3F) header_printfln("memory_tools", "_rodata_end highest byte is not 0x3F. This will break ConfObject schemas!");
 }

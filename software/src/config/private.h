@@ -71,8 +71,21 @@ struct ConfArraySlot {
 
 struct ConfObjectSchema {
     struct Key {
-        size_t length;
-        const char *val;
+        // check_memory_assumptions checks that this is safe.
+        // The ConfObject constructor enforces that keys are in rodata.
+        [[gnu::always_inline]] const char *get_val() const {
+            asm("" : : "r" (ptr));
+            return reinterpret_cast<const char *>(0x3F000000 | (reinterpret_cast<uintptr_t>(ptr) & 0x00FFFFFF));
+        }
+        [[gnu::always_inline]] size_t get_length() const {
+            asm("" : : "r" (ptr));
+            return reinterpret_cast<uintptr_t>(ptr) >> 24;
+        }
+        [[gnu::always_inline]] void set(size_t len, const char *key) {
+            ptr = reinterpret_cast<const char *>(len << 24 | (reinterpret_cast<uintptr_t>(key) & 0x00FFFFFF));
+        }
+    private:
+        const char *ptr;
     };
     size_t length;
     Key keys[];

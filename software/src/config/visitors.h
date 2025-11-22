@@ -178,7 +178,7 @@ struct default_validator {
             String err = Config::apply_visitor(default_validator{}, x.getSlot()->values[i].value);
 
             if (!err.isEmpty())
-                return String("[\"") + x.getSlot()->schema->keys[i].val + "\"] " + err;
+                return String("[\"") + x.getSlot()->schema->keys[i].get_val() + "\"] " + err;
         }
 
         return "";
@@ -290,7 +290,7 @@ struct to_json {
 
         JsonObject obj = insertHere.as<JsonObject>();
         for (size_t i = 0; i < size; ++i) {
-            const char *key = schema->keys[i].val;
+            const char *key = schema->keys[i].get_val();
             const Config &child = slot->values[i];
 
             bool censored = false;
@@ -474,7 +474,7 @@ struct max_string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
-            sum += schema->keys[i].length + 3; // "":
+            sum += schema->keys[i].get_length() + 3; // "":
             sum += Config::apply_visitor(max_string_length_visitor{}, slot->values[i].value);
         }
         sum += size - 1; // ,
@@ -589,7 +589,7 @@ struct string_length_visitor {
 
         size_t sum = 2; // { and }
         for (size_t i = 0; i < size; ++i) {
-            sum += schema->keys[i].length + 3; // "":
+            sum += schema->keys[i].get_length() + 3; // "":
             sum += Config::apply_visitor(string_length_visitor{}, slot->values[i].value);
         }
         sum += size - 1; // ,
@@ -687,7 +687,7 @@ struct json_length_visitor {
         size_t sum = 0;
         for (size_t i = 0; i < size; ++i) {
             if (!zero_copy)
-                sum += schema->keys[i].length + 1;
+                sum += schema->keys[i].get_length() + 1;
 
             sum += Config::apply_visitor(json_length_visitor{zero_copy}, slot->values[i].value);
         }
@@ -954,10 +954,10 @@ struct from_json {
             // Try to use the non-object as value for the single member.
             // This allows calling for example evse/external_current_update with the payload 8000 instead of {"current": 8000}
             // Only allow this if the omitted key is not the confirm key.
-            if (!json_node.is<JsonObject>() && is_root && size == 1 && Config::ConfirmKey() != schema->keys[0].val) {
+            if (!json_node.is<JsonObject>() && is_root && size == 1 && Config::ConfirmKey() != schema->keys[0].get_val()) {
                 auto res =  Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->values[0].value);
                 if (!res.message.isEmpty())
-                    return {String("(inferred) [\"") + schema->keys[0].val + "\"] " + res.message + "\n", false};
+                    return {String("(inferred) [\"") + schema->keys[0].get_val() + "\"] " + res.message + "\n", false};
                 else {
                     x.getSlot()->values[0].set_updated(res.changed ? 0xFF : 0);
                     return res;
@@ -978,7 +978,7 @@ struct from_json {
         for (size_t i = 0; i < size; ++i) {
             // Don't cache x.getSlot(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
             const auto *slot = x.getSlot();
-            const auto *key = slot->schema->keys[i].val;
+            const auto *key = slot->schema->keys[i].get_val();
 
             if (!obj.containsKey(key)) {
                 if (!force_same_keys)
@@ -1401,7 +1401,7 @@ struct from_update {
         for (size_t i = 0; i < size; ++i) {
             size_t obj_idx = 0xFFFFFFFF;
             // Don't cache x.getSlot(): The recursive visitor can reallocate slot buffers which invalidates the returned pointer!
-            const char *key = x.getSlot()->schema->keys[i].val;
+            const char *key = x.getSlot()->schema->keys[i].get_val();
             Config &value = x.getSlot()->values[i];
             for (size_t j = 0; j < size; ++j) {
                 if (obj_elements[j].first != key)
@@ -1745,7 +1745,7 @@ struct api_info {
                 sw.printf(",");
             }
             first = false;
-            sw.printf("{\"key\":\"%.*s\",\"value\":", static_cast<int>(slot->schema->keys[i].length), slot->schema->keys[i].val);
+            sw.printf("{\"key\":\"%.*s\",\"value\":", static_cast<int>(slot->schema->keys[i].get_length()), slot->schema->keys[i].get_val());
             Config::apply_visitor(api_info{sw}, slot->values[i].value);
             sw.printf("}");
         }
