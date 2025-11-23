@@ -145,7 +145,7 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
     if (!err.isEmpty())
         return err;
 
-    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
+    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
 
     if (validator_ != nullptr) {
         err = (*validator_)(*out_config, source);
@@ -177,7 +177,7 @@ String ConfigRoot::update(const Config::ConfUpdate *val)
 String ConfigRoot::validate(ConfigSource source)
 {
     ASSERT_MAIN_THREAD();
-    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
+    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
 
     if (validator_ != nullptr) {
         return (*validator_)(*this, source);
@@ -195,14 +195,14 @@ void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
     // Store permit_null_updates == true as 0 and == false as 1
     // so that the default value is permitted.
     if (permit_null_updates)
-        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
+        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
     else
-        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) | 0x01u);
+        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) | 0x01u);
 }
 
 bool ConfigRoot::get_permit_null_updates() {
     // Inverted; see set_permit_null_updates.
-    return (reinterpret_cast<std::uintptr_t>(this->validator) & 0x01) == 0;
+    return (reinterpret_cast<uintptr_t>(this->validator) & 0x01) == 0;
 }
 
 #ifdef DEBUG_FS_ENABLE
