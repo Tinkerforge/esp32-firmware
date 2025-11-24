@@ -896,7 +896,7 @@ String get_result_error_number_string(int error_number);
 * @param error_number The error number to set in the result data. Default is NoError.
 * @param description The description of the error set in the result data. Default is an empty string.
 */
-void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
+void build_result_data(const JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
 
 /**
  * Converts a duration in seconds to an ISO 8601 duration string. Will be automatically converted to full minutes or hours if possible.
@@ -909,7 +909,7 @@ std::string iso_duration_to_string(seconds_t duration);
  * @param iso_duration The ISO 8601 duration string
  * @return The duration in seconds.
  */
-seconds_t iso_duration_to_seconds(std::string iso_duration);
+seconds_t iso_duration_to_seconds(const std::string& iso_duration);
 
 time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
 
