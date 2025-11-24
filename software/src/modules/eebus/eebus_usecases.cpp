@@ -41,7 +41,7 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     ElementTagType data{};
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(256);
     JsonObject dst = message.to<JsonObject>();
-    JsonObject func = dst.createNestedObject(function_name);
+    dst.createNestedObject(function_name);
     eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
 
@@ -93,9 +93,12 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
                     task_scheduler.scheduleOnce(
                         [this, header]() {
-                            EEBusUseCases::get_spine_connection(header.addressSource.get())->eebus_active(true);
+                            auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get());
+                            if (conn) {
+                                conn->eebus_active(true);
+                            }
                         },
-                        5_s);
+                        0_s);
 
                     return CmdClassifierType::reply;
                 default:
@@ -2563,7 +2566,7 @@ String get_result_error_number_string(const int error_number)
     return "UnknownError";
 }
 
-void build_result_data(JsonObject &response, ResultErrorNumber error_number, const char *description)
+void build_result_data(const JsonObject &response, ResultErrorNumber error_number, const char *description)
 {
     if (error_number != ResultErrorNumber::NoError) {
         eebus.trace_fmtln("Usecases: Building result data with error number %s and description: %s", get_result_error_number_string(static_cast<int>(error_number)).c_str(), description);
@@ -2589,7 +2592,7 @@ std::string iso_duration_to_string(seconds_t duration)
     return "PT" + std::to_string(duration_uint) + unit;
 }
 
-seconds_t iso_duration_to_seconds(std::string iso_duration)
+seconds_t iso_duration_to_seconds(const std::string& iso_duration)
 {
     int64_t duration_seconds = 0;
     size_t p_pos = iso_duration.find('P');
@@ -2615,8 +2618,7 @@ seconds_t iso_duration_to_seconds(std::string iso_duration)
     std::regex second_part_regex("([0-9]+[HMS])");
 
     std::sregex_iterator second_it(after_t.begin(), after_t.end(), second_part_regex);
-    std::sregex_iterator second_end;
-    for (; second_it != second_end; ++second_it) {
+    for (std::sregex_iterator second_end; second_it != second_end; ++second_it) {
         std::string match = second_it->str();
         int value = std::stoi(match.substr(0, match.size() - 1));
         char unit = match.back();
@@ -2643,7 +2645,7 @@ time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t)
 
 String unix_to_iso_timestamp(time_t unix_time)
 {
-    tm t;
+    tm t{};
     gmtime_r(&unix_time, &t);
     char buf[OCPP_ISO_8601_MAX_LEN];
     strftime(buf, OCPP_ISO_8601_MAX_LEN, "%FT%TZ", &t);
@@ -2675,6 +2677,6 @@ String spine_address_to_string(const FeatureAddressType &address)
         }
         out += std::to_string(address.feature.get());
     }
-    return String(out.c_str());
+    return {out.c_str()};
 }
 } // namespace EEBUS_USECASE_HELPERS
