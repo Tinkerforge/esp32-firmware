@@ -34,6 +34,7 @@
 #define CHARGE_TRACKER_MAX_REPAIR 200
 struct RemoteUploadRequest;
 class ChargeLogGenerationLockHelper;
+struct ChargeWithLocation;
 
 class ChargeTracker final : public IModule
 {
@@ -82,6 +83,7 @@ private:
     bool repair_last(float);
     void repair_charges();
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
+    std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
 
     Config last_charges_prototype;
     Config current_charge_prototype;
@@ -152,6 +154,25 @@ class ChargeLogGenerationLockHelper {
         ~ChargeLogGenerationLockHelper();
     private:
         static std::atomic<GenerationState> generation_lock_state;
+};
+
+struct ChargeWithLocation {
+    ChargeStart cs;
+    ChargeEnd ce;
+    String directory;
+    uint32_t file_index;
+    uint32_t prev_known_timestamp_minutes;
+
+    bool operator>(const ChargeWithLocation &other) const {
+        uint32_t this_timestamp = cs.timestamp_minutes != 0 ? cs.timestamp_minutes : prev_known_timestamp_minutes;
+        uint32_t other_timestamp = other.cs.timestamp_minutes != 0 ? other.cs.timestamp_minutes : other.prev_known_timestamp_minutes;
+
+        if (this_timestamp == 0 && other_timestamp == 0) {
+            return false;
+        }
+
+        return this_timestamp > other_timestamp; // Sort ascending (oldest first)
+    }
 };
 
 #include "module_available_end.h"
