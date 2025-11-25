@@ -23,10 +23,12 @@
 #include <esp_system.h>
 #include <esp_task.h>
 #include <esp_flash.h>
+#include <esp_flash_internal.h>
 #include <LittleFS.h>
 #include <lwipopts.h>
 #include <soc/rtc.h>
 #include <soc/spi_reg.h>
+#include <spi_flash_chip_driver.h>
 #include <freertos/task.h>
 
 // lwip_socket_dbg_get_socket() in sockets_priv.h is not declared extern "C".
@@ -41,6 +43,10 @@ extern "C" {
 #include "tools/string_builder.h"
 #include "tools/memory.h"
 #include "tools/fs.h"
+
+#ifdef DEBUG_FS_ENABLE
+#include "embedded_bootloader.embedded.h"
+#endif
 
 #include "gcc_warnings.h"
 
@@ -502,6 +508,126 @@ static WebServerRequestReturnProtect browse_method_switch(WebServerRequest &requ
     }
 }
 #pragma GCC diagnostic pop
+
+enum class BootloaderAccess {
+    VerifyOnly,
+    WriteVerify,
+};
+
+static constexpr uint32_t BOOTLOADER_ADDRESS = 0x1000;
+static constexpr uint32_t BOOTLOADER_SIZE    = 0x7000;
+
+[[gnu::noinline]]
+static esp_err_t write_and_verify_bootloader(BootloaderAccess access_type, bool force_write = false)
+{
+    if (embedded_bootloader_length == 0) {
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+
+    bool flash_protected = false;
+    esp_err_t read_protect_err = esp_flash_get_chip_write_protect(esp_flash_default_chip, &flash_protected);
+
+    if (read_protect_err != ESP_OK) {
+        logger.printfln("esp_flash_get_chip_write_protect failed: %s (0x%04X)", esp_err_to_name(read_protect_err), static_cast<unsigned>(read_protect_err));
+        return read_protect_err;
+    }
+
+    uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(embedded_bootloader_length, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+
+    if (buf == nullptr) {
+        return ESP_ERR_NO_MEM;
+    }
+
+    // Use unique_ptr to auto-free buffer.
+    std::unique_ptr<uint8_t> buf_u{buf};
+
+    uint32_t attempts = 0;
+    uint32_t delay_ms = 0;
+
+    while (attempts < 10) {
+        // Delay between write and verify to possibly avoid unstable writes.
+        if (delay_ms == 0) {
+            delay_ms = 1;
+        } else {
+            vTaskDelay_ms(delay_ms);
+            delay_ms += 50;
+        }
+
+        if (access_type == BootloaderAccess::VerifyOnly || !force_write) {
+            const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, embedded_bootloader_length);
+
+            if (err != ESP_OK) {
+                return err;
+            }
+
+            const int result = memcmp(embedded_bootloader_data, buf, embedded_bootloader_length);
+
+            if (result == 0) { // Match
+                if (access_type == BootloaderAccess::WriteVerify && attempts == 0) {
+                    return ESP_ERR_INVALID_STATE;
+                }
+                return ESP_OK;
+            }
+
+            if (access_type == BootloaderAccess::VerifyOnly) {
+                return ESP_FAIL;
+            }
+        }
+
+        attempts++;
+
+        if (flash_protected) {
+            esp_err_t write_protect_err = esp_flash_set_chip_write_protect(esp_flash_default_chip, false);
+
+            if (write_protect_err != ESP_OK) {
+                logger.printfln("esp_flash_set_chip_write_protect failed to unlock chip: %s (0x%04X)", esp_err_to_name(write_protect_err), static_cast<unsigned>(write_protect_err));
+                return write_protect_err;
+            }
+        }
+
+        memcpy(buf, embedded_bootloader_data, embedded_bootloader_length);
+
+        esp_flash_set_dangerous_write_protection(esp_flash_default_chip, false);
+
+        const micros_t t_start = now_us();
+
+        const esp_err_t err_erase = esp_flash_erase_region(esp_flash_default_chip, BOOTLOADER_ADDRESS, BOOTLOADER_SIZE);
+
+        if (err_erase != ESP_OK) {
+            logger.printfln("Bootloader erase failed: %s (0x%04X)", esp_err_to_name(err_erase), static_cast<unsigned>(err_erase));
+            continue;
+        }
+
+        const micros_t t_mid = now_us();
+
+        const esp_err_t err_write = esp_flash_write(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, embedded_bootloader_length);
+
+        if (err_write != ESP_OK) {
+            logger.printfln("Bootloader write failed: %s (0x%04X)", esp_err_to_name(err_write), static_cast<unsigned>(err_write));
+            continue;
+        }
+
+        const micros_t t_end = now_us();
+
+        esp_flash_set_dangerous_write_protection(esp_flash_default_chip, true);
+
+        if (flash_protected) {
+            esp_err_t write_protect_err = esp_flash_set_chip_write_protect(esp_flash_default_chip, true);
+
+            if (write_protect_err != ESP_OK) {
+                logger.printfln("esp_flash_set_chip_write_protect failed to lock chip: %s (0x%04X) (ignoring)", esp_err_to_name(write_protect_err), static_cast<unsigned>(write_protect_err));
+            }
+        } else {
+            logger.printfln("Not locking flash chip");
+        }
+
+        logger.printfln("Bootloader erase %lums, write %lums", (t_mid - t_start).as<uint32_t>() / 1000, (t_end - t_mid  ).as<uint32_t>() / 1000);
+
+        return ESP_OK;
+    };
+
+    return ESP_ERR_NOT_FINISHED;
+}
 #endif
 
 extern Arena dram_arena;
@@ -559,6 +685,62 @@ void Debug::register_urls()
 
     server.on_HTTPThread("/debug/fs", static_cast<httpd_method_t>(HTTP_ANY), [this](WebServerRequest request) {
         return browse_method_switch(request, "/");
+    });
+
+    server.on_HTTPThread("/debug/bootloader", HTTP_GET, [](WebServerRequest req) {
+        uint8_t *buf = static_cast<uint8_t *>(heap_caps_malloc_prefer(BOOTLOADER_SIZE, 1, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+
+        if (buf == nullptr) {
+            return req.send_plain(500, "No memory");
+        }
+
+        // Use unique_ptr to auto-free buffer.
+        std::unique_ptr<uint8_t> buf_u{buf};
+
+        const esp_err_t err = esp_flash_read(esp_flash_default_chip, buf, BOOTLOADER_ADDRESS, BOOTLOADER_SIZE);
+
+        if (err != ESP_OK) {
+            logger.printfln("esp_flash_read_failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+            return req.send_plain(500, "esp_flash_read failed");
+        }
+
+        return req.send_bytes(200, reinterpret_cast<const char *>(buf), BOOTLOADER_SIZE);
+    });
+
+    server.on_HTTPThread("/debug/bootloader_check", HTTP_GET, [](WebServerRequest req) {
+        const esp_err_t err = write_and_verify_bootloader(BootloaderAccess::VerifyOnly);
+
+        if (err == ESP_ERR_NOT_SUPPORTED) {
+            return req.send_plain(500, "No embedded bootloader");
+        }
+        if (err == ESP_OK) {
+            return req.send_bytes(200, "Bootloader match");
+        }
+        if (err == ESP_FAIL) {
+            return req.send_bytes(200, "Bootloader mismatch");
+        }
+
+        char msg[128];
+        const size_t len = snprintf_u(msg, std::size(msg), "Check failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+        return req.send_plain(500, msg, len);
+    });
+
+    server.on_HTTPThread("/debug/bootloader_write", HTTP_GET, [](WebServerRequest req) {
+        const esp_err_t err = write_and_verify_bootloader(BootloaderAccess::WriteVerify);
+
+        if (err == ESP_ERR_NOT_SUPPORTED) {
+            return req.send_plain(500, "No embedded bootloader");
+        }
+        if (err == ESP_ERR_INVALID_STATE) {
+            return req.send_bytes(200, "Bootloader already up to date");
+        }
+        if (err == ESP_OK) {
+            return req.send_bytes(200, "Bootloader update OK");
+        }
+
+        char msg[128];
+        const size_t len = snprintf_u(msg, std::size(msg), "Write failed: %s (0x%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+        return req.send_plain(500, msg, len);
     });
 #endif
 }
