@@ -14,6 +14,7 @@ import json
 import collections
 from dataclasses import dataclass, InitVar, field
 from collections.abc import Callable
+from pathlib import Path
 
 import tinkerforge_util as tfutil
 
@@ -151,6 +152,8 @@ def remove_digest(dst_dir, var_name, env=None):
 
 def store_digest(digest, dst_dir, var_name, env=None):
     for digest_path in get_digest_paths(dst_dir, var_name, env=env):
+        Path(digest_path).parent.mkdir(exist_ok=True)
+
         with open(digest_path + '.tmp', 'w', encoding='utf-8') as f:
             f.write(digest)
 
