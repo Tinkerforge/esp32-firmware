@@ -952,7 +952,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     // Update authorization state based on charger state
     CASAuthState auth_state = CASAuthState::None;
     if (charger.charger_state != 0) { // If a car is connected
-        auth_state = charger.authorized ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
+        auth_state = charger.authenticated_user_id != 0 ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
     }
     charger_cfg->get("a")->updateEnum(auth_state);
 
