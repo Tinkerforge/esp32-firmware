@@ -37,6 +37,6 @@ struct SemanticVersion {
     };
 
     bool from_string(const char *buf, Format format = Format::WithTimestamp);
-    int to_string(char *buf, size_t len) const;
+    size_t to_string(char *buf, size_t len) const;
     int compare(const SemanticVersion &other) const;
 };

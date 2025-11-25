@@ -19,8 +19,9 @@
 
 #include "semantic_version.h"
 
-#include <stdio.h>
 #include <string.h>
+
+#include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
 
@@ -89,22 +90,21 @@ bool SemanticVersion::from_string(const char *buf, Format format)
     return true;
 }
 
-int SemanticVersion::to_string(char *buf, size_t len) const
+size_t SemanticVersion::to_string(char *buf, size_t len) const
 {
+    StringWriter sw{buf, len};
+
+    sw.printf("%hhu.%hhu.%hhu", major, minor, patch);
+
+    if (beta != 255) {
+        sw.printf("-beta.%hhu", beta);
+    }
+
     if (timestamp != UINT32_MAX) {
-        if (beta != 255) {
-            return snprintf(buf, len, "%u.%u.%u-beta.%u+%lx", major, minor, patch, beta, timestamp);
-        }
-        else {
-            return snprintf(buf, len, "%u.%u.%u+%lx", major, minor, patch, timestamp);
-        }
+        sw.printf("+%lx", timestamp);
     }
-    else if (beta != 255) {
-        return snprintf(buf, len, "%u.%u.%u-beta.%u", major, minor, patch, beta);
-    }
-    else {
-        return snprintf(buf, len, "%u.%u.%u", major, minor, patch);
-    }
+
+    return sw.getLength();
 }
 
 int SemanticVersion::compare(const SemanticVersion &other) const
