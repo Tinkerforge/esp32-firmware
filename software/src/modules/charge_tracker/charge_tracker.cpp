@@ -21,6 +21,7 @@
 
 #include <esp_task.h>
 #include <memory>
+#include <vector>
 #include <LittleFS.h>
 #include <stdlib_noniso.h>
 
@@ -440,7 +441,6 @@ bool ChargeTracker::setupRecords()
     while (File f = folder.openNextFile()) {
         String name{f.name()};
         if (f.isDirectory()) {
-            logger.printfln("Unexpected directory %s in charge record folder", name.c_str());
             continue;
         }
 
@@ -635,27 +635,102 @@ void ChargeTracker::setup()
     api.restorePersistentConfig("charge_tracker/config", &config);
     api.restorePersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
 
-    // Fill charge_tracker/last_charges
-    bool charging = currentlyCharging();
-    size_t records_in_last_file = completeRecordsInLastFile();
-
-    const String penultimate_file_name = chargeRecordFilename(this->last_charge_record - 1, nullptr);
-    if (records_in_last_file < CHARGE_RECORD_LAST_CHARGES_SIZE && file_exists(LittleFS, penultimate_file_name)) {
-        size_t records_to_read = CHARGE_RECORD_LAST_CHARGES_SIZE - records_in_last_file;
-        File f = LittleFS.open(penultimate_file_name);
-        f.seek(-(records_to_read * CHARGE_RECORD_SIZE), SeekMode::SeekEnd);
-
-        this->readNRecords(&f, records_to_read);
-    }
-
-    size_t records_to_read = min(records_in_last_file, (size_t)CHARGE_RECORD_LAST_CHARGES_SIZE);
-    if (records_to_read > 0) {
-        File f = LittleFS.open(last_file_name);
-        f.seek(-(records_to_read * CHARGE_RECORD_SIZE) - (charging ? sizeof(ChargeStart) : 0), SeekMode::SeekEnd);
-        this->readNRecords(&f, records_to_read);
-    }
+    // Note: last_charges is now populated during repair_charges()
 
     updateState();
+}
+
+std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(const char *directory)
+{
+    logger.printfln("Reading last charges from directory: %s", directory ? directory : "root");
+    std::vector<ChargeWithLocation> charges;
+    charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
+
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    uint32_t prev_known_timestamp = 0;
+
+    // Get the range of records for this directory
+    if (directory == nullptr) {
+        first_record = this->first_charge_record;
+        last_record = this->last_charge_record;
+    } else {
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            return charges; // Empty vector if directory doesn't exist or has no records
+        }
+    }
+
+    // Read charges from the last file first (most recent)
+    for (int file_idx = last_record; file_idx >= static_cast<int>(first_record) && charges.size() < CHARGE_RECORD_LAST_CHARGES_SIZE; --file_idx) {
+        File f = LittleFS.open(chargeRecordFilename(file_idx, directory));
+        if (!f) {
+            continue;
+        }
+
+        size_t file_size = f.size();
+        size_t num_records = file_size / CHARGE_RECORD_SIZE;
+
+        // Read from end to beginning of file
+        for (int record_idx = num_records - 1; record_idx >= 0 && charges.size() < CHARGE_RECORD_LAST_CHARGES_SIZE; --record_idx) {
+            f.seek(record_idx * CHARGE_RECORD_SIZE);
+
+            uint8_t buf[CHARGE_RECORD_SIZE];
+            size_t bytes_read = f.read(buf, CHARGE_RECORD_SIZE);
+
+            if (bytes_read != CHARGE_RECORD_SIZE) {
+                continue;
+            }
+
+            ChargeStart cs;
+            ChargeEnd ce;
+            memcpy(&cs, buf, sizeof(cs));
+            memcpy(&ce, buf + sizeof(cs), sizeof(ce));
+
+            ChargeWithLocation charge;
+            charge.cs = cs;
+            charge.ce = ce;
+            charge.directory = directory ? String(directory) : String("");
+            charge.file_index = file_idx;
+            charge.prev_known_timestamp_minutes = prev_known_timestamp;
+
+            charges.push_back(charge);
+
+            if (cs.timestamp_minutes != 0) {
+                prev_known_timestamp = cs.timestamp_minutes;
+            }
+        }
+
+        f.close();
+    }
+
+    return charges;
+}
+
+static void merge_charge_vectors(std::vector<ChargeWithLocation> &target, std::vector<ChargeWithLocation> &source)
+{
+    logger.printfln("Merging %zu source charges into %zu target charges", source.size(), target.size());
+    if (target.empty()) {
+        target = std::move(source);
+        return;
+    }
+
+    auto target_iter = target.begin();
+    auto source_iter = source.begin();
+
+    for (; target_iter != target.end() && source_iter != source.end(); ) {
+        if (*source_iter > *target_iter) {
+            target_iter = target.insert(target_iter, *source_iter);
+            ++source_iter;
+            ++target_iter;
+        } else {
+            ++target_iter;
+        }
+    }
+
+    // Keep only the newest CHARGE_RECORD_LAST_CHARGES_SIZE entries
+    if (target.size() > CHARGE_RECORD_LAST_CHARGES_SIZE) {
+        target.resize(CHARGE_RECORD_LAST_CHARGES_SIZE);
+    }
 }
 
 bool user_configured(const uint8_t configured_users[MAX_ACTIVE_USERS], uint8_t user_id)
@@ -860,40 +935,112 @@ void ChargeTracker::repair_charges()
     Charge transfer;
     transfer.ce.meter_end = NAN;
 
-    for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
-        bool file_needs_repair = false;
-        memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
+    std::vector<ChargeWithLocation> all_charges;
+    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
 
-        File f = LittleFS.open(chargeRecordFilename(i, nullptr));
-        if (i < this->last_charge_record) {
-            File next_f = LittleFS.open(chargeRecordFilename(i + 1, nullptr));
-            int read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
-            if (read != sizeof(Charge))
-                buf[257].cs.meter_start = NAN;
-        }
-        else
-            buf[257].cs.meter_start = NAN;
+    // Helper lambda to repair charges in a specific directory
+    auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory) {
+        uint32_t first_record = 0;
+        uint32_t last_record = 0;
 
-        int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
-        if (read == -1 || read == 0) {
-            break;
-        }
-
-        for (int a = 1; a < read / sizeof(Charge); a++) {
-            if (repair_logic(&buf[a])) {
-                file_needs_repair = true;
-                num_repaired++;
+        // Get the range of records for this directory
+        if (directory == nullptr) {
+            first_record = this->first_charge_record;
+            last_record = this->last_charge_record;
+        } else {
+            if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+                return; // No records in this directory
             }
         }
-        if (file_needs_repair) {
-            File write_f = LittleFS.open(chargeRecordFilename(i, nullptr), "w");
-            write_f.write(reinterpret_cast<uint8_t *>(&buf[1]), read);
+
+        Charge transfer_local;
+        transfer_local.ce.meter_end = NAN;
+
+        for (uint32_t i = first_record; i <= last_record; ++i) {
+            bool file_needs_repair = false;
+            memset(reinterpret_cast<uint8_t *>(&buf[1]), 0, sizeof(Charge) * 257);
+
+            File f = LittleFS.open(chargeRecordFilename(i, directory));
+            if (i < last_record) {
+                File next_f = LittleFS.open(chargeRecordFilename(i + 1, directory));
+                int read = next_f.read(reinterpret_cast<uint8_t *>(&buf[257]), sizeof(Charge));
+                if (read != sizeof(Charge))
+                    buf[257].cs.meter_start = NAN;
+            }
+            else
+                buf[257].cs.meter_start = NAN;
+
+            int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
+            if (read == -1 || read == 0) {
+                break;
+            }
+
+            for (int a = 1; a < read / sizeof(Charge); a++) {
+                if (repair_logic(&buf[a])) {
+                    file_needs_repair = true;
+                    num_repaired++;
+                }
+            }
+            if (file_needs_repair) {
+                File write_f = LittleFS.open(chargeRecordFilename(i, directory), "w");
+                write_f.write(reinterpret_cast<uint8_t *>(&buf[1]), read);
+            }
+            buf[0] = buf[256];
         }
-        buf[0] = buf[256];
+
+        // After repairing, get last charges from this directory and merge
+        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(directory);
+        merge_charge_vectors(all_charges, dir_charges);
+    };
+
+    // Repair main directory (nullptr)
+    repair_directory(nullptr);
+
+    // Scan all subdirectories
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                // Skip the directory name prefix if present
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+                repair_directory(dirname.c_str());
+            }
+        }
     }
+
     if (num_repaired != 0) {
-        logger.printfln("Repaired %lu charge-entries.", num_repaired);
+        logger.printfln("Repaired %lu charge-entries across all directories.", num_repaired);
     }
+
+    logger.printfln("Collected %u charges during repair from all directories", all_charges.size());
+
+    // Populate last_charges from the collected charges
+    std::lock_guard<std::mutex> lock{records_mutex};
+
+    // Clear existing last_charges
+    while (last_charges.count() > 0) {
+        last_charges.remove(0);
+    }
+
+    // Add charges from the vector (already sorted newest first)
+    size_t charges_to_add = std::min(all_charges.size(), static_cast<size_t>(CHARGE_RECORD_LAST_CHARGES_SIZE));
+    for (int i = static_cast<int>(charges_to_add) - 1; i >= 0; --i) {
+        const auto &charge = all_charges[i];
+
+        auto last_charge = last_charges.add();
+        last_charge->get("timestamp_minutes")->updateUint(charge.cs.timestamp_minutes);
+        last_charge->get("charge_duration")->updateUint(charge.ce.charge_duration);
+        last_charge->get("user_id")->updateUint(charge.cs.user_id);
+
+        float energy_charged = charged_invalid(charge.cs, charge.ce) ? NAN : charge.ce.meter_end - charge.cs.meter_start;
+        last_charge->get("energy_charged")->updateFloat(energy_charged);
+    }
+
+    logger.printfln("Populated last_charges with %u charge(s) from repair", charges_to_add);
 }
 
 void ChargeTracker::register_urls()
