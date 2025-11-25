@@ -19,6 +19,10 @@ void CoolString::make_invalid() {
     this->invalidate();
 }
 
+bool CoolString::is_sso() const {
+    return this->isSSO();
+}
+
 /* Currently broken for SSO strings
 char* CoolString::releaseOwnership(size_t *len) {
     char *p = const_cast<char *>(c_str());

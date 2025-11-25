@@ -13,6 +13,7 @@ public:
     unsigned int getCapacity() const;
     void shrinkToFit();
     void make_invalid();
+    bool is_sso() const;
     //char *releaseOwnership(size_t *len);
 };
 
