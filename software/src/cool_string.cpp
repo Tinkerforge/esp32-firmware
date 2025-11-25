@@ -5,7 +5,7 @@ void CoolString::setLength(int len)
     setLen(len);
 }
 
-unsigned int CoolString::getCapacity()
+unsigned int CoolString::getCapacity() const
 {
     return capacity();
 }

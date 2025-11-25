@@ -10,7 +10,7 @@ public:
     using String::operator=;
 
     void setLength(int len);
-    unsigned int getCapacity();
+    unsigned int getCapacity() const;
     void shrinkToFit();
     void make_invalid();
     //char *releaseOwnership(size_t *len);
