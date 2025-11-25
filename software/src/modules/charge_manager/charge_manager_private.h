@@ -167,8 +167,8 @@ struct ChargerState {
     uint8_t auth_type;
     uint8_t nfc_tag_type;
 
-    // Authorization state: true if authorized to charge, false if blocked by authorization
-    bool authorized;
+    // Authorization state: user_id of the authorized user (0 if not authorized)
+    uint8_t authenticated_user_id;
 };
 
 struct ChargerAllocationState {

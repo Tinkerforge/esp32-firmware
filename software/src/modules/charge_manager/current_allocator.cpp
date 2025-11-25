@@ -91,16 +91,17 @@ static inline bool micros_in_range(micros_t ts, micros_t center, micros_t tolera
 }
 
 // Check if the charger is authorized based on NFC tag information.
-static inline bool charger_authorized(ChargerState &state) {
+// Returns the user_id of the authorized user (0 if not authorized)
+static inline uint8_t charger_authorized(ChargerState &state) {
 #if MODULE_NFC_AVAILABLE()
     // Check if authorization is required
     const Config *user_slot = (const Config *)api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
     if (!user_slot->get("active")->asBool()) {
-        return true;
+        return 1; // Return 1 to indicate authorized when authorization is not required
     }
 
     if (!micros_in_range(state.nfc_last_seen, now_us(), 30_s)) {
-        return false;
+        return 0;
     }
 
     // Check if the NFC tag is authorized by comparing against local NFC config
@@ -114,11 +115,13 @@ static inline bool charger_authorized(ChargerState &state) {
     uint8_t tag_idx = 0;
     uint8_t user_id = nfc.get_user_id(&tag_info, &tag_idx);
 
-    return user_id != 0;
+    logger.printfln("user id from nfc: %u", user_id);
+
+    return user_id;
 #else
     // If NFC module is not available but auth_type indicates NFC was used,
     // we should authorize to avoid blocking charges (fail-open behavior)
-    return true;
+    return 1; // Return 1 to indicate authorized
 #endif
 }
 
@@ -173,11 +176,12 @@ bool update_from_client_packet(
 
         // If the charger is currently charging when first seen, end that charge
         // since we don't know when it started
-        if (charge_tracker.currentlyCharging(uid_str)) {
+        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
+        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
             charge_tracker.endCharge(
                 0, // Unknown duration
                 v1->energy_abs,
-                uid_str);
+                 is_local_charger ? nullptr : uid_str);
 
             // Update tracked charges after ending the charge
             if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
@@ -213,7 +217,7 @@ bool update_from_client_packet(
         target.auth_type = v5->auth_type;
         target.nfc_tag_type = v5->nfc_tag_type;
 
-        target.authorized = charger_authorized(target);
+        target.authenticated_user_id = charger_authorized(target);
     }
 
     // A charger wants to charge if:
@@ -222,13 +226,13 @@ bool update_from_client_packet(
     //         or 2 (i.e. already have current allocated)
     // OR the charger is already charging
     // AND the charger is authorized
-    bool wants_to_charge = ((v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3) && target.authorized;
+    bool wants_to_charge = ((v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3) && target.authenticated_user_id != 0;
     target.wants_to_charge = wants_to_charge;
 
     // A charger wants to charge and has low priority if it has already charged this vehicle
     // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
     // AND the charger is authorized
-    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2) && target.authorized;
+    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2) && target.authenticated_user_id != 0;
 
     if (!target.wants_to_charge_low_priority && low_prio)
         target.last_wakeup = now - cfg->wakeup_time;
@@ -245,7 +249,7 @@ bool update_from_client_packet(
         target.allocated_average_power = 0;
         target_alloc.allocated_current = 0;
         target_alloc.allocated_phases = 0;
-        target.authorized = false; // Reset authorization state when no car is connected
+        target.authenticated_user_id = 0; // Reset authorization state when no car is connected
         target.nfc_last_seen = 0_us;
         target.nfc_tag_type = 0;
         memset(target.nfc_tag_id, 0, sizeof(target.nfc_tag_id));
@@ -253,7 +257,7 @@ bool update_from_client_packet(
 
     // Set allowed_current to 0 if not authorized to prevent current allocation
     // Allow charging to continue if already in state 3 (charging) to avoid interrupting active sessions
-    if (!target.authorized) {
+    if (target.authenticated_user_id == 0) {
         target.allowed_current = 0;
     } else {
         target.allowed_current = v1->allowed_charging_current;
@@ -273,11 +277,11 @@ bool update_from_client_packet(
         if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
             target.just_plugged_in_timestamp = now;
 
-        target.authorized = charger_authorized(target);
+        target.authenticated_user_id = charger_authorized(target);
     }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-    if (target.charger_state != CHARGER_STATE_CHARGING && v1->charger_state == CHARGER_STATE_CHARGING && target.authorized) {
+    if (target.charger_state != CHARGER_STATE_CHARGING && v1->charger_state == CHARGER_STATE_CHARGING && target.authenticated_user_id != 0) {
         char uid_str[32];
         tf_base58_encode(target.uid, uid_str);
 
@@ -289,11 +293,11 @@ bool update_from_client_packet(
 
             charge_tracker.startCharge(charge_start,
                                        v1->energy_abs,
-                                       0,
+                                       target.authenticated_user_id,
                                        v1->evse_uptime,
                                        USERS_AUTH_TYPE_NONE,
                                        Config::ConfVariant(),
-                                       uid_str);
+                                       strcmp(uid_str, local_uid_str) == 0 ? nullptr : uid_str);
 
             // Update last_tracked_charge when a new charge is started
             if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
@@ -322,11 +326,12 @@ bool update_from_client_packet(
         char uid_str[32];
         tf_base58_encode(target.uid, uid_str);
 
-        if (charge_tracker.currentlyCharging(uid_str)) {
+        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
+        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
             charge_tracker.endCharge(
                 micros_t{now} .as<uint32_t>() / 1'000'000 - target.last_plug_in.as<uint32_t>() / 1'000'000,
                 v1->energy_abs,
-                uid_str);
+                 is_local_charger ? nullptr : uid_str);
 
             // Update tracked charges after ending a charge
             if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
@@ -399,7 +404,7 @@ bool update_from_client_packet(
 
         // Override with UserBlocked if the charger has an unauthorized NFC tag and is not yet actively charging
         // This prevents unauthorized users from starting a charge session
-        if (!target.authorized && v1->charger_state != 0) {
+        if (target.authenticated_user_id == 0 && v1->charger_state != 0) {
             target_alloc.state = CASState::Unauthorized;
         }
     }
