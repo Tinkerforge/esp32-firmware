@@ -328,6 +328,10 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
         file.write(buf, sizeof(ce));
     }
     logger.printfln("Tracked end of charge.");
+    if (directory != nullptr) {
+        logger.printfln("Charge record saved in directory: %s", directory);
+        return true;
+    }
 
     // We've just written the charge record in the file. It is always safe to read it back again.
     if (last_charges.count() == CHARGE_RECORD_LAST_CHARGES_SIZE)
