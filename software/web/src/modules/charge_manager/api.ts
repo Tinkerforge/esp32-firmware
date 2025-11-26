@@ -74,7 +74,8 @@ export interface config {
     minimum_current_vehicle_type: number,
     requested_current_threshold: number,
     requested_current_margin: number,
-    chargers: ChargerConfig[]
+    chargers: ChargerConfig[],
+    enable_central_auth: boolean
 }
 
 export interface available_current {

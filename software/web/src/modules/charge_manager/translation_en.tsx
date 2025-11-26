@@ -38,6 +38,8 @@ let x = {
             "enable_watchdog": "Watchdog enabled",
             "enable_watchdog_muted": "only enable if using the API (not required for normal charge manager use!)",
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
+            "enable_central_auth": "Central authorization",
+            "enable_central_auth_desc": "Enables central authorization handling by the charge manager. When enabled, managed chargers must be authorized by the charge manager before charging can begin.",
             "verbose": "Current distribution log enabled",
             "verbose_desc": "Creates log entries whenever current is redistributed",
             "default_available_current": "Default available current",

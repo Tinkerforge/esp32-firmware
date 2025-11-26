@@ -38,6 +38,8 @@ let x = {
             "enable_watchdog": "Watchdog aktiviert",
             "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
+            "enable_central_auth": "Zentrale Autorisierung",
+            "enable_central_auth_desc": "Aktiviert die zentrale Autorisierungsabwicklung durch das Lastmanagement. Wenn aktiviert, müssen verwaltete Ladegeräte vom Lastmanagement autorisiert werden, bevor der Ladevorgang beginnen kann.",
             "verbose": "Stromverteilungsprotokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
             "default_available_current": "Voreingestellt verfügbarer Strom",
