@@ -794,7 +794,9 @@ void Mqtt::register_events()
         return;
     }
 
-    this->state_last_send = perm_new_array<micros_t>(api.states.size(), IRAM);
+    const size_t state_count = api.states.size();
+    this->state_last_send = perm_new_array<micros_t>(state_count, IRAM);
+    memset(this->state_last_send, 0, state_count * sizeof(micros_t));
 
     // Start MQTT client here to make sure all handlers are already registered.
     network.on_network_connected([this](const Config *connected) {
