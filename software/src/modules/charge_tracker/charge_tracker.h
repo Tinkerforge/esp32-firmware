@@ -157,15 +157,14 @@ class ChargeLogGenerationLockHelper {
 };
 
 struct ChargeWithLocation {
-    ChargeStart cs;
-    ChargeEnd ce;
+    Charge charge;
     String directory;
     uint32_t file_index;
     uint32_t prev_known_timestamp_minutes;
 
     bool operator>(const ChargeWithLocation &other) const {
-        uint32_t this_timestamp = cs.timestamp_minutes != 0 ? cs.timestamp_minutes : prev_known_timestamp_minutes;
-        uint32_t other_timestamp = other.cs.timestamp_minutes != 0 ? other.cs.timestamp_minutes : other.prev_known_timestamp_minutes;
+        uint32_t this_timestamp = charge.cs.timestamp_minutes != 0 ? charge.cs.timestamp_minutes : prev_known_timestamp_minutes;
+        uint32_t other_timestamp = other.charge.cs.timestamp_minutes != 0 ? other.charge.cs.timestamp_minutes : other.prev_known_timestamp_minutes;
 
         if (this_timestamp == 0 && other_timestamp == 0) {
             return false;
