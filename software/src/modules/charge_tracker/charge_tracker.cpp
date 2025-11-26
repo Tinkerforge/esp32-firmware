@@ -355,19 +355,56 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
 {
     const size_t user_id_offset = offsetof(ChargeStart, user_id);
 
-    for (int file = this->first_charge_record; file <= this->last_charge_record; ++file) {
-        File f = LittleFS.open(chargeRecordFilename(file, nullptr));
-        size_t size = f.size();
-        // LittleFS caches internally, so we can read single bytes without a huge performance loss.
-        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
-            f.seek(i + user_id_offset);
-            int read_user_id = f.read();
-            if (read_user_id < 0)
-                continue;
-            if (user_id == read_user_id)
-                return true;
+    auto check_directory = [this, user_id, user_id_offset](const char *directory) -> bool {
+        uint32_t first_record = 0;
+        uint32_t last_record = 0;
+
+        if (directory == nullptr) {
+            first_record = this->first_charge_record;
+            last_record = this->last_charge_record;
+        } else {
+            if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+                return false;
+            }
+        }
+
+        for (int file = first_record; file <= static_cast<int>(last_record); ++file) {
+            File f = LittleFS.open(chargeRecordFilename(file, directory));
+            size_t size = f.size();
+            // LittleFS caches internally, so we can read single bytes without a huge performance loss.
+            for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+                f.seek(i + user_id_offset);
+                int read_user_id = f.read();
+                if (read_user_id < 0)
+                    continue;
+                if (user_id == read_user_id)
+                    return true;
+            }
+        }
+        return false;
+    };
+
+    if (check_directory(nullptr)) {
+        return true;
+    }
+
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                // Skip the directory name prefix if present
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+                if (check_directory(dirname.c_str())) {
+                    return true;
+                }
+            }
         }
     }
+
     return false;
 }
 
