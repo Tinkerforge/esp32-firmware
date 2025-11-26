@@ -765,8 +765,8 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
             memcpy(&ce, buf + sizeof(cs), sizeof(ce));
 
             ChargeWithLocation charge;
-            charge.cs = cs;
-            charge.ce = ce;
+            charge.charge.cs = cs;
+            charge.charge.ce = ce;
             charge.directory = directory ? String(directory) : String("");
             charge.file_index = file_idx;
             charge.prev_known_timestamp_minutes = prev_known_timestamp;
@@ -1108,11 +1108,11 @@ void ChargeTracker::repair_charges()
         const auto &charge = all_charges[i];
 
         auto last_charge = last_charges.add();
-        last_charge->get("timestamp_minutes")->updateUint(charge.cs.timestamp_minutes);
-        last_charge->get("charge_duration")->updateUint(charge.ce.charge_duration);
-        last_charge->get("user_id")->updateUint(charge.cs.user_id);
+        last_charge->get("timestamp_minutes")->updateUint(charge.charge.cs.timestamp_minutes);
+        last_charge->get("charge_duration")->updateUint(charge.charge.ce.charge_duration);
+        last_charge->get("user_id")->updateUint(charge.charge.cs.user_id);
 
-        float energy_charged = charged_invalid(charge.cs, charge.ce) ? NAN : charge.ce.meter_end - charge.cs.meter_start;
+        float energy_charged = charged_invalid(charge.charge.cs, charge.charge.ce) ? NAN : charge.charge.ce.meter_end - charge.charge.cs.meter_start;
         last_charge->get("energy_charged")->updateFloat(energy_charged);
     }
 }
