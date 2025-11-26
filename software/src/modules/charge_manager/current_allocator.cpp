@@ -80,16 +80,6 @@ static CASState get_charge_state(uint8_t charger_state, uint16_t supported_curre
     return CASState::Error;
 }
 
-// Returns true if 'ts' lies within +/- 'tolerance' around 'center'.
-// Boundaries are inclusive.
-static inline bool micros_in_range(micros_t ts, micros_t center, micros_t tolerance) {
-    if (tolerance < 0_us) {
-        tolerance = -tolerance;
-    }
-    return (ts >= center) ? ((ts - center) <= tolerance)
-                          : ((center - ts) <= tolerance);
-}
-
 // Check if the charger is authorized based on NFC tag information.
 // Returns the user_id of the authorized user (0 if not authorized)
 static inline uint8_t charger_authorized(ChargerState &state) {
@@ -100,7 +90,7 @@ static inline uint8_t charger_authorized(ChargerState &state) {
         return 1; // Return 1 to indicate authorized when authorization is not required
     }
 
-    if (!micros_in_range(state.nfc_last_seen, now_us(), 30_s)) {
+    if (deadline_elapsed(state.nfc_last_seen + 30_s)) {
         return 0;
     }
 
