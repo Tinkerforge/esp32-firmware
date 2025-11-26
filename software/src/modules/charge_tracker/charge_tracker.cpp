@@ -108,7 +108,7 @@ String chargeRecordFilename(uint32_t i, const char *directory)
     if (directory == nullptr) {
         sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
     } else {
-        sw.printf(CHARGE_RECORD_FOLDER "/%s/charge-record-%lu.bin", directory, i);
+        sw.printf(CHARGE_RECORD_FOLDER "/%.30s/charge-record-%lu.bin", directory, i);
     }
     return String(buf, sw.getLength());
 }
