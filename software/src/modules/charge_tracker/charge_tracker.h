@@ -50,7 +50,7 @@ public:
     bool startCharge(uint32_t timestamp_minutes, float meter_start, uint8_t user_id, uint32_t evse_uptime, uint8_t auth_type, Config::ConfVariant auth_info, const char *directory = nullptr);
     void endCharge(uint32_t charge_duration_seconds, float meter_end, const char *directory = nullptr);
     void removeOldRecords();
-    bool setupRecords();
+    bool setupRecords(const char *directory = nullptr);
     void updateState();
     bool is_user_tracked(uint8_t user_id);
 

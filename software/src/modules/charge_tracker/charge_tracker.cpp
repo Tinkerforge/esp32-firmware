@@ -428,14 +428,19 @@ void ChargeTracker::removeOldRecords()
     }
 }
 
-bool ChargeTracker::setupRecords()
+bool ChargeTracker::setupRecords(const char *directory)
 {
-    if (!LittleFS.mkdir(CHARGE_RECORD_FOLDER)) { // mkdir also returns true if the directory already exists and is a directory.
-        logger.printfln("Failed to create charge record folder!");
+    // Extract the folder path from the first charge record filename
+    String first_record_path = chargeRecordFilename(1, directory);
+    int last_slash = first_record_path.lastIndexOf('/');
+    String folder_path = first_record_path.substring(0, last_slash);
+
+    if (!LittleFS.mkdir(folder_path)) { // mkdir also returns true if the directory already exists and is a directory.
+        logger.printfln("Failed to create charge record folder: %s", folder_path.c_str());
         return false;
     }
 
-    File folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    File folder = LittleFS.open(folder_path);
 
     // Two more to handle power cycles where a new record was created but the oldest one was not yet deleted.
     uint32_t found_blobs[CHARGE_RECORD_FILE_COUNT + 2] = {0};
@@ -473,8 +478,13 @@ bool ChargeTracker::setupRecords()
     }
 
     if (found_blob_counter == 0) {
-        this->first_charge_record = 1;
-        this->last_charge_record = 1;
+        logger.printfln("No charge record files found in directory: %s", directory ? directory : "main");
+        // Only update main directory tracking when directory is nullptr
+        if (directory == nullptr) {
+            this->first_charge_record = 1;
+            this->last_charge_record = 1;
+            this->total_charge_log_files = 0;
+        }
         return true;
     }
 
@@ -483,31 +493,39 @@ bool ChargeTracker::setupRecords()
     uint32_t first = found_blobs[0];
     uint32_t last = found_blobs[found_blob_counter - 1];
 
-    logger.printfln("Found %u record%s: first is %lu, last is %lu", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
+    logger.printfln("Directory %s: Found %u record%s: first is %lu, last is %lu",
+                    directory ? directory : "main", found_blob_counter, found_blob_counter == 1 ? "" : "s", first, last);
     for (int i = 0; i < found_blob_counter - 1; ++i) {
         if (found_blobs[i] + 1 != found_blobs[i + 1]) {
-            logger.printfln("Non-consecutive charge records found! (Next after %lu is %lu. Expected was %lu", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
+            logger.printfln("Directory %s: Non-consecutive charge records found! (Next after %lu is %lu. Expected was %lu)",
+                           directory ? directory : "main", found_blobs[i], found_blobs[i+1], found_blobs[i] + 1);
             return false;
         }
 
-        const String fname = chargeRecordFilename(found_blobs[i], nullptr);
+        const String fname = chargeRecordFilename(found_blobs[i], directory);
         const size_t fsize = file_size(LittleFS, fname);
         if (fsize != CHARGE_RECORD_MAX_FILE_SIZE) {
-            logger.printfln("Charge record %s doesn't have max size: %u bytes", fname.c_str(), fsize);
+            logger.printfln("Directory %s: Charge record %s doesn't have max size: %u bytes (expected: %u)",
+                           directory ? directory : "main", fname.c_str(), fsize, CHARGE_RECORD_MAX_FILE_SIZE);
             return false;
         }
     }
 
-    const String last_file_name = chargeRecordFilename(found_blobs[found_blob_counter - 1], nullptr);
+    const String last_file_name = chargeRecordFilename(found_blobs[found_blob_counter - 1], directory);
     const size_t last_file_size = file_size(LittleFS, last_file_name);
-    logger.printfln("Last charge record size is %u (%u, %u)", last_file_size, last_file_size / CHARGE_RECORD_SIZE, (last_file_size % CHARGE_RECORD_SIZE));
+    logger.printfln("Directory %s: Last charge record size is %u bytes (%u, %u)",
+                    directory ? directory : "main", last_file_size, last_file_size / CHARGE_RECORD_SIZE, (last_file_size % CHARGE_RECORD_SIZE));
     if (last_file_size > CHARGE_RECORD_MAX_FILE_SIZE) {
-        logger.printfln("Last charge record %s is too long: %u bytes", last_file_name.c_str(), last_file_size);
+        logger.printfln("Directory %s: Last charge record %s is too long: %u bytes (max: %u)",
+                       directory ? directory : "main", last_file_name.c_str(), last_file_size, CHARGE_RECORD_MAX_FILE_SIZE);
         return false;
     }
 
-    this->first_charge_record = first;
-    this->last_charge_record = last;
+    // Only update main directory tracking when directory is nullptr
+    if (directory == nullptr) {
+        this->first_charge_record = first;
+        this->last_charge_record = last;
+    }
 
     return true;
 }
@@ -623,9 +641,29 @@ void ChargeTracker::updateState()
 
 void ChargeTracker::setup()
 {
-    initialized = this->setupRecords();
+    initialized = this->setupRecords(nullptr);
     if (!initialized) {
         return;
+    }
+
+    // Setup all subdirectories
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                // Skip the directory name prefix if present
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+
+                // Setup records for this subdirectory
+                if (!this->setupRecords(dirname.c_str())) {
+                    logger.printfln("Warning: Failed to setup records for directory %s", dirname.c_str());
+                }
+            }
+        }
     }
 
     last_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
@@ -646,7 +684,6 @@ void ChargeTracker::setup()
 
 std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(const char *directory)
 {
-    logger.printfln("Reading last charges from directory: %s", directory ? directory : "root");
     std::vector<ChargeWithLocation> charges;
     charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
 
@@ -1020,8 +1057,6 @@ void ChargeTracker::repair_charges()
         logger.printfln("Repaired %lu charge-entries across all directories.", num_repaired);
     }
 
-    logger.printfln("Collected %u charges during repair from all directories", all_charges.size());
-
     // Populate last_charges from the collected charges
     std::lock_guard<std::mutex> lock{records_mutex};
 
@@ -1043,8 +1078,6 @@ void ChargeTracker::repair_charges()
         float energy_charged = charged_invalid(charge.cs, charge.ce) ? NAN : charge.ce.meter_end - charge.cs.meter_start;
         last_charge->get("energy_charged")->updateFloat(energy_charged);
     }
-
-    logger.printfln("Populated last_charges with %u charge(s) from repair", charges_to_add);
 }
 
 void ChargeTracker::register_urls()
