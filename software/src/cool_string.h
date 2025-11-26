@@ -12,8 +12,8 @@ public:
     void setLength(int len);
     unsigned int getCapacity() const;
     void shrinkToFit();
-    void make_invalid();
-    bool is_sso() const;
+    inline void make_invalid() {this->invalidate();};
+    inline bool is_sso() const {return this->isSSO();};
     //char *releaseOwnership(size_t *len);
 };
 
