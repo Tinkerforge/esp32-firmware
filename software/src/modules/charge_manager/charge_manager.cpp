@@ -521,6 +521,7 @@ void ChargeManager::setup()
     ca_config->minimum_current_1p = config.get("minimum_current_1p")->asUint();
     ca_config->requested_current_margin = config.get("requested_current_margin")->asUint();
     ca_config->requested_current_threshold = config.get("requested_current_threshold")->asUint();
+    ca_config->enable_central_auth = config.get("enable_central_auth")->asBool();
 
     this->ca_state = new CurrentAllocatorState();
 
