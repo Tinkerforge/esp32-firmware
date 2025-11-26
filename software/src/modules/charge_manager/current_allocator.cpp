@@ -82,8 +82,13 @@ static CASState get_charge_state(uint8_t charger_state, uint16_t supported_curre
 
 // Check if the charger is authorized based on NFC tag information.
 // Returns the user_id of the authorized user (0 if not authorized)
-static inline uint8_t charger_authorized(ChargerState &state) {
+uint8_t charger_authorized(ChargerState &state, const CurrentAllocatorConfig *cfg) {
 #if MODULE_NFC_AVAILABLE()
+    // If central auth is disabled, always authorize
+    if (!cfg->enable_central_auth) {
+        return 1;
+    }
+
     // Check if authorization is required
     const Config *user_slot = (const Config *)api.getState("evse/slots", false)->get(CHARGING_SLOT_USER);
     if (!user_slot->get("active")->asBool()) {
@@ -211,7 +216,7 @@ bool update_from_client_packet(
         target.auth_type = v5->auth_type;
         target.nfc_tag_type = v5->nfc_tag_type;
 
-        target.authenticated_user_id = charger_authorized(target);
+        target.authenticated_user_id = charger_authorized(target, cfg);
     }
 
     // A charger wants to charge if:
@@ -271,7 +276,7 @@ bool update_from_client_packet(
         if (target.last_update != 0_us && target.charger_state == 0 && v1->charger_state != 0 && cfg->plug_in_time != 0_us)
             target.just_plugged_in_timestamp = now;
 
-        target.authenticated_user_id = charger_authorized(target);
+        target.authenticated_user_id = charger_authorized(target, cfg);
     }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
