@@ -735,7 +735,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
 
-#if MODULE_NFC_AVAILABLE
+#if MODULE_NFC_AVAILABLE()
     if (has_nfc) {
         NFC::tag_info_t info;
         if (nfc.get_last_tag_seen(&info, nullptr, nullptr)
