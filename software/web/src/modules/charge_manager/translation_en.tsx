@@ -40,6 +40,8 @@ let x = {
             "enable_watchdog_desc": "Sets the available current to the default value if it is not updated every 30 seconds",
             "enable_central_auth": "Central authorization",
             "enable_central_auth_desc": "Enables central authorization handling by the charge manager. When enabled, managed chargers must be authorized by the charge manager before charging can begin.",
+            "enable_charge_tracking": "Central charge tracking",
+            "enable_charge_tracking_desc": "Enables central tracking of all charging sessions. When enabled, the charge tracker records all charging sessions from managed chargers.",
             "verbose": "Current distribution log enabled",
             "verbose_desc": "Creates log entries whenever current is redistributed",
             "default_available_current": "Default available current",
