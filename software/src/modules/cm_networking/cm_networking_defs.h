@@ -253,24 +253,30 @@ static_assert(CM_STATE_V3_LENGTH == 4, "Unexpected CM_STATE_V3_LENGTH");
 
 struct cm_state_v4 {
     uint8_t requested_charge_mode;
-    uint8_t _padding[3];
+    uint8_t _padding[3]; // in use for cm_state_v5 auth_type and nfc_last_seen_s
 };
 
 #define CM_STATE_V4_LENGTH (sizeof(cm_state_v4))
 static_assert(CM_STATE_V4_LENGTH == 4, "Unexpected CM_STATE_V4_LENGTH");
 struct cm_state_v5 {
+    uint8_t _padding; // in use for cm_state_v4 requested_charge_mode
+
     /**
      * 0 = no authentication
      * 1 = NFC
      */
-    uint32_t nfc_last_seen;
-    uint8_t nfc_tag_id[30];
     uint8_t auth_type;
+    uint16_t nfc_last_seen_s;
     uint8_t nfc_tag_type;
+    uint8_t nfc_tag_id_len;
+    uint8_t nfc_tag_id[10];
 };
 
+#define CM_STATE_V5_AUTH_TYPE_NONE 0
+#define CM_STATE_V5_AUTH_TYPE_NFC 1
+
 #define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
-static_assert(CM_STATE_V5_LENGTH == 36, "Unexpected CM_STATE_V5_LENGTH");
+static_assert(CM_STATE_V5_LENGTH == 16, "Unexpected CM_STATE_V5_LENGTH");
 
 // #if MODULE_NFC_AVAILABLE()
 //     static_assert(NFC_TAG_ID_STRING_LENGTH + 1 == sizeof(cm_state_v5::nfc_tag_id), "NFC_TAG_ID_STRING_LENGTH does not match cm_state_v5::nfc_tag_id size");
@@ -281,11 +287,13 @@ struct cm_state_packet {
     cm_state_v1 v1;
     cm_state_v2 v2;
     cm_state_v3 v3;
-    cm_state_v4 v4;
-    cm_state_v5 v5;
+    union {
+        cm_state_v4 v4;
+        cm_state_v5 v5;
+    };
 };
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 128, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 104, "Unexpected CM_STATE_PACKET_LENGTH");
 
 #include "module_available_end.h"
