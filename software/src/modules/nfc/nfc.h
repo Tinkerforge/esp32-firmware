@@ -92,7 +92,6 @@ private:
 
 public:
     ConfigRoot seen_tags;
-    ConfigRoot state;
     ConfigRoot inject_tag;
     micros_t last_tag_injection = 0_us;
     int tag_injection_action = 0;
