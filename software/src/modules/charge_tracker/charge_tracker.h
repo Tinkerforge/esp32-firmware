@@ -88,6 +88,8 @@ private:
     Config last_charges_prototype;
     Config current_charge_prototype;
     Config charge_log_send_prototype;
+
+    uint32_t total_charge_log_files;
 };
 
 /**
