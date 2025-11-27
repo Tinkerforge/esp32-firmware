@@ -58,6 +58,7 @@ struct CurrentAllocatorConfig {
     uint16_t requested_current_margin;
     uint16_t requested_current_threshold;
     bool enable_central_auth;
+    bool enable_charge_tracking;
 };
 
 // R+W _only_ by current_allocator.cpp
