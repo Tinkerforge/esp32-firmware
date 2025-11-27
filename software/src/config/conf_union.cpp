@@ -118,10 +118,3 @@ Config::ConfUnion::ConfUnion(ConfUnion &&cpy)  : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfUnion &Config::ConfUnion::operator=(ConfUnion &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

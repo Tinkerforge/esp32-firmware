@@ -117,10 +117,3 @@ Config::ConfString::ConfString(ConfString &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfString &Config::ConfString::operator=(ConfString &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

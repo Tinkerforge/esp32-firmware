@@ -146,10 +146,3 @@ Config::ConfArray::ConfArray(ConfArray &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfArray &Config::ConfArray::operator=(ConfArray &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

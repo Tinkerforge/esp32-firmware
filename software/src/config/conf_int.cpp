@@ -101,10 +101,3 @@ Config::ConfInt::ConfInt(ConfInt &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfInt &Config::ConfInt::operator=(ConfInt &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

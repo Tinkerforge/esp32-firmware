@@ -108,10 +108,3 @@ Config::ConfInt32::ConfInt32(ConfInt32 &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfInt32 &Config::ConfInt32::operator=(ConfInt32 &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

@@ -119,10 +119,3 @@ Config::ConfFloat::ConfFloat(ConfFloat &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfFloat &Config::ConfFloat::operator=(ConfFloat &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}

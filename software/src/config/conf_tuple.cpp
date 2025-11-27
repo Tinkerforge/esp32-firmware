@@ -174,13 +174,6 @@ Config::ConfTuple::ConfTuple(ConfTuple &&cpy) : idx(cpy.idx)
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfTuple &Config::ConfTuple::operator=(ConfTuple &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}
-
 size_t Config::ConfTuple::getSize() const {
     return this->getSlot()->length;
 }

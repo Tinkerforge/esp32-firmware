@@ -254,10 +254,3 @@ Config::ConfObject::ConfObject(ConfObject &&cpy)  : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
-
-Config::ConfObject &Config::ConfObject::operator=(ConfObject &&cpy)
-{
-    this->idx = cpy.idx;
-    cpy.idx = std::numeric_limits<decltype(idx)>::max();
-    return *this;
-}
