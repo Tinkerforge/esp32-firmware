@@ -146,6 +146,12 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                         onClick={this.toggle("enable_central_auth")}/>
             </FormRow>;
 
+        let enable_charge_tracking = <FormRow label={__("charge_manager.content.enable_charge_tracking")}>
+                <Switch desc={__("charge_manager.content.enable_charge_tracking_desc")}
+                        checked={state.enable_charge_tracking}
+                        onClick={this.toggle("enable_charge_tracking")}/>
+            </FormRow>;
+
         let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")} label_muted={__("charge_manager.content.enable_watchdog_muted")}>
                 <Switch desc={__("charge_manager.content.enable_watchdog_desc")}
                         checked={state.enable_watchdog}
@@ -252,6 +258,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                         <div>
                             {verbose}
                             {enable_central_auth}
+                            {enable_charge_tracking}
                             {watchdog}
                             {default_available_current}
                             {requested_current_threshold}

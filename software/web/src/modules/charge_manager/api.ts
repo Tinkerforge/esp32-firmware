@@ -75,7 +75,8 @@ export interface config {
     requested_current_threshold: number,
     requested_current_margin: number,
     chargers: ChargerConfig[],
-    enable_central_auth: boolean
+    enable_central_auth: boolean,
+    enable_charge_tracking: boolean
 }
 
 export interface available_current {

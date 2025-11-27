@@ -40,6 +40,8 @@ let x = {
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",
             "enable_central_auth": "Zentrale Autorisierung",
             "enable_central_auth_desc": "Aktiviert die zentrale Autorisierungsabwicklung durch das Lastmanagement. Wenn aktiviert, müssen verwaltete Ladegeräte vom Lastmanagement autorisiert werden, bevor der Ladevorgang beginnen kann.",
+            "enable_charge_tracking": "Zentraler Ladetracker",
+            "enable_charge_tracking_desc": "Aktiviert das zentrale Tracken aller Ladevorgänge. Wenn aktiviert, zeichnet der Ladetracker alle Ladevorgänge von verwalteten Wallboxen auf.",
             "verbose": "Stromverteilungsprotokoll aktiviert",
             "verbose_desc": "Erzeugt Einträge im Ereignis-Log, wenn Strom umverteilt wird",
             "default_available_current": "Voreingestellt verfügbarer Strom",
