@@ -99,15 +99,14 @@ static inline uint8_t charger_authorized(ChargerState &state) {
     }
 
     // Check if the NFC tag is authorized by comparing against local NFC config
-    NFC::tag_info_t tag_info;
-    tag_info.tag_type = state.nfc_tag_type;
-    tag_info.last_seen = 0; // Not used for authorization check
+    NFC::tag_t tag;
+    tag.type = state.nfc_tag_type;
+    tag.id_length = state.nfc_tag_id_length;
 
-    static_assert(sizeof(tag_info.tag_id) == sizeof(state.nfc_tag_id), "Tag ID size mismatch");
-    memcpy(tag_info.tag_id, state.nfc_tag_id, sizeof(state.nfc_tag_id));
+    static_assert(sizeof(tag.id_bytes) == sizeof(state.nfc_tag_id), "Tag ID size mismatch");
+    memcpy(tag.id_bytes, state.nfc_tag_id, sizeof(state.nfc_tag_id));
 
-    uint8_t tag_idx = 0;
-    uint8_t user_id = nfc.get_user_id(&tag_info, &tag_idx);
+    uint8_t user_id = nfc.get_user_id(tag);
 
     logger.printfln("user id from nfc: %u", user_id);
 
@@ -204,9 +203,10 @@ bool update_from_client_packet(
 #endif
 
     // Update NFC state
-    if (v5 != nullptr && v5->nfc_last_seen != 0 && v5->nfc_last_seen <= 5000) {
-        micros_t nfc_timestamp = now - micros_t{v5->nfc_last_seen * 1000};
+    if (v5 != nullptr && v5->nfc_last_seen_s != 0 && v5->nfc_last_seen_s <= 5) {
+        micros_t nfc_timestamp = now - seconds_t{v5->nfc_last_seen_s};
         target.nfc_last_seen = nfc_timestamp;
+        target.nfc_tag_id_length = v5->nfc_tag_id_len;
         memcpy(target.nfc_tag_id, v5->nfc_tag_id, ARRAY_SIZE(cm_state_v5::nfc_tag_id));
         target.auth_type = v5->auth_type;
         target.nfc_tag_type = v5->nfc_tag_type;
