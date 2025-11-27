@@ -39,6 +39,14 @@ extern uint32_t local_uid_num;
 // 4 - Add button state
 #define MODBUS_TABLE_VERSION 4
 
+struct WarpInputRegisterCtx {
+        Option<float> energy_abs = {};
+#if MODULE_NFC_AVAILABLE()
+        Option<NFC::tag_info_t> tag = {};
+        char tag_id_str[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
+#endif
+};
+
 static uint8_t hextouint(const char c)
 {
     uint8_t i = 0;
@@ -159,19 +167,16 @@ void ModbusTCP::pre_setup()
 }
 
 #if MODULE_NFC_AVAILABLE()
-static inline void fillTagCache(Option<NFC::tag_info_t> &tag) {
-    if (tag.is_none()) {
-        const auto &seen_tag = nfc.old_tags[0];
-        const auto &injected_tag = nfc.old_tags[TAG_LIST_LENGTH - 1];
-        if ((seen_tag.last_seen == 0 || seen_tag.last_seen > injected_tag.last_seen) && injected_tag.last_seen > 0)
-            tag = {injected_tag};
-        else
-            tag = {seen_tag};
+static inline void fillTagCache(Option<NFC::tag_info_t> &tag, char tag_id_str[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1] ) {
+    if (!tag.is_none())
+        return;
 
-        int written = remove_separator(tag.unwrap().tag_id, tag.unwrap().tag_id);
-        memset(tag.unwrap().tag_id + written, 0, sizeof(tag.unwrap().tag_id) - written);
-        //swap_bytes(tag.unwrap().tag_id, 20);
-    }
+    NFC::tag_info_t info;
+    memset(&info, 0, sizeof(info));
+    memset(tag_id_str, 0, NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1);
+
+    nfc.get_last_tag_seen(&info, nullptr, tag_id_str);
+    tag.insert(info);
 }
 #endif
 
@@ -192,15 +197,7 @@ static inline uint16_t swapBytes(uint16_t x) {
 
 #define REQUIRE(x) if(!cache->has_feature_##x) break
 
-Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
-    struct Ctx{
-        Option<float> energy_abs = {};
-#if MODULE_NFC_AVAILABLE()
-        Option<NFC::tag_info_t> tag = {};
-#endif
-    };
-    Ctx *ctx = (Ctx*) ctx_ptr;
-
+Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, WarpInputRegisterCtx *ctx) {
     ModbusTCP::TwoRegs val{0};
 
     bool report_illegal_data_address = false;
@@ -279,7 +276,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
         // 4000... handled below
         case 4010: REQUIRE(nfc); {
 #if MODULE_NFC_AVAILABLE()
-                fillTagCache(ctx->tag);
+                fillTagCache(ctx->tag, ctx->tag_id_str);
                 val.u = ctx->tag.unwrap().last_seen;
                 // We want to support both 1 and 2 and '1' and '2' as injection types inject_tag_start/_stop.
                 // Other values are interpreted as 0, i.e. inject_tag
@@ -292,7 +289,8 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
             } break;
         case 4012: REQUIRE(nfc);
 #if MODULE_NFC_AVAILABLE()
-            fillTagCache(ctx->tag); val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag_type);
+            fillTagCache(ctx->tag, ctx->tag_id_str);
+            val.u = 0x30303000 + ('0' + ctx->tag.unwrap().tag.type);
 #endif
             break;
 
@@ -330,9 +328,9 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
 
 #if MODULE_NFC_AVAILABLE()
         if (cache->has_feature_nfc) {
-            fillTagCache(ctx->tag);
+            fillTagCache(ctx->tag, ctx->tag_id_str);
             auto value_idx = (reg - 4000) * 2;
-            memcpy(&val, ctx->tag.unwrap().tag_id + value_idx, 4);
+            memcpy(&val, ctx->tag_id_str + value_idx, 4);
             // the ID is already in network order, but this function should return values in host order.
             val.u = swapBytes(val.u);
         }
@@ -346,12 +344,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
 }
 
 TFModbusTCPExceptionCode ModbusTCP::getWarpInputRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
-    struct {
-        Option<float> energy_abs = {};
-#if MODULE_NFC_AVAILABLE()
-        Option<NFC::tag_info_t> tag = {};
-#endif
-    } ctx;
+    WarpInputRegisterCtx ctx;
 
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(meter)
@@ -781,16 +774,10 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
                 // Inject tag if the tag type register(s) were written, but only if either the lower or both registers were written.
                 if (reg == 4012 && ((i + start_address == 4013) || data_count > 1)) {
                     char buf[NFC_TAG_ID_STRING_LENGTH + 1];
-                    StringWriter sw{buf, ARRAY_SIZE(buf)};
 
-                    for(size_t j = 0; j < NFC_TAG_ID_LENGTH; ++j) {
-                        if (cache->nfc_tag_injection_buffer[2 * j] == 0)
-                            break;
-                        sw.putc(cache->nfc_tag_injection_buffer[2 * j]);
-                        sw.putc(cache->nfc_tag_injection_buffer[2 * j + 1]);
-                        sw.putc(':');
-                    }
-                    sw.setLength(sw.getLength() - 1);
+                    add_separator(cache->nfc_tag_injection_buffer,
+                                  strnlen(cache->nfc_tag_injection_buffer, NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH),
+                                  buf);
 
                     // Accepts both 0 - 5 and '0' to '5'
                     uint32_t tag_type = cache->nfc_tag_injection_buffer[ARRAY_SIZE(cache->nfc_tag_injection_buffer) - 1] & 0x0F;
