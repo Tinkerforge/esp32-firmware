@@ -88,6 +88,7 @@ void ChargeManager::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable_charge_manager", Config::Bool(false)},
         {"enable_central_auth", Config::Bool(false)},
+        {"enable_charge_tracking", Config::Bool(true)},
         {"enable_watchdog", Config::Bool(false)},
         {"default_available_current", Config::Uint32(0)},
         {"maximum_available_current", Config::Uint(0, 0, 32000 * MAX_CONTROLLED_CHARGERS)},
