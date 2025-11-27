@@ -90,6 +90,10 @@ static inline uint8_t charger_authorized(ChargerState &state) {
         return 1; // Return 1 to indicate authorized when authorization is not required
     }
 
+    if (state.auth_type == 0) {
+        return 0;
+    }
+
     if (deadline_elapsed(state.nfc_last_seen + 30_s)) {
         return 0;
     }
