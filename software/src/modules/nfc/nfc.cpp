@@ -33,6 +33,66 @@
 
 #define DETECTION_THRESHOLD_MS 2000
 
+static bool operator==(const NFC::tag_t& a, const NFC::tag_t& b) {
+    return a.type == b.type && a.id_length == b.id_length && memcmp(a.id_bytes, b.id_bytes, a.id_length) == 0;
+}
+
+static const char *lookup = "0123456789ABCDEF";
+
+static size_t id_to_string(char str[NFC_TAG_ID_STRING_LENGTH + 1], const NFC::tag_t *tag) {
+    if (tag->id_length == 0) {
+        str[0] = '\0';
+        return 0;
+    }
+
+    auto chars = tag->id_length * 3; // last : will be overwritten with \0
+
+    for (size_t c = 0; c < chars ; c += 3) {
+        auto byte = tag->id_bytes[c / 3];
+        str[c]     = lookup[byte >> 4];
+        str[c + 1] = lookup[byte & 0x0F];
+        str[c + 2] = ':';
+    }
+    str[chars - 1] = '\0';
+    return chars;
+}
+
+static size_t id_to_string_without_separator(char str[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1], const NFC::tag_t *tag) {
+    auto chars = tag->id_length * 2;
+
+    for (size_t c = 0; c < chars; c += 2) {
+        auto byte = tag->id_bytes[c / 2];
+        str[c]     = lookup[byte >> 4];
+        str[c + 1] = lookup[byte & 0x0F];
+    }
+    str[chars] = '\0';
+    return chars;
+}
+
+static uint8_t hex_digit_to_byte(char digit)
+{
+    if (digit >= '0' && digit <= '9')
+        return digit - '0';
+
+    digit |= 0x60;
+    if (digit >= 'a' && digit <= 'f')
+        return digit - 'a' + 10;
+
+    return 0xFF;
+}
+
+static size_t string_to_id(uint8_t buf[NFC_TAG_ID_LENGTH], const char *str, size_t str_len = std::numeric_limits<size_t>::max()) {
+    if (str_len == std::numeric_limits<size_t>::max())
+        str_len = strnlen(str, NFC_TAG_ID_STRING_LENGTH);
+
+    auto bytes = (str_len + 1) / 3;
+
+    for (size_t b = 0; b < bytes; ++b) {
+        buf[b] = hex_digit_to_byte(str[b * 3]) << 4 | hex_digit_to_byte(str[b * 3 + 1]);
+    }
+    return bytes;
+}
+
 NFC::NFC() : DeviceModule(nfc_bricklet_firmware_bin_data,
                           nfc_bricklet_firmware_bin_length,
                           "nfc",
@@ -247,16 +307,13 @@ void NFC::check_nfc_state()
     }
 }
 
-uint8_t NFC::get_user_id(tag_info_t *tag, uint8_t *tag_idx)
+uint8_t NFC::get_user_id(const tag_t &tag)
 {
     for (uint8_t i = 0; i < auth_tag_count; ++i) {
         const auto &auth_tag = auth_tags[i];
 
-        if (auth_tag.tag_type == tag->tag_type
-         && strncmp(auth_tag.tag_id, tag->tag_id, sizeof(auth_tag.tag_id)) == 0) {
-            *tag_idx = i;
+        if (auth_tag.tag == tag)
             return auth_tag.user_id;
-        }
     }
     return 0;
 }
@@ -270,18 +327,22 @@ void NFC::remove_user(uint8_t user_id)
             tags->get(i)->get("user_id")->updateUint(0);
     }
     API::writeConfig("nfc/config", &config);
+
+    // todo update auth_tags immediately here?
 }
 
-void NFC::tag_seen(tag_info_t *tag, bool injected)
+void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-    uint8_t idx = 0;
-    uint8_t user_id = get_user_id(tag, &idx);
+    uint8_t user_id = get_user_id(info->tag);
+
+    char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
+    id_to_string_without_separator(buf, &info->tag);
 
     if (user_id != 0) {
         // Found a new authorized tag.
         bool blink_handled = false;
 #if MODULE_OCPP_AVAILABLE()
-        blink_handled = ocpp.on_tag_seen(tag->tag_id);
+        blink_handled = ocpp.on_tag_seen(buf_ocpp);
 #endif
 #if MODULE_EVSE_LED_AVAILABLE()
         if (!blink_handled)
@@ -290,8 +351,11 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
         (void) blink_handled;
 #endif
 
-        auth_info.get("tag_type")->updateUint(tag->tag_type);
-        auth_info.get("tag_id")->updateString(tag->tag_id);
+        auth_info.get("tag_type")->updateUint(info->tag.type);
+
+        char buf[NFC_TAG_ID_STRING_LENGTH + 1];
+        id_to_string(buf, &info->tag);
+        auth_info.get("tag_id")->updateString(buf);
 
         users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
@@ -299,7 +363,7 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
     } else {
         bool blink_handled = false;
 #if MODULE_OCPP_AVAILABLE()
-        blink_handled = ocpp.on_tag_seen(tag->tag_id);
+        blink_handled = ocpp.on_tag_seen(buf_ocpp);
 #endif
 #if MODULE_EVSE_LED_AVAILABLE()
         if (!blink_handled)
@@ -310,35 +374,32 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation.trigger(AutomationTriggerID::NFC, tag, this);
+    automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
 #endif
 }
 
 void NFC::update_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-        uint8_t tag_id_bytes[NFC_TAG_ID_LENGTH];
-        uint8_t tag_id_len = 0;
-        int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, tag_id_bytes, &tag_id_len, &new_tags[i].last_seen);
+        int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen);
         if (result != TF_E_OK) {
             if (!is_in_bootloader(result)) {
                 logger.printfln("Failed to get tag ID %d, rc: %d", i, result);
             }
             continue;
         }
-
-        hexdump(tag_id_bytes, tag_id_len, new_tags[i].tag_id, ARRAY_SIZE(new_tags[i].tag_id), HexdumpCase::Upper, ':');
     }
 
     // The NFC bricklet removes tags after 24h. Do the same with injected tags.
     if (last_tag_injection == 0_us || deadline_elapsed(last_tag_injection + 24_h)) {
         last_tag_injection = 0_us;
-        new_tags[TAG_LIST_LENGTH - 1].tag_type = 0;
-        new_tags[TAG_LIST_LENGTH - 1].tag_id[0] = '\0';
+        new_tags[TAG_LIST_LENGTH - 1].tag.type = 0;
+        new_tags[TAG_LIST_LENGTH - 1].tag.id_length = 0;
         new_tags[TAG_LIST_LENGTH - 1].last_seen = 0;
     } else {
-        new_tags[TAG_LIST_LENGTH - 1].tag_type = inject_tag.get("tag_type")->asUint();
-        strncpy(new_tags[TAG_LIST_LENGTH - 1].tag_id, inject_tag.get("tag_id")->asEphemeralCStr(), sizeof(new_tags[TAG_LIST_LENGTH - 1].tag_id));
+        const auto &str = inject_tag.get("tag_id")->asString();
+        new_tags[TAG_LIST_LENGTH - 1].tag.type = inject_tag.get("tag_type")->asUint();
+        new_tags[TAG_LIST_LENGTH - 1].tag.id_length = string_to_id(new_tags[TAG_LIST_LENGTH - 1].tag.id_bytes, str.c_str(), str.length());
         new_tags[TAG_LIST_LENGTH - 1].last_seen = now_us().to<millis_t>().as<uint32_t>() - last_tag_injection.to<millis_t>().as<uint32_t>();
     }
 
@@ -348,8 +409,10 @@ void NFC::update_seen_tags()
         tag_info_t *new_tag = new_tags + i;
 
         seen_tag_state->get("last_seen")->updateUint(new_tag->last_seen);
-        seen_tag_state->get("tag_type")->updateUint(new_tag->tag_type);
-        seen_tag_state->get("tag_id")->updateString(new_tag->tag_id);
+        seen_tag_state->get("tag_type")->updateUint(new_tag->tag.type);
+        char buf[NFC_TAG_ID_STRING_LENGTH + 1];
+        id_to_string(buf, &new_tag->tag);
+        seen_tag_state->get("tag_id")->updateString(buf);
     }
 
     // compare new list with old
@@ -364,9 +427,7 @@ void NFC::update_seen_tags()
             if (old_tags[old_idx].last_seen == 0)
                 continue;
 
-            if(strncmp(old_tags[old_idx].tag_id,
-                       new_tags[new_idx].tag_id,
-                       NFC_TAG_ID_STRING_LENGTH) != 0)
+            if (old_tags[old_idx].tag != new_tags[new_idx].tag)
                 continue;
 
             if (min_old_idx == -1 ||
@@ -403,6 +464,7 @@ void NFC::update_seen_tags()
     new_tags = tmp;
 }
 
+
 void NFC::setup_auth_tags()
 {
     const auto *auth_tags_cfg = (Config *)config.get("authorized_tags");
@@ -416,9 +478,11 @@ void NFC::setup_auth_tags()
     for (size_t i = 0; i < auth_tag_count; ++i) {
         const auto tag = auth_tags_cfg->get(i);
 
-        auth_tags[i].tag_type = tag->get("tag_type")->asUint();
+        auth_tags[i].tag.type = tag->get("tag_type")->asUint();
         auth_tags[i].user_id = tag->get("user_id")->asUint();
-        tag->get("tag_id")->asString().toCharArray(auth_tags[i].tag_id, sizeof(auth_tags[i].tag_id));
+
+        const auto &id = tag->get("tag_id")->asString();
+        auth_tags[i].tag.id_length = string_to_id(auth_tags[i].tag.id_bytes, id.c_str(), id.length());
     }
 
     this->deadtime_post_start = seconds_t{config.get("deadtime_post_start")->asUint()};
@@ -466,15 +530,48 @@ void NFC::register_urls()
     this->DeviceModule::register_urls();
 }
 
+bool NFC::get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]) {
+    const auto &seen_tag = old_tags[0];
+    const auto &injected_tag = old_tags[TAG_LIST_LENGTH - 1];
+    const tag_info_t *tag = nullptr;
+
+    // Injected tag wins if it was seen
+    // and either there is no "normal" seen tag
+    //     or it was seen before (i.e. a longer time ago than) the injected one.
+    if (injected_tag.last_seen > 0 && (seen_tag.last_seen == 0 || seen_tag.last_seen > injected_tag.last_seen))
+        tag = &injected_tag;
+    else if (seen_tag.last_seen > 0) // "normal" seen tag wins otherwise if there is one
+        tag = &seen_tag;
+
+    // No tag seen
+    if (tag == nullptr) {
+        return false;
+    }
+
+    if (info != nullptr)
+        *info = *tag;
+
+    if (id_with_separator != nullptr)
+        id_to_string(id_with_separator, &tag->tag);
+
+    if (id_without_separator != nullptr)
+        id_to_string_without_separator(id_without_separator, &tag->tag);
+
+    return true;
+}
+
 #if MODULE_AUTOMATION_AVAILABLE()
 bool NFC::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    tag_info_t *tag = (tag_info_t *)data;
+    tag_t *tag = (tag_t *)data;
     switch (conf->getTag<AutomationTriggerID>()) {
-        case AutomationTriggerID::NFC:
-        if (cfg->get("tag_type")->asUint() == tag->tag_type && cfg->get("tag_id")->asString() == tag->tag_id) {
-            return true;
+        case AutomationTriggerID::NFC: {
+            char buf[NFC_TAG_ID_STRING_LENGTH + 1];
+            id_to_string(buf, tag);
+            if (cfg->get("tag_type")->asUint() == tag->type && cfg->get("tag_id")->asString() == buf) {
+                return true;
+            }
         }
         break;
 
