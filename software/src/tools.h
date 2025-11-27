@@ -131,8 +131,10 @@ std::unique_ptr<T[]> heap_alloc_array(size_t n) {
 }
 #endif
 
-// Remove seperator for nfc tags
+// Remove ':' seperator for nfc tag IDs
 int remove_separator(const char *const in, char *out);
+// Add ':' separator for nfc tag IDs
+int add_separator(const char *const in, size_t in_len, char *out);
 
 enum class BootStage {
     STATIC_INITIALIZATION,
