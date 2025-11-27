@@ -104,18 +104,7 @@ void NFC::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
-    seen_tags_prototype = Config::Object({
-        {"tag_type", Config::Uint8(0)},
-        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
-        {"last_seen", Config::Uint32(0)}
-    });
-
-    seen_tags = Config::Array(
-        {},
-        &seen_tags_prototype,
-        0, TAG_LIST_LENGTH,
-        Config::type_id<Config::ConfObject>()
-    );
+    seen_tags = Config::Tuple({});
 
     config_authorized_tags_prototype = Config::Object({
         {"user_id", Config::Uint8(0)},
@@ -497,7 +486,11 @@ void NFC::setup()
     api.restorePersistentConfig("nfc/config", &config);
     setup_auth_tags();
 
-    seen_tags.setCount(TAG_LIST_LENGTH);
+    seen_tags.replace(TAG_LIST_LENGTH, Config::Object({
+        {"tag_type", Config::Uint8(0)},
+        {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
+        {"last_seen", Config::Uint32(0)}
+    }));
 
     task_scheduler.scheduleUncancelable([this]() {
         this->check_nfc_state();
