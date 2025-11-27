@@ -314,6 +314,29 @@ int remove_separator(const char *const in, char *out)
     return written;
 }
 
+int add_separator(const char *const in, size_t in_len, char *out)
+{
+    int written = 0;
+    if (in_len == 0) {
+        out[0] = '\0';
+        return 0;
+    }
+
+    for (size_t i = 0; i < in_len; ++i) {
+        out[written] = in[i];
+        ++written;
+        if (i % 2 == 1) {
+            out[written] = ':';
+            ++written;
+        }
+    }
+    // Only to one char back if a ':' was inserted last.
+    if (in_len % 2 == 0)
+        --written;
+    out[written] = '\0';
+    return written;
+}
+
 int strncmp_with_same_len(const char *left, const char *right, size_t right_len)
 {
     size_t left_len = strlen(left);

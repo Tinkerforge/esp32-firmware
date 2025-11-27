@@ -33,6 +33,7 @@
 #define NFC_TAG_ID_LENGTH 10
 // For hex strings: two chars per byte plus a separator between each byte
 #define NFC_TAG_ID_STRING_LENGTH (NFC_TAG_ID_LENGTH * 3 - 1)
+#define NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH (NFC_TAG_ID_LENGTH * 2)
 
 #define TAG_LIST_LENGTH 9
 
@@ -53,27 +54,31 @@ public:
     void setup() override;
     void register_urls() override;
 
+    struct tag_t {
+        uint8_t type;
+        uint8_t id_length;
+        uint8_t id_bytes[NFC_TAG_ID_LENGTH];
+    };
+
     struct tag_info_t {
         uint32_t last_seen;
-        uint8_t tag_type;
-        char tag_id[NFC_TAG_ID_STRING_LENGTH + 1]; // allow null terminator here
+        tag_t tag;
     };
 
     struct auth_tag_t {
-        uint8_t tag_type;
         uint8_t user_id;
-        char tag_id[NFC_TAG_ID_STRING_LENGTH + 1]; // allow null terminator here
+        tag_t tag;
     };
 
-    static_assert(sizeof(auth_tag_t::tag_id) == sizeof(tag_info_t::tag_id));
-
     void update_seen_tags();
-    void tag_seen(tag_info_t *tag, bool injected);
+    void tag_seen(tag_info_t *info, bool injected);
     void setup_nfc();
     void check_nfc_state();
-    uint8_t get_user_id(tag_info_t *tag, uint8_t *tag_idx);
+    uint8_t get_user_id(const tag_t &tag);
 
     void remove_user(uint8_t user_id);
+
+    bool get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]);
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;

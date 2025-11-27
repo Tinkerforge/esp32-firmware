@@ -163,7 +163,8 @@ struct ChargerState {
     uint32_t last_tracked_charge;
 
     micros_t nfc_last_seen;
-    uint8_t nfc_tag_id[30];
+    uint8_t nfc_tag_id_length;
+    uint8_t nfc_tag_id[10];
     uint8_t auth_type;
     uint8_t nfc_tag_type;
 

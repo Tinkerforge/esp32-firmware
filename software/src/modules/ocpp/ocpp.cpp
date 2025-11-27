@@ -192,12 +192,7 @@ bool Ocpp::on_tag_seen(const char *tag_id)
     if (tag_seen_cb == nullptr)
         return false;
 
-    // We have to remove the separating ':'s from the tag_id.
-    // OCPP expectes IDs that map to physical tag IDs to contain only the hex-bytes.
-    char buf[NFC_TAG_ID_STRING_LENGTH + 1] = {};
-    remove_separator(tag_id, buf);
-
-    tag_seen_cb(1, buf, tag_seen_cb_user_data);
+    tag_seen_cb(1, tag_id, tag_seen_cb_user_data);
     return true;
 }
 #endif

@@ -28,6 +28,8 @@
 
 #include "register_table.enum.h"
 
+struct WarpInputRegisterCtx;
+
 class ModbusTCP final : public IModule
 {
 public:
@@ -106,7 +108,7 @@ private:
         char chars[4];
     };
 
-    Option<TwoRegs> getWarpInputRegister(uint16_t address, void *ctx);
+    Option<TwoRegs> getWarpInputRegister(uint16_t address, WarpInputRegisterCtx *ctx);
     Option<TwoRegs> getWarpHoldingRegister(uint16_t address);
 
     Option<TwoRegs> getKebaHoldingRegister(uint16_t reg);

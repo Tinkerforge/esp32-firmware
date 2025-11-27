@@ -82,7 +82,7 @@ int CMNetworking::create_socket(uint16_t port, bool blocking)
 static const uint8_t cm_command_packet_length_versions[] = {
     sizeof(struct cm_packet_header),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v1),
-    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 or v2.
+    sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2), // cm_command_v2 redefined v1._padding to v2.allocated_phases. Size is still the same and cm_command_packet holds a union of v1 and v2.
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3),
     sizeof(struct cm_packet_header) + sizeof(struct cm_command_v2) + sizeof(struct cm_command_v3) + sizeof(struct cm_command_v4),
 };
@@ -93,8 +93,8 @@ static const uint8_t cm_state_packet_length_versions[] = {
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2),
     sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3),
-    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v3),
-    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v4) + sizeof(struct cm_state_v5),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v4),
+    sizeof(struct cm_packet_header) + sizeof(struct cm_state_v1) + sizeof(struct cm_state_v2) + sizeof(struct cm_state_v3) + sizeof(struct cm_state_v5), // cm_state_v5 redefined v4._padding. Size is still the same and cm_state_packet holds a union of v4 and v5.
 };
 static_assert(ARRAY_SIZE(cm_state_packet_length_versions) == (CM_STATE_VERSION + 1), "Unexpected amount of state packet length versions.");
 
@@ -659,7 +659,7 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         | has_phase_switch                          << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS
         | api.hasFeature("cp_disconnect")           << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS
         | api.hasFeature("evse")                    << CM_FEATURE_FLAGS_EVSE_BIT_POS
-        | api.hasFeature("nfc")                     << CM_FEATURE_FLAGS_NFC_BIT_POS
+        | has_nfc                                   << CM_FEATURE_FLAGS_NFC_BIT_POS
         | has_meter_values                          << CM_FEATURE_FLAGS_METER_ALL_VALUES_BIT_POS
         | has_meter_phases                          << CM_FEATURE_FLAGS_METER_PHASES_BIT_POS
         | has_meter                                 << CM_FEATURE_FLAGS_METER_BIT_POS
@@ -735,14 +735,27 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
 
     state_pkt.v4.requested_charge_mode = to_underlying(requested_charge_mode);
 
+#if MODULE_NFC_AVAILABLE
     if (has_nfc) {
-        auto last_seen_tag = api.getState("nfc/seen_tags")->get(0);
-        state_pkt.v5.auth_type = 1;
-        state_pkt.v5.nfc_last_seen = last_seen_tag->get("last_seen")->asUint();
-        state_pkt.v5.nfc_tag_type = last_seen_tag->get("tag_type")->asUint8();
-        auto tag_id_str = last_seen_tag->get("tag_id")->asString();
-        memcpy(state_pkt.v5.nfc_tag_id, tag_id_str.c_str(), sizeof(state_pkt.v5.nfc_tag_id) - 1);
+        NFC::tag_info_t info;
+        if (nfc.get_last_tag_seen(&info, nullptr, nullptr)
+            && info.last_seen < 3'600'000) {
+            state_pkt.v5.auth_type = CM_STATE_V5_AUTH_TYPE_NFC;
+            state_pkt.v5.nfc_last_seen_s = info.last_seen / 1000;
+            state_pkt.v5.nfc_tag_type = info.tag.type;
+            state_pkt.v5.nfc_tag_id_len = info.tag.id_length;
+            logger.printfln_debug("hier %d", info.tag.id_length);
+            memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
+            memcpy(state_pkt.v5.nfc_tag_id, info.tag.id_bytes, info.tag.id_length);
+        } else {
+            state_pkt.v5.auth_type = CM_STATE_V5_AUTH_TYPE_NONE;
+            state_pkt.v5.nfc_last_seen_s = 0;
+            state_pkt.v5.nfc_tag_type = 0;
+            state_pkt.v5.nfc_tag_id_len = 0;
+            memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
+        }
     }
+#endif
 
     return send_state_packet(&state_pkt);
 }
