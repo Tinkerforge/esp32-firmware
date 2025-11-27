@@ -28,6 +28,7 @@
 #include "node_state.enum.h"
 #include "ship_connection.h"
 #include "ship_discovery_state.enum.h"
+#include "tools/string_builder.h"
 #include <TFJson.h>
 #include <vector>
 
