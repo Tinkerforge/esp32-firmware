@@ -336,7 +336,7 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
     uint8_t user_id = get_user_id(info->tag);
 
     char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
-    id_to_string_without_separator(buf, &info->tag);
+    id_to_string_without_separator(buf_ocpp, &info->tag);
 
     if (user_id != 0) {
         // Found a new authorized tag.
