@@ -83,7 +83,7 @@ T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
 
 template<typename T, class... Args>
 [[gnu::malloc]]
-T *perm_new_array(size_t count, RAM r) {
+T *perm_new_array(size_t count, RAM r, Args&&... args) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_aligned_alloc(alignof(T), sizeof(T) * count, r);
@@ -91,13 +91,13 @@ T *perm_new_array(size_t count, RAM r) {
         return nullptr;
 
     T *ptr = static_cast<T *>(mem);
-    new (ptr) T[count];
+    new (ptr) T[count]{std::forward<Args>(args)...};
     return ptr;
 }
 
 template<typename T, class... Args>
 [[gnu::malloc]]
-T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
+T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3, Args&&... args) {
     static_assert(alignof(T) <= Arena::MAX_ALIGNMENT);
 
     void *mem = perm_aligned_alloc_prefer(alignof(T), sizeof(T) * count, r1, r2, r3);
@@ -105,7 +105,7 @@ T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
         return nullptr;
 
     T *ptr = static_cast<T *>(mem);
-    new (ptr) T[count];
+    new (ptr) T[count]{std::forward<Args>(args)...};
     return ptr;
 }
 
