@@ -85,7 +85,6 @@ public:
 #endif
 
 private:
-    Config seen_tags_prototype;
     Config config_authorized_tags_prototype;
     ConfigRoot config;
     ConfigRoot auth_info;
