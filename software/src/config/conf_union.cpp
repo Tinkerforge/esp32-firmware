@@ -103,17 +103,6 @@ Config::ConfUnion::~ConfUnion()
     notify_free_slot<Config::ConfUnion>(idx);
 }
 
-Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
-{
-    if (this == &cpy) {
-        return *this;
-    }
-
-    *this->getSlot() = *cpy.getSlot();
-
-    return *this;
-}
-
 Config::ConfUnion::ConfUnion(ConfUnion &&cpy)  : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();

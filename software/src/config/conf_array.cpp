@@ -132,16 +132,6 @@ Config::ConfArray::~ConfArray()
     notify_free_slot<Config::ConfArray>(idx);
 }
 
-Config::ConfArray &Config::ConfArray::operator=(const ConfArray &cpy)
-{
-    if (this == &cpy)
-        return *this;
-
-    *this->getSlot() = *cpy.getSlot();
-
-    return *this;
-}
-
 Config::ConfArray::ConfArray(ConfArray &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();

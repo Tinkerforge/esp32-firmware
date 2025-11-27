@@ -87,16 +87,6 @@ Config::ConfInt::~ConfInt()
     notify_free_slot<Config::ConfInt>(idx);
 }
 
-Config::ConfInt &Config::ConfInt::operator=(const ConfInt &cpy)
-{
-    if (this == &cpy)
-        return *this;
-
-    *this->getSlot() = *cpy.getSlot();
-
-    return *this;
-}
-
 Config::ConfInt::ConfInt(ConfInt &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();

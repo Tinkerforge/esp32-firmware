@@ -148,27 +148,6 @@ Config::ConfTuple::~ConfTuple()
     notify_free_slot<Config::ConfTuple>(idx);
 }
 
-Config::ConfTuple &Config::ConfTuple::operator=(const ConfTuple &cpy)
-{
-    if (this == &cpy)
-        return *this;
-
-    const size_t len = cpy.getSlot()->length;
-    Config *cpy_vals = cpy.getSlot()->values.get();
-
-    Config *vals = new Config[len];
-
-    auto *slot = this->getSlot();
-    slot->values.reset(vals);
-    slot->length = len;
-
-    for (size_t i = 0; i < len; ++i) {
-        vals[i] = cpy_vals[i];
-    }
-
-    return *this;
-}
-
 Config::ConfTuple::ConfTuple(ConfTuple &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();

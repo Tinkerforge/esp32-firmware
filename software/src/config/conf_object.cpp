@@ -189,8 +189,6 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 
 Config::ConfObject::ConfObject(const ConfObject &cpy) : idx(nextSlot<Config::ConfObject>())
 {
-    // TODO: could we just use *this = cpy here?
-
     // We have to mark this slot as in use here:
     // (by setting the schema pointer first)
     // This object could contain a nested object that will be copied over
@@ -222,32 +220,6 @@ Config::ConfObject::~ConfObject()
     slot->values = nullptr;
 
     notify_free_slot<Config::ConfObject>(idx);
-}
-
-Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
-{
-    if (this == &cpy)
-        return *this;
-
-    // We have to mark this slot as in use here:
-    // (by setting the schema pointer first)
-    // This object could contain a nested object that will be copied over
-    // The inner object's copy constructor then takes the first free slot, i.e.
-    // ours if we don't mark it as in use first.
-    this->getSlot()->schema = cpy.getSlot()->schema;
-
-    const size_t len = cpy.getSlot()->schema->length;
-    auto values = new Config[len]();
-    for (size_t i = 0; i < len; ++i)
-        values[i] = cpy.getSlot()->values[i];
-
-    // Must call getSlot() again because any reference would be invalidated
-    // if the copy triggers a move of the slots.
-    if (this->getSlot()->values != nullptr)
-        delete[] this->getSlot()->values;
-    this->getSlot()->values = values;
-
-    return *this;
 }
 
 Config::ConfObject::ConfObject(ConfObject &&cpy)  : idx(cpy.idx)

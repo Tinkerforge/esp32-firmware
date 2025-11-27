@@ -102,17 +102,6 @@ Config::ConfString::~ConfString()
     notify_free_slot<Config::ConfString>(idx);
 }
 
-Config::ConfString &Config::ConfString::operator=(const ConfString &cpy)
-{
-    if (this == &cpy) {
-        return *this;
-    }
-
-    *this->getSlot() = *cpy.getSlot();
-
-    return *this;
-}
-
 Config::ConfString::ConfString(ConfString &&cpy) : idx(cpy.idx)
 {
     cpy.idx = std::numeric_limits<decltype(idx)>::max();

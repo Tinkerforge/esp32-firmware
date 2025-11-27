@@ -107,7 +107,7 @@ struct Config {
         ConfString(const ConfString &cpy);
         ~ConfString();
 
-        ConfString &operator=(const ConfString &cpy);
+        ConfString &operator=(const ConfString &cpy) = delete;
 
         ConfString(ConfString &&cpy);
         ConfString &operator=(ConfString &&cpy) = delete;
@@ -135,7 +135,7 @@ struct Config {
         ConfFloat(const ConfFloat &cpy);
         ~ConfFloat();
 
-        ConfFloat &operator=(const ConfFloat &cpy);
+        ConfFloat &operator=(const ConfFloat &cpy) = delete;
 
         ConfFloat(ConfFloat &&cpy);
         ConfFloat &operator=(ConfFloat &&cpy) = delete;
@@ -163,7 +163,7 @@ struct Config {
         ConfInt(const ConfInt &cpy);
         ~ConfInt();
 
-        ConfInt &operator=(const ConfInt &cpy);
+        ConfInt &operator=(const ConfInt &cpy) = delete;
 
         ConfInt(ConfInt &&cpy);
         ConfInt &operator=(ConfInt &&cpy) = delete;
@@ -191,7 +191,7 @@ struct Config {
         ConfUint(const ConfUint &cpy);
         ~ConfUint();
 
-        ConfUint &operator=(const ConfUint &cpy);
+        ConfUint &operator=(const ConfUint &cpy) = delete;
 
         ConfUint(ConfUint &&cpy);
         ConfUint &operator=(ConfUint &&cpy) = delete;
@@ -219,7 +219,7 @@ struct Config {
         ConfInt32(const ConfInt32 &cpy);
         ~ConfInt32();
 
-        ConfInt32 &operator=(const ConfInt32 &cpy);
+        ConfInt32 &operator=(const ConfInt32 &cpy) = delete;
 
         ConfInt32(ConfInt32 &&cpy);
         ConfInt32 &operator=(ConfInt32 &&cpy) = delete;
@@ -247,7 +247,7 @@ struct Config {
         ConfUint32(const ConfUint32 &cpy);
         ~ConfUint32();
 
-        ConfUint32 &operator=(const ConfUint32 &cpy);
+        ConfUint32 &operator=(const ConfUint32 &cpy) = delete;
 
         ConfUint32(ConfUint32 &&cpy);
         ConfUint32 &operator=(ConfUint32 &&cpy) = delete;
@@ -275,7 +275,7 @@ struct Config {
         ConfInt52(const ConfInt52 &cpy);
         ~ConfInt52();
 
-        ConfInt52 &operator=(const ConfInt52 &cpy);
+        ConfInt52 &operator=(const ConfInt52 &cpy) = delete;
 
         ConfInt52(ConfInt52 &&cpy);
         ConfInt52 &operator=(ConfInt52 &&cpy) = delete;
@@ -303,7 +303,7 @@ struct Config {
         ConfUint53(const ConfUint53 &cpy);
         ~ConfUint53();
 
-        ConfUint53 &operator=(const ConfUint53 &cpy);
+        ConfUint53 &operator=(const ConfUint53 &cpy) = delete;
 
         ConfUint53(ConfUint53 &&cpy);
         ConfUint53 &operator=(ConfUint53 &&cpy) = delete;
@@ -372,7 +372,7 @@ struct Config {
         ConfArray(const ConfArray &cpy);
         ~ConfArray();
 
-        ConfArray &operator=(const ConfArray &cpy);
+        ConfArray &operator=(const ConfArray &cpy) = delete;
 
         ConfArray(ConfArray &&cpy);
         ConfArray &operator=(ConfArray &&cpy) = delete;
@@ -401,7 +401,7 @@ struct Config {
         ConfObject(const ConfObject &cpy);
         ~ConfObject();
 
-        ConfObject &operator=(const ConfObject &cpy);
+        ConfObject &operator=(const ConfObject &cpy) = delete;
 
         ConfObject(ConfObject &&cpy);
         ConfObject &operator=(ConfObject &&cpy) = delete;
@@ -432,7 +432,7 @@ struct Config {
         ConfUnion(const ConfUnion &cpy);
         ~ConfUnion();
 
-        ConfUnion &operator=(const ConfUnion &cpy);
+        ConfUnion &operator=(const ConfUnion &cpy) = delete;
 
         ConfUnion(ConfUnion &&cpy);
         ConfUnion &operator=(ConfUnion &&cpy) = delete;
@@ -465,7 +465,7 @@ struct Config {
         ConfTuple(const ConfTuple &cpy);
         ~ConfTuple();
 
-        ConfTuple &operator=(const ConfTuple &cpy);
+        ConfTuple &operator=(const ConfTuple &cpy) = delete;
 
         ConfTuple(ConfTuple &&cpy);
         ConfTuple &operator=(ConfTuple &&cpy) = delete;
