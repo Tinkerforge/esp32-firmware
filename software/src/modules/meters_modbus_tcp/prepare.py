@@ -23,6 +23,7 @@ import huawei
 import sma
 import varta
 import chisage_ess
+import janitza
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -51,6 +52,7 @@ modules = [
     sma,
     varta,
     chisage_ess,
+    janitza,
 ]
 
 table_prototypes = []
@@ -171,7 +173,7 @@ for spec in specs:
                 start_address = value['start_address']
 
             if start_address != 'START_ADDRESS_VIRTUAL':
-                address_name_words = value['name'].split('|', 1)[-1].split('[')[0].replace('-', ' ').replace('/', ' ').replace('.', ' ').split(' ')
+                address_name_words = value['name'].split('|', 1)[-1].split('[')[0].replace('+', ' ').replace('-', ' ').replace('/', ' ').replace('.', ' ').replace(',', ' ').split(' ')
                 address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
                 value_addresses.append(f'    {address_name} = {start_address},')

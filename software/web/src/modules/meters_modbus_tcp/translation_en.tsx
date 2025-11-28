@@ -63,6 +63,7 @@ let x = {
             "table_varta_element": "VARTA element / one / pulse / link",
             "table_varta_flex": "VARTA pulse neo / flex storage",
             "table_chisage_ess_hybrid_inverter": "Chisage ESS hybrid inverter",
+            "table_janitza": "Janitza (UMG series)",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",

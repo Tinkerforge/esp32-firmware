@@ -300,6 +300,7 @@ export function init() {
                                 [MeterModbusTCPTableID.HuaweiEMMA.toString(), __("meters_modbus_tcp.content.table_huawei_emma")],
                                 [MeterModbusTCPTableID.HuaweiSUN2000.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000")],
                                 [MeterModbusTCPTableID.HuaweiSUN2000SmartDongle.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000_smart_dongle")],
+                                [MeterModbusTCPTableID.Janitza.toString(), __("meters_modbus_tcp.content.table_janitza")],
                                 [MeterModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_basic_mode")],
                                 [MeterModbusTCPTableID.SAXPowerHomeExtendedMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_extended_mode")],
                                 [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
@@ -388,7 +389,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAElement
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
-                  || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.Janitza)) {
                     if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
                         edit_children.push(
                             <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
