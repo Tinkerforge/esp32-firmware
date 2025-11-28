@@ -150,83 +150,63 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 result = "Error: " + transact_result.error;
             }
             else if (transact_result.read_data !== null) {
-                if (this.state.function_code == 1 || this.state.function_code == 2) {
-                    let header = " AdrD  AdrH   NumD   NumH   Idx  V ";
+                let rows = [];
+                let footer = "";
 
-                    result = header + "\n";
+                if (this.state.function_code == 1 || this.state.function_code == 2) {
+                    let header = ["AdrD", "AdrH", "NumD", "NumH", "Idx", "V"];
+
+                    rows.push(header);
+                    rows.push(null);
 
                     for (let i = 0, j = 0; j < transact_result.read_data.length / 2; ++j) {
                         let values = parseInt(transact_result.read_data.substring(j * 2, j * 2 + 2), 16);
 
                         for (let k = 0; k < 8 && i < this.state.data_count; ++k, ++i) {
-                            let a = this.state.start_address + i;
+                            let adr = this.state.start_address + i;
+                            let adr_d = adr.toString(10);
+                            let adr_h = adr.toString(16).toUpperCase();
 
-                            let ad_pad = "    " + a;
+                            let num = adr + 1;
+                            let num_d = num.toString(10);
+                            let num_h = num.toString(16).toUpperCase();
 
-                            ad_pad = ad_pad.substring(ad_pad.length - 5);
-
-                            let ah_pad = "   " + a.toString(16);
-
-                            ah_pad = ah_pad.substring(ah_pad.length - 4);
-
-                            let n = a + 1;
-
-                            let nd_pad = "    " + n;
-
-                            nd_pad = nd_pad.substring(nd_pad.length - 5);
-
-                            let nh_pad = "    " + n.toString(16);
-
-                            nh_pad = nh_pad.substring(nh_pad.length - 5);
-
-                            let i_pad = "   " + i;
-
-                            i_pad = i_pad.substring(i_pad.length - 4);
+                            let idx = i.toString(10);
 
                             let v = values & (1 << k) ? "1" : "0";
 
-                            result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + v + " ";
+                            rows.push([adr_d, adr_h, num_d, num_h, idx, v]);
 
                             if (i % 20 == 19 && i < this.state.data_count - 1) {
-                                result += "\n\n" + header + "\n";
+                                rows.push(null);
+                                rows.push(header);
+                                rows.push(null);
                             }
                         }
                     }
                 }
                 else {
-                    let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS       Binary [15..0]    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
+                    let header = ["AdrD", "AdrH", "NumD", "NumH", "Idx", "Hex", "AS", "Binary [15..0]", "U16", "S16", "U32BE", "U32LE", "S32BE", "S32LE", "F32BE", "F32LE", "U64BE", "U64LE", "S64BE", "S64LE", "F64BE", "F64LE"];
 
-                    result = header + "\n";
+                    rows.push(header);
+                    rows.push(null);
 
                     let ascii_all = "";
 
                     for (let i = 0; i < transact_result.read_data.length / 4; ++i) {
-                        let a = this.state.start_address + i;
+                        let adr = this.state.start_address + i;
+                        let adr_d = adr.toString(10);
+                        let adr_h = adr.toString(16).toUpperCase();
 
-                        let ad_pad = "    " + a;
+                        let num = adr + 1;
+                        let num_d = num.toString(10);
+                        let num_h = num.toString(16).toUpperCase();
 
-                        ad_pad = ad_pad.substring(ad_pad.length - 5);
+                        let idx = i.toString(10);
 
-                        let ah_pad = "   " + a.toString(16);
-
-                        ah_pad = ah_pad.substring(ah_pad.length - 4);
-
-                        let n = a + 1;
-
-                        let nd_pad = "    " + n;
-
-                        nd_pad = nd_pad.substring(nd_pad.length - 5);
-
-                        let nh_pad = "    " + n.toString(16);
-
-                        nh_pad = nh_pad.substring(nh_pad.length - 5);
-
-                        let i_pad = "  " + i;
-
-                        i_pad = i_pad.substring(i_pad.length - 3);
-
-                        let hex = transact_result.read_data.substring(i * 4, i * 4 + 4);
+                        let hex = transact_result.read_data.substring(i * 4, i * 4 + 4).toUpperCase();
                         let u16 = parseInt(hex, 16);
+                        let u16_s = u16.toString(10);
 
                         let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
                         let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
@@ -234,23 +214,19 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         ascii_all += ascii_0;
                         ascii_all += ascii_1;
 
-                        let binary_pad = "000000000000000" + u16.toString(2);
+                        let binary_s = "000000000000000" + u16.toString(2);
 
-                        binary_pad = binary_pad.substring(binary_pad.length - 16);
-                        binary_pad = binary_pad.substring(0, 4) + " " + binary_pad.substring(4, 8) + " " + binary_pad.substring(8, 12) + " " + binary_pad.substring(12, 16);
+                        binary_s = binary_s.substring(binary_s.length - 16);
+                        binary_s = binary_s.substring(0, 4) + " " + binary_s.substring(4, 8) + " " + binary_s.substring(8, 12) + " " + binary_s.substring(12, 16);
 
-                        let u16_pad = "    " + u16;
+                        let s16_s = ((u16 << 16) >> 16).toString(10);
 
-                        u16_pad = u16_pad.substring(u16_pad.length - 5);
-
-                        let s16_pad = "     " + ((u16 << 16) >> 16);
-
-                        s16_pad = s16_pad.substring(s16_pad.length - 6);
-
-                        let u32be_pad = "          ";
-                        let u32le_pad = "          ";
-                        let s32be_pad = "           ";
-                        let s32le_pad = "           ";
+                        let u32be_s = "";
+                        let u32le_s = "";
+                        let s32be_s = "";
+                        let s32le_s = "";
+                        let f32be_s = "";
+                        let f32le_s = "";
 
                         if ((i % 2) == 1) {
                             let u32be = parseInt(transact_result.read_data.substring((i - 1) * 4,     (i - 1) * 4 + 8), 16);
@@ -259,21 +235,27 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             let s32be = u32be >> 0;
                             let s32le = u32le >> 0;
 
-                            u32be_pad += u32be;
-                            u32le_pad += u32le;
-                            s32be_pad += s32be;
-                            s32le_pad += s32le;
+                            let view = new DataView(new ArrayBuffer(4));
+
+                            view.setUint32(0, u32be);
+
+                            let f32be = Math.fround(view.getFloat32(0));
+                            let f32le = Math.fround(view.getFloat32(0, true));
+
+                            u32be_s = u32be.toString();
+                            u32le_s = u32le.toString();
+                            s32be_s = s32be.toString();
+                            s32le_s = s32le.toString();
+                            f32be_s = f32be.toString();
+                            f32le_s = f32le.toString();
                         }
 
-                        u32be_pad = u32be_pad.substring(u32be_pad.length - 10);
-                        u32le_pad = u32le_pad.substring(u32le_pad.length - 10);
-                        s32be_pad = s32be_pad.substring(s32be_pad.length - 11);
-                        s32le_pad = s32le_pad.substring(s32le_pad.length - 11);
-
-                        let u64be_pad = "                    ";
-                        let u64le_pad = "                    ";
-                        let s64be_pad = "                     ";
-                        let s64le_pad = "                     ";
+                        let u64be_s = "";
+                        let u64le_s = "";
+                        let s64be_s = "";
+                        let s64le_s = "";
+                        let f64be_s = "";
+                        let f64le_s = "";
 
                         if ((i % 4) == 3) {
                             let u64be = BigInt("0x" + transact_result.read_data.substring((i - 3) * 4,      (i - 3) * 4 + 16));
@@ -284,26 +266,70 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             let s64be = BigInt.asIntN(64, u64be);
                             let s64le = BigInt.asIntN(64, u64le);
 
-                            u64be_pad += u64be.toString();
-                            u64le_pad += u64le.toString();
-                            s64be_pad += s64be.toString();
-                            s64le_pad += s64le.toString();
+                            let view = new DataView(new ArrayBuffer(8));
+
+                            view.setBigUint64(0, s64be);
+
+                            let f64be = view.getFloat64(0);
+                            let f64le = view.getFloat64(0, true);
+
+                            u64be_s = u64be.toString();
+                            u64le_s = u64le.toString();
+                            s64be_s = s64be.toString();
+                            s64le_s = s64le.toString();
+                            f64be_s = f64be.toString();
+                            f64le_s = f64le.toString();
                         }
 
-                        u64be_pad = u64be_pad.substring(u64be_pad.length - 20);
-                        u64le_pad = u64le_pad.substring(u64le_pad.length - 20);
-                        s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
-                        s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
-
-                        result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + binary_pad + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+                        rows.push([adr_d, adr_h, num_d, num_h, idx, hex, ascii_0 + ascii_1, binary_s, u16_s, s16_s, u32be_s, u32le_s, s32be_s, s32le_s, f32be_s, f32le_s, u64be_s, u64le_s, s64be_s, s64le_s, f64be_s, f64le_s]);
 
                         if (i % 20 == 19 && i < transact_result.read_data.length / 4 - 1) {
-                            result += "\n\n" + header + "\n";
+                            rows.push(null);
+                            rows.push(header);
+                            rows.push(null);
                         }
                     }
 
-                    result += "\n\nASCII: " + ascii_all;
+                    footer = "\n\nASCII: " + ascii_all;
                 }
+
+                let column_widths: number[] = [];
+
+                for (let row of rows) {
+                    if (row !== null) {
+                        for (let i = 0; i < row.length; ++i) {
+                            if (column_widths[i] === undefined || row[i].length > column_widths[i]) {
+                                column_widths[i] = row[i].length;
+                            }
+                        }
+                    }
+                }
+
+                result = "";
+
+                for (let row of rows) {
+                    if (result.length > 0) {
+                        result += "\n";
+                    }
+
+                    if (row !== null) {
+                        for (let i = 0; i < row.length; ++i) {
+                            let cell = " ".repeat(column_widths[i]) + row[i];
+
+                            cell = cell.substring(cell.length - column_widths[i]);
+
+                            if (i > 0) {
+                                result += "  ";
+                            }
+
+                            result += cell;
+                        }
+
+                        result += " ";
+                    }
+                }
+
+                result += footer;
             }
 
             this.setState({waiting: false, cookie: null, result: result});
