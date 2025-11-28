@@ -107,6 +107,7 @@ String chargeRecordFilename(uint32_t i)
     return String(buf, sw.getLength());
 }
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
 static bool wants_send(uint32_t current_time_min, uint32_t last_send_time_min)
 {
     if (last_send_time_min == 0) {
@@ -128,7 +129,7 @@ static bool wants_send(uint32_t current_time_min, uint32_t last_send_time_min)
 
     return true;
 }
-
+#endif
 
 void ChargeTracker::pre_setup()
 {
