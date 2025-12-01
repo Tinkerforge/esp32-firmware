@@ -278,9 +278,9 @@ std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_ce
 
     if (bytes_read != file_size) {
         logger.printfln("Failed to read cert %hhu: got %zu/%zu bytes, %s (%i)", cert_id, bytes_read, file_size, strerror(errno), errno);
+        return {};
     }
 
-    bytes_read = std::min(bytes_read, file_size); // Safeguard against bytes_read > file_size because read() might return SIZE_MAX.
     cert_data[bytes_read] = 0;
 
     if (out_cert_len) {
