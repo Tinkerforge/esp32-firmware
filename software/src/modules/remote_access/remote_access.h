@@ -104,8 +104,6 @@ private:
     esp_ping_handle_t ping = nullptr;
     micros_t ping_start = 0_us;
 
-    bool done = false;
-
     std::unique_ptr<AsyncHTTPSClient> https_client;
     String response_body;
     std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;

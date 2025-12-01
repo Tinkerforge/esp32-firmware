@@ -1698,8 +1698,8 @@ void RemoteAccess::resolve_management()
         this->management_request_done = true;
         this->last_mgmt_alive = now_us();
         this->request_cleanup();
-        // Don't reconnect if authentication failed or we already setup the connection
-        if (!this->management_auth_failed && !done) {
+        // Don't reconnect if authentication failed
+        if (!this->management_auth_failed) {
             this->connect_management();
         }
         this->connection_state.get(0)->get("state")->updateUint(1);
@@ -1795,11 +1795,6 @@ void RemoteAccess::request_cleanup()
 
 void RemoteAccess::connect_management()
 {
-    if (done) {
-        logger.printfln("Attempted connect_management again despite being done");
-        return;
-    }
-
     struct timeval tv;
     if (!rtc.clock_synced(&tv)) {
         task_scheduler.scheduleOnce(
@@ -1809,8 +1804,7 @@ void RemoteAccess::connect_management()
             5_s);
         return;
     }
-
-    done = true;
+    management = nullptr;
 
     const IPAddress internal_ip     { 10,123,123,2};
     const IPAddress internal_subnet {255,255,255,0};
@@ -2202,10 +2196,6 @@ int RemoteAccess::stop_ping() {
 }
 
 bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip) {
-    if (!done) {
-        return false;
-    }
-
     const uint32_t ip = static_cast<uint32_t>(local_ip);
     const uint32_t masked_ip = ip & 0xFF00FFFFul;
     constexpr uint32_t expected_masked_ip = ntohl((10u << 24) + (123u << 16) + (0u << 8) + (2u << 0)); // 10.123.x.2
