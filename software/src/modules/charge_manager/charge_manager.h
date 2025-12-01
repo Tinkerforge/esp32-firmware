@@ -104,6 +104,9 @@ public:
     uint8_t config_cm_to_cm(ConfigChargeMode power_manager_charge_mode);
     ConfigChargeMode cm_to_config_cm(uint8_t mode);
 
+    // we need the config to be public since we need access to it in users module setup
+    ConfigRoot config;
+
 private:
     bool seen_all_chargers();
     void start_manager_task();
@@ -161,7 +164,6 @@ private:
 
     ChargerState *charger_state = nullptr;
 
-    ConfigRoot config;
     ConfigRoot low_level_config;
 
     ConfigRoot state;
