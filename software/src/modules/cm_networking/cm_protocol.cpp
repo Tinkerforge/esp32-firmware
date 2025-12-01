@@ -744,7 +744,6 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
             state_pkt.v5.nfc_last_seen_s = info.last_seen / 1000;
             state_pkt.v5.nfc_tag_type = info.tag.type;
             state_pkt.v5.nfc_tag_id_len = info.tag.id_length;
-            logger.printfln_debug("hier %d", info.tag.id_length);
             memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
             memcpy(state_pkt.v5.nfc_tag_id, info.tag.id_bytes, info.tag.id_length);
         } else {
