@@ -50,25 +50,26 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_LPC_AWAIT_HEARTBEAT false
 
 // Feature Addresses for the different features in the usecases. Addresses can repeat accross entities but we make sure they are unique for simplicity
-enum FeatureAddresses : uint8_t {
+/*enum FeatureAddresses : uint8_t {
     nodemgmt_feature_address = 0,
-    chargingsummary_bill,
-    chargerate_measurement,
+    chargingsummary_bill = 10,
+    chargerate_measurement = 20,
     chargerate_electrical_connection,
-    ev_device_configuration,
+    ev_device_configuration = 30,
     ev_identification,
     ev_device_classification,
     ev_electrical_connection,
     ev_device_diagnosis,
-    evse_device_classification,
+    evse_device_classification = 40,
     evse_device_diagnosis,
-    lpc_loadcontrol,
+    lpc_loadcontrol = 50,
     lpc_device_configuration,
-    lpc_device_diagnosis,
+    lpc_device_diagnosis_server,
+    lpc_device_diagnosis_client,
     lpc_electrical_connection,
-    cevc_timeseries,
+    cevc_timeseries = 60,
     cevc_incentive_table,
-};
+};*/
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
@@ -90,6 +91,10 @@ public:
     void set_entity_address(const std::vector<int> &address)
     {
         entity_address = address;
+    }
+    [[nodiscard]] std::vector<int> get_entity_address() const
+    {
+        return entity_address;
     }
 
     [[nodiscard]] bool matches_entity_address(const std::vector<int> &address) const
@@ -127,7 +132,13 @@ public:
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-
+    [[nodiscard]] virtual std::vector<FeatureTypeEnumType> get_supported_features() const = 0;
+    /**
+     * Set a feature address for a given feature type.
+     * @param feature_address The feature address. This must be unique within the usecase.
+     * @param feature_type The feature type. This must also be unique within the usecase and must be one of the features returned by get_supported_features().
+     */
+    void set_feature_address(AddressFeatureType feature_address, FeatureTypeEnumType feature_type);
 
     [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
     [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
@@ -135,7 +146,9 @@ public:
 protected:
     std::vector<int> entity_address{}; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
 
-    bool entity_active = true; // If the entity is active or not. Inactive entities do not respond to messages or their entity and feature information should not be called.
+    bool entity_active = true;                                             // If the entity is active or not. Inactive entities do not respond to messages or their entity and feature information should not be called.
+    std::map<FeatureTypeEnumType, AddressFeatureType> feature_addresses{}; // The feature addresses of the features in this usecase.
+    [[nodiscard]] FeatureTypeEnumType get_feature_by_address(AddressFeatureType feature_address) const;
 };
 
 /**
@@ -198,6 +211,11 @@ public:
      */
     void detailed_discovery_update();
 
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::NodeManagement};
+    }
+
 private:
     AddressFeatureType nodemgmt_feature_address = 0;
 
@@ -222,6 +240,7 @@ private:
     */
     CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
+public:
 };
 
 /**
@@ -280,6 +299,10 @@ public:
     {
         return "EvcsUsecase";
     };
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::Bill};
+    }
 
 private:
     struct BillEntry {
@@ -353,6 +376,11 @@ public:
      * @param energy_stepsize Stepsize of the charged power in wh measurement
      */
     void update_constraints(int amps_min, int amps_max, int amps_stepsize, int power_min, int power_max, int power_stepsize, int energy_min, int energy_max, int energy_stepsize);
+
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};
+    }
 
 private:
     // Data held about the current charge
@@ -480,7 +508,11 @@ public:
     bool is_ev_connected() const
     {
         return ev_connected;
-    };
+    }
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return { FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Identification, FeatureTypeEnumType::DeviceClassification, FeatureTypeEnumType::ElectricalConnection};
+    }
 
 private:
     void update_api() const;
@@ -555,12 +587,12 @@ public:
      * @param error_message The message describing the failure. Only used if failure is true.
      */
     void update_operating_state(bool failure = false, const String &error_message = "");
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::DeviceClassification};
+    }
 
 private:
-    // Feature Addresses
-    uint8_t feature_address_device_classification = FeatureAddresses::evse_device_classification;
-    uint8_t feature_address_device_diagnosis = FeatureAddresses::evse_device_diagnosis;
-
     // Server Data
     DeviceDiagnosisOperatingStateEnumType operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
     std::string last_error_message;
@@ -639,7 +671,11 @@ public:
     String get_entity_name() const override
     {
         return "LpcUsecase";
-    };
+    }
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection};
+    }
 
 private:
     /**
@@ -783,6 +819,11 @@ public:
         std::vector<IncentiveTier> tiers;
     };
 
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::TimeSeries, FeatureTypeEnumType::IncentiveTable};
+    }
+
 private:
     // Functions
     // Timeseries Feature
@@ -859,14 +900,16 @@ public:
 
     NodeManagementEntity node_management{};
 #if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+
+    EvseccUsecase evse_commissioning_and_configuration{};
     EvcsUsecase charging_summary{};
     LpcUsecase limitation_of_power_consumption{};
-    EvccUsecase ev_commissioning_and_configuration{};
-    EvseccUsecase evse_commissioning_and_configuration{};
-    CevcUsecase coordinate_ev_charging{};
-    EvcemUsecase ev_charging_electricity_measurement{};
 
-    std::vector<EebusUsecase *> entity_list{&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration, &coordinate_ev_charging, &ev_charging_electricity_measurement};
+    EvccUsecase ev_commissioning_and_configuration{};
+    EvcemUsecase ev_charging_electricity_measurement{};
+    CevcUsecase coordinate_ev_charging{};
+
+    std::vector<EebusUsecase *> usecase_list{&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration, &coordinate_ev_charging, &ev_charging_electricity_measurement};
 #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
     // TODO: Implement the power production limitation usecase
 
@@ -909,7 +952,7 @@ std::string iso_duration_to_string(seconds_t duration);
  * @param iso_duration The ISO 8601 duration string
  * @return The duration in seconds.
  */
-seconds_t iso_duration_to_seconds(const std::string& iso_duration);
+seconds_t iso_duration_to_seconds(const std::string &iso_duration);
 
 time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
 
