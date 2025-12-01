@@ -141,10 +141,11 @@ private:
     bool mdns_result_is_charger(mdns_result_t *entry, const char **ret_version, const char **ret_enabled, const char **ret_display_name, const char **ret_proxy_of);
     void resolve_via_mdns(mdns_result_t *entry);
     bool get_scan_results(CoolString &result);
+    void resolve_scan_results_only();
 
     #define SCAN_RESULT_ERROR_OK 0
     #define SCAN_RESULT_ERROR_FIRMWARE_MISMATCH 1
     #define SCAN_RESULT_ERROR_MANAGEMENT_DISABLED 2
-    void add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json);
+    void add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer *json);
     size_t build_scan_result_json(mdns_result_t *list, char *buf, size_t len);
 };

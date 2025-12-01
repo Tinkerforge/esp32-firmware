@@ -401,22 +401,17 @@ void CMNetworking::check_mdns_results()
     }
 
 #if MODULE_WS_AVAILABLE()
-    CoolString result;
-    if (get_scan_results(result))
-        ws.pushRawStateUpdate(result, "charge_manager/scan_result");
-#else
-    {
-        std::lock_guard<std::mutex> lock{scan_results_mutex};
-        if (scan_results == nullptr)
-            return;
-
-        while (scan_results != nullptr) {
-            if (this->mdns_result_is_charger(scan_results, nullptr, nullptr, nullptr))
-                this->resolve_via_mdns(scan_results);
-            scan_results = scan_results->next;
-        }
+    if (ws.haveActiveClient()) {
+        CoolString result;
+        if (get_scan_results(result))
+            ws.pushRawStateUpdate(result, "charge_manager/scan_result");
     }
+    else
 #endif
+    {
+        resolve_scan_results_only();
+    }
+
     return;
 }
 
@@ -453,41 +448,41 @@ bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** re
     if (entry->txt_count < 3)
         return false;
 
-    int found = 0;
+    bool have_enabled      = false;
+    bool have_display_name = false;
+    bool have_version      = false;
+
     for (size_t i = 0; i < entry->txt_count; ++i) {
         // strcmp is safe here: Keys are always null terminated.
         // https://github.com/espressif/esp-idf/blob/7eba5f80027e1648775b46f889cb4d9519afc965/components/mdns/mdns.c#L3000-L3011
         if (strcmp(entry->txt[i].key, "enabled") == 0 && entry->txt_value_len[i] > 0) {
             if (ret_enabled != nullptr)
                 *ret_enabled = entry->txt[i].value;
-            ++found;
+            have_enabled = true;
         }
         else if (strcmp(entry->txt[i].key, "display_name") == 0 && entry->txt_value_len[i] > 0) {
             if (ret_display_name != nullptr)
                 *ret_display_name = entry->txt[i].value;
-            ++found;
+            have_display_name = true;
         }
         else if (strcmp(entry->txt[i].key, "version") == 0 && entry->txt_value_len[i] > 0) {
             if (ret_version != nullptr)
                 *ret_version = entry->txt[i].value;
-            ++found;
+            have_version = true;
         }
         else if (strcmp(entry->txt[i].key, "proxy_of") == 0 && entry->txt_value_len[i] > 0) {
             if (ret_proxy_of != nullptr)
                 *ret_proxy_of = entry->txt[i].value;
-            // don't increase found: this is an optional entry.
+            // This is an optional entry.
         }
     }
 
-    if (found < 3)
-        return false;
-
-    return true;
+    return have_enabled && have_display_name && have_version;
 }
 
 void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
 {
-    if (!manager_data || !result_entry->addr) {
+    if (!manager_data || !result_entry->hostname || !result_entry->addr) {
         return;
     }
 
@@ -525,16 +520,37 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
     }
 }
 
-void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer &json)
+void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer *json)
 {
+    const char *hostname = entry->hostname == nullptr ? "[no_hostname]" : entry->hostname;
+    char addr_str[16];
+
+    if (entry->addr != nullptr && entry->addr->addr.type == IPADDR_TYPE_V4) {
+        tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
+    } else {
+        strncpy(addr_str, "[no_address]", std::size(addr_str));
+    }
+
     const char *version;
     const char *enabled;
     const char *display_name;
     const char *proxy_of = nullptr;
-    if (!this->mdns_result_is_charger(entry, &version, &enabled, &display_name, &proxy_of))
+
+    if (!this->mdns_result_is_charger(entry, &version, &enabled, &display_name, &proxy_of)) {
+        logger.printfln("Non-charger in mDNS scan results: %s/%s '%s' en=%s v='%s'", hostname, addr_str, display_name, enabled, version);
         return;
+    }
+
+    if (entry->hostname == nullptr || entry->addr == nullptr) {
+        logger.printfln("Invalid charger mDNS scan result: %s/%s '%s' en=%s v='%s'", hostname, addr_str, display_name, enabled, version);
+        return;
+    }
 
     this->resolve_via_mdns(entry);
+
+    if (json == nullptr) {
+        return;
+    }
 
     uint8_t error = SCAN_RESULT_ERROR_OK;
 
@@ -558,20 +574,15 @@ void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer 
         }
     }
 
-    json.addObject();
-        json.addMemberString("hostname", entry->hostname);
+    json->addObject();
+        json->addMemberString("hostname", hostname);
+        json->addMemberString("ip", addr_str);
 
-        char addr_str[32] = "[no_address]";
-        if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
-            tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
-        }
-        json.addMemberString("ip", addr_str);
-
-        json.addMemberString("display_name", display_name);
-        json.addMemberNumber("error", error);
+        json->addMemberString("display_name", display_name);
+        json->addMemberNumber("error", error);
         if (proxy_of != nullptr)
-            json.addMemberString("proxy_of", proxy_of);
-    json.endObject();
+            json->addMemberString("proxy_of", proxy_of);
+    json->endObject();
 }
 
 size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size_t len)
@@ -580,7 +591,7 @@ size_t CMNetworking::build_scan_result_json(mdns_result_t *list, char *buf, size
     json.addArray();
 
     while (list != nullptr) {
-        add_scan_result_entry(list, json);
+        add_scan_result_entry(list, &json);
         list = list->next;
     }
 
@@ -603,4 +614,15 @@ bool CMNetworking::get_scan_results(CoolString &result)
     result.setLength(payload_size - 1);
 
     return true;
+}
+
+void CMNetworking::resolve_scan_results_only()
+{
+    std::lock_guard<std::mutex> lock{scan_results_mutex};
+    mdns_result_t *list = scan_results;
+
+    while (list != nullptr) {
+        add_scan_result_entry(list, nullptr);
+        list = list->next;
+    }
 }
