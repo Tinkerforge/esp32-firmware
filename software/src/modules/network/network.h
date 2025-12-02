@@ -59,7 +59,7 @@ private:
     String hostname;
     CoolString default_hostname;
     bool enable_mdns;
-    bool mdns_started;
+    bool mdns_started = false;
     TransportMode transport_mode;
     uint16_t web_server_port;
     uint16_t web_server_port_secure;
