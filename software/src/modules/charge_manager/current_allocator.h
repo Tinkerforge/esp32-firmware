@@ -48,8 +48,6 @@ bool update_from_client_packet(
     cm_state_v1 *v1,
     cm_state_v2 *v2,
     cm_state_v3 *v3,
-    cm_state_v4 *v4,
-    cm_state_v5 *v5,
     const CurrentAllocatorConfig *cfg,
     ChargerState *charger_state,
     ChargerAllocationState *charger_allocation_state,

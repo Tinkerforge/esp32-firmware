@@ -25,6 +25,8 @@
 #include <freertos/task.h>
 #include <time.h>
 
+#include "bindings/base58.h"
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "current_allocator.h"
@@ -38,6 +40,11 @@
 #include "current_decision.union.h"
 #include "modules/cm_networking/client_error.enum.h"
 #include "cas_auth_state.enum.h"
+
+#include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
+
+extern char local_uid_str[32];
+extern uint32_t local_uid_num;
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
@@ -304,6 +311,183 @@ void ChargeManager::pre_setup()
 #endif
 }
 
+static bool is_packet_stale(
+    uint8_t client_id,
+    cm_state_v1 *v1,
+    ChargerState *charger_state,
+    ChargerAllocationState *charger_allocation_state,
+    const char * const *hosts,
+    const std::function<const char *(uint8_t)> &get_charger_name
+    )
+{
+    auto now = now_us();
+    // TODO: bounds check
+    auto &target = charger_state[client_id];
+    auto &target_alloc = charger_allocation_state[client_id];
+
+    // Don't update if the uptimes are the same.
+    // This means, that the EVSE hangs or the communication
+    // is not working. As last_update will now hang too,
+    // the management will stop all charging after some time.
+    if (target.uptime == v1->evse_uptime) {
+        logger.printfln("Received stale charger state from %s (%s). Reported EVSE uptime (%lu) is the same as in the last state. Is the EVSE still reachable?",
+            get_charger_name(client_id), hosts[client_id],
+            v1->evse_uptime);
+        if (now < (target.last_update + 10_s)) {
+            target_alloc.state = CASState::Error;
+            target_alloc.error = CASError::EVSEUnreachable;
+        }
+
+        return true;
+    }
+    return false;
+}
+
+static constexpr uint16_t NOT_AUTHORIZED = -1;
+static constexpr uint16_t AUTHD_ANONYMOUSLY = 0;
+
+// Check if the charger is authorized based on NFC tag information.
+// Returns the user_id of the authorized user (0 if not authorized)
+static int16_t charger_authorized(cm_state_v5 *v5, const CurrentAllocatorConfig *cfg) {
+#if MODULE_NFC_AVAILABLE()
+    // If central auth is disabled, always authorize
+    if (!cfg->enable_central_auth) {
+        return AUTHD_ANONYMOUSLY;
+    }
+
+    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0) {
+        return NOT_AUTHORIZED;
+    }
+
+    micros_t nfc_deadline = now_us() - seconds_t{v5->nfc_last_seen_s} + 30_s;
+    if(deadline_elapsed(nfc_deadline)) {
+        return NOT_AUTHORIZED;
+    }
+
+    // Check if the NFC tag is authorized by comparing against local NFC config
+    NFC::tag_t tag;
+    tag.type = v5->nfc_tag_type;
+    tag.id_length = v5->nfc_tag_id_len;
+
+    static_assert(sizeof(tag.id_bytes) == sizeof(v5->nfc_tag_id), "Tag ID size mismatch");
+    memcpy(tag.id_bytes, v5->nfc_tag_id, sizeof(v5->nfc_tag_id));
+
+    uint8_t user_id = nfc.get_user_id(tag);
+    // nfc.get_user_id returns 0 if a tag is not authorized (because it is mapped to anonymous)
+    if (user_id == 0)
+        return NOT_AUTHORIZED;
+
+    logger.printfln("user id from nfc: %u", user_id);
+
+    return user_id;
+#else
+    // If we can't check the NFC tag, it is not authorized.
+    return NOT_AUTHORIZED;
+#endif
+}
+
+static void update_charge_tracking(
+    uint8_t client_id,
+    cm_state_v1 *v1,
+    cm_state_v5 *v5,
+    const CurrentAllocatorConfig *cfg,
+    ChargerState *charger_state)
+{
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    if (!cfg->enable_charge_tracking)
+        return;
+
+    auto now = now_us();
+    // TODO: bounds check
+    auto &target = charger_state[client_id];
+
+    // Populate first and last tracked charge when we first see this charger
+    if (target.last_update == 0_us) {
+        char uid_str[32];
+        tf_base58_encode(target.uid, uid_str);
+
+        // TODO: is this necessary? A charge can continue after a charge manager reboot.
+
+        // If the charger is currently charging when first seen, end that charge
+        // since we don't know when it started
+        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
+        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
+            charge_tracker.endCharge(
+                0, // Unknown duration
+                v1->energy_abs,
+                    is_local_charger ? nullptr : uid_str);
+        }
+    }
+
+    // If tracking, a vehicle is plugged in and we are authenticated, track a start if not done already.
+    if (v1->charger_state != 0 && target.authenticated_user_id != -1) {
+        char uid_str[32];
+        bool local_charger = false;
+        if (target.uid != local_uid_num) {
+            tf_base58_encode(target.uid, uid_str);
+        } else {
+            local_charger = true;
+        }
+
+        // TODO: optimize this!
+        if (!charge_tracker.currentlyCharging(local_charger ? nullptr : uid_str)) {
+            uint32_t charge_start = 0;
+            timeval _timeval;
+            if (rtc.clock_synced(&_timeval))
+                charge_start = rtc.timestamp_minutes();
+
+            charge_tracker.startCharge(charge_start,
+                                       v1->energy_abs,
+                                       target.authenticated_user_id,
+                                       v1->evse_uptime,
+                                       v5 == nullptr ? USERS_AUTH_TYPE_LOST : v5->auth_type,
+                                       Config::ConfVariant(),
+                                       local_charger ? nullptr : uid_str);
+        }
+    }
+
+    // If tracking and no vehicle is plugged in track a stop if not done already.
+    if (v1->charger_state == 0) {
+        char uid_str[32];
+        tf_base58_encode(target.uid, uid_str);
+
+        bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
+        if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
+            charge_tracker.endCharge(
+                micros_t{now} .as<uint32_t>() / 1'000'000 - target.last_plug_in.as<uint32_t>() / 1'000'000,
+                v1->energy_abs,
+                    is_local_charger ? nullptr : uid_str);
+        }
+    }
+#endif
+}
+
+static void update_authentication(
+    uint8_t client_id,
+    cm_state_v1 *v1,
+    cm_state_v5 *v5,
+    const CurrentAllocatorConfig *cfg,
+    ChargerState *charger_state)
+{
+    // TODO: bounds check
+    auto &target = charger_state[client_id];
+
+    // Reset allocated energy if no car is connected
+    if (v1->charger_state == 0) {
+        target.authenticated_user_id = -1; // Reset authorization state when no car is connected
+    } else if (target.authenticated_user_id == -1) {
+        // Update NFC state
+        target.authenticated_user_id = charger_authorized(v5, cfg);
+    }
+
+    // Set supported_current to 0 if not authorized to prevent current allocation
+    // TODO: this is ugly. Setting is_charging and wants_to_charge(_low_prio) should be sufficient?
+    // TODO: Set user limit somewhere.
+    if (target.authenticated_user_id == -1) {
+        v1->supported_current = 0;
+    }
+}
+
 void ChargeManager::start_manager_task()
 {
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
@@ -311,13 +495,23 @@ void ChargeManager::start_manager_task()
     cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4, cm_state_v5 *v5) mutable {
             auto old_charger_state = charger_state[client_id].charger_state;
 
+            if (is_packet_stale(
+                    client_id,
+                    v1,
+                    this->charger_state,
+                    this->charger_allocation_state,
+                    this->hosts.get(),
+                    get_charger_name_fn))
+                return;
+
+            update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
+            update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
+
             if (update_from_client_packet(
                     client_id,
                     v1,
                     v2,
                     v3,
-                    v4,
-                    v5,
                     this->ca_config,
                     this->charger_state,
                     this->charger_allocation_state,
