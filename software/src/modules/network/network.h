@@ -37,7 +37,7 @@ public:
 
     inline bool is_connected() { return connected; }
 
-    inline bool get_enable_mdns() { return enable_mdns; }
+    inline bool is_mdns_started() { return mdns_started; }
     inline const String &get_hostname() { return hostname; }
     inline TransportMode get_transport_mode() { return transport_mode; }
     inline uint16_t get_web_server_port() { return web_server_port; }
@@ -59,6 +59,7 @@ private:
     String hostname;
     CoolString default_hostname;
     bool enable_mdns;
+    bool mdns_started;
     TransportMode transport_mode;
     uint16_t web_server_port;
     uint16_t web_server_port_secure;

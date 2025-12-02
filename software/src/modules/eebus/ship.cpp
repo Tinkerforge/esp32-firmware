@@ -130,7 +130,12 @@ void Ship::disable_ship()
     for (auto &ship_connection : eebus.ship.ship_connections) {
         ship_connection->schedule_close(0_ms, "EEBUS disabled");
     }
-    mdns_service_remove("_ship", "_tcp");
+    // If mDNS is not started now,
+    // it was not started while enabling ship
+    // -> We don't have to remove the service in this case
+    if (network.is_mdns_started()) {
+        mdns_service_remove("_ship", "_tcp");
+    }
 
     eebus.trace_fmtln("disable_ship end");
 }
@@ -277,6 +282,12 @@ void Ship::setup_mdns()
 {
     eebus.trace_fmtln("setup_mdns() start");
 
+    if (!network.is_mdns_started()) {
+        logger.printfln("EEBUS Ship mDNS setup failed: mDNS is disabled or failed to start.");
+        eebus.trace_fmtln("setup_mdns() failed; mDNS not started");
+        return;
+    }
+
     // SHIP 7.2 Service Name
     mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
 
@@ -381,6 +392,13 @@ ShipDiscoveryState Ship::discover_ship_peers()
         }
         return String(buf);
     };
+
+    if (!network.is_mdns_started()) {
+        logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
+        eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
+        update_discovery_state(ShipDiscoveryState::Error);
+        return discovery_state;
+    }
 
     const char *service = "_ship";
     const char *proto = "_tcp";

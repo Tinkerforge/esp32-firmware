@@ -145,8 +145,8 @@ void CMNetworking::register_urls()
 {
     api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &errmsg) {
 #if MODULE_NETWORK_AVAILABLE()
-        if (!network.get_enable_mdns()) {
-            errmsg = "Cannot scan for chargers: mDNS is disabled.";
+        if (!network.is_mdns_started()) {
+            errmsg = "Cannot scan for chargers: mDNS is disabled or failed to start.";
             return;
         }
 #endif
@@ -165,7 +165,7 @@ void CMNetworking::register_urls()
 
 void CMNetworking::register_events() {
 #if MODULE_NETWORK_AVAILABLE()
-    if (!network.get_enable_mdns())
+    if (!network.is_mdns_started())
         return;
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
@@ -254,8 +254,8 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 
     if (device->host_address_type == HostAddressType::mDNS) {
 #if MODULE_NETWORK_AVAILABLE()
-        if (!network.get_enable_mdns()) {
-            logger.printfln("mDNS required to resolve %s but it is disabled", device->hostname);
+        if (!network.is_mdns_started()) {
+            logger.printfln("mDNS required to resolve %s but it is disabled or failed to start", device->hostname);
         } else
 #endif
             start_mdns_scan();

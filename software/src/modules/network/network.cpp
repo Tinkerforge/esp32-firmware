@@ -118,21 +118,32 @@ void Network::register_urls()
     register_urls_late();
 #endif
 
-    if (!get_enable_mdns()) {
+    if (!this->enable_mdns) {
         return;
     }
 
-    if (mdns_init() != ESP_OK) {
-        logger.printfln("Error initializing mDNS responder");
-    } else {
-        if(mdns_hostname_set(get_hostname().c_str()) != ESP_OK) {
-            logger.printfln("Error initializing mDNS hostname");
-        } else {
-            logger.printfln("mDNS responder started");
-        }
+    esp_err_t ret;
+
+    if ((ret = mdns_init()) != ESP_OK) {
+        logger.printfln("Failed to initialize mDNS responder: %s", esp_err_to_name(ret));
+        return;
     }
 
-    mdns_service_add(NULL, "_http", "_tcp", get_web_server_port(), NULL, 0);
+    // "required if you want to advertise services."
+    if((ret = mdns_hostname_set(get_hostname().c_str())) != ESP_OK) {
+        logger.printfln("Failed to set mDNS hostname: %s", esp_err_to_name(ret));
+        mdns_free();
+        return;
+    }
+
+    if ((ret = mdns_service_add(NULL, "_http", "_tcp", get_web_server_port(), NULL, 0)) != ESP_OK) {
+        logger.printfln("Failed to add mDNS service: %s", esp_err_to_name(ret));
+        mdns_free();
+        return;
+    }
+
+    mdns_started = true;
+    logger.printfln("mDNS responder started");
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);
