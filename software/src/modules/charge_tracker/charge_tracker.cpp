@@ -24,6 +24,7 @@
 #include <vector>
 #include <LittleFS.h>
 #include <stdlib_noniso.h>
+#include <algorithm>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -57,6 +58,12 @@ static constexpr BaseType_t pdPASS_safe = pdPASS;
 
 static bool repair_logic(Charge *);
 
+static uint32_t get_charge_log_file_limit()
+{
+    size_t managed_chargers = charge_manager.get_charger_count();
+    return std::max(30, static_cast<int>(managed_chargers * 2));
+}
+
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
 
@@ -69,7 +76,8 @@ static_assert(MAX_CONFIGURED_CHARGELOG_USERS <= 255, "MAX_CONFIGURED_CHARGELOG_U
 
 #define MAX_UPLOAD_RETRIES 5
 
-// 30 files with 256 records each: 7680 records @ ~ max. 10 records per day = ~ 2 years and one month of records.
+// Default: 30 files with 256 records each: 7680 records @ ~ max. 10 records per day = ~ 2 years and one month of records.
+// With charge management: up to max(30, managed_chargers * 2) files to accommodate multiple managed chargers.
 // Also update frontend when changing this!
 
 // Define static member variable for ChargeLogGenerationLockHelper
@@ -278,6 +286,7 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
         updateState();
 
         file = LittleFS.open(new_file_name, "w", true);
+        ++this->total_charge_log_files;
     }
 
     cs.timestamp_minutes = timestamp_minutes;
@@ -411,29 +420,90 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
 
 void ChargeTracker::removeOldRecords()
 {
+    uint32_t file_limit = get_charge_log_file_limit();
+    if (this->total_charge_log_files < file_limit) {
+        return;
+    }
+
     const size_t user_id_offset = offsetof(ChargeStart, user_id);
 
     uint32_t users_to_delete[8] = {0}; // one bit per user
     bool have_user_to_delete = false;
 
-    while (this->last_charge_record - this->first_charge_record >= 30) {
-        String name = chargeRecordFilename(this->first_charge_record, nullptr);
-        logger.printfln("Got %lu charge records. Dropping the first one (%s)", this->last_charge_record - this->first_charge_record, name.c_str());
-        {
-            File f = LittleFS.open(name, "r");
-            size_t size = f.size();
-            for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
-                f.seek(i + user_id_offset);
-                int x = f.read();
-                if (x < 0)
-                    continue;
-                uint8_t user_id = x;
-                users_to_delete[user_id / 32] |= (1 << (user_id % 32));
-                have_user_to_delete = true;
+    // Find the directory with the oldest charge that has at least 2 files
+    const char *oldest_dir = nullptr;
+    uint32_t oldest_timestamp = UINT32_MAX;
+
+    for (const auto &charge : oldest_charges_per_directory) {
+        uint32_t first_record = 0;
+        uint32_t last_record = 0;
+
+        const char *dir = charge.directory.isEmpty() ? nullptr : charge.directory.c_str();
+        if (dir == nullptr) {
+            first_record = this->first_charge_record;
+            last_record = this->last_charge_record;
+        } else {
+            if (!getChargerChargeRecords(dir, &first_record, &last_record)) {
+                continue;
             }
         }
-        LittleFS.remove(name);
+
+        uint32_t file_count = last_record - first_record + 1;
+
+        // Only consider directories with more than one file
+        if (file_count > 1) {
+            uint32_t charge_timestamp = charge.charge.cs.timestamp_minutes != 0
+                ? charge.charge.cs.timestamp_minutes
+                : charge.prev_known_timestamp_minutes;
+
+            if (charge_timestamp < oldest_timestamp) {
+                oldest_timestamp = charge_timestamp;
+                oldest_dir = dir;
+            }
+        }
+    }
+
+    // If no directory with 2+ files was found, don't delete anything
+    if (oldest_dir == nullptr && oldest_timestamp == UINT32_MAX) {
+        return;
+    }
+
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+
+    if (oldest_dir == nullptr) {
+        first_record = this->first_charge_record;
+        last_record = this->last_charge_record;
+    } else {
+        if (!getChargerChargeRecords(oldest_dir, &first_record, &last_record)) {
+            // should never happen but just in case
+            logger.printfln("BUG: Failed to get charge records for directory but verified that it should have entries before %s", oldest_dir);
+            return;
+        }
+    }
+
+    String name = chargeRecordFilename(first_record, oldest_dir);
+    logger.printfln("Directory %s: Got %lu charge record files. Dropping the first one (%s)",
+                  oldest_dir ? oldest_dir : "main", last_record - first_record + 1, name.c_str());
+
+    {
+        File f = LittleFS.open(name, "r");
+        size_t size = f.size();
+        for (size_t i = 0; i < size; i += CHARGE_RECORD_SIZE) {
+            f.seek(i + user_id_offset);
+            int x = f.read();
+            if (x < 0)
+                continue;
+            uint8_t user_id = x;
+            users_to_delete[user_id / 32] |= (1 << (user_id % 32));
+            have_user_to_delete = true;
+        }
+    }
+    LittleFS.remove(name);
+
+    if (oldest_dir == nullptr) {
         ++this->first_charge_record;
+        --this->total_charge_log_files;
     }
 
     // Skip parsing all charge records if there aren't any users to delete.
@@ -746,6 +816,8 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
             continue;
         }
 
+        ++this->total_charge_log_files;
+
         size_t file_size = f.size();
         size_t num_records = file_size / CHARGE_RECORD_SIZE;
 
@@ -787,7 +859,6 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
 
 static void merge_charge_vectors(std::vector<ChargeWithLocation> &target, std::vector<ChargeWithLocation> &source)
 {
-    logger.printfln("Merging %zu source charges into %zu target charges", source.size(), target.size());
     if (target.empty()) {
         target = std::move(source);
         return;
@@ -1052,6 +1123,23 @@ void ChargeTracker::repair_charges()
             int read = f.read(reinterpret_cast<uint8_t *>(&buf[1]), sizeof(Charge) * 257);
             if (read == -1 || read == 0) {
                 break;
+            }
+
+            // Capture the oldest charge from the first file on first iteration
+            if (i == first_record && read >= static_cast<int>(CHARGE_RECORD_SIZE)) {
+                ChargeStart cs;
+                ChargeEnd ce;
+                memcpy(&cs, &buf[1].cs, sizeof(cs));
+                memcpy(&ce, &buf[1].ce, sizeof(ce));
+
+                ChargeWithLocation oldest_charge;
+                oldest_charge.charge.cs = cs;
+                oldest_charge.charge.ce = ce;
+                oldest_charge.directory = directory ? String(directory) : String("");
+                oldest_charge.file_index = first_record;
+                oldest_charge.prev_known_timestamp_minutes = 0;
+
+                oldest_charges_per_directory.push_back(oldest_charge);
             }
 
             for (int a = 1; a < read / sizeof(Charge); a++) {
