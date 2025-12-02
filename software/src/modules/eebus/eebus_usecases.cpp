@@ -63,15 +63,19 @@ FeatureTypeEnumType EebusUsecase::get_feature_by_address(AddressFeatureType feat
     return FeatureTypeEnumType::EnumUndefined;
 }
 
-bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
+bool NodeManagementEntity::check_is_bound(FeatureAddressType &sending_feature, FeatureAddressType &target_feature) const
 {
     for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
+        logger.printfln("Binding entry: Client %s (received: %s) -> Server %s (received: %s).", EEBUS_USECASE_HELPERS::spine_address_to_string(binding.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(sending_feature).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(binding.serverAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
+
         if (binding.clientAddress && binding.serverAddress) {
-            if (binding.clientAddress->device.get() == client.device.get() && binding.serverAddress->device.get() == server.device.get() && binding.clientAddress->entity.get() == client.entity.get() && binding.serverAddress->entity.get() == server.entity.get() && binding.clientAddress->feature.get() == client.feature.get() && binding.serverAddress->feature.get() == server.feature.get()) {
+            if (binding.clientAddress->device.get() == sending_feature.device.get() && binding.serverAddress->device.get() == target_feature.device.get() && binding.clientAddress->entity.get() == sending_feature.entity.get() && binding.serverAddress->entity.get() == target_feature.entity.get() && binding.clientAddress->feature.get() == sending_feature.feature.get() && binding.serverAddress->feature.get() == target_feature.feature.get()) {
+                logger.printfln("Is bound");
                 return true; // The client is bound to the server
             }
         }
     }
+    logger.printfln("Not bound");
     return false;
 }
 
@@ -226,7 +230,7 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
         entry.serverAddress = request.subscriptionRequest->serverAddress;
         subscription_data.subscriptionEntry->push_back(entry);
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Subscription request was successful");
-        logger.printfln("%s successfully subscribed to %s. Featuretype: %s", EEBUS_USECASE_HELPERS::spine_address_to_string(entry.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(entry.serverAddress.get()).c_str(), convertToString(request.subscriptionRequest->serverFeatureType.get()).c_str());
+        eebus.trace_fmtln("%s successfully subscribed to %s. Featuretype: %s", EEBUS_USECASE_HELPERS::spine_address_to_string(entry.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(entry.serverAddress.get()).c_str(), convertToString(request.subscriptionRequest->serverFeatureType.get()).c_str());
         return CmdClassifierType::result;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
@@ -1885,19 +1889,8 @@ void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consu
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
 }
 
-bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t endtime)
+bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, time_t endtime)
 {
-
-    load_control_limit_description_list.loadControlLimitDescriptionData.reset();
-    LoadControlLimitDescriptionDataType limit_description{};
-    limit_description.limitId = 1;
-    limit_description.limitType = LoadControlLimitTypeEnumType::signDependentAbsValueLimit;
-    limit_description.limitCategory = LoadControlCategoryEnumType::obligation;
-    limit_description.limitDirection = EnergyDirectionEnumType::consume;
-    limit_description.measurementId = 1;
-    limit_description.unit = UnitOfMeasurementEnumType::W;
-    limit_description.scopeType = ScopeTypeEnumType::activePowerLimit;
-    load_control_limit_description_list.loadControlLimitDescriptionData->push_back(limit_description);
 
     // Evaluate if the limit can be applied according to EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.2 Line 311
     bool limit_accepted = true;
@@ -1909,29 +1902,20 @@ bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t end
         // The limit shall apply the limit unless the rejection of the limit is required by: Self-protection, safety related activities, legal or regulatory specifications
 
         // A limit MAY be larger than the devices possible maximum consumption. If this limit too large to be stored, the System may alter the value to the highest possible value.
-
+        /*
         if (current_limit_w > EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION) {
             current_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-        }
+        }*/
+        configured_limit = current_limit_w;
     }
-    LoadControlLimitDataType old_limit{};
-    load_control_limit_list.loadControlLimitData.emplace();
 
-    LoadControlLimitDataType limit_data{};
-    limit_data.limitId = 1;
-    limit_data.isLimitChangeable = true;
-    limit_data.isLimitActive = limit_active && limit_accepted;
     if (endtime > 0) {
-        limit_data.timePeriod->endTime = std::to_string(endtime);
-    } else if (old_limit.timePeriod.has_value()) {
+        limit_endtime = endtime;
+    } else if (endtime == 0) {
         // A value of 0 means the limit is valid until further notice. see 3.4.1.4
-        limit_data.timePeriod = old_limit.timePeriod;
     } else {
-        limit_data.timePeriod.reset();
+        // Check what is to do in this case
     }
-    limit_data.value->number = current_limit_w;
-    limit_data.value->scale = 0;
-    load_control_limit_list.loadControlLimitData->push_back(limit_data);
 
     if (limit_accepted && heartbeat_received && limit_active) {
         // LPC-902, LPC-904
@@ -1943,10 +1927,9 @@ bool LpcUsecase::update_lpc(bool limit_active, int current_limit_w, uint64_t end
         // LPC-906
         switch_state(LPCState::UnlimitedControlled);
     }
-
-    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), load_control_limit_description_list, "loadControlLimitDescriptionListData");
-    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), load_control_limit_list, "loadControlLimitListData");
-
+    auto data = get_loadcontrol_limit_list();
+    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
+    update_api();
     return limit_accepted;
 }
 
@@ -1954,28 +1937,49 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
-            response["loadControlLimitDescriptionListData"] = load_control_limit_description_list;
+            response["loadControlLimitDescriptionListData"] = get_loadcontrol_limit_description();
             return CmdClassifierType::reply;
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
-            response["loadControlLimitListData"] = load_control_limit_list;
+            response["loadControlLimitListData"] = get_loadcontrol_limit_list();
             return CmdClassifierType::reply;
         }
     }
     if (header.cmdClassifier == CmdClassifierType::write) {
+        logger.printfln("Got write to Load Control feature with command: %s", data->function_to_string(data->last_cmd).c_str());
         FeatureAddressType feature_address{};
         feature_address.entity = entity_address;
         feature_address.feature = feature_addresses.at(FeatureTypeEnumType::LoadControl);
         feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-
-        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address) && data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitData && data->loadcontrollimitdatatype.has_value()) {
-            LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitdatatype.get();
-            if (!update_lpc(load_control_limit_data.isLimitActive.get(), load_control_limit_data.value->number.get() * 10 * *(load_control_limit_data.value->scale), load_control_limit_data.timePeriod->endTime.has_value() ? std::stoull(load_control_limit_data.timePeriod->endTime.get()) : 0)) {
-                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
-            }
+        bool is_bound = eebus.usecases->node_management.check_is_bound(header.addressSource.get(), feature_address);
+        if (!is_bound) {
+            eebus.trace_fmtln("Received write from an unbound node");
+            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired, "Load Control requires binding");
             return CmdClassifierType::result;
         }
-        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired, "Load Control requires binding");
+        switch (data->last_cmd) {
+            case SpineDataTypeHandler::Function::loadControlLimitListData:
+                if (data->loadcontrollimitlistdatatype.has_value() && !data->loadcontrollimitlistdatatype->loadControlLimitData->empty()) {
+                    LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitlistdatatype->loadControlLimitData->at(0);
+                    logger.printfln("Write is from a bound node. Applying limit");
+                    bool limit_accepted = load_control_limit_data.isLimitActive.get();
+
+                    int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());;
+                    uint64_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get()).t;
+                    if (!update_lpc(limit_accepted, new_limit_w, duration_s)) {
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
+                        logger.printfln("Write not accepted");
+                    } else {
+                        logger.printfln("Write accepted");
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
+                    }
+                } else {
+                    EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted or invalid data");
+                }
+                break;
+            default:
+                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Unknown command");
+        }
         return CmdClassifierType::result;
     }
     return CmdClassifierType::EnumUndefined;
@@ -2141,8 +2145,11 @@ bool LpcUsecase::limited_state()
 {
     if (lpc_state == LPCState::Init || lpc_state == LPCState::UnlimitedControlled || lpc_state == LPCState::UnlimitedAutonomous || lpc_state == LPCState::Failsafe) {
         lpc_state = LPCState::Limited;
+
         task_scheduler.cancel(state_change_timeout);
-        current_active_consumption_limit_w = load_control_limit_list.loadControlLimitData->at(0).value->number.get();
+        current_active_consumption_limit_w = configured_limit;
+        // TODO: We need to check heartbeat  and schedule the end of the limit
+        limit_engaged = true;
         return true;
     }
 
@@ -2188,6 +2195,36 @@ void LpcUsecase::update_api()
     api_entry->get("failsafe_limit_duration_s")->updateUint(EEBUS_USECASE_HELPERS::iso_duration_to_seconds(device_configuration_key_value_list.deviceConfigurationKeyValueData->at(1).value->duration.get()).as<uint64_t>());
     api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
     //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
+}
+LoadControlLimitDescriptionListDataType LpcUsecase::get_loadcontrol_limit_description() const
+{
+    LoadControlLimitDescriptionListDataType load_control_limit_description_list{};
+    load_control_limit_description_list.loadControlLimitDescriptionData.reset();
+    LoadControlLimitDescriptionDataType limit_description{};
+    limit_description.limitId = limit_description_id;
+    limit_description.limitType = LoadControlLimitTypeEnumType::signDependentAbsValueLimit;
+    limit_description.limitCategory = LoadControlCategoryEnumType::obligation;
+    limit_description.limitDirection = EnergyDirectionEnumType::consume;
+    limit_description.measurementId = limit_measurement_description_id;
+    limit_description.unit = UnitOfMeasurementEnumType::W;
+    limit_description.scopeType = ScopeTypeEnumType::activePowerLimit;
+    load_control_limit_description_list.loadControlLimitDescriptionData->push_back(limit_description);
+    return load_control_limit_description_list;
+}
+LoadControlLimitListDataType LpcUsecase::get_loadcontrol_limit_list() const
+{
+    LoadControlLimitListDataType load_control_limit_list{};
+    load_control_limit_list.loadControlLimitData.emplace();
+    LoadControlLimitDataType limit_data{};
+    limit_data.limitId = limit_description_id;
+    limit_data.isLimitChangeable = !limit_fixed;
+    limit_data.isLimitActive = limit_engaged;
+    limit_data.timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(limit_endtime).c_str();
+    limit_data.value->number = current_active_consumption_limit_w;
+    limit_data.value->scale = 0;
+    load_control_limit_list.loadControlLimitData->push_back(limit_data);
+
+    return load_control_limit_list;
 }
 
 void LpcUsecase::broadcast_heartbeat()

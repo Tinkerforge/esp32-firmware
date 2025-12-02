@@ -162,11 +162,11 @@ public:
 
     /**
      * Checks if the given client is bound to the given server entity and feature.
-     * @param client The client FeatureAddressType to check.
-     * @param server The server FeatureAddressType to check.
+     * @param sending_feature The client FeatureAddressType to check.
+     * @param target_feature The server FeatureAddressType to check.
      * @return true if the client is bound to the server, false otherwise.
      */
-    bool check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const;
+    bool check_is_bound(FeatureAddressType &sending_feature, FeatureAddressType &target_feature) const;
 
     UseCaseInformationDataType get_usecase_information() override;
     /**
@@ -652,7 +652,7 @@ public:
      * @param endtime Timestamp until which the limit shall be set
      * @return true if the limit is accepted and set.
      */
-    bool update_lpc(bool limit_active, int current_limit_w, uint64_t endtime);
+    bool update_lpc(bool limit_active, int current_limit_w, time_t endtime);
 
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
@@ -727,9 +727,20 @@ private:
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    // While the limit is active, this shall be set to true
     bool limit_engaged = false;
+    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    // If the limit is changeable, this shall be set to false
+    bool limit_fixed = false;
+    // The description ID of the limit so its consistent across description and limit list data
+    int limit_description_id = 1;
+    int limit_measurement_description_id = 1;
+    time_t limit_endtime = 0;
+    LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
+    LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
     // Device Configuration Data as required for Scenario 2 - Device Configuration
+    // TODO: switch these to type generating functions
     DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
 
@@ -742,9 +753,8 @@ private:
     bool heartbeat_received = false;
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
+    // TODO: switch this to type generating functions
     ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
-    LoadControlLimitDescriptionListDataType load_control_limit_description_list{};
-    LoadControlLimitListDataType load_control_limit_list{};
 };
 
 /**
