@@ -32,6 +32,7 @@
 #include "bindings/base58.h"
 
 extern char local_uid_str[32];
+extern uint32_t local_uid_num;
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
@@ -275,11 +276,16 @@ bool update_from_client_packet(
     }
 
 #if MODULE_CHARGE_TRACKER_AVAILABLE()
-    if (cfg->enable_charge_tracking && target.charger_state != CHARGER_STATE_CHARGING && v1->charger_state == CHARGER_STATE_CHARGING && target.authenticated_user_id != -1) {
+    if (cfg->enable_charge_tracking && target.authenticated_user_id != -1 && v1->charger_state != 0) {
         char uid_str[32];
-        tf_base58_encode(target.uid, uid_str);
+        bool local_charger = false;
+        if (target.uid != local_uid_num) {
+            tf_base58_encode(target.uid, uid_str);
+        } else {
+            local_charger = true;
+        }
 
-        if (!charge_tracker.currentlyCharging(uid_str)) {
+        if (!charge_tracker.currentlyCharging(local_charger ? nullptr : uid_str)) {
             uint32_t charge_start = 0;
             timeval _timeval;
             if (rtc.clock_synced(&_timeval))
@@ -289,12 +295,12 @@ bool update_from_client_packet(
                                        v1->energy_abs,
                                        target.authenticated_user_id,
                                        v1->evse_uptime,
-                                       USERS_AUTH_TYPE_NONE,
+                                       target.auth_type,
                                        Config::ConfVariant(),
-                                       strcmp(uid_str, local_uid_str) == 0 ? nullptr : uid_str);
+                                       local_charger ? nullptr : uid_str);
 
             // Update last_tracked_charge when a new charge is started
-            if (charge_tracker.getChargerChargeRecords(uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
+            if (charge_tracker.getChargerChargeRecords(local_charger ? nullptr : uid_str, &target.first_tracked_charge, &target.last_tracked_charge)) {
                 // Records exist and were updated
             }
         }
