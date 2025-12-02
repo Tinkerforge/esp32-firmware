@@ -161,15 +161,6 @@ struct ChargerState {
     bool eco_fast;
     int guaranteed_pv_current;
 
-    uint32_t first_tracked_charge;
-    uint32_t last_tracked_charge;
-
-    micros_t nfc_last_seen;
-    uint8_t nfc_tag_id_length;
-    uint8_t nfc_tag_id[10];
-    uint8_t auth_type;
-    uint8_t nfc_tag_type;
-
     // Authorization state: user_id of the authorized user (-1 if not authorized)
     int16_t authenticated_user_id;
 };
