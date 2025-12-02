@@ -178,6 +178,16 @@ void Network::register_events()
         return EventResult::OK;
     });
 #endif
+
+#if MODULE_DEVICE_NAME_AVAILABLE()
+    if (mdns_started) {
+        event.registerEvent("info/display_name", {"display_name"}, [](const Config *display_name) {
+            // It's fine if this fails. mDNS will fall back to the hostname.
+            mdns_instance_name_set(display_name->asEphemeralCStr());
+            return EventResult::OK;
+        });
+    }
+#endif
 }
 
 void Network::update_connected()
