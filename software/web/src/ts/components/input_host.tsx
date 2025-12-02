@@ -40,11 +40,13 @@ export function InputHost(props: InputHostProps) {
         invalidFeedback = __("component.input_host.invalid_feedback");
     }
 
+    // FIXME: the goal of the pattern is to forbid entering IPv4 addresses with leading zeros in
+    //        any octet, but the hostname part of the pattern is too lax and accepts those anyway
     return <InputTextPatterned {...props}
                 invalidFeedback={invalidFeedback}
                 maxLength={64}
                 class={props.class + (props.value.endsWith(".localhost") ? " is-invalid" : "")}
-                pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|.*[^0-9\.].*)$`} />
+                pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|[a-zA-Z0-9\-\.]+$`} />
 }
 
 register_id_context_component_type(InputHost);
