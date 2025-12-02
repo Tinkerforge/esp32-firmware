@@ -523,6 +523,7 @@ void ChargeManager::setup()
     ca_config->requested_current_margin = config.get("requested_current_margin")->asUint();
     ca_config->requested_current_threshold = config.get("requested_current_threshold")->asUint();
     ca_config->enable_central_auth = config.get("enable_central_auth")->asBool();
+    ca_config->enable_charge_tracking = config.get("enable_charge_tracking")->asBool();
 
     this->ca_state = new CurrentAllocatorState();
 
@@ -954,7 +955,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     // Update authorization state based on charger state
     CASAuthState auth_state = CASAuthState::None;
     if (charger.charger_state != 0) { // If a car is connected
-        auth_state = charger.authenticated_user_id != 0 ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
+        auth_state = charger.authenticated_user_id != -1 ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
     }
     charger_cfg->get("a")->updateEnum(auth_state);
 
