@@ -89,6 +89,7 @@ private:
     Config current_charge_prototype;
     Config charge_log_send_prototype;
 
+    std::vector<ChargeWithLocation> oldest_charges_per_directory;
     uint32_t total_charge_log_files;
 };
 
