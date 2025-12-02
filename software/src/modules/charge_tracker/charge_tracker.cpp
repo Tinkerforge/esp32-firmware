@@ -698,8 +698,10 @@ bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *fir
 
     std::sort(found_blobs, found_blobs + found_blob_counter);
 
-    *first_record = found_blobs[0];
-    *last_record = found_blobs[found_blob_counter - 1];
+    if (first_record != nullptr)
+        *first_record = found_blobs[0];
+    if (last_record != nullptr)
+        *last_record = found_blobs[found_blob_counter - 1];
     return true;
 }
 
