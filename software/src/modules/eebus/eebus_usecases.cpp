@@ -66,16 +66,13 @@ FeatureTypeEnumType EebusUsecase::get_feature_by_address(AddressFeatureType feat
 bool NodeManagementEntity::check_is_bound(FeatureAddressType &sending_feature, FeatureAddressType &target_feature) const
 {
     for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
-        logger.printfln("Binding entry: Client %s (received: %s) -> Server %s (received: %s).", EEBUS_USECASE_HELPERS::spine_address_to_string(binding.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(sending_feature).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(binding.serverAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(target_feature).c_str());
 
         if (binding.clientAddress && binding.serverAddress) {
             if (binding.clientAddress->device.get() == sending_feature.device.get() && binding.serverAddress->device.get() == target_feature.device.get() && binding.clientAddress->entity.get() == sending_feature.entity.get() && binding.serverAddress->entity.get() == target_feature.entity.get() && binding.clientAddress->feature.get() == sending_feature.feature.get() && binding.serverAddress->feature.get() == target_feature.feature.get()) {
-                logger.printfln("Is bound");
                 return true; // The client is bound to the server
             }
         }
     }
-    logger.printfln("Not bound");
     return false;
 }
 
@@ -98,30 +95,29 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
                 case CmdClassifierType::read:
                     response["nodeManagementUseCaseData"] = get_usecase_data();
                     return CmdClassifierType::reply;
+                case CmdClassifierType::reply:
+                case CmdClassifierType::notify:
+                    if (const auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
+                        conn->update_use_case_data(data->nodemanagementusecasedatatype.get());
+                    }
+                    return CmdClassifierType::reply;
                 default:
                     eebus.trace_fmtln("NodeManagementUsecase: NodeManagementUsecaseData does not support a %s command", cmd_classifier.c_str());
                     return CmdClassifierType::EnumUndefined;
             }
-
         case SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData:
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData with a %s command", cmd_classifier.c_str());
             switch (header.cmdClassifier.get()) {
                 case CmdClassifierType::read:
                     response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
-                    send_full_read(0, header.addressSource.get(), SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
                     //send_detailed_discovery_read(header.addressSource.get());
                     return CmdClassifierType::reply;
                 case CmdClassifierType::reply:
+                case CmdClassifierType::notify:
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
-                    task_scheduler.scheduleOnce(
-                        [this, header]() {
-                            auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get());
-                            if (conn) {
-                                conn->eebus_active(true);
-                            }
-                        },
-                        0_s);
-
+                    if (const auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
+                        conn->update_detailed_discovery_data(data->nodemanagementdetaileddiscoverydatatype.get());
+                    }
                     return CmdClassifierType::reply;
                 default:
                     eebus.trace_fmtln("NodeManagementUsecase: NodeManagementDetailedDiscoveryData does not support a %s command", cmd_classifier.c_str());
@@ -144,6 +140,28 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
     }
 }
 
+bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature) const
+{
+    NodeManagementSubscriptionRequestCallType subscription_request{};
+    subscription_request.subscriptionRequest->clientAddress = sending_feature;
+        subscription_request.subscriptionRequest->serverAddress = target_feature;
+    if (feature != FeatureTypeEnumType::EnumUndefined) {
+        subscription_request.subscriptionRequest->serverFeatureType = feature;
+    }
+    FeatureAddressType sender{};
+    sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    sender.entity = this->entity_address;
+    sender.feature = 0;
+    FeatureAddressType target{};
+    target.feature = 0;
+    target.entity = {0};
+    target.device = target_feature.device;
+    BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
+    JsonObject dst = message.to<JsonObject>();
+    dst["nodeManagementSubscriptionRequestCall"] = subscription_request;
+    return eebus.usecases->send_spine_message(target, sender, message.as<JsonVariantConst>(), CmdClassifierType::call, true);
+
+}
 void NodeManagementEntity::detailed_discovery_update()
 {
     auto detailed_data = get_detailed_discovery_data();
@@ -212,7 +230,6 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
                 node_management_detailed_data.featureInformation->push_back(feature);
             }
         }
-        //node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
     }
     return node_management_detailed_data;
 }
@@ -295,7 +312,6 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
 
 CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    logger.printfln("Got binding message");
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
         if (data->nodemanagementbindingrequestcalltype && data->nodemanagementbindingrequestcalltype->bindingRequest && data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress && data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress) {
@@ -1964,7 +1980,8 @@ CmdClassifierType LpcUsecase::load_control_feature(HeaderType &header, SpineData
                     logger.printfln("Write is from a bound node. Applying limit");
                     bool limit_accepted = load_control_limit_data.isLimitActive.get();
 
-                    int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());;
+                    int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());
+                    ;
                     uint64_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get()).t;
                     if (!update_lpc(limit_accepted, new_limit_w, duration_s)) {
                         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
@@ -2023,42 +2040,19 @@ CmdClassifierType LpcUsecase::device_diagnosis_feature(HeaderType &header, Spine
             response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
 
             // Initialize  read on their heartbeat
-            DeviceDiagnosisHeartbeatDataType read_heartbeat{};
-            FeatureAddressType read_destination = header.addressSource.get();
-            task_scheduler.scheduleOnce(
-                [this, read_destination, read_heartbeat]() {
-                    FeatureAddressType read_source{};
-                    read_source.feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
-                    read_source.entity = entity_address;
-                    eebus.usecases->send_spine_message(read_destination, read_source, read_heartbeat, CmdClassifierType::read, "deviceDiagnosisHeartbeatData", false);
-                },
-                0_ms);
-            if (!heartbeat_timeout_task) {
-                heartbeat_timeout_task = task_scheduler.scheduleOnce(
-                    [this]() {
-                        this->handle_heartbeat_timeout();
-                    },
-                    60_s);
-            }
-            // If we get a read from someone we just try to subscribe to them. They can then deny or accept it. Should be able to handle double requests.
             task_scheduler.scheduleOnce(
                 [this, header]() {
-                    NodeManagementSubscriptionRequestCallType subscription_request_call{};
-                    subscription_request_call.subscriptionRequest->clientAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-                    subscription_request_call.subscriptionRequest->clientAddress->entity = entity_address;
-                    subscription_request_call.subscriptionRequest->clientAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
-
-                    subscription_request_call.subscriptionRequest->serverAddress = header.addressSource.get();
-                    subscription_request_call.subscriptionRequest->serverFeatureType = FeatureTypeEnumType::DeviceDiagnosis;
-
-                    FeatureAddressType subscription_request_destination = header.addressDestination.get();
-                    subscription_request_destination.entity = {0};
-                    subscription_request_destination.feature = 0;
-                    FeatureAddressType subscription_request_source = subscription_request_call.subscriptionRequest->clientAddress.get();
-
-                    eebus.usecases->send_spine_message(subscription_request_destination, subscription_request_source, subscription_request_call, CmdClassifierType::call, "subscriptionRequestCall");
+                    auto device_diag_peer = EEBusUseCases::get_spine_connection(header.addressSource.get())->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::server, "limitationOfPowerConsumption", "EnergyGuard");
+                    FeatureAddressType feat_addr = get_feature_address(client_feature_address);
+                    if (device_diag_peer.size() != 1) {
+                        eebus.trace_fmtln("LPC Usecase: DeviceDiagnosis heartbeat read: Unexpected number of DeviceDiagnosis feature addresses found: %d", device_diag_peer.size());
+                    }
+                    for (auto &addr : device_diag_peer) {
+                        send_full_read(feat_addr.feature.get(), addr, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
+                        eebus.usecases->node_management.subscribe_to_feature(feat_addr, addr, FeatureTypeEnumType::DeviceDiagnosis);
+                    }
                 },
-                200_ms);
+                0_ms);
             heartbeatEnabled = true;
             heartbeat_received = true;
             return CmdClassifierType::reply;
@@ -2574,9 +2568,9 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 
             eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response));
         }
-        eebus_responses_sent++;
-        eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent);
+        eebus.eebus_usecase_state.get("commands_sent")->updateUint(eebus_responses_sent++);
         //send_spine_message(*header.addressDestination, *header.addressSource, response_doc, send_response);
+        // We should use send_spine_message here but as we have the connection it is much quicker to send it directly back to it
         connection->send_datagram(response_doc, send_response, destination_address, source_address, false);
     } else {
         if (header.ackRequest.has_value() && header.ackRequest.get()) {

@@ -66,6 +66,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         eebus.trace_jsonln(received_payload);
         return false;
     }
+    initial_peer_discovery();
     eebus.usecases->handle_message(received_header, eebus.data_handler.get(), this);
     return true;
 }
@@ -133,6 +134,32 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
     return false;
 }
 
+void SpineConnection::initial_peer_discovery()
+{
+    if (initial_peer_discovery_started)
+        return;
+    initial_peer_discovery_started = true;
+    FeatureAddressType address = received_header.addressSource.get();
+    address.entity = {0};
+    address.feature = 0;
+    if (!detailed_discovery_data_received)
+        eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData);
+    if (!use_case_data_received)
+        eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementUseCaseData);
+
+    task_scheduler.scheduleUncancelable(
+        [this] { // If the connection gets interrupted and removed, this might cause a crash
+            if (!detailed_discovery_data_received || !use_case_data_received) {
+                eebus.trace_fmtln("SPINE: WARNING: Initial peer discovery not completed for peer %s", ship_connection->peer_node->node_name().c_str());
+                ship_connection->peer_node->state = NodeState::EEBUSDegraded;
+                eebus.update_peers_config();
+                initial_peer_discovery_started = false;
+            } else {
+                eebus_active(true);
+            }
+        },
+        10_s);
+}
 void SpineConnection::eebus_active(bool active) const
 {
     if (active) {
@@ -144,6 +171,28 @@ void SpineConnection::eebus_active(bool active) const
         ship_connection->peer_node->state = NodeState::Connected;
     }
     eebus.update_peers_config();
+}
+std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
+{
+    if (!detailed_discovery_data_received || !use_case_data_received) {
+        eebus.trace_fmtln("SPINE: WARNING: Attempted to get a feature address without full discovery data");
+        return {};
+    }
+    std::vector<FeatureAddressType> feature_addresses{};
+    for (auto usecase : use_case_data.useCaseInformation.get()) {
+        if (usecase.actor == use_case_actor) {
+            for (auto usecase_support : usecase.useCaseSupport.get()) {
+                if (usecase_support.useCaseAvailable.get() && usecase_support.useCaseName == use_case_name) {
+                    for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
+                        if (feature_info.description->featureType == feature && feature_info.description->role == role) {
+                            feature_addresses.push_back(feature_info.description->featureAddress.get());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return feature_addresses;
 }
 bool SpineConnection::validate_header(HeaderType &header)
 {

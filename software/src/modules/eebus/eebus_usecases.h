@@ -75,6 +75,45 @@ class EEBusUseCases; // Forward declaration of EEBusUseCases
 
 enum class UseCaseType : uint8_t { NodeManagement, ChargingSummary, LimitationOfActivePowerConsumption, CoordinatedEvCharging, EvCommissioningAndConfiguration, EvseCommissioningAndConfiguration, LimitationOfPowerProduction, EvChargingElectricityMeasurement, MonitoringOfPowerConsumption };
 
+namespace EEBUS_USECASE_HELPERS
+{
+const char *get_spine_device_name();
+
+/**
+* The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19
+*/
+enum class ResultErrorNumber { NoError = 0, GeneralError, Timeout, Overload, DestinationUnknown, DestinationUnreachable, CommandNotSupported, CommandRejected, RestrictedFunctionExchangeCombinationNotSupported, BindingRequired };
+
+String get_result_error_number_string(int error_number);
+
+/**
+* Generate a result data object and writes it to the response object. Generally required when the header demands an acknowledgement or a result.
+* @param response The JsonObject to write the result data to.
+* @param error_number The error number to set in the result data. Default is NoError.
+* @param description The description of the error set in the result data. Default is an empty string.
+*/
+void build_result_data(const JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
+
+/**
+ * Converts a duration in seconds to an ISO 8601 duration string. Will be automatically converted to full minutes or hours if possible.
+ * @param duration Duration in seconds.
+ * @return The ISO 8601 duration string.
+ */
+std::string iso_duration_to_string(seconds_t duration);
+/**
+ * Convert a ISO 8601 duration string to a duration in seconds.
+ * @param iso_duration The ISO 8601 duration string
+ * @return The duration in seconds.
+ */
+seconds_t iso_duration_to_seconds(const std::string &iso_duration);
+
+time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
+
+String unix_to_iso_timestamp(time_t unix_time);
+
+String spine_address_to_string(const FeatureAddressType &address);
+} // namespace EEBUS_USECASE_HELPERS
+
 /**
  * The basic Framework of a EEBUS Usecase.
  * Each usecase has one or multiple features and belongs to an entity
@@ -149,6 +188,15 @@ protected:
     bool entity_active = true;                                             // If the entity is active or not. Inactive entities do not respond to messages or their entity and feature information should not be called.
     std::map<FeatureTypeEnumType, AddressFeatureType> feature_addresses{}; // The feature addresses of the features in this usecase.
     [[nodiscard]] FeatureTypeEnumType get_feature_by_address(AddressFeatureType feature_address) const;
+
+    [[nodiscard]] FeatureAddressType get_feature_address(AddressFeatureType feature) const
+    {
+        FeatureAddressType address{};
+        address.feature = feature;
+        address.entity = entity_address;
+        address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+        return address;
+    }
 };
 
 /**
@@ -201,6 +249,15 @@ public:
      */
     template <typename T> size_t inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, T data, const char *function_name);
 
+    /**
+     * Subscribe to a feature. Make sure the sending feature supports notify messages.
+     * @param sending_feature The feature that is subscribing to the target feature.
+     * @param target_feature The target feature to subscribe to.
+     * @param feature The feature type of the target feature. Not mandatory.
+     * @return If the subscription request was successful. Note: This only means the subscription request was valid and a destination was found, not that the target feature accepted the subscription.
+     */
+    bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined) const;
+
     String get_entity_name() const override
     {
         return "NodeManagement";
@@ -240,7 +297,6 @@ private:
     */
     CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
-public:
 };
 
 /**
@@ -511,7 +567,7 @@ public:
     }
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
-        return { FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Identification, FeatureTypeEnumType::DeviceClassification, FeatureTypeEnumType::ElectricalConnection};
+        return {FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Identification, FeatureTypeEnumType::DeviceClassification, FeatureTypeEnumType::ElectricalConnection};
     }
 
 private:
@@ -745,6 +801,7 @@ private:
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
+    AddressFeatureType client_feature_address = 1001;
     bool heartbeatEnabled = false;
     uint64_t heartbeatCounter = 0;
     uint64_t heartbeat_timeout_task = 0;
@@ -931,42 +988,3 @@ private:
     uint16_t eebus_commands_received = 0;
     uint16_t eebus_responses_sent = 0;
 };
-
-namespace EEBUS_USECASE_HELPERS
-{
-const char *get_spine_device_name();
-
-/**
-* The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19
-*/
-enum class ResultErrorNumber { NoError = 0, GeneralError, Timeout, Overload, DestinationUnknown, DestinationUnreachable, CommandNotSupported, CommandRejected, RestrictedFunctionExchangeCombinationNotSupported, BindingRequired };
-
-String get_result_error_number_string(int error_number);
-
-/**
-* Generate a result data object and writes it to the response object. Generally required when the header demands an acknowledgement or a result.
-* @param response The JsonObject to write the result data to.
-* @param error_number The error number to set in the result data. Default is NoError.
-* @param description The description of the error set in the result data. Default is an empty string.
-*/
-void build_result_data(const JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
-
-/**
- * Converts a duration in seconds to an ISO 8601 duration string. Will be automatically converted to full minutes or hours if possible.
- * @param duration Duration in seconds.
- * @return The ISO 8601 duration string.
- */
-std::string iso_duration_to_string(seconds_t duration);
-/**
- * Convert a ISO 8601 duration string to a duration in seconds.
- * @param iso_duration The ISO 8601 duration string
- * @return The duration in seconds.
- */
-seconds_t iso_duration_to_seconds(const std::string &iso_duration);
-
-time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
-
-String unix_to_iso_timestamp(time_t unix_time);
-
-String spine_address_to_string(const FeatureAddressType &address);
-} // namespace EEBUS_USECASE_HELPERS
