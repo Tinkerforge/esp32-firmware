@@ -314,7 +314,7 @@ bool Arena::check_integrity() const
 #endif
 
 void Arena::print_statistics() {
-    logger.printfln("allocs %zu padding overhead %zu blocks %zu", allocs, padding_overhead, allocated_blocks);
+    logger.printfln("allocs %zu padding overhead %zu alloc'd blocks %zu", allocs, padding_overhead, allocated_blocks);
     BlockHeader *ptr = this->head;
     size_t i = 0;
     while (ptr != nullptr) {
