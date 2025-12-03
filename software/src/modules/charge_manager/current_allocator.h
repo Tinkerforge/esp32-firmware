@@ -43,7 +43,7 @@ int allocate_current(
         uint32_t *allocated_current,
         ChargerDecision *charger_decisions);
 
-bool update_from_client_packet(
+void update_from_client_packet(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v2 *v2,
