@@ -81,6 +81,8 @@ type ChargeTrackerState = S & API.getType['charge_tracker/state'];
 
 let wallet_icon = <svg width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6.0999" width="22" height="16" rx="2" ry="2"/><path d="m2.9474 6.0908 15.599-4.8048s0.59352-0.22385 0.57647 0.62527c-0.02215 1.1038-0.01535 3.6833-0.01535 3.6833"/></svg>
 
+let wallbox_icon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="feather feather-type2"><path d="M23 10.846c0 6.022-4.925 10.904-11 10.904S1 16.868 1 10.846c0-1.506.308-2.94.864-4.244C2.143 5.95 2.88 4.75 2.88 4.75h18.243s.736 1.2 1.014 1.852c.556 1.304.864 2.738.864 4.244z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="8.5" r="1.5"/><circle cx="15" cy="8.5" r="1.5"/><circle cx="9" cy="16.75" r="2"/><circle cx="15" cy="16.75" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
+
 function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number}) {
     const display_name = useMemo(
         () => {
@@ -112,7 +114,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
-        <div class={"row justify-content-end" + (have_charge_cost ? "" : " mb-n2")}>
+        <div class={"row justify-content-end" + ((props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost  ? "" : " mb-n2")}>
             <div class="col-auto pe-2 mb-2">
                 <span class="pe-2"><Calendar/></span>
                 <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
@@ -123,13 +125,19 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <span class="ps-2"><Clock/></span>
             </div>
         </div>
-        {have_charge_cost ?
+        {(props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost ?
             <div class="row justify-content-end mb-n2">
+                {props.charge.charger_name && props.charge.charger_name !== '' ?
+                    <div class="col-auto pe-2 mb-2">
+                        <span class="pe-2">{wallbox_icon}</span>
+                        <span style="vertical-align: middle;">{props.charge.charger_name}</span>
+                    </div> : undefined}
                 <div class="col px-0" />
-                <div class="col-auto ps-2 mb-2">
-                    <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
-                    <span class="ps-2">{wallet_icon}</span>
-                </div>
+                {have_charge_cost ?
+                    <div class="col-auto ps-2 mb-2">
+                        <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
+                        <span class="ps-2">{wallet_icon}</span>
+                    </div> : undefined}
             </div> : undefined}
     </ListGroupItem>
 }
@@ -807,7 +815,8 @@ export class ChargeTrackerStatus extends Component {
                 charge_duration: charge_duration,
                 energy_charged: (energy_abs === null || cc.meter_start === null) ? null : (energy_abs - cc.meter_start),
                 timestamp_minutes: cc.timestamp_minutes,
-                user_id: cc.user_id
+                user_id: cc.user_id,
+                charger_name: "",
             };
 
             current_charge = <FormRow label={__("charge_tracker.status.current_charge")}>

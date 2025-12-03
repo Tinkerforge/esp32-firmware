@@ -59,7 +59,8 @@ export type state = {
 interface ChargerConfig {
     host: string,
     name: string,
-    rot: number
+    rot: number,
+    uid: number,
 }
 
 export interface config {
