@@ -325,7 +325,7 @@ static ssize_t dstr_ensure(struct dstr *str, size_t len)
     else if (str->alloc_len < len) {
         size_t new_len;
 
-        new_len = len + 4096;
+        new_len = std::max(len + 1024, (size_t)2048); // generating a "full" pdf was observed to require up to 2029 bytes
 
         if (str->data) {
             char *new_data = (char *)realloc((void *)str->data, new_len);
