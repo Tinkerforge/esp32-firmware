@@ -175,7 +175,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 
         let show_buttons = API.get("evse/management_enabled").enabled
 //#if MODULE_CHARGE_MANAGER_AVAILABLE
-                         && API.get("charge_manager/config").chargers.length != 1
+                         && (!API.get("charge_manager/config").enable_charge_manager || API.get("charge_manager/config").chargers.length != 1)
 //#endif
 
         let charge_mode_buttons = !show_buttons ? undefined :
