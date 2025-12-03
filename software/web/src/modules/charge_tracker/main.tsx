@@ -108,22 +108,22 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
         <div class="row justify-content-end">
             <div class="col-auto pe-2 mb-2">
                 <span class="pe-2"><User/></span>
-                <span style="vertical-align: middle;">{display_name}</span>
+                <span style={{verticalAlign: "middle"}}>{display_name}</span>
             </div>
             <div class="col px-0" />
             <div class="col-auto ps-2 mb-2">
-                <span style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
+                <span style={{verticalAlign: "middle"}}>{props.charge.energy_charged === null ? "N/A" : util.util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
                 <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
-        <div class={"row justify-content-end" + ((props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost  ? "" : " mb-n2")}>
+        <div class={"row justify-content-end" + ((props.charge.charger_name && props.charge.charger_name !== '') || (props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost   ? "" : " mb-n2")}>
             <div class="col-auto pe-2 mb-2">
                 <span class="pe-2"><Calendar/></span>
-                <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
+                <span style={{verticalAlign: "middle"}}>{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
             </div>
             <div class="col px-0" />
             <div class="col-auto ps-2 mb-2">
-                <span style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span>
+                <span style={{verticalAlign: "middle"}}>{util.format_timespan(props.charge.charge_duration)}</span>
                 <span class="ps-2"><Clock/></span>
             </div>
         </div>
@@ -134,10 +134,15 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                         <span class="pe-2">{wallbox_icon}</span>
                         <span style="vertical-align: middle;">{props.charge.charger_name}</span>
                     </div> : undefined}
+                {props.charge.charger_name && props.charge.charger_name !== '' ?
+                    <div class="col-auto pr-2 mb-2">
+                        <span class="pr-2">{wallbox_icon}</span>
+                        <span style={{verticalAlign: "middle"}}>{props.charge.charger_name}</span>
+                    </div> : undefined}
                 <div class="col px-0" />
                 {have_charge_cost ?
                     <div class="col-auto ps-2 mb-2">
-                        <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
+                        <span style={{verticalAlign: "middle"}}>{util.util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
                         <span class="ps-2">{wallet_icon}</span>
                     </div> : undefined}
             </div> : undefined}
