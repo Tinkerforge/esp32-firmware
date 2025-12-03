@@ -78,7 +78,7 @@ static CASState get_charge_state(uint8_t charger_state, uint16_t supported_curre
 }
 
 
-bool update_from_client_packet(
+void update_from_client_packet(
     uint8_t client_id,
     cm_state_v1 *v1,
     cm_state_v2 *v2,
@@ -236,6 +236,7 @@ bool update_from_client_packet(
                                               v1->car_stopped_charging,
                                               target_alloc.allocated_current);
 
+        // TODO
         // Override with UserBlocked if the charger has an unauthorized NFC tag and is not yet actively charging
         // This prevents unauthorized users from starting a charge session
         if (target.authenticated_user_id == -1 && v1->charger_state != 0) {
@@ -256,8 +257,6 @@ bool update_from_client_packet(
         target.phases = 3;
         target.phase_switch_supported = false;
     }
-
-    return true;
 }
 
 // All time calculations in the allocation algorithm shall use the same timestamp (sc.now and sc.elapsed(x))
