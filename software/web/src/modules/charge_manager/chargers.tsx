@@ -71,8 +71,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         super('charge_manager/config',
               () => __("charge_manager.script.save_failed"),
               () => __("charge_manager.script.reboot_content_changed"), {
-                  addCharger: {host: "", name: "", rot: -1},
-                  editCharger: {host: "", name: "", rot: -1},
+                  addCharger: {host: "", name: "", rot: -1, uid: 0},
+                  editCharger: {host: "", name: "", rot: -1, uid: 0},
                   managementEnabled: false,
                   showExpert: false,
                   scanResult: [],
@@ -277,7 +277,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         c.unshift({
             host: "127.0.0.1",
             name: name.display_name,
-            rot: CMPhaseRotation.Unknown
+            rot: CMPhaseRotation.Unknown,
+            uid: 0
         });
         this.setState({chargers: c})
     }
@@ -468,7 +469,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         addTitle={__("charge_manager.content.add_charger_title")}
                         addMessage={__("charge_manager.content.add_charger_message")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
                         onAddShow={async () => {
-                            this.setState({addCharger: {name: "", host: "", rot: -1}});
+                            this.setState({addCharger: {name: "", host: "", rot: -1, uid: 0}});
                             this.scan_services();
                             this.scan_interval_id = window.setInterval(this.scan_services, 3000);
                         }}
@@ -497,7 +498,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                                         action
                                                         disabled={s.error != 0}
                                                         onClick={s.error != 0 ? undefined : () => {
-                                                            this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})
+                                                            this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1, uid: 0}})
                                                         }}>
                                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                                     <div class="flex-grow-1 col p-2">

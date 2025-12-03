@@ -89,7 +89,8 @@ void ChargeManager::pre_setup()
     config_chargers_prototype = Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"name", Config::Str("", 0, 32)},
-        {"rot", Config::Enum(CMPhaseRotation::Unknown)}
+        {"rot", Config::Enum(CMPhaseRotation::Unknown)},
+        {"uid", Config::Uint32(0)},
     });
 
     config = ConfigRoot{Config::Object({
@@ -519,6 +520,12 @@ void ChargeManager::start_manager_task()
                     get_charger_name_fn
                     )) {
 
+                // Populate and save UID if not yet stored for this charger
+                if (this->config.get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
+                    this->config.get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
+                    api.writeConfig("charge_manager/config", &this->config);
+                }
+
                 // This should be done in update_from_client_packet, but the current allocator does not know about config charge modes and this->config_cm_to_cm.
                 // If requested_charge_mode is default, no charge mode change is requested.
                 if (v4 != nullptr && v4->requested_charge_mode != (uint8_t)ConfigChargeMode::Default)
@@ -934,6 +941,16 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
     return this->state.get("chargers")->get(idx)->get("n")->asEphemeralCStr();
 }
 
+const char *ChargeManager::get_charger_name_by_uid(uint32_t uid)
+{
+    for (size_t i = 0; i < charger_count; ++i) {
+        if (config.get("chargers")->get(i)->get("uid")->asUint() == uid)
+            return config.get("chargers")->get(i)->get("name")->asEphemeralCStr();
+    }
+
+    return nullptr;
+}
+
 void ChargeManager::register_urls()
 {
 #if MODULE_POWER_MANAGER_AVAILABLE()
@@ -1146,7 +1163,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
     charger_cfg->get("lu")->updateUptime(charger.last_update);
     charger_cfg->get("u")->updateUint(charger.uid);
-    
+
     // Update authorization state based on charger state
     CASAuthState auth_state = CASAuthState::None;
     if (charger.charger_state != 0) { // If a car is connected
