@@ -2735,6 +2735,55 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
     return charges;
 }
 
+void ChargeTracker::updateLastCharges(const char *directory)
+{
+    std::vector<ChargeWithLocation> all_charges;
+    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
+
+    auto get_charges_from_directory = [this, &all_charges](const char *dir) {
+        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(dir);
+        merge_charge_vectors(all_charges, dir_charges);
+    };
+
+    get_charges_from_directory(nullptr);
+
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+                get_charges_from_directory(dirname.c_str());
+            }
+        }
+    }
+
+    while (last_charges.count() > 0) {
+        last_charges.remove(0);
+    }
+
+    size_t charges_to_add = std::min(all_charges.size(), static_cast<size_t>(CHARGE_RECORD_LAST_CHARGES_SIZE));
+    for (int i = static_cast<int>(charges_to_add) - 1; i >= 0; --i) {
+        const auto &charge_with_loc = all_charges[i];
+
+        auto last_charge = last_charges.add();
+        last_charge->get("timestamp_minutes")->updateUint(charge_with_loc.charge.cs.timestamp_minutes);
+        last_charge->get("charge_duration")->updateUint(charge_with_loc.charge.ce.charge_duration);
+        last_charge->get("user_id")->updateUint(charge_with_loc.charge.cs.user_id);
+
+        float energy_charged = charged_invalid(charge_with_loc.charge.cs, charge_with_loc.charge.ce)
+            ? NAN
+            : charge_with_loc.charge.ce.meter_end - charge_with_loc.charge.cs.meter_start;
+        last_charge->get("energy_charged")->updateFloat(energy_charged);
+
+        String charger_display_name = get_charger_display_name_from_host(charge_with_loc.directory.c_str());
+        last_charge->get("charger_name")->updateString(charger_display_name);
+    }
+}
+
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
     GenerationState expected = GenerationState::Ready;
     if (!generation_lock_state.compare_exchange_strong(expected, kind)) {
