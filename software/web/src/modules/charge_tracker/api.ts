@@ -12,6 +12,7 @@ interface Charge {
     charge_duration: number;
     user_id: number;
     energy_charged: number;
+    charger_name: string;
 }
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE

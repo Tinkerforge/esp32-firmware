@@ -43,6 +43,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     uint32_t first_charge_record;
     uint32_t last_charge_record;
@@ -60,7 +61,9 @@ public:
 
     bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
-    void readNRecords(File *f, size_t records_to_read);
+    void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
+
+    void updateLastCharges(const char *directory);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);

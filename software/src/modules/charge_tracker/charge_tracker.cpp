@@ -38,6 +38,7 @@
 #include "csv_flavor.enum.h"
 #include "generation_state.enum.h"
 #include "charge_tracker_defs.h"
+#include "bindings/base58.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
 
@@ -55,6 +56,7 @@ static constexpr BaseType_t pdPASS_safe = pdPASS;
     #pragma GCC diagnostic pop
 #endif
 
+extern const char local_uid_str[32];
 
 static bool repair_logic(Charge *);
 
@@ -151,7 +153,8 @@ void ChargeTracker::pre_setup()
         {"timestamp_minutes", Config::Uint32(0)},
         {"charge_duration", Config::Uint32(0)},
         {"user_id", Config::Uint8(0)},
-        {"energy_charged", Config::Float(0)}
+        {"energy_charged", Config::Float(0)},
+        {"charger_name", Config::Str("", 0, 32)}
     });
 
     last_charges = Config::Array(
@@ -256,6 +259,7 @@ bool ChargeTracker::repair_last(float meter_start)
         r_file.write(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
         logger.printfln("Repaired previous broken charge.");
         last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat(charges[1].ce.meter_end - charges[1].cs.meter_start);
+        last_charges.get(last_charges.count() - 1)->get("charger_name")->updateString("");
     }
     return true;
 }
@@ -343,7 +347,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
 
     File f = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory));
     f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
-    this->readNRecords(&f, 1);
+    this->readNRecords(&f, 1, directory);
 
     logger.printfln("Tracked end of charge.");
     if (directory != nullptr) {
@@ -710,11 +714,31 @@ bool charged_invalid(ChargeStart cs, ChargeEnd ce)
     return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
 }
 
-void ChargeTracker::readNRecords(File *f, size_t records_to_read)
+static String get_charger_display_name_from_host(const char *b58)
+{
+    if (b58 == nullptr || strlen(b58) == 0) {
+        b58 = local_uid_str;
+    }
+
+    uint32_t uid = 0;
+    if (tf_base58_decode(b58, &uid) == 0) {
+        const char *name = charge_manager.get_charger_name_by_uid(uid);
+        if (name != nullptr) {
+            return String(name);
+        }
+    }
+
+    return String(b58);
+}
+
+void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *directory)
 {
     uint8_t buf[CHARGE_RECORD_SIZE];
     ChargeStart cs;
     ChargeEnd ce;
+
+    const char *directory_identifier = (directory != nullptr && directory[0] != '\0') ? directory : nullptr;
+    String charger_display_name = get_charger_display_name_from_host(directory_identifier);
 
     for (int i = 0; i < records_to_read; ++i) {
         memset(buf, 0, sizeof(buf));
@@ -728,6 +752,7 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read)
         last_charge->get("charge_duration")->updateUint(ce.charge_duration);
         last_charge->get("user_id")->updateUint(cs.user_id);
         last_charge->get("energy_charged")->updateFloat(charged_invalid(cs, ce) ? NAN : ce.meter_end - cs.meter_start);
+        last_charge->get("charger_name")->updateString(charger_display_name);
     }
 }
 
@@ -1205,7 +1230,22 @@ void ChargeTracker::repair_charges()
 
         float energy_charged = charged_invalid(charge.charge.cs, charge.charge.ce) ? NAN : charge.charge.ce.meter_end - charge.charge.cs.meter_start;
         last_charge->get("energy_charged")->updateFloat(energy_charged);
+
+        String charger_display_name = get_charger_display_name_from_host(charge.directory.c_str());
+        last_charge->get("charger_name")->updateString(charger_display_name);
     }
+}
+
+void ChargeTracker::register_events()
+{
+    event.registerEvent("charge_manager/config", {"chargers"}, [this](const Config *chargers_cfg) {
+        std::lock_guard<std::mutex> lock{records_mutex};
+
+        // TODO: Discuss if we are able to identify charges by charger and update them selectively.
+        this->updateLastCharges(nullptr);
+
+        return EventResult::OK;
+    });
 }
 
 void ChargeTracker::register_urls()
@@ -2252,6 +2292,55 @@ search_done:
     free(display_name_cache);
 
     return rc;
+}
+
+void ChargeTracker::updateLastCharges(const char *directory)
+{
+    std::vector<ChargeWithLocation> all_charges;
+    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
+
+    auto get_charges_from_directory = [this, &all_charges](const char *dir) {
+        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(dir);
+        merge_charge_vectors(all_charges, dir_charges);
+    };
+
+    get_charges_from_directory(nullptr);
+
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+                get_charges_from_directory(dirname.c_str());
+            }
+        }
+    }
+
+    while (last_charges.count() > 0) {
+        last_charges.remove(0);
+    }
+
+    size_t charges_to_add = std::min(all_charges.size(), static_cast<size_t>(CHARGE_RECORD_LAST_CHARGES_SIZE));
+    for (int i = static_cast<int>(charges_to_add) - 1; i >= 0; --i) {
+        const auto &charge_with_loc = all_charges[i];
+
+        auto last_charge = last_charges.add();
+        last_charge->get("timestamp_minutes")->updateUint(charge_with_loc.charge.cs.timestamp_minutes);
+        last_charge->get("charge_duration")->updateUint(charge_with_loc.charge.ce.charge_duration);
+        last_charge->get("user_id")->updateUint(charge_with_loc.charge.cs.user_id);
+
+        float energy_charged = charged_invalid(charge_with_loc.charge.cs, charge_with_loc.charge.ce)
+            ? NAN
+            : charge_with_loc.charge.ce.meter_end - charge_with_loc.charge.cs.meter_start;
+        last_charge->get("energy_charged")->updateFloat(energy_charged);
+
+        String charger_display_name = get_charger_display_name_from_host(charge_with_loc.directory.c_str());
+        last_charge->get("charger_name")->updateString(charger_display_name);
+    }
 }
 
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
