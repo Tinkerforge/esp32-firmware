@@ -31,6 +31,8 @@
 #include "modules/meters/meter_defs.h"
 #include "client_error.enum.h"
 
+#include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
+
 static const char *get_charger_name(uint8_t idx)
 {
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
@@ -740,14 +742,14 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
         NFC::tag_info_t info;
         if (nfc.get_last_tag_seen(&info, nullptr, nullptr)
             && info.last_seen < 3'600'000) {
-            state_pkt.v5.auth_type = CM_STATE_V5_AUTH_TYPE_NFC;
+            state_pkt.v5.auth_type = USERS_AUTH_TYPE_NFC;
             state_pkt.v5.nfc_last_seen_s = info.last_seen / 1000;
             state_pkt.v5.nfc_tag_type = info.tag.type;
             state_pkt.v5.nfc_tag_id_len = info.tag.id_length;
             memset(state_pkt.v5.nfc_tag_id, 0, sizeof(state_pkt.v5.nfc_tag_id));
             memcpy(state_pkt.v5.nfc_tag_id, info.tag.id_bytes, info.tag.id_length);
         } else {
-            state_pkt.v5.auth_type = CM_STATE_V5_AUTH_TYPE_NONE;
+            state_pkt.v5.auth_type = USERS_AUTH_TYPE_NONE;
             state_pkt.v5.nfc_last_seen_s = 0;
             state_pkt.v5.nfc_tag_type = 0;
             state_pkt.v5.nfc_tag_id_len = 0;

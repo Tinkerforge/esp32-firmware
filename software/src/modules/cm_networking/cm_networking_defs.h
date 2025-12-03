@@ -272,9 +272,6 @@ struct cm_state_v5 {
     uint8_t nfc_tag_id[10];
 };
 
-#define CM_STATE_V5_AUTH_TYPE_NONE 0
-#define CM_STATE_V5_AUTH_TYPE_NFC 1
-
 #define CM_STATE_V5_LENGTH (sizeof(cm_state_v5))
 static_assert(CM_STATE_V5_LENGTH == 16, "Unexpected CM_STATE_V5_LENGTH");
 
