@@ -70,7 +70,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
             console.log("charge_manager save failed because of power_manager/dynamic_load_config", e);
         }
 
-        let {enable_charge_manager, chargers, maximum_available_current, ...new_values} = cfg;
+        let {enable_charge_manager, chargers, maximum_available_current, enable_central_auth, enable_charge_tracking, ...new_values} = cfg;
         let new_cfg: ChargeManagerConfig = {...API.get("charge_manager/config"), ...new_values};
 
         await super.sendSave(topic, new_cfg);
@@ -109,18 +109,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                 <Switch desc={__("charge_manager.content.verbose_desc")}
                         checked={state.verbose}
                         onClick={this.toggle("verbose")}/>
-            </FormRow>;
-
-        let enable_central_auth = <FormRow label={__("charge_manager.content.enable_central_auth")}>
-                <Switch desc={__("charge_manager.content.enable_central_auth_desc")}
-                        checked={state.enable_central_auth}
-                        onClick={this.toggle("enable_central_auth")}/>
-            </FormRow>;
-
-        let enable_charge_tracking = <FormRow label={__("charge_manager.content.enable_charge_tracking")}>
-                <Switch desc={__("charge_manager.content.enable_charge_tracking_desc")}
-                        checked={state.enable_charge_tracking}
-                        onClick={this.toggle("enable_charge_tracking")}/>
             </FormRow>;
 
         let watchdog = <FormRow label={__("charge_manager.content.enable_watchdog")} label_muted={__("charge_manager.content.enable_watchdog_muted")}>
@@ -221,8 +209,6 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
 
                     <CollapsedSection heading={__("charge_manager.content.advanced_settings")}>
                         {verbose}
-                        {enable_central_auth}
-                        {enable_charge_tracking}
                         {watchdog}
                         {default_available_current}
                         {requested_current_threshold}
