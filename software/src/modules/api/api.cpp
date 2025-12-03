@@ -183,7 +183,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
     if (already_registered(path, path_len, "command"))
         return;
 
-    auto ktc = ktc_size == 0 ? nullptr : perm_new_array<const char *>(ktc_size, DRAM);
+    auto ktc = ktc_size == 0 ? nullptr : perm_new_array_prefer<const char *>(ktc_size, IRAM, DRAM, _NONE);
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
@@ -253,7 +253,7 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
     if (already_registered(path, path_len, "state"))
         return;
 
-    auto ktc = ktc_size == 0 ? nullptr : perm_new_array<const char *>(ktc_size, DRAM);
+    auto ktc = ktc_size == 0 ? nullptr : perm_new_array_prefer<const char *>(ktc_size, IRAM, DRAM, _NONE);
     {
         int i = 0;
         for(const char *k : keys_to_censor){
@@ -265,7 +265,7 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
         }
     }
 
-    auto ktc_debug = ktc_debug_size == 0 ? nullptr : perm_new_array<const char *>(ktc_debug_size, DRAM);
+    auto ktc_debug = ktc_debug_size == 0 ? nullptr : perm_new_array_prefer<const char *>(ktc_debug_size, IRAM, DRAM, _NONE);
     {
         int i = 0;
         for(const char *k : keys_to_censor){
@@ -421,7 +421,7 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
     if (already_registered(path, path_len, "response"))
         return;
 
-    auto ktc = ktc_size == 0 ? nullptr : perm_new_array<const char *>(ktc_size, DRAM);
+    auto ktc = ktc_size == 0 ? nullptr : perm_new_array_prefer<const char *>(ktc_size, IRAM, DRAM, _NONE);
     {
         int i = 0;
         for(const char *k : keys_to_censor_in_debug_report){
