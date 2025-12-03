@@ -489,22 +489,22 @@ static void update_authentication(
     }
 }
 
-static void update_uid(uint8_t client_id, cm_state_v1 *v1,) {
+static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config) {
     // Populate and save UID if not yet stored for this charger
-    if (this->config.get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
-        this->config.get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
-        api.writeConfig("charge_manager/config", &this->config);
+    if (config->get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
+        config->get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
+        api.writeConfig("charge_manager/config", config);
     }
 }
 
-static void update_charge_mode(uint8_t client_id,  cm_state_v1 *v1, cm_state_v4 *v4, ChargerState *charger_state) {
+static void update_charge_mode(uint8_t client_id, cm_state_v1 *v1, cm_state_v4 *v4, ChargerState *charger_state) {
     // If requested_charge_mode is default, no charge mode change is requested.
     if (v4 != nullptr && v4->requested_charge_mode != (uint8_t)ConfigChargeMode::Default)
-        charger_state[client_id].charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
+        charger_state[client_id].charge_mode = charge_manager.config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
 
     // If the car is unplugged, change back to the default charge mode once.
-    if (v1->charger_state == 0 && old_charger_state != 0) {
-        charger_state[client_id].charge_mode = this->config_cm_to_cm(ConfigChargeMode::Default);
+    if (v1->charger_state == 0 && charger_state[client_id].charger_state != 0) {
+        charger_state[client_id].charge_mode = charge_manager.config_cm_to_cm(ConfigChargeMode::Default);
     }
 }
 
@@ -513,8 +513,6 @@ void ChargeManager::start_manager_task()
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
     cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4, cm_state_v5 *v5) mutable {
-            auto old_charger_state = charger_state[client_id].charger_state;
-
             if (is_packet_stale(
                     client_id,
                     v1,
@@ -524,7 +522,9 @@ void ChargeManager::start_manager_task()
                     get_charger_name_fn))
                 return;
 
-            update_uid(client_id, v1);
+            update_uid(client_id, v1, &this->config);
+
+            update_charge_mode(client_id, v1, v4, this->charger_state);
 
             update_authentication(client_id, v1, v5, this->ca_config, this->charger_state);
             update_charge_tracking(client_id, v1, v5, this->ca_config, this->charger_state);
@@ -540,9 +540,6 @@ void ChargeManager::start_manager_task()
                     this->hosts.get(),
                     get_charger_name_fn
                     );
-
-            update_charge_mode(client_id, v1, v4, this->charger_state);
-
 
             update_charger_state_config(client_id);
     }, [this](uint8_t client_id, ClientError error){
