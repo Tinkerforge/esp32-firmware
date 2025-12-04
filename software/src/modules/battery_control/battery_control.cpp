@@ -698,7 +698,7 @@ void BatteryControl::evaluate_all_rules()
             if (discharge_action == RuleAction::Normal) {
                 new_mode = BatteryMode::DischargeToLoad;
             } else { // block discharge
-                new_mode = BatteryMode::Disable;
+                new_mode = BatteryMode::Block;
             }
         }
     } while (false);
