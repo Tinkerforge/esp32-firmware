@@ -273,7 +273,8 @@ let x = {
             "cd_guaranteed_pv": "Garantierte PV-Leistung",
             "cd_fast_ramp_up": "Ermittle Fahrzeuglimit",
             "cd_supported_by_charger": "Wallboxlimit",
-            "cd_left_over": "Reststrom"
+            "cd_left_over": "Reststrom",
+            "cd_user_limit": "Nutzerlimit"
         }
     }
 }

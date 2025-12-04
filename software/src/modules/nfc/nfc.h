@@ -74,7 +74,7 @@ public:
     void tag_seen(tag_info_t *info, bool injected);
     void setup_nfc();
     void check_nfc_state();
-    uint8_t get_user_id(const tag_t &tag);
+    int16_t get_user_id(const tag_t &tag);
 
     void remove_user(uint8_t user_id);
 
