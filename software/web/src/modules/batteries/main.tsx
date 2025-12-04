@@ -1115,7 +1115,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         let mode_group2: number;
 
         switch (battery_control_state.mode) {
-            case BatteryMode.Disable:
+            case BatteryMode.Block:
                 mode_group1 = 0;
                 mode_group2 = -1;
                 break;

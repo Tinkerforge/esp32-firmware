@@ -30,6 +30,20 @@
 
 #include "gcc_warnings.h"
 
+static const char *get_battery_mode_display_name(BatteryMode value)
+{
+    switch (value) {
+    case BatteryMode::None:             return "none";
+    case BatteryMode::Block:            return "block charge, block discharge";
+    case BatteryMode::Normal:           return "charge normally, discharge normally";
+    case BatteryMode::ChargeFromExcess: return "charge normally, block discharge";
+    case BatteryMode::ChargeFromGrid:   return "force charge, block discharge";
+    case BatteryMode::DischargeToLoad:  return "block charge, discharge normally";
+    case BatteryMode::DischargeToGrid:  return "block charge, force discharge";
+    default:                            return "unknown";
+    }
+}
+
 void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr, const Config *config)
 {
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
@@ -256,8 +270,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
     [writer, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             table_writer_logfln(writer,
-                                "Setting mode %i failed at %zu of %zu: %s (%d)%s%s",
-                                static_cast<int>(writer->mode),
+                                "Setting mode \"%s\" failed at %zu of %zu: %s (%d)%s%s",
+                                get_battery_mode_display_name(writer->mode),
                                 writer->index + 1, writer->table->register_blocks_count,
                                 get_tf_modbus_tcp_client_transaction_result_name(result),
                                 static_cast<int>(result),
@@ -298,8 +312,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
                     table_writer_logfln(writer,
-                                        "Setting mode %i (step 2) failed at %zu of %zu: %s (%d)%s%s",
-                                        static_cast<int>(writer->mode),
+                                        "Setting mode \"%s\" (step 2) failed at %zu of %zu: %s (%d)%s%s",
+                                        get_battery_mode_display_name(writer->mode),
                                         writer->index + 1, writer->table->register_blocks_count,
                                         get_tf_modbus_tcp_client_transaction_result_name(step2_result),
                                         static_cast<int>(step2_result),
@@ -351,10 +365,10 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(TFModbusTCP
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
             if (writer->repeat_interval > 0) {
-                table_writer_logfln(writer, "Setting mode %i now (will repeat in %u second%s)", static_cast<int>(writer->mode), writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
+                table_writer_logfln(writer, "Setting mode \"%s\" now (will repeat in %u second%s)", get_battery_mode_display_name(writer->mode), writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
             }
             else {
-                table_writer_logfln(writer, "Setting mode %i now (once)", static_cast<int>(writer->mode));
+                table_writer_logfln(writer, "Setting mode \"%s\" now (once)", get_battery_mode_display_name(writer->mode));
             }
 
             next_table_writer_step(writer);
@@ -403,7 +417,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         repeat_interval = table_config->get("repeat_interval")->asUint16();
         battery_modes_config = static_cast<const Config *>(table_config->get("battery_modes"));
 
-        for (size_t i = static_cast<size_t>(BatteryMode::Disable); i <= static_cast<size_t>(BatteryMode::_max); ++i) {
+        for (size_t i = static_cast<size_t>(BatteryMode::Block); i <= static_cast<size_t>(BatteryMode::_max); ++i) {
             load_custom_table(&tables[i], static_cast<const Config *>(battery_modes_config->get(i)));
         }
 

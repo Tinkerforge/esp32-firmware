@@ -35,8 +35,8 @@ repeat_intervals = [
 specs = [
     {
         'group': 'Deye Hybrid Inverter',
-        'mode': 'Disable',
-        'actions': ('Disable', 'Disable'),
+        'mode': 'Block',
+        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
@@ -148,7 +148,7 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Disable'),
+        'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
@@ -204,7 +204,7 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'mode': 'Charge From Grid',
-        'actions': ('Force', 'Disable'),
+        'actions': ('Force', 'Block'),
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
@@ -273,7 +273,7 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'mode': 'Discharge To Load',
-        'actions': ('Disable', 'Normal'),
+        'actions': ('Block', 'Normal'),
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',
@@ -329,7 +329,7 @@ specs = [
     {
         'group': 'Deye Hybrid Inverter',
         'mode': 'Discharge To Grid',
-        'actions': ('Disable', 'Force'),
+        'actions': ('Block', 'Force'),
         'register_blocks': [
             {
                 'description': 'Max charge current [A]',

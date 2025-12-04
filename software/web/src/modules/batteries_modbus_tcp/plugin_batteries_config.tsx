@@ -896,7 +896,7 @@ export function init() {
                 ];
 
                 let battery_mode_names = [
-                    __("batteries_modbus_tcp.content.battery_mode_disable"),
+                    __("batteries_modbus_tcp.content.battery_mode_block"),
                     __("batteries_modbus_tcp.content.battery_mode_normal"),
                     __("batteries_modbus_tcp.content.battery_mode_charge_from_excess"),
                     __("batteries_modbus_tcp.content.battery_mode_charge_from_grid"),
@@ -908,7 +908,7 @@ export function init() {
                     BatteryMode.Normal,
                     BatteryMode.ChargeFromExcess,
                     BatteryMode.DischargeToLoad,
-                    BatteryMode.Disable,
+                    BatteryMode.Block,
                     BatteryMode.DischargeToGrid,
                     BatteryMode.ChargeFromGrid,
                 ];

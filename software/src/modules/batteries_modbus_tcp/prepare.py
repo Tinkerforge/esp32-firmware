@@ -39,12 +39,12 @@ for module in modules:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
 
             test_table_prototypes.append(f'\n    test_table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
-            test_table_prototypes.append('        {"mode", Config::Enum(BatteryMode::Disable)},')
+            test_table_prototypes.append('        {"mode", Config::Enum(BatteryMode::Block)},')
             test_table_prototypes.append('    })});')
         else:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
             test_table_prototypes.append(f'\n    test_table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, Config::Object({{')
-            test_table_prototypes.append('        {"mode", Config::Enum(BatteryMode::Disable)},')
+            test_table_prototypes.append('        {"mode", Config::Enum(BatteryMode::Block)},')
 
             for member in table_prototype[1]:
                 if isinstance(member, dict):

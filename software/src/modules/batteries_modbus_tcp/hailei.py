@@ -22,9 +22,9 @@ repeat_intervals = [
 specs = [
     {
         'group': 'Hailei Hybrid Inverter',
-        'mode': 'Disable',
-        #            Disable
-        'actions': ('Normal', 'Disable'),  # FIXME: cannot fully disable charge
+        'mode': 'Block',
+        #            Block
+        'actions': ('Normal', 'Block'),  # FIXME: cannot fully block charge
         'register_blocks': [
             {
                 'description': 'Time discharge start hours',
@@ -100,7 +100,7 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Disable'),
+        'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
                 'description': 'Time discharge start hours',
@@ -153,7 +153,7 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Charge From Grid',
-        'actions': ('Force', 'Disable'),
+        'actions': ('Force', 'Block'),
         'register_blocks': [
             {
                 'description': 'Time charge start hours',
@@ -237,8 +237,8 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Discharge To Load',
-        #            Disable
-        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully disable charge
+        #            Block
+        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully block charge
         'register_blocks': [
             {
                 'description': 'Time period control flag',
@@ -261,8 +261,8 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Discharge To Grid',
-        #            Disable   Force
-        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully disable charge and cannot force discharge
+        #            Block     Force
+        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully block charge and cannot force discharge
         'register_blocks': [
             {
                 'description': 'Time period control flag',
