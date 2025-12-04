@@ -1066,7 +1066,15 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
     // Asserts checked in ::to_json.
     auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
     char *ptr = sw->getRemainingPtr();
-    size_t written = serializeJson(doc, ptr, sw->getRemainingLength());
+
+    // serializeJson only adds the null terminator if there is enough room in the buffer.
+    // To detect truncation, allow writing one byte more than what is still remaining.
+    // StringWriter always keeps one byte extra to be able to null-terminate, so writing one byte extra is safe.
+    auto remaining_before = sw->getRemainingLength();
+    size_t written = serializeJson(doc, ptr, sw->getRemainingLength() + 1);
+
+    // If serializeJson has written the extra byte from above, the output is truncated.
+    bool truncated = written == remaining_before + 1;
 
     sw->setLength(sw->getLength() + written);
 
@@ -1082,7 +1090,7 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
     }
 
     if (sw->getRemainingLength() == 0) {
-        logger.printfln("StringBuilder overflow while converting JSON to string! Doc size is %zu. Truncated string follows.", doc.size());
+        logger.printfln("StringBuilder overflow while converting JSON to string! Capacity %zu, remaining before serialize %zu. Truncated string follows.", sw->getCapacity(), capacity_before);
         logger.print_plain(ptr, written);
         logger.print_plain("\n", 1);
     }
