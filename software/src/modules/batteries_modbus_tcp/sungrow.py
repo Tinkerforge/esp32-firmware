@@ -35,8 +35,8 @@ repeat_intervals = [
 specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
-        'mode': 'Disable',
-        'actions': ('Disable', 'Disable'),
+        'mode': 'Block',
+        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -132,7 +132,7 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Disable'),
+        'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -180,7 +180,7 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Charge From Grid',
-        'actions': ('Force', 'Disable'),
+        'actions': ('Force', 'Block'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -229,7 +229,7 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Discharge To Load',
-        'actions': ('Disable', 'Normal'),
+        'actions': ('Block', 'Normal'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',
@@ -277,7 +277,7 @@ specs = [
     {
         'group': 'Sungrow Hybrid Inverter',
         'mode': 'Discharge To Grid',
-        'actions': ('Disable', 'Force'),
+        'actions': ('Block', 'Force'),
         'register_blocks': [
             {
                 'description': 'EMS mode selection',

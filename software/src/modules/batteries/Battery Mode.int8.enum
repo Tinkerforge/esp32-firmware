@@ -1,5 +1,5 @@
 None = -1
-Disable = 0
+Block = 0
 Normal
 Charge From Excess
 Charge From Grid
