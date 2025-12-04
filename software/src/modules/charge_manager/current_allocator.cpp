@@ -119,21 +119,20 @@ void update_from_client_packet(
     //         or 2 (i.e. already have current allocated)
     // OR the charger is already charging
     // AND the charger is authorized
-    bool wants_to_charge = ((v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3) && target.authenticated_user_id != -1;
+    bool wants_to_charge = ((v1->car_stopped_charging == 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2)) || v1->charger_state == 3) && target.user_current > 0;
     target.wants_to_charge = wants_to_charge;
 
     // A charger wants to charge and has low priority if it has already charged this vehicle
     // AND only the charge manager slot (charger_state == 1, supported_current != 0) or no slot (charger_state == 2) blocks.
     // AND the charger is authorized
-    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2) && target.authenticated_user_id != -1;
+    bool low_prio = v1->car_stopped_charging != 0 && v1->supported_current != 0 && (v1->charger_state == 1 || v1->charger_state == 2) && target.user_current > 0;
 
     if (!target.wants_to_charge_low_priority && low_prio)
         target.last_wakeup = now - cfg->wakeup_time;
 
     target.wants_to_charge_low_priority = low_prio;
 
-    // Only set is_charging to true if the charger is authorized
-    target.is_charging = v1->charger_state == 3 && target.authenticated_user_id != -1;
+    target.is_charging = v1->charger_state == 3 && target.user_current > 0;
     if (v1->charger_state != 1 && v1->charger_state != 2)
         target.last_wakeup = 0_us;
 
@@ -236,10 +235,9 @@ void update_from_client_packet(
                                               v1->car_stopped_charging,
                                               target_alloc.allocated_current);
 
-        // TODO
         // Override with UserBlocked if the charger has an unauthorized NFC tag and is not yet actively charging
         // This prevents unauthorized users from starting a charge session
-        if (target.authenticated_user_id == -1 && v1->charger_state != 0) {
+        if (target.user_current == 0 && v1->charger_state != 0) {
             target_alloc.state = CASState::Unauthorized;
         }
     }
@@ -996,7 +994,8 @@ enum class CurrentCapacityLimit : uint8_t {
     FastRampUp,
     RequestedByVehicle,
     LimitedByPhase,
-    Guaranteed
+    Guaranteed,
+    UserLimit
 };
 
 // Use the supported current in case the last allocation was able to fulfill the requested current.
@@ -1025,6 +1024,13 @@ static int get_requested_current(const StageContext &sc, const ChargerState *sta
                 *out_limit = CurrentCapacityLimit::Guaranteed;
         }
     }
+
+    if (state->user_current < reqd) {
+        reqd = state->user_current;
+        if (out_limit != nullptr)
+            *out_limit = CurrentCapacityLimit::UserLimit;
+    }
+
     return reqd;
 }
 
@@ -1969,6 +1975,9 @@ static void stage_7(StageContext &sc) {
                         break;
                     case CurrentCapacityLimit::Guaranteed:
                         set_charger_decision(sc, sc.idx_array[i], CurrentDecision::GuaranteedPV());
+                        break;
+                    case CurrentCapacityLimit::UserLimit:
+                        set_charger_decision(sc, sc.idx_array[i], CurrentDecision::UserLimit());
                         break;
                 }
             } else

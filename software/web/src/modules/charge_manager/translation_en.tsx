@@ -295,7 +295,8 @@ let x = {
             "cd_guaranteed_pv": "Guaranteed PV power",
             "cd_fast_ramp_up": "Detecting vehicle limit",
             "cd_supported_by_charger": "Charger limit",
-            "cd_left_over": "Left over current"
+            "cd_left_over": "Left over current",
+            "cd_user_limit": "User limit"
         }
     }
 }

@@ -344,48 +344,9 @@ static bool is_packet_stale(
     return false;
 }
 
-static constexpr uint16_t NOT_AUTHORIZED = -1;
-static constexpr uint16_t AUTHD_ANONYMOUSLY = 0;
 
-// Check if the charger is authorized based on NFC tag information.
-// Returns the user_id of the authorized user (0 if not authorized)
-static int16_t charger_authorized(cm_state_v5 *v5, const CurrentAllocatorConfig *cfg) {
-#if MODULE_NFC_AVAILABLE()
-    // If central auth is disabled, always authorize
-    if (!cfg->enable_central_auth) {
-        return AUTHD_ANONYMOUSLY;
-    }
-
-    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0) {
-        return NOT_AUTHORIZED;
-    }
-
-    micros_t nfc_deadline = now_us() - seconds_t{v5->nfc_last_seen_s} + 30_s;
-    if(deadline_elapsed(nfc_deadline)) {
-        return NOT_AUTHORIZED;
-    }
-
-    // Check if the NFC tag is authorized by comparing against local NFC config
-    NFC::tag_t tag;
-    tag.type = v5->nfc_tag_type;
-    tag.id_length = v5->nfc_tag_id_len;
-
-    static_assert(sizeof(tag.id_bytes) == sizeof(v5->nfc_tag_id), "Tag ID size mismatch");
-    memcpy(tag.id_bytes, v5->nfc_tag_id, sizeof(v5->nfc_tag_id));
-
-    uint8_t user_id = nfc.get_user_id(tag);
-    // nfc.get_user_id returns 0 if a tag is not authorized (because it is mapped to anonymous)
-    if (user_id == 0)
-        return NOT_AUTHORIZED;
-
-    logger.printfln("user id from nfc: %u", user_id);
-
-    return user_id;
-#else
-    // If we can't check the NFC tag, it is not authorized.
-    return NOT_AUTHORIZED;
-#endif
-}
+static constexpr int16_t NOT_AUTHORIZED = -1;
+static constexpr int16_t AUTHD_ANONYMOUSLY = 0;
 
 static void update_charge_tracking(
     uint8_t client_id,
@@ -421,7 +382,7 @@ static void update_charge_tracking(
     }
 
     // If tracking, a vehicle is plugged in and we are authenticated, track a start if not done already.
-    if (v1->charger_state != 0 && target.authenticated_user_id != -1) {
+    if (v1->charger_state != 0 && target.authenticated_user_id != NOT_AUTHORIZED) {
         char uid_str[32];
         bool local_charger = false;
         if (target.uid != local_uid_num) {
@@ -463,6 +424,46 @@ static void update_charge_tracking(
 #endif
 }
 
+// Check if the charger is authorized based on NFC tag information.
+// Returns the user_id of the authorized user (0 if not authorized)
+static int16_t charger_authorized(cm_state_v5 *v5) {
+#if MODULE_NFC_AVAILABLE()
+    if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0) {
+        return NOT_AUTHORIZED;
+    }
+
+    micros_t nfc_deadline = now_us() - seconds_t{v5->nfc_last_seen_s} + 30_s;
+    if(deadline_elapsed(nfc_deadline)) {
+        return NOT_AUTHORIZED;
+    }
+
+    // Check if the NFC tag is authorized by comparing against local NFC config
+    NFC::tag_t tag;
+    tag.type = v5->nfc_tag_type;
+    tag.id_length = v5->nfc_tag_id_len;
+
+    static_assert(sizeof(tag.id_bytes) == sizeof(v5->nfc_tag_id), "Tag ID size mismatch");
+    memcpy(tag.id_bytes, v5->nfc_tag_id, sizeof(v5->nfc_tag_id));
+
+    int16_t user_id = nfc.get_user_id(tag);
+    if (user_id == -1)
+        return NOT_AUTHORIZED;
+
+    return user_id;
+#else
+    // If we can't check the NFC tag, it is not authorized.
+    return NOT_AUTHORIZED;
+#endif
+}
+
+static uint16_t get_user_current(uint8_t user_id) {
+#if MODULE_USERS_AVAILABLE()
+        return users.get_user_current(user_id);
+#else
+        return 32000;
+#endif
+}
+
 static void update_authentication(
     uint8_t client_id,
     cm_state_v1 *v1,
@@ -473,19 +474,29 @@ static void update_authentication(
     // TODO: bounds check
     auto &target = charger_state[client_id];
 
-    // Reset allocated energy if no car is connected
-    if (v1->charger_state == 0) {
-        target.authenticated_user_id = -1; // Reset authorization state when no car is connected
-    } else if (target.authenticated_user_id == -1) {
-        // Update NFC state
-        target.authenticated_user_id = charger_authorized(v5, cfg);
+    // If central auth is disabled, always authorize
+    if (!cfg->enable_central_auth) {
+
+        target.authenticated_user_id = AUTHD_ANONYMOUSLY;
+        target.user_current = get_user_current(target.authenticated_user_id);
+        return;
     }
 
-    // Set supported_current to 0 if not authorized to prevent current allocation
-    // TODO: this is ugly. Setting is_charging and wants_to_charge(_low_prio) should be sufficient?
-    // TODO: Set user limit somewhere.
-    if (target.authenticated_user_id == -1) {
-        v1->supported_current = 0;
+    // Reset allocated energy if no car is connected
+    if (v1->charger_state == 0) {
+        target.authenticated_user_id = NOT_AUTHORIZED; // Reset authorization state when no car is connected
+        target.user_current = 0;
+        return;
+    }
+
+    if (target.authenticated_user_id == NOT_AUTHORIZED) {
+        // Update NFC state
+        target.authenticated_user_id = charger_authorized(v5);
+
+        if (target.authenticated_user_id != NOT_AUTHORIZED) {
+            // Authentication changed; update user current
+            target.user_current = get_user_current(target.authenticated_user_id);
+        }
     }
 }
 
@@ -769,7 +780,7 @@ void ChargeManager::setup()
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
         charger_state[i].last_phase_switch = -ca_config->global_hysteresis;
-        charger_state[i].authenticated_user_id = -1;
+        charger_state[i].authenticated_user_id = NOT_AUTHORIZED;
     }
 
     // TODO: Change all currents everywhere to int32_t or int16_t.
@@ -1171,7 +1182,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     // Update authorization state based on charger state
     CASAuthState auth_state = CASAuthState::None;
     if (charger.charger_state != 0) { // If a car is connected
-        auth_state = charger.authenticated_user_id != -1 ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
+        auth_state = charger.authenticated_user_id != NOT_AUTHORIZED ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
     }
     charger_cfg->get("a")->updateEnum(auth_state);
 

@@ -729,6 +729,14 @@ void Users::remove_from_username_file(uint8_t user_id)
     }
 }
 
+uint16_t Users::get_user_current(uint8_t user_id) {
+    for (const auto &user : config.get("users"))
+        if (user.get("id")->asUint() == user_id)
+            return user.get("current")->asUint();
+
+    return 0;
+}
+
 // Only returns true if the triggered action was a charge start.
 bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::ConfVariant auth_info, int action, micros_t deadtime_post_stop, micros_t deadtime_post_start)
 {
@@ -745,14 +753,7 @@ bool Users::trigger_charge_action(uint8_t user_id, uint8_t auth_type, Config::Co
     // This is called whenever a user wants to trigger a charge action.
     // I.e. when holding an NFC tag at the box or when calling the start_charging API
 
-    uint16_t current_limit = 0;
-    Config *users = (Config *)config.get("users");
-    for (size_t i = 0; i < users->count(); ++i) {
-        if (users->get(i)->get("id")->asUint() != user_id)
-            continue;
-
-        current_limit = users->get(i)->get("current")->asUint();
-    }
+    uint16_t current_limit = this->get_user_current(user_id);
 
     if (current_limit == 0) {
         logger.printfln("Unknown user with ID %u.", user_id);
