@@ -32,8 +32,8 @@ repeat_intervals = [
 specs = [
     {
         'group': 'Victron Energy GX',
-        'mode': 'Disable',
-        'actions': ('Disable', 'Disable'),
+        'mode': 'Block',
+        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
@@ -99,7 +99,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'mode': 'Charge From Excess',
-        'actions': ('Normal', 'Disable'),
+        'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
@@ -133,7 +133,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'mode': 'Charge From Grid',
-        'actions': ('Force', 'Disable'),
+        'actions': ('Force', 'Block'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
@@ -167,7 +167,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'mode': 'Discharge To Load',
-        'actions': ('Disable', 'Normal'),
+        'actions': ('Block', 'Normal'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
@@ -201,7 +201,7 @@ specs = [
     {
         'group': 'Victron Energy GX',
         'mode': 'Discharge To Grid',
-        'actions': ('Disable', 'Force'),
+        'actions': ('Block', 'Force'),
         'register_blocks': [
             {
                 'description': 'AC grid setpoint override [W]',
