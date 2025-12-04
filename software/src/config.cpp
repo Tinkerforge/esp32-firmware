@@ -1089,8 +1089,8 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
         }
     }
 
-    if (sw->getRemainingLength() == 0) {
-        logger.printfln("StringBuilder overflow while converting JSON to string! Capacity %zu, remaining before serialize %zu. Truncated string follows.", sw->getCapacity(), capacity_before);
+    if (truncated) {
+        logger.printfln("StringBuilder overflow while converting JSON to string! Capacity %zu, remaining before serialize %zu. Truncated string follows.", sw->getCapacity(), remaining_before);
         logger.print_plain(ptr, written);
         logger.print_plain("\n", 1);
     }
