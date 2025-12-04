@@ -10,13 +10,11 @@ let x = {
         "content": {
             "batteries": "Battery Control",
 
-            "battery_mode": "Battery mode",
-            "battery_mode_disable": "No charge or discharge",
-            "battery_mode_normal": "Normal",
-            "battery_mode_charge_from_excess": "No discharge",
-            "battery_mode_charge_from_grid": "Charge from grid",
-            "battery_mode_discharge_to_load": "No charge",
-            "battery_mode_discharge_to_grid": "Discharge to grid",
+            "status_charge": "Charging",
+            "status_discharge": "Discharging",
+            "status_normal": "Normal",
+            "status_block": "Blocked",
+            "status_force": "Forced",
 
             "dynamic_tariff_schedule": "Dynamic tariff schedule",
             "schedule_cheap_hours": "Cheap hours",

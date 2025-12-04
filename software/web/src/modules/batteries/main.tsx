@@ -1111,37 +1111,37 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
         const battery_control_state = API.get("battery_control/state");
-        let mode_group1: number;
-        let mode_group2: number;
+        let status_charge: number;
+        let status_discharge: number;
 
         switch (battery_control_state.mode) {
             case BatteryMode.Block:
-                mode_group1 = 0;
-                mode_group2 = -1;
+                status_charge = 1;
+                status_discharge = 1;
                 break;
             case BatteryMode.Normal:
-                mode_group1 = -1;
-                mode_group2 = 1;
+                status_charge = 0;
+                status_discharge = 0;
                 break;
             case BatteryMode.ChargeFromExcess:
-                mode_group1 = 1;
-                mode_group2 = -1;
+                status_charge = 0;
+                status_discharge = 1;
                 break;
             case BatteryMode.ChargeFromGrid:
-                mode_group1 = 2;
-                mode_group2 = -1;
+                status_charge = 2;
+                status_discharge = 1;
                 break;
             case BatteryMode.DischargeToLoad:
-                mode_group1 = -1;
-                mode_group2 = 0;
+                status_charge = 1;
+                status_discharge = 0;
                 break;
             case BatteryMode.DischargeToGrid:
-                mode_group1 = -1;
-                mode_group2 = 2;
+                status_charge = 1;
+                status_discharge = 2;
                 break;
             default:
-                mode_group1 = -1;
-                mode_group2 = -1;
+                status_charge = -1;
+                status_discharge = -1;
         }
 //#endif
 
@@ -1151,27 +1151,27 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
             <SubPage name="batteries" colClasses="col-xl-10">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
 {/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
-                    <FormRow label={__("batteries.content.battery_mode")} class="mb-0">
+                    <FormRow label={__("batteries.content.status_charge")}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
-                            value={mode_group1}
+                            value={status_charge}
                             items={[
-                                ["danger",  __("batteries.content.battery_mode_disable")],
-                                ["warning", __("batteries.content.battery_mode_charge_from_excess")],
-                                ["warning", __("batteries.content.battery_mode_charge_from_grid")],
+                                ["success", __("batteries.content.status_normal")],
+                                ["warning", __("batteries.content.status_block")],
+                                ["warning", __("batteries.content.status_force")],
                             ]}/>
                     </FormRow>
 
-                    <FormRow label="">
+                    <FormRow label={__("batteries.content.status_discharge")}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
-                            value={mode_group2}
+                            value={status_discharge}
                             items={[
-                                ["warning", __("batteries.content.battery_mode_discharge_to_load")],
-                                ["success", __("batteries.content.battery_mode_normal")],
-                                ["warning", __("batteries.content.battery_mode_discharge_to_grid")],
+                                ["success", __("batteries.content.status_normal")],
+                                ["warning", __("batteries.content.status_block")],
+                                ["warning", __("batteries.content.status_force")],
                             ]}/>
                     </FormRow>
 {/*#endif*/}
