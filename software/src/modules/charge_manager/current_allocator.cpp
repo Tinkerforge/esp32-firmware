@@ -2004,9 +2004,13 @@ static void stage_7(StageContext &sc) {
 //   If there is current left after this, we've probably hit one of the phase limits.
 //   One phase chargers on other phases will take the rest if possible.
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
-static void stage_8(StageContext &sc) {
+static void stage_8(StageContext &sc, bool allocate_to_non_charging) {
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 7.
-    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
+    int matched = 0;
+    if (allocate_to_non_charging)
+        matched = filter_chargers(ctx.allocated_current > 0);
+    else
+        matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
 
     sort_chargers(
         3 - ctx.allocated_phases,
@@ -2379,12 +2383,13 @@ int allocate_current(
         stage_5(sc);
         stage_6(sc);
         stage_7(sc);
-        stage_8(sc);
+        stage_8(sc, false);
     }
 
     trace("__all except Off__");
     sc.charger_count = not_off_count;
     stage_9(sc);
+    stage_8(sc, true);
     decision_postprocess(sc);
     trace_alloc(9, sc);
     //logger.printfln("Took %u µs", end - start);
