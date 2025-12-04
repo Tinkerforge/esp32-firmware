@@ -57,7 +57,7 @@ let x = {
             "table_rule_price": "Strompreis",
             "table_rule_forecast": "PV-Ertrag",
             "table_rule_schedule": "Strompreisplan",
-            "table_rule_fast_chg": "Schnelladung",
+            "table_rule_fast_chg": "Schnellladung",
             "table_rule_action": "Aktion",
 
             "table_rule_fast_chg_not_active": "Nicht aktiv",
@@ -87,7 +87,7 @@ let x = {
             "edit_rule_price_muted": "Börsenpreis",
             "edit_rule_forecast": "PV-Ertragsprognose",
             "edit_rule_schedule": "Dynamischer Strompreisplan",
-            "edit_rule_fast_chg": "Fahrzeug-Schnelladung",
+            "edit_rule_fast_chg": "Fahrzeug-Schnellladung",
             "edit_rule_action": "Aktion",
 
             "condition_ignore": "Wird ignoriert",
