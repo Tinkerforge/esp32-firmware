@@ -92,6 +92,9 @@ struct ChargerState {
     // requested current calculated with the line currents reported by the charger
     uint16_t requested_current;
 
+    // maximum current allowed for this user
+    uint16_t user_current;
+
     // 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
     //uint8_t state;
 

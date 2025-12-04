@@ -24,4 +24,5 @@ spec = Union("Current Decision", 4, require_stable_api=False, variants=[
     Variant('Left Over', [
         Member('Unknown Rotation', Types.Bool)
     ]),
+    Variant('User Limit'),
 ])
