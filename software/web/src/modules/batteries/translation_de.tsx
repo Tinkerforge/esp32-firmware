@@ -10,13 +10,11 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
-            "battery_mode": "Speichermodus",
-            "battery_mode_disable": "Weder laden noch entladen",
-            "battery_mode_normal": "Normal",
-            "battery_mode_charge_from_excess": "Nicht entladen",
-            "battery_mode_charge_from_grid": "Vom Netz laden",
-            "battery_mode_discharge_to_load": "Nicht laden",
-            "battery_mode_discharge_to_grid": "Ins Netz entladen",
+            "status_charge": "Laden",
+            "status_discharge": "Entladen",
+            "status_normal": "Normal",
+            "status_block": "Blockiert",
+            "status_force": "Erzwungen",
 
             "dynamic_tariff_schedule": "Zeitplan für dynamischen Strompreis",
             "schedule_cheap_hours": "Günstige Stunden",
