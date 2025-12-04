@@ -203,6 +203,8 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
             return __("charge_manager.script.cd_supported_by_charger");
         case CurrentDecisionTag.LeftOver:
             return __("charge_manager.script.cd_left_over");
+        case CurrentDecisionTag.UserLimit:
+            return __("charge_manager.script.cd_user_limit");
     }
 }
 
@@ -278,6 +280,7 @@ function get_timestamp_dc(d: CurrentDecision): number {
         case CurrentDecisionTag.FastRampUp:
         case CurrentDecisionTag.SupportedByCharger:
         case CurrentDecisionTag.LeftOver:
+        case CurrentDecisionTag.UserLimit:
             return Number.MAX_SAFE_INTEGER;
     }
 }

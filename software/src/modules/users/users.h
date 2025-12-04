@@ -75,6 +75,7 @@ public:
 
     bool start_charging(uint8_t user_id, uint16_t current_limit, uint8_t auth_type, Config::ConfVariant auth_info);
     bool stop_charging(uint8_t user_id, bool force, float meter_abs = 0);
+    uint16_t get_user_current(uint8_t user_id);
 
     micros_t last_charge_action_triggered = 0_us;
 };
