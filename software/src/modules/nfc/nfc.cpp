@@ -296,15 +296,18 @@ void NFC::check_nfc_state()
     }
 }
 
-uint8_t NFC::get_user_id(const tag_t &tag)
+int16_t NFC::get_user_id(const tag_t &tag)
 {
+    // NFC does not know about the anonymous user (that has ID 0)
+    // return -1 instead if this tag was not found or it was found
+    // but not assigned to any user.
     for (uint8_t i = 0; i < auth_tag_count; ++i) {
         const auto &auth_tag = auth_tags[i];
 
         if (auth_tag.tag == tag)
-            return auth_tag.user_id;
+            return auth_tag.user_id == 0 ? -1 : auth_tag.user_id;
     }
-    return 0;
+    return -1;
 }
 
 void NFC::remove_user(uint8_t user_id)
@@ -322,12 +325,12 @@ void NFC::remove_user(uint8_t user_id)
 
 void NFC::tag_seen(tag_info_t *info, bool injected)
 {
-    uint8_t user_id = get_user_id(info->tag);
+    int16_t user_id = get_user_id(info->tag);
 
     char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
     id_to_string_without_separator(buf_ocpp, &info->tag);
 
-    if (user_id != 0) {
+    if (user_id >= 0) {
         // Found a new authorized tag.
         bool blink_handled = false;
 #if MODULE_OCPP_AVAILABLE()
