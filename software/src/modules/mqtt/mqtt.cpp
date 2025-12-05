@@ -206,14 +206,6 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 #endif
 }
 
-void Mqtt::addState(size_t stateIdx, const StateRegistration &reg)
-{
-}
-
-void Mqtt::addResponse(size_t responseIdx, const ResponseRegistration &reg)
-{
-}
-
 bool Mqtt::publish_with_prefix(const String &path, const String &payload, bool retain)
 {
     String topic = global_topic_prefix + "/" + path;

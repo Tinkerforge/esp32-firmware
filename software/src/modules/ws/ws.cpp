@@ -135,18 +135,6 @@ void WS::register_urls()
     }, 1_s, 1_s);
 }
 
-void WS::addCommand(size_t commandIdx, const CommandRegistration &reg)
-{
-}
-
-void WS::addState(size_t stateIdx, const StateRegistration &reg)
-{
-}
-
-void WS::addResponse(size_t responseIdx, const ResponseRegistration &reg)
-{
-}
-
 // returns true on success
 bool WS::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
 {

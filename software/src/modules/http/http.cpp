@@ -474,30 +474,3 @@ void Http::register_urls()
     server.on("/automation_trigger/*", static_cast<httpd_method_t>(HTTP_ANY), [this](WebServerRequest request) {return automation_trigger_handler(request);});
 #endif
 }
-
-void Http::addCommand(size_t commandIdx, const CommandRegistration &reg)
-{
-}
-
-void Http::addState(size_t stateIdx, const StateRegistration &reg)
-{
-}
-
-void Http::addResponse(size_t responseIdx, const ResponseRegistration &reg)
-{
-}
-
-bool Http::pushStateUpdate(size_t stateIdx, const String &payload, const String &path)
-{
-    return true;
-}
-
-bool Http::pushRawStateUpdate(const String &payload, const String &path)
-{
-    return true;
-}
-
-IAPIBackend::WantsStateUpdate Http::wantsStateUpdate(size_t stateIdx)
-{
-    return IAPIBackend::WantsStateUpdate::No;
-}

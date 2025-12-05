@@ -87,17 +87,17 @@ struct ResponseRegistration {
 class IAPIBackend
 {
 public:
-    virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) = 0;
-    virtual void addState(size_t stateIdx, const StateRegistration &reg) = 0;
-    virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) = 0;
-    virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) = 0;
-    virtual bool pushRawStateUpdate(const String &payload, const String &path) = 0;
+    virtual void addCommand(size_t commandIdx, const CommandRegistration &reg) {};
+    virtual void addState(size_t stateIdx, const StateRegistration &reg) {};
+    virtual void addResponse(size_t responseIdx, const ResponseRegistration &reg) {};
+    virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) { return true; };
+    virtual bool pushRawStateUpdate(const String &payload, const String &path) { return true; };
     enum class WantsStateUpdate {
         No,
         AsConfig,
         AsString
     };
-    virtual WantsStateUpdate wantsStateUpdate(size_t stateIdx);
+    virtual WantsStateUpdate wantsStateUpdate(size_t stateIdx) { return WantsStateUpdate::No;}
 };
 
 #ifdef DEBUG_FS_ENABLE

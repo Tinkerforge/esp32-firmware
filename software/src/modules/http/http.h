@@ -42,14 +42,6 @@ public:
     void setup() override;
     void register_urls() override;
 
-    // IAPIBackend implementation
-    void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
-    void addState(size_t stateIdx, const StateRegistration &reg) override;
-    void addResponse(size_t responseIdx, const ResponseRegistration &reg) override;
-    bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
-    bool pushRawStateUpdate(const String &payload, const String &path) override;
-    WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
-
     bool api_handler(WebServerRequest &req, size_t in_uri_len);
 
 #if MODULE_AUTOMATION_AVAILABLE()

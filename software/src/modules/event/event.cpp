@@ -271,18 +271,6 @@ void Event::deregisterEvent(int64_t eventID)
     logger.printfln("Cannot deregister event ID %lli: ID not found", eventID);
 }
 
-void Event::addCommand(size_t commandIdx, const CommandRegistration &reg)
-{
-}
-
-void Event::addState(size_t stateIdx, const StateRegistration &reg)
-{
-}
-
-void Event::addResponse(size_t responseIdx, const ResponseRegistration &reg)
-{
-}
-
 [[gnu::noinline]]
 [[gnu::noreturn]]
 static void pushStateUpdate_ConfPath_abort(const char *state_path)
@@ -349,11 +337,6 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &/*payload*/, const St
 
     state_update_in_progress.store(false, std::memory_order_release);
 
-    return true;
-}
-
-bool Event::pushRawStateUpdate(const String &payload, const String &path)
-{
     return true;
 }
 
