@@ -93,7 +93,10 @@ public:
     virtual bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) { return true; };
     virtual bool pushRawStateUpdate(const String &payload, const String &path) { return true; };
     enum class WantsStateUpdate {
+        // This backend will not send this state update, for example because there is no connection. Clear updated flag.
         No,
+        // This backend will not send this state update right now, but maybe later. Don't clear updated flag.
+        Later,
         AsConfig,
         AsString
     };

@@ -250,9 +250,16 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 }
 
 IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
-    return this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::Connected ?
-           IAPIBackend::WantsStateUpdate::AsString :
-           IAPIBackend::WantsStateUpdate::No;
+    auto state = this->state.get("connection_state")->asEnum<MqttConnectionState>();
+    if (state != MqttConnectionState::Connected)
+        return IAPIBackend::WantsStateUpdate::No;
+
+    auto &last_send = this->state_last_send[stateIdx];
+
+    if (!deadline_elapsed(last_send + this->send_interval))
+        return IAPIBackend::WantsStateUpdate::Later;
+
+    return IAPIBackend::WantsStateUpdate::AsString;
 }
 
 void Mqtt::resubscribe()

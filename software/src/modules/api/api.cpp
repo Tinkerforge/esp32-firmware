@@ -107,37 +107,37 @@ void API::setup()
                 continue;
             }
 
-            auto wsu = IAPIBackend::WantsStateUpdate::No;
-            for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
-                auto backend_wsu = this->backends[backend_idx]->wantsStateUpdate(state_idx);
-                if (static_cast<int>(wsu) < static_cast<int>(backend_wsu)) {
-                    wsu = backend_wsu;
-                }
-            }
-            // If no backend wants the state update because (for example)
-            // - this backend does not push state updates (HTTP)
-            // - there is no active connection (WS, MQTT)
-            // - there is no registration for this state index (MQTT)
-            // we don't have to do anything.
-            if (wsu == IAPIBackend::WantsStateUpdate::No) {
-                reg.config->clear_updated(0xFF);
-                continue;
-            }
-
-            String payload;
-            // If no backend wants the state update as string
-            // don't serialize the payload.
-            if (wsu == IAPIBackend::WantsStateUpdate::AsString)
-                payload = reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
-
             uint8_t sent = 0;
+            String payload;
 
             for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
                 if ((to_send & (1 << backend_idx)) == 0)
                     continue;
 
-                if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
-                    sent |= 1 << backend_idx;
+                switch (this->backends[backend_idx]->wantsStateUpdate(state_idx)) {
+                    case IAPIBackend::WantsStateUpdate::Later:
+                        break;
+
+                    case IAPIBackend::WantsStateUpdate::No:
+                        sent |= 1 << backend_idx;
+                        break;
+
+
+                    case IAPIBackend::WantsStateUpdate::AsString:
+                        if (payload.length() == 0) {
+                            // This assumes that no config can be serialized to an empty string.
+                            // This will probably hold because an empty string is not valid JSON.
+                            payload = reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
+                        }
+                        [[fallthrough]];
+
+                    case IAPIBackend::WantsStateUpdate::AsConfig:
+                        if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
+                            sent |= 1 << backend_idx;
+                        break;
+
+                    default: break;
+                }
             }
 
             reg.config->clear_updated(sent);
