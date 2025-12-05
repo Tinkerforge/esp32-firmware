@@ -702,10 +702,10 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &janitza_table;
         break;
 
-    case MeterModbusTCPTableID::HuaweiSmartLogger:
+    case MeterModbusTCPTableID::HuaweiSmartLogger3000:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
-        huawei_smart_logger.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiSmartLoggerVirtualMeter>();
-        table = get_huawei_smart_logger_table(slot, huawei_smart_logger.virtual_meter);
+        huawei_smart_logger_3000.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiSmartLogger3000VirtualMeter>();
+        table = get_huawei_smart_logger_3000_table(slot, huawei_smart_logger_3000.virtual_meter);
         break;
 
     default:

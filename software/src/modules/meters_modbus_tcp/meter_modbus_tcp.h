@@ -509,10 +509,10 @@ private:
             float pv2_power;
         } chisage_ess_hybrid_inverter;
 
-        // Huawei Smart Logger
+        // Huawei Smart Logger 3000
         struct {
-            HuaweiSmartLoggerVirtualMeter virtual_meter;
-        } huawei_smart_logger;
+            HuaweiSmartLogger3000VirtualMeter virtual_meter;
+        } huawei_smart_logger_3000;
     };
 };
 

@@ -298,7 +298,7 @@ export function init() {
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HuaweiEMMA.toString(), __("meters_modbus_tcp.content.table_huawei_emma")],
-                                [MeterModbusTCPTableID.HuaweiSmartLogger.toString(), __("meters_modbus_tcp.content.table_huawei_smart_logger")],
+                                [MeterModbusTCPTableID.HuaweiSmartLogger3000.toString(), __("meters_modbus_tcp.content.table_huawei_smart_logger_3000")],
                                 [MeterModbusTCPTableID.HuaweiSUN2000.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000")],
                                 [MeterModbusTCPTableID.HuaweiSUN2000SmartDongle.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000_smart_dongle")],
                                 [MeterModbusTCPTableID.Janitza.toString(), __("meters_modbus_tcp.content.table_janitza")],
@@ -392,7 +392,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
                   || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.Janitza
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSmartLogger)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSmartLogger3000)) {
                     let default_device_address = get_default_device_address(config[1].table[0]);
 
                     if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {

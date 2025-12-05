@@ -2,7 +2,7 @@ table_prototypes = [
     ('Huawei SUN2000', ['device_address', 'virtual_meter']),
     ('Huawei SUN2000 Smart Dongle', ['device_address', 'virtual_meter']),
     ('Huawei EMMA', ['device_address', 'virtual_meter']),
-    ('Huawei Smart Logger', ['device_address_no_default', 'virtual_meter']),
+    ('Huawei Smart Logger 3000', ['device_address_no_default', 'virtual_meter']),
 ]
 
 default_device_addresses = [
@@ -1055,8 +1055,8 @@ specs = [
         ],
     },
     {
-        'name': 'Huawei Smart Logger Grid',
-        'virtual_meter': ('Huawei Smart Logger', 'Grid'),
+        'name': 'Huawei Smart Logger 3000 Grid',
+        'virtual_meter': ('Huawei Smart Logger 3000', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -1211,8 +1211,8 @@ specs = [
         ],
     },
     {
-        'name': 'Huawei Smart Logger PV',
-        'virtual_meter': ('Huawei Smart Logger', 'PV'),
+        'name': 'Huawei Smart Logger 3000 PV',
+        'virtual_meter': ('Huawei Smart Logger 3000', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

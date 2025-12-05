@@ -64,7 +64,7 @@ let x = {
             "table_varta_flex": "VARTA pulse neo / flex storage",
             "table_chisage_ess_hybrid_inverter": "Chisage ESS hybrid inverter",
             "table_janitza": "Janitza (UMG series)",
-            "table_huawei_smart_logger": "Huawei Smart Logger",
+            "table_huawei_smart_logger_3000": "Huawei Smart Logger 3000",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
