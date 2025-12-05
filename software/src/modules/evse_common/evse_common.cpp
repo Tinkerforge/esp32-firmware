@@ -425,10 +425,47 @@ void EvseCommon::send_cm_client_update() {
 #endif
 }
 
+#if MODULE_CM_NETWORKING_AVAILABLE()
+void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
+{
+    if (backend == nullptr)
+        return;
+
+    if (last_auth_feedback_valid && auth_feedback == last_auth_feedback)
+        return;
+
+    last_auth_feedback = auth_feedback;
+    last_auth_feedback_valid = true;
+
+    constexpr int16_t LED_ACK = 1001;  // Mirrors EvseLed::Blink::Ack
+    constexpr int16_t LED_NACK = 1002; // Mirrors EvseLed::Blink::Nack
+    constexpr int16_t LED_AWAIT_AUTHENTICATION = 1003; // Mirrors EvseLed::Blink::AwaitAuthentication
+
+    switch (auth_feedback) {
+        case CMAuthFeedback::Unauthenticated:
+            set_indicator_led(LED_AWAIT_AUTHENTICATION, 2000, 0, 0, 0, nullptr);
+            auth_feedback_led_end = now_us() + 2000_ms;
+            break;
+        case CMAuthFeedback::Unauthorized:
+            set_indicator_led(LED_NACK, 2000, 0, 0, 0, nullptr);
+            auth_feedback_led_end = now_us() + 2000_ms;
+            break;
+        case CMAuthFeedback::Authorized:
+            set_indicator_led(LED_ACK, 2000, 0, 0, 0, nullptr);
+            auth_feedback_led_end = now_us() + 2000_ms;
+            break;
+        default:
+            auth_feedback_led_end = 0_us;
+            break;
+    }
+}
+#endif
+
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len) {
+    cm_networking.register_client([this](uint16_t current, bool ignore_allocation, bool cp_disconnect_requested, int8_t phases_requested, ConfigChargeMode mode, ConfigChargeMode *supported_modes, size_t supported_mode_len, CMAuthFeedback auth_feedback) {
+        this->handle_auth_feedback(auth_feedback);
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -992,6 +1029,15 @@ void EvseCommon::get_data_storage(uint8_t page, uint8_t *data)
 
 void EvseCommon::set_indicator_led(int16_t indication, uint16_t duration, uint16_t color_h, uint8_t color_s, uint8_t color_v,  uint8_t *ret_status) {
     backend->set_indicator_led(indication, duration, color_h, color_s, color_v, ret_status);
+}
+
+bool EvseCommon::block_normal_led_behaviour()
+{
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    return last_auth_feedback != CMAuthFeedback::None;
+#else
+    return false;
+#endif
 }
 
 ConfigRoot &EvseCommon::get_slots()
