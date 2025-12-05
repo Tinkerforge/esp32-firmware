@@ -77,6 +77,8 @@ for module in modules:
                     table_prototypes.append(f'        {{"virtual_meter", Config::Enum({table_id.camel}VirtualMeter::None)}},')
                 elif member == 'device_address':
                     table_prototypes.append(f'        {{"device_address", Config::Uint8(DefaultDeviceAddress::{table_id.camel})}},')
+                elif member == 'device_address_no_default':
+                    table_prototypes.append('        {"device_address", Config::Uint8(0)},')
                 elif isinstance(member, tuple):
                     table_prototypes.append(f'        {{"{member[0]}", {member[1]}}},')
                 else:
@@ -99,10 +101,15 @@ for module in modules:
                 else:
                     member_name = member
 
-                table_typedefs.append(f'        {member_name}: number;')
+                if member_name == 'device_address_no_default':
+                    table_typedefs.append('        device_address: number;')
+                else:
+                    table_typedefs.append(f'        {member_name}: number;')
 
                 if member_name == 'device_address':
                     table_new.append(f'device_address: DefaultDeviceAddress.{table_id.camel}')
+                elif member_name == 'device_address_no_default':
+                    table_new.append(f'device_address: null')
                 else:
                     table_new.append(f'{member_name}: null')
 
@@ -309,8 +316,8 @@ specs_ts.append('    }\n\n'
 ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { __ } from "../../ts/translation";\n'
 ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
-ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n\n'
-ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n'
+ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'

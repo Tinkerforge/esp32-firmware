@@ -134,6 +134,7 @@ private:
     bool is_varta_flex_grid_meter() const;
     bool is_varta_flex_battery_meter() const;
     bool is_chisage_ess_hybrid_inverter_pv_meter() const;
+    bool is_huawei_smart_logger_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -511,6 +512,11 @@ private:
             float pv1_power;
             float pv2_power;
         } chisage_ess_hybrid_inverter;
+
+        // Huawei Smart Logger
+        struct {
+            HuaweiSmartLoggerVirtualMeter virtual_meter;
+        } huawei_smart_logger;
     };
 };
 

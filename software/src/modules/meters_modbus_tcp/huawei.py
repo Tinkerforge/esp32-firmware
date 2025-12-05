@@ -2,6 +2,7 @@ table_prototypes = [
     ('Huawei SUN2000', ['device_address', 'virtual_meter']),
     ('Huawei SUN2000 Smart Dongle', ['device_address', 'virtual_meter']),
     ('Huawei EMMA', ['device_address', 'virtual_meter']),
+    ('Huawei Smart Logger', ['device_address_no_default', 'virtual_meter']),
 ]
 
 default_device_addresses = [
@@ -1065,6 +1066,188 @@ specs = [
                 'name': 'PV output power signed [W]',
                 'value_id': 'PowerPVSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei Smart Logger Grid',
+        'virtual_meter': ('Huawei Smart Logger', 'Grid'),
+        'default_location': 'Grid',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Phase A voltage [0.01 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 32260,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase B voltage [0.01 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 32262,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase C voltage [0.01 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 32264,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'A-B line voltage [0.01 V]',
+                'value_id': 'VoltageL1L2',
+                'start_address': 32266,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'B-C line voltage [0.01 V]',
+                'value_id': 'VoltageL2L3',
+                'start_address': 32268,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'C-A voltage [0.01 V]',
+                'value_id': 'VoltageL3L1',
+                'start_address': 32270,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase A current [0.01 A]',
+                'value_id': 'CurrentL1ImExDiff',
+                'start_address': 32272,
+                'value_type': 'S32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Phase B current [0.01 A]',
+                'value_id': 'CurrentL2ImExDiff',
+                'start_address': 32274,
+                'value_type': 'S32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Phase C current [0.01 A]',
+                'value_id': 'CurrentL3ImExDiff',
+                'start_address': 32276,
+                'value_type': 'S32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Active power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 32278,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Reactive power [var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
+                'start_address': 32280,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Power factor [0.001]',
+                'value_id': 'PowerFactorLSumDirectional',  # FIXME: direction?
+                'start_address': 32284,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Apparent power [VA]',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
+                'start_address': 32287,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Phase A active power [W]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 32335,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Phase B active power [W]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 32337,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Phase C active power [W]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 32339,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Total active electricity [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImExDiff',  # FIXME: direction?
+                'start_address': 32341,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total reactive electricity [0.01 kvarh]',
+                'value_id': 'EnergyReactiveLSumIndCapDiff',  # FIXME: direction?
+                'start_address': 37123,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Negative active electricity [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
+                'start_address': 32349,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Negative reactive electricity [0.01 kvarh]',
+                'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
+                'start_address': 32353,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Positive active electricity [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
+                'start_address': 32357,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Positive reactive electricity [0.01 kvarh]',
+                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
+                'start_address': 32361,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei Smart Logger PV',
+        'virtual_meter': ('Huawei Smart Logger', 'PV'),
+        'default_location': 'PV',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Input power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 40521,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Input power signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'E-Total [0.1 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 40560,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
             },
         ],
     },

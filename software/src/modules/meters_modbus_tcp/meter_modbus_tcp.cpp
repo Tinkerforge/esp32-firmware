@@ -702,6 +702,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &janitza_table;
         break;
 
+    case MeterModbusTCPTableID::HuaweiSmartLogger:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
+        huawei_smart_logger.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<HuaweiSmartLoggerVirtualMeter>();
+        table = get_huawei_smart_logger_table(slot, huawei_smart_logger.virtual_meter);
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1081,6 +1087,12 @@ bool MeterModbusTCP::is_chisage_ess_hybrid_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::ChisageESSHybridInverter
         && chisage_ess_hybrid_inverter.virtual_meter == ChisageESSHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_huawei_smart_logger_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HuaweiSmartLogger
+        && huawei_smart_logger.virtual_meter == HuaweiSmartLoggerVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -3333,6 +3345,11 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 2], current_sum);
             meters.update_value(slot, table->index[read_index + 3], power_sum);
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+    }
+    else if (is_huawei_smart_logger_pv_meter()) {
+        if (register_start_address == HuaweiSmartLoggerPVAddress::InputPower) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
 

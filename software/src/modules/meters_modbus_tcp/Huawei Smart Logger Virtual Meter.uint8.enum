@@ -1,0 +1,6 @@
+None
+// Inverter = 1 // Not used (yet)
+Grid = 2
+// Battery = 3 // Not used (yet)
+// Load = 4 // Not used (yet)
+PV = 5
