@@ -24,6 +24,7 @@
 
 #include "client_error.enum.h"
 #include "config_charge_mode.enum.h"
+#include "cm_auth_feedback.enum.h"
 #include "module_available.h"
 
 #if defined(BOARD_HAS_PSRAM)
@@ -88,12 +89,7 @@ struct cm_command_v3 {
 };
 
 struct cm_command_v4 {
-    /**
-     * 0 = no feedback
-     * 1 = unauthorized
-     * 2 = authorized
-     */
-    uint8_t auth_feedback;
+    CMAuthFeedback auth_feedback;
     uint8_t _padding[3];
 };
 

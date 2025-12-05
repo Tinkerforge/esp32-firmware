@@ -164,7 +164,7 @@ struct ChargerState {
     bool eco_fast;
     int guaranteed_pv_current;
 
-    // Authorization state: user_id of the authorized user (-1 if not authorized)
+    // Authorization state: user_id of the authenticated user (-1 if not authenticated, -2 if wrong authentication)
     int16_t authenticated_user_id;
 };
 
