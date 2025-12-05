@@ -21,6 +21,13 @@
 
 #include "gcc_warnings.h"
 
+void GenericTCPClientConnector::force_reconnect()
+{
+    if (connected_client != nullptr) {
+        client->disconnect();
+    }
+}
+
 void GenericTCPClientConnector::connect_internal()
 {
     if (connected_client != nullptr) {

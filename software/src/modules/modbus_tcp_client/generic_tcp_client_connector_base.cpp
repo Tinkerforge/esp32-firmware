@@ -45,12 +45,6 @@ void GenericTCPClientConnectorBase::stop_connection()
     disconnect_internal();
 }
 
-void GenericTCPClientConnectorBase::force_reconnect()
-{
-    stop_connection();
-    start_connection();
-}
-
 void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level)
 {
     if (result == TFGenericTCPClientConnectResult::Connected) {

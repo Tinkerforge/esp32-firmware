@@ -21,6 +21,13 @@
 
 #include "gcc_warnings.h"
 
+void GenericTCPClientPoolConnector::force_reconnect()
+{
+    if (connected_client != nullptr) {
+        pool->release(connected_client, true);
+    }
+}
+
 void GenericTCPClientPoolConnector::connect_internal()
 {
     if (connected_client != nullptr) {

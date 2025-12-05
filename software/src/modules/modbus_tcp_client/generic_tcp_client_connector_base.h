@@ -40,13 +40,13 @@ protected:
 
     void start_connection();
     void stop_connection();
-    void force_reconnect();
 
     void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level);
     void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level);
 
     virtual void connect_callback() = 0;
     virtual void disconnect_callback() = 0;
+    virtual void force_reconnect() = 0;
 
     const char *event_log_prefix_override;
     size_t event_log_prefix_override_len;

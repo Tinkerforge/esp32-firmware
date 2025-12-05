@@ -27,9 +27,11 @@ protected:
     GenericTCPClientConnector(const char *event_log_prefix_override, const char *event_log_message_prefix, TFGenericTCPClient *client_, TFGenericTCPSharedClient *shared_client_) :
         GenericTCPClientConnectorBase(event_log_prefix_override, event_log_message_prefix), client(client_), shared_client(shared_client_) {}
 
+    void force_reconnect() override;
+
 private:
-    virtual void connect_internal();
-    virtual void disconnect_internal();
+    void connect_internal() override;
+    void disconnect_internal() override;
 
     TFGenericTCPClient *client;
     TFGenericTCPSharedClient *shared_client;
