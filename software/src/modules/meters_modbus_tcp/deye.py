@@ -676,11 +676,6 @@ specs = [
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'PV Total Power Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-            {
                 'name': 'PV Average Voltage [0.1 V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',

@@ -403,11 +403,6 @@ specs = [
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'PV Total Power Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-            {
                 'name': 'Total PV Power Generation [0.1 kWh]',
                 'value_id': 'EnergyPVSumExport',
                 'start_address': 2066,

@@ -567,11 +567,6 @@ specs = [
                 'value_type': 'S32BE',
             },
             {
-                'name': 'Input power signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-            {
                 'name': 'Accumulated energy yield [0.01 kWh]',
                 'value_id': 'EnergyPVSumExport',
                 'start_address': 32106,
@@ -692,11 +687,6 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 32064,
                 'value_type': 'S32BE',
-            },
-            {
-                'name': 'Input power signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
             },
         ],
     },
@@ -1062,11 +1052,6 @@ specs = [
                 'start_address': 30354,
                 'value_type': 'U32BE',
             },
-            {
-                'name': 'PV output power signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
         ],
     },
     {
@@ -1236,11 +1221,6 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 40521,
                 'value_type': 'U32BE',
-            },
-            {
-                'name': 'Input power signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
                 'name': 'E-Total [0.1 kWh]',

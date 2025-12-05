@@ -174,11 +174,6 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
-            {
-                'name': 'Total PV Power Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
         ],
     },
 ]

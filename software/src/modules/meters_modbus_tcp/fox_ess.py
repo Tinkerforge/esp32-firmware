@@ -303,11 +303,6 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
-            {
-                'name': 'PV Power Total Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
         ],
     },
     {
@@ -1003,11 +998,6 @@ specs = [
                 'value_id': 'PowerPVSumExport',
                 'start_address': 39118,
                 'value_type': 'U32BE',
-            },
-            {
-                'name': 'PV Power Total Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
             },
         ],
     },

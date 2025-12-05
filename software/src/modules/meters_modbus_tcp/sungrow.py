@@ -505,11 +505,6 @@ specs = [
                 'value_type': 'U32LE',
             },
             {
-                'name': 'Total DC Power Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_number': 'START_NUMBER_VIRTUAL',
-            },
-            {
                 'name': 'Total PV Generation [0.1 kWh]',
                 'value_id': 'EnergyPVSumExport',
                 'start_number': 13003,

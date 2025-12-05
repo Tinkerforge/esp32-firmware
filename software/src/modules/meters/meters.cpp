@@ -26,6 +26,7 @@
 #include "meter_value_imexdiff.h"
 #include "tools.h"
 #include "tools/string_builder.h"
+#include "tools/float.h"
 
 #include "gcc_warnings.h"
 #ifdef __GNUC__
@@ -93,6 +94,17 @@ static void filter_phase2sum(const Meters::value_combiner_filter_data *filter_da
     extra_values[output_pos] = l1 + l2 + l3;
 }
 
+// Takes one export value and will calculate the ImExDiff value.
+static void filter_ex2imexdiff(const Meters::value_combiner_filter_data *filter_data, size_t base_values_length, const float *base_values, float *extra_values)
+{
+    const uint8_t *input_pos = filter_data->input_pos;
+    const size_t output_pos = filter_data->output_pos - base_values_length;
+
+    float ex = get_value_from_concat_values(input_pos[0], base_values_length, base_values, extra_values);
+
+    extra_values[output_pos] = zero_safe_negation(ex);
+}
+
 // Filters will be run in array order
 static const Meters::value_combiner_filter value_combiner_filters[] = {
     {
@@ -156,6 +168,16 @@ static const Meters::value_combiner_filter value_combiner_filters[] = {
         },
         {
             MeterValueID::PowerActiveLSumImExDiff,
+        },
+    },
+    {
+        &filter_ex2imexdiff,
+        "Power PV export to ImExDiff",
+        {
+            MeterValueID::PowerPVSumExport,
+        },
+        {
+            MeterValueID::PowerPVSumImExDiff,
         },
     },
 };
