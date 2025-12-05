@@ -1176,7 +1176,7 @@ specs = [
             {
                 'name': 'Total reactive electricity [0.01 kvarh]',
                 'value_id': 'EnergyReactiveLSumIndCapDiff',  # FIXME: direction?
-                'start_address': 37123,
+                'start_address': 32345,
                 'value_type': 'S64BE',
                 'scale_factor': 0.01,
             },
