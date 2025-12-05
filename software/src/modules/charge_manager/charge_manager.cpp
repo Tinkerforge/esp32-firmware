@@ -39,6 +39,7 @@
 #include "three_phase_decision.union.h"
 #include "current_decision.union.h"
 #include "modules/cm_networking/client_error.enum.h"
+#include "modules/cm_networking/cm_networking_defs.h"
 #include "cas_auth_state.enum.h"
 
 #include "modules/users/users.h" // For USERS_AUTH_TYPE_* constants
@@ -586,6 +587,27 @@ void ChargeManager::start_manager_task()
         auto phases = charger_alloc.allocated_phases;
         auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
 
+        CMAuthFeedback auth_feedback = CMAuthFeedback::None;
+        if (this->ca_config != nullptr && this->ca_config->enable_central_auth) {
+            const auto &charger = this->charger_state[i];
+            if (charger.charger_state != 0) {
+                switch (charger.authenticated_user_id) {
+                    case -2:
+                        auth_feedback = CMAuthFeedback::Unauthorized;
+                        break;
+                    case -1:
+                        auth_feedback = CMAuthFeedback::Unauthenticated;
+                        break;
+                    default:
+                        auth_feedback = CMAuthFeedback::Authorized;
+                        break;
+                }
+            } else {
+                // Always send unauthenticated feedback when central auth is enabled
+                auth_feedback = CMAuthFeedback::Unauthenticated;
+            }
+        }
+
         // If we've never seen a packet from this charger, send "ignore allocation".
         // This means we (the charge manager) have rebooted and either our uptime is < 30 seconds or the charger has stopped charging
         // (managed chargers set the managed slot to 0 if they don't receive a packet for 30 seconds)
@@ -600,7 +622,14 @@ void ChargeManager::start_manager_task()
             phases = 0; // 0 phases are ignored except with WARP* firmware == 2.6.0. 2.6.1 fixed this two weeks later
         }
 
-        if(cm_networking.send_manager_update(i, ignore_allocation, current, cp_disconnect, phases, charge_mode, this->supported_charge_mode_bitmask))
+        if(cm_networking.send_manager_update(i,
+                                             ignore_allocation,
+                                             current,
+                                             cp_disconnect,
+                                             phases,
+                                             charge_mode,
+                                             this->supported_charge_mode_bitmask,
+                                             auth_feedback))
             ++i;
 
     }, cm_send_delay);

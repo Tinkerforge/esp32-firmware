@@ -24,6 +24,7 @@
 #include "modules/meters/meter_value_availability.h"
 #include "modules/power_manager/phase_switcher_back-end.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
+#include "modules/cm_networking/cm_auth_feedback.enum.h"
 #include "tools.h"
 #include "module_available.h"
 
@@ -171,6 +172,7 @@ public:
     void set_data_storage(uint8_t, const uint8_t *);
     void get_data_storage(uint8_t, uint8_t *);
     void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
+    bool block_normal_led_behaviour();
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     bool apply_defaults();
@@ -229,6 +231,10 @@ private:
 #if MODULE_CM_NETWORKING_AVAILABLE()
     ConfigRoot charge_mode;
     ConfigRoot supported_charge_modes;
+    void handle_auth_feedback(CMAuthFeedback auth_feedback);
+    CMAuthFeedback last_auth_feedback = CMAuthFeedback::None;
+    bool last_auth_feedback_valid = false;
+    micros_t auth_feedback_led_end = 0_us;
 #endif
     ConfigRoot enumerate_value;
     micros_t request_charge_mode_until = 0_us;
