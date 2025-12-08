@@ -158,6 +158,9 @@ public:
     bool get_require_meter_blocking();
     bool get_require_meter_enabled();
 
+    void set_central_user_management_enabled(bool);
+    bool get_central_user_management_enabled();
+
     void set_charge_limits_slot(uint16_t, bool);
 
     void set_ocpp_current(uint16_t);
@@ -172,7 +175,6 @@ public:
     void set_data_storage(uint8_t, const uint8_t *);
     void get_data_storage(uint8_t, uint8_t *);
     void set_indicator_led(int16_t, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
-    bool block_normal_led_behaviour();
 
     bool apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear);
     bool apply_defaults();
@@ -247,6 +249,7 @@ private:
     void send_cm_client_update();
 
     bool use_imexsum = false;
+    bool central_user_management_enabled = false;
 };
 
 #include "module_available_end.h"

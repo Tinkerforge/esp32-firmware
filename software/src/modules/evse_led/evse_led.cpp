@@ -164,7 +164,7 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint
 bool EvseLed::set_module(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v)
 {
     // Suppress normal LED behavior when auth feedback LED is active
-    if (evse_common.block_normal_led_behaviour())
+    if (evse_common.get_central_user_management_enabled())
         return false;
 
     // Allow modules to override API only if module reports an error and API does not.
