@@ -475,7 +475,6 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                         select_file={__("evse.content.user_calibration_select_file")}
                                         upload={__("evse.content.user_calibration_upload")}
                                         url="/evse/user_calibration_update"
-
                                         timeout_ms={10 * 1000}
                                         onUploadSuccess={() => {}}
                                         onUploadError={error => {
