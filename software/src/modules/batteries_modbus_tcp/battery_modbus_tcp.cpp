@@ -594,35 +594,37 @@ void BatteryModbusTCP::set_active_mode(BatteryMode mode)
     else if (network.is_connected()) {
         start_connection();
 
-        if (mode_changed) {
+        if (mode_changed || active_writer == nullptr) {
             destroy_table_writer(active_writer);
             active_writer = nullptr;
 
-            TableSpec *table = tables[static_cast<size_t>(active_mode)];
+            if (connected_client != nullptr) {
+                TableSpec *table = tables[static_cast<size_t>(active_mode)];
 
-            if (table != nullptr) {
+                if (table != nullptr) {
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-                active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, mode, table,
-                [this](bool error, const char *fmt, va_list args) {
-                    if (!error) {
-                        return;
-                    }
+                    active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, mode, table,
+                    [this](bool error, const char *fmt, va_list args) {
+                        if (!error) {
+                            return;
+                        }
 
-                    char message[256];
+                        char message[256];
 
-                    vsnprintf(message, sizeof(message), fmt, args);
-                    logger.printfln_battery("%s", message);
-                },
-                [this]() {
-                    destroy_table_writer(active_writer);
-                    active_writer = nullptr;
-                });
+                        vsnprintf(message, sizeof(message), fmt, args);
+                        logger.printfln_battery("%s", message);
+                    },
+                    [this]() {
+                        destroy_table_writer(active_writer);
+                        active_writer = nullptr;
+                    });
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
+                }
             }
         }
     }
