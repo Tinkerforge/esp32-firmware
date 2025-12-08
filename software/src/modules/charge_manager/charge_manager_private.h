@@ -166,6 +166,9 @@ struct ChargerState {
 
     // Authorization state: user_id of the authenticated user (-1 if not authenticated, -2 if wrong authentication)
     int16_t authenticated_user_id;
+
+    // Timestamp when an unknown NFC tag was last seen
+    micros_t unknown_nfc_tag_timestamp;
 };
 
 struct ChargerAllocationState {
