@@ -445,7 +445,9 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
                                        int8_t allocated_phases,
                                        ConfigChargeMode charge_mode,
                                        std::array<uint8_t, 2> supported_charge_mode_bitmask,
-                                       CMAuthFeedback auth_feedback)
+                                       CMAuthFeedback auth_feedback,
+                                       bool central_user_management_enabled,
+                                       bool central_charge_logging_enabled)
 {
     static uint16_t next_seq_num = 1;
 
@@ -458,7 +460,9 @@ bool CMNetworking::send_manager_update(uint8_t client_id,
 
     command_pkt.v1.allocated_current = allocated_current;
     command_pkt.v1.command_flags = (ignore_allocation << CM_COMMAND_FLAGS_IGNORE_ALLOCATION_BIT_POS)
-                                 | (cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS);
+                                 | (cp_disconnect_requested << CM_COMMAND_FLAGS_CPDISC_BIT_POS)
+                                 | (central_user_management_enabled << CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_BIT_POS)
+                                 | (central_charge_logging_enabled << CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_BIT_POS);
 
     command_pkt.v2.allocated_phases = allocated_phases;
 
@@ -607,6 +611,8 @@ void CMNetworking::register_client(const std::function<void(uint16_t, bool, bool
         if (manager_update_received_cb) {
             ConfigChargeMode supported_charge_modes[ARRAY_SIZE(command_pkt.v3.supported_charge_modes) * 8];
             size_t supported_charge_mode_length = 0;
+
+            evse_common.set_central_user_management_enabled(CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_IS_SET(command_pkt.v1.command_flags));
 
             bool ignore_allocation = false;
             if (command_pkt.header.version >= 3) {

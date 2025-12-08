@@ -348,6 +348,7 @@ static bool is_packet_stale(
 
 
 static constexpr int16_t NOT_AUTHORIZED = -1;
+static constexpr int16_t UNKNOWN_NFC_TAG = -2;
 static constexpr int16_t AUTHD_ANONYMOUSLY = 0;
 
 static void update_charge_tracking(
@@ -384,7 +385,7 @@ static void update_charge_tracking(
     }
 
     // If tracking, a vehicle is plugged in and we are authenticated, track a start if not done already.
-    if (v1->charger_state != 0 && target.authenticated_user_id != NOT_AUTHORIZED) {
+    if (v1->charger_state != 0 && target.authenticated_user_id != NOT_AUTHORIZED && target.authenticated_user_id != UNKNOWN_NFC_TAG) {
         char uid_str[32];
         bool local_charger = false;
         if (target.uid != local_uid_num) {
@@ -449,7 +450,7 @@ static int16_t charger_authorized(cm_state_v5 *v5) {
 
     int16_t user_id = nfc.get_user_id(tag);
     if (user_id == -1)
-        return NOT_AUTHORIZED;
+        return UNKNOWN_NFC_TAG;
 
     return user_id;
 #else
@@ -478,7 +479,6 @@ static void update_authentication(
 
     // If central auth is disabled, always authorize
     if (!cfg->enable_central_auth) {
-
         target.authenticated_user_id = AUTHD_ANONYMOUSLY;
         target.user_current = get_user_current(target.authenticated_user_id);
         return;
@@ -488,16 +488,32 @@ static void update_authentication(
     if (v1->charger_state == 0) {
         target.authenticated_user_id = NOT_AUTHORIZED; // Reset authorization state when no car is connected
         target.user_current = 0;
+        target.unknown_nfc_tag_timestamp = 0_us;
         return;
     }
 
-    if (target.authenticated_user_id == NOT_AUTHORIZED) {
+    if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
         // Update NFC state
-        target.authenticated_user_id = charger_authorized(v5);
+        int16_t new_auth = charger_authorized(v5);
 
-        if (target.authenticated_user_id != NOT_AUTHORIZED) {
-            // Authentication changed; update user current
+        if (new_auth == UNKNOWN_NFC_TAG) {
+            if (target.unknown_nfc_tag_timestamp == 0_us)
+                target.unknown_nfc_tag_timestamp = now_us();
+
+            if (!deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s)) {
+                target.authenticated_user_id = new_auth;
+            } else {
+                target.authenticated_user_id = NOT_AUTHORIZED; // switch back to nag after short nack window
+                target.user_current = 0;
+            }
+        } else if (new_auth != NOT_AUTHORIZED) {
+            target.authenticated_user_id = new_auth;
             target.user_current = get_user_current(target.authenticated_user_id);
+            target.unknown_nfc_tag_timestamp = 0_us;
+        } else {
+            target.authenticated_user_id = NOT_AUTHORIZED;
+            target.user_current = 0;
+            target.unknown_nfc_tag_timestamp = 0_us;
         }
     }
 }
@@ -589,23 +605,20 @@ void ChargeManager::start_manager_task()
         auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
 
         CMAuthFeedback auth_feedback = CMAuthFeedback::None;
-        if (this->ca_config != nullptr && this->ca_config->enable_central_auth) {
+        if (this->ca_config->enable_central_auth) {
             const auto &charger = this->charger_state[i];
             if (charger.charger_state != 0) {
                 switch (charger.authenticated_user_id) {
                     case -2:
-                        auth_feedback = CMAuthFeedback::Unauthorized;
+                        auth_feedback = CMAuthFeedback::Nack;
                         break;
                     case -1:
-                        auth_feedback = CMAuthFeedback::Unauthenticated;
+                        auth_feedback = CMAuthFeedback::Nag;
                         break;
                     default:
-                        auth_feedback = CMAuthFeedback::Authorized;
+                        auth_feedback = CMAuthFeedback::Ack;
                         break;
                 }
-            } else {
-                // Always send unauthenticated feedback when central auth is enabled
-                auth_feedback = CMAuthFeedback::Unauthenticated;
             }
         }
 
@@ -630,7 +643,9 @@ void ChargeManager::start_manager_task()
                                              phases,
                                              charge_mode,
                                              this->supported_charge_mode_bitmask,
-                                             auth_feedback))
+                                             auth_feedback,
+                                             this->ca_config->enable_central_auth,
+                                             this->ca_config->enable_charge_tracking))
             ++i;
 
     }, cm_send_delay);

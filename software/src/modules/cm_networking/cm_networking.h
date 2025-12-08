@@ -57,7 +57,9 @@ public:
                              int8_t allocated_phases,
                              ConfigChargeMode charge_mode,
                              std::array<uint8_t, 2> supported_charge_mode_bitmask,
-                             CMAuthFeedback auth_feedback);
+                             CMAuthFeedback auth_feedback,
+                             bool central_user_management_enabled,
+                             bool central_charge_logging_enabled);
 
     void register_client(const std::function<void(uint16_t, bool, bool, int8_t, ConfigChargeMode, ConfigChargeMode *, size_t, CMAuthFeedback)> &manager_update_received_cb);
     bool send_client_update(uint32_t esp32_uid,
