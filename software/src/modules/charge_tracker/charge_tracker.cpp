@@ -301,10 +301,12 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
     memcpy(buf, &cs, sizeof(cs));
 
     file.write(buf, sizeof(cs));
-    logger.printfln("Tracked start of charge.");
+
     if (directory != nullptr) {
-        logger.printfln("Charge record saved in directory: %s", directory);
+        logger.printfln("Tracked start of charge for %s", directory);
         return true;
+    } else {
+        logger.printfln("Tracked start of charge for local charger.");
     }
 
     current_charge.get("user_id")->updateInt(user_id);
@@ -349,10 +351,11 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
     f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
     this->readNRecords(&f, 1, directory);
 
-    logger.printfln("Tracked end of charge.");
     if (directory != nullptr) {
-        logger.printfln("Charge record saved in directory: %s", directory);
+        logger.printfln("Tracked end of charge for %s", directory);
         return;
+    } else {
+        logger.printfln("Tracked end of charge for local charger.");
     }
 
     current_charge.get("user_id")->updateInt(-1);
