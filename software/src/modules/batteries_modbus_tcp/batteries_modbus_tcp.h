@@ -49,6 +49,10 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
     virtual String validate_config(Config &update, ConfigSource source) override;
 
+    void trace_timestamp();
+
+    size_t trace_buffer_index;
+
 private:
     enum class TestState : uint8_t {
         Connect,
@@ -96,6 +100,8 @@ private:
     Test *test = nullptr;
 
     BatteryModbusTCP *instances[OPTIONS_BATTERIES_MAX_SLOTS()];
+
+    micros_t last_trace_timestamp = -1_us;
 };
 
 #if defined(__GNUC__)
