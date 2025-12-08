@@ -429,12 +429,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         <td>Usecase State</td>
                                         <td>
                                             {{
+                                                [LPCState.Startup]: "Startup",
                                                 [LPCState.Init]: "Init",
                                                 [LPCState.UnlimitedControlled]: "UnlimitedControlled",
                                                 [LPCState.Limited]: "Limited",
                                                 [LPCState.Failsafe]: "Failsafe",
                                                 [LPCState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                            }[state.usecases.power_consumption_limitation.usecase_state] ?? "undefined"}
+                                            }[state.usecases.power_consumption_limitation.usecase_state] ?? state.usecases.power_consumption_limitation.usecase_state}
                                         </td>
                                     </tr>
                                     <tr>

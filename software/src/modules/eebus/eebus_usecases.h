@@ -296,7 +296,6 @@ private:
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
     CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
 };
 
 /**
@@ -703,12 +702,12 @@ public:
 
     /**
      * Update the limit the system is supposed to be consuming.
-     * @param limit_active If the limit is active or not.
+     * @param limit If the limit is active or not.
      * @param current_limit_w The limit in W.
      * @param endtime Timestamp until which the limit shall be set
      * @return true if the limit is accepted and set.
      */
-    bool update_lpc(bool limit_active, int current_limit_w, time_t endtime);
+    bool update_lpc(bool limit, int current_limit_w, time_t endtime);
 
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
@@ -730,7 +729,7 @@ public:
     }
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
-        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection};
+        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Generic};
     }
 
 private:
@@ -768,23 +767,66 @@ private:
      */
     CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
+    /**
+    * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
+    * Implements a heartbeat mechanism to ensure that the energy guard is still online and reachable, if not it enters the failsafe state.
+    * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
+    * This is the client part of that scenario and will request heartbeats from the energy guard aswell as handle notify messages.
+    * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
+    */
+    CmdClassifierType generic_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
-    LPCState lpc_state = LPCState::Init;
-    uint64_t state_change_timeout = 0;
-    bool switch_state(LPCState state);
-    bool init_state();
-    bool unlimited_controlled_state();
-    bool limited_state();
-    bool failsafe_state();
-    bool unlimited_autonomous_state();
+    void update_state();
+    void got_heartbeat(seconds_t timeout = 60_s);
+    LPCState lpc_state = LPCState::Startup;
+    uint64_t state_change_timeout_task = 0;
+    bool heartbeat_received = false;
+
+    /**
+     * Switch to or update the Init state. As described in LPC UC TS v1.0.0 2.3.2
+     * Triggered on startup.
+     * Disables the active consumption limit and applies the failsafe limit.
+     */
+    void init_state();
+
+    /**
+     * Switch to or update the Unlimited/controlled state. As described in LPC UC TS v1.0.0 2.3.2
+     * Entered when a heartbeat and limit is received but no limit is enabled.
+     * Disables the active consumption limit.
+     */
+    void unlimited_controlled_state();
+
+    /**
+     * Switch or update the Limited state. As described in LPC UC TS v1.0.0 2.3.2
+     * Entered when a heartbeat, limit and activation of the limit is received.
+     * Enables the active consumption limit and applies the value to the charging system.
+     */
+    void limited_state();
+
+    /**
+     * Switch or update the Failsafe state. As described in LPC UC TS v1.0.0 2.3.2
+     * Entered when no heartbeat is received.
+     * Applies the failsafe limit.
+     */
+    void failsafe_state();
+    bool failsafe_expired = false;
+
+    /**
+     * Switch or update the Unlimited/autonomous state. As described in LPC UC TS v1.0.0 2.3.2
+     * Entered when no heartbeat and write is received after startup or after expiry of the failsafe duration.
+     * Disables the active consumption limit.
+     */
+    void unlimited_autonomous_state();
 
     void update_api();
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
+    bool limit_received = false;
     int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     // While the limit is active, this shall be set to true
-    bool limit_engaged = false;
+    bool limit_active = false;
     int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     // If the limit is changeable, this shall be set to false
     bool limit_fixed = false;
@@ -795,19 +837,20 @@ private:
     LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
     LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
-    // Device Configuration Data as required for Scenario 2 - Device Configuration
+    // Device Configuration Data as required for Scenario 2 - Failsafe values
     // TODO: switch these to type generating functions
-    DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
-    DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
+    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    seconds_t failsafe_duration_min = 3600_s * 24_h; // Default to 24 hours
+    DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
+    DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
+    //DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
+    //DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
-    AddressFeatureType client_feature_address = 1001;
     bool heartbeatEnabled = false;
     uint64_t heartbeatCounter = 0;
     uint64_t heartbeat_timeout_task = 0;
     void broadcast_heartbeat();
-    void handle_heartbeat_timeout();
-    bool heartbeat_received = false;
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
     // TODO: switch this to type generating functions
