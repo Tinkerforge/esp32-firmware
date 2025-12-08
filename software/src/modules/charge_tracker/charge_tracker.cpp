@@ -376,13 +376,8 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
         uint32_t first_record = 0;
         uint32_t last_record = 0;
 
-        if (directory == nullptr) {
-            first_record = this->first_charge_record;
-            last_record = this->last_charge_record;
-        } else {
-            if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
-                return false;
-            }
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            return false;
         }
 
         for (int file = first_record; file <= static_cast<int>(last_record); ++file) {
@@ -446,13 +441,8 @@ void ChargeTracker::removeOldRecords()
         uint32_t last_record = 0;
 
         const char *dir = charge.directory.isEmpty() ? nullptr : charge.directory.c_str();
-        if (dir == nullptr) {
-            first_record = this->first_charge_record;
-            last_record = this->last_charge_record;
-        } else {
-            if (!getChargerChargeRecords(dir, &first_record, &last_record)) {
-                continue;
-            }
+        if (!getChargerChargeRecords(dir, &first_record, &last_record)) {
+            continue;
         }
 
         uint32_t file_count = last_record - first_record + 1;
@@ -478,15 +468,10 @@ void ChargeTracker::removeOldRecords()
     uint32_t first_record = 0;
     uint32_t last_record = 0;
 
-    if (oldest_dir == nullptr) {
-        first_record = this->first_charge_record;
-        last_record = this->last_charge_record;
-    } else {
-        if (!getChargerChargeRecords(oldest_dir, &first_record, &last_record)) {
-            // should never happen but just in case
-            logger.printfln("BUG: Failed to get charge records for directory but verified that it should have entries before %s", oldest_dir);
-            return;
-        }
+    if (!getChargerChargeRecords(oldest_dir, &first_record, &last_record)) {
+        // should never happen but just in case
+        logger.printfln("BUG: Failed to get charge records for directory but verified that it should have entries before %s", oldest_dir);
+        return;
     }
 
     String name = chargeRecordFilename(first_record, oldest_dir);
@@ -665,8 +650,11 @@ bool ChargeTracker::currentlyCharging(const char *directory)
 
 bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record)
 {
-    if (directory == nullptr)
-        return false;
+    if (directory == nullptr) {
+        *first_record = this->first_charge_record;
+        *last_record = this->last_charge_record;
+        return true;
+    }
 
     char folder_path[96];
     snprintf(folder_path, sizeof(folder_path), CHARGE_RECORD_FOLDER "/%s", directory);
@@ -705,10 +693,8 @@ bool ChargeTracker::getChargerChargeRecords(const char *directory, uint32_t *fir
 
     std::sort(found_blobs, found_blobs + found_blob_counter);
 
-    if (first_record != nullptr)
-        *first_record = found_blobs[0];
-    if (last_record != nullptr)
-        *last_record = found_blobs[found_blob_counter - 1];
+    *first_record = found_blobs[0];
+    *last_record = found_blobs[found_blob_counter - 1];
     return true;
 }
 
@@ -829,13 +815,8 @@ std::vector<ChargeWithLocation> ChargeTracker::readLastChargesFromDirectory(cons
     uint32_t prev_known_timestamp = 0;
 
     // Get the range of records for this directory
-    if (directory == nullptr) {
-        first_record = this->first_charge_record;
-        last_record = this->last_charge_record;
-    } else {
-        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
-            return charges; // Empty vector if directory doesn't exist or has no records
-        }
+    if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+        return charges; // Empty vector if directory doesn't exist or has no records
     }
 
     // Read charges from the last file first (most recent)
@@ -1123,13 +1104,8 @@ void ChargeTracker::repair_charges()
         uint32_t last_record = 0;
 
         // Get the range of records for this directory
-        if (directory == nullptr) {
-            first_record = this->first_charge_record;
-            last_record = this->last_charge_record;
-        } else {
-            if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
-                return; // No records in this directory
-            }
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            return; // No records in this directory
         }
 
         Charge transfer_local;

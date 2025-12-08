@@ -59,7 +59,6 @@ public:
     bool currentlyCharging();
     bool currentlyCharging(const char *directory);
 
-    bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
 
@@ -87,6 +86,7 @@ private:
     void repair_charges();
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
     std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
+    bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
     Config last_charges_prototype;
     Config current_charge_prototype;
