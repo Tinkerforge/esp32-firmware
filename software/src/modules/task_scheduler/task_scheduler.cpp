@@ -63,29 +63,33 @@ bool compare(const std::unique_ptr<Task> &a, const std::unique_ptr<Task> &b)
 }
 
 // https://stackoverflow.com/a/36711682
-bool TaskQueue::removeByTaskID(uint64_t task_id)
+std::unique_ptr<Task> TaskQueue::removeByTaskID(uint64_t task_id)
 {
     // The queue is locked if this function is called.
 
     if (task_id == 0)
-        return false;
+        return nullptr;
 
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
         // not found
-        return false;
+        return nullptr;
     }
 
     if (it == this->c.begin()) {
-        this->pop();
-        return true;
+        return this->top_and_pop();
     }
+
+    // extract payload from element to be removed
+    std::unique_ptr<Task> result = nullptr;
+    it->swap(result);
 
     // remove element and re-heap
     this->c.erase(it);
     std::make_heap(this->c.begin(), this->c.end(), this->comp);
-    return true;
+
+    return result;
 }
 
 Task *TaskQueue::findByTaskID(uint64_t task_id)
@@ -276,8 +280,11 @@ TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
         this->currentTask->cancelled = true;
         return TaskScheduler::CancelResult::WillBeCancelled;
     }
-    else
-        return tasks.removeByTaskID(task_id) ? TaskScheduler::CancelResult::Cancelled : TaskScheduler::CancelResult::NotFound;
+    else {
+        return tasks.removeByTaskID(task_id) != nullptr
+            ? TaskScheduler::CancelResult::Cancelled
+            : TaskScheduler::CancelResult::NotFound;
+    }
 }
 
 uint64_t TaskScheduler::currentTaskId()
