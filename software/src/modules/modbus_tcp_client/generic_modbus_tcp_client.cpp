@@ -32,8 +32,12 @@
 
 #define SUCCESSFUL_READ_TIMEOUT 1_min
 
-void GenericModbusTCPClient::connect_callback()
+void GenericModbusTCPClient::connect_callback(TFGenericTCPClientConnectResult result)
 {
+    if (result != TFGenericTCPClientConnectResult::Connected) {
+        return;
+    }
+
     last_successful_read = now_us();
 
     last_read_result = TFModbusTCPClientTransactionResult::Success;

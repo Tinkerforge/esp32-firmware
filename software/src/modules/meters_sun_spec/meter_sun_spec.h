@@ -60,8 +60,8 @@ private:
         ReadModel,
     };
 
-    void connect_callback() override;
-    void disconnect_callback() override;
+    void connect_callback(TFGenericTCPClientConnectResult result) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
 
     bool alloc_read_buffer(size_t model_regcount);
     void trace_response();

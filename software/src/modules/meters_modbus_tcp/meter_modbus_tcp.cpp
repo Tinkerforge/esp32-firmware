@@ -757,9 +757,15 @@ void MeterModbusTCP::pre_reboot()
     stop_connection();
 }
 
-void MeterModbusTCP::connect_callback()
+void MeterModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
 {
-    GenericModbusTCPClient::connect_callback();
+    GenericModbusTCPClient::connect_callback(result);
+
+    trace("m%lu t%u c%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(result));
+
+    if (result != TFGenericTCPClientConnectResult::Connected) {
+        return;
+    }
 
     generic_read_request.data[0] = register_buffer;
     generic_read_request.data[1] = nullptr;
@@ -773,8 +779,10 @@ void MeterModbusTCP::connect_callback()
     read_next();
 }
 
-void MeterModbusTCP::disconnect_callback()
+void MeterModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
+    trace("m%lu t%u d%d", slot, static_cast<uint8_t>(table_id), static_cast<int>(reason));
+
     read_allowed = false;
 }
 

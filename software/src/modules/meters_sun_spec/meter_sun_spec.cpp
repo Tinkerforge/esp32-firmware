@@ -133,17 +133,25 @@ void MeterSunSpec::pre_reboot()
     stop_connection();
 }
 
-void MeterSunSpec::connect_callback()
+void MeterSunSpec::connect_callback(TFGenericTCPClientConnectResult result)
 {
-    GenericModbusTCPClient::connect_callback();
+    GenericModbusTCPClient::connect_callback(result);
+
+    trace("m%lu c%d", slot, static_cast<int>(result));
+
+    if (result != TFGenericTCPClientConnectResult::Connected) {
+        return;
+    }
 
     last_successful_parse = now_us();
 
     scan_start();
 }
 
-void MeterSunSpec::disconnect_callback()
+void MeterSunSpec::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
+    trace("m%lu d%d", slot, static_cast<int>(reason));
+
     read_allowed = false;
 
     task_scheduler.cancel(this->scan_task_id);

@@ -259,14 +259,18 @@ void MeterRCTPower::pre_reboot()
     stop_connection();
 }
 
-void MeterRCTPower::connect_callback()
+void MeterRCTPower::connect_callback(TFGenericTCPClientConnectResult result)
 {
+    if (result != TFGenericTCPClientConnectResult::Connected) {
+        return;
+    }
+
     value_index = 0;
 
     read_next();
 }
 
-void MeterRCTPower::disconnect_callback()
+void MeterRCTPower::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
     read_allowed = false;
 }

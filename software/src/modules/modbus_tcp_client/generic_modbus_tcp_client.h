@@ -42,7 +42,7 @@ protected:
     GenericModbusTCPClient(const char *event_log_prefix_override, const char *event_log_message_prefix, TFModbusTCPClientPool *pool) :
         GenericTCPClientPoolConnector(event_log_prefix_override, event_log_message_prefix, pool) {}
 
-    void connect_callback() override;
+    void connect_callback(TFGenericTCPClientConnectResult result) override;
     void start_generic_read();
 
     uint8_t device_address = 0;

@@ -86,8 +86,8 @@ public:
     void read_done_callback();
 
 private:
-    void connect_callback() override;
-    void disconnect_callback() override;
+    void connect_callback(TFGenericTCPClientConnectResult result) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
     bool prepare_read();
     void read_next();
     void parse_next();
