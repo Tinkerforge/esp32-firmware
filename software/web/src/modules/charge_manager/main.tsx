@@ -493,7 +493,8 @@ function CMStatusCharger(props: {
         charger_index: number,
         charge_mode: ConfigChargeMode,
         charger_state: API.getType['charge_manager/state']['chargers'][0],
-        charger_config: API.getType['charge_manager/config']['chargers'][0]
+        charger_config: API.getType['charge_manager/config']['chargers'][0],
+        users: API.getType['users/config']['users']
     }) {
     const [showDetails, setShowDetails] = useState(false);
 
@@ -504,6 +505,19 @@ function CMStatusCharger(props: {
     const c = props.charger_state
 
     let last_update = Math.floor((props.uptime - c.lu) / 1000);
+
+    // Get the display name of the currently charging user
+    let user_display_name = "";
+    if (c.uid >= 0) {
+        let filtered = props.users.filter(x => x.id == c.uid);
+        if (filtered.length == 1) {
+            user_display_name = filtered[0].display_name;
+        } else if (c.uid == 0) {
+            user_display_name = __("charge_tracker.script.unknown_user");
+        } else {
+            user_display_name = __("charge_tracker.script.deleted_user");
+        }
+    }
 
     let cur = c.ac / 1000.0;
     let p = c.ap;
@@ -549,7 +563,10 @@ function CMStatusCharger(props: {
     return  <div class="card h-100">
                 <div class="card-header">
                     <div class="row gx-2 align-items-center">
-                        <div class="col"><h5 class="mb-0">{name_link}</h5></div>
+                        <div class="col">
+                            <h5 class="mb-0">{name_link}</h5>
+                            {user_display_name ? <div class="text-muted" style="font-size: 0.875rem;">{__("charge_manager.script.currently_charging_user")}: {user_display_name}</div> : null}
+                        </div>
                         <div class="col-auto">
                             <InputSelect
                                 items={modes}
@@ -663,6 +680,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         const default_mode = API.get("power_manager/config").default_mode;
         const charge_modes = API.get("charge_manager/charge_modes");
         const uptime = API.get("info/keep_alive").uptime;
+        const users = API.get("users/config").users;
 
         let cards = state.state.chargers.map((c, i) =>
             <CMStatusCharger
@@ -675,6 +693,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 charge_mode={charge_modes[i]}
                 charger_state={c}
                 charger_config={state.config.chargers[i]}
+                users={users}
             />);
 
         let controls_only_self = false && (state.config.chargers.length == 1
