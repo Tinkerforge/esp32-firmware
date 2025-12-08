@@ -38,7 +38,7 @@
 #define trace(fmt, ...) \
     do { \
         meters_sun_spec.trace_timestamp(); \
-        logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+        logger.tracefln_plain(meters_sun_spec.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
 
 // The manufacturer name for SolarEdge devices sometimes has a trailing space
@@ -207,7 +207,7 @@ void MeterSunSpec::trace_response()
                 data_buf[data_buf_used] = '\n';
                 ++data_buf_used;
 
-                logger.trace_plain(trace_buffer_index, data_buf, data_buf_used);
+                logger.trace_plain(meters_sun_spec.trace_buffer_index, data_buf, data_buf_used);
             }
         }
     }

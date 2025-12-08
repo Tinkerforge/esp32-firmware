@@ -55,6 +55,8 @@ public:
 
     void trace_timestamp();
 
+    size_t trace_buffer_index;
+
 private:
     enum class ScanState : uint8_t {
         Connect,
@@ -128,7 +130,6 @@ private:
 
     Scan *scan = nullptr;
 
-    size_t trace_buffer_index;
     micros_t last_trace_timestamp = -1_us;
 };
 

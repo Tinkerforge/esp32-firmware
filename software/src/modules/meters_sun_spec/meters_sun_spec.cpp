@@ -736,7 +736,7 @@ MeterClassID MetersSunSpec::get_class() const
 
 IMeter *MetersSunSpec::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterSunSpec(slot, state, errors, modbus_tcp_client.get_pool(), trace_buffer_index);
+    return new MeterSunSpec(slot, state, errors, modbus_tcp_client.get_pool());
 }
 
 [[gnu::const]]
