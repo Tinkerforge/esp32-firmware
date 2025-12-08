@@ -565,13 +565,21 @@ void BatteryModbusTCP::set_paused(bool paused_)
     set_active_mode(requested_mode);
 }
 
-void BatteryModbusTCP::connect_callback()
+void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
 {
+    trace("b%lu c%d", slot, static_cast<int>(result));
+
+    if (result != TFGenericTCPClientConnectResult::Connected) {
+        return;
+    }
+
     set_active_mode(requested_mode);
 }
 
-void BatteryModbusTCP::disconnect_callback()
+void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
+    trace("b%lu d%d", slot, static_cast<int>(reason));
+
     set_active_mode(BatteryMode::None);
 }
 
