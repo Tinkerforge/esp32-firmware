@@ -296,7 +296,8 @@ let x = {
             "cd_fast_ramp_up": "Detecting vehicle limit",
             "cd_supported_by_charger": "Charger limit",
             "cd_left_over": "Left over current",
-            "cd_user_limit": "User limit"
+            "cd_user_limit": "User limit",
+            "currently_charging_user": "Charging user"
         }
     }
 }
