@@ -716,7 +716,7 @@ bool charged_invalid(ChargeStart cs, ChargeEnd ce)
 
 static String get_charger_display_name_from_host(const char *b58)
 {
-    if (b58 == nullptr || strlen(b58) == 0) {
+    if (b58 == nullptr) {
         b58 = local_uid_str;
     }
 
@@ -737,8 +737,7 @@ void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *di
     ChargeStart cs;
     ChargeEnd ce;
 
-    const char *directory_identifier = (directory != nullptr && directory[0] != '\0') ? directory : nullptr;
-    String charger_display_name = get_charger_display_name_from_host(directory_identifier);
+    String charger_display_name = get_charger_display_name_from_host(directory);
 
     for (int i = 0; i < records_to_read; ++i) {
         memset(buf, 0, sizeof(buf));
