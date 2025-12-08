@@ -44,7 +44,7 @@ static int get_localtime_hour()
 
 void BatteryControl::pre_setup()
 {
-    trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 32768);
+    trace_buffer_idx = logger.alloc_trace_buffer("battery_control", 64*1024u);
 
     config = Config::Object({
         {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(battery_control_data::tariff_schedule))},
@@ -551,8 +551,6 @@ void BatteryControl::schedule_evaluation()
     }
 
     data->evaluation_task_id = task_scheduler.scheduleOnce([this]() {
-        logger.tracefln(this->trace_buffer_idx, "Evaluating");
-
         this->data->evaluation_task_id = 0;
 
         if (this->data->evaluation_must_check_rules) {
@@ -565,6 +563,8 @@ void BatteryControl::schedule_evaluation()
             }
 
             this->evaluate_all_rules();
+        } else {
+            logger.printfln("Evaluation scheduled but nothing to do");
         }
     });
 }
