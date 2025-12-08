@@ -67,7 +67,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    1,  # The minimum value is 1. This has been verified by one user.
+                    1,  # minimum
                 ],
             },
             {
@@ -75,7 +75,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    1,  # The minimum value is 1. This has been verified by one user.
+                    1,  # minimum
                 ],
             },
         ],
