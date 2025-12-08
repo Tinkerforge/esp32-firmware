@@ -636,12 +636,6 @@ size_t ChargeTracker::completeRecordsInLastFile()
     return fsize / CHARGE_RECORD_SIZE;
 }
 
-bool ChargeTracker::currentlyCharging()
-{
-    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, nullptr));
-    return (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
-}
-
 bool ChargeTracker::currentlyCharging(const char *directory)
 {
     const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, directory));

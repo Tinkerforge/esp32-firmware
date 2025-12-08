@@ -56,9 +56,7 @@ public:
     bool is_user_tracked(uint8_t user_id);
 
     size_t completeRecordsInLastFile();
-    bool currentlyCharging();
-    bool currentlyCharging(const char *directory);
-
+    bool currentlyCharging(const char *directory = nullptr);
 
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
 
