@@ -33,6 +33,8 @@ type ChargerState = {
     dc: CurrentDecision,
     /** auth_state */
     a: CASAuthState,
+    /** user_id - ID of the currently authenticated/charging user */
+    uid: number,
 };
 
 interface ServCharger {

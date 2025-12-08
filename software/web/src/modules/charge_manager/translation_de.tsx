@@ -274,7 +274,8 @@ let x = {
             "cd_fast_ramp_up": "Ermittle Fahrzeuglimit",
             "cd_supported_by_charger": "Wallboxlimit",
             "cd_left_over": "Reststrom",
-            "cd_user_limit": "Nutzerlimit"
+            "cd_user_limit": "Nutzerlimit",
+            "currently_charging_user": "Ladender Benutzer"
         }
     }
 }
