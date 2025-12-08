@@ -65,11 +65,21 @@ static_assert(CM_PACKET_HEADER_LENGTH == 8, "Unexpected CM_PACKET_HEADER_LENGTH"
 #define CM_COMMAND_FLAGS_CPDISC_MASK (1u << CM_COMMAND_FLAGS_CPDISC_BIT_POS)
 #define CM_COMMAND_FLAGS_CPDISC_IS_SET(FLAGS) (((FLAGS) & CM_COMMAND_FLAGS_CPDISC_MASK) != 0)
 
+#define CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_BIT_POS 5
+#define CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_MASK (1u << CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_BIT_POS)
+#define CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_IS_SET(FLAGS) (((FLAGS) & CM_COMMAND_FLAGS_CENTRAL_USER_MANAGEMENT_MASK) != 0)
+
+#define CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_BIT_POS 4
+#define CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_MASK (1u << CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_BIT_POS)
+#define CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_IS_SET(FLAGS) (((FLAGS) & CM_COMMAND_FLAGS_CENTRAL_CHARGE_LOGGING_MASK) != 0)
+
 struct cm_command_v1 {
     uint16_t allocated_current;
     /* command_flags
     bit 7    - ignore allocation: If set, don't update allocated_current, cp_disconnect flag and allocated_phases. Added with cm_command_v3.
     bit 6    - control pilot permanently disconnected
+    bit 5    - central user management enabled
+    bit 4    - central charge-logging enabled
     */
     uint8_t command_flags;
     uint8_t _padding; // In use for cm_command_v2 allocated phases
