@@ -85,8 +85,8 @@ public:
     void set_paused(bool paused);
 
 private:
-    void connect_callback() override;
-    void disconnect_callback() override;
+    void connect_callback(TFGenericTCPClientConnectResult result) override;
+    void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
     void set_active_mode(BatteryMode mode);
 
     uint32_t slot;
