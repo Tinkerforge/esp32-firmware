@@ -526,7 +526,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
         if (linked_state) {
             uint32_t local_meter_type = linked_state->get("type")->asUint();
             if (meter_type != local_meter_type) {
-                if (local_meter_type != METER_TYPE_DSZ15DZMOD) { // Known undetectable
+                if (local_meter_type != METER_TYPE_DSZ15DZMOD && local_meter_type != METER_TYPE_DSZ16DZE) { // Known undetectable
                     logger.printfln("Meter type %lu from Bricklet overrides auto-detected meter type %lu.", local_meter_type, meter_type);
                 }
                 meter_type = local_meter_type;
