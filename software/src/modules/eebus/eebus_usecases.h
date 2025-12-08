@@ -49,27 +49,20 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
 #define EEBUS_LPC_AWAIT_HEARTBEAT false
 
-// Feature Addresses for the different features in the usecases. Addresses can repeat accross entities but we make sure they are unique for simplicity
-/*enum FeatureAddresses : uint8_t {
-    nodemgmt_feature_address = 0,
-    chargingsummary_bill = 10,
-    chargerate_measurement = 20,
-    chargerate_electrical_connection,
-    ev_device_configuration = 30,
-    ev_identification,
-    ev_device_classification,
-    ev_electrical_connection,
-    ev_device_diagnosis,
-    evse_device_classification = 40,
-    evse_device_diagnosis,
-    lpc_loadcontrol = 50,
-    lpc_device_configuration,
-    lpc_device_diagnosis_server,
-    lpc_device_diagnosis_client,
-    lpc_electrical_connection,
-    cevc_timeseries = 60,
-    cevc_incentive_table,
-};*/
+struct MessageReturn {
+    /**
+     * If this is true, the usecase has handled the message and no further processing is required.
+     */
+    bool is_handled = false;
+    /**
+     * If true a response should be sent back to the sender.
+     */
+    bool send_response = false;
+    /**
+     * If a response should be sent, this contains the command classifier to use for the response.
+     */
+    CmdClassifierType cmd_classifier = CmdClassifierType::EnumUndefined;
+};
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
@@ -163,7 +156,7 @@ public:
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) = 0;
+    virtual MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) = 0;
 
     /**
      * Returns the usecase information for this entity. This gives information about which usecases this entity belongs to. Multiple entities may belong to the same usecase.
@@ -222,10 +215,9 @@ public:
     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
     * @param data The actual Function call
     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
-    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    * @return The MessageReturn object which contains information about the returned message.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
@@ -283,7 +275,7 @@ private:
     NodeManagementUseCaseDataType get_usecase_data() const;
     NodeManagementDetailedDiscoveryDataType get_detailed_discovery_data() const;
 
-    CmdClassifierType handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     // The list of bindings for this usecase.
     // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
@@ -295,7 +287,7 @@ private:
     * @param response The JsonObject to write the response to. This should be filled with the response data.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    CmdClassifierType handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 };
 
 /**
@@ -320,9 +312,9 @@ public:
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call and data of the message.
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     * @return The MessageReturn object which contains information about the returned message.
      */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -400,7 +392,7 @@ public:
         return "EvcemUsecase";
     }
 
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     UseCaseInformationDataType get_usecase_information() override;
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
@@ -493,9 +485,9 @@ public:
     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
     * @param data The actual Function call and data of the message.
     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    * @return The MessageReturn object which contains information about the message handling.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     /**
      * The entity information as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1. 3.2.1.
      * @return The entity information.
@@ -627,7 +619,7 @@ public:
         return "EvseccUsecase";
     }
 
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.0. 3.1.2.
     * @return
@@ -680,9 +672,9 @@ public:
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call and data of the message.
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     * @return The MessageReturn object which contains information about the returned message.
      */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -741,7 +733,7 @@ private:
      * Supports subscriptions.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.1 and 3.4.1
      */
-    CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Device Configuration feature as required for Scenario 2 - Failsafe Values.
@@ -749,7 +741,7 @@ private:
      * A failsafe value is the maximum power that can be consumed if no contact to the energy guard can be established and always comes with a duration for which the failsafe will be active.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.2 and 3.4.2
      */
-    CmdClassifierType deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
@@ -757,7 +749,7 @@ private:
      * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
      */
-    CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
      * The Electrical Connection feature as required for Scenario 4 - Constraints.
@@ -765,7 +757,7 @@ private:
      * Constraints are the maximum power the system is capable of consuming.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
      */
-    CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     /**
     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
@@ -774,7 +766,7 @@ private:
     * This is the client part of that scenario and will request heartbeats from the energy guard aswell as handle notify messages.
     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
     */
-    CmdClassifierType generic_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn generic_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
@@ -884,9 +876,9 @@ public:
     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
     * @param data The actual Function call and data of the message.
     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    * @return The MessageReturn object which contains information about the returned message.
     */
-    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.0. 3.1.2.
@@ -940,13 +932,13 @@ private:
     [[nodiscard]] TimeSeriesDescriptionListDataType read_time_series_description() const;
     [[nodiscard]] TimeSeriesConstraintsListDataType read_time_series_constraints() const;
     [[nodiscard]] TimeSeriesListDataType read_time_series_list() const;
-    CmdClassifierType write_time_series_list(HeaderType &header, SpineOptional<TimeSeriesListDataType> data, JsonObject response);
+    MessageReturn write_time_series_list(HeaderType &header, SpineOptional<TimeSeriesListDataType> data, JsonObject response);
     // IncentiveTable Feature
     [[nodiscard]] IncentiveTableDescriptionDataType read_incentive_table_description() const;
-    CmdClassifierType write_incentive_table_description(HeaderType &header, SpineOptional<IncentiveTableDescriptionDataType> data, JsonObject response);
+    MessageReturn write_incentive_table_description(HeaderType &header, SpineOptional<IncentiveTableDescriptionDataType> data, JsonObject response);
     [[nodiscard]] IncentiveTableConstraintsDataType read_incentive_table_constraints() const;
     [[nodiscard]] IncentiveTableDataType read_incentive_table_data() const;
-    CmdClassifierType write_incentive_table_data(HeaderType &header, SpineOptional<IncentiveTableDataType> data, JsonObject response);
+    MessageReturn write_incentive_table_data(HeaderType &header, SpineOptional<IncentiveTableDataType> data, JsonObject response);
 
     // Data held and transmitted
     time_t arrival_time{};
