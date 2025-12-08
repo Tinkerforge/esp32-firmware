@@ -697,20 +697,31 @@ bool charged_invalid(ChargeStart cs, ChargeEnd ce)
     return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
 }
 
-static String get_charger_display_name_from_host(const char *b58)
+static String get_charger_display_name_from_host(const char *directory)
 {
-    if (b58 == nullptr) {
-        b58 = local_uid_str;
-    }
+    const char *b58 = directory == nullptr ? local_uid_str : directory;
 
     uint32_t uid = 0;
-    if (tf_base58_decode(b58, &uid) == 0) {
-        const char *name = charge_manager.get_charger_name_by_uid(uid);
-        if (name != nullptr) {
-            return String(name);
-        }
+    if (tf_base58_decode(b58, &uid) != 0) {
+        // Failed to decode;
+        // use passed string as fallback.
+        return String(b58);
     }
 
+    const char *name = charge_manager.get_charger_name_by_uid(uid);
+    if (name != nullptr) {
+        // Charger found.
+        return String(name);
+    }
+
+    if (directory == nullptr)
+        // Charger not found but this is the local charger.
+        // We are probably not a charge manager.
+        // Return empty string in this case.
+        return String();
+
+    // Charger not found but not the local charger;
+    // use passed string as fallback.
     return String(b58);
 }
 
