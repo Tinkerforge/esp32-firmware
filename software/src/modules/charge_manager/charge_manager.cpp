@@ -184,6 +184,7 @@ void ChargeManager::pre_setup()
         {"d3", ThreePhaseDecision::getUnion()},
         {"dc", CurrentDecision::getUnion()},
         {"a", Config::Enum(CASAuthState::None)}, // "auth_state"
+        {"uid", Config::Int16(-1)},     // "user_id" - ID of the currently authenticated/charging user (-1 if not authenticated)
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -1214,6 +1215,7 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
         auth_state = charger.authenticated_user_id != NOT_AUTHORIZED ? CASAuthState::Authenticated : CASAuthState::Unauthenticated;
     }
     charger_cfg->get("a")->updateEnum(auth_state);
+    charger_cfg->get("uid")->updateInt(charger.authenticated_user_id);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);
