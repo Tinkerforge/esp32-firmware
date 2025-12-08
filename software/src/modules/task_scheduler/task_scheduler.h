@@ -39,7 +39,12 @@ struct Task {
     const char *file;
     uint_least32_t line;
     bool once;
+    // Task is currently running while another thread (or fn itself) called cancel with this task's ID.
+    // Will be cancelled (i.e. not rescheduled) after completion of fn.
     bool cancelled;
+    // Task is currently running while another thread (or fn itself) called rescheduleNow with this task's ID.
+    // Will be executed as next task again.
+    bool immediate_reschedule;
 
     Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once);
 };
@@ -79,6 +84,8 @@ public:
         c.pop_back();
         return value;
     }
+
+    void restoreHeap();
 };
 
 class TaskScheduler final : public IModule
@@ -128,6 +135,8 @@ public:
     };
 
     AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
+
+    bool rescheduleNow(uint64_t task_id);
 
 private:
     AwaitResult await(uint64_t task_id, millis_t millis_to_wait = 10_s);
