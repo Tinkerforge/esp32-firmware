@@ -45,11 +45,12 @@ public:
         size_t register_blocks_count;
     };
 
-    typedef std::function<void(const char *fmt, va_list args)> TableWriterVLogFLnFunction;
+    typedef std::function<void(bool error, const char *fmt, va_list args)> TableWriterVLogFLnFunction;
     typedef std::function<void(void)> TableWriterFinishedFunction;
 
     struct TableWriter {
         uint64_t task_id = 0;
+        uint32_t slot;
         TFModbusTCPSharedClient *client = nullptr;
         uint8_t device_address = 0;
         BatteryMode mode = BatteryMode::None;
@@ -61,12 +62,12 @@ public:
         TableWriterFinishedFunction finished;
         bool transact_pending = false;
         bool delete_requested = false;
+        bool test;
     };
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
-
-    static TableWriter *create_table_writer(TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
+    static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
                                             BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished);
     static void destroy_table_writer(TableWriter *writer);
 

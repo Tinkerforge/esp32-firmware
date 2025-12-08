@@ -34,6 +34,8 @@
 
 void BatteriesModbusTCP::pre_setup()
 {
+    this->trace_buffer_index = logger.alloc_trace_buffer("batteries_mbtcp", 8192);
+
     for (size_t i = 0; i < OPTIONS_BATTERIES_MAX_SLOTS(); ++i) {
         instances[i] = nullptr;
     }
@@ -380,8 +382,8 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer = BatteryModbusTCP::create_table_writer(static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->mode, test->table,
-        [this](const char *fmt, va_list args) {
+        test->writer = BatteryModbusTCP::create_table_writer(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->mode, test->table,
+        [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
         [this]() {
@@ -538,4 +540,12 @@ void BatteriesModbusTCP::test_printfln(const char *fmt, ...)
     va_start(args, fmt);
     test_vprintfln(fmt, args);
     va_end(args);
+}
+
+void BatteriesModbusTCP::trace_timestamp()
+{
+    if (last_trace_timestamp < 0_us || deadline_elapsed(last_trace_timestamp + 5_min)) {
+        last_trace_timestamp = now_us();
+        logger.trace_timestamp(trace_buffer_index);
+    }
 }
