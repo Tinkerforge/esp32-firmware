@@ -35,7 +35,8 @@ Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_
         file(file),
         line(line),
         once(once),
-        cancelled(false) {
+        cancelled(false),
+        immediate_reschedule(false) {
 }
 
 WallClockTask::WallClockTask(std::unique_ptr<Task> &&runner_task, uint64_t task_id, minutes_t interval_minutes, bool run_on_first_sync) :
@@ -105,6 +106,10 @@ Task *TaskQueue::findByTaskID(uint64_t task_id)
     }
 
     return it->get();
+}
+
+void TaskQueue::restoreHeap() {
+    std::make_heap(this->c.begin(), this->c.end(), this->comp);
 }
 
 void TaskScheduler::pre_reboot()
@@ -186,7 +191,8 @@ void TaskScheduler::custom_loop()
             return;
         }
 
-        this->currentTask->next_deadline = now_us() + this->currentTask->delay;
+        this->currentTask->next_deadline = this->currentTask->immediate_reschedule ? 0_us : (now_us() + this->currentTask->delay);
+        this->currentTask->immediate_reschedule = false;
 
         tasks.push(std::move(this->currentTask));
     }
@@ -423,4 +429,32 @@ void TaskScheduler::wall_clock_worker() {
     }
 
     last_minute = time_struct.tm_min;
+}
+
+bool TaskScheduler::rescheduleNow(uint64_t task_id) {
+    if (task_id == 0)
+        return false;
+
+    if (IS_WALL_CLOCK_TASK_ID(task_id)) {
+        esp_system_abort("Not implemented yet. Tell Erik why you want to do this!");
+    }
+
+    std::lock_guard<std::mutex> lock{this->task_mutex};
+
+    if (this->currentTask && this->currentTask->task_id == task_id) {
+        this->currentTask->immediate_reschedule = true;
+        return true;
+    }
+
+    // TODO: could this be faster by implementing the decrease-key operation?
+    Task *task = this->tasks.findByTaskID(task_id);
+
+    if (task == nullptr)
+        return false;
+
+    task->next_deadline = 0_us;
+
+    this->tasks.restoreHeap();
+
+    return true;
 }
