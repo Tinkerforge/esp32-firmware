@@ -417,9 +417,9 @@ static void update_charge_tracking(
         bool is_local_charger = strcmp(uid_str, local_uid_str) == 0;
         if (charge_tracker.currentlyCharging(is_local_charger ? nullptr : uid_str)) {
             charge_tracker.endCharge(
-                (now - target.last_plug_in).to<seconds_t>().as<uint32_t>()
+                (now - target.last_plug_in).to<seconds_t>().as<uint32_t>(),
                 v1->energy_abs,
-                    is_local_charger ? nullptr : uid_str);
+                is_local_charger ? nullptr : uid_str);
         }
     }
 #endif
