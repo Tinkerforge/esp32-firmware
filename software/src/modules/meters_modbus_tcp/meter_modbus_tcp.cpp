@@ -70,7 +70,7 @@ namespace HuaweiSUN2000PVAddress = HuaweiSUN2000PVNoStringsAddress;
 #define trace(fmt, ...) \
     do { \
         meters_modbus_tcp.trace_timestamp(); \
-        logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+        logger.tracefln_plain(meters_modbus_tcp.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
 
 MeterClassID MeterModbusTCP::get_class() const

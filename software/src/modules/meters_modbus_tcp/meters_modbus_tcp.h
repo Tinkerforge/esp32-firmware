@@ -48,13 +48,14 @@ public:
 
     void trace_timestamp();
 
+    size_t trace_buffer_index;
+
 private:
     Config config_prototype;
     Config table_custom_registers_prototype;
     std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> table_prototypes;
     Config errors_prototype;
 
-    size_t trace_buffer_index;
     micros_t last_trace_timestamp = -1_us;
 };
 

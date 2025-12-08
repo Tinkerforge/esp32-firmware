@@ -69,8 +69,8 @@ public:
         bool f32_negative_max_as_nan;
     };
 
-    MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_, size_t trace_buffer_index_) :
-        GenericModbusTCPClient("meters_mbtcp", format_meter_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_), trace_buffer_index(trace_buffer_index_) {}
+    MeterModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
+        GenericModbusTCPClient("meters_mbtcp", format_meter_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config *ephemeral_config) override;
@@ -135,7 +135,6 @@ private:
     uint32_t slot;
     Config *state;
     Config *errors;
-    size_t trace_buffer_index;
 
     MeterModbusTCPTableID table_id;
     const TableSpec *table = nullptr;

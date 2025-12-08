@@ -85,7 +85,7 @@ MeterClassID MetersModbusTCP::get_class() const
 
 IMeter *MetersModbusTCP::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterModbusTCP(slot, state, errors, modbus_tcp_client.get_pool(), trace_buffer_index);
+    return new MeterModbusTCP(slot, state, errors, modbus_tcp_client.get_pool());
 }
 
 const Config *MetersModbusTCP::get_config_prototype()
