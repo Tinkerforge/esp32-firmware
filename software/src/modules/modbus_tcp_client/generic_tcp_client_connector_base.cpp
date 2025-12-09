@@ -33,6 +33,10 @@
 
 void GenericTCPClientConnectorBase::start_connection()
 {
+    if (keep_connected) {
+        return;
+    }
+
     keep_connected = true;
 
     connect_internal();
@@ -40,6 +44,10 @@ void GenericTCPClientConnectorBase::start_connection()
 
 void GenericTCPClientConnectorBase::stop_connection()
 {
+    if (!keep_connected) {
+        return;
+    }
+
     keep_connected = false;
 
     disconnect_internal();

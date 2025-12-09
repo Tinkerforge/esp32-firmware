@@ -34,6 +34,7 @@ protected:
 private:
     void connect_internal() override;
     void disconnect_internal() override;
+    void disconnect_internal(bool force_disconnect);
 
     TFGenericTCPClientPool *pool;
 };

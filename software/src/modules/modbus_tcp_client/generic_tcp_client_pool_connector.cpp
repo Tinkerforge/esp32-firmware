@@ -23,9 +23,7 @@
 
 void GenericTCPClientPoolConnector::force_reconnect()
 {
-    if (connected_client != nullptr) {
-        pool->release(connected_client, true);
-    }
+    disconnect_internal(true);
 }
 
 void GenericTCPClientPoolConnector::connect_internal()
@@ -36,6 +34,10 @@ void GenericTCPClientPoolConnector::connect_internal()
 
     pool->acquire(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        if (result == TFGenericTCPClientConnectResult::NonReentrant) {
+            esp_system_abort("TFGenericTCPClientPool acquire was called in non-reentrant context");
+        }
+
         if (result == TFGenericTCPClientConnectResult::Connected) {
             connected_client = shared_client;
         }
@@ -51,7 +53,26 @@ void GenericTCPClientPoolConnector::connect_internal()
 
 void GenericTCPClientPoolConnector::disconnect_internal()
 {
-    if (connected_client != nullptr) {
-        pool->release(connected_client);
+    disconnect_internal(false);
+}
+
+void GenericTCPClientPoolConnector::disconnect_internal(bool force_disconnect)
+{
+    if (connected_client == nullptr) {
+        return;
+    }
+
+    switch (pool->release(connected_client, force_disconnect)) {
+    case TFGenericTCPClientDisconnectResult::NonReentrant:
+        esp_system_abort("TFGenericTCPClientPool release was called in non-reentrant context");
+
+    case TFGenericTCPClientDisconnectResult::NotConnected:
+        esp_system_abort("TFGenericTCPClientPool release was called while not connected");
+
+    case TFGenericTCPClientDisconnectResult::Disconnected:
+        break;
+
+    default:
+        esp_system_abort("TFGenericTCPClientPool release returned unknown result");
     }
 }

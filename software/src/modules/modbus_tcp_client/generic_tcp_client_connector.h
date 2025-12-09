@@ -31,7 +31,7 @@ protected:
 
 private:
     void connect_internal() override;
-    void disconnect_internal() override;
+    void disconnect_internal() override final;
 
     TFGenericTCPClient *client;
     TFGenericTCPSharedClient *shared_client;
