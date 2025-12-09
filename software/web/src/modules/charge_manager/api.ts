@@ -129,6 +129,11 @@ export interface low_level_config {
 export type charge_modes = ConfigChargeMode[];
 export type supported_charge_modes = ConfigChargeMode[];
 
+export interface authorize_charger {
+    charger_idx: number;
+    user_id: number;
+}
+
 //APIPath:power_manager/
 export interface charge_mode {
     mode: ConfigChargeMode;
