@@ -452,7 +452,13 @@ bool TaskScheduler::rescheduleNow(uint64_t task_id) {
     if (task == nullptr)
         return false;
 
-    task->next_deadline = 0_us;
+    // Set this task's deadline to 1 less than the one of the next task to be executed if the next task is ready.
+    // This allows calling rescheduleNow multiple times with a defined result (reverse execution).
+    // We can't simply un-reverse this because it is not known whether the next task is one that was already rescheduled.
+    // Note that the defined result only works as expected if rescheduleNow is also called in a task and for other tasks.
+    // If this is called from another thread, it could be that one of the rescheduled tasks is this->currentTask
+    // In that case, it will always win against "concurrent" reschedule calls of other tasks.
+    task->next_deadline = std::min(now_us(), this->tasks.top()->next_deadline - 1_us);
 
     this->tasks.restoreHeap();
 
