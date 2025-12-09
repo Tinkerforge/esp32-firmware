@@ -283,7 +283,11 @@ let x = {
             "cd_supported_by_charger": "Wallboxlimit",
             "cd_left_over": "Reststrom",
             "cd_user_limit": "Nutzerlimit",
-            "currently_charging_user": "Ladender Benutzer"
+            "currently_charging_user": "Ladender Benutzer",
+            "authorize_charger": "Freigeben",
+            "authorize_charger_for_user": "Ladevorgang für Benutzer freigeben",
+            "authorize_charger_no_users": "Keine Benutzer konfiguriert",
+            "authorize_failed": "Freigabe fehlgeschlagen"
         }
     }
 }
