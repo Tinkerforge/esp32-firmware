@@ -214,11 +214,12 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, m
     return task_id;
 }
 
-void TaskScheduler::scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
+uint64_t TaskScheduler::scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
-    // All uncancelable tasks have task ID 0.
-    tasks.emplace(perm_new<Task>(DRAM, std::move(fn), 0ull, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false));
+    uint64_t task_id = ++last_task_id | (1ull << 62ull);
+    tasks.emplace(perm_new<Task>(DRAM, std::move(fn), task_id, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false));
+    return task_id;
 }
 
 uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location)
@@ -266,6 +267,9 @@ TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
 {
     if (task_id == 0)
         return TaskScheduler::CancelResult::NotFound;
+
+    if (IS_UNCANCELABLE_TASK_ID(task_id))
+        esp_system_abort("Attempted to cancel an uncancelable task!");
 
     std::lock_guard<std::mutex> lock{this->task_mutex};
     if (IS_WALL_CLOCK_TASK_ID(task_id)) {
@@ -459,6 +463,35 @@ bool TaskScheduler::rescheduleNow(uint64_t task_id) {
     // If this is called from another thread, it could be that one of the rescheduled tasks is this->currentTask
     // In that case, it will always win against "concurrent" reschedule calls of other tasks.
     task->next_deadline = std::min(now_us(), this->tasks.top()->next_deadline - 1_us);
+
+    this->tasks.restoreHeap();
+
+    return true;
+}
+
+bool TaskScheduler::updateDelay(uint64_t task_id, micros_t new_delay) {
+    if (task_id == 0)
+        return false;
+
+    if (IS_WALL_CLOCK_TASK_ID(task_id)) {
+        esp_system_abort("Not implemented yet. Tell Erik why you want to do this!");
+    }
+
+    std::lock_guard<std::mutex> lock{this->task_mutex};
+
+    if (this->currentTask && this->currentTask->task_id == task_id) {
+        this->currentTask->delay = new_delay;
+        return true;
+    }
+
+    // TODO: could this be faster by implementing the decrease-key operation?
+    Task *task = this->tasks.findByTaskID(task_id);
+
+    if (task == nullptr)
+        return false;
+
+    task->delay = new_delay;
+    task->next_deadline = task->next_deadline - task->delay + new_delay;
 
     this->tasks.restoreHeap();
 
