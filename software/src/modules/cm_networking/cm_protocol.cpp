@@ -653,7 +653,9 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
                                       bool cp_disconnected_state,
                                       int8_t phases,
                                       bool can_switch_phases_now,
-                                      ConfigChargeMode requested_charge_mode)
+                                      ConfigChargeMode requested_charge_mode,
+                                      bool urgent,
+                                      bool request_reallocation)
 {
     static uint16_t next_seq_num = 0;
 
@@ -677,6 +679,8 @@ bool CMNetworking::send_client_update(uint32_t esp32_uid,
     bool has_nfc          = api.hasFeature("nfc");
 
     state_pkt.v1.feature_flags = 0
+        | urgent                                    << CM_FEATURE_FLAGS_URGENT_BIT_POS
+        | request_reallocation                      << CM_FEATURE_FLAGS_REQUEST_REALLOCATION_BIT_POS
         | has_phase_switch                          << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS
         | api.hasFeature("cp_disconnect")           << CM_FEATURE_FLAGS_CP_DISCONNECT_BIT_POS
         | api.hasFeature("evse")                    << CM_FEATURE_FLAGS_EVSE_BIT_POS

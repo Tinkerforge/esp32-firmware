@@ -75,7 +75,9 @@ public:
                             bool cp_disconnected_state,
                             int8_t phases,
                             bool can_switch_phases_now,
-                            ConfigChargeMode requested_charge_mode);
+                            ConfigChargeMode requested_charge_mode,
+                            bool urgent,
+                            bool request_reallocation);
 
     void notify_charger_unresponsive(uint8_t charger_idx);
 

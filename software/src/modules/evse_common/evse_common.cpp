@@ -343,7 +343,16 @@ void EvseCommon::setup()
     debug_protocol.register_backend(backend);
 
     task_scheduler.scheduleUncancelable([this](){
+        auto old_state = this->state.get("iec61851_state")->asUint8();
+
         backend->update_all_data();
+
+        auto new_state = this->state.get("iec61851_state")->asUint8();
+        if (old_state != new_state && old_state == 0) {
+            // Immediately request reallocation and response to reduce latency
+            send_cm_client_update(true, true);
+        }
+
     }, 250_ms);
 
 #if MODULE_POWER_MANAGER_AVAILABLE()
@@ -417,7 +426,7 @@ void EvseCommon::setup_evse()
     backend->set_initialized(true);
 }
 
-void EvseCommon::send_cm_client_update() {
+void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
 #if MODULE_CM_NETWORKING_AVAILABLE()
     uint16_t supported_current = 32000;
     for (size_t i = 0; i < CHARGING_SLOT_COUNT; ++i) {
@@ -444,8 +453,12 @@ void EvseCommon::send_cm_client_update() {
         backend->get_control_pilot_disconnect(),
         phases,
         backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
-        deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->charge_mode.get("mode")->asEnum<ConfigChargeMode>()
+        deadline_elapsed(request_charge_mode_until) ? ConfigChargeMode::Default : this->charge_mode.get("mode")->asEnum<ConfigChargeMode>(),
+        urgent,
+        request_reallocation
     );
+
+    next_cm_send_deadline = now_us() + 2500_ms;
 #endif
 }
 
@@ -620,8 +633,7 @@ void EvseCommon::register_urls()
         if (!deadline_elapsed(next_cm_send_deadline))
             return;
 
-        send_cm_client_update();
-        next_cm_send_deadline = now_us() + 2500_ms;
+        send_cm_client_update(false, false);
     }, 100_ms, 100_ms);
 
     api.addState("evse/charge_mode", &charge_mode);
@@ -1112,4 +1124,14 @@ bool EvseCommon::get_management_enabled()
 uint32_t EvseCommon::get_evse_version()
 {
     return hardware_configuration.get("evse_version")->asUint();
+}
+
+void EvseCommon::notify_new_auth() {
+    auto state = this->state.get("iec61851_state")->asUint8();
+    if (state != 0 && state != 1)
+        return;
+
+    // Immediately send the next client update to reduce NFC check latency.
+    // If a car is already connected, also request reallocation.
+    send_cm_client_update(true, state == 1);
 }
