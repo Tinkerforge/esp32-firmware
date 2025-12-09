@@ -32,6 +32,12 @@
 
 #include "gcc_warnings.h"
 
+#define trace(fmt, ...) \
+    do { \
+        trace_timestamp(); \
+        logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
+    } while (0)
+
 void BatteriesModbusTCP::pre_setup()
 {
     this->trace_buffer_index = logger.alloc_trace_buffer("batteries_mbtcp", 8192);
@@ -304,6 +310,8 @@ void BatteriesModbusTCP::loop()
 
         modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port,
         [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            trace("b%lu t1 cc%d", test->slot, static_cast<int>(result));
+
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
@@ -318,6 +326,8 @@ void BatteriesModbusTCP::loop()
             test->state = TestState::CreateTableWriter;
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            trace("b%lu t1 cd%d", test->slot, static_cast<int>(reason));
+
             char buf[256] = "";
 
             GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf));
