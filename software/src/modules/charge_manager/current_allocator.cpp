@@ -158,6 +158,10 @@ void update_from_client_packet(
             target.just_plugged_in_timestamp = now;
     }
 
+    if (v1->charger_state == 0 && (target.charger_state != 0 || target.last_update == 0_us)) {
+        target.last_plug_out = now;
+    }
+
     // If this charger just switched to state C (i.e. the contactor switched on)
     // set last_phase_switch to now to make sure we don't immediately switch again.
     // The delay between the phase switch and the car requesting current again
