@@ -1820,8 +1820,13 @@ static void undo_stage_6(StageContext &sc) {
 }
 
 // The current capacity of a charger is the maximum amount of current that can be allocated to the charger additionally to the already allocated current on the allocated phases.
-static int current_capacity(const StageContext &sc, const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg, CurrentCapacityLimit *out_limit = nullptr) {
-    auto requested_current = get_requested_current(sc, state, cfg, allocated_phases, out_limit);
+static int current_capacity(const StageContext &sc, const CurrentLimits *limits, const ChargerState *state, int allocated_current, uint8_t allocated_phases, const CurrentAllocatorConfig *cfg, CurrentCapacityLimit *out_limit = nullptr, bool ignore_requested_current = false) {
+    int requested_current = state->supported_current;
+    if (!ignore_requested_current) {
+        requested_current = get_requested_current(sc, state, cfg, allocated_phases, out_limit);
+    } else if (out_limit != nullptr) {
+        *out_limit = CurrentCapacityLimit::SupportedByCharger;
+    }
 
     // TODO: add margin again if exactly one charger is active and requested_current > 6000. Also add in calculate_window? -> Maybe not necessary any more?
 
@@ -2012,10 +2017,16 @@ static void stage_8(StageContext &sc, bool allocate_to_non_charging) {
     else
         matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
 
-    sort_chargers(
-        3 - ctx.allocated_phases,
-        current_capacity(sc_, ctx.limits, ctx.left.state, ctx.left.allocated_current, ctx.left.allocated_phases, ctx.cfg) < current_capacity(sc_, ctx.limits, ctx.right.state, ctx.right.allocated_current, ctx.right.allocated_phases, ctx.cfg)
-    );
+    if (allocate_to_non_charging)
+        sort_chargers(
+            3 - ctx.allocated_phases,
+            current_capacity(sc_, ctx.limits, ctx.left.state, ctx.left.allocated_current, ctx.left.allocated_phases, ctx.cfg, nullptr, true) < current_capacity(sc_, ctx.limits, ctx.right.state, ctx.right.allocated_current, ctx.right.allocated_phases, ctx.cfg, nullptr, true)
+        );
+    else
+        sort_chargers(
+            3 - ctx.allocated_phases,
+            current_capacity(sc_, ctx.limits, ctx.left.state, ctx.left.allocated_current, ctx.left.allocated_phases, ctx.cfg, nullptr, false) < current_capacity(sc_, ctx.limits, ctx.right.state, ctx.right.allocated_current, ctx.right.allocated_phases, ctx.cfg, nullptr, false)
+        );
 
     trace_sort(8);
 
@@ -2031,7 +2042,7 @@ static void stage_8(StageContext &sc, bool allocate_to_non_charging) {
                             state->observe_pv_limit
                                 ? std::max(state->guaranteed_pv_current / allocated_phases - allocated_current, sc.limits->raw.pv / allocated_phases)
                                 : 32000),
-                        current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg) / allocated_phases);
+                        current_capacity(sc, sc.limits, state, allocated_current, allocated_phases, sc.cfg, nullptr, allocate_to_non_charging) / allocated_phases);
 
         if (state->phase_rotation == PhaseRotation::Unknown) {
             // Phase rotation unknown. We have to assume that each phase could be used
