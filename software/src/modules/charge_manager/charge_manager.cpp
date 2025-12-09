@@ -258,6 +258,11 @@ void ChargeManager::pre_setup()
 
     supported_charge_modes = Config::Tuple({Config::Enum(ConfigChargeMode::Off), Config::Enum(ConfigChargeMode::Fast)});
 
+    authorize_charger = Config::Object({
+        {"charger_idx", Config::Uint8(0)},
+        {"user_id", Config::Int16(-1)},
+    });
+
 #ifdef DEBUG_FS_ENABLE
     debug_limits_update = Config::Object({
         {"raw", Config::Tuple(4, Config::Int32(0))},
@@ -1147,6 +1152,38 @@ void ChargeManager::register_urls()
 
         //logger.printfln("Charging mode %u requested but it was ignored", new_mode);
         //errmsg = "Charge mode switch ignored";
+    }, false);
+
+    api.addCommand("charge_manager/authorize_charger", &authorize_charger, {}, [this](Language /*language*/, String &errmsg) {
+        uint8_t charger_idx = this->authorize_charger.get("charger_idx")->asUint();
+        int16_t user_id = this->authorize_charger.get("user_id")->asInt();
+
+        if (charger_idx >= this->charger_count) {
+            errmsg = "Invalid charger index";
+            return;
+        }
+
+        if (!this->ca_config->enable_central_auth) {
+            errmsg = "Central authorization is not enabled";
+            return;
+        }
+
+        if (user_id <= 0) {
+            errmsg = "Invalid user ID";
+            return;
+        }
+
+        auto &target = this->charger_state[charger_idx];
+
+        target.authenticated_user_id = user_id;
+
+#if MODULE_USERS_AVAILABLE()
+        target.user_current = users.get_user_current(user_id);
+#else
+        target.user_current = 32000;
+#endif
+
+        target.unknown_nfc_tag_timestamp = 0_us;
     }, false);
 
     if (static_cm && config.get("enable_watchdog")->asBool()) {

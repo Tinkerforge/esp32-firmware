@@ -48,8 +48,11 @@ import { CurrentDecision } from "./current_decision.union";
 import { CurrentDecisionTag } from "./current_decision_tag.enum";
 import { CASState } from "./cas_state.enum";
 import { CASError } from "./cas_error.enum";
+import { CASAuthState } from "./cas_auth_state.enum";
 import { FormSeparator } from "ts/components/form_separator";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
+import { Dropdown } from "react-bootstrap";
+import { useId } from "preact/hooks";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -494,7 +497,8 @@ function CMStatusCharger(props: {
         charge_mode: ConfigChargeMode,
         charger_state: API.getType['charge_manager/state']['chargers'][0],
         charger_config: API.getType['charge_manager/config']['chargers'][0],
-        users: API.getType['users/config']['users']
+        users: API.getType['users/config']['users'],
+        central_auth_enabled: boolean
     }) {
     const [showDetails, setShowDetails] = useState(false);
 
@@ -576,14 +580,45 @@ function CMStatusCharger(props: {
                                 />
                         </div>
                     </div>
+                    {props.central_auth_enabled && c.a === CASAuthState.Unauthenticated ?
+                        <div class="row px-1 mt-2 mx-n1">
+                            <Dropdown>
+                                <Dropdown.Toggle variant="primary" size="sm" id={useId()}>
+                                    {__("charge_manager.script.authorize_charger")}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu alignRight>
+                                    <Dropdown.Header class="text-wrap">
+                                        {props.users.filter(u => u.id > 0).length > 0 ? __("charge_manager.script.authorize_charger_for_user") : __("charge_manager.script.authorize_charger_no_users")}
+                                    </Dropdown.Header>
+                                    {props.users.filter(u => u.id > 0).map(u =>
+                                        <Dropdown.Item
+                                            as="button"
+                                            className="py-2"
+                                            onClick={() => {
+                                                API.call("charge_manager/authorize_charger", {
+                                                    charger_idx: props.charger_index,
+                                                    user_id: u.id
+                                                }, () => __("charge_manager.script.authorize_failed"));
+                                            }}>
+                                            {u.display_name}
+                                        </Dropdown.Item>
+                                    )}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                    : null}
                 </div>
                 <div class={"card-body " + c_body_classes}>
-                    <h5 class="card-title mb-0"><Button
-                        className="me-2"
-                        size="sm"
-                        onClick={() => setShowDetails(!showDetails)}>
-                        <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                    </Button>{c_state}</h5>
+                    <h5 class={"card-title my-0"}>
+                        {c.s != CASState.NoVehicle && c.s != CASState.Unauthorized ?
+                            <Button
+                                className="me-2"
+                                size="sm"
+                                onClick={() => setShowDetails(!showDetails)}>
+                                <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                            </Button>
+                        : null}{c_state}
+                    </h5>
                     <Collapse in={!showDetails}>
                         <div>
                             <div class="card-text" style={desc.length > 0 ? "margin-top: 0.75rem;" : ""}>
@@ -681,6 +716,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         const charge_modes = API.get("charge_manager/charge_modes");
         const uptime = API.get("info/keep_alive").uptime;
         const users = API.get("users/config").users;
+        const central_auth_enabled = state.config.enable_central_auth;
 
         let cards = state.state.chargers.map((c, i) =>
             <CMStatusCharger
@@ -694,6 +730,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                 charger_state={c}
                 charger_config={state.config.chargers[i]}
                 users={users}
+                central_auth_enabled={central_auth_enabled}
             />);
 
         let controls_only_self = false && (state.config.chargers.length == 1

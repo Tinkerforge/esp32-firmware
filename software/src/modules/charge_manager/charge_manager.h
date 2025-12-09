@@ -187,6 +187,7 @@ private:
     ConfigRoot pm_charge_mode;
     ConfigRoot pm_charge_mode_update;
     ConfigRoot supported_charge_modes;
+    ConfigRoot authorize_charger;
 
 #ifdef DEBUG_FS_ENABLE
     ConfigRoot debug_limits_update;
