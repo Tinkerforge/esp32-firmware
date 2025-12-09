@@ -368,6 +368,9 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger(AutomationTriggerID::NFC, &info->tag, this);
 #endif
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    evse_common.notify_new_auth();
+#endif
 }
 
 void NFC::update_seen_tags()

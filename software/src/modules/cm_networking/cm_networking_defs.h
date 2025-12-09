@@ -134,6 +134,13 @@ struct cm_command_packet {
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
 static_assert(CM_COMMAND_PACKET_LENGTH == 20, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
+#define CM_FEATURE_FLAGS_URGENT_BIT_POS 31
+#define CM_FEATURE_FLAGS_URGENT_MASK (1u << CM_FEATURE_FLAGS_URGENT_BIT_POS)
+#define CM_FEATURE_FLAGS_URGENT_IS_SET(FLAGS) (((FLAGS) & CM_FEATURE_FLAGS_URGENT_MASK) != 0)
+#define CM_FEATURE_FLAGS_REQUEST_REALLOCATION_BIT_POS 30
+#define CM_FEATURE_FLAGS_REQUEST_REALLOCATION_MASK (1u << CM_FEATURE_FLAGS_REQUEST_REALLOCATION_BIT_POS)
+#define CM_FEATURE_FLAGS_REQUEST_REALLOCATION_IS_SET(FLAGS) (((FLAGS) & CM_FEATURE_FLAGS_REQUEST_REALLOCATION_MASK) != 0)
+
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS 7
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_MASK (1u << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS)
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_IS_SET(FLAGS) (((FLAGS) & CM_FEATURE_FLAGS_PHASE_SWITCH_MASK) != 0)
@@ -192,6 +199,9 @@ static_assert(CM_COMMAND_PACKET_LENGTH == 20, "Unexpected CM_COMMAND_PACKET_LENG
 
 struct cm_state_v1 {
     /* feature_flags
+    bit 31 - "urgent": Request immediate response after processing this packet
+    bit 30 - "request_reallocation": Request reallocation between processing this packet and generating the response
+    [...]
     bit 7 - has phase_switch
     bit 6 - has cp_disconnect
     bit 5 - has evse
