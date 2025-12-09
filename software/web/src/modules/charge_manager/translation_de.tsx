@@ -277,8 +277,8 @@ let x = {
             "cd_user_limit": "Nutzerlimit",
             "currently_charging_user": "Ladender Benutzer",
             "authorize_charger": "Freigeben",
-            "authorize_charger_for_user": "Für Benutzer",
-            "authorize_charger_no_users": "Kein Benutzer mit NFC-Tag vorhanden",
+            "authorize_charger_for_user": "Ladevorgang für Benutzer freigeben",
+            "authorize_charger_no_users": "Keine Benutzer konfiguriert",
             "authorize_failed": "Freigabe fehlgeschlagen"
         }
     }
