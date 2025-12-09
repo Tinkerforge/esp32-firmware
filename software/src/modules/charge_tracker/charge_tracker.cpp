@@ -697,6 +697,34 @@ bool charged_invalid(ChargeStart cs, ChargeEnd ce)
     return isnan(cs.meter_start) || isnan(ce.meter_end) || ce.meter_end < cs.meter_start;
 }
 
+// Returns true if the charger (identified by its directory) is present in the charge manager configuration.
+// For the local charger (directory == nullptr), this checks if the local UID is in the config.
+// For remote chargers, the directory name is the base58-encoded UID.
+static bool is_charger_in_config(const char *directory)
+{
+    const char *b58 = directory == nullptr ? local_uid_str : directory;
+
+    uint32_t uid = 0;
+    if (tf_base58_decode(b58, &uid) != 0) {
+        // Failed to decode; assume not in config
+        return false;
+    }
+
+    const char *name = charge_manager.get_charger_name_by_uid(uid);
+    if (name != nullptr) {
+        return true;
+    }
+
+    if (directory == nullptr) {
+        // Charger not found but this is the local charger.
+        // We are probably not a charge manager.
+        // Include local charger in this case.
+        return true;
+    }
+
+    return false;
+}
+
 static String get_charger_display_name_from_host(const char *directory)
 {
     const char *b58 = directory == nullptr ? local_uid_str : directory;
@@ -1104,7 +1132,7 @@ void ChargeTracker::repair_charges()
     all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
 
     // Helper lambda to repair charges in a specific directory
-    auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory) {
+    auto repair_directory = [this, &buf, &num_repaired, &all_charges](const char *directory, bool include_in_last_charges) {
         uint32_t first_record = 0;
         uint32_t last_record = 0;
 
@@ -1166,12 +1194,14 @@ void ChargeTracker::repair_charges()
         }
 
         // After repairing, get last charges from this directory and merge
-        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(directory);
-        merge_charge_vectors(all_charges, dir_charges);
+        // Only include charges from chargers that are in the charge manager config
+        if (include_in_last_charges) {
+            std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(directory);
+            merge_charge_vectors(all_charges, dir_charges);
+        }
     };
 
-    // Repair main directory (nullptr)
-    repair_directory(nullptr);
+    repair_directory(nullptr, is_charger_in_config(nullptr));
 
     // Scan all subdirectories
     File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
@@ -1184,7 +1214,7 @@ void ChargeTracker::repair_charges()
                 if (last_slash >= 0) {
                     dirname = dirname.substring(last_slash + 1);
                 }
-                repair_directory(dirname.c_str());
+                repair_directory(dirname.c_str(), is_charger_in_config(dirname.c_str()));
             }
         }
     }
@@ -2283,6 +2313,9 @@ void ChargeTracker::updateLastCharges(const char *directory)
     all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
 
     auto get_charges_from_directory = [this, &all_charges](const char *dir) {
+        if (!is_charger_in_config(dir)) {
+            return;
+        }
         std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(dir);
         merge_charge_vectors(all_charges, dir_charges);
     };
