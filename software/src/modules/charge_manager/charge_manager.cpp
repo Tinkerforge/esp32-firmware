@@ -518,12 +518,14 @@ static void update_authentication(
     }
 }
 
-static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config) {
+static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
     // Populate and save UID if not yet stored for this charger
     if (config->get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
         config->get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
         api.writeConfig("charge_manager/config", config);
     }
+    auto &target = charger_state[client_id];
+    target.uid = v1->esp32_uid;
 }
 
 static void update_charge_mode(uint8_t client_id, cm_state_v1 *v1, cm_state_v4 *v4, ChargerState *charger_state) {
@@ -551,7 +553,7 @@ void ChargeManager::start_manager_task()
                     get_charger_name_fn))
                 return;
 
-            update_uid(client_id, v1, &this->config);
+            update_uid(client_id, v1, &this->config, this->charger_state);
 
             update_charge_mode(client_id, v1, v4, this->charger_state);
 

@@ -95,7 +95,6 @@ void update_from_client_packet(
     auto &target = charger_state[client_id];
     auto &target_alloc = charger_allocation_state[client_id];
 
-    target.uid = v1->esp32_uid;
     target.uptime = v1->evse_uptime;
 
     // If we've just resolved this charger but the charger did not reboot
