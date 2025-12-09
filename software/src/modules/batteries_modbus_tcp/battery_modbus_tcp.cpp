@@ -50,6 +50,15 @@ static const char *get_battery_mode_display_name(BatteryMode value)
     }
 }
 
+static char get_battery_mode_as_char(BatteryMode mode)
+{
+    if (mode == BatteryMode::None) {
+        return 'n';
+    }
+
+    return '0' + static_cast<char>(mode);
+}
+
 void BatteryModbusTCP::load_custom_table(BatteryModbusTCP::TableSpec **table_ptr, const Config *config)
 {
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
@@ -278,10 +287,10 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                       || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            trace("b%lu t%d am%d i%zu/%zu%s e%d%s%s",
+            trace("b%lu t%d ww m%c i%zu/%zu%s e%d%s%s",
                   writer->slot,
                   writer->test ? 1 : 0,
-                  static_cast<int8_t>(writer->mode),
+                  get_battery_mode_as_char(writer->mode),
                   writer->index + 1,
                   writer->table->register_blocks_count,
                   has_step2 ? " s1/2" : "",
@@ -306,10 +315,10 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
             return;
         }
 
-        trace("b%lu t%d am%d i%zu/%zu%s",
+        trace("b%lu t%d ww m%c i%zu/%zu%s",
               writer->slot,
               writer->test ? 1 : 0,
-              static_cast<int8_t>(writer->mode),
+              get_battery_mode_as_char(writer->mode),
               writer->index + 1,
               writer->table->register_blocks_count,
               has_step2 ? " s1/2" : "");
@@ -339,10 +348,10 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                              2_s,
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    trace("b%lu t%d am%d i%zu/%zu s2/2 e%d%s%s",
+                    trace("b%lu t%d ww m%c i%zu/%zu s2/2 e%d%s%s",
                           writer->slot,
                           writer->test ? 1 : 0,
-                          static_cast<int8_t>(writer->mode),
+                          get_battery_mode_as_char(writer->mode),
                           writer->index + 1,
                           writer->table->register_blocks_count,
                           static_cast<int>(step2_result),
@@ -366,10 +375,10 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                     return;
                 }
 
-                trace("b%lu t%d am%d i%zu/%zu s2/2",
+                trace("b%lu t%d ww m%c i%zu/%zu s2/2",
                       writer->slot,
                       writer->test ? 1 : 0,
-                      static_cast<int8_t>(writer->mode),
+                      get_battery_mode_as_char(writer->mode),
                       writer->index + 1,
                       writer->table->register_blocks_count);
 
@@ -400,10 +409,10 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
                                                                      TableWriterVLogFLnFunction &&vlogfln,
                                                                      TableWriterFinishedFunction &&finished)
 {
-    trace("b%lu t%d am%d wc",
+    trace("b%lu t%d wc m%c",
           slot,
           test ? 1 : 0,
-          static_cast<int8_t>(mode));
+          get_battery_mode_as_char(mode));
 
     TableWriter *writer = new TableWriter;
 
@@ -439,10 +448,10 @@ void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *write
         return;
     }
 
-    trace("b%lu t%d am%d wd",
+    trace("b%lu t%d wd m%c",
           writer->slot,
           writer->test ? 1 : 0,
-          static_cast<int8_t>(writer->mode));
+          get_battery_mode_as_char(writer->mode));
 
     if (writer->transact_pending) {
         writer->delete_requested = true;
@@ -550,8 +559,9 @@ void BatteryModbusTCP::set_mode(BatteryMode mode)
     }
 
     requested_mode = mode;
+    finished = false;
 
-    set_active_mode(requested_mode);
+    update_active_mode();
 }
 
 void BatteryModbusTCP::set_paused(bool paused_)
@@ -562,7 +572,7 @@ void BatteryModbusTCP::set_paused(bool paused_)
 
     this->paused = paused_;
 
-    set_active_mode(requested_mode);
+    update_active_mode();
 }
 
 void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
@@ -573,67 +583,75 @@ void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
         return;
     }
 
-    set_active_mode(requested_mode);
+    update_active_mode();
 }
 
 void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
     trace("b%lu t0 cd%d", slot, static_cast<int>(reason));
 
-    set_active_mode(BatteryMode::None);
+    update_active_mode();
 }
 
-void BatteryModbusTCP::set_active_mode(BatteryMode mode)
+void BatteryModbusTCP::update_active_mode()
 {
-    if (paused) {
-        mode = BatteryMode::None;
+    BatteryMode next_mode = requested_mode;
+
+    if (connected_client == nullptr || requested_mode == BatteryMode::None || paused || finished) {
+        next_mode = BatteryMode::None;
     }
 
-    bool mode_changed = active_mode != mode;
-
-    active_mode = mode;
-
-    if (active_mode == BatteryMode::None) {
-        destroy_table_writer(active_writer);
-        active_writer = nullptr;
-
-        stop_connection();
+    if (active_mode == next_mode) {
+        return;
     }
-    else if (network.is_connected()) {
-        start_connection();
 
-        if (mode_changed || active_writer == nullptr) {
-            destroy_table_writer(active_writer);
-            active_writer = nullptr;
+    TableSpec *table = nullptr;
 
-            if (connected_client != nullptr) {
-                TableSpec *table = tables[static_cast<size_t>(active_mode)];
+    if (next_mode != BatteryMode::None) {
+        table = tables[static_cast<size_t>(next_mode)];
+    }
 
-                if (table != nullptr) {
+    if (table == nullptr) {
+        next_mode = BatteryMode::None;
+    }
+
+    destroy_table_writer(active_writer);
+    active_writer = nullptr;
+
+    trace("b%lu t0 %s r%c%s%s m%c->%c",
+          slot,
+          connected_client != nullptr ? "ce" : "nc",
+          get_battery_mode_as_char(requested_mode),
+          paused ? " p" : "",
+          finished ? " f" : "",
+          get_battery_mode_as_char(active_mode),
+          get_battery_mode_as_char(next_mode));
+
+    active_mode = next_mode;
+
+    if (table != nullptr) {
 #if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-                    active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, mode, table,
-                    [this](bool error, const char *fmt, va_list args) {
-                        if (!error) {
-                            return;
-                        }
-
-                        char message[256];
-
-                        vsnprintf(message, sizeof(message), fmt, args);
-                        logger.printfln_battery("%s", message);
-                    },
-                    [this]() {
-                        destroy_table_writer(active_writer);
-                        active_writer = nullptr;
-                    });
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-                }
+        active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, active_mode, table,
+        [this](bool error, const char *fmt, va_list args) {
+            if (!error) {
+                return;
             }
-        }
+
+            char message[256];
+
+            vsnprintf(message, sizeof(message), fmt, args);
+            logger.printfln_battery("%s", message);
+        },
+        [this]() {
+            finished = true;
+
+            update_active_mode();
+        });
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     }
 }
