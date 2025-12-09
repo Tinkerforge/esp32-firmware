@@ -87,7 +87,7 @@ public:
 private:
     void connect_callback(TFGenericTCPClientConnectResult result) override;
     void disconnect_callback(TFGenericTCPClientDisconnectReason reason) override;
-    void set_active_mode(BatteryMode mode);
+    void update_active_mode();
 
     uint32_t slot;
     Config *state;
@@ -99,7 +99,8 @@ private:
     uint8_t device_address;
     uint16_t repeat_interval; // seconds
     BatteryMode requested_mode = BatteryMode::None;
-    BatteryMode active_mode = BatteryMode::None;
     bool paused = false;
+    bool finished = false;
+    BatteryMode active_mode = BatteryMode::None;
     TableWriter *active_writer = nullptr;
 };
