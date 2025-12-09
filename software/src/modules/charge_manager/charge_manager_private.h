@@ -146,6 +146,9 @@ struct ChargerState {
     // The last time a vehicle was plugged in or 0 if no car is currently plugged in.
     micros_t last_plug_in;
 
+    // The last time a vehicle was plugged out
+    micros_t last_plug_out;
+
     micros_t last_wakeup;
 
     // If set, the last allocation was less than the requested current.
