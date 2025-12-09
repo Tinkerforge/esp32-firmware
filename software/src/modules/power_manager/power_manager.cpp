@@ -993,7 +993,7 @@ void PowerManager::update_energy()
 
                     // Limit exceeded too much, trigger CM allocator run
                     if (deadline_elapsed(cm_allocator_trigger_hysteresis)) {
-                        charge_manager.trigger_allocator_run();
+                        charge_manager.trigger_allocator_run(true);
                         cm_allocator_trigger_hysteresis = now_us() + 5_s;
                     }
                 } else {

@@ -539,6 +539,59 @@ static void update_charge_mode(uint8_t client_id, cm_state_v1 *v1, cm_state_v4 *
     }
 }
 
+bool ChargeManager::send_client_packet(uint8_t i) {
+    auto &charger_alloc = this->charger_allocation_state[i];
+
+    auto ignore_allocation = false;
+    auto current = charger_alloc.allocated_current;
+    auto cp_disconnect = charger_alloc.cp_disconnect;
+    auto phases = charger_alloc.allocated_phases;
+    auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
+
+    CMAuthFeedback auth_feedback = CMAuthFeedback::None;
+    if (this->ca_config->enable_central_auth) {
+        const auto &charger = this->charger_state[i];
+        if (charger.charger_state != 0) {
+            switch (charger.authenticated_user_id) {
+                case -2:
+                    auth_feedback = CMAuthFeedback::Nack;
+                    break;
+                case -1:
+                    auth_feedback = CMAuthFeedback::Nag;
+                    break;
+                default:
+                    auth_feedback = CMAuthFeedback::Ack;
+                    break;
+            }
+        }
+    }
+
+    // If we've never seen a packet from this charger, send "ignore allocation".
+    // This means we (the charge manager) have rebooted and either our uptime is < 30 seconds or the charger has stopped charging
+    // (managed chargers set the managed slot to 0 if they don't receive a packet for 30 seconds)
+    // We assume the the last allocation (before the reboot) is fine for up to 30 seconds.
+    if (!all_chargers_seen || this->charger_state[i].last_update == 0_us) {
+        ignore_allocation = true; // This requires managed chargers to support cm_command_v3!
+        charge_mode = ConfigChargeMode::Default; // This will instruct the managed charger to send its charge mode back as if it wants to request a charge mode change
+
+        // Set sane defaults for managed chargers with older firmwares
+        current = std::numeric_limits<decltype(current)>::max(); // Directly passed through to the EVSE bricklet, which ignores values > 32000
+        cp_disconnect = false; // Way more likely to be correct than that the manager restarted while a phase switch was in progress
+        phases = 0; // 0 phases are ignored except with WARP* firmware == 2.6.0. 2.6.1 fixed this two weeks later
+    }
+
+    return cm_networking.send_manager_update(i,
+                                             ignore_allocation,
+                                             current,
+                                             cp_disconnect,
+                                             phases,
+                                             charge_mode,
+                                             this->supported_charge_mode_bitmask,
+                                             auth_feedback,
+                                             this->ca_config->enable_central_auth,
+                                             this->ca_config->enable_charge_tracking);
+}
+
 void ChargeManager::start_manager_task()
 {
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
@@ -573,6 +626,17 @@ void ChargeManager::start_manager_task()
                     );
 
             update_charger_state_config(client_id);
+
+            if (CM_FEATURE_FLAGS_URGENT_IS_SET(v1->feature_flags)) {
+                this->override_next_client_send = client_id;
+                // This task will run directly after the one that is rescheduled in trigger_allocator_run.
+                // Multiple rescheduleNow calls are executed backwards.
+                task_scheduler.rescheduleNow(this->send_client_task_id);
+            }
+
+            if (CM_FEATURE_FLAGS_REQUEST_REALLOCATION_IS_SET(v1->feature_flags)) {
+                trigger_allocator_run(false);
+            }
     }, [this](uint8_t client_id, ClientError error){
         static_assert(std::is_same_v<std::underlying_type_t<ClientError>, std::underlying_type_t<CASError>>);
         static_assert(ClientError::_min == ClientError::OK);
@@ -592,62 +656,19 @@ void ChargeManager::start_manager_task()
 
     millis_t cm_send_delay = 1000_ms / millis_t{charger_count};
 
-    task_scheduler.scheduleUncancelable([this](){
+    send_client_task_id = task_scheduler.scheduleUncancelable([this](){
         static int i = 0;
 
         if (i >= charger_count)
             i = 0;
 
-        auto &charger_alloc = this->charger_allocation_state[i];
-
-        auto ignore_allocation = false;
-        auto current = charger_alloc.allocated_current;
-        auto cp_disconnect = charger_alloc.cp_disconnect;
-        auto phases = charger_alloc.allocated_phases;
-        auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
-
-        CMAuthFeedback auth_feedback = CMAuthFeedback::None;
-        if (this->ca_config->enable_central_auth) {
-            const auto &charger = this->charger_state[i];
-            if (charger.charger_state != 0) {
-                switch (charger.authenticated_user_id) {
-                    case -2:
-                        auth_feedback = CMAuthFeedback::Nack;
-                        break;
-                    case -1:
-                        auth_feedback = CMAuthFeedback::Nag;
-                        break;
-                    default:
-                        auth_feedback = CMAuthFeedback::Ack;
-                        break;
-                }
-            }
+        if (this->override_next_client_send != -1) {
+            if (this->send_client_packet((uint8_t) this->override_next_client_send))
+                this->override_next_client_send = -1;
+            return;
         }
 
-        // If we've never seen a packet from this charger, send "ignore allocation".
-        // This means we (the charge manager) have rebooted and either our uptime is < 30 seconds or the charger has stopped charging
-        // (managed chargers set the managed slot to 0 if they don't receive a packet for 30 seconds)
-        // We assume the the last allocation (before the reboot) is fine for up to 30 seconds.
-        if (!all_chargers_seen || this->charger_state[i].last_update == 0_us) {
-            ignore_allocation = true; // This requires managed chargers to support cm_command_v3!
-            charge_mode = ConfigChargeMode::Default; // This will instruct the managed charger to send its charge mode back as if it wants to request a charge mode change
-
-            // Set sane defaults for managed chargers with older firmwares
-            current = std::numeric_limits<decltype(current)>::max(); // Directly passed through to the EVSE bricklet, which ignores values > 32000
-            cp_disconnect = false; // Way more likely to be correct than that the manager restarted while a phase switch was in progress
-            phases = 0; // 0 phases are ignored except with WARP* firmware == 2.6.0. 2.6.1 fixed this two weeks later
-        }
-
-        if(cm_networking.send_manager_update(i,
-                                             ignore_allocation,
-                                             current,
-                                             cp_disconnect,
-                                             phases,
-                                             charge_mode,
-                                             this->supported_charge_mode_bitmask,
-                                             auth_feedback,
-                                             this->ca_config->enable_central_auth,
-                                             this->ca_config->enable_charge_tracking))
+        if (this->send_client_packet(i))
             ++i;
 
     }, cm_send_delay);
@@ -751,6 +772,9 @@ ConfigChargeMode ChargeManager::cm_to_config_cm(uint8_t mode) {
     return ConfigChargeMode::Fast;
 }
 
+static const char *get_charger_name_fn(uint8_t idx) {return charge_manager.get_charger_name(idx);}
+static void notify_charger_unresponsive_fn(uint8_t idx) {return cm_networking.notify_charger_unresponsive(idx);}
+
 void ChargeManager::setup()
 {
     api.restorePersistentConfig("charge_manager/config", &config);
@@ -844,91 +868,82 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    auto get_charger_name_fn = [this](uint8_t idx) {return this->get_charger_name(idx);};
-    auto notify_charger_unresponsive_fn = [](uint8_t charger_index) {return cm_networking.notify_charger_unresponsive(charger_index);};
+    (void)task_scheduler.scheduleWithFixedDelay([this](){
+        all_chargers_seen = seen_all_chargers();
 
-    this->next_allocation = now_us() + 1_s;
+        this->limits_post_allocation = this->limits;
 
-    task_scheduler.scheduleUncancelable([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
-            if (!deadline_elapsed(this->next_allocation))
-                return;
+        for (size_t i = 0; i < charger_count; ++i) {
+            if (this->charger_state[i].last_update == 0_us)
+                cm_networking.notify_charger_unresponsive(i);
 
-            if (!all_chargers_seen) {
-                // This branch does not update this->next_allocation,
-                // because the task itself runs once per second.
+            auto allocd_current = this->charger_state[i].allowed_current;
+            auto allocd_phases = this->charger_state[i].phases;
 
-                // Even if all_chargers_seen is now true, don't run the allocation algorithm yet.
-                // This gives the power manager one second to re-calculate the limits with all now known
-                // active chargers
-                all_chargers_seen = seen_all_chargers();
+            this->charger_allocation_state[i].allocated_current = allocd_current;
+            this->charger_allocation_state[i].allocated_phases = allocd_phases;
+
+            auto cost = get_cost(allocd_current, allocd_phases, this->charger_state[i].phase_rotation, 0, 0);
+
+            apply_cost(cost, &this->limits_post_allocation);
+        }
+
+        if (all_chargers_seen) {
+            task_scheduler.cancel(task_scheduler.currentTaskId());
+
+            // Delay first allocation algorithm run by one second:
+            // This gives the power manager one second to re-calculate
+            // the limits with all now known active chargers.
+
+            this->allocate_task_id = task_scheduler.scheduleUncancelable([this](){
+                uint32_t allocated_current = 0;
 
                 this->limits_post_allocation = this->limits;
 
-                for (size_t i = 0; i < charger_count; ++i) {
-                    if (this->charger_state[i].last_update == 0_us)
-                        cm_networking.notify_charger_unresponsive(i);
-
-                    auto allocd_current = this->charger_state[i].allowed_current;
-                    auto allocd_phases = this->charger_state[i].phases;
-
-                    this->charger_allocation_state[i].allocated_current = allocd_current;
-                    this->charger_allocation_state[i].allocated_phases = allocd_phases;
-
-                    auto cost = get_cost(allocd_current, allocd_phases, this->charger_state[i].phase_rotation, 0, 0);
-
-                    apply_cost(cost, &this->limits_post_allocation);
+                for(size_t i = 0; i < charger_count; ++i) {
+                    update_charger_state_from_mode(&charger_state[i], i);
                 }
-                return;
-            }
 
-            this->next_allocation = now_us() + ca_config->allocation_interval;
+                int result = allocate_current(
+                    this->ca_config,
+                    &this->limits_post_allocation,
+                    this->control_pilot_disconnect.get("disconnect")->asBool(),
+                    this->charger_state,
+                    this->hosts.get(),
+                    get_charger_name_fn,
+                    notify_charger_unresponsive_fn,
 
-            uint32_t allocated_current = 0;
+                    this->ca_state,
+                    this->charger_allocation_state,
+                    &allocated_current,
+                    this->charger_decisions
+                );
 
-            this->limits_post_allocation = this->limits;
+                for (size_t i = 0; i < 4; i++) {
+                    allocated_currents[i] = this->limits.raw[i] - limits_post_allocation.raw[i];
+                    this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
+                    this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
+                    this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
+                    this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
+                    this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
+                    this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
+                }
+                this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
+                this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
 
-            for(size_t i = 0; i < charger_count; ++i) {
-                update_charger_state_from_mode(&charger_state[i], i);
-            }
+                fast_charger_in_c = false;
+                for (int i = 0; i < this->charger_count; ++i) {
+                    update_charger_state_config(i);
+                    this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
+                    this->charger_decisions[i].one.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d1"));
+                    this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
+                    this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
+                }
 
-            int result = allocate_current(
-                this->ca_config,
-                &this->limits_post_allocation,
-                this->control_pilot_disconnect.get("disconnect")->asBool(),
-                this->charger_state,
-                this->hosts.get(),
-                get_charger_name_fn,
-                notify_charger_unresponsive_fn,
-
-                this->ca_state,
-                this->charger_allocation_state,
-                &allocated_current,
-                this->charger_decisions
-            );
-
-            for (size_t i = 0; i < 4; i++) {
-                allocated_currents[i] = this->limits.raw[i] - limits_post_allocation.raw[i];
-                this->state.get("l_raw")->get(i)->updateInt(this->limits.raw[i]);
-                this->state.get("l_min")->get(i)->updateInt(this->limits.min[i]);
-                this->state.get("l_spread")->get(i)->updateInt(this->limits.spread[i]);
-                this->state.get("alloc")->get(i)->updateInt(allocated_currents[i]);
-                this->low_level_state.get("wnd_min")->get(i)->updateInt(this->ca_state->control_window_min[i]);
-                this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
-            }
-            this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
-            this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
-
-            fast_charger_in_c = false;
-            for (int i = 0; i < this->charger_count; ++i) {
-                update_charger_state_config(i);
-                this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
-                this->charger_decisions[i].one.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d1"));
-                this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
-                this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
-            }
-
-            this->state.get("state")->updateUint(result);
-        }, 1_s);
+                this->state.get("state")->updateUint(result);
+            }, 1_s, ca_config->allocation_interval.to<millis_t>());
+        }
+    }, 1_s);
 
     if (config.get("verbose")->asBool()) {
         ca_config->distribution_log = heap_alloc_array<char>(DISTRIBUTION_LOG_LEN);
@@ -1254,6 +1269,14 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
 uint32_t ChargeManager::get_maximum_available_current()
 {
     return config.get("maximum_available_current")->asUint();
+}
+
+void ChargeManager::trigger_allocator_run(bool force) {
+    if (!force && !deadline_elapsed(this->last_allocator_run_override + 5_s))
+        return;
+
+    task_scheduler.rescheduleNow(this->allocate_task_id);
+    this->last_allocator_run_override = now_us();
 }
 
 void ChargeManager::skip_global_hysteresis() {
