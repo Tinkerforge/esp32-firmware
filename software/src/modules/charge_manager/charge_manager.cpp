@@ -429,14 +429,20 @@ static void update_charge_tracking(
 
 // Check if the charger is authorized based on NFC tag information.
 // Returns the user_id of the authorized user (0 if not authorized)
-static int16_t charger_authorized(cm_state_v5 *v5) {
+static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
 #if MODULE_NFC_AVAILABLE()
     if (v5 == nullptr || v5->auth_type != USERS_AUTH_TYPE_NFC || v5->nfc_last_seen_s == 0) {
         return NOT_AUTHORIZED;
     }
 
-    micros_t nfc_deadline = now_us() - seconds_t{v5->nfc_last_seen_s} + 30_s;
-    if(deadline_elapsed(nfc_deadline)) {
+    auto nfc_timestamp = now_us() - seconds_t{v5->nfc_last_seen_s};
+    if (nfc_timestamp < last_plug_out)
+        return NOT_AUTHORIZED;
+
+    logger.printfln_debug("nfc_timestamp %lld last_plug_out %lld", nfc_timestamp.t, last_plug_out.t);
+
+    // Only accept a NFC tag if it was seen in the last 30 seconds and after the last time a car was unplugged.
+    if(deadline_elapsed(nfc_timestamp + 30_s)) {
         return NOT_AUTHORIZED;
     }
 
@@ -494,7 +500,7 @@ static void update_authentication(
 
     if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
         // Update NFC state
-        int16_t new_auth = charger_authorized(v5);
+        int16_t new_auth = charger_authorized(v5, target.last_plug_out);
 
         if (new_auth == UNKNOWN_NFC_TAG) {
             if (target.unknown_nfc_tag_timestamp == 0_us)
