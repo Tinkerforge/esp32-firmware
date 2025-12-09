@@ -278,7 +278,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                       || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters;
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            trace("b%lu t%d m%d i%zu/%zu%s e%d%s%s",
+            trace("b%lu t%d am%d i%zu/%zu%s e%d%s%s",
                   writer->slot,
                   writer->test ? 1 : 0,
                   static_cast<int8_t>(writer->mode),
@@ -306,7 +306,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
             return;
         }
 
-        trace("b%lu t%d m%d i%zu/%zu%s",
+        trace("b%lu t%d am%d i%zu/%zu%s",
               writer->slot,
               writer->test ? 1 : 0,
               static_cast<int8_t>(writer->mode),
@@ -339,7 +339,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                                                                              2_s,
             [writer, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
                 if (step2_result != TFModbusTCPClientTransactionResult::Success) {
-                    trace("b%lu t%d m%d i%zu/%zu s2/2 e%d%s%s",
+                    trace("b%lu t%d am%d i%zu/%zu s2/2 e%d%s%s",
                           writer->slot,
                           writer->test ? 1 : 0,
                           static_cast<int8_t>(writer->mode),
@@ -366,7 +366,7 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
                     return;
                 }
 
-                trace("b%lu t%d m%d i%zu/%zu s2/2",
+                trace("b%lu t%d am%d i%zu/%zu s2/2",
                       writer->slot,
                       writer->test ? 1 : 0,
                       static_cast<int8_t>(writer->mode),
@@ -400,7 +400,7 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
                                                                      TableWriterVLogFLnFunction &&vlogfln,
                                                                      TableWriterFinishedFunction &&finished)
 {
-    trace("b%lu t%d m%d c",
+    trace("b%lu t%d am%d wc",
           slot,
           test ? 1 : 0,
           static_cast<int8_t>(mode));
@@ -439,7 +439,7 @@ void BatteryModbusTCP::destroy_table_writer(BatteryModbusTCP::TableWriter *write
         return;
     }
 
-    trace("b%lu t%d m%d d",
+    trace("b%lu t%d am%d wd",
           writer->slot,
           writer->test ? 1 : 0,
           static_cast<int8_t>(writer->mode));
@@ -567,7 +567,7 @@ void BatteryModbusTCP::set_paused(bool paused_)
 
 void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
 {
-    trace("b%lu c%d", slot, static_cast<int>(result));
+    trace("b%lu t0 cc%d", slot, static_cast<int>(result));
 
     if (result != TFGenericTCPClientConnectResult::Connected) {
         return;
@@ -578,7 +578,7 @@ void BatteryModbusTCP::connect_callback(TFGenericTCPClientConnectResult result)
 
 void BatteryModbusTCP::disconnect_callback(TFGenericTCPClientDisconnectReason reason)
 {
-    trace("b%lu d%d", slot, static_cast<int>(reason));
+    trace("b%lu t0 cd%d", slot, static_cast<int>(reason));
 
     set_active_mode(BatteryMode::None);
 }
