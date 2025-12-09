@@ -23,9 +23,7 @@
 
 void GenericTCPClientConnector::force_reconnect()
 {
-    if (connected_client != nullptr) {
-        client->disconnect();
-    }
+    disconnect_internal();
 }
 
 void GenericTCPClientConnector::connect_internal()
@@ -36,6 +34,10 @@ void GenericTCPClientConnector::connect_internal()
 
     client->connect(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number) {
+        if (result == TFGenericTCPClientConnectResult::NonReentrant) {
+            esp_system_abort("TFGenericTCPClient connect was called in non-reentrant context");
+        }
+
         if (result == TFGenericTCPClientConnectResult::Connected) {
             connected_client = shared_client;
         }
@@ -51,7 +53,21 @@ void GenericTCPClientConnector::connect_internal()
 
 void GenericTCPClientConnector::disconnect_internal()
 {
-    if (connected_client != nullptr) {
-        client->disconnect();
+    if (connected_client == nullptr) {
+        return;
+    }
+
+    switch (client->disconnect()) {
+    case TFGenericTCPClientDisconnectResult::NonReentrant:
+        esp_system_abort("TFGenericTCPClient disconnect was called in non-reentrant context");
+
+    case TFGenericTCPClientDisconnectResult::NotConnected:
+        esp_system_abort("TFGenericTCPClient disconnect was called while not connected");
+
+    case TFGenericTCPClientDisconnectResult::Disconnected:
+        break;
+
+    default:
+        esp_system_abort("TFGenericTCPClient disconnect returned unknown result");
     }
 }
