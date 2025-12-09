@@ -90,7 +90,7 @@ public:
     }
     const Cost *get_allocated_currents() {return &allocated_currents;}
 
-    void trigger_allocator_run() {next_allocation = 0_us;}
+    void trigger_allocator_run(bool force);
     void skip_global_hysteresis();
     void enable_fast_single_charger_mode();
 
@@ -119,6 +119,8 @@ private:
     void update_charger_state_from_mode(ChargerState *state, int charger_idx);
 
     void update_supported_charge_modes(bool pv, bool eco);
+
+    bool send_client_packet(uint8_t i);
 
     /*
         Charge modes are confusing.
@@ -193,7 +195,6 @@ private:
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
 
-    micros_t next_allocation = 0_us;
     bool static_cm = true;
 
     bool all_chargers_seen = false;
@@ -214,6 +215,13 @@ private:
     ChargerDecision *charger_decisions = nullptr;
 
     std::array<uint8_t, 2> supported_charge_mode_bitmask;
+
+    uint64_t allocate_task_id = 0;
+    uint64_t send_client_task_id = 0;
+
+    int16_t override_next_client_send = 0;
+
+    micros_t last_allocator_run_override = 0_us;
 };
 
 #include "module_available_end.h"
