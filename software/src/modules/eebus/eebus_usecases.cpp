@@ -112,7 +112,7 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
                 case CmdClassifierType::read:
                     response["nodeManagementDetailedDiscoveryData"] = get_detailed_discovery_data();
                     //send_detailed_discovery_read(header.addressSource.get());
-                    return {false, false, CmdClassifierType::reply};
+                    return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::reply:
                 case CmdClassifierType::notify:
                     eebus.trace_fmtln("Got a reply to a NodeManagementDetailedDiscoveryData read command as expected");
@@ -1696,9 +1696,11 @@ LpcUsecase::LpcUsecase()
             task_scheduler.scheduleUncancelable(
                 [this]() {
                     broadcast_heartbeat();
+                    update_state();
+                    update_api();
                 },
                 120_s,
-                60_s);
+                30_s);
             // Initialize ElectricalConnection feature
             //update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
             //update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
@@ -1882,7 +1884,6 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
             eebus.trace_fmtln("Received write from an unbound node");
             EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired, "Load Control requires binding");
             return {true, true, CmdClassifierType::result};
-            ;
         }
         switch (data->last_cmd) {
             case SpineDataTypeHandler::Function::loadControlLimitListData:
@@ -1891,8 +1892,8 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
 
                     bool limit_enabled = load_control_limit_data.isLimitActive.get();
                     int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());
-                    uint64_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get()).t;
-                    logger.printfln("Received a Loadcontrol Limit. Attempting to apply limit. Limit is: %d W, duration: %llu s, enabled: %d", new_limit_w, duration_s, limit_enabled);
+                    const seconds_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
+                    logger.printfln("Received a Loadcontrol Limit. Attempting to apply limit. Limit is: %d W, duration: %d s, enabled: %d", new_limit_w, duration_s.as<int>(), limit_enabled);
                     if (!update_lpc(limit_enabled, new_limit_w, duration_s)) {
                         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
                         logger.printfln("Limit not accepted");
@@ -1919,12 +1920,10 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
             response["deviceConfigurationKeyValueDescriptionListData"] = get_device_configuration_description();
             return {true, true, CmdClassifierType::reply};
-            ;
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
             response["deviceConfigurationKeyValueListData"] = get_device_configuration_value();
             return {true, true, CmdClassifierType::reply};
-            ;
         }
     }
     if (header.cmdClassifier == CmdClassifierType::write && data->deviceconfigurationkeyvaluelistdatatype.has_value() && data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
@@ -1935,7 +1934,6 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
             EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Configuration updated successfully");
             update_api();
             return {true, true, CmdClassifierType::result};
-            ;
         }
     }
     return {false};
@@ -1969,9 +1967,9 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
                 },
                 0_ms);
             heartbeatEnabled = true;
-            heartbeat_received = true;
+            got_heartbeat(60_s); // Initial timeout
             return {true, true, CmdClassifierType::reply};
-            ;
+
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
             // Just reset timeout here. Resetting on replies is not quite conform but its still possible
@@ -1989,7 +1987,6 @@ MessageReturn LpcUsecase::electricalConnection_feature(HeaderType &header, Spine
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
         response["electricalConnectionCharacteristicListData"] = electrical_connection_characteristic_list;
         return {true, true, CmdClassifierType::reply};
-        ;
     }
     return {false};
 }
@@ -1999,8 +1996,8 @@ MessageReturn LpcUsecase::generic_feature(HeaderType &header, SpineDataTypeHandl
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
             // Just reset timeout here. Resetting on replies is not quite conform but its still possible
+            String timeout_string = data->devicediagnosisheartbeatdatatype->heartbeatTimeout.get().c_str();
             const seconds_t time_out = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(data->devicediagnosisheartbeatdatatype->heartbeatTimeout.get());
-
             got_heartbeat(time_out);
         }
         return {true, false};
@@ -2047,7 +2044,7 @@ void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consu
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
 }
 
-bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const time_t endtime)
+bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t duration)
 {
     limit_received = current_limit_w > 0;
     // Evaluate if the limit can be applied according to EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.2 Line 311
@@ -2067,10 +2064,25 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const time_t endtim
         configured_limit = current_limit_w;
     }
 
-    if (endtime > 0) {
-        limit_endtime = endtime;
-    } else if (endtime == 0) {
+    if (duration > 0_s) {
+        limit_expired = false;
+        timeval time_v;
+        rtc.clock_synced(&time_v);
+        limit_endtime = time_v.tv_sec + duration.as<int>();
+        task_scheduler.cancel(limit_endtime_timer);
+        limit_endtime_timer = task_scheduler.scheduleOnce(
+            [this]() {
+                if (lpc_state == LPCState::Limited) {
+                    logger.printfln("Limit duration expired");
+                    limit_expired = true;
+                    update_state();
+                    update_api();
+                }
+            },
+            duration);
+    } else if (duration == 0_s) {
         // A value of 0 means the limit is valid until further notice. see 3.4.1.4. Just update the limit
+
     } else {
         // Check what is to do in this case
     }
@@ -2084,10 +2096,7 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const time_t endtim
 
 void LpcUsecase::update_state()
 {
-    timeval time_v;
-    rtc.clock_synced(&time_v);
-    bool limit_expired = limit_endtime < time_v.tv_sec;
-
+    eebus.trace_fmtln("Updating state. Current state: %s. Heartbeat received: %d, Limit received: %d, Limit active: %d, Limit expired: %d", get_lpc_state_name(lpc_state), heartbeat_received, limit_received, limit_active, limit_expired);
     // These are the possible transitions as described in LPC UC TS v1.0.0 2.3.3
     switch (lpc_state) {
         case LPCState::Startup:
@@ -2126,7 +2135,7 @@ void LpcUsecase::update_state()
             // TODO: Implement case where the System has to interrupt the limited state for exceptional reasons. Should switch to unlimited/controlled in that case (Transition 6)
             break;
         case LPCState::Failsafe:
-            if (heartbeat_received && limit_received) {
+            if (heartbeat_received && limit_received && !limit_active) {
                 // 8: Failsafe --> Unlimited/Controlled
                 unlimited_controlled_state();
             } else if (heartbeat_received && limit_received && limit_active) {
@@ -2138,7 +2147,7 @@ void LpcUsecase::update_state()
             }
             break;
         case LPCState::UnlimitedAutonomous:
-            if (heartbeat_received && limit_received) {
+            if (heartbeat_received && limit_received && !limit_active) {
                 // 11: Unlimited/Autonomous --> Unlimited/Controlled
                 unlimited_controlled_state();
             } else if (heartbeat_received && limit_received && limit_active) {
@@ -2147,22 +2156,21 @@ void LpcUsecase::update_state()
             }
             break;
     }
-    // Reset limit_received after evaluation
-    if (limit_received)
-        limit_received = false;
 }
 void LpcUsecase::got_heartbeat(seconds_t timeout)
 {
-    if (!heartbeat_received) {
-        heartbeat_received = true;
-        update_state();
-        update_api();
-    }
     heartbeat_received = true;
+    update_state();
+    update_api();
+    if (timeout > 60_s) {
+        timeout = 60_s;
+    }
+
     task_scheduler.cancel(heartbeat_timeout_task);
     heartbeat_timeout_task = task_scheduler.scheduleOnce(
         [this]() {
             this->heartbeat_received = false;
+            logger.printfln("No Heartbeat received from control box. Switching to failsafe or unlimited/autonomous mode");
             update_state();
             update_api();
         },
@@ -2173,6 +2181,7 @@ void LpcUsecase::init_state()
 {
     limit_active = false;
     current_active_consumption_limit_w = failsafe_power_limit_w;
+    lpc_state = LPCState::Init;
 }
 
 void LpcUsecase::unlimited_controlled_state()
@@ -2185,10 +2194,18 @@ void LpcUsecase::unlimited_controlled_state()
 
 void LpcUsecase::limited_state()
 {
+    timeval time_v;
+    rtc.clock_synced(&time_v);
+    long long duration_left = limit_endtime - time_v.tv_sec;
+    if (lpc_state != LPCState::Limited) {
+        logger.printfln("Received a limit of %d W valid for %lld s", configured_limit, duration_left);
+    } else if (current_active_consumption_limit_w != configured_limit) {
+        logger.printfln("Updating limit to %d W", configured_limit);
+    }
+
     lpc_state = LPCState::Limited;
     current_active_consumption_limit_w = configured_limit;
     limit_active = true;
-    // TODO: We need to check heartbeat  and schedule the end of the limit
 }
 
 void LpcUsecase::failsafe_state()
@@ -2196,8 +2213,23 @@ void LpcUsecase::failsafe_state()
     lpc_state = LPCState::Failsafe;
     limit_active = false;
     current_active_consumption_limit_w = failsafe_power_limit_w;
+    task_scheduler.cancel(limit_endtime_timer);
+    task_scheduler.cancel(limit_endtime_timer);
+
+    timeval time_v;
+    rtc.clock_synced(&time_v);
+    failsafe_expiry_endtime = time_v.tv_sec + failsafe_duration_min.as<int>();
+    failsafe_expiry_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            if (lpc_state == LPCState::Failsafe) {
+                logger.printfln("Failsafe duration expired. Switching to autonomous/unlimited mode");
+                failsafe_expired = true;
+                update_state();
+                update_api();
+            }
+        },
+        failsafe_duration_min);
     // TODO: Send the power limit to the charging system
-    // TODO: Schedule exit from failsafe after duration
 }
 
 void LpcUsecase::unlimited_autonomous_state()
@@ -2207,7 +2239,7 @@ void LpcUsecase::unlimited_autonomous_state()
     current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
 }
 
-void LpcUsecase::update_api()
+void LpcUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("power_consumption_limitation");
     api_entry->get("usecase_state")->updateEnum(lpc_state);
@@ -2215,6 +2247,19 @@ void LpcUsecase::update_api()
     api_entry->get("current_limit")->updateUint(current_active_consumption_limit_w);
     api_entry->get("failsafe_limit_power_w")->updateUint(failsafe_power_limit_w);
     api_entry->get("failsafe_limit_duration_s")->updateUint(failsafe_duration_min.as<uint32_t>());
+
+    timeval now;
+    rtc.clock_synced(&now);
+    if (lpc_state == LPCState::Limited) {
+        const long long duration_left = limit_endtime - now.tv_sec;
+        api_entry->get("outstanding_duration_s")->updateUint(duration_left > 0 ? duration_left : 0);
+    } else if (lpc_state == LPCState::Failsafe) {
+        const long long failsafe_time_left = failsafe_expiry_endtime - now.tv_sec;
+        api_entry->get("outstanding_duration_s")->updateUint(failsafe_time_left > 0 ? failsafe_time_left : 0);
+    } else {
+        api_entry->get("outstanding_duration_s")->updateUint(0);
+    }
+
     // TODO: Change this to use the electrical connection variables
     //api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
     //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
@@ -2237,13 +2282,19 @@ LoadControlLimitDescriptionListDataType LpcUsecase::get_loadcontrol_limit_descri
 }
 LoadControlLimitListDataType LpcUsecase::get_loadcontrol_limit_list() const
 {
+    timeval now;
+    rtc.clock_synced(&now);
+    const long long duration_left = limit_endtime - now.tv_sec;
+
     LoadControlLimitListDataType load_control_limit_list{};
     load_control_limit_list.loadControlLimitData.emplace();
     LoadControlLimitDataType limit_data{};
     limit_data.limitId = limit_description_id;
     limit_data.isLimitChangeable = !limit_fixed;
     limit_data.isLimitActive = limit_active;
-    limit_data.timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(limit_endtime).c_str();
+    if (duration_left > 0) {
+        limit_data.timePeriod->endTime = EEBUS_USECASE_HELPERS::iso_duration_to_string(seconds_t(duration_left)); // 0 means valid until further notice
+    }
     limit_data.value->number = current_active_consumption_limit_w;
     limit_data.value->scale = 0;
     load_control_limit_list.loadControlLimitData->push_back(limit_data);
@@ -2794,10 +2845,10 @@ seconds_t iso_duration_to_seconds(const std::string &iso_duration)
         int value = std::stoi(match.substr(0, match.size() - 1));
         char unit = match.back();
         if (unit == 'H') {
-            duration_seconds += value * 3600; // Approximate, not accounting for leap years
+            duration_seconds += value * 3600;
         } else if (unit == 'M') {
-            duration_seconds += value * 60; // Approximate, assuming 30 days in a month
-        } else if (unit == 'D') {
+            duration_seconds += value * 60;
+        } else if (unit == 'S') {
             duration_seconds += value;
         }
     }

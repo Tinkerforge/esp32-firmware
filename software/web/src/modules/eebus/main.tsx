@@ -440,22 +440,32 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     </tr>
                                     <tr>
                                         <td>Limit Active</td>
-                                        <td>{state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}</td>
+                                        <td>
+                                            {state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
+                                            {state.usecases.power_consumption_limitation.usecase_state === LPCState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s} s)`
+                                                : null}
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td>Current Limit (W)</td>
+                                        <td>Current Limit</td>
                                         <td>{state.usecases.power_consumption_limitation.current_limit} W</td>
                                     </tr>
                                     <tr>
-                                        <td>Failsafe Limit Power (W)</td>
+                                        <td>Failsafe Limit Power</td>
                                         <td>{state.usecases.power_consumption_limitation.failsafe_limit_power_w} W</td>
                                     </tr>
                                     <tr>
-                                        <td>Failsafe Limit Duration (s)</td>
-                                        <td>{state.usecases.power_consumption_limitation.failsafe_limit_duration_s} s</td>
+                                        <td>Failsafe Limit Duration</td>
+                                        <td>
+                                            {state.usecases.power_consumption_limitation.failsafe_limit_duration_s}
+                                            {state.usecases.power_consumption_limitation.usecase_state === LPCState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s})`
+                                                : null} s
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td>Constraints Power Maximum (W)</td>
+                                        <td>Constraints Power Maximum</td>
                                         <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
                                     </tr>
                                     </tbody>

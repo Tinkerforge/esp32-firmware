@@ -119,6 +119,7 @@ void EEBus::pre_setup()
              {"failsafe_limit_power_w", Config::Uint16(0)},    // The limit which may have been set by the energy guard
              {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
              {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
+             {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
         {"ev_commissioning_and_configuration",
          Config::Object({{"ev_connected", Config::Bool(false)},

@@ -64,6 +64,7 @@ export interface usecases {
         failsafe_limit_power_w: number;
         failsafe_limit_duration_s: number;
         constraints_power_maximum: number;
+        outstanding_duration_s: number;
     };
     ev_commissioning_and_configuration: {
         ev_connected: boolean;

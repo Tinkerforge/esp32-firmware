@@ -696,10 +696,10 @@ public:
      * Update the limit the system is supposed to be consuming.
      * @param limit If the limit is active or not.
      * @param current_limit_w The limit in W.
-     * @param endtime Timestamp until which the limit shall be set
+     * @param duration For how long the limit shall be active from now
      * @return true if the limit is accepted and set.
      */
-    bool update_lpc(bool limit, int current_limit_w, time_t endtime);
+    bool update_lpc(bool limit, int current_limit_w, seconds_t duration);
 
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
@@ -812,27 +812,37 @@ private:
      */
     void unlimited_autonomous_state();
 
-    void update_api();
+    void update_api() const;
 
     // LoadControl configuration as required for scenario 1 - Control Active Power
+    // If a limit was received since startup
     bool limit_received = false;
-    int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     // While the limit is active, this shall be set to true
     bool limit_active = false;
+    // The current limit in effect
+    int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    // The configured limit as received from the energy manager
     int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     // If the limit is changeable, this shall be set to false
     bool limit_fixed = false;
     // The description ID of the limit so its consistent across description and limit list data
     int limit_description_id = 1;
     int limit_measurement_description_id = 1;
+    // Time when the limit shall end
     time_t limit_endtime = 0;
+    // If the limit is expired
+    bool limit_expired = false;
+    // If in limited mode, this shall
+    uint64_t limit_endtime_timer = 0;
     LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
     LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
     // Device Configuration Data as required for Scenario 2 - Failsafe values
     // TODO: switch these to type generating functions
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    seconds_t failsafe_duration_min = 3600_s * 24_h; // Default to 24 hours
+    seconds_t failsafe_duration_min = 3600_s * 2_h; // Default to 24 hours
+    uint64_t failsafe_expiry_timer = 0;
+    time_t failsafe_expiry_endtime = 0;
     DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
     DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
     //DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
