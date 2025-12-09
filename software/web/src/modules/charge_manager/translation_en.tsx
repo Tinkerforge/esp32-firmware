@@ -299,8 +299,8 @@ let x = {
             "cd_user_limit": "User limit",
             "currently_charging_user": "Charging user",
             "authorize_charger": "Authorize",
-            "authorize_charger_for_user": "For user",
-            "authorize_charger_no_users": "No user with NFC tag configured",
+            "authorize_charger_for_user": "Authorize charge for user",
+            "authorize_charger_no_users": "No users configured",
             "authorize_failed": "Authorization failed"
         }
     }
