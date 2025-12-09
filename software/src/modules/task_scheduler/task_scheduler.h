@@ -50,6 +50,7 @@ struct Task {
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
+#define IS_UNCANCELABLE_TASK_ID(task_id) (task_id & (1ull << 62))
 
 struct WallClockTask {
     // Is moved into the task queue to execute the WallClockTask.
@@ -121,8 +122,8 @@ public:
     [[nodiscard("Use scheduleUncancelable if you don't need the returned task ID to cancel this task later. Cast to void if you intend to write a self-canceling task that will use task_scheduler.currentTaskId()")]]
     uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
 
-    inline void scheduleUncancelable(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {this->scheduleUncancelable(std::move(fn), 0_ms, delay_ms, src_location);}
-    void scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
+    inline uint64_t scheduleUncancelable(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleUncancelable(std::move(fn), 0_ms, delay_ms, src_location);}
+    uint64_t scheduleUncancelable(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
 
     uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location = std::source_location::current());
 
@@ -137,6 +138,7 @@ public:
     AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
 
     bool rescheduleNow(uint64_t task_id);
+    bool updateDelay(uint64_t task_id, micros_t new_delay);
 
 private:
     AwaitResult await(uint64_t task_id, millis_t millis_to_wait = 10_s);
