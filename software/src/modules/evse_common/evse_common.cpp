@@ -421,7 +421,7 @@ void EvseCommon::send_cm_client_update(bool urgent, bool request_reallocation) {
         state.get("charger_state")->asUint(),
         low_level_state.get("time_since_state_change")->asUint(),
         state.get("error_state")->asUint(),
-        low_level_state.get("uptime")->asUint(),
+        low_level_state.get("uptime")->asUint() + (urgent ? 1 : 0),
         low_level_state.get("charging_time")->asUint(),
         slots.get(CHARGING_SLOT_CHARGE_MANAGER)->get("max_current")->asUint(),
         supported_current,
