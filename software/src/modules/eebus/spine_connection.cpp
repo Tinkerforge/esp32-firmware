@@ -33,10 +33,12 @@ SpineConnection::SpineConnection(ShipConnection *ship_conn)
             check_ack_expired();
         },
         60_s);
+    eebus.trace_fmtln("New SPINE Connection created for peer %s", ship_connection->peer_node->node_name().c_str());
 }
 SpineConnection::~SpineConnection()
 {
     task_scheduler.cancel(ack_check_timer);
+    task_scheduler.cancel(update_api_timer);
 }
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
@@ -147,7 +149,7 @@ void SpineConnection::initial_peer_discovery()
     if (!use_case_data_received)
         eebus.usecases->node_management.send_full_read(0, address, SpineDataTypeHandler::Function::nodeManagementUseCaseData);
 
-    task_scheduler.scheduleUncancelable(
+    update_api_timer = task_scheduler.scheduleOnce(
         [this] { // If the connection gets interrupted and removed, this might cause a crash
             if (!detailed_discovery_data_received || !use_case_data_received) {
                 eebus.trace_fmtln("SPINE: WARNING: Initial peer discovery not completed for peer %s", ship_connection->peer_node->node_name().c_str());

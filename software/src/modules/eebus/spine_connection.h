@@ -137,4 +137,6 @@ private:
     std::map<int, unsigned long> ack_waiting{};
     void check_ack_expired();
     uint64_t ack_check_timer = 0;
+
+    uint64_t update_api_timer = 0;
 };
