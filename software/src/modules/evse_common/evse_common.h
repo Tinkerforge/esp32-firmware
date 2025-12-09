@@ -189,6 +189,8 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    void notify_new_auth();
+
     micros_t last_current_update = 0_us;
     bool shutdown_logged = false;
 
@@ -246,7 +248,7 @@ private:
     uint32_t charger_meter_slot = 0;
 
     micros_t next_cm_send_deadline = 0_us;
-    void send_cm_client_update();
+    void send_cm_client_update(bool urgent, bool request_reallocation);
 
     bool use_imexsum = false;
     bool central_user_management_enabled = false;
