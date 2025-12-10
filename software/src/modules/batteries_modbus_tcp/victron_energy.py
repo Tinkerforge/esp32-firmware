@@ -53,7 +53,7 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
@@ -87,11 +87,11 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
-                    65535,  # -1 = no limit
+                    32767,  # maximum = no limit
                 ],
             },
         ],
@@ -121,7 +121,7 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
@@ -155,7 +155,7 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
@@ -189,11 +189,11 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
-                    65535,  # -1 = no limit
+                    32767,  # maximum = no limit
                 ],
             },
         ],
@@ -223,11 +223,11 @@ specs = [
                 ],
             },
             {
-                'description': 'ESS max discharge power [0.1 W]',
+                'description': 'ESS max discharge power [10 W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2704,  # S16
                 'values': [
-                    65535,  # -1 = no limit
+                    32767,  # maximum = no limit
                 ],
             },
         ],
