@@ -513,7 +513,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
 }
 
 export function getAllUsernames() {
-    return util.download('/users/all_usernames')
+    return util.download('/users/all_usernames', true)
         .then(blob => blob.arrayBuffer())
         .then(buffer => {
             let usernames: string[] = [];

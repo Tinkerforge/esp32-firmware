@@ -56,7 +56,7 @@ export function InputFile(props: InputFileProps) {
         setProgress(0);
         setUploading(true);
 
-        util.upload(file, props.url, setProgress, props.contentType, props.timeout_ms)
+        util.upload(props.url, file, true, setProgress, props.contentType, props.timeout_ms)
             .then(() => {
                 setUploading(false);
                 setProgress(0);

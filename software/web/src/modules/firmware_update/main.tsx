@@ -107,7 +107,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
         try {
             // The arrayBuffer function needs to be called to get a deep copy of the file data
             // since Safari sends the unsliced buffer to the ServiceWorker of the remote-access otherwise.
-            await util.upload(await f.slice(0xd000 - 0x1000, 0xd000).arrayBuffer(), "/check_firmware", () => {});
+            await util.upload("/check_firmware", await f.slice(0xd000 - 0x1000, 0xd000).arrayBuffer(), true);
         }
         catch (error) {
             let message = "";

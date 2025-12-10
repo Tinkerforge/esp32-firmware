@@ -237,7 +237,7 @@ export async function call_with_path<T extends keyof ConfigMap, U extends keyof 
 
 export async function call_unchecked(topic: string, payload: any, error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
     try {
-        let blob = await util.put('/' + topic, payload, timeout_ms);
+        let blob = await util.put('/' + topic, payload, true, timeout_ms);
         if (reboot_string) {
             const modal = util.async_modal_ref.current;
 

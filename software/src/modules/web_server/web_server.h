@@ -48,7 +48,7 @@ struct WebServerRequestReturnProtect {
 class WebServerRequest
 {
 public:
-    WebServerRequest(httpd_req_t *req, bool keep_alive = false);
+    WebServerRequest(httpd_req_t *req_) : req(req_) {}
 
     WebServerRequestReturnProtect send(uint16_t code, const char *content_type, const char *content, size_t content_len);
 

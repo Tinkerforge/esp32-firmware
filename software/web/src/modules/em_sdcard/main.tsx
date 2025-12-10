@@ -159,7 +159,7 @@ export class EMSDcard extends Component {
                             return;
 
                         try {
-                            await util.put("/energy_manager/sdcard_format", {"do_i_know_what_i_am_doing": true});
+                            await util.put("/energy_manager/sdcard_format", {"do_i_know_what_i_am_doing": true}, true);
                         } catch (error) {
                             util.add_alert("sdcard_format_failed", "danger", () => __("em_sdcard.script.sdcard_format_error"), () => error);
                         }

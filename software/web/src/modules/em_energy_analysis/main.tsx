@@ -1687,7 +1687,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let response: string = '';
 
                 try {
-                    response = await (await util.put('/energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day})).text();
+                    response = await (await util.put('/energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day}, false)).text();
                 } catch (e) {
                     console.log('Energy Analysis: Could not get wallbox 5min data: ' + e);
                     resolve(false);
@@ -1777,7 +1777,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let response: string = '';
 
                 try {
-                    response = await (await util.put('/energy_manager/history_energy_manager_5min', {year: year, month: month, day: day})).text();
+                    response = await (await util.put('/energy_manager/history_energy_manager_5min', {year: year, month: month, day: day}, false)).text();
                 } catch (e) {
                     console.log('Energy Analysis: Could not get energy manager 5min data: ' + e);
                     resolve(false);
@@ -1970,7 +1970,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let response: string = '';
 
                 try {
-                    response = await (await util.put('/energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month})).text();
+                    response = await (await util.put('/energy_manager/history_wallbox_daily', {uid: uid, year: year, month: month}, false)).text();
                 } catch (e) {
                     console.log('Energy Analysis: Could not get wallbox daily data: ' + e);
                     resolve(false);
@@ -2063,7 +2063,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 let response: string = '';
 
                 try {
-                    response = await (await util.put('/energy_manager/history_energy_manager_daily', {year: year, month: month})).text();
+                    response = await (await util.put('/energy_manager/history_energy_manager_daily', {year: year, month: month}, false)).text();
                 } catch (e) {
                     console.log('Energy Analysis: Could not get energy manager daily data: ' + e);
                     resolve(false);

@@ -464,7 +464,7 @@ let loginReconnectTimeout: number = null;
 
 export function ifLoggedInElse(if_continuation: () => void, else_continuation: () => void) {
     if (!remoteAccessMode || connection_id.length > 0) {
-        download("/login_state")
+        download("/login_state", true)
             .catch(e => new Blob(["Logged in"]))
             .then(blob => blob.text())
             .then(text => text == "Logged in" ? if_continuation() : else_continuation());
@@ -661,7 +661,40 @@ export function timestamp_sec_to_date(timestamp_seconds: number, unsynced_string
     return timestamp_to_date(timestamp_seconds * 1000, {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 
-export function upload(data: Blob | ArrayBuffer, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
+type Transfer = () => void;
+
+let transfer_pending: Transfer = null;
+let transfer_queue_urgent: Transfer[] = [];
+let transfer_queue_normal: Transfer[] = [];
+
+function transfer_start() {
+    if (transfer_queue_urgent.length > 0) {
+        transfer_pending = transfer_queue_urgent.shift();
+    }
+    else if (transfer_queue_normal.length > 0) {
+        transfer_pending = transfer_queue_normal.shift();
+    }
+
+    if (transfer_pending !== null) {
+        transfer_pending();
+    }
+}
+
+function transfer_schedule(transfer: Transfer, urgent: boolean) {
+    (urgent ? transfer_queue_urgent : transfer_queue_normal).push(transfer);
+
+    if (transfer_pending === null) {
+        transfer_start();
+    }
+}
+
+function transfer_done() {
+    transfer_pending = null;
+
+    transfer_start();
+}
+
+export function upload(url: string, data: Blob | ArrayBuffer, urgent: boolean, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
     const xhr = new XMLHttpRequest();
     progress(0);
 
@@ -672,91 +705,137 @@ export function upload(data: Blob | ArrayBuffer, url: string, progress: (i: numb
     }
 
     return new Promise<void>((resolve, reject) => {
-        xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
-        // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
-        // "The details of errors of XHRs and Fetch API are not exposed to JavaScript for security reasons."
-        // Web development just sucks.
-        xhr.upload.addEventListener("error", e => error_message = error_message ?? __("util.upload_error"));
-        xhr.upload.addEventListener("timeout", e => error_message = error_message ?? __("util.upload_timeout"));
+        let transfer = () => {
+            try {
+                xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
+                // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
+                // "The details of errors of XHRs and Fetch API are not exposed to JavaScript for security reasons."
+                // Web development just sucks.
+                xhr.upload.addEventListener("error", e => error_message = error_message ?? __("util.upload_error"));
+                xhr.upload.addEventListener("timeout", e => error_message = error_message ?? __("util.upload_timeout"));
 
-        xhr.upload.addEventListener("progress", (event) => {
-            if (event.lengthComputable) {
-                progress(event.loaded / event.total);
+                xhr.upload.addEventListener("progress", (event) => {
+                    if (event.lengthComputable) {
+                        progress(event.loaded / event.total);
+                    }
+                });
+
+                xhr.addEventListener("abort", e => error_message = error_message ?? __("util.download_abort"));
+                xhr.addEventListener("error", e => error_message = error_message ?? __("util.download_error"));
+                xhr.addEventListener("timeout", e => error_message = error_message ?? __("util.download_timeout"));
+
+                xhr.addEventListener("loadend", () => {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        progress(1);
+
+                        if (xhr.status === 200) {
+                            transfer_done();
+                            resolve();
+                            return;
+                        }
+                    }
+
+                    transfer_done();
+                    reject(error_message ?? xhr);
+                });
+
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader("X-Connection-Id", connection_id);
+                xhr.timeout = timeout_ms;
+                if (contentType)
+                    xhr.setRequestHeader("Content-Type", contentType);
+                xhr.send(data);
             }
-        });
-
-        xhr.addEventListener("abort", e => error_message = error_message ?? __("util.download_abort"));
-        xhr.addEventListener("error", e => error_message = error_message ?? __("util.download_error"));
-        xhr.addEventListener("timeout", e => error_message = error_message ?? __("util.download_timeout"));
-
-        xhr.addEventListener("loadend", () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                xhr.response
-                progress(1);
-                if (xhr.status === 200)
-                    resolve();
+            catch (e) {
+                reject(e);
+                transfer_done();
             }
-            reject(error_message ?? xhr);
-        });
+        }
 
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("X-Connection-Id", connection_id);
-        xhr.timeout = timeout_ms;
-        if (contentType)
-            xhr.setRequestHeader("Content-Type", contentType);
-        xhr.send(data);
+        transfer_schedule(transfer, urgent);
     });
 }
 
-export async function download(url: string, timeout_ms: number = 10*1000) {
-    let abort = new AbortController();
-    let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
+export function download(url: string, urgent: boolean, timeout_ms: number = 10*1000) {
+    return new Promise<Blob>((resolve, reject) => {
+        let transfer = async () => {
+            try {
+                let abort = new AbortController();
+                let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
 
-    let response = null;
-    try {
-        if (remoteAccessMode) {
-            url = path + (url.startsWith("/") ? "" : "/") + url;
+                let response = null;
+                try {
+                    if (remoteAccessMode) {
+                        url = path + (url.startsWith("/") ? "" : "/") + url;
+                    }
+                    response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
+                } catch (e) {
+                    window.clearTimeout(timeout);
+                    throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+                }
+
+                if (!response.ok) {
+                    throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+                }
+
+                let result = await response.blob();
+
+                transfer_done();
+                resolve(result);
+            }
+            catch (e) {
+                transfer_done();
+                reject(e);
+            }
         }
-        response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
-    } catch (e) {
-        window.clearTimeout(timeout);
-        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
-    }
-    if (!response.ok) {
-        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
-    }
 
-    return await response.blob();
+        transfer_schedule(transfer, urgent);
+    });
 }
 
-export async function put(url: string, payload: any, timeout_ms: number = 10*1000) {
-    let abort = new AbortController();
-    let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
+export function put(url: string, payload: any, urgent: boolean, timeout_ms: number = 10*1000) {
+    return new Promise<Blob>((resolve, reject) => {
+        let transfer = async () => {
+            try {
+                let abort = new AbortController();
+                let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
 
-    let response = null;
-    try {
-        if (remoteAccessMode) {
-            url = path + (url.startsWith("/") ? "" : "/") + url;
+                let response = null;
+                try {
+                    if (remoteAccessMode) {
+                        url = path + (url.startsWith("/") ? "" : "/") + url;
+                    }
+                    response = await fetch(url, {
+                        signal: abort.signal,
+                        method: "PUT",
+                        credentials: 'same-origin',
+                        headers: {
+                            "Content-Type": "application/json; charset=utf-8",
+                            "X-Connection-Id": connection_id,
+                        },
+                        body: JSON.stringify(payload)})
+                } catch (e) {
+                    window.clearTimeout(timeout);
+                    throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
+                }
+
+                if (!response.ok) {
+                    throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
+                }
+
+                let result = await response.blob();
+
+                transfer_done();
+                resolve(result);
+            }
+            catch (e) {
+                transfer_done();
+                reject(e);
+            }
         }
-        response = await fetch(url, {
-            signal: abort.signal,
-            method: "PUT",
-            credentials: 'same-origin',
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
-                "X-Connection-Id": connection_id,
-            },
-            body: JSON.stringify(payload)})
-    } catch (e) {
-        window.clearTimeout(timeout);
-        throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
-    }
 
-    if (!response.ok) {
-        throw new Error(`${response.status}(${response.statusText}) ${await response.text()}`)
-    }
-
-    return await response.blob();
+        transfer_schedule(transfer, urgent);
+    });
 }
 
 export const async_modal_ref: RefObject<AsyncModal> = createRef();

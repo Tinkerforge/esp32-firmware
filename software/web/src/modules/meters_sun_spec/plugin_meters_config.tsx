@@ -226,7 +226,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         let result;
 
         try {
-            result = await (await util.put('/meters_sun_spec/scan_abort', {cookie: this.state.cookie})).text();
+            result = await (await util.put('/meters_sun_spec/scan_abort', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
@@ -282,7 +282,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         let result;
 
         try {
-            result = await (await util.put('/meters_sun_spec/scan_continue', {cookie: this.state.cookie})).text();
+            result = await (await util.put('/meters_sun_spec/scan_continue', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
@@ -346,7 +346,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                                         device_address_first: this.state.device_address_first,
                                         device_address_last: this.state.device_address_last,
                                         cookie: cookie,
-                                    })).text();
+                                    }, true)).text();
                                 }
                                 catch (e) {
                                     result = e.message.replace('400(Bad Request) ', '');

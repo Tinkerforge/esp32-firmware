@@ -123,7 +123,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
             let result = "";
             try {
-                result = await util.download("/wifi/scan_results").then(blob => blob.text())
+                result = await util.download("/wifi/scan_results", true).then(blob => blob.text())
             } catch (e) {
                 this.setState({scan_running: false, scan_error: __("wifi.script.scan_wifi_results_failed") + ": " + e.message});
                 return;

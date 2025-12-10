@@ -86,7 +86,7 @@ export class EventLog extends Component<{}, EventLogState> {
     }
 
     load_event_log(reboot: boolean) {
-        util.download("/event_log")
+        util.download("/event_log", true)
             .then(blob => blob.text())
             .then(text => {
                 util.remove_alert("event_log_load_failed");
@@ -172,12 +172,12 @@ export class EventLog extends Component<{}, EventLogState> {
             let timestamp = new Date();
             let debug_log = util.iso8601ButLocal(timestamp) + "\nScroll down for event log!\n\n";
 
-            debug_log += await util.download("/debug_report").then(blob => blob.text());
+            debug_log += await util.download("/debug_report", true).then(blob => blob.text());
             debug_log += "\n\n";
             debug_log += this.state.log;
 
             const trace_log_uri = "/trace_log" + (util.remoteAccessMode ? "/10020" : ""); // Use greedy level 20 compression to download the trace log when in remote access mode.
-            const trace_log = (await util.download(trace_log_uri, 20000).then(blob => blob.text())).replace(/\s+$/, "");
+            const trace_log = (await util.download(trace_log_uri, true, 20000).then(blob => blob.text())).replace(/\s+$/, "");
 
             if (trace_log.length > 0) {
                 debug_log += "\n\n___TRACE_LOG_START___\n\n";
@@ -185,7 +185,7 @@ export class EventLog extends Component<{}, EventLogState> {
             }
 
             try {
-                let blob = await util.download("/coredump/coredump.elf");
+                let blob = await util.download("/coredump/coredump.elf", true);
                 let base64 = await blobToBase64(blob);
                 base64 = base64.replace(/(.{80})/g, "$1\n");
                 debug_log += "\n\n___CORE_DUMP_START___\n\n";

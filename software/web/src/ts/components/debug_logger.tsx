@@ -71,7 +71,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         try {
             this.setState({debug_status: __("component.debug_logger.loading_debug_report")});
-            text += await util.download("/debug_report").then(blob => blob.text()) + "\n\n";
+            text += await util.download("/debug_report", true).then(blob => blob.text()) + "\n\n";
         } catch (error) {
             this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_debug_report_failed")});
             throw __("component.debug_logger.loading_debug_report_failed") + ": " + error;
@@ -79,7 +79,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
         try {
             this.setState({debug_status: __("component.debug_logger.loading_event_log")});
-            text += await util.download("/event_log").then(blob => blob.text()) + "\n";
+            text += await util.download("/event_log", true).then(blob => blob.text()) + "\n";
         } catch (error) {
             this.setState({debug_running: false, debug_status: __("component.debug_logger.loading_event_log_failed")});
             throw __("component.debug_logger.loading_event_log_failed") + ": " + error;
@@ -92,7 +92,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
 
     async resetDebugWd() {
         try {
-            await util.download("/debug_protocol/continue");
+            await util.download("/debug_protocol/continue", true);
         }
         catch{
             this.setState({debug_running: false, debug_status: __("component.debug_logger.starting_debug_failed")(this.props.name)});
@@ -117,7 +117,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         }
 
         try {
-            await util.download("/debug_protocol/start");
+            await util.download("/debug_protocol/start", true);
         } catch {
             this.setState({debug_running: false, debug_status: __("component.debug_logger.starting_debug_failed")(this.props.name)});
             return;
@@ -133,7 +133,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         window.clearInterval(this.debugTimeout);
 
         try {
-            await util.download("/debug_protocol/stop");
+            await util.download("/debug_protocol/stop", true);
         } catch {
             this.setState({debug_running: true, debug_status: __("component.debug_logger.debug_stop_failed")(this.props.name)});
         }

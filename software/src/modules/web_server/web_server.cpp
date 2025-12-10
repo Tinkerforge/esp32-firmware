@@ -1068,9 +1068,3 @@ IPAddress WebServerRequest::getPeerAddress()
 
     return tf_peer_address_of_sockfd(sockfd);
 }
-
-WebServerRequest::WebServerRequest(httpd_req_t *req_, bool keep_alive) : req(req_)
-{
-    if (!keep_alive)
-        this->addResponseHeader("Connection", "close");
-}

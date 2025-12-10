@@ -399,7 +399,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         let response: string = '';
 
         try {
-            response = await (await util.download('/meters/live')).text();
+            response = await (await util.download('/meters/live', false)).text();
         } catch (e) {
             console.log('Meters: Could not get meters live data: ' + e);
             return false;
@@ -463,7 +463,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         let response: string = '';
 
         try {
-            response = await (await util.download('/meters/history')).text();
+            response = await (await util.download('/meters/history', false)).text();
         } catch (e) {
             console.log('Meters: Could not get meters history data: ' + e);
             return false;

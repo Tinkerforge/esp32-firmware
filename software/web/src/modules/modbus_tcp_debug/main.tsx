@@ -536,7 +536,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                 write_data: values_hex.join(""),
                                 timeout: this.state.timeout,
                                 cookie: cookie,
-                            })).text();
+                            }, true)).text();
                         }
                         catch (e) {
                             result = e.message.replace("400(Bad Request) ", "");
