@@ -345,7 +345,7 @@ void EvseCommon::setup()
         backend->update_all_data();
 
         auto new_state = this->state.get("iec61851_state")->asUint8();
-        if (old_state != new_state && old_state == 0) {
+        if ((old_state != new_state) && (old_state == 0 || new_state == 0)) {
             // Immediately request reallocation and response to reduce latency
             send_cm_client_update(true, true);
         }
