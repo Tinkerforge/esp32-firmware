@@ -115,6 +115,9 @@ struct ChargerState {
 
     bool phase_switch_supported;
 
+    // Don't accept two consecutive urgent packets.
+    bool last_send_was_urgent = false;
+
     // TODO move everything below into charger allocation state.
 
     // Phases that are currently used or will be used if current is allocated.
