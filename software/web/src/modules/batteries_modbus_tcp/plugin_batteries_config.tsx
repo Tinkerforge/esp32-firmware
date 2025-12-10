@@ -509,7 +509,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         let result;
 
         try {
-            result = await (await util.put('/batteries_modbus_tcp/test_stop', {cookie: this.state.cookie})).text();
+            result = await (await util.put('/batteries_modbus_tcp/test_stop', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
@@ -535,7 +535,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         let result;
 
         try {
-            result = await (await util.put('/batteries_modbus_tcp/test_continue', {cookie: this.state.cookie})).text();
+            result = await (await util.put('/batteries_modbus_tcp/test_continue', {cookie: this.state.cookie}, true)).text();
         }
         catch (e) {
             result = e.message.replace('400(Bad Request) ', '');
@@ -585,7 +585,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                     port: this.props.port,
                     table: table,
                     cookie: cookie,
-                })).text();
+                }, true)).text();
             }
             catch (e) {
                 result = e.message.replace('400(Bad Request) ', '');
