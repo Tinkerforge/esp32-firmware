@@ -238,7 +238,6 @@ private:
     void handle_auth_feedback(CMAuthFeedback auth_feedback);
     CMAuthFeedback last_auth_feedback = CMAuthFeedback::None;
     bool last_auth_feedback_valid = false;
-    micros_t auth_feedback_led_end = 0_us;
 #endif
     ConfigRoot enumerate_value;
     micros_t request_charge_mode_until = 0_us;

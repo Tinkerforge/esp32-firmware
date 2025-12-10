@@ -447,26 +447,29 @@ void EvseCommon::handle_auth_feedback(CMAuthFeedback auth_feedback)
     if (auth_feedback == last_auth_feedback && auth_feedback != CMAuthFeedback::Nag)
         return;
 
-    last_auth_feedback = auth_feedback;
-
+    constexpr int16_t LED_NONE = -1;  // Mirrors EvseLed::Blink::None
     constexpr int16_t LED_ACK = 1001;  // Mirrors EvseLed::Blink::Ack
     constexpr int16_t LED_NACK = 1002; // Mirrors EvseLed::Blink::Nack
-    constexpr int16_t LED_AWAIT_AUTHENTICATION = 1003; // Mirrors EvseLed::Blink::AwaitAuthentication
+    constexpr int16_t LED_NAG = 1003; // Mirrors EvseLed::Blink::Nag
 
     switch (auth_feedback) {
         case CMAuthFeedback::Nag:
-            set_indicator_led(LED_AWAIT_AUTHENTICATION, 2000, 0, 0, 0, nullptr);
+            set_indicator_led(LED_NAG, 4000, 0, 0, 0, nullptr);
             break;
         case CMAuthFeedback::Nack:
-            set_indicator_led(LED_NACK, 2000, 0, 0, 0, nullptr);
+            set_indicator_led(LED_NACK, 4000, 0, 0, 0, nullptr);
             break;
         case CMAuthFeedback::Ack:
-            set_indicator_led(LED_ACK, 2000, 0, 0, 0, nullptr);
+            set_indicator_led(LED_ACK, 4000, 0, 0, 0, nullptr);
             break;
-        default:
-            auth_feedback_led_end = 0_us;
+        case CMAuthFeedback::None:
+            if (last_auth_feedback != CMAuthFeedback::None) {
+                set_indicator_led(LED_NONE, 0, 0, 0, 0, nullptr);
+            }
             break;
     }
+
+    last_auth_feedback = auth_feedback;
 }
 #endif
 
