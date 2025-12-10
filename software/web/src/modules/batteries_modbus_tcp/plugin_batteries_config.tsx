@@ -421,7 +421,7 @@ interface TestRunnerProps {
     device_address: number;
     repeat_interval?: number;
     register_blocks?: RegisterBlock[];
-    modes?: [number, string][];
+    modes: [number, string][];
     extra_values?: {[key: string]: number};
 }
 
@@ -546,7 +546,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         }
     }
 
-    async start_mode(mode?: [number, string]) {
+    async start_mode(mode: [number, string]) {
         let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
         this.pending_log = '';
@@ -560,7 +560,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             show_log: true,
             log: '',
         }, async () => {
-            let table = [this.props.table_id, {device_address: this.props.device_address}];
+            let table = [this.props.table_id, {mode: mode[0], device_address: this.props.device_address}];
 
             if (util.hasValue(this.props.repeat_interval)) {
                 (table[1] as any)["repeat_interval"] = this.props.repeat_interval;
@@ -568,10 +568,6 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
 
             if (util.hasValue(this.props.register_blocks)) {
                 (table[1] as any)["register_blocks"] = this.props.register_blocks;
-            }
-
-            if (util.hasValue(mode)) {
-                (table[1] as any)["mode"] = mode[0];
             }
 
             if (util.hasValue(this.props.extra_values)) {
@@ -615,7 +611,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
         return <>
             <FormRow label={__("batteries_modbus_tcp.content.test")} label_muted={__("batteries_modbus_tcp.content.test_muted")}>
             {!this.state.running ?
-                (this.props.modes ?
+                (this.props.modes.length > 1 ?
                     <Dropdown key="test_start">
                         <Dropdown.Toggle
                             variant="primary"
@@ -637,7 +633,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                     <Button key="test_start"
                             variant="primary"
                             className="form-control"
-                            onClick={async () => await this.start_mode()}
+                            onClick={async () => await this.start_mode(this.props.modes[0])}
                             disabled={start_button_disabled}>
                         {__("batteries_modbus_tcp.content.test_start")}
                     </Button>) :
@@ -646,7 +642,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                         className="form-control"
                         onClick={async () => await this.stop_test()}
                         disabled={this.state.stopped}>
-                    {__("batteries_modbus_tcp.content.test_stop")(util.hasValue(this.state.mode) ? this.state.mode[1] : null)}
+                    {__("batteries_modbus_tcp.content.test_stop")(util.hasValue(this.state.mode) && this.props.modes.length > 1 ? this.state.mode[1] : null)}
                 </Button>}
             </FormRow>
 
@@ -1181,6 +1177,7 @@ export function init() {
                                     port={config[1].port}
                                     table_id={config[1].table[0]}
                                     device_address={config[1].table[1].device_address}
+                                    modes={[[mode, battery_mode_names[mode]]]}
                                     repeat_interval={config[1].table[1].repeat_interval}
                                     register_blocks={config[1].table[1].battery_modes[mode].register_blocks} />
                             </CollapsedSection>);
