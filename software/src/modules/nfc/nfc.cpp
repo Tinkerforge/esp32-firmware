@@ -410,6 +410,9 @@ void NFC::update_seen_tags()
         seen_tag_state->get("tag_id")->updateString(buf);
     }
 
+    bool new_seen_tags[TAG_LIST_LENGTH];
+    memset(new_seen_tags, 0, sizeof(new_seen_tags));
+
     // compare new list with old
     for (int new_idx = 0; new_idx < TAG_LIST_LENGTH; ++new_idx) {
         if (new_tags[new_idx].last_seen == 0)
@@ -436,7 +439,7 @@ void NFC::update_seen_tags()
             // because this will probably only happen if this
             // task slowed down because something else blocked
             // for more than one second.
-            tag_seen(&new_tags[new_idx], new_idx == TAG_LIST_LENGTH - 1);
+            new_seen_tags[new_idx] = true;
             continue;
         }
 
@@ -449,7 +452,7 @@ void NFC::update_seen_tags()
             // -> The tag was seen, then removed and then seen again.
             // If old_seen was also true, this would be a tag that
             // is detected continously, which only counts as one detection.
-            tag_seen(&new_tags[new_idx], new_idx == TAG_LIST_LENGTH - 1);
+            new_seen_tags[new_idx] = true;
             continue;
         }
     }
@@ -457,6 +460,10 @@ void NFC::update_seen_tags()
     tag_info_t *tmp = old_tags;
     old_tags = new_tags;
     new_tags = tmp;
+
+    for (size_t i = 0; i < TAG_LIST_LENGTH; ++i)
+        if (new_seen_tags[i])
+            tag_seen(&new_tags[i], i == TAG_LIST_LENGTH - 1);
 }
 
 
