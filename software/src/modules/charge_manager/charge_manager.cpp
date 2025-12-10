@@ -633,7 +633,8 @@ void ChargeManager::start_manager_task()
 
             update_charger_state_config(client_id);
 
-            if (CM_FEATURE_FLAGS_URGENT_IS_SET(v1->feature_flags)) {
+            if (CM_FEATURE_FLAGS_URGENT_IS_SET(v1->feature_flags) && !this->charger_state[client_id].last_send_was_urgent) {
+                this->charger_state[client_id].last_send_was_urgent = true;
                 this->override_next_client_send = client_id;
                 // This task will run directly after the one that is rescheduled in trigger_allocator_run.
                 // Multiple rescheduleNow calls are executed backwards.
@@ -673,6 +674,8 @@ void ChargeManager::start_manager_task()
                 this->override_next_client_send = -1;
             return;
         }
+
+        this->charger_state[i].last_send_was_urgent = false;
 
         if (this->send_client_packet(i))
             ++i;
