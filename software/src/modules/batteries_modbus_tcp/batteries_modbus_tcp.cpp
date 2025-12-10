@@ -306,6 +306,8 @@ void BatteriesModbusTCP::loop()
         }
 
         test_printfln("Connecting to %s:%u", test->host.c_str(), test->port);
+
+        test->reconnect = false;
         test->state = TestState::Connecting;
 
         modbus_tcp_client.get_pool()->acquire(test->host.c_str(), test->port,
@@ -334,7 +336,13 @@ void BatteriesModbusTCP::loop()
             test_printfln("%s", buf);
 
             test->client = nullptr;
-            test->state = reason == TFGenericTCPClientDisconnectReason::Requested ? TestState::Done : TestState::DestroyTableWriter;
+            test->reconnect = reason == TFGenericTCPClientDisconnectReason::Forced;
+            test->state = TestState::DestroyTableWriter;
+
+            // immediately destroy the writer to stop the separate
+            // writer task from accessing the disconnected client
+            BatteryModbusTCP::destroy_table_writer(test->writer);
+            test->writer = nullptr;
         });
 
         break;
@@ -409,8 +417,10 @@ void BatteriesModbusTCP::loop()
         BatteryModbusTCP::destroy_table_writer(test->writer);
         test->writer = nullptr;
 
-        BatteryModbusTCP::free_table(test->table);
-        test->table = nullptr;
+        if (!test->reconnect) {
+            BatteryModbusTCP::free_table(test->table);
+            test->table = nullptr;
+        }
 
         if (instances[test->slot] != nullptr) {
             instances[test->slot]->set_paused(false);
@@ -418,6 +428,9 @@ void BatteriesModbusTCP::loop()
 
         if (test->client != nullptr) {
             test->state = TestState::Disconnect;
+        }
+        else if (test->reconnect) {
+            test->state = TestState::Connect;
         }
         else {
             test->state = TestState::Done;
