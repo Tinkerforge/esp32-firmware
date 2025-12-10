@@ -55,6 +55,8 @@ void GenericTCPClientConnectorBase::stop_connection()
 
 void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level)
 {
+    bool report_result = false;
+
     if (result == TFGenericTCPClientConnectResult::Connected) {
         const char *shared;
 
@@ -78,6 +80,7 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
                                  event_log_message_prefix,
                                  shared, host.c_str(), port);
 
+        report_result = true;
         connect_backoff = 1_s;
         last_connect_result = TFGenericTCPClientConnectResult::Connected;
         last_connect_error_number = 0;
@@ -89,6 +92,8 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
 
             format_connect_error(result, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
             logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
+
+            report_result = true;
         }
 
         if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
@@ -113,7 +118,9 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         }
     }
 
-    connect_callback(result);
+    if (report_result) {
+        connect_callback(result);
+    }
 
     last_connect_result = result;
     last_connect_error_number = error_number;
@@ -199,12 +206,12 @@ void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientD
     const char *shared;
 
     switch (share_level) {
-    case  TFGenericTCPClientPoolShareLevel::Undefined:
-    case  TFGenericTCPClientPoolShareLevel::Primary:
+    case TFGenericTCPClientPoolShareLevel::Undefined:
+    case TFGenericTCPClientPoolShareLevel::Primary:
         shared = "Disconnected from";
         break;
 
-    case  TFGenericTCPClientPoolShareLevel::Secondary:
+    case TFGenericTCPClientPoolShareLevel::Secondary:
         shared = "Unshared existing connection to";
         break;
 
