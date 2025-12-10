@@ -443,7 +443,7 @@ void BatteryControl::update_tariff_schedule()
         schedule_start_s = mktime(&start_date);
 
         if (schedule_start_s <= now_s) {
-            logger.tracefln(this->trace_buffer_idx, "Schedule begins %llis in the past | %i-%02i-%02i %02i:%02i:%02i", now_s - schedule_start_s, start_date.tm_year+1900, start_date.tm_mon+1, start_date.tm_mday, start_date.tm_hour, start_date.tm_min, start_date.tm_sec);
+            logger.tracefln(this->trace_buffer_idx, "Schedule begins %llis in the past: %i-%02i-%02i %02i:%02i:%02i", now_s - schedule_start_s, start_date.tm_year+1900, start_date.tm_mon+1, start_date.tm_mday, start_date.tm_hour, start_date.tm_min, start_date.tm_sec);
             break;
         }
 
