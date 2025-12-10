@@ -175,7 +175,7 @@ void BatteryControl::setup()
             sw.puts(" [none]");
         }
 
-        logger.tracefln(this->trace_buffer_idx, "Rules:%s", buf);
+        logger.tracefln(this->trace_buffer_idx, "Conditions:%s", buf);
     }
 }
 
@@ -240,20 +240,20 @@ void BatteryControl::register_events()
                 meters.fill_index_cache(slot, 1, &soc_vid, &soc_index);
 
                 if (soc_index == std::numeric_limits<decltype(soc_index)>::max()) {
-                    logger.printfln("Battery meter in slot %lu doesn't provide SOC.", slot);
+                    logger.printfln("Battery meter in slot %lu doesn't provide SoC.", slot);
                 } else {
                     event.registerEvent(meters.get_path(slot, Meters::PathType::Values), {static_cast<size_t>(soc_index)}, [this, slot](const Config *config_soc) {
                         const float soc = config_soc->asFloat();
 
                         if (!isnan(soc)) {
                             this->data->soc_cache[slot] = static_cast<uint8_t>(soc);
-                            logger.tracefln(this->trace_buffer_idx, "meter %lu SOC=%hhu%%", slot, this->data->soc_cache[slot]);
+                            logger.tracefln(this->trace_buffer_idx, "meter %lu SoC=%hhu%%", slot, this->data->soc_cache[slot]);
 
                             this->data->evaluation_must_update_soc  = true;
                             this->data->evaluation_must_check_rules = true;
                             this->schedule_evaluation();
                         } else {
-                            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot);
+                            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SoC from battery meter %lu", slot);
                         }
 
                         return EventResult::OK;
@@ -408,11 +408,11 @@ void BatteryControl::update_avg_soc()
     }
 
     if (soc_count == 0) {
-        logger.tracefln(this->trace_buffer_idx, "soc_avg has no data: No battery meters have SOC data.");
+        logger.tracefln(this->trace_buffer_idx, "soc_avg has no data: No battery meters have SoC data.");
         return;
     }
 
-    data->soc_cache_avg = static_cast<decltype(data->soc_cache_avg)>(soc_sum / soc_count);
+    data->soc_cache_avg = static_cast<decltype(data->soc_cache_avg)>(soc_count == 1 ? soc_sum : soc_sum / soc_count);
 
     logger.tracefln(trace_buffer_idx, "soc_avg=%li", data->soc_cache_avg);
 }
@@ -443,7 +443,11 @@ void BatteryControl::update_tariff_schedule()
         schedule_start_s = mktime(&start_date);
 
         if (schedule_start_s <= now_s) {
-            logger.tracefln(this->trace_buffer_idx, "Schedule begins %llis in the past: %i-%02i-%02i %02i:%02i:%02i", now_s - schedule_start_s, start_date.tm_year+1900, start_date.tm_mon+1, start_date.tm_mday, start_date.tm_hour, start_date.tm_min, start_date.tm_sec);
+            if (schedule_start_s == now_s) {
+                logger.tracefln(this->trace_buffer_idx, "Schedule begins now");
+            } else {
+                logger.tracefln(this->trace_buffer_idx, "Schedule begins %llis in the past: %i-%02i-%02i %02i:%02i:%02i", now_s - schedule_start_s, start_date.tm_year+1900, start_date.tm_mon+1, start_date.tm_mday, start_date.tm_hour, start_date.tm_min, start_date.tm_sec);
+            }
             break;
         }
 
@@ -479,11 +483,32 @@ void BatteryControl::update_tariff_schedule()
     }
 
     char str[sizeof(data->tariff_schedule) + 1];
+
     for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
-        str[i] = '0' + data->tariff_schedule[i];
+        const uint8_t quarter = data->tariff_schedule[i];
+        char chr;
+
+        switch (quarter) {
+            case 0:                          chr = 'N'; break;
+            case BC_SCHEDULE_CHEAP_MASK:     chr = 'C'; break;
+            case BC_SCHEDULE_EXPENSIVE_MASK: chr = 'E'; break;
+            default: { // Multiple bits set :-?
+                if (quarter < 10) {
+                    chr = '0' + quarter;
+                } else if (quarter < 36) {
+                    chr = 'a' + quarter - 10;
+                } else {
+                    chr = '/';
+                }
+            }
+        }
+
+        str[i] = chr;
     }
-    str[sizeof(str) - 1] = 0;
-    logger.tracefln(this->trace_buffer_idx, "Schedule: %s", str);
+
+    str[sizeof(str) - 1] = '\n';
+
+    logger.trace_plain(this->trace_buffer_idx, str, sizeof(str));
 
     evaluate_tariff_schedule();
 }
@@ -704,9 +729,9 @@ void BatteryControl::evaluate_all_rules()
         }
     } while (false);
 
-    logger.tracefln(this->trace_buffer_idx, "Rules: Chg=%u Dis=%u Mode=%u",
-                    static_cast<unsigned>(charge_action),
-                    static_cast<unsigned>(discharge_action),
+    logger.tracefln(this->trace_buffer_idx, "Chg=%c DChg=%c Mode=%u",
+                    get_rule_action_name(charge_action)[0],
+                    get_rule_action_name(discharge_action)[0],
                     static_cast<unsigned>(new_mode));
 
     state.get("active_charge_rule"   )->updateUint(active_charge_rule);
