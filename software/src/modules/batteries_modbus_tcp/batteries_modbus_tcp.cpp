@@ -94,6 +94,7 @@ void BatteriesModbusTCP::pre_setup()
     batteries.register_battery_generator(get_class(), this);
 
     test_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
+        {"mode", Config::Enum(BatteryMode::Block)},
         {"device_address", Config::Uint8(1)},
         {"repeat_interval", Config::Uint16(60)},
         {"register_blocks", Config::Array({},
@@ -162,9 +163,9 @@ void BatteriesModbusTCP::register_urls()
             return;
 
         case BatteryModbusTCPTableID::Custom:
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
-            test->mode = BatteryMode::None;
 
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
 
@@ -176,8 +177,8 @@ void BatteriesModbusTCP::register_urls()
             break;
 
         case BatteryModbusTCPTableID::VictronEnergyGX:
-            test->device_address = table_config->get("device_address")->asUint8();
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
 
             load_victron_energy_gx_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -189,8 +190,8 @@ void BatteriesModbusTCP::register_urls()
             break;
 
         case BatteryModbusTCPTableID::DeyeHybridInverter:
-            test->device_address = table_config->get("device_address")->asUint8();
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
 
             load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -202,8 +203,8 @@ void BatteriesModbusTCP::register_urls()
             break;
 
         case BatteryModbusTCPTableID::AlphaESSHybridInverter:
-            test->device_address = table_config->get("device_address")->asUint8();
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
 
             load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -215,8 +216,8 @@ void BatteriesModbusTCP::register_urls()
             break;
 
         case BatteryModbusTCPTableID::HaileiHybridInverter:
-            test->device_address = table_config->get("device_address")->asUint8();
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
 
             load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -228,8 +229,8 @@ void BatteriesModbusTCP::register_urls()
             break;
 
         case BatteryModbusTCPTableID::SungrowHybridInverter:
-            test->device_address = table_config->get("device_address")->asUint8();
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
 
             load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
