@@ -46,7 +46,7 @@ export function InputHost(props: InputHostProps) {
                 invalidFeedback={invalidFeedback}
                 maxLength={64}
                 class={props.class + (props.value.endsWith(".localhost") ? " is-invalid" : "")}
-                pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|[a-zA-Z0-9\-\.]+)$`} />
+                pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|[a-zA-Z0-9\\-\\.]+)$`} />
 }
 
 register_id_context_component_type(InputHost);

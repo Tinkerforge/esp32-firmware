@@ -51,7 +51,7 @@ export class InputAnyFloat extends Component<InputAnyFloatProps, InputAnyFloatSt
         else {
             this.separator = ".";
             this.regexp = /^-?[0-9]*\.?[0-9]*$/;
-            this.pattern = "-?[0-9]+(\.[0-9]+)?";
+            this.pattern = "-?[0-9]+(\\.[0-9]+)?";
         }
 
         this.state = {

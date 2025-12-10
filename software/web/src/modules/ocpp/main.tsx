@@ -102,7 +102,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                    maxLength={128}
                                    value={state.url}
                                    onValue={this.set("url")}
-                                   pattern="wss?:\/\/.*[^\/]"
+                                   pattern="wss?://.*[^\/]"
                                    invalidFeedback={__("ocpp.content.endpoint_url_invalid")}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.tls_cert")}>
