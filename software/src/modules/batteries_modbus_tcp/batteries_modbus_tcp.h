@@ -94,6 +94,7 @@ private:
         char printfln_buffer[512] = "";
         micros_t printfln_last_flush = 0_us;
         size_t printfln_buffer_used = 0;
+        bool reconnect = false;
         bool stop = false;
     };
 

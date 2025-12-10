@@ -223,6 +223,11 @@ void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientD
                  "%s %s:%u",
                  shared, host, port);
     }
+    else if (reason == TFGenericTCPClientDisconnectReason::Forced) {
+        snprintf(buf, buf_len,
+                 "%s %s:%u by force",
+                 shared, host, port);
+    }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
                  "%s %s:%u: %s / %s (%d)",
