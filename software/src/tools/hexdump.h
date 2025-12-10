@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <type_traits>
 
@@ -33,10 +34,7 @@ size_t hexdump(const T *data, size_t data_len, char *buf, size_t buf_len, Hexdum
 {
     static_assert(std::is_arithmetic<T>::value, "data has to be an arithmetic type");
 
-    static const char *alphabet_lower = "0123456789abcdef";
-    static const char *alphabet_upper = "0123456789ABCDEF";
-
-    const char *alphabet = case_ == HexdumpCase::Lower ? alphabet_lower : alphabet_upper;
+    const char * const alphabet = case_ == HexdumpCase::Lower ? "0123456789abcdef" : "0123456789ABCDEF";
 
     if (buf_len < 1) {
         return 0;
