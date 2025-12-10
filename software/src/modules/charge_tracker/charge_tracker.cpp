@@ -277,12 +277,25 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
         return false;
     }
 
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    if (directory != nullptr) {
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            last_record = 1;
+        }
+    } else {
+        last_record = this->last_charge_record;
+    }
+
     ChargeStart cs;
-    File file = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory), "a", true);
+    File file = LittleFS.open(chargeRecordFilename(last_record, directory), "a", true);
 
     if (file.size() == CHARGE_RECORD_MAX_FILE_SIZE) {
-        ++this->last_charge_record;
-        String new_file_name = chargeRecordFilename(this->last_charge_record, directory);
+        ++last_record;
+        if (directory == nullptr) {
+            this->last_charge_record = last_record;
+        }
+        String new_file_name = chargeRecordFilename(last_record, directory);
         logger.printfln("Last charge record file %s is full. Creating the new file %s", file.name(), new_file_name.c_str());
         file.close();
 
@@ -324,8 +337,19 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
     std::lock_guard<std::mutex> lock{records_mutex};
     ChargeEnd ce;
 
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    if (directory != nullptr) {
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            logger.printfln("Can't track end of charge: Directory %s doesn't exist", directory);
+            return;
+        }
+    } else {
+        last_record = this->last_charge_record;
+    }
+
     {
-        File file = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory), "a");
+        File file = LittleFS.open(chargeRecordFilename(last_record, directory), "a");
         if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
             logger.printfln("Can't track end of charge: Last charge start was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected %u", file.size() , file.size() % CHARGE_RECORD_SIZE, sizeof(ChargeStart));
             // TODO: How to handle this case? Add a charge start with the same meter value as the last end?
@@ -638,7 +662,17 @@ size_t ChargeTracker::completeRecordsInLastFile()
 
 bool ChargeTracker::currentlyCharging(const char *directory)
 {
-    const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record, directory));
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    if (directory != nullptr) {
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            return false;
+        }
+    } else {
+        last_record = this->last_charge_record;
+    }
+
+    const size_t fsize = file_size(LittleFS, chargeRecordFilename(last_record, directory));
     return (fsize % CHARGE_RECORD_SIZE) == sizeof(ChargeStart);
 }
 
