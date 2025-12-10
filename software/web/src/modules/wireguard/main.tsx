@@ -38,6 +38,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
+import { InputHost } from "ts/components/input_host";
 
 export function WireguardNavbar() {
     return (
@@ -119,8 +120,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                         />
 
                     <FormRow label={__("wireguard.content.remote_host")}>
-                        <InputText required
-                                   maxLength={64}
+                        <InputHost required
                                    value={state.remote_host}
                                    onValue={this.set("remote_host")}/>
                     </FormRow>
