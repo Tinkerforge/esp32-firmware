@@ -418,6 +418,23 @@ void BatteryControl::update_avg_soc()
 }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
+static char tariff_schedule_quarter_to_char(uint8_t quarter) {
+    switch (quarter) {
+        case 0:                          return 'N';
+        case BC_SCHEDULE_CHEAP_MASK:     return 'C';
+        case BC_SCHEDULE_EXPENSIVE_MASK: return 'E';
+        default: { // Multiple bits set :-?
+            if (quarter < 10) {
+                return '0' + quarter;
+            } else if (quarter < 36) {
+                return 'a' + quarter - 10;
+            } else {
+                return '?';
+            }
+        }
+    }
+}
+
 void BatteryControl::update_tariff_schedule()
 {
     const uint8_t cheap_tariff_quarters     = static_cast<uint8_t>(config.get("cheap_tariff_quarters"    )->asUint());
@@ -485,25 +502,7 @@ void BatteryControl::update_tariff_schedule()
     char str[sizeof(data->tariff_schedule) + 1];
 
     for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
-        const uint8_t quarter = data->tariff_schedule[i];
-        char chr;
-
-        switch (quarter) {
-            case 0:                          chr = 'N'; break;
-            case BC_SCHEDULE_CHEAP_MASK:     chr = 'C'; break;
-            case BC_SCHEDULE_EXPENSIVE_MASK: chr = 'E'; break;
-            default: { // Multiple bits set :-?
-                if (quarter < 10) {
-                    chr = '0' + quarter;
-                } else if (quarter < 36) {
-                    chr = 'a' + quarter - 10;
-                } else {
-                    chr = '/';
-                }
-            }
-        }
-
-        str[i] = chr;
+        str[i] = tariff_schedule_quarter_to_char(data->tariff_schedule[i]);
     }
 
     str[sizeof(str) - 1] = '\n';
@@ -512,7 +511,6 @@ void BatteryControl::update_tariff_schedule()
 
     evaluate_tariff_schedule();
 }
-#endif
 
 void BatteryControl::evaluate_tariff_schedule()
 {
@@ -541,11 +539,12 @@ void BatteryControl::evaluate_tariff_schedule()
 
     if (data->tariff_schedule_cache != charge_permitted_schedule_cache_update) {
         data->tariff_schedule_cache  = charge_permitted_schedule_cache_update;
-        logger.tracefln(this->trace_buffer_idx, "tariff_schedule_cache=%hhu", data->tariff_schedule_cache);
+        logger.tracefln(this->trace_buffer_idx, "Tariff schedule=%c", tariff_schedule_quarter_to_char(data->tariff_schedule_cache));
         data->evaluation_must_check_rules = true;
         schedule_evaluation();
     }
 }
+#endif
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
 void BatteryControl::update_solar_forecast(int localtime_hour_now, const Config *sf_state)
@@ -667,7 +666,7 @@ RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rule
         if (time_rule_condition_failed(rule->time_cond, rule->time_start_s, rule->time_end_s, time_since_midnight_s)) continue;
 
         // Complete rule matches.
-        logger.tracefln(this->trace_buffer_idx, "%s rule %zu matches", rules_type_name, i);
+        logger.tracefln(this->trace_buffer_idx, "%s %zu match", rules_type_name, i);
         *active_rule_out = static_cast<uint8_t>(i);
         return rule->action;
     }
