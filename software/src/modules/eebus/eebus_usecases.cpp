@@ -1889,7 +1889,7 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
             case SpineDataTypeHandler::Function::loadControlLimitListData:
                 if (data->loadcontrollimitlistdatatype.has_value() && !data->loadcontrollimitlistdatatype->loadControlLimitData->empty()) {
                     LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitlistdatatype->loadControlLimitData->at(0);
-
+                    // TODO: Loop over the list and identify the correct ID
                     bool limit_enabled = load_control_limit_data.isLimitActive.get();
                     int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());
                     const seconds_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
@@ -1916,26 +1916,52 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
 
 MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
-    if (header.cmdClassifier == CmdClassifierType::read) {
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
-            response["deviceConfigurationKeyValueDescriptionListData"] = get_device_configuration_description();
-            return {true, true, CmdClassifierType::reply};
-        }
-        if (data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
-            response["deviceConfigurationKeyValueListData"] = get_device_configuration_value();
-            return {true, true, CmdClassifierType::reply};
-        }
+    switch (data->last_cmd) {
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
+            switch (header.cmdClassifier.get()) {
+                case CmdClassifierType::read:
+                    response["deviceConfigurationKeyValueDescriptionListData"] = get_device_configuration_description();
+                    return {true, true, CmdClassifierType::reply};
+                default:
+                    EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported, "This cmdclassifier is not supported on this function");
+
+                    return {true, true, CmdClassifierType::result};
+            }
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
+            switch (header.cmdClassifier.get()) {
+                case CmdClassifierType::read:
+                    response["deviceConfigurationKeyValueListData"] = get_device_configuration_value();
+                    return {true, true, CmdClassifierType::reply};
+                case CmdClassifierType::write:
+                    if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
+                        auto new_config = data->deviceconfigurationkeyvaluelistdatatype.get();
+                        int new_failsafe_power = -1;
+                        seconds_t new_failsafe_duration = -1_s;
+                        for (const auto &list_entry : new_config.deviceConfigurationKeyValueData.get()) {
+                            if (list_entry.keyId == failsafe_consumption_key_id) {
+                                new_failsafe_power = list_entry.value->scaledNumber->number.get() * pow(10, list_entry.value->scaledNumber->scale.get());
+                            } else if (list_entry.keyId == failsafe_duration_key_id) {
+                                auto value = list_entry.value->duration.get();
+
+                                new_failsafe_duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(list_entry.value->duration.get());
+                                logger.printfln("string: %s duration: %d", value.c_str(), new_failsafe_duration.as<int>());
+                            }
+                        }
+                        update_failsafe(new_failsafe_power, new_failsafe_duration);
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Configuration updated successfully");
+                        return {true, true, CmdClassifierType::result};
+                    }
+                    EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::BindingRequired, "DeviceConfiguration requires binding");
+                    return {true, true, CmdClassifierType::result};
+
+                default:
+                    EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported, "This cmdclassifier is not supported on this function");
+                    return {true, true, CmdClassifierType::result};
+            }
+        default:
+            return {false};
     }
-    if (header.cmdClassifier == CmdClassifierType::write && data->deviceconfigurationkeyvaluelistdatatype.has_value() && data->last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
-        // We only accept writes from nodes we are bound to and we only do full writes
-        if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
-            // TODO: Handle writes on failsafe
-            //device_configuration_key_value_list = data->deviceconfigurationkeyvaluelistdatatype.get();
-            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Configuration updated successfully");
-            update_api();
-            return {true, true, CmdClassifierType::result};
-        }
-    }
+
     return {false};
 }
 
@@ -1969,7 +1995,6 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
             heartbeatEnabled = true;
             got_heartbeat(60_s); // Initial timeout
             return {true, true, CmdClassifierType::reply};
-
         }
         if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
             // Just reset timeout here. Resetting on replies is not quite conform but its still possible
@@ -2007,13 +2032,20 @@ MessageReturn LpcUsecase::generic_feature(HeaderType &header, SpineDataTypeHandl
 
 void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
 {
-    failsafe_power_limit_w = power_limit_w;
-    failsafe_duration_min = duration;
-    update_state();
-    update_api();
-
-    auto data = get_device_configuration_value();
-    eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), data, "deviceConfigurationKeyValueListData");
+    // TODO: Do sanity checks on these failsafe limits
+    if (power_limit_w > -1) {
+        failsafe_power_limit_w = power_limit_w;
+    }
+    if (duration > -1_s) {
+        failsafe_duration = duration;
+    }
+    if (power_limit_w > 0 || duration > 0_s) {
+        logger.printfln("Updated failsafe to %d W for %d seconds", failsafe_power_limit_w, failsafe_duration.as<int>());
+        update_state();
+        update_api();
+        auto data = get_device_configuration_value();
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), data, "deviceConfigurationKeyValueListData");
+    }
 }
 
 void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
@@ -2066,7 +2098,7 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t dur
 
     if (duration > 0_s) {
         limit_expired = false;
-        timeval time_v;
+        timeval time_v{};
         rtc.clock_synced(&time_v);
         limit_endtime = time_v.tv_sec + duration.as<int>();
         task_scheduler.cancel(limit_endtime_timer);
@@ -2194,7 +2226,7 @@ void LpcUsecase::unlimited_controlled_state()
 
 void LpcUsecase::limited_state()
 {
-    timeval time_v;
+    timeval time_v{};
     rtc.clock_synced(&time_v);
     long long duration_left = limit_endtime - time_v.tv_sec;
     if (lpc_state != LPCState::Limited) {
@@ -2203,6 +2235,7 @@ void LpcUsecase::limited_state()
         logger.printfln("Updating limit to %d W", configured_limit);
     }
 
+    // TODO: Send the power limit to the charging system
     lpc_state = LPCState::Limited;
     current_active_consumption_limit_w = configured_limit;
     limit_active = true;
@@ -2212,13 +2245,16 @@ void LpcUsecase::failsafe_state()
 {
     lpc_state = LPCState::Failsafe;
     limit_active = false;
+
+    // TODO: Send the power limit to the charging system
+
     current_active_consumption_limit_w = failsafe_power_limit_w;
     task_scheduler.cancel(limit_endtime_timer);
     task_scheduler.cancel(limit_endtime_timer);
 
-    timeval time_v;
+    timeval time_v{};
     rtc.clock_synced(&time_v);
-    failsafe_expiry_endtime = time_v.tv_sec + failsafe_duration_min.as<int>();
+    failsafe_expiry_endtime = time_v.tv_sec + failsafe_duration.as<int>();
     failsafe_expiry_timer = task_scheduler.scheduleOnce(
         [this]() {
             if (lpc_state == LPCState::Failsafe) {
@@ -2228,8 +2264,7 @@ void LpcUsecase::failsafe_state()
                 update_api();
             }
         },
-        failsafe_duration_min);
-    // TODO: Send the power limit to the charging system
+        failsafe_duration);
 }
 
 void LpcUsecase::unlimited_autonomous_state()
@@ -2246,9 +2281,9 @@ void LpcUsecase::update_api() const
     api_entry->get("limit_active")->updateBool(limit_active);
     api_entry->get("current_limit")->updateUint(current_active_consumption_limit_w);
     api_entry->get("failsafe_limit_power_w")->updateUint(failsafe_power_limit_w);
-    api_entry->get("failsafe_limit_duration_s")->updateUint(failsafe_duration_min.as<uint32_t>());
+    api_entry->get("failsafe_limit_duration_s")->updateUint(failsafe_duration.as<uint32_t>());
 
-    timeval now;
+    timeval now{};
     rtc.clock_synced(&now);
     if (lpc_state == LPCState::Limited) {
         const long long duration_left = limit_endtime - now.tv_sec;
@@ -2282,7 +2317,7 @@ LoadControlLimitDescriptionListDataType LpcUsecase::get_loadcontrol_limit_descri
 }
 LoadControlLimitListDataType LpcUsecase::get_loadcontrol_limit_list() const
 {
-    timeval now;
+    timeval now{};
     rtc.clock_synced(&now);
     const long long duration_left = limit_endtime - now.tv_sec;
 
@@ -2308,15 +2343,15 @@ DeviceConfigurationKeyValueListDataType LpcUsecase::get_device_configuration_val
 
     DeviceConfigurationKeyValueDataType failsafe_power_key_value{};
     failsafe_power_key_value.isValueChangeable = true;
-    failsafe_power_key_value.keyId = 1;
+    failsafe_power_key_value.keyId = failsafe_consumption_key_id;
     failsafe_power_key_value.value->scaledNumber->number = failsafe_power_limit_w;
     failsafe_power_key_value.value->scaledNumber->scale = 0;
     device_configuration_value_list.deviceConfigurationKeyValueData->push_back(failsafe_power_key_value);
 
     DeviceConfigurationKeyValueDataType failsafe_duration_key_value{};
     failsafe_duration_key_value.isValueChangeable = true;
-    failsafe_duration_key_value.keyId = 2;
-    failsafe_duration_key_value.value->duration = EEBUS_USECASE_HELPERS::iso_duration_to_string(failsafe_duration_min);
+    failsafe_duration_key_value.keyId = failsafe_duration_key_id;
+    failsafe_duration_key_value.value->duration = EEBUS_USECASE_HELPERS::iso_duration_to_string(failsafe_duration);
     device_configuration_value_list.deviceConfigurationKeyValueData->push_back(failsafe_duration_key_value);
 
     return device_configuration_value_list;
@@ -2325,14 +2360,14 @@ DeviceConfigurationKeyValueDescriptionListDataType LpcUsecase::get_device_config
 {
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration_description{};
     DeviceConfigurationKeyValueDescriptionDataType failsafe_power_description{};
-    failsafe_power_description.keyId = 1;
+    failsafe_power_description.keyId = failsafe_consumption_key_id;
     failsafe_power_description.keyName = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit;
     failsafe_power_description.unit = UnitOfMeasurementEnumType::W;
     failsafe_power_description.valueType = DeviceConfigurationKeyValueTypeType::scaledNumber;
     device_configuration_description.deviceConfigurationKeyValueDescriptionData->push_back(failsafe_power_description);
 
     DeviceConfigurationKeyValueDescriptionDataType failsafe_duration_description{};
-    failsafe_duration_description.keyId = 2;
+    failsafe_duration_description.keyId = failsafe_duration_key_id;
     failsafe_duration_description.keyName = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
     failsafe_duration_description.valueType = DeviceConfigurationKeyValueTypeType::duration;
     device_configuration_description.deviceConfigurationKeyValueDescriptionData->push_back(failsafe_duration_description);
@@ -2342,7 +2377,7 @@ DeviceConfigurationKeyValueDescriptionListDataType LpcUsecase::get_device_config
 
 void LpcUsecase::broadcast_heartbeat()
 {
-    if constexpr (!EEBUS_LPC_AWAIT_HEARTBEAT) {
+    if constexpr (!EEBUS_LPC_ENABLE_HEARTBEAT) {
         return;
     }
     DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};

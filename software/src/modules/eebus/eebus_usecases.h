@@ -47,7 +47,8 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
 // The power consumption limit at startup in w. Should be the maximum limit of the Warp Charger. Is also used to tell the Energy Broker the maximum consumption limit of the device
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
-#define EEBUS_LPC_AWAIT_HEARTBEAT false
+// Enable LPC heartbeat
+#define EEBUS_LPC_ENABLE_HEARTBEAT true
 
 struct MessageReturn {
     /**
@@ -838,15 +839,14 @@ private:
     LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
     // Device Configuration Data as required for Scenario 2 - Failsafe values
-    // TODO: switch these to type generating functions
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    seconds_t failsafe_duration_min = 3600_s * 2_h; // Default to 24 hours
+    seconds_t failsafe_duration = 2_h; // Default to 2 hours
     uint64_t failsafe_expiry_timer = 0;
     time_t failsafe_expiry_endtime = 0;
+    uint8_t failsafe_consumption_key_id = 1;
+    uint8_t failsafe_duration_key_id = 2;
     DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
     DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
-    //DeviceConfigurationKeyValueListDataType device_configuration_key_value_list{};
-    //DeviceConfigurationKeyValueDescriptionListDataType device_configuration_key_value_description_list{};
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
     bool heartbeatEnabled = false;
