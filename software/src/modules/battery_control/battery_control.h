@@ -46,6 +46,10 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    static constexpr int32_t UNAVAILABLE_CONDITION_CACHE       = std::numeric_limits<int32_t>::min();
+    static constexpr int32_t UNAVAILABLE_SOC_CACHE             = std::numeric_limits<uint8_t>::max();
+    static constexpr uint8_t UNAVAILABLE_TARIFF_SCHEDULE_CACHE = std::numeric_limits<uint8_t>::max();
+
 private:
     struct control_rule {
         uint32_t      time_start_s; // in seconds since midnight
@@ -102,15 +106,15 @@ private:
         bool have_time_rule            = false;
         bool have_fast_chg_rule        = false;
 
-        int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
-        int32_t price_cache    = std::numeric_limits<decltype(price_cache   )>::min();
-        int32_t forecast_cache = std::numeric_limits<decltype(forecast_cache)>::min();
+        int32_t soc_cache_avg  = UNAVAILABLE_CONDITION_CACHE;
+        int32_t price_cache    = UNAVAILABLE_CONDITION_CACHE;
+        int32_t forecast_cache = UNAVAILABLE_CONDITION_CACHE;
         uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
         bool fast_charger_in_c_cache = false;
 
         int32_t tariff_schedule_start_min = 0;
         uint8_t tariff_schedule[24 * 4] = {0};
-        uint8_t tariff_schedule_cache = 0;
+        uint8_t tariff_schedule_cache = UNAVAILABLE_TARIFF_SCHEDULE_CACHE;
 
         uint8_t max_used_batteries = 0;
 

@@ -129,7 +129,7 @@ void BatteryControl::setup()
     data->max_used_batteries = max_used_batteries;
 
     for (size_t i = 0; i < ARRAY_SIZE(data->soc_cache); i++) {
-        data->soc_cache[i] = std::numeric_limits<uint8_t>::max();
+        data->soc_cache[i] = UNAVAILABLE_SOC_CACHE;
     }
 
     const size_t charge_rules_cnt    = count_enabled_rules(rules_charge);
@@ -306,8 +306,8 @@ void BatteryControl::register_events()
                     const int32_t price = current_price_cfg->asInt();
 
                     if (price == std::numeric_limits<decltype(price)>::max()) {
-                        this->data->price_cache = std::numeric_limits<decltype(this->data->price_cache)>::min();
-                        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized current_price from DAP");
+                        this->data->price_cache = UNAVAILABLE_CONDITION_CACHE;
+                        logger.tracefln(this->trace_buffer_idx, "current_price from DAP unavailable");
                     } else {
                         this->data->price_cache = price;
                         logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
@@ -321,9 +321,17 @@ void BatteryControl::register_events()
             if (this->data->have_tariff_schedule_rule) {
                 const Config *last_sync_cfg = static_cast<const Config *>(cfg->get("last_sync"));
 
-                if (last_sync_cfg->was_updated(event_api_backend_flag) && last_sync_cfg->asUint() != 0) {
-                    logger.tracefln(this->trace_buffer_idx, "DAP last_sync at %lu", last_sync_cfg->asUint());
-                    this->update_tariff_schedule();
+                if (last_sync_cfg->was_updated(event_api_backend_flag)) {
+                    const uint32_t last_sync = last_sync_cfg->asUint();
+
+                    if (last_sync == 0) {
+                        logger.tracefln(this->trace_buffer_idx, "DAP not synced", );
+                        data->tariff_schedule_start_min = 0;
+                        this->evaluate_tariff_schedule();
+                    } else {
+                        logger.tracefln(this->trace_buffer_idx, "DAP last_sync at %lu", last_sync);
+                        this->update_tariff_schedule();
+                    }
                 }
             }
 
@@ -354,6 +362,14 @@ void BatteryControl::register_events()
             this->schedule_evaluation();
         }, 1_min, 0_ms, false);
     }
+
+    task_scheduler.scheduleOnce([this]() {
+        if (this->data->last_mode == BatteryMode::None) {
+            logger.tracefln(this->trace_buffer_idx, "Defaulting to Normal mode after 2 minutes without data trigger");
+
+            this->set_mode(BatteryMode::Normal);
+        }
+    }, 2_min);
 }
 
 void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *rules)
@@ -400,7 +416,7 @@ void BatteryControl::update_avg_soc()
 
     for (size_t i = 0; i < ARRAY_SIZE(data->soc_cache); i++) {
         const uint8_t soc = data->soc_cache[i];
-        if (soc == std::numeric_limits<decltype(soc)>::max()) {
+        if (soc == UNAVAILABLE_SOC_CACHE) {
             continue;
         }
         soc_sum += soc;
@@ -408,6 +424,7 @@ void BatteryControl::update_avg_soc()
     }
 
     if (soc_count == 0) {
+        data->soc_cache_avg = UNAVAILABLE_CONDITION_CACHE;
         logger.tracefln(this->trace_buffer_idx, "soc_avg has no data: No battery meters have SoC data.");
         return;
     }
@@ -423,6 +440,7 @@ static char tariff_schedule_quarter_to_char(uint8_t quarter) {
         case 0:                          return 'N';
         case BC_SCHEDULE_CHEAP_MASK:     return 'C';
         case BC_SCHEDULE_EXPENSIVE_MASK: return 'E';
+        case BatteryControl::UNAVAILABLE_TARIFF_SCHEDULE_CACHE: return 'U';
         default: { // Multiple bits set :-?
             if (quarter < 10) {
                 return '0' + quarter;
@@ -491,23 +509,22 @@ void BatteryControl::update_tariff_schedule()
     }
 
     if (any_data_available) {
+        char str[sizeof(data->tariff_schedule) + 1];
+
         for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
             data->tariff_schedule[i] = cheap_hours[i]     << BC_SCHEDULE_CHEAP_POS
                                      | expensive_hours[i] << BC_SCHEDULE_EXPENSIVE_POS;
+
+            str[i] = tariff_schedule_quarter_to_char(data->tariff_schedule[i]);
         }
+
+        str[sizeof(str) - 1] = '\n';
+
+        logger.trace_plain(this->trace_buffer_idx, str, sizeof(str));
     } else {
+        data->tariff_schedule_start_min = 0;
         memset(data->tariff_schedule, 0, sizeof(data->tariff_schedule));
     }
-
-    char str[sizeof(data->tariff_schedule) + 1];
-
-    for (size_t i = 0; i < sizeof(data->tariff_schedule); i++) {
-        str[i] = tariff_schedule_quarter_to_char(data->tariff_schedule[i]);
-    }
-
-    str[sizeof(str) - 1] = '\n';
-
-    logger.trace_plain(this->trace_buffer_idx, str, sizeof(str));
 
     evaluate_tariff_schedule();
 }
@@ -517,20 +534,20 @@ void BatteryControl::evaluate_tariff_schedule()
     uint8_t charge_permitted_schedule_cache_update;
 
     if (data->tariff_schedule_start_min <= 0) {
-        logger.printfln("Tariff schedule uninitialized: %li", data->tariff_schedule_start_min);
-        charge_permitted_schedule_cache_update = 0;
+        logger.tracefln(this->trace_buffer_idx, "Tariff schedule unavailable");
+        charge_permitted_schedule_cache_update = UNAVAILABLE_TARIFF_SCHEDULE_CACHE;
     } else {
         const int32_t now_min = static_cast<int32_t>(time(nullptr) / 60);
 
         if (now_min < data->tariff_schedule_start_min) {
             logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, data->tariff_schedule_start_min);
-            charge_permitted_schedule_cache_update = 0;
+            charge_permitted_schedule_cache_update = UNAVAILABLE_TARIFF_SCHEDULE_CACHE;
         } else {
             const uint32_t quarter_index = static_cast<uint32_t>(now_min - data->tariff_schedule_start_min) / 15;
 
             if (quarter_index >= sizeof(data->tariff_schedule)) {
                 logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(data->tariff_schedule));
-                charge_permitted_schedule_cache_update = 0;
+                charge_permitted_schedule_cache_update = UNAVAILABLE_TARIFF_SCHEDULE_CACHE;
             } else {
                 charge_permitted_schedule_cache_update = data->tariff_schedule[quarter_index];
             }
@@ -550,11 +567,11 @@ void BatteryControl::evaluate_tariff_schedule()
 void BatteryControl::update_solar_forecast(int localtime_hour_now, const Config *sf_state)
 {
     const char *const forecast_field_name = localtime_hour_now < 20 ? "wh_today" : "wh_tomorrow";
-    const int32_t wh_forecast = sf_state->get(forecast_field_name)->asInt();
+    int32_t wh_forecast = sf_state->get(forecast_field_name)->asInt();
 
     if (wh_forecast < 0) {
-        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized %s forecast: %li", forecast_field_name, wh_forecast);
-        return;
+        logger.tracefln(this->trace_buffer_idx, "%s forecast unavailable: %li", forecast_field_name, wh_forecast);
+        wh_forecast = UNAVAILABLE_CONDITION_CACHE;
     }
 
     if (this->data->forecast_cache == wh_forecast) {
@@ -599,7 +616,7 @@ static bool rule_condition_failed(const RuleCondition cond, const int32_t th, co
         return false;
     }
 
-    if (value == std::numeric_limits<decltype(value)>::min()) {
+    if (value == BatteryControl::UNAVAILABLE_CONDITION_CACHE) {
         return true; // Input value is uninitialized, rule cannot be true.
     }
 
@@ -615,6 +632,10 @@ static bool schedule_rule_condition_failed(const ScheduleRuleCondition cond, con
 {
     if (cond == ScheduleRuleCondition::Ignore) {
         return false;
+    }
+
+    if (value == BatteryControl::UNAVAILABLE_TARIFF_SCHEDULE_CACHE) {
+        return true; // Input value is uninitialized, rule cannot be true.
     }
 
     if (cond == ScheduleRuleCondition::Cheap) {
