@@ -22,9 +22,9 @@
 #include <TFModbusTCPClient.h>
 #include <TFModbusTCPClientPool.h>
 
-#include "generic_tcp_client_pool_connector.h"
 #include "modbus_register_type.enum.h"
 #include "tools.h"
+#include "modules/network_lib/generic_tcp_client_pool_connector.h"
 
 class GenericModbusTCPClient : protected GenericTCPClientPoolConnector
 {

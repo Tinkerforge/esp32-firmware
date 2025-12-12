@@ -22,14 +22,12 @@
 #include <TFModbusTCPClientPool.h>
 
 #include "module.h"
-#include "tools.h"
 
 class ModbusTCPClient final : public IModule
 {
 public:
     ModbusTCPClient() : pool(TFModbusTCPByteOrder::Host) {}
 
-    void setup() override;
     void loop() override;
 
     TFModbusTCPClientPool *get_pool();

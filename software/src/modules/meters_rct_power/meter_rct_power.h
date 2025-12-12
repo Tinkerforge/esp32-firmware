@@ -20,17 +20,18 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFRCTPowerClient.h>
+#include <TFRCTPowerClientPool.h>
 
 #include "modules/meters/imeter.h"
-#include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
-#include "rct_power_client.h"
-#include "rct_power_client_pool.h"
+#include "modules/meters/meter_value_id.h"
+#include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "virtual_meter.enum.h"
 
 class MeterRCTPower final : protected GenericTCPClientPoolConnector, public IMeter
 {
 public:
-    MeterRCTPower(uint32_t slot_, Config *state_, Config *errors_, RCTPowerClientPool *pool) :
+    MeterRCTPower(uint32_t slot_, Config *state_, Config *errors_, TFRCTPowerClientPool *pool) :
         GenericTCPClientPoolConnector("meter_rct_power", format_meter_slot(slot_), pool), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] MeterClassID get_class() const override;
@@ -51,13 +52,13 @@ private:
     uint32_t slot;
     Config *state;
     Config *errors;
-    VirtualMeter virtual_meter      = VirtualMeter::None;
-    const RCTValueSpec *value_specs = nullptr;
-    size_t value_specs_length       = 0;
-    const MeterValueID *value_ids   = nullptr;
-    size_t value_ids_length         = 0;
-    size_t value_index              = 0;
-    bool read_allowed               = false;
+    VirtualMeter virtual_meter             = VirtualMeter::None;
+    const TFRCTPowerValueSpec *value_specs = nullptr;
+    size_t value_specs_length              = 0;
+    const MeterValueID *value_ids          = nullptr;
+    size_t value_ids_length                = 0;
+    size_t value_index                     = 0;
+    bool read_allowed                      = false;
 
     float pv1_voltage;
     float pv1_power;

@@ -44,11 +44,6 @@ void MetersRCTPower::pre_setup()
     meters.register_meter_generator(get_class(), this);
 }
 
-void MetersRCTPower::loop()
-{
-    pool.tick();
-}
-
 MeterClassID MetersRCTPower::get_class() const
 {
     return MeterClassID::RCTPower;
@@ -56,7 +51,7 @@ MeterClassID MetersRCTPower::get_class() const
 
 IMeter *MetersRCTPower::new_meter(uint32_t slot, Config *state, Config *errors)
 {
-    return new MeterRCTPower(slot, state, errors, &pool);
+    return new MeterRCTPower(slot, state, errors, rct_power_client.get_pool());
 }
 
 const Config *MetersRCTPower::get_config_prototype()

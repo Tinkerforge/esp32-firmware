@@ -17,16 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rct_power_client_pool.h"
+#pragma once
 
-#include "rct_power_client.h"
+#include "module.h"
 
-TFGenericTCPClient *RCTPowerClientPool::create_client()
+class NetworkLib final : public IModule
 {
-    return new RCTPowerClient;
-}
+public:
+    NetworkLib() {}
 
-TFGenericTCPSharedClient *RCTPowerClientPool::create_shared_client(TFGenericTCPClient *client)
-{
-    return new RCTPowerSharedClient(static_cast<RCTPowerClient *>(client));
-}
+    void setup() override;
+};

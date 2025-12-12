@@ -17,16 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#pragma once
+#include "rct_power_client.h"
 
-#include <TFGenericTCPClientPool.h>
+#include "gcc_warnings.h"
 
-class RCTPowerClientPool : public TFGenericTCPClientPool
+void RCTPowerClient::loop()
 {
-public:
-    RCTPowerClientPool() {}
+    pool.tick();
+}
 
-protected:
-    TFGenericTCPClient *create_client() override;
-    TFGenericTCPSharedClient *create_shared_client(TFGenericTCPClient *client) override;
-};
+[[gnu::const]]
+TFRCTPowerClientPool *RCTPowerClient::get_pool()
+{
+    return &pool;
+}

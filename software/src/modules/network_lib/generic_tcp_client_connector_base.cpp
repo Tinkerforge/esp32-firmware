@@ -17,12 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "modbus_tcp_clnt"
-
 #include "generic_tcp_client_connector_base.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "main_dependencies.h"
 
 #include "gcc_warnings.h"
 

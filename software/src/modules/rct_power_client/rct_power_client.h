@@ -17,17 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "modbus_tcp_client.h"
+#pragma once
 
-#include "gcc_warnings.h"
+#include <TFRCTPowerClientPool.h>
 
-void ModbusTCPClient::loop()
+#include "module.h"
+
+class RCTPowerClient final : public IModule
 {
-    pool.tick();
-}
+public:
+    RCTPowerClient() {}
 
-[[gnu::const]]
-TFModbusTCPClientPool *ModbusTCPClient::get_pool()
-{
-    return &pool;
-}
+    void loop() override;
+
+    TFRCTPowerClientPool *get_pool();
+
+private:
+    TFRCTPowerClientPool pool;
+};
