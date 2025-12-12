@@ -88,6 +88,14 @@ specs = [
                 ],
             },
             {
+                'description': 'UPS reserve SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0850,  # U16
+                'values': [
+                    20,  # FIXME: make this configurable
+                ],
+            },
+            {
                 'description': 'UPS reserve enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0862,  # U16
@@ -249,6 +257,14 @@ specs = [
                 ],
             },
             {
+                'description': 'UPS reserve SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0850,  # U16
+                'values': [
+                    20,  # FIXME: make this configurable
+                ],
+            },
+            {
                 'description': 'UPS reserve enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0862,  # U16
@@ -270,6 +286,14 @@ specs = [
                 'start_address': 0x084F,  # U16
                 'values': [
                     0,  # disable time period control
+                ],
+            },
+            {
+                'description': 'UPS reserve SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 0x0850,  # U16
+                'values': [
+                    20,  # FIXME: make this configurable
                 ],
             },
             {
