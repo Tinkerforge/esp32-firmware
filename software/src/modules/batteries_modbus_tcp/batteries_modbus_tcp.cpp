@@ -40,7 +40,7 @@
 
 void BatteriesModbusTCP::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("batteries_mbtcp", 8192);
+    this->trace_buffer_index = logger.alloc_trace_buffer("batteries_mbtcp", 64*1024u);
 
     for (size_t i = 0; i < OPTIONS_BATTERIES_MAX_SLOTS(); ++i) {
         instances[i] = nullptr;
