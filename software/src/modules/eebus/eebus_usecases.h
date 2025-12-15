@@ -20,12 +20,13 @@
 /*
 This file contains the definitions of the EEBUS Usecases as defined in the EEBUS Usecase Technical Specifications.
 The usecase names may have been shortened and the spec is referred to as much as possible:
+NMC -> Node Management and Control. Implemented according to EEBUS_SPINE_TS_ProtocolSpecification.pdf, technically nodemanagement is not a usecase but it behaves like one in many ways and is therefore implemented alongside
 EVCS -> Electric Vehicle Charging Summary. Implemented according to EEBUS_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
-LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
+EVCEM -> EV Charging Electricity Measurement. Implemented according to EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf
 EVCC -> EV Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVCommissioningAndConfiguration_V1.0.1.pdf
 EVSECC -> EVSE Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.0.pdf
-NMC -> Node Management and Control. Implemented according to EEBUS_SPINE_TS_ProtocolSpecification.pdf, technically nodemanagement is not a usecase but it behaves like one in many ways and is therefore implemented alongside
-EVCEM -> EV Charging Electricity Measurement. Implemented according to EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf
+LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
+CEVC -> Coordinate EV Charging. Implemented according to EEBUS_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
 Sometimes the following references are used e.g. LPC-905, these refer to rules laid out in the spec and can be found in the according technical spec.
 */
 
@@ -40,7 +41,12 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_types.h"
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
-#define EEBUS_USECASES_ACTIVE 5
+//#define EEBUS_ENABLE_EVCS_USECASE
+//#define EEBUS_ENABLE_EVCEM_USECASE
+//#define EEBUS_ENABLE_EVCC_USECASE
+//#define EEBUS_ENABLE_EVSECC_USECASE
+#define EEBUS_ENABLE_LPC_USECASE
+//#define EEBUS_ENABLE_CEVC_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -291,6 +297,7 @@ private:
     MessageReturn handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 };
 
+#ifdef EEBUS_ENABLE_EVCS_USECASE
 /**
  * The EEBUSChargingSummary Entity as defined in EEBus UC TS - EV Charging Summary V1.0.1.
  * This should have the same entity address as other entities with the EVSE actor <br>
@@ -371,7 +378,8 @@ private:
 
     void update_api() const;
 };
-
+#endif
+#ifdef EEBUS_ENABLE_EVCS_USECASE
 /**
  * The EvcemUsecase Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
  * This should have the same entity address as other entities with the EV actor <br>
@@ -458,7 +466,8 @@ private:
 
     void update_api() const;
 };
-
+#endif
+#ifdef EEBUS_ENABLE_EVCC_USECASE
 /**
  * The Evcc Entity as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1.
  * This should have the same entity address as other entities with the EV actor <br>
@@ -598,7 +607,8 @@ private:
     bool standby_mode = false;
     [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
 };
-
+#endif
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
 /**
  * The EVSE Entity as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.1.
  * This should have the same entity address as other entities with the EVSE actor <br>
@@ -649,6 +659,8 @@ private:
 
     void update_api() const;
 };
+#endif
+#ifdef EEBUS_ENABLE_LPC_USECASE
 
 /**
  * The LpcUsecase as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
@@ -858,7 +870,8 @@ private:
     // TODO: switch this to type generating functions
     ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
 };
-
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
 /**
  * The CevcUsecase as defined in EEBus UC TS - Coordinate EV Charging V1.0.1.
  * This should have the same entity address as other entities with the EV actor <br>
@@ -960,6 +973,7 @@ private:
     std::vector<PowerLimitEntry> power_limits{};
     std::vector<IncentiveSlotEntry> incentives_available{};
 };
+#endif
 
 /**
  * The central Interface for EEBus UseCases.
@@ -1011,22 +1025,26 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE};           // The response document to be filled with the response data
 
     NodeManagementEntity node_management{};
-#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
-
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
     EvseccUsecase evse_commissioning_and_configuration{};
-    EvcsUsecase charging_summary{};
-    LpcUsecase limitation_of_power_consumption{};
-
-    EvccUsecase ev_commissioning_and_configuration{};
-    EvcemUsecase ev_charging_electricity_measurement{};
-    CevcUsecase coordinate_ev_charging{};
-
-    std::vector<EebusUsecase *> usecase_list{&node_management, &charging_summary, &limitation_of_power_consumption, &ev_commissioning_and_configuration, &evse_commissioning_and_configuration, &coordinate_ev_charging, &ev_charging_electricity_measurement};
-#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
-    // TODO: Implement the power production limitation usecase
-
-    std::vector<EebusUsecase *> entity_list{&node_management, &limitation_of_power_production};
 #endif
+#ifdef EEBUS_ENABLE_EVCS_USECASE
+    EvcsUsecase charging_summary{};
+#endif
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    LpcUsecase limitation_of_power_consumption{};
+#endif
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    EvccUsecase ev_commissioning_and_configuration{};
+#endif
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    EvcemUsecase ev_charging_electricity_measurement{};
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    CevcUsecase coordinate_ev_charging{};
+#endif
+
+    std::vector<EebusUsecase *> usecase_list{};
 
 private:
     bool initialized = false;

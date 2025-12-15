@@ -515,6 +515,7 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
     usecase_interface = new_usecase_interface;
 }
 
+#ifdef EEBUS_ENABLE_EVCS_USECASE
 EvcsUsecase::EvcsUsecase()
 {
     update_api();
@@ -766,7 +767,8 @@ void EvcsUsecase::update_api() const
         api_bill_entry->get("percent_self_produced_cost")->updateUint(bill_entry.self_produced_cost_percent);
     }
 }
-
+#endif
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
 EvcemUsecase::EvcemUsecase()
 {
 #ifdef EEBUS_DEV_TEST_ENABLE
@@ -1096,7 +1098,8 @@ void EvcemUsecase::update_api() const
     api_entry->get("charged_wh")->updateUint(power_charged_wh);
     api_entry->get("charged_valuesource_measured")->updateBool(power_charged_measured);
 }
-
+#endif
+#ifdef EEBUS_ENABLE_EVCC_USECASE
 EvccUsecase::EvccUsecase()
 {
     entity_active = false; // Disable entity until an EV is connected
@@ -1531,6 +1534,8 @@ DeviceDiagnosisStateDataType EvccUsecase::generate_state() const
     }
     return state;
 }
+#endif
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
 
 EvseccUsecase::EvseccUsecase()
 {
@@ -1684,7 +1689,8 @@ void EvseccUsecase::update_api() const
     api_entry->get("evse_failure")->updateBool(operating_state != DeviceDiagnosisOperatingStateEnumType::normalOperation);
     api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }
-
+#endif
+#ifdef EEBUS_ENABLE_LPC_USECASE
 LpcUsecase::LpcUsecase()
 {
     task_scheduler.scheduleOnce(
@@ -2391,7 +2397,8 @@ void LpcUsecase::broadcast_heartbeat()
         heartbeatCounter++;
     }
 }
-
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
 CevcUsecase::CevcUsecase()
 {
 }
@@ -2625,23 +2632,43 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
     // TODO: Implement write_incentive_table_data
     return {false};
 }
+#endif
 
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses should be consistent so all actors are under the same entity
+    usecase_list.push_back(&node_management);
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
     // EVSE Actors
+#ifdef EEBUS_ENABLE_EVCS_USECASE
+    usecase_list.push_back(&charging_summary);
     charging_summary.set_entity_address({1});
+#endif
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    usecase_list.push_back(&limitation_of_power_consumption);
     limitation_of_power_consumption.set_entity_address({1});
+#endif
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
+    usecase_list.push_back(&evse_commissioning_and_configuration);
     evse_commissioning_and_configuration.set_entity_address({1});
+#endif
     // EV actors
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+        usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address({1, 1}); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+        usecase_list.push_back(&coordinate_ev_charging);
     coordinate_ev_charging.set_entity_address({1, 1});
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+        usecase_list.push_back(&ev_charging_electricity_measurement);
     ev_charging_electricity_measurement.set_entity_address({1, 1});
+#endif
+
     // Controllable System Actors
 
-    // TODO: Map feature addresses to featuretypes
     std::map<std::pair<std::vector<int>, int>, FeatureTypeEnumType> features;
     int feature_index = 5;
     for (EebusUsecase *uc : usecase_list) {
