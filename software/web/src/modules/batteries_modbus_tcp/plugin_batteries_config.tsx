@@ -1030,6 +1030,17 @@ export function init() {
                     else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                           || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
                         edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    value={config[1].table[1].min_soc}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
+                                    }} />
+                            </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
                                 <InputNumber
                                     required
@@ -1043,6 +1054,7 @@ export function init() {
                             </FormRow>);
 
                         extra_values = {
+                            min_soc: config[1].table[1].min_soc,
                             max_soc: config[1].table[1].max_soc,
                         };
                     }

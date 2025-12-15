@@ -4,6 +4,11 @@ table_prototypes = [
     ('Alpha ESS Hybrid Inverter', [
         'device_address',
         {
+            'name': 'min_soc',
+            'type': 'Uint8',  # FIXME: add range limit to [0..100]
+            'default': 10,  # %
+        },
+        {
             'name': 'max_soc',
             'type': 'Uint8',  # FIXME: add range limit to [0..100]
             'default': 100,  # %
@@ -92,8 +97,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0850,  # U16
                 'values': [
-                    20,  # FIXME: make this configurable
+                    None,
                 ],
+                'mapping': 'values[0] = min_soc;',
             },
             {
                 'description': 'UPS reserve enable',
@@ -261,8 +267,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0850,  # U16
                 'values': [
-                    20,  # FIXME: make this configurable
+                    None,
                 ],
+                'mapping': 'values[0] = min_soc;',
             },
             {
                 'description': 'UPS reserve enable',
@@ -293,8 +300,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0850,  # U16
                 'values': [
-                    20,  # FIXME: make this configurable
+                    None,
                 ],
+                'mapping': 'values[0] = min_soc;',
             },
             {
                 'description': 'UPS reserve enable',
