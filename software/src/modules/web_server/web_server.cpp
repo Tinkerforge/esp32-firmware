@@ -257,7 +257,7 @@ void WebServer::post_setup()
     httpd_config.global_user_ctx_free_fn = dummy_free_fn;
     httpd_config.max_open_sockets = 10;
     httpd_config.enable_so_linger = true;
-    httpd_config.linger_timeout = 100; // Try to get WS close and TLS close out.
+    httpd_config.linger_timeout = 250; // Try to get WS close, TLS close and error messages out. Only blocks as long as necessary. Sometimes needs >50ms for remote access.
     httpd_config.uri_match_fn = custom_uri_match;
     httpd_config.close_fn = custom_close_fn;
 
