@@ -113,6 +113,9 @@ interface RemoteAccessState {
     },
     removeUsers: number[],
     pingState: API.getType["remote_access/ping_state"],
+    authMethod: string,
+    invalidFeedback: string,
+    authToken: string,
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {status_ref: RefObject<RemoteAccessStatus>}, RemoteAccessState> {
@@ -148,7 +151,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         util.addApiEventListener("remote_access/ping_state", () => {
             this.setState({pingState: API.get("remote_access/ping_state")});
         });
-        this.setState({status_modal_string: "", removeUsers: []});
+        this.setState({status_modal_string: "", removeUsers: [], authMethod: "password", invalidFeedback: "", authToken: ""});
     }
 
 
@@ -656,8 +659,6 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
         if (!util.render_allowed())
             return <></>
 
-        const [authToken, setAuthToken] = useState("");
-
         // Check if NTP is disabled and remote access is enabled
         const ntpConfig = API.get("ntp/config");
         const remoteAccessEnabled = this.state.enable;
@@ -734,37 +735,31 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                             addEnabled={users.length < options.REMOTE_ACCESS_MAX_USERS}
                             addTitle={__("remote_access.content.add_user")}
                             onAddShow={async () => {
-                                this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
-                                setAuthToken("");
+                                this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}, authMethod: "password", invalidFeedback: "", authToken: ""});
                             }}
                             addMessage={__("remote_access.content.user_add_message")(users.length, options.REMOTE_ACCESS_MAX_USERS)}
                             onAddGetChildren={() => {
-                                const [authMethod, setAuthMethod] = useState("password");
-                                const [invalidFeedback, setInvalidFeedback] = useState("");
 
                                 return <>
                                     <FormRow label={__("remote_access.content.auth_method")}>
-                                        <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => {
-                                            setAuthMethod(v);
-                                            setAuthToken("");
-                                            this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
+                                        <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={this.state.authMethod} onValue={(v) => {
+                                            this.setState({authMethod: v, authToken: "", addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
                                         }}/>
                                     </FormRow>
-                                    <Collapse in={authMethod === "token"}>
+                                    <Collapse in={this.state.authMethod === "token"}>
                                        <div>
                                         <FormRow label={__("remote_access.content.auth_token")}>
                                                 <InputText required={this.state.addUser.password === ""}
-                                                    class={invalidFeedback !== "" ? "is-invalid" : undefined}
-                                                    value={authToken}
-                                                    invalidFeedback={invalidFeedback}
+                                                    class={this.state.invalidFeedback !== "" ? "is-invalid" : undefined}
+                                                    value={this.state.authToken}
+                                                    invalidFeedback={this.state.invalidFeedback}
                                                     onValue={ async (v) => {
-                                                        setAuthToken(v);
+                                                        this.setState({authToken: v});
                                                         try {
                                                             const parsedToken = await this.parseAuthorizationToken(v);
-                                                            this.setState({addUser: {...this.state.addUser, email: parsedToken.email, password: "", public_key: parsedToken.pubKey, auth_token: parsedToken.token, user_id: parsedToken.uuid}});
-                                                            setInvalidFeedback("");
+                                                            this.setState({addUser: {...this.state.addUser, email: parsedToken.email, password: "", public_key: parsedToken.pubKey, auth_token: parsedToken.token, user_id: parsedToken.uuid}, invalidFeedback: ""});
                                                         } catch (e) {
-                                                            setInvalidFeedback(e.message);
+                                                            this.setState({invalidFeedback: e.message});
                                                         }
                                                     }} />
                                             </FormRow>
@@ -773,7 +768,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                             </FormRow>
                                        </div>
                                     </Collapse>
-                                    <Collapse in={authMethod === "password"}>
+                                    <Collapse in={this.state.authMethod === "password"}>
                                         <div>
                                             <FormRow label={__("remote_access.content.email")}>
                                                 <InputText value={this.state.addUser.email} required={this.state.addUser.auth_token === ""}
