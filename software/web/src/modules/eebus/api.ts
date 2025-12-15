@@ -1,3 +1,5 @@
+import {Usecases} from "./usecases.enum";
+
 interface Peer {
     ip: string;
     port: number;
@@ -56,6 +58,7 @@ export interface state {
 export interface usecases {
     commands_received: number;
     commands_sent: number;
+    usecases_supported: Usecases[],
     charging_summary: ChargeProcesses[];
     power_consumption_limitation: {
         usecase_state: number;

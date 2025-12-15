@@ -96,11 +96,13 @@ void EEBus::pre_setup()
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy
     charges_prototype = Config::Object({{"id", Config::Uint16(0)}, {"charged_kwh", Config::Float(0)}, {"start_time", Config::Uint32(0)}, {"duration", Config::Uint16(0)}, {"cost", Config::Float(0)}, {"percent_self_produced_energy", Config::Uint16(0)}, {"percent_self_produced_cost", Config::Uint16(0)}});
-
+    usecase_list = Config::Enum(Usecases::NMC);
     // Currently eebus state and eebus config are one config. Maybe split them?
     eebus_usecase_state = Config::Object({
         {"commands_received", Config::Uint16(0)},
         {"commands_sent", Config::Uint16(0)},
+        //      {"usecases_supported", Config::Str("", 0, 128)}, // Comma separated list of supported usecases
+        {"usecases_supported", Config::Array({usecase_list}, &usecase_list, 0, 12, Config::type_id<Config::ConfObject>())},
         {"charging_summary",
          Config::Array(
              {// Read/Write

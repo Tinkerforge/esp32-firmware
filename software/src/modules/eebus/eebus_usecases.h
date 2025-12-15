@@ -39,6 +39,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "options.h"
 #include "spine_connection.h"
 #include "spine_types.h"
+#include "usecases.enum.h"
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 //#define EEBUS_ENABLE_EVCS_USECASE
@@ -73,7 +74,7 @@ struct MessageReturn {
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
-enum class UseCaseType : uint8_t { NodeManagement, ChargingSummary, LimitationOfActivePowerConsumption, CoordinatedEvCharging, EvCommissioningAndConfiguration, EvseCommissioningAndConfiguration, LimitationOfPowerProduction, EvChargingElectricityMeasurement, MonitoringOfPowerConsumption };
+//enum class UseCaseType : uint8_t { NodeManagement, ChargingSummary, LimitationOfActivePowerConsumption, CoordinatedEvCharging, EvCommissioningAndConfiguration, EvseCommissioningAndConfiguration, LimitationOfPowerProduction, EvChargingElectricityMeasurement, MonitoringOfPowerConsumption };
 
 namespace EEBUS_USECASE_HELPERS
 {
@@ -125,7 +126,7 @@ public:
     // Usecase Handlers
     virtual ~EebusUsecase() = default;
 
-    [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
+    [[nodiscard]] virtual Usecases get_usecase_type() const = 0;
 
     void set_entity_address(const std::vector<int> &address)
     {
@@ -141,7 +142,6 @@ public:
         return entity_address == address;
     }
 
-    virtual String get_entity_name() const = 0;
 
     [[nodiscard]] bool isActive() const
     {
@@ -233,9 +233,9 @@ public:
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::NodeManagement;
+        return Usecases::NMC;
     }
 
     /**
@@ -256,11 +256,6 @@ public:
      * @return If the subscription request was successful. Note: This only means the subscription request was valid and a destination was found, not that the target feature accepted the subscription.
      */
     bool subscribe_to_feature(FeatureAddressType &sending_feature, FeatureAddressType &target_feature, FeatureTypeEnumType feature = FeatureTypeEnumType::EnumUndefined) const;
-
-    String get_entity_name() const override
-    {
-        return "NodeManagement";
-    };
 
     /**
      * Informs the nodemanagement usecase that the detailed discovery data has changed and all subscribers should be informed.
@@ -324,9 +319,9 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::ChargingSummary;
+        return Usecases::EVCS;
     }
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
@@ -350,10 +345,7 @@ public:
      */
     void update_billing_data(int id, time_t start_time, time_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
 
-    [[nodiscard]] String get_entity_name() const override
-    {
-        return "EvcsUsecase";
-    };
+
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::Bill};
@@ -391,14 +383,9 @@ class EvcemUsecase final : public EebusUsecase
 public:
     EvcemUsecase();
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::EvChargingElectricityMeasurement;
-    }
-
-    [[nodiscard]] String get_entity_name() const override
-    {
-        return "EvcemUsecase";
+        return Usecases::EVCEM;
     }
 
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
@@ -479,9 +466,9 @@ class EvccUsecase final : public EebusUsecase
 public:
     EvccUsecase();
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::EvCommissioningAndConfiguration;
+        return Usecases::EVCC;
     }
 
     /**
@@ -557,11 +544,6 @@ public:
      */
     void update_operating_state(bool standby);
 
-    [[nodiscard]] String get_entity_name() const override
-    {
-        return "EvccUsecase";
-    };
-
     bool is_ev_connected() const
     {
         return ev_connected;
@@ -620,14 +602,9 @@ class EvseccUsecase final : public EebusUsecase
 public:
     EvseccUsecase();
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::EvseCommissioningAndConfiguration;
-    }
-
-    [[nodiscard]] String get_entity_name() const override
-    {
-        return "EvseccUsecase";
+        return Usecases::EVSECC;
     }
 
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
@@ -689,9 +666,9 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::LimitationOfActivePowerConsumption;
+        return Usecases::LPC;
     }
 
     /**
@@ -728,10 +705,6 @@ public:
      */
     void update_constraints(int power_consumption_max = 0, int power_consumption_contract_max = 0);
 
-    String get_entity_name() const override
-    {
-        return "LpcUsecase";
-    }
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Generic};
@@ -885,14 +858,9 @@ class CevcUsecase final : public EebusUsecase
 public:
     CevcUsecase();
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override
+    [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return UseCaseType::CoordinatedEvCharging;
-    }
-
-    String get_entity_name() const override
-    {
-        return "CevcUsecase";
+        return Usecases::CEVC;
     }
 
     /**

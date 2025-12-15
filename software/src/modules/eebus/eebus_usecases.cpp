@@ -161,7 +161,7 @@ bool NodeManagementEntity::subscribe_to_feature(FeatureAddressType &sending_feat
     BasicJsonDocument<ArduinoJsonPsramAllocator> message(512);
     JsonObject dst = message.to<JsonObject>();
     if (dst["nodeManagementSubscriptionRequestCall"].set(subscription_request)) {
-        ;
+
         eebus.trace_fmtln("NodeManagementUsecase: Built subscription request message successfully");
     } else {
         eebus.trace_fmtln("NodeManagementUsecase: Failed to build subscription request message");
@@ -179,7 +179,7 @@ NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (EebusUsecase *uc : usecase_interface->usecase_list) {
-        if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
+        if (uc->get_usecase_type() != Usecases::NMC) {
             node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
         }
     }
@@ -1950,7 +1950,6 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
                                 auto value = list_entry.value->duration.get();
 
                                 new_failsafe_duration = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(list_entry.value->duration.get());
-                                logger.printfln("string: %s duration: %d", value.c_str(), new_failsafe_duration.as<int>());
                             }
                         }
                         update_failsafe(new_failsafe_power, new_failsafe_duration);
@@ -2439,7 +2438,6 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 case CmdClassifierType::read:
                     response["timeSeriesConstraintsListData"] = read_time_series_constraints();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 default:
                     break;
             }
@@ -2449,7 +2447,6 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 case CmdClassifierType::read:
                     response["timeSeriesListData"] = read_time_series_list();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 case CmdClassifierType::write:
                     return write_time_series_list(header, data->timeserieslistdatatype, response);
                 default:
@@ -2461,7 +2458,6 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 case CmdClassifierType::read:
                     response["incentiveTableDescriptionData"] = read_incentive_table_description();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 default:
                     break;
             }
@@ -2471,7 +2467,6 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 case CmdClassifierType::read:
                     response["incentiveTableConstraintsData"] = read_incentive_table_constraints();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 default:
                     break;
             }
@@ -2480,9 +2475,7 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             switch (cmd) {
                 case CmdClassifierType::read:
                     response["incentiveTableData"] = read_incentive_table_data();
-                    ;
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 case CmdClassifierType::write:
                     return write_incentive_table_data(header, data->incentivetabledatatype, response);
                 default:
@@ -2658,31 +2651,38 @@ EEBusUseCases::EEBusUseCases()
     usecase_list.push_back(&node_management);
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
+    std::vector<Usecases> supported_usecases{};
     // EVSE Actors
 #ifdef EEBUS_ENABLE_EVCS_USECASE
     usecase_list.push_back(&charging_summary);
     charging_summary.set_entity_address({1});
+    supported_usecases.push_back(charging_summary.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
     usecase_list.push_back(&limitation_of_power_consumption);
     limitation_of_power_consumption.set_entity_address({1});
+    supported_usecases.push_back(limitation_of_power_consumption.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     usecase_list.push_back(&evse_commissioning_and_configuration);
     evse_commissioning_and_configuration.set_entity_address({1});
+    supported_usecases.push_back(evse_commissioning_and_configuration.get_usecase_type());
 #endif
     // EV actors
 #ifdef EEBUS_ENABLE_EVCC_USECASE
-        usecase_list.push_back(&ev_commissioning_and_configuration);
+    usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address({1, 1}); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
+    supported_usecases.push_back(ev_commissioning_and_configuration.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
-        usecase_list.push_back(&coordinate_ev_charging);
+    usecase_list.push_back(&coordinate_ev_charging);
     coordinate_ev_charging.set_entity_address({1, 1});
+    supported_usecases.push_back(coordinate_ev_charging.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
-        usecase_list.push_back(&ev_charging_electricity_measurement);
+    usecase_list.push_back(&ev_charging_electricity_measurement);
     ev_charging_electricity_measurement.set_entity_address({1, 1});
+    supported_usecases.push_back(ev_charging_electricity_measurement.get_usecase_type());
 #endif
 
     // Controllable System Actors
@@ -2712,6 +2712,17 @@ EEBusUseCases::EEBusUseCases()
             }
         }
     }
+    task_scheduler.scheduleOnce(
+        [this, supported_usecases]() {
+            // String usecase_names = "";
+            for (const Usecases uc : supported_usecases) {
+                //  usecase_names += String(get_usecases_name(uc)) + ",";
+                auto entry = eebus.eebus_usecase_state.get("usecases_supported")->add();
+                entry->updateEnum(uc);
+            }
+        },
+        1_s);
+    // eebus.eebus_usecase_state.get("usecases_supported")->updateString(usecase_names);
     initialized = true; // set to true, otherwise subscriptions will not work
 }
 
@@ -2745,9 +2756,9 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
             send_response = entity->handle_message(header, data, responseObj);
             if (send_response.is_handled) {
                 found_dest_entity = true;
-                eebus.trace_fmtln("Usecases: Found entity: %s", entity->get_entity_name().c_str());
+                eebus.trace_fmtln("Usecases: Found entity: %s", get_usecases_name(entity->get_usecase_type()));
             } else {
-                eebus.trace_fmtln("Usecases: Entity %s could not handle the message", entity->get_entity_name().c_str());
+                eebus.trace_fmtln("Usecases: Entity %s could not handle the message", get_usecases_name(entity->get_usecase_type()));
             }
         }
     }

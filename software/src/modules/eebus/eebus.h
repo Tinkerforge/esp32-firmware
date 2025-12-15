@@ -76,6 +76,7 @@ public:
 
     ConfigRoot eebus_usecase_state;
     Config charges_prototype;
+    Config usecase_list;
 
 
     Ship ship;

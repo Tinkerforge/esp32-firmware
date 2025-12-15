@@ -41,6 +41,7 @@ import {FormSeparator} from "../../ts/components/form_separator";
 import {LPCState} from "./lpc_state.enum";
 import {usecases} from "./api";
 import {useState} from "preact/hooks";
+import {Usecases} from "./usecases.enum";
 
 function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -420,227 +421,233 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 </table>
                             </td>
                         </tr>
-                        <tr>
-                            <td>Limitation of Power Consumption</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td>Usecase State</td>
-                                        <td>
-                                            {{
-                                                [LPCState.Startup]: "Startup",
-                                                [LPCState.Init]: "Init",
-                                                [LPCState.UnlimitedControlled]: "UnlimitedControlled",
-                                                [LPCState.Limited]: "Limited",
-                                                [LPCState.Failsafe]: "Failsafe",
-                                                [LPCState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                            }[state.usecases.power_consumption_limitation.usecase_state] ?? state.usecases.power_consumption_limitation.usecase_state}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Limit Active</td>
-                                        <td>
-                                            {state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
-                                            {state.usecases.power_consumption_limitation.usecase_state === LPCState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
-                                                ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s} s)`
-                                                : null}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Current Limit</td>
-                                        <td>{state.usecases.power_consumption_limitation.current_limit} W</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Failsafe Limit Power</td>
-                                        <td>{state.usecases.power_consumption_limitation.failsafe_limit_power_w} W</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Failsafe Limit Duration</td>
-                                        <td>
-                                            {state.usecases.power_consumption_limitation.failsafe_limit_duration_s}
-                                            {state.usecases.power_consumption_limitation.usecase_state === LPCState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
-                                                ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s})`
-                                                : null} s
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Constraints Power Maximum</td>
-                                        <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>EV Commissioning and Configuration</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td>EV Connected</td>
-                                        <td>
-                                            {state.usecases.ev_commissioning_and_configuration.ev_connected
-                                                ? __("eebus.content.yes")
-                                                : __("eebus.content.no")}
-                                        </td>
-                                    </tr>
-                                    {state.usecases.ev_commissioning_and_configuration.ev_connected && (
-                                        <>
-                                            <tr>
-                                                <td>Communication Standard</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.communication_standard}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Asymmetric Charging supported</td>
-                                                <td>
-                                                    {state.usecases.ev_commissioning_and_configuration.asymmetric_charging_supported
-                                                        ? __("eebus.content.yes")
-                                                        : __("eebus.content.no")}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Vehicle MAC Address</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.mac_address}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Minimum Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.minimum_power} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Maximum Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.maximum_power} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Standby Power Consumption (reported by Vehicle)</td>
-                                                <td>{state.usecases.ev_commissioning_and_configuration.standby_power} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Standby Mode Active</td>
-                                                <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPC) > -1 && (
+                            <tr>
+                                <td>Limitation of Power Consumption</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>Usecase State</td>
+                                            <td>
+                                                {{
+                                                    [LPCState.Startup]: "Startup",
+                                                    [LPCState.Init]: "Init",
+                                                    [LPCState.UnlimitedControlled]: "UnlimitedControlled",
+                                                    [LPCState.Limited]: "Limited",
+                                                    [LPCState.Failsafe]: "Failsafe",
+                                                    [LPCState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                                }[state.usecases.power_consumption_limitation.usecase_state] ?? state.usecases.power_consumption_limitation.usecase_state}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Limit Active</td>
+                                            <td>
+                                                {state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
+                                                {state.usecases.power_consumption_limitation.usecase_state === LPCState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                    ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s} s)`
+                                                    : null}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current Limit</td>
+                                            <td>{state.usecases.power_consumption_limitation.current_limit} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Failsafe Limit Power</td>
+                                            <td>{state.usecases.power_consumption_limitation.failsafe_limit_power_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Failsafe Limit Duration</td>
+                                            <td>
+                                                {state.usecases.power_consumption_limitation.failsafe_limit_duration_s}
+                                                {state.usecases.power_consumption_limitation.usecase_state === LPCState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                    ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s})`
+                                                    : null} s
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Constraints Power Maximum</td>
+                                            <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCC) > -1 && (
+                            <tr>
+                                <td>EV Commissioning and Configuration</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>EV Connected</td>
+                                            <td>
+                                                {state.usecases.ev_commissioning_and_configuration.ev_connected
                                                     ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}</td>
-                                            </tr>
-                                        </>
-                                    )}
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>EV Charging Electricity Measurement</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td>EV Connected</td>
-                                        <td>
-                                            {state.usecases.ev_commissioning_and_configuration.ev_connected
-                                                ? __("eebus.content.yes")
-                                                : __("eebus.content.no")}
-                                        </td>
-                                    </tr>
-                                    {state.usecases.ev_commissioning_and_configuration.ev_connected && (
-                                        <>
-                                            <tr>
-                                                <td>Amps Phase 1</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_1} A</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Amps Phase 2</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_2} A</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Amps Phase 3</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_3} A</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Power Phase 1</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_1} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Power Phase 2</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_2} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Power Phase 3</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.power_phase_3} W</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Charged Wh</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.charged_wh} Wh</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Method of obtaining charged Wh</td>
-                                                <td>{state.usecases.ev_charging_electricity_measurement.charged_valuesource_measured ? "Measured" : "Calculated"}</td>
-                                            </tr>
-                                        </>
-                                    )}
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>EVSE Commissioning and Configuration</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td>EVSE in failure state</td>
-                                        <td>
-                                            {state.usecases.evse_commissioning_and_configuration.evse_failure
-                                                ? __("eebus.content.yes")
-                                                : __("eebus.content.no")}
-                                        </td>
-                                    </tr>
-                                    {state.usecases.evse_commissioning_and_configuration.evse_failure && (
-                                        <>
-                                            <tr>
-                                                <td>Failure Message</td>
-                                                <td>{state.usecases.evse_commissioning_and_configuration.evse_failure_description}</td>
-                                            </tr>
-                                        </>
-                                    )}
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Charging Summary</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td colSpan={2}>
-                                            <CollapsedSection
-                                                heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
-                                                <table class="table table-bordered table-sm mb-0">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>ID</th>
-                                                        <th>Charged Kwh</th>
-                                                        <th>Cost</th>
-                                                        <th>Percentage Self Produced Energy</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {state.usecases.charging_summary.map((item, idx) => (
-                                                        <tr key={idx}>
-                                                            <td>{item.id}</td>
-                                                            <td>{item.charged_kwh}</td>
-                                                            <td>{item.cost}</td>
-                                                            <td>{item.percent_self_produced_energy}</td>
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        {state.usecases.ev_commissioning_and_configuration.ev_connected && (
+                                            <>
+                                                <tr>
+                                                    <td>Communication Standard</td>
+                                                    <td>{state.usecases.ev_commissioning_and_configuration.communication_standard}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Asymmetric Charging supported</td>
+                                                    <td>
+                                                        {state.usecases.ev_commissioning_and_configuration.asymmetric_charging_supported
+                                                            ? __("eebus.content.yes")
+                                                            : __("eebus.content.no")}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Vehicle MAC Address</td>
+                                                    <td>{state.usecases.ev_commissioning_and_configuration.mac_address}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Minimum Power Consumption (reported by Vehicle)</td>
+                                                    <td>{state.usecases.ev_commissioning_and_configuration.minimum_power} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Maximum Power Consumption (reported by Vehicle)</td>
+                                                    <td>{state.usecases.ev_commissioning_and_configuration.maximum_power} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Standby Power Consumption (reported by Vehicle)</td>
+                                                    <td>{state.usecases.ev_commissioning_and_configuration.standby_power} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Standby Mode Active</td>
+                                                    <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
+                                                        ? __("eebus.content.yes")
+                                                        : __("eebus.content.no")}</td>
+                                                </tr>
+                                            </>
+                                        )}
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCEM) > -1 && (
+                            <tr>
+                                <td>EV Charging Electricity Measurement</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>EV Connected</td>
+                                            <td>
+                                                {state.usecases.ev_commissioning_and_configuration.ev_connected
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        {state.usecases.ev_commissioning_and_configuration.ev_connected && (
+                                            <>
+                                                <tr>
+                                                    <td>Amps Phase 1</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_1} A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Amps Phase 2</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_2} A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Amps Phase 3</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_3} A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Power Phase 1</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_1} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Power Phase 2</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_2} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Power Phase 3</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_3} W</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Charged Wh</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.charged_wh} Wh</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Method of obtaining charged Wh</td>
+                                                    <td>{state.usecases.ev_charging_electricity_measurement.charged_valuesource_measured ? "Measured" : "Calculated"}</td>
+                                                </tr>
+                                            </>
+                                        )}
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVSECC) > -1 && (
+                            <tr>
+                                <td>EVSE Commissioning and Configuration</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>EVSE in failure state</td>
+                                            <td>
+                                                {state.usecases.evse_commissioning_and_configuration.evse_failure
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        {state.usecases.evse_commissioning_and_configuration.evse_failure && (
+                                            <>
+                                                <tr>
+                                                    <td>Failure Message</td>
+                                                    <td>{state.usecases.evse_commissioning_and_configuration.evse_failure_description}</td>
+                                                </tr>
+                                            </>
+                                        )}
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        )}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCS) > -1 && (
+                            <tr>
+                                <td>Charging Summary</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td colSpan={2}>
+                                                <CollapsedSection
+                                                    heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
+                                                    <table class="table table-bordered table-sm mb-0">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>ID</th>
+                                                            <th>Charged Kwh</th>
+                                                            <th>Cost</th>
+                                                            <th>Percentage Self Produced Energy</th>
                                                         </tr>
-                                                    ))}
-                                                    </tbody>
-                                                </table>
-                                            </CollapsedSection>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {state.usecases.charging_summary.map((item, idx) => (
+                                                            <tr key={idx}>
+                                                                <td>{item.id}</td>
+                                                                <td>{item.charged_kwh}</td>
+                                                                <td>{item.cost}</td>
+                                                                <td>{item.percent_self_produced_energy}</td>
+                                                            </tr>
+                                                        ))}
+                                                        </tbody>
+                                                    </table>
+                                                </CollapsedSection>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
 
                         </tbody>
                     </table>
