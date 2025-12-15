@@ -371,7 +371,7 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
     if (last_charges.count() == CHARGE_RECORD_LAST_CHARGES_SIZE)
         last_charges.remove(0);
 
-    File f = LittleFS.open(chargeRecordFilename(this->last_charge_record, directory));
+    File f = LittleFS.open(chargeRecordFilename(last_record, directory));
     f.seek(-CHARGE_RECORD_SIZE, SeekMode::SeekEnd);
     this->readNRecords(&f, 1, directory);
 
@@ -2109,19 +2109,11 @@ int ChargeTracker::generate_pdf(
     uint32_t charged_cost_sum = 0;
     bool seen_charges_without_meter = false;
     int charge_records = 0;
-    int first_file = -1;
-    int first_charge = -1;
-    int last_file = -1;
-    int last_charge = -1;
-    std::lock_guard<std::mutex> lock{records_mutex};
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
     uint32_t electricity_price;
     String dev_name = "unknown device";
-    auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
+
+    auto await_result = task_scheduler.await([this, &electricity_price, &dev_name]() mutable {
         electricity_price = this->config.get("electricity_price")->asUint();
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
 #if MODULE_DEVICE_NAME_AVAILABLE()
         dev_name = device_name.display_name.get("display_name")->asString();
         if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
@@ -2129,6 +2121,28 @@ int ChargeTracker::generate_pdf(
 #endif
     });
     if (await_result == TaskScheduler::AwaitResult::Timeout) {
+        if (request != nullptr) {
+            request->send_plain(500, "Failed to generate PDF: Task timed out");
+        } else {
+            logger.printfln("Failed to generate PDF: Task timed out");
+        }
+        return -1;
+    }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+    // WARP1 has limited memory (no PSRAM), use file-by-file reading
+    int first_file = -1;
+    int first_charge = -1;
+    int last_file = -1;
+    int last_charge = -1;
+    std::lock_guard<std::mutex> lock{records_mutex};
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    auto await_result_users = task_scheduler.await([configured_users]() mutable {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+    });
+    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
         if (request != nullptr) {
             request->send_plain(500, "Failed to generate PDF: Task timed out");
         } else {
@@ -2160,7 +2174,7 @@ int ChargeTracker::generate_pdf(
                     last_charge = j;
                     goto search_done;
                 }
-                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
+                bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
                 if (!include_user)
                     continue;
                 if (first_file == -1)
@@ -2182,8 +2196,32 @@ int ChargeTracker::generate_pdf(
         }
     }
 search_done:
+#else
+    // Non-WARP1 builds have PSRAM, use getFilteredCharges for efficient charge collection
+    size_t filtered_count = 0;
+    ExportCharge *filtered_charges = getFilteredCharges(user_filter, start_timestamp_min, end_timestamp_min, &filtered_count);
+
+    // Calculate statistics from filtered charges
+    charge_records = static_cast<int>(filtered_count);
+    for (size_t i = 0; i < filtered_count; ++i) {
+        const ChargeStart &cs = filtered_charges[i].charge.cs;
+        const ChargeEnd &ce = filtered_charges[i].charge.ce;
+        if (charged_invalid(cs, ce)) {
+            seen_charges_without_meter = true;
+        } else {
+            double charged = ce.meter_end - cs.meter_start;
+            charged_sum += charged;
+            if (electricity_price != 0)
+                charged_cost_sum += round(charged * electricity_price / 100.0f);
+        }
+    }
+#endif
+
     display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
-    if (!display_name_cache) {
+    if (display_name_cache == nullptr) {
+#if !OPTIONS_PRODUCT_ID_IS_WARP()
+        delete[] filtered_charges;
+#endif
         if (request != nullptr) {
             request->send_plain(500, "Failed to generate PDF: No memory");
         } else {
@@ -2199,9 +2237,9 @@ search_done:
     stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported on" : "Exportiert am");
     stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, language);
     stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported users" : "Exportierte Benutzer");
-    if (user_filter == -2)
+    if (user_filter == USER_FILTER_ALL_USERS)
         stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "all users" : "Alle Benutzer");
-    else if (user_filter == -1)
+    else if (user_filter == USER_FILTER_DELETED_USERS)
         stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "deleted users" : "Gelöschte Benutzer");
     else
         stats_head += get_display_name(user_filter, stats_head, display_name_cache, language);
@@ -2243,9 +2281,6 @@ search_done:
         stats_head += 1 + written;
     }
     std::lock_guard<std::mutex> lock2{pdf_mutex};
-    int current_file = (first_file > -1 ? first_file : this->first_charge_record);
-    int current_charge = (first_charge > -1 ? first_charge : 0);
-    last_file = (last_file >= 0) ? last_file : this->last_charge_record;
 
 #define TABLE_LINE_LEN (17 /* start date: 01.02.3456 12:34\0 or 3456-02-01 12:34\0 */ \
                       + 33 /* display name: max 32 chars + \0 */ \
@@ -2255,7 +2290,6 @@ search_done:
                       + 8) /* cost max 9999.99\0 else truncated to >10000 */
 
     char table_lines_buffer[8 * TABLE_LINE_LEN];
-    File f;
     const char * table_header_de = "Startzeit\0"
                                    "Benutzer\0"
                                    "geladen (kWh)\0"
@@ -2271,6 +2305,13 @@ search_done:
     bool any_charges_tracked = charge_records > 0;
     if (!any_charges_tracked)
         charge_records = 1;
+
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+    int current_file = (first_file > -1 ? first_file : this->first_charge_record);
+    int current_charge = (first_charge > -1 ? first_charge : 0);
+    last_file = (last_file >= 0) ? last_file : this->last_charge_record;
+    File f;
+
     int rc = init_pdf_generator(callback,
                        (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
                        stats_buf, (electricity_price == 0) ? 5 : 6,
@@ -2314,7 +2355,7 @@ search_done:
                     break;
                 memcpy(&cs, charge_buf, sizeof(ChargeStart));
                 memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
+                bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
                 if (!include_user)
                     continue;
                 table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
@@ -2336,6 +2377,45 @@ search_done:
         vTaskDelay(1);
         return lines_generated;
     });
+#else
+    size_t current_charge_idx = 0;
+
+    int rc = init_pdf_generator(callback,
+                       (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
+                       stats_buf, (electricity_price == 0) ? 5 : 6,
+                       letterhead, letterhead_lines,
+                       (language == Language::English) ? table_header_en : table_header_de,
+                       charge_records,
+                       [&table_lines_buffer,
+                        &current_charge_idx,
+                        filtered_charges,
+                        filtered_count,
+                        electricity_price,
+                        language,
+                        &display_name_cache,
+                        any_charges_tracked]
+                       (const char * * table_lines) {
+        memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
+        int lines_generated = 0;
+        char *table_lines_head = table_lines_buffer;
+
+        while (any_charges_tracked && current_charge_idx < filtered_count && lines_generated < 8) {
+            const ChargeStart &cs = filtered_charges[current_charge_idx].charge.cs;
+            const ChargeEnd &ce = filtered_charges[current_charge_idx].charge.ce;
+
+            table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, language, electricity_price, display_name_cache);
+            ++lines_generated;
+            ++current_charge_idx;
+        }
+
+        *table_lines = table_lines_buffer;
+
+        vTaskDelay(1);
+        return lines_generated;
+    });
+
+    free_any(filtered_charges);
+#endif
     free(display_name_cache);
 
     return rc;
@@ -2391,6 +2471,170 @@ void ChargeTracker::updateLastCharges(const char *directory)
         String charger_display_name = get_charger_display_name_from_host(charge_with_loc.directory.c_str());
         last_charge->get("charger_name")->updateString(charger_display_name);
     }
+}
+
+ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count)
+{
+    std::lock_guard<std::mutex> lock{records_mutex};
+
+    const size_t max_records_per_file = CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
+    size_t total_files = 0;
+
+    // Count files in main directory
+    uint32_t main_first = 0, main_last = 0;
+    if (getChargerChargeRecords(nullptr, &main_first, &main_last)) {
+        total_files += (main_last - main_first + 1);
+    }
+
+    logger.printfln("Main directory has %u files", total_files);
+
+    // Count files in subdirectories
+    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+
+                uint32_t first_record = 0, last_record = 0;
+                if (getChargerChargeRecords(dirname.c_str(), &first_record, &last_record)) {
+                    total_files += (last_record - first_record + 1);
+                    logger.printfln("Directory '%s' has %lu files. Totalling to %u", dirname.c_str(), (last_record - first_record + 1), total_files);
+                }
+            }
+        }
+    }
+
+    if (total_files == 0) {
+        *out_count = 0;
+        return nullptr;
+    }
+
+    size_t max_charges = total_files * max_records_per_file + 1;
+
+    ExportCharge *charges = static_cast<ExportCharge *>(malloc_psram((max_charges + 1) * sizeof(ExportCharge)));
+    if (charges == nullptr) {
+        *out_count = 0;
+        return nullptr;
+    }
+
+    size_t charge_count = 0;
+
+    // Get configured users for filtering deleted users
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    auto await_result = task_scheduler.await([configured_users]() mutable {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+    });
+    if (await_result == TaskScheduler::AwaitResult::Timeout) {
+        logger.printfln("Failed to get configured users: Task timed out");
+        free_any(charges);
+        *out_count = 0;
+        return nullptr;
+    }
+
+    // Helper lambda to read charges from a directory
+    auto read_directory_charges = [this, &charges, &charge_count, max_charges, user_filter, start_timestamp_min, end_timestamp_min, configured_users](const char *directory) {
+        uint32_t first_record = 0, last_record = 0;
+        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
+            return;
+        }
+
+        // Get charger UID from directory name
+        const char *b58 = directory == nullptr ? local_uid_str : directory;
+        uint32_t charger_uid = 0;
+        tf_base58_decode(b58, &charger_uid);
+
+        uint32_t prev_known_timestamp = 0;
+        uint8_t charge_buf[CHARGE_RECORD_SIZE];
+        ChargeStart cs;
+        ChargeEnd ce;
+
+        for (uint32_t file_idx = first_record; file_idx <= last_record && charge_count <= max_charges; ++file_idx) {
+            File f = LittleFS.open(chargeRecordFilename(file_idx, directory));
+            if (!f) {
+                continue;
+            }
+
+            size_t file_size = f.size();
+            size_t num_complete_records = file_size / CHARGE_RECORD_SIZE;
+
+            for (size_t record_idx = 0; record_idx < num_complete_records && charge_count <= max_charges; ++record_idx) {
+                size_t bytes_read = f.read(charge_buf, CHARGE_RECORD_SIZE);
+                if (bytes_read != CHARGE_RECORD_SIZE) {
+                    break;
+                }
+
+                memcpy(&cs, charge_buf, sizeof(cs));
+                memcpy(&ce, charge_buf + sizeof(cs), sizeof(ce));
+
+                // Apply timestamp filters
+                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
+                    if (cs.timestamp_minutes != 0) {
+                        prev_known_timestamp = cs.timestamp_minutes;
+                    }
+                    continue;
+                }
+                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
+                    if (cs.timestamp_minutes != 0) {
+                        prev_known_timestamp = cs.timestamp_minutes;
+                    }
+                    continue;
+                }
+
+                // Apply user filter
+                bool include_user = user_filter == USER_FILTER_ALL_USERS
+                    || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id))
+                    || cs.user_id == user_filter;
+
+                if (!include_user) {
+                    if (cs.timestamp_minutes != 0) {
+                        prev_known_timestamp = cs.timestamp_minutes;
+                    }
+                    continue;
+                }
+
+                charges[charge_count].charge.cs = cs;
+                charges[charge_count].charge.ce = ce;
+                charges[charge_count].charger_uid = charger_uid;
+                charges[charge_count].prev_known_timestamp_minutes = prev_known_timestamp;
+                ++charge_count;
+
+                if (cs.timestamp_minutes != 0) {
+                    prev_known_timestamp = cs.timestamp_minutes;
+                }
+            }
+
+            f.close();
+        }
+    };
+
+    read_directory_charges(nullptr);
+
+    root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
+    if (root_folder && root_folder.isDirectory()) {
+        while (File subdir = root_folder.openNextFile()) {
+            if (subdir.isDirectory()) {
+                String dirname{subdir.name()};
+                int last_slash = dirname.lastIndexOf('/');
+                if (last_slash >= 0) {
+                    dirname = dirname.substring(last_slash + 1);
+                }
+                read_directory_charges(dirname.c_str());
+            }
+        }
+    }
+
+    std::sort(charges, charges + charge_count, [](const ExportCharge &a, const ExportCharge &b) {
+        return b > a;
+    });
+
+    *out_count = charge_count;
+    return charges;
 }
 
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
