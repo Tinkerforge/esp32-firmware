@@ -191,6 +191,12 @@ static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool s
 
     if (delay != 0_s) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
+            trace("b%lu t%d ww m%c r%zu",
+                  writer->slot,
+                  writer->test ? 1 : 0,
+                  get_battery_mode_as_char(writer->mode),
+                  writer->repeat_count);
+
             table_writer_logfln(writer, false, "Setting mode \"%s\" (repeat %zu)", get_battery_mode_display_name(writer->mode), writer->repeat_count);
             next_table_writer_step(writer);
         }, delay);
@@ -413,16 +419,17 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
 
     if (table->register_blocks_count > 0) {
         writer->task_id = task_scheduler.scheduleOnce([writer]() {
-            trace("b%lu t%d ww m%c",
+            trace("b%lu t%d ww m%c %c",
                   writer->slot,
                   writer->test ? 1 : 0,
-                  get_battery_mode_as_char(writer->mode));
+                  get_battery_mode_as_char(writer->mode),
+                  writer->repeat_interval > 0 ? 'f' : 'o');
 
             if (writer->repeat_interval > 0) {
-                table_writer_logfln(writer, false, "Setting mode \"%s\" now (will repeat in %u second%s)", get_battery_mode_display_name(writer->mode), writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
+                table_writer_logfln(writer, false, "Setting mode \"%s\" (will repeat in %u second%s)", get_battery_mode_display_name(writer->mode), writer->repeat_interval, writer->repeat_interval > 1 ? "s" : "");
             }
             else {
-                table_writer_logfln(writer, false, "Setting mode \"%s\" now (once)", get_battery_mode_display_name(writer->mode));
+                table_writer_logfln(writer, false, "Setting mode \"%s\" (once)", get_battery_mode_display_name(writer->mode));
             }
 
             next_table_writer_step(writer);
