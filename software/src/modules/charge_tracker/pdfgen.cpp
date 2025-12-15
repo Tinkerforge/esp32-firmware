@@ -130,8 +130,16 @@ typedef SSIZE_T ssize_t;
 #include <functional>
 
 #include "pdfgen.h"
+#include "options.h"
 
+#if OPTIONS_PRODUCT_ID_IS_WARP()
 #define PDF_MAX_OBJECTS 2400
+#else
+// Maximum tracked charges: 130 files × 256 records = 33,280 charges
+// Pages needed: 1 + ceil((33280 - 32) / 40) = 833 pages
+// Objects: 3 header + 13 first page + 832 × 12 other pages + 2 footer = 10,002
+#define PDF_MAX_OBJECTS 10100
+#endif
 #define PDF_MAX_OBJECTS_PER_PAGE 100
 
 #define RGB_R(c) (((c) >> 16) & 0xff)
@@ -795,6 +803,13 @@ static int pdf_save_object(struct pdf_doc *pdf, int index)
 
     if (object->type == OBJ_none)
         return -ENOENT;
+
+    // printf("objects ptr: %p, offsets ptr: %p\n", (void *)pdf->objects.get(), (void *)pdf->offsets.get());
+
+    if (pdf->offsets_in_use >= PDF_MAX_OBJECTS) {
+        printf("ERROR: offsets array overflow! offsets_in_use=%zu, max=%d\n", pdf->offsets_in_use, PDF_MAX_OBJECTS);
+        return -ENOMEM;
+    }
 
     pdf->offsets[pdf->offsets_in_use++] = pdf->write_buf_written - pdf->last_write_buf_written;
     pdf->last_write_buf_written = pdf->write_buf_written;
