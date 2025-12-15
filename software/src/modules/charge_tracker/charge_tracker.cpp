@@ -2196,6 +2196,50 @@ int ChargeTracker::generate_pdf(
         }
         return -1;
     }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+    // WARP1 has limited memory (no PSRAM), use file-by-file reading
+    int first_file = -1;
+    int first_charge = -1;
+    int last_file = -1;
+    int last_charge = -1;
+    std::lock_guard<std::mutex> lock{records_mutex};
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    auto await_result_users = task_scheduler.await([configured_users]() mutable {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+    });
+    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
+        if (request != nullptr) {
+            request->send_plain(500, "Failed to generate PDF: Task timed out");
+        } else {
+            logger.printfln("Failed to generate PDF: Task timed out");
+        }
+        return -1;
+    }
+
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+    // WARP1 has limited memory (no PSRAM), use file-by-file reading
+    int first_file = -1;
+    int first_charge = -1;
+    int last_file = -1;
+    int last_charge = -1;
+    std::lock_guard<std::mutex> lock{records_mutex};
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    auto await_result_users = task_scheduler.await([configured_users]() mutable {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+    });
+    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
+        if (request != nullptr) {
+            request->send_plain(500, "Failed to generate PDF: Task timed out");
+        } else {
+            logger.printfln("Failed to generate PDF: Task timed out");
+        }
+        return -1;
+    }
     {
         char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
         ChargeStart cs;
