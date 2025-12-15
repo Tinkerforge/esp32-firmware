@@ -35,6 +35,7 @@
 struct RemoteUploadRequest;
 class ChargeLogGenerationLockHelper;
 struct ChargeWithLocation;
+struct ExportCharge;
 
 class ChargeTracker final : public IModule
 {
@@ -61,6 +62,8 @@ public:
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
 
     void updateLastCharges(const char *directory);
+
+    ExportCharge *getFilteredCharges(int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
@@ -174,7 +177,24 @@ struct ChargeWithLocation {
             return false;
         }
 
-        return this_timestamp > other_timestamp; // Sort ascending (oldest first)
+        return this_timestamp > other_timestamp;
+    }
+};
+
+struct ExportCharge {
+    Charge charge;
+    uint32_t charger_uid;
+    uint32_t prev_known_timestamp_minutes;
+
+    bool operator>(const ExportCharge &other) const {
+        uint32_t this_timestamp = charge.cs.timestamp_minutes != 0 ? charge.cs.timestamp_minutes : prev_known_timestamp_minutes;
+        uint32_t other_timestamp = other.charge.cs.timestamp_minutes != 0 ? other.charge.cs.timestamp_minutes : other.prev_known_timestamp_minutes;
+
+        if (this_timestamp == 0 && other_timestamp == 0) {
+            return false;
+        }
+
+        return this_timestamp > other_timestamp;
     }
 };
 
