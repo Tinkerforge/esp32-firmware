@@ -19,7 +19,7 @@
 
 #include "network_lib.h"
 
-#include <TFNetworkUtil.h>
+#include <TFNetwork.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -29,11 +29,11 @@
 
 void NetworkLib::setup()
 {
-    TFNetworkUtil::vlogfln = [](const char *fmt, va_list args) __attribute__((format(printf, 2, 0))) {
+    TFNetwork::vlogfln = [](const char *fmt, va_list args) __attribute__((format(printf, 2, 0))) {
         logger.vprintfln(fmt, args);
     };
 
-    TFNetworkUtil::resolve = [this](const char *host, std::function<void(uint32_t address, int error_number)> &&callback) {
+    TFNetwork::resolve = [this](const char *host, std::function<void(uint32_t address, int error_number)> &&callback) {
         dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
             if (data->err != ERR_OK) {
                 callback(0, err_to_errno(data->err));
@@ -47,7 +47,7 @@ void NetworkLib::setup()
         }, LWIP_DNS_ADDRTYPE_IPV4);
     };
 
-    TFNetworkUtil::get_random_uint16 = []() {
+    TFNetwork::get_random_uint16 = []() {
         uint32_t r = esp_random();
 
         return (r >> 16) ^ r;
