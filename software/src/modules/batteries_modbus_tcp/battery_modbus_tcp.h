@@ -26,9 +26,9 @@
 #include "config.h"
 #include "options.h"
 #include "battery_modbus_tcp_table_id.enum.h"
+#include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/modbus_tcp_client/modbus_function_code.enum.h"
-#include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
 
 class BatteryModbusTCP final : protected GenericTCPClientPoolConnector, public IBattery
 {
