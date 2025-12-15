@@ -723,10 +723,10 @@ public:
 
     /**
      * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPC UC TS v1.0.0 3.2.2.2.5.1
-     * @param power_consumption_max_w
-     * @param power_consumption_contract_max_w
+     * @param power_consumption_max Maximum power consumption the system is capable of consuming. This is the physical limit of the device and should only be set if the device is not an energy manager. Set to 0 to omit it.
+     * @param power_consumption_contract_max Maximum power consumption the contract allows. This should only be set if the device is an energy manager.
      */
-    void update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w);
+    void update_constraints(int power_consumption_max = 0, int power_consumption_contract_max = 0);
 
     String get_entity_name() const override
     {
@@ -770,7 +770,7 @@ private:
      * Constraints are the maximum power the system is capable of consuming.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
      */
-    MessageReturn electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response) const;
 
     /**
     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
@@ -837,7 +837,7 @@ private:
     // The configured limit as received from the energy manager
     int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     // If the limit is changeable, this shall be set to false
-    bool limit_fixed = false;
+    constexpr static bool limit_fixed = false;
     // The description ID of the limit so its consistent across description and limit list data
     int limit_description_id = 1;
     int limit_measurement_description_id = 1;
@@ -867,8 +867,9 @@ private:
     void broadcast_heartbeat();
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
-    // TODO: switch this to type generating functions
-    ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list{};
+    ElectricalConnectionCharacteristicListDataType get_electrical_connection_data_constraints() const;
+    int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
+    int power_consumption_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
 };
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE

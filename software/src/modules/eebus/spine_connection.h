@@ -118,6 +118,8 @@ public:
      */
     std::vector<FeatureAddressType> get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
 
+    // Subscription state
+    bool heartbeat_subscription_active = false;
 private:
     // This is to hold the state of the connection regarding discovery and usecase information.
     NodeManagementDetailedDiscoveryDataType detailed_discovery_data{};

@@ -1987,14 +1987,18 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
             // Initialize  read on their heartbeat
             task_scheduler.scheduleOnce(
                 [this, header]() {
-                    auto device_diag_peer = EEBusUseCases::get_spine_connection(header.addressSource.get())->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::server, "limitationOfPowerConsumption", "EnergyGuard");
+                    auto connection = EEBusUseCases::get_spine_connection(header.addressSource.get());
+                    auto device_diag_peer = connection->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::server, "limitationOfPowerConsumption", "EnergyGuard");
                     FeatureAddressType feat_addr = get_feature_address(feature_addresses.at(FeatureTypeEnumType::Generic));
                     if (device_diag_peer.size() != 1) {
                         eebus.trace_fmtln("LPC Usecase: DeviceDiagnosis heartbeat read: Unexpected number of DeviceDiagnosis feature addresses found: %d", device_diag_peer.size());
                     }
                     for (auto &addr : device_diag_peer) {
+                        if (connection->heartbeat_subscription_active)
+                            continue;
                         send_full_read(feat_addr.feature.get(), addr, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
                         eebus.usecases->node_management.subscribe_to_feature(feat_addr, addr, FeatureTypeEnumType::DeviceDiagnosis);
+                        connection->heartbeat_subscription_active = true;
                     }
                 },
                 0_ms);
@@ -2013,10 +2017,10 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
     return {false};
 }
 
-MessageReturn LpcUsecase::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response) const
 {
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
-        response["electricalConnectionCharacteristicListData"] = electrical_connection_characteristic_list;
+        response["electricalConnectionCharacteristicListData"] = get_electrical_connection_data_constraints();
         return {true, true, CmdClassifierType::reply};
     }
     return {false};
@@ -2054,32 +2058,16 @@ void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
     }
 }
 
-void LpcUsecase::update_constraints(int power_consumption_max_w, int power_consumption_contract_max_w)
+void LpcUsecase::update_constraints(int power_consumption_max, int power_consumption_contract_max)
 {
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->clear();
-
-    ElectricalConnectionCharacteristicDataType power_consumption_max{};
-    power_consumption_max.electricalConnectionId = 1;
-    power_consumption_max.characteristicId = 1;
-    power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
-    power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
-    power_consumption_max.value->number = power_consumption_max_w;
-    power_consumption_max.unit = UnitOfMeasurementEnumType::W;
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(power_consumption_max);
-
-    // TODO: Inform Subscribers
-
-    // As stated in EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.6.4.1, the contractual consumption is not something the CS is supposed to handle
-    /*
-    ElectricalConnectionCharacteristicDataType contractual_power_consumption_max{};
-    contractual_power_consumption_max.electricalConnectionId = 1;
-    contractual_power_consumption_max.parameterId = 1;
-    contractual_power_consumption_max.characteristicId = 2;
-    contractual_power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
-    contractual_power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax;
-    contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
-    contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
-    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
+    if (power_consumption_max_w > 0) {
+        power_consumption_max_w = power_consumption_max;
+    }
+    if (power_consumption_contract_max_w > 0) {
+        power_consumption_contract_max_w = power_consumption_contract_max;
+    }
+    auto data = get_electrical_connection_data_constraints();
+    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), data, "electricalConnectionCharacteristicListData");
 }
 
 bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t duration)
@@ -2169,6 +2157,9 @@ void LpcUsecase::update_state()
             } else if (limit_expired || (limit_received && !limit_active)) {
                 // 6: Limited --> Unlimited/Controlled
                 unlimited_controlled_state();
+            } else if (lpc_state == LPCState::Limited) {
+                // Update limited state
+                limited_state();
             }
             // TODO: Implement case where the System has to interrupt the limited state for exceptional reasons. Should switch to unlimited/controlled in that case (Transition 6)
             break;
@@ -2301,8 +2292,7 @@ void LpcUsecase::update_api() const
         api_entry->get("outstanding_duration_s")->updateUint(0);
     }
 
-    // TODO: Change this to use the electrical connection variables
-    //api_entry->get("constraints_power_maximum")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(0).value->number.get());
+    api_entry->get("constraints_power_maximum")->updateUint(power_consumption_max_w);
     //api_entry->get("constraints_power_maximum_contractual")->updateUint(electrical_connection_characteristic_list.electricalConnectionCharacteristicData->at(1).value->number.get());
 }
 
@@ -2396,6 +2386,34 @@ void LpcUsecase::broadcast_heartbeat()
     if (eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
         heartbeatCounter++;
     }
+}
+ElectricalConnectionCharacteristicListDataType LpcUsecase::get_electrical_connection_data_constraints() const
+{
+    ElectricalConnectionCharacteristicListDataType data{};
+
+    ElectricalConnectionCharacteristicDataType power_consumption_max{};
+    power_consumption_max.electricalConnectionId = 1;
+    power_consumption_max.characteristicId = 1;
+    power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+    power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
+    power_consumption_max.value->number = power_consumption_max_w;
+    power_consumption_max.unit = UnitOfMeasurementEnumType::W;
+    data.electricalConnectionCharacteristicData->push_back(power_consumption_max);
+
+    // TODO: if this is not a consumer but a energy guard it should report this.
+    // As stated in EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.6.4.1, the contractual consumption is not something the CS is supposed to handle
+    /*
+    ElectricalConnectionCharacteristicDataType contractual_power_consumption_max{};
+    contractual_power_consumption_max.electricalConnectionId = 1;
+    contractual_power_consumption_max.parameterId = 1;
+    contractual_power_consumption_max.characteristicId = 2;
+    contractual_power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
+    contractual_power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax;
+    contractual_power_consumption_max.value->number = power_consumption_contract_max_w;
+    contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
+    electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
+
+    return data;
 }
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
