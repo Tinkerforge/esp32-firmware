@@ -1030,6 +1030,28 @@ export function init() {
                     else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                           || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
                         edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={32000}
+                                    unit="W"
+                                    value={config[1].table[1].max_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={33535}
+                                    unit="W"
+                                    value={config[1].table[1].max_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
+                                    }} />
+                            </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
                                 <InputNumber
                                     required
@@ -1054,6 +1076,8 @@ export function init() {
                             </FormRow>);
 
                         extra_values = {
+                            max_charge_power: config[1].table[1].max_charge_power,
+                            max_discharge_power: config[1].table[1].max_discharge_power,
                             min_soc: config[1].table[1].min_soc,
                             max_soc: config[1].table[1].max_soc,
                         };
