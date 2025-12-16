@@ -687,7 +687,7 @@ public:
      * @param limit If the limit is active or not.
      * @param current_limit_w The limit in W.
      * @param duration For how long the limit shall be active from now
-     * @return true if the limit is accepted and set.
+     * @return true if the processing of the limit was successful.
      */
     bool update_lpc(bool limit, int current_limit_w, seconds_t duration);
 
@@ -820,8 +820,8 @@ private:
     bool limit_expired = false;
     // If in limited mode, this shall
     uint64_t limit_endtime_timer = 0;
-    LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
-    LoadControlLimitListDataType get_loadcontrol_limit_list() const;
+    [[nodiscard]] LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
+    [[nodiscard]] LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
     // Device Configuration Data as required for Scenario 2 - Failsafe values
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -830,8 +830,8 @@ private:
     time_t failsafe_expiry_endtime = 0;
     uint8_t failsafe_consumption_key_id = 1;
     uint8_t failsafe_duration_key_id = 2;
-    DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
-    DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
+    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
+    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
     bool heartbeatEnabled = false;
@@ -840,7 +840,7 @@ private:
     void broadcast_heartbeat();
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
-    ElectricalConnectionCharacteristicListDataType get_electrical_connection_data_constraints() const;
+    [[nodiscard]] ElectricalConnectionCharacteristicListDataType get_electrical_connection_data_constraints() const;
     int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
     int power_consumption_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
 };

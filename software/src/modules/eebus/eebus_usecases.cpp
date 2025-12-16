@@ -326,7 +326,7 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
             // We are supposed consider the featuretype of the feature
             //SpineOptional<FeatureTypeEnumType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
-
+            // TODO: Check if anything else is bound to the feature. Only one device may be bound. If the connection does still exist, we reject the binding request. Otherwise the binding is cleared up
             if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get())) {
                 eebus.trace_fmtln("Binding requested but is already bound");
             } else {
@@ -2071,25 +2071,25 @@ void LpcUsecase::update_constraints(int power_consumption_max, int power_consump
 
 bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t duration)
 {
-    limit_received = current_limit_w > 0;
+    limit_received = current_limit_w > 0 || limit_received;
     // Evaluate if the limit can be applied according to EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.2 Line 311
     limit_active = limit;
 
     // A limit lower than 0W shall be rejected
     if (current_limit_w < 0) {
         limit_active = false;
-    } else if (limit) {
-        // TODO: check if the limit can be applied
-        // The limit shall apply the limit unless the rejection of the limit is required by: Self-protection, safety related activities, legal or regulatory specifications
-        // A limit MAY be larger than the devices possible maximum consumption. If this limit too large to be stored, the System may alter the value to the highest possible value.
-        /*
+        return false;
+    }
+    // TODO: check if the limit can be applied
+    // The limit shall apply the limit unless the rejection of the limit is required by: Self-protection, safety related activities, legal or regulatory specifications
+    // A limit MAY be larger than the devices possible maximum consumption. If this limit too large to be stored, the System may alter the value to the highest possible value.
+    /*
         if (current_limit_w > EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION) {
             current_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
         }*/
-        configured_limit = current_limit_w;
-    }
+    configured_limit = current_limit_w;
 
-    if (duration > 0_s) {
+    if (duration > 0_s && limit_active) {
         limit_expired = false;
         timeval time_v{};
         rtc.clock_synced(&time_v);
@@ -2116,7 +2116,7 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t dur
 
     auto data = get_loadcontrol_limit_list();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
-    return limit_active;
+    return true;
 }
 
 void LpcUsecase::update_state()
