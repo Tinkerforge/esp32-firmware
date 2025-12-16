@@ -4,6 +4,16 @@ table_prototypes = [
     ('Hailei Hybrid Inverter', [
         'device_address',
         {
+            'name': 'max_charge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..32000]
+            'default': 2000,  # W
+        },
+        {
+            'name': 'max_discharge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..33535]
+            'default': 2000,  # W
+        },
+        {
             'name': 'min_soc',
             'type': 'Uint8',  # FIXME: add range limit to [0..100]
             'default': 10,  # %
@@ -28,53 +38,19 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Block',
-        #            Block
-        'actions': ('Normal', 'Block'),  # FIXME: cannot fully block charge
+        'actions': ('Block', 'Block'),
         'register_blocks': [
             {
-                'description': 'Time discharge start hours',
+                'description': 'Dispatch',  # block charge and discharge
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0851,  # U16
+                'start_address': 0x0880,
                 'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time discharge start minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085A,  # U16
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    100,
-                ],
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    1,  # enable UPS reserve
-                ],
-            },
-            {
-                'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
-                'values': [
-                    2,  # enable discharge time period control
+                    1,         # start dispatch, U16
+                    0, 32000,  # active power [W], U32BE
+                    0, 32000,  # reactive power [var], U32BE, unused
+                    2,         # state of charge control, U16
+                    125,       # state of charge [0.4 %], U16
+                    0, 90,     # duration [s], U32BE
                 ],
             },
         ],
@@ -85,28 +61,11 @@ specs = [
         'actions': ('Normal', 'Normal'),
         'register_blocks': [
             {
-                'description': 'Time period control flag',
+                'description': 'Dispatch',
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
+                'start_address': 0x0880,  # U16
                 'values': [
-                    0,  # disable time period control
-                ],
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;',
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    0,  # disable UPS reserve
+                    0,  # stop dispatch
                 ],
             },
         ],
@@ -117,49 +76,16 @@ specs = [
         'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
-                'description': 'Time discharge start hours',
+                'description': 'Dispatch',  # block discharge
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0851,  # U16
+                'start_address': 0x0880,
                 'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time discharge start minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085A,  # U16
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    100,
-                ],
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    1,  # enable UPS reserve
-                ],
-            },
-            {
-                'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
-                'values': [
-                    2,  # enable discharge time period control
+                    1,         # start dispatch, U16
+                    0, 0,      # active power [W], U32BE
+                    0, 32000,  # reactive power [var], U32BE, unused
+                    1,         # battery only charges from PV, U16
+                    250,       # state of charge [0.4 %], U16, unused
+                    0, 90,     # duration [s], U32BE
                 ],
             },
         ],
@@ -170,113 +96,38 @@ specs = [
         'actions': ('Force', 'Block'),
         'register_blocks': [
             {
-                'description': 'Time charge start hours',
+                'description': 'Dispatch',  # force charge
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0856,  # U16
+                'start_address': 0x0880,
                 'values': [
-                    0,
-                    23,
-                    23,
-                    23,
+                    1,         # start dispatch, U16
+                    0, None,   # active power [W], U32BE
+                    0, 32000,  # reactive power [var], U32BE, unused
+                    2,         # state of charge control, U16
+                    None,      # state of charge [0.4 %], U16
+                    0, 90,     # duration [s], U32BE
                 ],
-            },
-            {
-                'description': 'Time charge start minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085E,  # U16
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
-            },
-            {
-                'description': 'Time discharge start hours',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0851,  # U16
-                'values': [
-                    0,
-                    23,
-                    23,
-                    23,
-                ],
-            },
-            {
-                'description': 'Time discharge start minutes',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x085A,  # U16
-                'values': [
-                    0,
-                    59,
-                    59,
-                    59,
-                ],
-            },
-            {
-                'description': 'Charge cut SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0855,  # U16
-                'values': [
-                    None,
-                ],
-                'mapping': 'values[0] = max_soc;',
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    100,
-                ],
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    1,  # enable UPS reserve
-                ],
-            },
-            {
-                'description': 'Time period control flag',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
-                'values': [
-                    3,  # enable charge and discharge time period control
-                ],
+                'mapping': 'values[2] = 32000 - max_charge_power;\n'
+                           'values[6] = static_cast<uint16_t>(max_soc * 10u / 4u);',
             },
         ],
     },
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Discharge To Load',
-        #            Block
-        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully block charge
+        'actions': ('Block', 'Normal'),
         'register_blocks': [
             {
-                'description': 'Time period control flag',
+                'description': 'Dispatch',  # block charge
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
+                'start_address': 0x0880,
                 'values': [
-                    0,  # disable time period control
-                ],
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;',
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    0,  # disable UPS reserve
+                    1,         # start dispatch, U16
+                    0, 32000,  # active power [W], U32BE, unused
+                    0, 32000,  # reactive power [var], U32BE, unused
+                    19,        # no battery charge, U16
+                    0,         # state of charge [0.4 %], U16, unused
+                    0, 90,     # duration [s], U32BE
                 ],
             },
         ],
@@ -284,33 +135,22 @@ specs = [
     {
         'group': 'Hailei Hybrid Inverter',
         'mode': 'Discharge To Grid',
-        #            Block     Force
-        'actions': ('Normal', 'Normal'),  # FIXME: cannot fully block charge and cannot force discharge
+        'actions': ('Block', 'Force'),
         'register_blocks': [
             {
-                'description': 'Time period control flag',
+                'description': 'Dispatch',  # force discharge
                 'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x084F,  # U16
+                'start_address': 0x0880,
                 'values': [
-                    0,  # disable time period control
+                    1,         # start dispatch, U16
+                    0, None,   # active power [W], U32BE
+                    0, 32000,  # reactive power [var], U32BE, unused
+                    2,         # state of charge control, U16
+                    None,      # state of charge [0.4 %], U16
+                    0, 90,     # duration [s], U32BE
                 ],
-            },
-            {
-                'description': 'UPS reserve SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0850,  # U16
-                'values': [
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;',
-            },
-            {
-                'description': 'UPS reserve enable',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 0x0862,  # U16
-                'values': [
-                    0,  # disable UPS reserve
-                ],
+                'mapping': 'values[2] = 32000 + max_discharge_power;\n'
+                           'values[6] = static_cast<uint16_t>(min_soc * 10u / 4u);',
             },
         ],
     },
