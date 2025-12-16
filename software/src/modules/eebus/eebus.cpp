@@ -31,7 +31,7 @@
 void EEBus::pre_setup()
 {
     // Use PSRAM 128kB for trace buffer for now. We can reduce it if necessary.
-    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 32768 * 8);
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 1 << 17);
 
     // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
