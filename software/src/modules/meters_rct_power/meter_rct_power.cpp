@@ -48,7 +48,7 @@ static const MeterValueID inverter_value_ids[] = {
     MeterValueID::PowerReactiveLSumIndCapDiff,
 };
 
-static const TFRCTPowerValueSpec inverter_rct_value_specs[] = {
+static const MeterRCTPower::ValueSpec inverter_rct_value_specs[] = {
     {0xCF053085,  1.0f}, // AC voltage phase 1 [V]       / g_sync.u_l_rms[0]
     {0x54B4684E,  1.0f}, // AC voltage phase 2 [V]       / g_sync.u_l_rms[1]
     {0x2545E22D,  1.0f}, // AC voltage phase 3 [V]       / g_sync.u_l_rms[2]
@@ -84,7 +84,7 @@ static const MeterValueID grid_value_ids[] = {
     MeterValueID::FrequencyLAvg,
 };
 
-static const TFRCTPowerValueSpec grid_rct_value_specs[] = {
+static const MeterRCTPower::ValueSpec grid_rct_value_specs[] = {
     {0x27BE51D9,  1.0f},   // Grid power phase 1 [W]         / g_sync.p_ac_sc[0]
     {0xF5584F90,  1.0f},   // Grid power phase 2 [W]         / g_sync.p_ac_sc[1]
     {0xB221BCFA,  1.0f},   // Grid power phase 3 [W]         / g_sync.p_ac_sc[2]
@@ -106,7 +106,7 @@ static const MeterValueID battery_value_ids[] = {
     MeterValueID::Temperature,
 };
 
-static const TFRCTPowerValueSpec battery_rct_value_specs[] = {
+static const MeterRCTPower::ValueSpec battery_rct_value_specs[] = {
     {0x65EED11B,   1.0f},   // Battery voltage [V]                 / battery.voltage
     {0x21961B58,  -1.0f},   // Battery current [A]                 / battery.current
     {0x400F015B,  -1.0f},   // Battery power [W]                   / g_sync.p_acc_lp
@@ -125,7 +125,7 @@ static const MeterValueID load_value_ids[] = {
     MeterValueID::EnergyActiveLSumImExDiff,
 };
 
-static const TFRCTPowerValueSpec load_rct_value_specs[] = {
+static const MeterRCTPower::ValueSpec load_rct_value_specs[] = {
     {0x3A39CA2,  1.0f},   // Load household phase 1 [W]  / g_sync.p_ac_load[0]
     {0x2788928C, 1.0f},   // Load household phase 2 [W]  / g_sync.p_ac_load[1]
     {0xF0B436DD, 1.0f},   // Load household phase 3 [W]  / g_sync.p_ac_load[2]
@@ -148,7 +148,7 @@ static const MeterValueID pv_value_ids[] = {
     MeterValueID::EnergyPVSumExport
 };
 
-static const TFRCTPowerValueSpec pv_rct_value_specs[] = {
+static const MeterRCTPower::ValueSpec pv_rct_value_specs[] = {
     {0xB298395D, 1.0f},   // Solar generator A voltage [V]       / dc_conv.dc_conv_struct[0].u_sg_lp
     {0xB5317B78, 1.0f},   // Solar generator A power [W]         / dc_conv.dc_conv_struct[0].p_dc
     {0xFC724A9E, 0.001f}, // Solar generator A total energy [Wh] / energy.e_dc_total[0]
@@ -286,7 +286,7 @@ void MeterRCTPower::read_next()
         value_index = 0;
     }
 
-    static_cast<TFRCTPowerSharedClient *>(connected_client)->read(&value_specs[value_index], 2_s,
+    static_cast<TFRCTPowerSharedClient *>(connected_client)->read(value_specs[value_index].id, 2_s,
     [this](TFRCTPowerClientTransactionResult result, float value) {
         if (result != TFRCTPowerClientTransactionResult::Success) {
             if (result == TFRCTPowerClientTransactionResult::Timeout) {
@@ -305,6 +305,11 @@ void MeterRCTPower::read_next()
             }
         }
         else {
+            if (!is_exactly_zero(value)) {
+                // Don't convert 0.0f into -0.0f if the scale factor is negative
+                value *= value_specs[value_index].scale_factor;
+            }
+
             meters.update_value(slot, value_index, value);
 
             if (virtual_meter == VirtualMeter::PV) {
