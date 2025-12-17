@@ -12,6 +12,16 @@ table_prototypes = [
             'default': 50,  # A
         },
         {
+            'name': 'force_charge_current',
+            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'default': 50,  # A
+        },
+        {
+            'name': 'force_discharge_current',
+            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'default': 50,  # A
+        },
+        {
             'name': 'min_soc',
             'type': 'Uint8',  # FIXME: add range limit to [0..100]
             'default': 10,  # %
@@ -213,7 +223,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_current;',
+                'mapping': 'values[0] = force_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
@@ -346,7 +356,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_current;',
+                'mapping': 'values[0] = force_discharge_current;',
             },
             {
                 'description': 'Target SOC [W]',
