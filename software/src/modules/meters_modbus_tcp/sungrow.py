@@ -414,6 +414,13 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Battery Capacity [0.1 kWh]',
+                'value_id': 'Capacity',
+                'start_number': 13039,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Total Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_number': 13041,
