@@ -43,6 +43,7 @@ extern "C" {
 #include "tools/string_builder.h"
 #include "tools/memory.h"
 #include "tools/fs.h"
+#include "tools/printf.h"
 
 #ifdef DEBUG_FS_ENABLE
 #include "embedded_bootloader.embedded.h"

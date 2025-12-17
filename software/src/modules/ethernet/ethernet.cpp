@@ -34,7 +34,7 @@
 
 #include "build.h"
 #include "options.h"
-#include "tools.h"
+#include "tools/printf.h"
 #include "tools/malloc.h"
 #include "tools/net.h"
 

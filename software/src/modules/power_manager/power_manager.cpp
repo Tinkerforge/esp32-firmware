@@ -26,7 +26,7 @@
 
 #include "event_log_prefix.h"
 #include "options.h"
-#include "tools.h"
+#include "tools/printf.h"
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"

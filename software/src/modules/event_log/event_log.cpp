@@ -40,7 +40,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
-#include "tools.h"
+#include "tools/printf.h"
 
 struct deflate_outbuf {
     char outbuf[1274]; // 1390 (conservative optimal WireGuard MTU) - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)

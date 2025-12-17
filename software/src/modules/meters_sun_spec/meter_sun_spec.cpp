@@ -22,11 +22,11 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "sun_spec_model_specs.h"
+#include "models/model_001.h"
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"
 #include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
-#include "modules/meters_sun_spec/models/model_001.h"
 
 #include "gcc_warnings.h"
 

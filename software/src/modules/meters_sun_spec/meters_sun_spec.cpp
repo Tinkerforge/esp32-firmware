@@ -27,7 +27,7 @@
 #include "build.h"
 #include "options.h"
 #include "meter_sun_spec.h"
-#include "tools.h"
+#include "tools/printf.h"
 #include "sun_spec_model_specs.h"
 #include "modules/meters/meter_location.enum.h"
 #include "dc_port_type.enum.h"

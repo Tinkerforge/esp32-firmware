@@ -28,6 +28,7 @@
 #include "module_dependencies.h"
 #include "tools/malloc.h"
 #include "tools/fs.h"
+#include "tools/printf.h"
 #include "pdf_charge_log.h"
 #include "csv_charge_log.h"
 #include "file_type.enum.h"

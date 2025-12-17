@@ -249,33 +249,6 @@ void trigger_reboot(const char *initiator, millis_t delay_ms)
     }, delay_ms);
 }
 
-size_t sprintf_u(char *buf, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    int res = vsprintf(buf, fmt, args);
-    va_end(args);
-
-    return res < 0 ? 0 : static_cast<size_t>(res);
-}
-
-size_t snprintf_u(char *buf, size_t len, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    int res = vsnprintf(buf, len, fmt, args);
-    va_end(args);
-
-    return res < 0 ? 0 : static_cast<size_t>(res);
-}
-
-size_t vsnprintf_u(char *buf, size_t len, const char *fmt, va_list args)
-{
-    int res = vsnprintf(buf, len, fmt, args);
-
-    return res < 0 ? 0 : static_cast<size_t>(res);
-}
-
 bool Ownership::try_acquire(uint32_t owner_id)
 {
     mutex.lock();
