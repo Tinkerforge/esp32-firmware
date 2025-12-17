@@ -68,13 +68,13 @@ MeterClassID MeterSunSpec::get_class() const
 void MeterSunSpec::setup(Config *ephemeral_config)
 {
     host              = ephemeral_config->get("host")->asString();
-    port              = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
-    device_address    = static_cast<uint8_t>(ephemeral_config->get("device_address")->asUint());
+    port              = ephemeral_config->get("port")->asUint16();
+    device_address    = ephemeral_config->get("device_address")->asUint8();
     manufacturer_name = ephemeral_config->get("manufacturer_name")->asString();
     model_name        = ephemeral_config->get("model_name")->asString();
     serial_number     = ephemeral_config->get("serial_number")->asString();
-    model_id          = static_cast<uint16_t>(ephemeral_config->get("model_id")->asUint());
-    model_instance    = static_cast<uint16_t>(ephemeral_config->get("model_instance")->asUint());
+    model_id          = ephemeral_config->get("model_id")->asUint16();
+    model_instance    = ephemeral_config->get("model_instance")->asUint16();
     dc_port_type      = ephemeral_config->get("dc_port_type")->asEnum<DCPortType>();
     model_parser      = MetersSunSpecParser::new_parser(slot, manufacturer_name.c_str(), model_name.c_str(), model_id, dc_port_type);
 

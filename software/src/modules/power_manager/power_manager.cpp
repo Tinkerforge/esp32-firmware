@@ -300,9 +300,9 @@ void PowerManager::setup()
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
     meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint();
     battery_priority            = config.get("battery_mode")->asEnum<BatteryPriority>(); // FIXME: for API stability reasons this member cannot be renamed to battery_priority
-    battery_target_soc          = static_cast<uint8_t>(config.get("battery_target_soc")->asUint());
+    battery_target_soc          = config.get("battery_target_soc")->asUint8();
     battery_inverted            = config.get("battery_inverted")->asBool();
-    battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
+    battery_deadzone_w          = config.get("battery_deadzone")->asUint16(); // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
     dynamic_load_enabled        = dynamic_load_config.get("enabled")->asBool();
     meter_slot_currents         = dynamic_load_config.get("meter_slot_grid_currents")->asUint();

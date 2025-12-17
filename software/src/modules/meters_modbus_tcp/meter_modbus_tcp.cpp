@@ -81,7 +81,7 @@ MeterClassID MeterModbusTCP::get_class() const
 void MeterModbusTCP::setup(Config *ephemeral_config)
 {
     host      = ephemeral_config->get("host")->asString();
-    port      = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
+    port      = ephemeral_config->get("port")->asUint16();
     table_id  = ephemeral_config->get("table")->getTag<MeterModbusTCPTableID>();
 
     auto ephemeral_table_config = ephemeral_config->get("table")->get();
@@ -480,7 +480,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM210:
-        device_address = static_cast<uint8_t>(ephemeral_table_config->get("device_address")->asUint());
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 61));
         table = &carlo_gavazzi_em210_table;
         break;
@@ -544,13 +544,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM300:
-        device_address = static_cast<uint8_t>(ephemeral_table_config->get("device_address")->asUint());
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
         table = &carlo_gavazzi_em300_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziET300:
-        device_address = static_cast<uint8_t>(ephemeral_table_config->get("device_address")->asUint());
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
         table = &carlo_gavazzi_et300_table;
         break;

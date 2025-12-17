@@ -101,11 +101,11 @@ void MetersSunSpec::register_urls()
 
         scan = new_psram_or_dram<Scan>();
 
-        scan->host = scan_config.get("host")->asString();
-        scan->port = static_cast<uint16_t>(scan_config.get("port")->asUint());
-        scan->device_address_first = static_cast<uint8_t>(scan_config.get("device_address_first")->asUint());
-        scan->device_address_last = static_cast<uint8_t>(scan_config.get("device_address_last")->asUint());
-        scan->cookie = scan_config.get("cookie")->asUint();
+        scan->host                 = scan_config.get("host")->asString();
+        scan->port                 = scan_config.get("port")->asUint16();
+        scan->device_address_first = scan_config.get("device_address_first")->asUint8();
+        scan->device_address_last  = scan_config.get("device_address_last")->asUint8();
+        scan->cookie               = scan_config.get("cookie")->asUint();
 
         if (scan->device_address_last < scan->device_address_first) {
             scan->device_address_last = scan->device_address_first;

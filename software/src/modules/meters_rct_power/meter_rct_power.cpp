@@ -167,7 +167,7 @@ MeterClassID MeterRCTPower::get_class() const
 void MeterRCTPower::setup(Config *ephemeral_config)
 {
     host          = ephemeral_config->get("host")->asString();
-    port          = static_cast<uint16_t>(ephemeral_config->get("port")->asUint());
+    port          = ephemeral_config->get("port")->asUint16();
     virtual_meter = ephemeral_config->get("virtual_meter")->asEnum<VirtualMeter>();
 
     MeterLocation default_location = MeterLocation::Unknown;

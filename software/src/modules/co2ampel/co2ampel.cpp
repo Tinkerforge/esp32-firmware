@@ -108,7 +108,7 @@ void Co2Ampel::setup()
 
     api.restorePersistentConfig("co2ampel/config", &config);
 
-    tf_co2_v2_set_temperature_offset(&co2, static_cast<uint16_t>(config.get("temperature_offset")->asUint()));
+    tf_co2_v2_set_temperature_offset(&co2, config.get("temperature_offset")->asUint16());
     tf_lcd_128x64_clear_display(&lcd);
     tf_lcd_128x64_set_touch_position_callback_configuration(&lcd, 100, true);
     tf_lcd_128x64_register_touch_position_callback(&lcd, touch_position_handler, NULL);

@@ -49,7 +49,7 @@ void EMPhaseSwitcher::setup()
     api.restorePersistentConfig("em_phase_switcher/charger_config", &charger_config);
 
     // Cache config
-    controlled_charger_idx = static_cast<uint8_t>(charger_config.get("idx")->asUint());
+    controlled_charger_idx = charger_config.get("idx")->asUint8();
 
     if (controlled_charger_idx == 255) {
         // Phase switching disabled

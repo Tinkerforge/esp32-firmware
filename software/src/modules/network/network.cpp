@@ -66,8 +66,8 @@ void Network::pre_setup()
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        const uint16_t new_port_http  = static_cast<uint16_t>(update.get("web_server_port")->asUint());
-        const uint16_t new_port_https = static_cast<uint16_t>(update.get("web_server_port_secure")->asUint());
+        const uint16_t new_port_http  = update.get("web_server_port")->asUint16();
+        const uint16_t new_port_https = update.get("web_server_port_secure")->asUint16();
 
         for (size_t i = 0; i < unsafe_ports_length; ++i) {
             if (unsafe_ports[i] == new_port_http) {

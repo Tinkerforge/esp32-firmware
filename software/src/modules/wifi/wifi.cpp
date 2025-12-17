@@ -573,7 +573,7 @@ void Wifi::setup()
             auto bssid_config = sta_config.get("bssid");
             uint8_t *bssid = runtime_sta->bssid;
             for (size_t i = 0; i < ARRAY_SIZE(runtime_sta->bssid); i++) {
-                bssid[i] = static_cast<uint8_t>(bssid_config->get(i)->asUint());
+                bssid[i] = bssid_config->get(i)->asUint8();
             }
 
             memcpy(runtime_sta->ssid_passphrase, ssid.c_str(), ssid_len_term);

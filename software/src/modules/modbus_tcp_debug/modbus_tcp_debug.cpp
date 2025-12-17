@@ -122,12 +122,12 @@ void ModbusTCPDebug::register_urls()
         }
 
         const String &host = transact_config.get("host")->asString();
-        uint16_t port = static_cast<uint16_t>(transact_config.get("port")->asUint());
-        uint8_t device_address = static_cast<uint8_t>(transact_config.get("device_address")->asUint());
+        uint16_t port = transact_config.get("port")->asUint16();
+        uint8_t device_address = transact_config.get("device_address")->asUint8();
         ModbusFunctionCode config_function_code = transact_config.get("function_code")->asEnum<ModbusFunctionCode>();
         TFModbusTCPFunctionCode protocol_function_code;
-        uint16_t start_address = static_cast<uint16_t>(transact_config.get("start_address")->asUint());
-        uint16_t data_count = static_cast<uint16_t>(transact_config.get("data_count")->asUint());
+        uint16_t start_address = transact_config.get("start_address")->asUint16();
+        uint16_t data_count = transact_config.get("data_count")->asUint16();
         const String &write_data = transact_config.get("write_data")->asString();
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
