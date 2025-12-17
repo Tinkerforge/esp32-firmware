@@ -18,6 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Component, Fragment, RefObject } from "preact";
@@ -33,7 +35,7 @@ import { InputText } from "../../ts/components/input_text";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { __, translate_unchecked } from "../../ts/translation";
-import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION } from "./api";
+import { EVSE_SLOT_EXTERNAL, EVSE_SLOT_AUTOMATION, EVSE_SLOT_EEBUS } from "./api";
 import { EVSEStatus } from "./evse_status";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryCharging } from "react-feather";
@@ -194,6 +196,12 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     <FormSeparator heading={__("evse.content.charging_current")}/>
 
                     {slots.map((slot, i) => {
+//#if MODULE_EEBUS_AVAILABLE
+
+//#else
+                        if (i == EVSE_SLOT_EEBUS)
+                            return null;
+//#endif
                         let variant = "";
                         let value = "";
 
