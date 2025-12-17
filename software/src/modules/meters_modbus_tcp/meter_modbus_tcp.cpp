@@ -347,12 +347,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
-    case MeterModbusTCPTableID::GoodweHybridInverter:
+    case MeterModbusTCPTableID::GoodweInverter:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
-        goodwe_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
-        goodwe_hybrid_inverter.battery_1_mode = -1;
-        goodwe_hybrid_inverter.battery_2_mode = -1;
-        table = get_goodwe_hybrid_inverter_table(slot, goodwe_hybrid_inverter.virtual_meter);
+        goodwe_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<GoodweInverterVirtualMeter>();
+        goodwe_inverter.battery_1_mode = -1;
+        goodwe_inverter.battery_2_mode = -1;
+        table = get_goodwe_inverter_table(slot, goodwe_inverter.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::SolaxHybridInverter:
@@ -918,16 +918,16 @@ bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
             && shelly_pro_3em.device_profile == ShellyPro3EMDeviceProfile::Monophase);
 }
 
-bool MeterModbusTCP::is_goodwe_hybrid_inverter_battery_meter() const
+bool MeterModbusTCP::is_goodwe_inverter_battery_meter() const
 {
-    return table_id == MeterModbusTCPTableID::GoodweHybridInverter
-        && goodwe_hybrid_inverter.virtual_meter == GoodweHybridInverterVirtualMeter::Battery;
+    return table_id == MeterModbusTCPTableID::GoodweInverter
+        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Battery;
 }
 
-bool MeterModbusTCP::is_goodwe_hybrid_inverter_pv_meter() const
+bool MeterModbusTCP::is_goodwe_inverter_pv_meter() const
 {
-    return table_id == MeterModbusTCPTableID::GoodweHybridInverter
-        && goodwe_hybrid_inverter.virtual_meter == GoodweHybridInverterVirtualMeter::PV;
+    return table_id == MeterModbusTCPTableID::GoodweInverter
+        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_solax_hybrid_inverter_pv_meter() const
@@ -1498,41 +1498,41 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if (is_goodwe_hybrid_inverter_battery_meter()) {
-        if (generic_read_request.start_address == GoodweHybridInverterBatteryModesAddress::Battery1Mode) {
-            if (goodwe_hybrid_inverter.battery_1_mode < 0) {
-                goodwe_hybrid_inverter.battery_1_mode = c16.u;
+    if (is_goodwe_inverter_battery_meter()) {
+        if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery1Mode) {
+            if (goodwe_inverter.battery_1_mode < 0) {
+                goodwe_inverter.battery_1_mode = c16.u;
             }
         }
-        else if (generic_read_request.start_address == GoodweHybridInverterBatteryModesAddress::Battery2Mode) {
-            if (goodwe_hybrid_inverter.battery_2_mode < 0) {
-                goodwe_hybrid_inverter.battery_2_mode = c16.u;
+        else if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery2Mode) {
+            if (goodwe_inverter.battery_2_mode < 0) {
+                goodwe_inverter.battery_2_mode = c16.u;
 
                 bool success = true;
 
-                if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
-                    table = &goodwe_hybrid_inverter_battery_1_and_2_table;
-                    logger.printfln_meter("Goodwe hybrid inverter with battery 1 and 2 detected");
+                if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode != 0) {
+                    table = &goodwe_inverter_battery_1_and_2_table;
+                    logger.printfln_meter("Goodwe inverter with battery 1 and 2 detected");
                 }
-                else if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode == 0) {
-                    table = &goodwe_hybrid_inverter_battery_1_table;
-                    logger.printfln_meter("Goodwe hybrid inverter with battery 1 detected");
+                else if (goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode == 0) {
+                    table = &goodwe_inverter_battery_1_table;
+                    logger.printfln_meter("Goodwe inverter with battery 1 detected");
                 }
-                else if (goodwe_hybrid_inverter.battery_1_mode == 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
-                    table = &goodwe_hybrid_inverter_battery_2_table;
-                    logger.printfln_meter("Goodwe hybrid inverter with battery 2 detected");
+                else if (goodwe_inverter.battery_1_mode == 0 && goodwe_inverter.battery_2_mode != 0) {
+                    table = &goodwe_inverter_battery_2_table;
+                    logger.printfln_meter("Goodwe inverter with battery 2 detected");
                 }
                 else {
                     success = false;
-                    logger.printfln_meter("Goodwe hybrid inverter without battery detected");
+                    logger.printfln_meter("Goodwe inverter without battery detected");
                 }
 
                 if (success) {
                     meters.declare_value_ids(slot, table->ids, table->ids_length);
                 }
                 else {
-                    goodwe_hybrid_inverter.battery_1_mode = -1;
-                    goodwe_hybrid_inverter.battery_2_mode = -1;
+                    goodwe_inverter.battery_1_mode = -1;
+                    goodwe_inverter.battery_2_mode = -1;
                 }
             }
 
@@ -2128,51 +2128,51 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
-    else if (is_goodwe_hybrid_inverter_battery_meter() && goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
-        if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery1Voltage) {
-            goodwe_hybrid_inverter.battery_1_voltage = value;
+    else if (is_goodwe_inverter_battery_meter() && goodwe_inverter.battery_1_mode != 0 && goodwe_inverter.battery_2_mode != 0) {
+        if (register_start_address == GoodweInverterBattery1And2Address::Battery1Voltage) {
+            goodwe_inverter.battery_1_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery1Current) {
-            goodwe_hybrid_inverter.battery_1_current = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery1Current) {
+            goodwe_inverter.battery_1_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery1Power) {
-            goodwe_hybrid_inverter.battery_1_power = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery1Power) {
+            goodwe_inverter.battery_1_power = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::BMS1PackTemperature) {
-            goodwe_hybrid_inverter.bms_1_pack_temperature = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::BMS1PackTemperature) {
+            goodwe_inverter.bms_1_pack_temperature = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery1Capacity) {
-            goodwe_hybrid_inverter.battery_1_capacity = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery1Capacity) {
+            goodwe_inverter.battery_1_capacity = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery2Voltage) {
-            goodwe_hybrid_inverter.battery_2_voltage = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery2Voltage) {
+            goodwe_inverter.battery_2_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery2Current) {
-            goodwe_hybrid_inverter.battery_2_current = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery2Current) {
+            goodwe_inverter.battery_2_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery2Power) {
-            goodwe_hybrid_inverter.battery_2_power = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery2Power) {
+            goodwe_inverter.battery_2_power = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::BMS2PackTemperature) {
-            goodwe_hybrid_inverter.bms_2_pack_temperature = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::BMS2PackTemperature) {
+            goodwe_inverter.bms_2_pack_temperature = value;
         }
-        else if (register_start_address == GoodweHybridInverterBattery1And2Address::Battery2Capacity) {
-            goodwe_hybrid_inverter.battery_2_capacity = value;
+        else if (register_start_address == GoodweInverterBattery1And2Address::Battery2Capacity) {
+            goodwe_inverter.battery_2_capacity = value;
 
-            float voltage_avg = (goodwe_hybrid_inverter.battery_1_voltage
-                               + goodwe_hybrid_inverter.battery_2_voltage) / 2.0f;
+            float voltage_avg = (goodwe_inverter.battery_1_voltage
+                               + goodwe_inverter.battery_2_voltage) / 2.0f;
 
-            float current_sum = goodwe_hybrid_inverter.battery_1_current
-                              + goodwe_hybrid_inverter.battery_2_current;
+            float current_sum = goodwe_inverter.battery_1_current
+                              + goodwe_inverter.battery_2_current;
 
-            float power_sum = goodwe_hybrid_inverter.battery_1_power
-                            + goodwe_hybrid_inverter.battery_2_power;
+            float power_sum = goodwe_inverter.battery_1_power
+                            + goodwe_inverter.battery_2_power;
 
-            float temperature_avg = (goodwe_hybrid_inverter.bms_1_pack_temperature
-                                   + goodwe_hybrid_inverter.bms_2_pack_temperature) / 2.0f;
+            float temperature_avg = (goodwe_inverter.bms_1_pack_temperature
+                                   + goodwe_inverter.bms_2_pack_temperature) / 2.0f;
 
-            float state_of_charge_avg = (goodwe_hybrid_inverter.battery_1_capacity
-                                       + goodwe_hybrid_inverter.battery_2_capacity) / 2.0f;
+            float state_of_charge_avg = (goodwe_inverter.battery_1_capacity
+                                       + goodwe_inverter.battery_2_capacity) / 2.0f;
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
@@ -2226,128 +2226,128 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], power_sum);
         }
     }
-    else if (is_goodwe_hybrid_inverter_pv_meter()) {
-        if (register_start_address == GoodweHybridInverterPVAddress::PVMode) {
-            goodwe_hybrid_inverter.pv_mode = c32.u;
+    else if (is_goodwe_inverter_pv_meter()) {
+        if (register_start_address == GoodweInverterPVAddress::PVMode) {
+            goodwe_inverter.pv_mode = c32.u;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV1Voltage) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 0) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV1Voltage) {
+            if (((goodwe_inverter.pv_mode >> 0) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv1_voltage = value;
+            goodwe_inverter.pv1_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV1Current) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 0) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV1Current) {
+            if (((goodwe_inverter.pv_mode >> 0) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv1_current = value;
+            goodwe_inverter.pv1_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV1Power) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 0) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV1Power) {
+            if (((goodwe_inverter.pv_mode >> 0) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv1_power = value;
+            goodwe_inverter.pv1_power = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV2Voltage) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 8) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV2Voltage) {
+            if (((goodwe_inverter.pv_mode >> 8) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv2_voltage = value;
+            goodwe_inverter.pv2_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV2Current) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 8) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV2Current) {
+            if (((goodwe_inverter.pv_mode >> 8) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv2_current = value;
+            goodwe_inverter.pv2_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV2Power) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 8) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV2Power) {
+            if (((goodwe_inverter.pv_mode >> 8) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv2_power = value;
+            goodwe_inverter.pv2_power = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV3Voltage) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 16) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV3Voltage) {
+            if (((goodwe_inverter.pv_mode >> 16) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv3_voltage = value;
+            goodwe_inverter.pv3_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV3Current) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 16) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV3Current) {
+            if (((goodwe_inverter.pv_mode >> 16) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv3_current = value;
+            goodwe_inverter.pv3_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV3Power) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 16) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV3Power) {
+            if (((goodwe_inverter.pv_mode >> 16) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv3_power = value;
+            goodwe_inverter.pv3_power = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV4Voltage) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 24) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV4Voltage) {
+            if (((goodwe_inverter.pv_mode >> 24) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv4_voltage = value;
+            goodwe_inverter.pv4_voltage = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV4Current) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 24) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV4Current) {
+            if (((goodwe_inverter.pv_mode >> 24) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv4_current = value;
+            goodwe_inverter.pv4_current = value;
         }
-        else if (register_start_address == GoodweHybridInverterPVAddress::PV4Power) {
-            if (((goodwe_hybrid_inverter.pv_mode >> 24) & 0xFF) == 0) {
+        else if (register_start_address == GoodweInverterPVAddress::PV4Power) {
+            if (((goodwe_inverter.pv_mode >> 24) & 0xFF) == 0) {
                 value = 0.0f; // ignore non-null values for disconnected PV inputs
             }
 
-            goodwe_hybrid_inverter.pv4_power = value;
+            goodwe_inverter.pv4_power = value;
 
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
-            if (!is_exactly_zero(goodwe_hybrid_inverter.pv1_voltage)) {
-                voltage_sum += goodwe_hybrid_inverter.pv1_voltage;
+            if (!is_exactly_zero(goodwe_inverter.pv1_voltage)) {
+                voltage_sum += goodwe_inverter.pv1_voltage;
                 ++voltage_count;
             }
 
-            if (!is_exactly_zero(goodwe_hybrid_inverter.pv2_voltage)) {
-                voltage_sum += goodwe_hybrid_inverter.pv2_voltage;
+            if (!is_exactly_zero(goodwe_inverter.pv2_voltage)) {
+                voltage_sum += goodwe_inverter.pv2_voltage;
                 ++voltage_count;
             }
 
-            if (!is_exactly_zero(goodwe_hybrid_inverter.pv3_voltage)) {
-                voltage_sum += goodwe_hybrid_inverter.pv3_voltage;
+            if (!is_exactly_zero(goodwe_inverter.pv3_voltage)) {
+                voltage_sum += goodwe_inverter.pv3_voltage;
                 ++voltage_count;
             }
 
-            if (!is_exactly_zero(goodwe_hybrid_inverter.pv4_voltage)) {
-                voltage_sum += goodwe_hybrid_inverter.pv4_voltage;
+            if (!is_exactly_zero(goodwe_inverter.pv4_voltage)) {
+                voltage_sum += goodwe_inverter.pv4_voltage;
                 ++voltage_count;
             }
 
             float voltage_avg = voltage_sum / voltage_count;
 
-            float current_sum = goodwe_hybrid_inverter.pv1_current
-                              + goodwe_hybrid_inverter.pv2_current
-                              + goodwe_hybrid_inverter.pv3_current
-                              + goodwe_hybrid_inverter.pv4_current;
+            float current_sum = goodwe_inverter.pv1_current
+                              + goodwe_inverter.pv2_current
+                              + goodwe_inverter.pv3_current
+                              + goodwe_inverter.pv4_current;
 
-            float power_sum = goodwe_hybrid_inverter.pv1_power
-                            + goodwe_hybrid_inverter.pv2_power
-                            + goodwe_hybrid_inverter.pv3_power
-                            + goodwe_hybrid_inverter.pv4_power;
+            float power_sum = goodwe_inverter.pv1_power
+                            + goodwe_inverter.pv2_power
+                            + goodwe_inverter.pv3_power
+                            + goodwe_inverter.pv4_power;
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);

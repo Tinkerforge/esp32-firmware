@@ -1,15 +1,15 @@
 table_prototypes = [
-    ('Goodwe Hybrid Inverter', ['device_address', 'virtual_meter']),
+    ('Goodwe Inverter', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
-    ('Goodwe Hybrid Inverter', 247),
+    ('Goodwe Inverter', 247),
 ]
 
 specs = [
     {
-        'name': 'Goodwe Hybrid Inverter',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Inverter'),
+        'name': 'Goodwe Inverter',
+        'virtual_meter': ('Goodwe Inverter', 'Inverter'),
         'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
@@ -51,8 +51,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Grid',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Grid'),
+        'name': 'Goodwe Inverter Grid',
+        'virtual_meter': ('Goodwe Inverter', 'Grid'),
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -178,8 +178,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Battery Modes',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Battery'),
+        'name': 'Goodwe  Inverter Battery Modes',
+        'virtual_meter': ('Goodwe Inverter', 'Battery'),
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -200,7 +200,7 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Battery 1',
+        'name': 'Goodwe Inverter Battery 1',
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -255,7 +255,7 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Battery 2',
+        'name': 'Goodwe Inverter Battery 2',
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -310,7 +310,7 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Battery 1 And 2',
+        'name': 'Goodwe Inverter Battery 1 And 2',
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
@@ -424,8 +424,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Load',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Load'),
+        'name': 'Goodwe Inverter Load',
+        'virtual_meter': ('Goodwe Inverter', 'Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -463,8 +463,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Backup Load',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Backup Load'),
+        'name': 'Goodwe Inverter Backup Load',
+        'virtual_meter': ('Goodwe Inverter', 'Backup Load'),
         'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
@@ -558,8 +558,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Meter',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'Meter'),
+        'name': 'Goodwe Inverter Meter',
+        'virtual_meter': ('Goodwe Inverter', 'Meter'),
         'default_location': 'Other',
         'register_type': 'HoldingRegister',
         'values': [
@@ -741,8 +741,8 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter PV',
-        'virtual_meter': ('Goodwe Hybrid Inverter', 'PV'),
+        'name': 'Goodwe Inverter PV',
+        'virtual_meter': ('Goodwe Inverter', 'PV'),
         'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [

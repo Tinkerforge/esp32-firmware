@@ -23,7 +23,7 @@ let x = {
             "table_alpha_ess_hybrid_inverter": "Alpha ESS hybrid inverter",
             "table_shelly_pro_em": "Shelly Pro EM",
             "table_shelly_pro_3em": "Shelly Pro 3EM",
-            "table_goodwe_hybrid_inverter": "GoodWe hybrid inverter (EH, ET, BH and BT series)",
+            "table_goodwe_inverter": "GoodWe inverter",
             "table_solax_hybrid_inverter": "Solax hybrid inverter",
             "table_fronius_gen24_plus": "Fronius GEN24 Plus",
             "table_hailei_hybrid_inverter": "Hailei hybrid inverter (TPH series)",

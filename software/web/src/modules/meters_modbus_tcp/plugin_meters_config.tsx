@@ -295,7 +295,7 @@ export function init() {
                                 [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_smart_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
-                                [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
+                                [MeterModbusTCPTableID.GoodweInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HuaweiEMMA.toString(), __("meters_modbus_tcp.content.table_huawei_emma")],
                                 [MeterModbusTCPTableID.HuaweiSmartLogger3000.toString(), __("meters_modbus_tcp.content.table_huawei_smart_logger_3000")],
@@ -351,7 +351,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
-                  || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.GoodweInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus
                   || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter
