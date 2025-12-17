@@ -1014,8 +1014,10 @@ void ShipConnection::state_sme_access_method_request()
 
 void ShipConnection::update_config_state(NodeState state) const
 {
-    peer_node->state = state;
-    eebus.update_peers_config();
+    task_scheduler.scheduleOnce([this, state]() {
+        peer_node->state = state;
+        eebus.update_peers_config();
+    });
 }
 
 void ShipConnection::state_done()
@@ -1026,7 +1028,7 @@ void ShipConnection::state_done()
     // which will then come back here.
 
     // Update frontend and config to inform it of the new connection state
-    if (!connection_established) {
+    if (!connection_established && peer_node->state != NodeState::Connected) {
         update_config_state(NodeState::Connected);
     }
     connection_established = true;
@@ -1037,9 +1039,11 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-            DynamicJsonDocument dynamic_json_document{SHIP_CONNECTION_MAX_JSON_SIZE}; //TESTING MEMORY STUFF
+            DynamicJsonDocument dynamic_json_document{SHIP_CONNECTION_MAX_JSON_SIZE}; //TODO: Make this more dynamic
             if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+
                 spine->process_datagram(data.payload);
+
             } else {
                 eebus.trace_fmtln("Received a Data Message but encountered an error while trying to deserialize the message");
             }
