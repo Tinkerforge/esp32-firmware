@@ -2,16 +2,6 @@ table_prototypes = [
     ('Sungrow Hybrid Inverter', [
         'device_address',
         {
-            'name': 'grid_charge_power',
-            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
-            'default': 1000,  # W
-        },
-        {
-            'name': 'grid_discharge_power',
-            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
-            'default': 1000,  # W
-        },
-        {
             'name': 'max_charge_power',
             'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 3000,  # 0.01 kW
@@ -20,6 +10,16 @@ table_prototypes = [
             'name': 'max_discharge_power',
             'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 1500,  # 0.01 kW
+        },
+        {
+            'name': 'grid_charge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
+            'default': 1000,  # W
+        },
+        {
+            'name': 'grid_discharge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
+            'default': 1000,  # W
         },
     ]),
 ]
