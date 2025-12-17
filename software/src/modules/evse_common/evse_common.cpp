@@ -120,6 +120,9 @@ void EvseCommon::pre_setup()
     ocpp_enabled = enabled_cfg;
     ocpp_enabled_update = ocpp_enabled;
 
+    eebus_enabled = enabled_cfg;
+    eebus_enabled_update = eebus_enabled;
+
     boost_mode = enabled_cfg;
     boost_mode_update = boost_mode;
 
@@ -765,6 +768,23 @@ void EvseCommon::register_urls()
         }
     }, false);
 
+    api.addState("evse/eebus_enabled", &eebus_enabled);
+    api.addCommand("evse/eebus_enabled_update", &eebus_enabled_update, {}, [this](String &/*errmsg*/) {
+        bool enabled = eebus_enabled_update.get("enabled")->asBool();
+
+        if (enabled == eebus_enabled.get("enabled")->asBool())
+            return;
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_EEBUS, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_EEBUS, 32000, false, false);
+        }
+    }, false);
+
     api.addPersistentConfig("evse/meter_config", &meter_config);
 
     backend->post_register_urls();
@@ -935,6 +955,16 @@ void EvseCommon::set_ocpp_current(uint16_t current)
 uint16_t EvseCommon::get_ocpp_current()
 {
     return slots.get(CHARGING_SLOT_OCPP)->get("max_current")->asUint();
+}
+
+void EvseCommon::set_eebus_current(uint16_t current)
+{
+    backend->set_charging_slot_max_current(CHARGING_SLOT_EEBUS, current);
+}
+
+uint16_t EvseCommon::get_eebus_current()
+{
+    return slots.get(CHARGING_SLOT_EEBUS)->get("max_current")->asUint();
 }
 
 void EvseCommon::factory_reset()
