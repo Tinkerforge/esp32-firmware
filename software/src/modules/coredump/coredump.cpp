@@ -199,9 +199,12 @@ void Coredump::register_urls()
 
         esp_err_t ret = esp_core_dump_image_check();
         if (ret != ESP_OK) {
+            if (ret == ESP_ERR_INVALID_SIZE) {
+                return request.send_plain(404, "No core dump stored");
+            }
             StringWriter sw(buffer, BUFFER_SIZE);
             sw.printf("No core dump image available: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-            return request.send_plain(404, sw);
+            return request.send_plain(503, sw);
         }
 
         size_t addr;

@@ -195,8 +195,8 @@ export class EventLog extends Component<{}, EventLogState> {
                 const msg = typeof(e) == "string" ? e : e?.message;
                 if (!msg) {
                     debug_log += "\n\nAn unknown error occurred while trying to download the core dump.";
-                } else if (msg.includes("404")) {
-                    debug_log += "\n\nNo core dump recorded: '" + msg + "'";
+                } else if (msg.startsWith("404")) {
+                    debug_log += "\n\nNo core dump stored";
                 } else {
                     debug_log += "\n\nFailed to download core dump: '" + msg + "'";
                 }
