@@ -695,7 +695,6 @@ function transfer_done() {
 }
 
 export function upload(url: string, data: Blob | ArrayBuffer, urgent: boolean, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
-    const xhr = new XMLHttpRequest();
     progress(0);
 
     let error_message: string = null;
@@ -707,6 +706,7 @@ export function upload(url: string, data: Blob | ArrayBuffer, urgent: boolean, p
     return new Promise<void>((resolve, reject) => {
         let transfer = () => {
             try {
+                const xhr = new XMLHttpRequest();
                 xhr.upload.addEventListener("abort", e => error_message = error_message ?? __("util.upload_abort"));
                 // https://bugs.chromium.org/p/chromium/issues/detail?id=118096#c5
                 // "The details of errors of XHRs and Fetch API are not exposed to JavaScript for security reasons."
