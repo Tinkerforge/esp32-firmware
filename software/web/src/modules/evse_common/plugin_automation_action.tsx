@@ -243,7 +243,7 @@ function get_pm_charge_mode_switch_edit_children(action: EVSEChargeModeAutomatio
 
 function new_pm_charge_mode_switch_config(): AutomationAction {
     return [
-        AutomationActionID.PMChargeModeSwitch,
+        AutomationActionID.EVSEChargeMode,
         {
             mode: 1,
         },
