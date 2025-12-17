@@ -2207,11 +2207,13 @@ void LpcUsecase::got_heartbeat(seconds_t timeout)
         timeout);
 }
 
-void LpcUsecase::apply_limit() const {
-    auto limit_mA = this->current_active_consumption_limit_w
-                    * 1000
-                    / 230
-                    / evse_common.backend->get_phases();
+void LpcUsecase::apply_limit() const
+{
+    uint32_t phases = evse_common.backend->get_phases();
+    if (phases == 0) {
+        return;
+    }
+    auto limit_mA = this->current_active_consumption_limit_w * 1000 / 230 / evse_common.backend->get_phases();
 
     if (limit_mA > 32000)
         limit_mA = 32000;
