@@ -45,7 +45,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_EVCS_USECASE
 //#define EEBUS_ENABLE_EVCEM_USECASE
 //#define EEBUS_ENABLE_EVCC_USECASE
-//#define EEBUS_ENABLE_EVSECC_USECASE
+#define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
 
@@ -56,6 +56,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION 22000
 // Enable LPC heartbeat
 #define EEBUS_LPC_ENABLE_HEARTBEAT true
+#define EEBUS_LPC_HEARTBEAT_INTERVAL 30_s // Must be more than 10 seconds and less or equal to 60 seconds
 
 struct MessageReturn {
     /**

@@ -249,9 +249,19 @@ MessageReturn NodeManagementEntity::handle_subscription(HeaderType &header, Spin
             return {true, true, CmdClassifierType::result};
         }
         NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
-        SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
+        SubscriptionManagementEntryDataType entry{};
         entry.clientAddress = request.subscriptionRequest->clientAddress;
         entry.serverAddress = request.subscriptionRequest->serverAddress;
+
+        // Check if the subscription already exists. We do not send an error and instead fail semi-silently.
+        for (SubscriptionManagementEntryDataType &old_entry : subscription_data.subscriptionEntry.get()) {
+            if (old_entry.clientAddress->device.get() == request.subscriptionRequest->clientAddress->device && old_entry.clientAddress->entity.get() == request.subscriptionRequest->clientAddress->entity && old_entry.clientAddress->feature.get() == request.subscriptionRequest->clientAddress->feature && old_entry.serverAddress->device.get() == request.subscriptionRequest->serverAddress->device && old_entry.serverAddress->entity.get() == request.subscriptionRequest->serverAddress->entity
+                && old_entry.serverAddress->feature.get() == request.subscriptionRequest->serverAddress->feature) {
+                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Subscription request was successful (already subscribed)");
+                return {true, true, CmdClassifierType::result};
+            }
+        }
+
         subscription_data.subscriptionEntry->push_back(entry);
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "Subscription request was successful");
         eebus.trace_fmtln("%s successfully subscribed to %s. Featuretype: %s", EEBUS_USECASE_HELPERS::spine_address_to_string(entry.clientAddress.get()).c_str(), EEBUS_USECASE_HELPERS::spine_address_to_string(entry.serverAddress.get()).c_str(), convertToString(request.subscriptionRequest->serverFeatureType.get()).c_str());
@@ -1648,7 +1658,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseccUsecase
     return features;
 }
 
-void EvseccUsecase::update_operating_state(bool failure, const String &error_message)
+void EvseccUsecase::update_operating_state(const bool failure, const String &error_message)
 {
     if (failure) {
         operating_state = DeviceDiagnosisOperatingStateEnumType::failure;
@@ -1706,7 +1716,7 @@ LpcUsecase::LpcUsecase()
                     update_api();
                 },
                 120_s,
-                30_s);
+                EEBUS_LPC_HEARTBEAT_INTERVAL - 2_s); //
             // Initialize ElectricalConnection feature
             //update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
             //update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
@@ -1714,7 +1724,11 @@ LpcUsecase::LpcUsecase()
             update_state();
             update_api();
 
-            task_scheduler.scheduleUncancelable([this](){ this->apply_limit(); }, 1_s);
+            task_scheduler.scheduleUncancelable(
+                [this]() {
+                    this->apply_limit();
+                },
+                1_s);
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
 }
@@ -1873,12 +1887,10 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
             response["loadControlLimitDescriptionListData"] = get_loadcontrol_limit_description();
             return {true, true, CmdClassifierType::reply};
-            ;
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
             response["loadControlLimitListData"] = get_loadcontrol_limit_list();
             return {true, true, CmdClassifierType::reply};
-            ;
         }
     }
     if (header.cmdClassifier == CmdClassifierType::write) {
@@ -1917,7 +1929,6 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Unknown command");
         }
         return {true, true, CmdClassifierType::result};
-        ;
     }
     return {false};
 }
@@ -2075,6 +2086,11 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t dur
 {
     limit_received = current_limit_w > 0 || limit_received;
     // Evaluate if the limit can be applied according to EEBUS_UC_TS_LimitationOfPowerConsumption_v1.0.0.pdf 2.2 Line 311
+    if (duration <= 0_s && !limit_active && limit_received && limit) {
+        // In case the duration is 0 (meaning until further notice) and the limit is not active, reject the limit. We need a duration to enable the limit
+        limit_active = false;
+        return false;
+    }
     limit_active = limit;
 
     // A limit lower than 0W shall be rejected
@@ -2107,9 +2123,8 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t dur
                 }
             },
             duration);
-    } else if (duration == 0_s) {
+    } else if (duration == 0_s && limit_active) {
         // A value of 0 means the limit is valid until further notice. see 3.4.1.4. Just update the limit
-
     } else {
         // Check what is to do in this case
     }
@@ -2397,7 +2412,7 @@ void LpcUsecase::broadcast_heartbeat()
     }
     DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
     outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
+    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(EEBUS_LPC_HEARTBEAT_INTERVAL);
     outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(rtc.timestamp_minutes() * 60).c_str();
 
     eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
