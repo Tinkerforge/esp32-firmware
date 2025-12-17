@@ -1713,6 +1713,8 @@ LpcUsecase::LpcUsecase()
 
             update_state();
             update_api();
+
+            task_scheduler.scheduleUncancelable([this](){ this->apply_limit(); }, 1_s);
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
 }
@@ -2203,6 +2205,22 @@ void LpcUsecase::got_heartbeat(seconds_t timeout)
             update_api();
         },
         timeout);
+}
+
+void LpcUsecase::apply_limit() const {
+    auto limit_mA = this->current_active_consumption_limit_w
+                    * 1000
+                    / 230
+                    / evse_common.backend->get_phases();
+
+    if (limit_mA > 32000)
+        limit_mA = 32000;
+    else if (limit_mA < 6000)
+        limit_mA = 0;
+
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    evse_common.set_eebus_current(limit_mA);
+#endif
 }
 
 void LpcUsecase::init_state()

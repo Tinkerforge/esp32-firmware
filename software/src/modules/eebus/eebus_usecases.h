@@ -800,6 +800,8 @@ private:
 
     void update_api() const;
 
+    void apply_limit() const;
+
     // LoadControl configuration as required for scenario 1 - Control Active Power
     // If a limit was received since startup
     bool limit_received = false;
