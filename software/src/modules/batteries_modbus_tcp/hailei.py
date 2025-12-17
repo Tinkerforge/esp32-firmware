@@ -4,12 +4,12 @@ table_prototypes = [
     ('Hailei Hybrid Inverter', [
         'device_address',
         {
-            'name': 'max_charge_power',
+            'name': 'force_charge_power',
             'type': 'Uint16',  # FIXME: add range limit to [0..32000]
             'default': 2000,  # W
         },
         {
-            'name': 'max_discharge_power',
+            'name': 'force_discharge_power',
             'type': 'Uint16',  # FIXME: add range limit to [0..33535]
             'default': 2000,  # W
         },
@@ -107,7 +107,7 @@ specs = [
                     None,      # state of charge [0.4 %], U16
                     0, 90,     # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 - max_charge_power;\n'
+                'mapping': 'values[2] = 32000 - force_charge_power;\n'
                            'values[6] = static_cast<uint16_t>(max_soc * 10u / 4u);',
             },
         ],
@@ -149,7 +149,7 @@ specs = [
                     None,      # state of charge [0.4 %], U16
                     0, 90,     # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 + max_discharge_power;\n'
+                'mapping': 'values[2] = 32000 + force_discharge_power;\n'
                            'values[6] = static_cast<uint16_t>(min_soc * 10u / 4u);',
             },
         ],

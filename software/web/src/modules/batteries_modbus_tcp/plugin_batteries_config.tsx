@@ -944,33 +944,33 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_normal: v})}));
                                     }} />
                             </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_charge")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_force_charge")}>
                                 <InputNumber
                                     required
                                     min={-2147483648}
                                     max={2147483647}
                                     unit="W"
-                                    value={config[1].table[1].grid_draw_setpoint_charge}
+                                    value={config[1].table[1].grid_draw_setpoint_force_charge}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_charge: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_force_charge: v})}));
                                     }} />
                             </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_discharge")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint_force_discharge")}>
                                 <InputNumber
                                     required
                                     min={-2147483648}
                                     max={2147483647}
                                     unit="W"
-                                    value={config[1].table[1].grid_draw_setpoint_discharge}
+                                    value={config[1].table[1].grid_draw_setpoint_force_discharge}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_discharge: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_draw_setpoint_force_discharge: v})}));
                                     }} />
                             </FormRow>);
 
                         extra_values = {
                             grid_draw_setpoint_normal: config[1].table[1].grid_draw_setpoint_normal,
-                            grid_draw_setpoint_charge: config[1].table[1].grid_draw_setpoint_charge,
-                            grid_draw_setpoint_discharge: config[1].table[1].grid_draw_setpoint_discharge,
+                            grid_draw_setpoint_force_charge: config[1].table[1].grid_draw_setpoint_force_charge,
+                            grid_draw_setpoint_force_discharge: config[1].table[1].grid_draw_setpoint_force_discharge,
                         };
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter) {
@@ -995,6 +995,28 @@ export function init() {
                                     value={config[1].table[1].max_discharge_current}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_current")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={185}
+                                    unit="A"
+                                    value={config[1].table[1].force_charge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_current")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={185}
+                                    unit="A"
+                                    value={config[1].table[1].force_discharge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_current: v})}));
                                     }} />
                             </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
@@ -1023,6 +1045,8 @@ export function init() {
                         extra_values = {
                             max_charge_current: config[1].table[1].max_charge_current,
                             max_discharge_current: config[1].table[1].max_discharge_current,
+                            force_charge_current: config[1].table[1].force_charge_current,
+                            force_discharge_current: config[1].table[1].force_discharge_current,
                             min_soc: config[1].table[1].min_soc,
                             max_soc: config[1].table[1].max_soc,
                         };
@@ -1030,26 +1054,26 @@ export function init() {
                     else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                           || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter) {
                         edit_children.push(
-                            <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputNumber
                                     required
                                     min={0}
                                     max={32000}
                                     unit="W"
-                                    value={config[1].table[1].max_charge_power}
+                                    value={config[1].table[1].force_charge_power}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
                                     }} />
                             </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
                                 <InputNumber
                                     required
                                     min={0}
                                     max={33535}
                                     unit="W"
-                                    value={config[1].table[1].max_discharge_power}
+                                    value={config[1].table[1].force_discharge_power}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
                                     }} />
                             </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
@@ -1076,8 +1100,8 @@ export function init() {
                             </FormRow>);
 
                         extra_values = {
-                            max_charge_power: config[1].table[1].max_charge_power,
-                            max_discharge_power: config[1].table[1].max_discharge_power,
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
                             min_soc: config[1].table[1].min_soc,
                             max_soc: config[1].table[1].max_soc,
                         };
@@ -1108,36 +1132,36 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
                                     }} />
                             </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
                                 <InputFloat
                                     required
                                     digits={3}
                                     min={0}
                                     max={5000}
                                     unit="kW"
-                                    value={config[1].table[1].grid_charge_power}
+                                    value={config[1].table[1].force_charge_power}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
                                     }} />
                             </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_discharge_power")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
                                 <InputFloat
                                     required
                                     digits={3}
                                     min={0}
                                     max={5000}
                                     unit="kW"
-                                    value={config[1].table[1].grid_discharge_power}
+                                    value={config[1].table[1].force_discharge_power}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_discharge_power: v})}));
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
                                     }} />
                             </FormRow>);
 
                         extra_values = {
                             max_charge_power: config[1].table[1].max_charge_power,
                             max_discharge_power: config[1].table[1].max_discharge_power,
-                            grid_charge_power: config[1].table[1].grid_charge_power,
-                            grid_discharge_power: config[1].table[1].grid_discharge_power,
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
                         };
                     }
 

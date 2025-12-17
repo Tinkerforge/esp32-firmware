@@ -9,12 +9,12 @@ table_prototypes = [
             'default': 50,  # W
         },
         {
-            'name': 'grid_draw_setpoint_charge',  # positive = draw, negative = feed
+            'name': 'grid_draw_setpoint_force_charge',  # positive = draw, negative = feed
             'type': 'Int32',
             'default': 1000,  # W
         },
         {
-            'name': 'grid_draw_setpoint_discharge',  # positive = draw, negative = feed
+            'name': 'grid_draw_setpoint_force_discharge',  # positive = draw, negative = feed
             'type': 'Int32',
             'default': 1000,  # W
         },
@@ -143,8 +143,8 @@ specs = [
                     None,
                     None,
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_charge) & 0xFFFF);',
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',
@@ -211,8 +211,8 @@ specs = [
                     None,
                     None,
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_discharge) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_discharge) & 0xFFFF);',
+                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) >> 16);\n'
+                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',

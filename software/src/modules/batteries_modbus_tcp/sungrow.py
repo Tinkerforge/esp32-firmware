@@ -12,12 +12,12 @@ table_prototypes = [
             'default': 1500,  # 0.01 kW
         },
         {
-            'name': 'grid_charge_power',
+            'name': 'force_charge_power',
             'type': 'Uint16',  # FIXME: add range limit to [0..5000]
             'default': 1000,  # W
         },
         {
-            'name': 'grid_discharge_power',
+            'name': 'force_discharge_power',
             'type': 'Uint16',  # FIXME: add range limit to [0..5000]
             'default': 1000,  # W
         },
@@ -205,7 +205,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = grid_charge_power;',
+                'mapping': 'values[0] = force_charge_power;',
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
@@ -302,7 +302,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = grid_discharge_power;',
+                'mapping': 'values[0] = force_discharge_power;',
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
