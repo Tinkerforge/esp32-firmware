@@ -1084,30 +1084,6 @@ export function init() {
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {
                         edit_children.push(
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
-                                <InputFloat
-                                    required
-                                    digits={3}
-                                    min={0}
-                                    max={65535}
-                                    unit="kW"
-                                    value={config[1].table[1].grid_charge_power}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
-                                    }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.grid_discharge_power")}>
-                                <InputFloat
-                                    required
-                                    digits={3}
-                                    min={0}
-                                    max={65535}
-                                    unit="kW"
-                                    value={config[1].table[1].grid_discharge_power}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_discharge_power: v})}));
-                                    }} />
-                            </FormRow>,
                             <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
                                 <InputFloat
                                     required
@@ -1131,13 +1107,37 @@ export function init() {
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
                                     }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_charge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={3}
+                                    min={0}
+                                    max={5000}
+                                    unit="kW"
+                                    value={config[1].table[1].grid_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.grid_discharge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={3}
+                                    min={0}
+                                    max={5000}
+                                    unit="kW"
+                                    value={config[1].table[1].grid_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {grid_discharge_power: v})}));
+                                    }} />
                             </FormRow>);
 
                         extra_values = {
-                            grid_charge_power: config[1].table[1].grid_charge_power,
-                            grid_discharge_power: config[1].table[1].grid_discharge_power,
                             max_charge_power: config[1].table[1].max_charge_power,
                             max_discharge_power: config[1].table[1].max_discharge_power,
+                            grid_charge_power: config[1].table[1].grid_charge_power,
+                            grid_discharge_power: config[1].table[1].grid_discharge_power,
                         };
                     }
 
