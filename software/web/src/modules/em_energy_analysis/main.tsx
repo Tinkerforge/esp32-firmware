@@ -490,6 +490,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             if (!subcache) {
                 // got changed event without having this UID cached before
+                console.log(`Energy Analysis: Got wallbox-5min ${changed.uid} changed event without having it cached before. Reloading subcache!`);
                 reload_subcache = true;
             } else {
                 let key = `${changed.year}-${changed.month}-${changed.day}`;
@@ -497,13 +498,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 if (!data) {
                     // got changed event without having this day cached before
+                    console.log(`Energy Analysis: Got wallbox-5min ${changed.uid} ${key} changed event without having it cached before. Reloading subcache!`);
                     reload_subcache = true;
                 }
                 else {
                     let timestamp_slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
                     if (timestamp_slot > 0 && data.flags[timestamp_slot - 1] === null) {
-                        // previous slot has no data. was a previous update event missed?
+                        // previous slot has no data. was a previous changed event missed?
+                        console.log(`Energy Analysis: Previous slot ${timestamp_slot - 1} has no data. Was a previous wallbox-5min ${changed.uid} ${key} changed event missed? Reloading subcache!`);
                         delete subcache[key];
                         reload_subcache = true;
                     }
@@ -537,12 +540,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             if (!data) {
                 // got changed event without having this day cached before
+                console.log(`Energy Analysis: Got energy-manager-5min ${key} changed event without having it cached before. Reloading cache!`);
                 reload_cache = true;
             } else {
                 let timestamp_slot = Math.floor((changed.hour * 60 + changed.minute) / 5);
 
                 if (timestamp_slot > 0 && data.flags[timestamp_slot - 1] === null) {
-                    // previous slot has no data. was a previous update event missed?
+                    // previous slot has no data. was a previous changed event missed?
+                    console.log(`Energy Analysis: Previous slot ${timestamp_slot - 1} has no data. Was a previous energy-manager-5min ${key} changed event missed? Reloading cache!`);
                     delete this.energy_manager_5min_cache[key];
                     reload_cache = true;
                 }
@@ -609,6 +614,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
             if (!subcache) {
                 // got changed event without having this UID cached before
+                console.log(`Energy Analysis: Got wallbox-daily ${changed.uid} changed event without having it cached before. Reloading subcache!`);
                 reload_subcache = true;
             } else {
                 let key = `${changed.year}-${changed.month}`;
@@ -616,13 +622,15 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 if (!data) {
                     // got changed event without having this month cached before
+                    console.log(`Energy Analysis: Got wallbox-daily ${changed.uid} ${key} changed event without having it cached before. Reloading subcache!`);
                     reload_subcache = true;
                 }
                 else {
                     let timestamp_slot = changed.day - 1;
 
                     if (timestamp_slot > 0 && data.energy[timestamp_slot - 1] == null) {
-                        // previous slot has no data. was a previous update event missed?
+                        // previous slot has no data. was a previous cached event missed?
+                        console.log(`Energy Analysis: Previous slot ${timestamp_slot - 1} has no data. Was a previous wallbox-daily ${changed.uid} ${key} cached event missed? Reloading subcache!`);
                         delete subcache[key];
                         reload_subcache = true;
                     }
@@ -654,7 +662,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let reload_cache: boolean = false;
 
             if (!data) {
-                // got changed event without having this day cached before
+                // got changed event without having this month cached before
+                console.log(`Energy Analysis: Got energy-manager-daily changed event without having ${key} cached before. Reloading cache!`);
                 reload_cache = true;
             } else {
                 let timestamp_slot = changed.day - 1;
