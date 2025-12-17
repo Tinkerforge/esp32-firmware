@@ -133,7 +133,7 @@ void Ship::disable_ship()
     // If mDNS is not started now,
     // it was not started while enabling ship
     // -> We don't have to remove the service in this case
-    if (network.is_mdns_started()) {
+    if (network.is_mdns_started() && mdns_service_exists("_ship", "_tcp", NULL)) {
         mdns_service_remove("_ship", "_tcp");
     }
 
@@ -192,12 +192,12 @@ void Ship::setup_wss()
         if (ws_client->setCtx(ship_connections.back().get()) != nullptr) {
             esp_system_abort("Clobbered previously set WebSocketsClient context");
         }
-         task_scheduler.scheduleOnce(
-                        []() {
-                            eebus.ship.discover_ship_peers();
-                            eebus.update_peers_config();
-                        },
-                        2_s);
+        task_scheduler.scheduleOnce(
+            []() {
+                eebus.ship.discover_ship_peers();
+                eebus.update_peers_config();
+            },
+            2_s);
 
         return true;
     });
@@ -523,8 +523,7 @@ void Ship::remove(const ShipConnection &ship_connection)
 
 void ShipNode::as_json(StringBuilder *sb)
 {
-    size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length()
-                    + txt_brand.length() + txt_model.length() + txt_type.length();
+    size_t strs_len = dns_name.length() + txt_id.length() + txt_wss_path.length() + txt_ski.length() + txt_brand.length() + txt_model.length() + txt_type.length();
     size_t ips_len = 0;
     for (const String &ip : ip_address) {
         ips_len += ip.length();
