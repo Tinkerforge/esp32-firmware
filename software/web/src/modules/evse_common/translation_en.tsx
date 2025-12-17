@@ -249,7 +249,7 @@ let x = {
             "dc_fault_current_6_ma_20_ma": "AC and DC fault",
 
             "reset_dc_fault_title": "Reset the DC fault protector",
-            "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>See manual for details.</a> : undefined} Really reset the DC fault protector?</>,
+            "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge (after disconnecting a possibly connected vehicle). <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>See manual for details.</a> : undefined} Really reset the DC fault protector?</>,
             "abort": "Abort",
             "reset": "Reset",
             "trigger_dc_fault_test": "Test DC fault protector",
