@@ -9,14 +9,14 @@ table_prototypes = [
             'default': 50,  # W
         },
         {
-            'name': 'grid_draw_setpoint_force_charge',  # positive = draw, negative = feed
-            'type': 'Int32',
+            'name': 'grid_draw_setpoint_force_charge',  # positive = draw
+            'type': 'Int32',  # FIXME: add range limit to [0..2147483647]
             'default': 1000,  # W
         },
         {
-            'name': 'grid_draw_setpoint_force_discharge',  # positive = draw, negative = feed
-            'type': 'Int32',
-            'default': 1000,  # W
+            'name': 'grid_draw_setpoint_force_discharge',  # negative = feed
+            'type': 'Int32',  # FIXME: add range limit to [-2147483648..0]
+            'default': -1000,  # W
         },
     ]),
 ]
@@ -40,8 +40,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    0,
-                    0,
+                    0, 0,
                 ],
             },
             {
@@ -72,8 +71,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    None, None,
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
                            'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
@@ -106,8 +104,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    None, None,
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
                            'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
@@ -140,8 +137,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    None, None,
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) >> 16);\n'
                            'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) & 0xFFFF);',
@@ -174,8 +170,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    None, None,
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
                            'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',

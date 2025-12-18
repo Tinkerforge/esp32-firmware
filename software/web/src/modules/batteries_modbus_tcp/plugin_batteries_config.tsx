@@ -949,7 +949,7 @@ export function init() {
                             <FormRow label={__("batteries_modbus_tcp.content.grid_draw_setpoint")} label_muted={__("batteries_modbus_tcp.content.grid_draw_setpoint_muted_force_charge")}>
                                 <InputNumber
                                     required
-                                    min={-2147483648}
+                                    min={0}
                                     max={2147483647}
                                     unit="W"
                                     value={config[1].table[1].grid_draw_setpoint_force_charge}
@@ -961,7 +961,7 @@ export function init() {
                                 <InputNumber
                                     required
                                     min={-2147483648}
-                                    max={2147483647}
+                                    max={0}
                                     unit="W"
                                     value={config[1].table[1].grid_draw_setpoint_force_discharge}
                                     onValue={(v) => {
