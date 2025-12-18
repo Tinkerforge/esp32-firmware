@@ -26,6 +26,9 @@
 #define USER_FILTER_ALL_USERS -2
 #define USER_FILTER_DELETED_USERS -1
 
+#define DEVICE_FILTER_ALL_CHARGERS -2
+#define DEVICE_FILTER_DELETED_CHARGERS -1
+
 #define CHARGE_RECORD_FOLDER "/charge-records"
 
 struct [[gnu::packed]] ChargeStart {
