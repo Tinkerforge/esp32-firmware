@@ -216,7 +216,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
                     <FormRow label={__("wireguard.content.mtu")} label_muted={__("wireguard.content.mtu_muted")}>
                         <InputNumber required
-                                     min={1280}
+                                     min={576}
                                      max={1440}
                                      value={state.mtu}
                                      onValue={this.set("mtu")}/>
