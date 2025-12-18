@@ -998,6 +998,13 @@ de_hyph = [
     "Ex-plo-rie-ren",
     "Zeit-syn-chro-ni-sa-ti-on",
     "ord-nungs-ge-mä-ße",
+    "even-tu-el-lem",
+    "si-g-nier-tes",
+    "ge-ne-rier-ter",
+    "Ver-bin-dungs-mo-dus",
+    "gleich-zei-tig",
+    "Pa-ket-grö-ße",
+    "öf-fent-li-cher",
 ]
 
 en_hyph = [
