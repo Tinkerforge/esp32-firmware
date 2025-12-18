@@ -2,12 +2,12 @@ table_prototypes = [
     ('SMA Hybrid Inverter', [
         'device_address',
         {
-            'name': 'max_charge_power',
+            'name': 'max_normal_charge_power',
             'type': 'Uint32',
             'default': 2000,  # W
         },
         {
-            'name': 'max_discharge_power',
+            'name': 'max_normal_discharge_power',
             'type': 'Uint32',
             'default': 2000,  # W
         },
@@ -84,10 +84,10 @@ specs = [
                     None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
                     0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
                 ],
-                'mapping': 'values[2] = static_cast<uint16_t>(max_charge_power >> 16);\n'
-                           'values[3] = static_cast<uint16_t>(max_charge_power & 0xFFFF);\n'
-                           'values[6] = static_cast<uint16_t>(max_discharge_power >> 16);\n'
-                           'values[7] = static_cast<uint16_t>(max_discharge_power & 0xFFFF);',
+                'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
+                           'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);\n'
+                           'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
+                           'values[7] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
             },
         ],
     },
@@ -115,8 +115,8 @@ specs = [
                     0, 0,        # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
                     0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
                 ],
-                'mapping': 'values[2] = static_cast<uint16_t>(max_charge_power >> 16);\n'
-                           'values[3] = static_cast<uint16_t>(max_charge_power & 0xFFFF);',
+                'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
+                           'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);',
             },
         ],
     },
@@ -175,8 +175,8 @@ specs = [
                     None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
                     0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
                 ],
-                'mapping': 'values[6] = static_cast<uint16_t>(max_discharge_power >> 16);\n'
-                           'values[6] = static_cast<uint16_t>(max_discharge_power & 0xFFFF);',
+                'mapping': 'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
+                           'values[6] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
             },
         ],
     },
