@@ -2505,6 +2505,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
                     logger.printfln("Directory '%s' has %lu files. Totalling to %u", dirname.c_str(), (last_record - first_record + 1), total_files);
                 }
             }
+            vTaskDelay(1);
         }
     }
 
@@ -2547,7 +2548,10 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
         // Get charger UID from directory name
         const char *b58 = directory == nullptr ? local_uid_str : directory;
         uint32_t charger_uid = 0;
-        tf_base58_decode(b58, &charger_uid);
+        if (tf_base58_decode(b58, &charger_uid) != 0) {
+            logger.printfln("Directory '%s' has invalid charger UID", directory == nullptr ? "main" : directory);
+            return;
+        }
 
         uint32_t prev_known_timestamp = 0;
         uint8_t charge_buf[CHARGE_RECORD_SIZE];
@@ -2609,6 +2613,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
                 }
             }
 
+            vTaskDelay(1);
             f.close();
         }
     };
@@ -2626,6 +2631,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
                 }
                 read_directory_charges(dirname.c_str());
             }
+            vTaskDelay(1);
         }
     }
 
