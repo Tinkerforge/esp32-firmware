@@ -240,3 +240,6 @@
 - Improve hostname/IP address validation
 - Improve web interface responsiveness with many configured chargers/meters
 - Update timezone database
+
+2025-12-18: 1.3.13 (<unknown>)
+- Fixed crash in charge manager initialization
