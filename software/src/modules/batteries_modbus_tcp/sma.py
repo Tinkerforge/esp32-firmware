@@ -39,11 +39,11 @@ specs = [
         'actions': ('Block', 'Block'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2424,  # Voreinstellung, U32BE
+                    0, 2424,  # Default setting, U32BE
                 ],
             },
             {
@@ -51,11 +51,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,  # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    0, 0,  # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    0, 0,  # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    0, 0,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,  # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,  # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
             },
         ],
@@ -66,11 +66,11 @@ specs = [
         'actions': ('Normal', 'Normal'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2424,  # Voreinstellung, U32BE
+                    0, 2424,  # Default setting, U32BE
                 ],
             },
             {
@@ -78,11 +78,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
                            'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);\n'
@@ -97,11 +97,11 @@ specs = [
         'actions': ('Normal', 'Block'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2424,  # Voreinstellung, U32BE
+                    0, 2424,  # Default setting, U32BE
                 ],
             },
             {
@@ -109,11 +109,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
                            'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);',
@@ -126,11 +126,11 @@ specs = [
         'actions': ('Force', 'Block'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2289,  # Batterie laden, U32BE
+                    0, 2289,  # Battery charging, U32BE
                 ],
             },
             {
@@ -138,11 +138,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    None, None,  # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    None, None,  # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(force_charge_power >> 16);\n'
                            'values[1] = static_cast<uint16_t>(force_charge_power & 0xFFFF);'
@@ -157,11 +157,11 @@ specs = [
         'actions': ('Block', 'Normal'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2424,  # Voreinstellung, U32BE
+                    0, 2424,  # Default setting, U32BE
                 ],
             },
             {
@@ -169,11 +169,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
                            'values[6] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
@@ -186,11 +186,11 @@ specs = [
         'actions': ('Block', 'Force'),
         'register_blocks': [
             {
-                'description': 'CmpBMS.OpMod - Betriebsart des BMS',
+                'description': 'CmpBMS.OpMod - Operating Mode of the battery management system',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40236,
                 'values': [
-                    0, 2290,  # Batterie entladen, U32BE
+                    0, 2290,  # Battery discharging, U32BE
                 ],
             },
             {
@@ -198,11 +198,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimale Batterieladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximale Batterieladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMinW - Minimale Batterieentladeleistung [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximale Batterieentladeleistung [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Sollwert der Netzaustauschleistung [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
+                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[4] = static_cast<uint16_t>(force_discharge_power >> 16);\n'
                            'values[5] = static_cast<uint16_t>(force_discharge_power & 0xFFFF);'
