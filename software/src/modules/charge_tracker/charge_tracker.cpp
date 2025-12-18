@@ -1382,8 +1382,8 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
 
     // Generate boundary for multipart form-data
-    String boundary = "----WebKitFormBoundary" + String(esp_random(), HEX);
-    String content_type = "multipart/form-data; boundary=" + boundary;
+    const char* boundary = "----TFESPFormBoundary";
+    String content_type = "multipart/form-data; boundary=" + String(boundary);
 
     upload_args->remote_client->set_header("Content-Type", content_type.c_str());
     const char *lang_header = (upload_args->language == Language::English) ? "en" : "de";
@@ -1400,7 +1400,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     // Send JSON part
     {
         StringBuilder json_part(600);
-        json_part.printf("--%s\r\n", boundary.c_str());
+        json_part.printf("--%s\r\n", boundary);
         json_part.printf("Content-Disposition: form-data; name=\"json\"\r\n");
         json_part.printf("Content-Type: application/json\r\n\r\n");
         json_part.printf("{"
@@ -1424,7 +1424,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     // Start chargelog part
     {
         StringBuilder chargelog_part_header(200);
-        chargelog_part_header.printf("--%s\r\n", boundary.c_str());
+        chargelog_part_header.printf("--%s\r\n", boundary);
         chargelog_part_header.printf("Content-Disposition: form-data; name=\"chargelog\"; filename=\"%s\"\r\n", filename.c_str());
         chargelog_part_header.printf("Content-Type: application/octet-stream\r\n\r\n");
 
@@ -1465,7 +1465,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     // Close multipart form-data
     {
         StringBuilder multipart_footer(50);
-        multipart_footer.printf("\r\n--%s--\r\n", boundary.c_str());
+        multipart_footer.printf("\r\n--%s--\r\n", boundary);
         upload_args->remote_client->send_chunk(multipart_footer.getPtr(), multipart_footer.getLength());
     }
 
