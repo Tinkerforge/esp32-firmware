@@ -26,6 +26,9 @@ let x = {
             "user_filter": "Benutzerfilter",
             "user_filter_muted": "heruntergeladene Datei wird nur Ladevorgänge des ausgewählten Benutzers beinhalten",
 
+            "device_filter": "Wallbox-Filter",
+            "device_filter_muted": "heruntergeladene Datei wird nur Ladevorgänge der ausgewählten Wallbox beinhalten",
+
             "date_filter": "Zeitfilter",
             "date_filter_muted": "heruntergeladene Datei wird nur Ladevorgänge in der ausgewählten Zeitspanne beinhalten",
             "from": "von",
@@ -90,6 +93,8 @@ let x = {
             "deleted_user": "Gelöschter Benutzer",
             "deleted_users": "Gelöschte Benutzer",
             "all_users": "Alle Benutzer",
+            "all_chargers": "Alle Wallboxen",
+            "deleted_chargers": "Gelöschte Wallboxen",
             "unknown_charge_start": "Unbekannter Startzeitpunkt",
 
             "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
