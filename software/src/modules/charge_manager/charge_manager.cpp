@@ -530,6 +530,9 @@ static void update_authentication(
 }
 
 static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, ChargerState *charger_state) {
+    if (client_id >= config->get("chargers")->count())
+        return;
+
     // Populate and save UID if not yet stored for this charger
     if (config->get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
         config->get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
@@ -1034,7 +1037,7 @@ const char *ChargeManager::get_charger_name(uint8_t idx)
 
 const char *ChargeManager::get_charger_name_by_uid(uint32_t uid)
 {
-    for (size_t i = 0; i < charger_count; ++i) {
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
         if (config.get("chargers")->get(i)->get("uid")->asUint() == uid)
             return config.get("chargers")->get(i)->get("name")->asEphemeralCStr();
     }
