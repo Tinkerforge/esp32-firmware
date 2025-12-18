@@ -241,6 +241,19 @@ void BatteriesModbusTCP::register_urls()
 
             break;
 
+        case BatteryModbusTCPTableID::SMAHybridInverter:
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
+
+            load_sma_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln("Unknown SMA Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                return;
+            }
+
+            break;
+
         default:
             test_printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
             return;

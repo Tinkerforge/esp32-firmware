@@ -514,6 +514,11 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         load_sungrow_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
+    case BatteryModbusTCPTableID::SMAHybridInverter:
+        device_address = table_config->get("device_address")->asUint8();
+        load_sma_hybrid_inverter_tables(tables, &repeat_interval, table_config);
+        break;
+
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
