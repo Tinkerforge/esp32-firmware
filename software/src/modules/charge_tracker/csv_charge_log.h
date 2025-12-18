@@ -31,6 +31,7 @@
 struct CSVGenerationParams {
     CSVFlavor flavor;
     int user_filter;
+    int device_filter;
     uint32_t start_timestamp_min;
     uint32_t end_timestamp_min;
     uint32_t electricity_price;
@@ -39,6 +40,7 @@ struct CSVGenerationParams {
     CSVGenerationParams() :
         flavor(CSVFlavor::Excel),
         user_filter(USER_FILTER_ALL_USERS),
+        device_filter(DEVICE_FILTER_ALL_CHARGERS),
         start_timestamp_min(0),
         end_timestamp_min(UINT32_MAX),
         electricity_price(0),
