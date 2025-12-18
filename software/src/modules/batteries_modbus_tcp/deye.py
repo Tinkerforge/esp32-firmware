@@ -14,22 +14,12 @@ table_prototypes = [
         {
             'name': 'force_charge_current',
             'type': 'Uint8',  # FIXME: add range limit to [1..185]
-            'default': 50,  # A
+            'default': 25,  # A
         },
         {
             'name': 'force_discharge_current',
             'type': 'Uint8',  # FIXME: add range limit to [1..185]
-            'default': 50,  # A
-        },
-        {
-            'name': 'min_soc',
-            'type': 'Uint8',  # FIXME: add range limit to [0..100]
-            'default': 10,  # %
-        },
-        {
-            'name': 'max_soc',
-            'type': 'Uint8',  # FIXME: add range limit to [0..100]
-            'default': 100,  # %
+            'default': 25,  # A
         },
     ]),
 ]
@@ -63,25 +53,6 @@ specs = [
                 'values': [
                     0,
                 ],
-            },
-            {
-                'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 166,  # U16
-                'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;\n'
-                           'values[1] = min_soc;\n'
-                           'values[2] = min_soc;\n'
-                           'values[3] = min_soc;\n'
-                           'values[4] = min_soc;\n'
-                           'values[5] = min_soc;\n',
             },
             {
                 'description': 'Time points charge enable',
@@ -122,25 +93,6 @@ specs = [
                 'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
-                'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 166,  # U16
-                'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;\n'
-                           'values[1] = min_soc;\n'
-                           'values[2] = min_soc;\n'
-                           'values[3] = min_soc;\n'
-                           'values[4] = min_soc;\n'
-                           'values[5] = min_soc;\n',
-            },
-            {
                 'description': 'Time points charge enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 172,  # U16
@@ -176,25 +128,6 @@ specs = [
                 'values': [
                     0,
                 ],
-            },
-            {
-                'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 166,  # U16
-                'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ],
-                'mapping': 'values[0] = max_soc;\n'
-                           'values[1] = max_soc;\n'
-                           'values[2] = max_soc;\n'
-                           'values[3] = max_soc;\n'
-                           'values[4] = max_soc;\n'
-                           'values[5] = max_soc;\n',
             },
             {
                 'description': 'Time points charge enable',
@@ -238,19 +171,13 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
+                    100,
+                    100,
+                    100,
+                    100,
+                    100,
+                    100,
                 ],
-                'mapping': 'values[0] = max_soc;\n'
-                           'values[1] = max_soc;\n'
-                           'values[2] = max_soc;\n'
-                           'values[3] = max_soc;\n'
-                           'values[4] = max_soc;\n'
-                           'values[5] = max_soc;\n',
             },
             {
                 'description': 'Time points',
@@ -303,25 +230,6 @@ specs = [
                 'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
-                'description': 'Target SOC [%]',
-                'function_code': 'WriteMultipleRegisters',
-                'start_address': 166,  # U16
-                'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ],
-                'mapping': 'values[0] = min_soc;\n'
-                           'values[1] = min_soc;\n'
-                           'values[2] = min_soc;\n'
-                           'values[3] = min_soc;\n'
-                           'values[4] = min_soc;\n'
-                           'values[5] = min_soc;\n',
-            },
-            {
                 'description': 'Time points charge enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 172,  # U16
@@ -359,23 +267,17 @@ specs = [
                 'mapping': 'values[0] = force_discharge_current;',
             },
             {
-                'description': 'Target SOC [W]',
+                'description': 'Target SOC [%]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 166,  # U16
                 'values': [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
                 ],
-                'mapping': 'values[0] = min_soc;\n'
-                           'values[1] = min_soc;\n'
-                           'values[2] = min_soc;\n'
-                           'values[3] = min_soc;\n'
-                           'values[4] = min_soc;\n'
-                           'values[5] = min_soc;\n',
             },
             {
                 'description': 'Time points',

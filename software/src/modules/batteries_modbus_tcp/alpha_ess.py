@@ -13,16 +13,6 @@ table_prototypes = [
             'type': 'Uint16',  # FIXME: add range limit to [0..33535]
             'default': 2000,  # W
         },
-        {
-            'name': 'min_soc',
-            'type': 'Uint8',  # FIXME: add range limit to [0..100]
-            'default': 10,  # %
-        },
-        {
-            'name': 'max_soc',
-            'type': 'Uint8',  # FIXME: add range limit to [0..100]
-            'default': 100,  # %
-        },
     ]),
 ]
 
@@ -49,7 +39,7 @@ specs = [
                     0, 32000,  # active power [W], U32BE
                     0, 32000,  # reactive power [var], U32BE, unused
                     2,         # state of charge control, U16
-                    125,       # state of charge [0.4 %], U16
+                    125,       # state of charge [0.4 %], U16, unused
                     0, 90,     # duration [s], U32BE
                 ],
             },
@@ -104,11 +94,10 @@ specs = [
                     0, None,   # active power [W], U32BE
                     0, 32000,  # reactive power [var], U32BE, unused
                     2,         # state of charge control, U16
-                    None,      # state of charge [0.4 %], U16
+                    250,       # state of charge [0.4 %], U16, 100 %
                     0, 90,     # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 - force_charge_power;\n'
-                           'values[6] = static_cast<uint16_t>(max_soc * 10u / 4u);',
+                'mapping': 'values[2] = 32000 - force_charge_power;',
             },
         ],
     },
@@ -146,11 +135,10 @@ specs = [
                     0, None,   # active power [W], U32BE
                     0, 32000,  # reactive power [var], U32BE, unused
                     2,         # state of charge control, U16
-                    None,      # state of charge [0.4 %], U16
+                    25,        # state of charge [0.4 %], U16, 10 %
                     0, 90,     # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 + force_discharge_power;\n'
-                           'values[6] = static_cast<uint16_t>(min_soc * 10u / 4u);',
+                'mapping': 'values[2] = 32000 + force_discharge_power;',
             },
         ],
     },

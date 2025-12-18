@@ -41,8 +41,6 @@ let x = {
             "grid_draw_setpoint_muted_normal": "normal",
             "grid_draw_setpoint_muted_force_charge": "force charge",
             "grid_draw_setpoint_muted_force_discharge": "force discharge",
-            "max_soc": "Maximum state of charge",
-            "min_soc": "Minimum state of charge",
             "force_charge_current": "Force charge current",
             "force_discharge_current": "Force discharge current",
             "force_charge_power": "Force charge power",
