@@ -214,7 +214,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
+                'mapping': 'values[0] = std::max(max_normal_charge_power, force_charge_power);',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -319,7 +319,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
+                'mapping': 'values[0] = std::max(max_normal_discharge_power, force_discharge_power);',
             },
         ],
     },
