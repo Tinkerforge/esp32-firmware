@@ -506,12 +506,14 @@ static void update_authentication(
     if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
         // Update NFC state
         int16_t new_auth = charger_authorized(v5, target.last_plug_out);
+        bool deadline_elapsed_unknown_nfc = deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s);
 
         if (new_auth == UNKNOWN_NFC_TAG) {
-            if (target.unknown_nfc_tag_timestamp == 0_us)
+            // We will always have a v5 here since we have seen the nfc info
+            if (v5->nfc_last_seen_s < 2 && deadline_elapsed_unknown_nfc)
                 target.unknown_nfc_tag_timestamp = now_us();
 
-            if (!deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s)) {
+            if (!deadline_elapsed_unknown_nfc) {
                 target.authenticated_user_id = new_auth;
             } else {
                 target.authenticated_user_id = NOT_AUTHORIZED; // switch back to nag after short nack window
