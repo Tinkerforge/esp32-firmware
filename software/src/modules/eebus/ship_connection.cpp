@@ -1039,14 +1039,15 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-            DynamicJsonDocument dynamic_json_document{SHIP_CONNECTION_MAX_JSON_SIZE}; //TODO: Make this more dynamic
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
 
-                spine->process_datagram(data.payload);
-
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+                task_scheduler.scheduleOnce([this, data = std::move(data)]() {
+                    spine->process_datagram(data.payload);
+                });
             } else {
                 eebus.trace_fmtln("Received a Data Message but encountered an error while trying to deserialize the message");
             }
+
             break;
         }
         case ProtocolState::MessageProtocolHandshake: {

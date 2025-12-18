@@ -32,7 +32,7 @@ SpineConnection::SpineConnection(ShipConnection *ship_conn)
         [this]() {
             check_ack_expired();
         },
-        60_s);
+        60_s); // Every 60 seconds we check for expired acks. Worst case an ack expires and it takes 119 seconds to notice.
     eebus.trace_fmtln("New SPINE Connection created for peer %s", ship_connection->peer_node->node_name().c_str());
 }
 SpineConnection::~SpineConnection()
@@ -60,7 +60,6 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     if (!check_known_address(received_header.addressSource.get())) {
         known_addresses.push_back(received_header.addressSource.get());
     }
-
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {

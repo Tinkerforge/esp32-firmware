@@ -28,7 +28,7 @@
 
 namespace SHIP_TYPES
 {
-DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, JsonDocument &doc)
+DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length)
 {
     doc.clear();
     String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);

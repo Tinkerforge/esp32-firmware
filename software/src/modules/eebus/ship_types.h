@@ -66,7 +66,8 @@ struct ShipMessageDataType {
     String extension_string{};
 
     bool eebus_json_compatibility_mode = true; // If true, the json will be converted to EEBUS format during deserialization and back to normal json during serialization
-    DeserializationResult json_to_type(uint8_t *data, size_t length, JsonDocument &doc);
+    BasicJsonDocument<ArduinoJsonPsramAllocator> doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DeserializationResult json_to_type(uint8_t *data, size_t length);
     // Needs a jsondoc otherwise the payload cant be stored
     String type_to_json();
 };

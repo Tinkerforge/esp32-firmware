@@ -28,6 +28,8 @@
 #include <LittleFS.h>
 #include <TFJson.h>
 
+extern char local_uid_str[32];
+
 void EEBus::pre_setup()
 {
     // Use PSRAM 128kB for trace buffer for now. We can reduce it if necessary.
@@ -282,11 +284,11 @@ void EEBus::toggle_module()
 String EEBus::get_eebus_name()
 {
     const char *manufacturer = OPTIONS_MANUFACTURER_USER_AGENT();
-    const char *model = api.getState("info/name")->get("type")->asEphemeralCStr();
-    const char *uid = api.getState("info/name")->get("uid")->asEphemeralCStr();
+    const char *model = OPTIONS_HOSTNAME_PREFIX();
+    const char *uid = local_uid_str;
 
     char buffer[64];
-    StringWriter sw(buffer, ARRAY_SIZE(buffer));
+    StringWriter sw(buffer, std::size(buffer));
 
     sw.puts(manufacturer);
     sw.putc('-');
