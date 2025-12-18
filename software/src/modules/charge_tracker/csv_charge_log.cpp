@@ -299,8 +299,6 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
 
 int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                                         std::function<esp_err_t(const char* data, size_t length)> callback) {
-    std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
-
     String header_line;
 
     if (params.flavor == CSVFlavor::Excel) {
@@ -333,7 +331,64 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     String accumulated_data;
     accumulated_data.reserve(MAX_ACCUMULATED);
 
-    int rc = readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
+    // Helper lambda to process a single charge record and add it to accumulated_data
+    auto process_charge = [&](const Charge* record, bool last) -> esp_err_t {
+        float energy_charged = NAN;
+        if (!std::isnan(record->cs.meter_start) && !std::isnan(record->ce.meter_end) &&
+            record->ce.meter_end >= record->cs.meter_start) {
+            energy_charged = record->ce.meter_end - record->cs.meter_start;
+        }
+
+        float price_euros = 0.0f;
+        if (params.electricity_price > 0 && !std::isnan(energy_charged) && energy_charged >= 0) {
+            float price_per_kwh = params.electricity_price / 10000.0f;
+            price_euros = energy_charged * price_per_kwh;
+        }
+
+        String fields[9];
+        size_t field_count = 7;
+        char display_name[33];
+        get_display_name(record->cs.user_id, display_name, display_name_cache, params.language);
+        fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
+        fields[1] = display_name;
+        fields[2] = formatEnergy(energy_charged, params.language);
+        fields[3] = formatDuration(record->ce.charge_duration);
+        fields[5] = formatEnergy(record->cs.meter_start, params.language);
+        fields[6] = formatEnergy(record->ce.meter_end, params.language);
+        fields[7] = display_name;
+
+        if (params.electricity_price > 0) {
+            fields[8] = formatPrice(price_euros, params.language);
+            field_count = 9;
+        }
+
+        String csv_line = formatCSVLine(fields, field_count, params.flavor);
+
+        if (params.flavor == CSVFlavor::Excel) {
+            csv_line = convertToWindows1252(csv_line);
+        }
+
+        accumulated_data += csv_line;
+
+        if (accumulated_data.length() < MAX_ACCUMULATED && !last) {
+            return ESP_OK;
+        }
+
+        int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
+        if (callback_result != ESP_OK) {
+            logger.printfln("Failed to send CSV data chunk.");
+        } else {
+            accumulated_data.clear();
+        }
+
+        vTaskDelay(1); // Yield to allow other tasks to run
+
+        return callback_result;
+    };
+
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+    std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
+    readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
         [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
@@ -353,59 +408,23 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                 return ESP_OK;
             }
 
-            float energy_charged = NAN;
-            if (!std::isnan(record->cs.meter_start) && !std::isnan(record->ce.meter_end) &&
-                record->ce.meter_end >= record->cs.meter_start) {
-                energy_charged = record->ce.meter_end - record->cs.meter_start;
-            }
-
-            float price_euros = 0.0f;
-            if (params.electricity_price > 0 && !std::isnan(energy_charged) && energy_charged >= 0) {
-                float price_per_kwh = params.electricity_price / 10000.0f;
-                price_euros = energy_charged * price_per_kwh;
-            }
-
-            String fields[9];
-            size_t field_count = 7;
-            char display_name[33];
-            get_display_name(record->cs.user_id, display_name, display_name_cache, params.language);
-            fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
-            fields[1] = display_name;
-            fields[2] = formatEnergy(energy_charged, params.language);
-            fields[3] = formatDuration(record->ce.charge_duration);
-            fields[5] = formatEnergy(record->cs.meter_start, params.language);
-            fields[6] = formatEnergy(record->ce.meter_end, params.language);
-            fields[7] = display_name; // TODO: a) this should be the username, not the display name and b) we can remove this column completely
-
-            if (params.electricity_price > 0) {
-                fields[8] = formatPrice(price_euros, params.language);
-                field_count = 9;
-            }
-
-            String csv_line = formatCSVLine(fields, field_count, params.flavor);
-
-            if (params.flavor == CSVFlavor::Excel) {
-                csv_line = convertToWindows1252(csv_line);
-            }
-
-            accumulated_data += csv_line;
-
-            if (accumulated_data.length() < MAX_ACCUMULATED && !last) {
-                return ESP_OK; // Continue accumulating
-            }
-
-            int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
-            if (callback_result != ESP_OK) {
-                logger.printfln("Failed to send CSV data chunk.");
-            } else {
-                accumulated_data.clear();
-            }
-
-            return callback_result;
+            return process_charge(record, last);
         });
+#else
+    size_t filtered_count = 0;
+    ExportCharge *filtered_charges = charge_tracker.getFilteredCharges(params.user_filter, params.start_timestamp_min, params.end_timestamp_min, &filtered_count);
 
-    if (rc < 0)
-        return rc;
+    if (filtered_charges != nullptr) {
+        for (size_t i = 0; i < filtered_count; ++i) {
+            bool last = (i == filtered_count - 1);
+            esp_err_t result = process_charge(&filtered_charges[i].charge, last);
+            if (result != ESP_OK) {
+                break;
+            }
+        }
+        delete[] filtered_charges;
+    }
+#endif
 
     // This might not be necessary if accumulated_data is cleared on error as well.
     if (accumulated_data.length() > 0) {
