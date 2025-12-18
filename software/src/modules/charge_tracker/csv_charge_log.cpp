@@ -381,6 +381,8 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             accumulated_data.clear();
         }
 
+        vTaskDelay(1); // Yield to allow other tasks to run
+
         return callback_result;
     };
 
