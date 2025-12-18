@@ -26,6 +26,9 @@ let x = {
             "user_filter": "User filter",
             "user_filter_muted": "downloaded file will only contain charges of the selected user",
 
+            "device_filter": "Charger filter",
+            "device_filter_muted": "downloaded file will only contain charges of the selected charger",
+
             "date_filter": "Time filter",
             "date_filter_muted": "downloaded file will only contain charges in the selected date range",
             "from": "from",
@@ -90,6 +93,8 @@ let x = {
             "deleted_user": "Deleted user",
             "deleted_users": "Deleted users",
             "all_users": "All users",
+            "all_chargers": "All chargers",
+            "deleted_chargers": "Deleted chargers",
             "unknown_charge_start": "Unknown start time",
 
             "remove_failed": "Failed to remove tracked charges",

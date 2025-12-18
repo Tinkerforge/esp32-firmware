@@ -63,7 +63,7 @@ public:
 
     void updateLastCharges(const char *directory);
 
-    ExportCharge *getFilteredCharges(int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
+    ExportCharge *getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
@@ -85,7 +85,7 @@ public:
 private:
     bool repair_last(float);
     void repair_charges();
-    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
+    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
     std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
     bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
