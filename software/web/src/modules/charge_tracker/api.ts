@@ -58,6 +58,7 @@ export interface csv {
     start_timestamp_min?: number;
     end_timestamp_min?: number;
     user_filter?: number;
+    device_filter?: number;
     csv_delimiter?: number;
 }
 
@@ -121,5 +122,6 @@ export interface pdf {
     start_timestamp_min?: number;
     end_timestamp_min?: number;
     user_filter?: number;
+    device_filter?: number;
     letterhead?: string;
 }

@@ -759,6 +759,20 @@ static bool is_charger_in_config(const char *directory)
     return false;
 }
 
+static bool is_charger_in_config_await(const char *directory)
+{
+    bool result = false;
+    String directory_copy = directory == nullptr ? String() : String(directory);
+    auto await_result = task_scheduler.await([&result, &directory_copy]() {
+        result = is_charger_in_config(directory_copy.isEmpty() ? nullptr : directory_copy.c_str());
+    });
+    if (await_result != TaskScheduler::AwaitResult::Done) {
+        logger.printfln("is_charger_in_config_await: Task timed out");
+        return false;
+    }
+    return result;
+}
+
 static String get_charger_display_name_from_host(const char *directory)
 {
     const char *b58 = directory == nullptr ? local_uid_str : directory;
@@ -1355,6 +1369,7 @@ void ChargeTracker::register_urls()
         #define USER_FILTER_ALL_USERS -2
         #define USER_FILTER_DELETED_USERS -1
         int user_filter = USER_FILTER_ALL_USERS;
+        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
@@ -1396,6 +1411,7 @@ void ChargeTracker::register_urls()
             }
 
             user_filter = doc["user_filter"];
+            device_filter = doc["device_filter"];
             start_timestamp_min = doc["start_timestamp_min"];
             end_timestamp_min = doc["end_timestamp_min"];
             uint8_t language_val = doc["language"];
@@ -1443,7 +1459,7 @@ void ChargeTracker::register_urls()
         };
 
         request.beginChunkedResponse(200, "application/pdf");
-        int rc = this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
+        int rc = this->generate_pdf(callback, user_filter, device_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
         if (rc != 0)
             return WebServerRequestReturnProtect{.error = ESP_FAIL};
 
@@ -1455,6 +1471,7 @@ void ChargeTracker::register_urls()
         #define USER_FILTER_ALL_USERS -2
         #define USER_FILTER_DELETED_USERS -1
         int user_filter = USER_FILTER_ALL_USERS;
+        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
@@ -1493,6 +1510,7 @@ void ChargeTracker::register_urls()
             }
 
             user_filter = doc["user_filter"];
+            device_filter = doc["device_filter"] | DEVICE_FILTER_ALL_CHARGERS;
             start_timestamp_min = doc["start_timestamp_min"];
             end_timestamp_min = doc["end_timestamp_min"];
             uint8_t language_val = doc["language"];
@@ -1506,6 +1524,7 @@ void ChargeTracker::register_urls()
 
         CSVGenerationParams csv_params;
         csv_params.user_filter = user_filter;
+        csv_params.device_filter = device_filter;
         csv_params.start_timestamp_min = start_timestamp_min;
         csv_params.end_timestamp_min = end_timestamp_min;
         csv_params.language = language;
@@ -1917,6 +1936,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                 return send_binary_chunk(remote_client, static_cast<const uint8_t *>(buffer), len);
             },
             upload_args->user_filter,
+            DEVICE_FILTER_ALL_CHARGERS,
             upload_args->start_timestamp_min,
             upload_args->end_timestamp_min,
             rtc.timestamp_minutes(),
@@ -1924,6 +1944,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = upload_args->user_filter;
+        csv_params.device_filter = DEVICE_FILTER_ALL_CHARGERS;
         csv_params.start_timestamp_min = upload_args->start_timestamp_min;
         csv_params.end_timestamp_min = upload_args->end_timestamp_min;
         csv_params.language = upload_args->language;
@@ -2096,6 +2117,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
 int ChargeTracker::generate_pdf(
     std::function<int(const void *buffer, size_t len)> &&callback,
     int user_filter,
+    int device_filter,
     uint32_t start_timestamp_min,
     uint32_t end_timestamp_min,
     uint32_t current_timestamp_min,
@@ -2199,7 +2221,7 @@ search_done:
 #else
     // Non-WARP1 builds have PSRAM, use getFilteredCharges for efficient charge collection
     size_t filtered_count = 0;
-    ExportCharge *filtered_charges = getFilteredCharges(user_filter, start_timestamp_min, end_timestamp_min, &filtered_count);
+    ExportCharge *filtered_charges = getFilteredCharges(user_filter, device_filter, start_timestamp_min, end_timestamp_min, &filtered_count);
 
     // Calculate statistics from filtered charges
     charge_records = static_cast<int>(filtered_count);
@@ -2473,17 +2495,49 @@ void ChargeTracker::updateLastCharges(const char *directory)
     }
 }
 
-ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count)
+// Returns true if the directory should be included based on the device filter
+static bool should_include_directory_for_device_filter(int device_filter, const char *dirname)
+{
+    uint32_t dir_uid = 0;
+    if (tf_base58_decode(dirname, &dir_uid) != 0) {
+        return false;
+    }
+    if (device_filter == DEVICE_FILTER_ALL_CHARGERS) {
+        // Only include if charger is in config
+        return is_charger_in_config_await(dirname);
+    } else if (device_filter == DEVICE_FILTER_DELETED_CHARGERS) {
+        // Only include if charger is NOT in config
+        return !is_charger_in_config_await(dirname);
+    } else {
+        return dir_uid == static_cast<uint32_t>(device_filter);
+    }
+}
+
+ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count)
 {
     std::lock_guard<std::mutex> lock{records_mutex};
 
     const size_t max_records_per_file = CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
     size_t total_files = 0;
 
-    // Count files in main directory
+    // Count files in main directory (only if device_filter matches or is DEVICE_FILTER_ALL_CHARGERS)
     uint32_t main_first = 0, main_last = 0;
-    if (getChargerChargeRecords(nullptr, &main_first, &main_last)) {
-        total_files += (main_last - main_first + 1);
+    uint32_t local_uid = 0;
+    if (tf_base58_decode(local_uid_str, &local_uid) != 0) {
+        logger.printfln("Failed to decode local UID");
+        *out_count = 0;
+        return nullptr;
+    }
+
+    bool local_charger_in_config = is_charger_in_config_await(nullptr);
+    bool include_main_dir = ((device_filter == DEVICE_FILTER_ALL_CHARGERS && local_charger_in_config) ||
+                             device_filter == local_uid ||
+                             (device_filter == DEVICE_FILTER_DELETED_CHARGERS && !local_charger_in_config));
+
+    if (include_main_dir) {
+        if (getChargerChargeRecords(nullptr, &main_first, &main_last)) {
+            total_files += (main_last - main_first + 1);
+        }
     }
 
     logger.printfln("Main directory has %u files", total_files);
@@ -2497,6 +2551,11 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
                 int last_slash = dirname.lastIndexOf('/');
                 if (last_slash >= 0) {
                     dirname = dirname.substring(last_slash + 1);
+                }
+
+                // Check if this directory matches the device filter
+                if (!should_include_directory_for_device_filter(device_filter, dirname.c_str())) {
+                    continue;
                 }
 
                 uint32_t first_record = 0, last_record = 0;
@@ -2618,7 +2677,10 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
         }
     };
 
-    read_directory_charges(nullptr);
+    // Only read main directory if device filter matches
+    if (include_main_dir) {
+        read_directory_charges(nullptr);
+    }
 
     root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
     if (root_folder && root_folder.isDirectory()) {
@@ -2629,6 +2691,12 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, uint32_t start_
                 if (last_slash >= 0) {
                     dirname = dirname.substring(last_slash + 1);
                 }
+
+                // Check if this directory matches the device filter
+                if (!should_include_directory_for_device_filter(device_filter, dirname.c_str())) {
+                    continue;
+                }
+
                 read_directory_charges(dirname.c_str());
             }
             vTaskDelay(1);

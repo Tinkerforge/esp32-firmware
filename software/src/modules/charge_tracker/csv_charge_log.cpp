@@ -412,7 +412,7 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
         });
 #else
     size_t filtered_count = 0;
-    ExportCharge *filtered_charges = charge_tracker.getFilteredCharges(params.user_filter, params.start_timestamp_min, params.end_timestamp_min, &filtered_count);
+    ExportCharge *filtered_charges = charge_tracker.getFilteredCharges(params.user_filter, params.device_filter, params.start_timestamp_min, params.end_timestamp_min, &filtered_count);
 
     if (filtered_charges != nullptr) {
         for (size_t i = 0; i < filtered_count; ++i) {
