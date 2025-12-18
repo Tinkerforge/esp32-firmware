@@ -2,12 +2,12 @@ table_prototypes = [
     ('Deye Hybrid Inverter', [
         'device_address',
         {
-            'name': 'max_charge_current',
+            'name': 'max_normal_charge_current',
             'type': 'Uint8',  # FIXME: add range limit to [1..185]
             'default': 50,  # A
         },
         {
-            'name': 'max_discharge_current',
+            'name': 'max_normal_discharge_current',
             'type': 'Uint8',  # FIXME: add range limit to [1..185]
             'default': 50,  # A
         },
@@ -110,7 +110,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_current;',
+                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
@@ -119,7 +119,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_current;',
+                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Target SOC [%]',
@@ -167,7 +167,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_current;',
+                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
@@ -300,7 +300,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_current;',
+                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Target SOC [%]',

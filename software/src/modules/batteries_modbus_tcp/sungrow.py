@@ -2,12 +2,12 @@ table_prototypes = [
     ('Sungrow Hybrid Inverter', [
         'device_address',
         {
-            'name': 'max_charge_power',
+            'name': 'max_normal_charge_power',
             'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 3000,  # 0.01 kW
         },
         {
-            'name': 'max_discharge_power',
+            'name': 'max_normal_discharge_power',
             'type': 'Uint16',  # FIXME: add range limit to [1..65535]
             'default': 1500,  # 0.01 kW
         },
@@ -116,7 +116,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_power;',
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -125,7 +125,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_power;',
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -165,7 +165,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_power;',
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -214,7 +214,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_charge_power;',
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -270,7 +270,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_power;',
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -319,7 +319,7 @@ specs = [
                 'values': [
                     None,
                 ],
-                'mapping': 'values[0] = max_discharge_power;',
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
