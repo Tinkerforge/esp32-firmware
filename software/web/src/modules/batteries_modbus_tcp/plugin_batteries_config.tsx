@@ -21,7 +21,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h, Fragment, Component, ComponentChildren } from "preact";
-import { Button, Dropdown } from "react-bootstrap";
+import { Button, Dropdown, Alert } from "react-bootstrap";
 import { __ } from "../../ts/translation";
 import { BatteryClassID } from "../batteries/battery_class_id.enum";
 import { BatteryConfig } from "../batteries/types";
@@ -930,6 +930,10 @@ export function init() {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
                         </FormRow>);
+
+                    if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
+                        edit_children.push(<Alert variant="warning">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>);
+                    }
 
                     let extra_values = undefined;
 
