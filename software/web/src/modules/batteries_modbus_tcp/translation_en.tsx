@@ -27,6 +27,7 @@ let x = {
             "table_hailei_hybrid_inverter": "Hailei hybrid inverter (TPH series)",
             "table_sungrow_hybrid_inverter": "Sungrow hybrid inverter (SH series)",
             "table_sma_hybrid_inverter": "SMA hybrid inverter",
+            "sma_forecast_based_charging_warning": <>The <a href="https://manuals.sma.de/HM-20/en-US/8644254859.html">SMA forecast-based charging</a> might interfere with the battery control. Please ensure that forecast-based charging is disabled in the SMA portal.</>,
             "device_address": "Device address",
             "device_address_muted": /*SFN*/(device_address: number) => "typically " + device_address/*NF*/,
             "repeat_interval": "Repeat interval",
