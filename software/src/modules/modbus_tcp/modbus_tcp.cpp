@@ -1255,7 +1255,7 @@ void ModbusTCP::start_server() {
     this->send_illegal_data_address = config.get("send_illegal_data_address")->asBool();
 
     server.start(
-        0, config.get("port")->asUint(),
+        0, config.get("port")->asUint16(),
         [](uint32_t peer_address, uint16_t port) {
             char peer_str[16];
             tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
