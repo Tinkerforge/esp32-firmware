@@ -919,6 +919,13 @@ export function init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter)) {
+                    if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
+                        edit_children.push(
+                            <FormRow label="">
+                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>
+                            </FormRow>);
+                    }
+
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
                             <InputNumber
@@ -930,10 +937,6 @@ export function init() {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
                                 }} />
                         </FormRow>);
-
-                    if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
-                        edit_children.push(<Alert variant="warning">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>);
-                    }
 
                     let extra_values = undefined;
 
