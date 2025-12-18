@@ -896,7 +896,7 @@
 - Fix wrong charge manager allocations when phase rotation is not configured
 - Work around Safari bug breaking firmware updates via remote access
 
-2025-12-18: 2.8.13 (<unknown>)
+2025-12-18: 2.8.13 (e14922b8)
 - Add support for more Modbus TCP devices: Janitza UMG series meters, Huawei Smart Logger 3000
 - Add reading of battery capacity values to Alpha ESS, Hailei and Sungrow inverters
 - Fix Fronius GEN24 Plus MPPT power sum via SunSpec
