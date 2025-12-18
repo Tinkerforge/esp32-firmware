@@ -56,7 +56,7 @@ let x = {
             "packets_received": "Packets received",
             "time_elapsed": "Elapsed time",
             "mtu": "MTU",
-            "mtu_desc": "Maximum Transmission Unit for WireGuard tunnel (bytes)"
+            "mtu_desc": "maximum inner packet size in WireGuard tunnel"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

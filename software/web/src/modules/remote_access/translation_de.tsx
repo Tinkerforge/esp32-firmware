@@ -56,7 +56,7 @@ let x = {
             "packets_received": "Empfangene Pakete",
             "time_elapsed": "Verstrichene Zeit",
             "mtu": "MTU",
-            "mtu_desc": "Maximum Transmission Unit für WireGuard-Tunnel (Bytes)"
+            "mtu_desc": "maximale (innere) Paketgröße im WireGuard-Tunnel"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

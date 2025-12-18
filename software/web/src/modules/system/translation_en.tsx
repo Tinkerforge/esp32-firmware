@@ -70,10 +70,10 @@ let x = {
             "detect_browser_language": "Auto-detect browser language"
         },
         "script": {
-            "factory_reset_init": "Formatting configuration partition and restarting...",
+            "factory_reset_init": "Formatting configuration partition and rebooting...",
             "factory_reset_error": "Initiating factory reset failed",
 
-            "config_reset_init": "Resetting configuration and restarting...",
+            "config_reset_init": "Resetting configuration and rebooting...",
             "config_reset_error": "Failed to reset configuration",
 
             "save_failed": "Failed to save the system settings"

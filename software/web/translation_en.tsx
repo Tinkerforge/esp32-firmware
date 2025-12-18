@@ -114,7 +114,7 @@ let x = {
     },
     "util": {
         "reboot_title": "Rebooting...",
-        "reboot_text": "The web interface will be reloaded automatically after the restart.",
+        "reboot_text": "The web interface will be reloaded automatically.",
         "event_connection_lost_title": <>{__("branding.device")} connection lost!</>,
         "event_connection_lost": "Connection will be reestablished...",
 

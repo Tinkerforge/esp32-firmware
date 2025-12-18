@@ -114,7 +114,7 @@ let x = {
     },
     "util": {
         "reboot_title": "Starte neu...",
-        "reboot_text": "Das Webinterface wird nach dem Neustart automatisch neu geladen.",
+        "reboot_text": "Das Webinterface wird automatisch neu geladen.",
         "event_connection_lost_title": <>Verbindung {__("to_the_device")} verloren!</>,
         "event_connection_lost": "Verbindung wird wiederhergestellt...",
 

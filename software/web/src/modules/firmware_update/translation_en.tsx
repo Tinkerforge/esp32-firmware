@@ -49,7 +49,7 @@ let x = {
             "install_complete": "Install complete"
         },
         "script": {
-            "update_success": "Successfully updated; restarting...",
+            "update_success": "Successfully updated; rebooting...",
             "update_fail": "Failed to update",
             "check_state_2": "Another operation is in progress",
             "check_state_3": "Internal error occurred",

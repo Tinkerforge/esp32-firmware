@@ -30,7 +30,7 @@
             "allowed_ip_invalid": "Die IP-Adresse muss aus vier Gruppen mit jeweils einer Zahl zwischen 0 und 255, getrennt durch einen Punkt, bestehen. Zum Beispiel 10.0.0.2",
             "allowed_subnet": "Erlaubte Subnetzmaske empfangener Pakete",
             "mtu": "MTU",
-            "mtu_muted": "Maximum Transmission Unit für WireGuard-Tunnel (Bytes)",
+            "mtu_muted": "maximale (innere) Paketgröße im WireGuard-Tunnel",
             "generate_keypair": "Schlüsselpaar generieren",
             "generate_keypair_button": "Generieren",
             "wireguard_public_key": "Eigener öffentlicher Schlüssel",
