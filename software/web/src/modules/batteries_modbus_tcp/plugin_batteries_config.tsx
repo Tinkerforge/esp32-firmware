@@ -1020,28 +1020,6 @@ export function init() {
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_current: v})}));
                                     }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={100}
-                                    unit="%"
-                                    value={config[1].table[1].min_soc}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
-                                    }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={100}
-                                    unit="%"
-                                    value={config[1].table[1].max_soc}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
-                                    }} />
                             </FormRow>);
 
                         extra_values = {
@@ -1049,8 +1027,6 @@ export function init() {
                             max_normal_discharge_current: config[1].table[1].max_normal_discharge_current,
                             force_charge_current: config[1].table[1].force_charge_current,
                             force_discharge_current: config[1].table[1].force_discharge_current,
-                            min_soc: config[1].table[1].min_soc,
-                            max_soc: config[1].table[1].max_soc,
                         };
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
@@ -1077,35 +1053,11 @@ export function init() {
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
                                     }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.min_soc")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={100}
-                                    unit="%"
-                                    value={config[1].table[1].min_soc}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {min_soc: v})}));
-                                    }} />
-                            </FormRow>,
-                            <FormRow label={__("batteries_modbus_tcp.content.max_soc")}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={100}
-                                    unit="%"
-                                    value={config[1].table[1].max_soc}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_soc: v})}));
-                                    }} />
                             </FormRow>);
 
                         extra_values = {
                             force_charge_power: config[1].table[1].force_charge_power,
                             force_discharge_power: config[1].table[1].force_discharge_power,
-                            min_soc: config[1].table[1].min_soc,
-                            max_soc: config[1].table[1].max_soc,
                         };
                     }
                     else if (config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter) {

@@ -41,8 +41,6 @@ let x = {
             "grid_draw_setpoint_muted_normal": "normal",
             "grid_draw_setpoint_muted_force_charge": "Laden erzwungen",
             "grid_draw_setpoint_muted_force_discharge": "Entladen erzwungen",
-            "max_soc": "Maximaler Ladestand",
-            "min_soc": "Minimaler Ladestand",
             "force_charge_current": "Erzwungener Ladestrom",
             "force_discharge_current": "Erzwungener Entladestrom",
             "force_charge_power": "Erzwungene Ladeleistung",
