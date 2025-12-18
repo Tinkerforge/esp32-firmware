@@ -56,6 +56,7 @@ type ChargeTrackerConfig = API.getType["charge_tracker/config"];
 
 interface S {
     user_filter: string;
+    device_filter: string;
     start_date: Date;
     end_date: Date;
     file_type: string;
@@ -165,6 +166,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
               () => __("charge_tracker.script.save_failed"),
               () => __("charge_tracker.script.reboot_content_changed"), {
                   user_filter: "-2",
+                  device_filter: "-2",
                   file_type: "0",
                   csv_flavor: 'excel',
                   start_date: new Date(NaN),
@@ -495,7 +497,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
+    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, device_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
         const language = get_active_language() != 'de' ? Language.English : Language.German;
@@ -505,6 +507,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             start_timestamp_min: start_minutes,
             end_timestamp_min: end_minutes,
             user_filter: user_filter,
+            device_filter: device_filter,
             csv_delimiter: csvFlavorEnum,
         };
 
@@ -527,6 +530,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         let user_filter_items: [string, string][] = API.get('users/config').users.map(x => [x.id.toString(), (x.display_name == "Anonymous" && x.id == 0) ? __("charge_tracker.script.unknown_users") : x.display_name]);
         user_filter_items.unshift(["-1",  __("charge_tracker.script.deleted_users")]);
         user_filter_items.unshift(["-2", __("charge_tracker.script.all_users")]);
+
+        let device_filter_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.u.toString(), x.n]);
+        device_filter_items.unshift(["-1", __("charge_tracker.script.deleted_chargers")]);
+        device_filter_items.unshift(["-2", __("charge_tracker.script.all_chargers")]);
 
         // TODO show hint that day ahead prices are not used here!
 
@@ -635,6 +642,14 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     />
                 </FormRow>
 
+                <FormRow label={__("charge_tracker.content.device_filter")} label_muted={__("charge_tracker.content.device_filter_muted")}>
+                    <InputSelect
+                        value={state.device_filter}
+                        onValue={(v) => this.setState({device_filter: v})}
+                        items={device_filter_items ?? []}
+                    />
+                </FormRow>
+
                 <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
                     <div class="row no-gutters">
                         <div class="col-md-6">
@@ -715,12 +730,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         start_timestamp_min: start_minutes,
                                         end_timestamp_min: end_minutes,
                                         user_filter: parseInt(state.user_filter),
+                                        device_filter: parseInt(state.device_filter),
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
                                 } else {
                                     // Download CSV
-                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start_minutes, end_minutes, state.electricity_price);
+                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), parseInt(state.device_filter), start_minutes, end_minutes, state.electricity_price);
                                 }
                             } finally {
                                 this.setState({show_spinner: false});
