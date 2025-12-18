@@ -879,6 +879,7 @@ export function init() {
                                 [BatteryModbusTCPTableID.AlphaESSHybridInverter.toString(), __("batteries_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
+                                [BatteryModbusTCPTableID.SMAHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sma_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.SungrowHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
                                 [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
@@ -916,7 +917,8 @@ export function init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter)) {
+                  || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter
+                  || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter)) {
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")} label_muted={__("batteries_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
                             <InputNumber
@@ -1151,6 +1153,60 @@ export function init() {
                                     min={0}
                                     max={5000}
                                     unit="kW"
+                                    value={config[1].table[1].force_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            max_charge_power: config[1].table[1].max_charge_power,
+                            max_discharge_power: config[1].table[1].max_discharge_power,
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.max_charge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={4294967295}
+                                    unit="W"
+                                    value={config[1].table[1].max_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_discharge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={4294967295}
+                                    unit="W"
+                                    value={config[1].table[1].max_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_discharge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={4294967295}
+                                    unit="W"
+                                    value={config[1].table[1].force_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={4294967295}
+                                    unit="W"
                                     value={config[1].table[1].force_discharge_power}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
