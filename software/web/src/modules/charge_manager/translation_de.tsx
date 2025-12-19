@@ -178,7 +178,7 @@ let x = {
                     case CASState.Charging: return "Lädt";
                     case CASState.Error: return "Fehler";
                     case CASState.Charged: return "Laden abgeschlossen";
-                    case CASState.Unauthorized: return "Nicht autorisiert";
+                    case CASState.Unauthorized: return "Blockiert";
                 }
             }/*NF*/,
 
@@ -277,8 +277,8 @@ let x = {
             "cd_user_limit": "Nutzerlimit",
             "currently_charging_user": "Ladender Benutzer",
             "authorize_charger": "Freigeben",
-            "authorize_charger_for_user": "Ladevorgang für Benutzer freigeben",
-            "authorize_charger_no_users": "Keine Benutzer konfiguriert",
+            "authorize_charger_for_user": "Für Benutzer",
+            "authorize_charger_no_users": "Kein Benutzer mit NFC-Tag vorhanden",
             "authorize_failed": "Freigabe fehlgeschlagen"
         }
     }

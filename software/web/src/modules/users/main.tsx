@@ -357,7 +357,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                         <div class="invalid-feedback">{__("users.content.enable_authentication_invalid")}</div>
                     </FormRow>
 
-                    <FormRow label={__("users.content.evse_user_description")} help={__("users.content.evse_user_description_help")}>
+                    <FormRow label={__("users.content.evse_user_description")}>
                         <Switch desc={__("users.content.evse_user_enable")}
                                 checked={user_slot_allowed && state.userSlotEnabled}
                                 disabled={!user_slot_allowed}
