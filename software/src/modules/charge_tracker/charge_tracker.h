@@ -83,7 +83,7 @@ public:
     std::mutex pdf_mutex;
 
 private:
-    bool repair_last(float);
+    bool repair_last(float, const char *);
     void repair_charges();
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
     std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
