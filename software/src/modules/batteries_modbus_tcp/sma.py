@@ -29,7 +29,7 @@ default_device_addresses = [
 ]
 
 repeat_intervals = [
-    ('SMA Hybrid Inverter', 30),
+    ('SMA Hybrid Inverter', 60),  # SMA watchdog duration is 5 minutes
 ]
 
 specs = [
