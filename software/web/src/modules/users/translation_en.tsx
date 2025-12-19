@@ -43,9 +43,8 @@ let x = {
             "edit_user_password": "Password",
 
             "evse_user_description": "Charge release",
-            "evse_user_description_help": <><p>NFC tags can be added at <a href="#nfc">NFC</a>.</p></>,
 
-            "evse_user_enable": "Requires a user authorization (via NFC tag) to charge",
+            "evse_user_enable": <>Requires a user authorization (via <a href="#nfc">NFC tag</a>) to charge</>,
             "evse_user_enable_invalid": "At least one user is required for the charge release."
         },
         "script": {
