@@ -219,48 +219,53 @@ void ChargeTracker::pre_setup()
 // #endif
 }
 
-bool ChargeTracker::repair_last(float meter_start)
+bool ChargeTracker::repair_last(float meter_start, const char *directory)
 {
     Charge charges[3];
     charges[0].ce.meter_end = NAN;
     charges[2].cs.meter_start = meter_start;
 
-    if (!file_exists(LittleFS, chargeRecordFilename(last_charge_record, nullptr)))
+    if (!file_exists(LittleFS, chargeRecordFilename(last_charge_record, directory)))
         return true;
 
-    File r_file = LittleFS.open(chargeRecordFilename(last_charge_record, nullptr), "r+");
-    if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
-        logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", r_file.size(), r_file.size() % CHARGE_RECORD_SIZE);
-        // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
-        return false;
-    }
-
-    if (r_file.size() > sizeof(Charge)) {
-        r_file.seek(r_file.size() - sizeof(Charge) * 2);
-        r_file.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge) * 2);
-    }
-    else if (r_file.size() == sizeof(Charge)) {
-        if (last_charge_record > 1) {
-            File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1, nullptr), "r");
-            auto tmp_size = tmp.size();
-            if (tmp_size % CHARGE_RECORD_SIZE != 0 || tmp_size < sizeof(Charge) * 2) {
-                logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", tmp_size, tmp_size % CHARGE_RECORD_SIZE);
-                return false;
-            }
-            tmp.seek(tmp.size() - sizeof(Charge) * 2);
-            tmp.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge));
+    bool repaired = false;
+    {
+        File r_file = LittleFS.open(chargeRecordFilename(last_charge_record, directory), "r+");
+        if (r_file.size() % CHARGE_RECORD_SIZE != 0) {
+            logger.printfln("Can't repair last charge: Last charge end was not tracked or file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", r_file.size(), r_file.size() % CHARGE_RECORD_SIZE);
+            // TODO: for robustness we would have to write the last end here? Yes, but only if % == 9. Also write duration 0, so we know this is a "faked" end. Still write the correct meter state.
+            return false;
         }
-        r_file.seek(r_file.size() - sizeof(Charge));
-        r_file.read(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
+
+        if (r_file.size() > sizeof(Charge)) {
+            r_file.seek(r_file.size() - sizeof(Charge) * 2);
+            r_file.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge) * 2);
+        }
+        else if (r_file.size() == sizeof(Charge)) {
+            if (last_charge_record > 1) {
+                File tmp = LittleFS.open(chargeRecordFilename(last_charge_record - 1, directory), "r");
+                auto tmp_size = tmp.size();
+                if (tmp_size % CHARGE_RECORD_SIZE != 0 || tmp_size < sizeof(Charge) * 2) {
+                    logger.printfln("Can't repair last charge: Penultimate tracked charge file is damaged! Size is %u bytes, offset is %u bytes. Expected 0", tmp_size, tmp_size % CHARGE_RECORD_SIZE);
+                    return false;
+                }
+                tmp.seek(tmp.size() - sizeof(Charge) * 2);
+                tmp.read(reinterpret_cast<uint8_t *>(&charges), sizeof(Charge));
+            }
+            r_file.seek(r_file.size() - sizeof(Charge));
+            r_file.read(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
+        }
+
+        if (repair_logic(&charges[1])) {
+            r_file.seek(r_file.size() - sizeof(Charge));
+            r_file.write(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
+            logger.printfln("Repaired previous broken charge.");
+        }
     }
 
-    if (repair_logic(&charges[1])) {
-        r_file.seek(r_file.size() - sizeof(Charge));
-        r_file.write(reinterpret_cast<uint8_t *>(&charges[1]), sizeof(Charge));
-        logger.printfln("Repaired previous broken charge.");
-        last_charges.get(last_charges.count() - 1)->get("energy_charged")->updateFloat(charges[1].ce.meter_end - charges[1].cs.meter_start);
-        last_charges.get(last_charges.count() - 1)->get("charger_name")->updateString("");
-    }
+    if (repaired)
+        this->updateLastCharges(directory /*TODO directory is ignored right know*/);
+
     return true;
 }
 
@@ -273,7 +278,7 @@ bool ChargeTracker::startCharge(uint32_t timestamp_minutes, float meter_start, u
 
     std::lock_guard<std::mutex> lock{records_mutex};
 
-    if (!repair_last(meter_start)) {
+    if (!repair_last(meter_start, directory)) {
         return false;
     }
 
