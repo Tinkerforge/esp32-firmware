@@ -43,9 +43,8 @@ let x = {
             "edit_user_password": "Passwort",
 
             "evse_user_description": "Ladefreigabe",
-            "evse_user_description_help": <><p>NFC-Tags können unter <a href="#nfc">NFC</a> hinzugefügt werden.</p></>,
 
-            "evse_user_enable": "Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per NFC-Tag)",
+            "evse_user_enable": <>Verlangt eine Freigabe des Ladevorgangs durch einen Benutzer zum Laden (z.B. per <a href="#nfc">NFC-Tag</a>)</>,
             "evse_user_enable_invalid": "Für die Ladefreigabe ist mindestens ein Benutzer notwendig."
         },
         "script": {
