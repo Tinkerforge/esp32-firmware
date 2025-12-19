@@ -564,7 +564,9 @@ function CMStatusCharger(props: {
     let mode = props.charge_mode
     let mode_found = supported_charge_modes.indexOf(mode) >= 0;
 
-    return  <div class="card h-100">
+    let show_user_dropdown = props.central_auth_enabled && c.a === CASAuthState.Unauthenticated;
+
+    return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
                 <div class="card-header">
                     <div class="row gx-2 align-items-center">
                         <div class="col">
@@ -580,45 +582,49 @@ function CMStatusCharger(props: {
                                 />
                         </div>
                     </div>
-                    {props.central_auth_enabled && c.a === CASAuthState.Unauthenticated ?
-                        <div class="row px-1 mt-2 mx-n1">
-                            <Dropdown>
-                                <Dropdown.Toggle variant="primary" size="sm" id={useId()}>
-                                    {__("charge_manager.script.authorize_charger")}
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu alignRight>
-                                    <Dropdown.Header class="text-wrap">
-                                        {props.users.filter(u => u.id > 0).length > 0 ? __("charge_manager.script.authorize_charger_for_user") : __("charge_manager.script.authorize_charger_no_users")}
-                                    </Dropdown.Header>
-                                    {props.users.filter(u => u.id > 0).map(u =>
-                                        <Dropdown.Item
-                                            as="button"
-                                            className="py-2"
-                                            onClick={() => {
-                                                API.call("charge_manager/authorize_charger", {
-                                                    charger_idx: props.charger_index,
-                                                    user_id: u.id
-                                                }, () => __("charge_manager.script.authorize_failed"));
-                                            }}>
-                                            {u.display_name}
-                                        </Dropdown.Item>
-                                    )}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </div>
-                    : null}
                 </div>
                 <div class={"card-body " + c_body_classes}>
-                    <h5 class={"card-title my-0"}>
-                        {c.s != CASState.NoVehicle && c.s != CASState.Unauthorized ?
-                            <Button
-                                className="me-2"
-                                size="sm"
-                                onClick={() => setShowDetails(!showDetails)}>
-                                <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>
-                            </Button>
-                        : null}{c_state}
-                    </h5>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class={"card-title my-0"}>
+                                {c.s != CASState.NoVehicle && c.s != CASState.Unauthorized ?
+                                    <Button
+                                        className="me-2"
+                                        size="sm"
+                                        onClick={() => setShowDetails(!showDetails)}>
+                                        <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>
+                                    </Button>
+                                : null}{c_state}
+                            </h5>
+                        </div>
+                        {show_user_dropdown ?
+                            <div class="col-auto">
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="primary" size="sm" id={useId()}>
+                                        {__("charge_manager.script.authorize_charger")}
+                                    </Dropdown.Toggle>
+                                    <Dropdown.Menu align="end">
+                                        <Dropdown.Header class="text-wrap">
+                                            {props.users.filter(u => u.id > 0).length > 0 ? __("charge_manager.script.authorize_charger_for_user") : __("charge_manager.script.authorize_charger_no_users")}
+                                        </Dropdown.Header>
+                                        {props.users.filter(u => u.id > 0).map(u =>
+                                            <Dropdown.Item
+                                                as="button"
+                                                className="py-2"
+                                                onClick={() => {
+                                                    API.call("charge_manager/authorize_charger", {
+                                                        charger_idx: props.charger_index,
+                                                        user_id: u.id
+                                                    }, () => __("charge_manager.script.authorize_failed"));
+                                                }}>
+                                                {u.display_name}
+                                            </Dropdown.Item>
+                                        )}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </div>
+                        : null}
+                    </div>
                     <Collapse in={!showDetails}>
                         <div>
                             <div class="card-text" style={desc.length > 0 ? "margin-top: 0.75rem;" : ""}>
