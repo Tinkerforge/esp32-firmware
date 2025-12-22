@@ -67,6 +67,7 @@ interface S {
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
     new_remote_upload_config: {
         user_filter: number;
+        device_filter: number;
         file_type: number;
         language: Language;
         letterhead: string;
@@ -175,6 +176,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   remote_upload_configs: [],
                   new_remote_upload_config: {
                     user_filter: -2,
+                    device_filter: -2,
                     file_type: 0,
                     language: Language.German,
                     letterhead: "",
@@ -274,6 +276,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     this.setState({
                         new_remote_upload_config: {
                             user_filter: send_config.user_filter,
+                            device_filter: send_config.device_filter,
                             file_type: send_config.file_type,
                             language: send_config.language,
                             letterhead: send_config.letterhead,
@@ -353,6 +356,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 start_timestamp_min: start_minutes,
                 end_timestamp_min: end_minutes,
                 user_filter: config.user_filter,
+                device_filter: config.device_filter,
                 file_type: config.file_type,
                 letterhead: config.letterhead,
                 csv_delimiter: config.csv_delimiter,
@@ -370,6 +374,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         this.setState({
             new_remote_upload_config: {
                 user_filter: -2,
+                device_filter: -2,
                 file_type: 0,
                 language: Language.German,
                 letterhead: "",
@@ -392,6 +397,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const user_items: [string, string][] = users_config.map(u => [u.id.toString(), u.username]);
         const remote_access_config = API.get("remote_access/config").users;
         const remote_access_user_items: [string, string][] = remote_access_config.map(u => [u.id.toString(), u.email]);
+        const device_items: [string, string][] = (API.get('charge_manager/state').chargers || []).map(x => [x.u.toString(), x.n]);
 
         return <>
             <FormRow label={__("charge_tracker.content.user_filter_label")}>
@@ -407,6 +413,22 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         ["-2", __("charge_tracker.script.all_users")],
                         ["-1", __("charge_tracker.script.deleted_users")],
                         ...user_items
+                    ]}
+                />
+            </FormRow>
+            <FormRow label={__("charge_tracker.content.device_filter_label")}>
+                <InputSelect
+                    value={this.state.new_remote_upload_config.device_filter.toString()}
+                    onValue={v => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            device_filter: parseInt(v)
+                        }
+                    })}
+                    items={[
+                        ["-2", __("charge_tracker.script.all_chargers")],
+                        ["-1", __("charge_tracker.script.deleted_chargers")],
+                        ...device_items
                     ]}
                 />
             </FormRow>
@@ -595,6 +617,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     end_timestamp_min: end_minutes,
                     user_filter: parseInt(state.user_filter),
                     file_type: parseInt(state.file_type),
+                    device_filter: parseInt(state.device_filter),
                     letterhead: state.pdf_letterhead,
                     csv_delimiter: state.file_type === "1" ? (state.csv_flavor === 'excel' ? 0 : 1) : 0,
                     cookie: Math.floor(Math.random() * 0xFFFFFFFF),
