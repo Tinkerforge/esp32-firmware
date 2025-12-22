@@ -30,6 +30,13 @@
 #include "current_limits.h"
 #include "modules/cm_networking/config_charge_mode.enum.h"
 
+// File to store charger names for charge tracking, similar to USERNAME_FILE in the users module.
+// Each entry is: UID (4 bytes) + display name (32 bytes) = 36 bytes
+#define CHARGER_NAMES_FILE "/charge_manager/all_charger_names"
+#define CHARGER_NAME_LENGTH 32
+#define CHARGER_NAME_ENTRY_LENGTH (sizeof(uint32_t) + CHARGER_NAME_LENGTH)
+#define MAX_TRACKED_CHARGERS 256
+
 struct CurrentAllocatorConfig;
 struct CurrentAllocatorState;
 struct ChargerState;
@@ -80,6 +87,12 @@ public:
     const char *get_charger_name(uint8_t idx);
     const char *get_charger_name_by_uid(uint32_t uid);
     bool is_only_proxy() { return this->config.get("chargers")->count() == 1 && !this->config.get("enable_charge_manager")->asBool(); }
+
+    void rename_charger(uint32_t uid, const String &display_name);
+    size_t get_charger_display_name(uint32_t uid, char *ret_buf);
+    void remove_charger_names_file();
+    void remove_from_charger_names_file(uint32_t uid);
+    bool is_charger_tracked(uint32_t uid);
 
     uint32_t get_maximum_available_current();
 
