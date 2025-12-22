@@ -71,6 +71,7 @@ let x = {
             "send_user_placeholder": "Remote access user",
 
             "user_filter_label": "User filter",
+            "device_filter_label": "Charger filter",
             "file_type_label": "File type",
             "language_label": "Language",
             "language_german": "German",

@@ -71,6 +71,7 @@ let x = {
             "send_user_placeholder": "Fernzugriffsbenutzer",
 
             "user_filter_label": "Benutzerfilter",
+            "device_filter_label": "Wallbox-Filter",
             "file_type_label": "Dateityp",
             "language_label": "Sprache",
             "language_german": "Deutsch",

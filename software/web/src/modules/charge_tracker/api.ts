@@ -18,6 +18,7 @@ interface Charge {
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
 interface remote_upload_config {
     user_filter: number;
+    device_filter: number;
     file_type: FileType;
     language: Language;
     letterhead: string;
@@ -30,6 +31,7 @@ export interface send_charge_log {
     api_not_final_acked: boolean;
     cookie: number;
     user_filter: number;
+    device_filter: number;
     start_timestamp_min: number;
     end_timestamp_min: number;
     file_type: FileType;
