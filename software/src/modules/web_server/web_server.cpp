@@ -256,7 +256,7 @@ void WebServer::post_setup()
     // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
     httpd_config.global_user_ctx_free_fn = dummy_free_fn;
     httpd_config.max_open_sockets = 10;
-    httpd_config.enable_so_linger = true;
+    httpd_config.enable_so_linger = false;
     httpd_config.linger_timeout = 1; // Try to get WS close, TLS close and error messages out. This is mostly necessary for connections over WireGuard/remote access. Only blocks as long as necessary but capped to 1 second.
     httpd_config.uri_match_fn = custom_uri_match;
     httpd_config.close_fn = custom_close_fn;
