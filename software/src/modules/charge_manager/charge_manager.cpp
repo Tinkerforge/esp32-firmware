@@ -444,8 +444,6 @@ static int16_t charger_authorized(cm_state_v5 *v5, micros_t last_plug_out) {
     if (nfc_timestamp < last_plug_out)
         return NOT_AUTHORIZED;
 
-    logger.printfln_debug("nfc_timestamp %lld last_plug_out %lld", nfc_timestamp.t, last_plug_out.t);
-
     // Only accept a NFC tag if it was seen in the last 30 seconds and after the last time a car was unplugged.
     if(deadline_elapsed(nfc_timestamp + 30_s)) {
         return NOT_AUTHORIZED;
@@ -499,9 +497,20 @@ static void update_authentication(
     if (v1->charger_state == 0) {
         target.authenticated_user_id = NOT_AUTHORIZED; // Reset authorization state when no car is connected
         target.user_current = 0;
-        target.unknown_nfc_tag_timestamp = 0_us;
+
+        // Show feedback for tags when tag is seen before a car is connected
+        if (v5 != nullptr && v5->nfc_last_seen_s < 2) {
+            int16_t tag_auth = charger_authorized(v5, target.last_plug_out);
+            if (tag_auth >= 0 && target.known_tag_no_car_timestamp == 0_us) {
+                target.known_tag_no_car_timestamp = now_us();
+            } else if (tag_auth == UNKNOWN_NFC_TAG && deadline_elapsed(target.unknown_nfc_tag_timestamp + 2_s)) {
+                target.unknown_nfc_tag_timestamp = now_us();
+            }
+        }
         return;
     }
+
+    target.known_tag_no_car_timestamp = 0_us;
 
     if (target.authenticated_user_id == NOT_AUTHORIZED || target.authenticated_user_id == UNKNOWN_NFC_TAG) {
         // Update NFC state
@@ -566,7 +575,7 @@ bool ChargeManager::send_client_packet(uint8_t i) {
 
     CMAuthFeedback auth_feedback = CMAuthFeedback::None;
     if (this->ca_config->enable_central_auth) {
-        const auto &charger = this->charger_state[i];
+        auto &charger = this->charger_state[i];
         if (charger.charger_state != 0) {
             switch (charger.authenticated_user_id) {
                 case -2:
@@ -578,6 +587,21 @@ bool ChargeManager::send_client_packet(uint8_t i) {
                 default:
                     auth_feedback = CMAuthFeedback::Ack;
                     break;
+            }
+        } else if (charger.known_tag_no_car_timestamp != 0_us) {
+            if (!deadline_elapsed(charger.known_tag_no_car_timestamp + 30_s)) {
+                auth_feedback = CMAuthFeedback::Ack;
+            } else if (!deadline_elapsed(charger.known_tag_no_car_timestamp + 33_s)) {
+                // Allow the blink to finish before sending Nack
+                auth_feedback = CMAuthFeedback::Nack;
+            } else {
+                charger.known_tag_no_car_timestamp = 0_us;
+            }
+        } else if (charger.unknown_nfc_tag_timestamp != 0_us) {
+            if (!deadline_elapsed(charger.unknown_nfc_tag_timestamp + 2_s)) {
+                auth_feedback = CMAuthFeedback::Nack;
+            } else {
+                charger.unknown_nfc_tag_timestamp = 0_us;
             }
         }
     }
@@ -1189,6 +1213,7 @@ void ChargeManager::register_urls()
 #endif
 
         target.unknown_nfc_tag_timestamp = 0_us;
+        target.known_tag_no_car_timestamp = 0_us;
     }, false);
 
     if (static_cm && config.get("enable_watchdog")->asBool()) {
