@@ -55,6 +55,32 @@ specs = [
                 ],
             },
             {
+                'description': 'Target SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 166,  # U16
+                'values': [
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                ],
+            },
+            {
+                'description': 'Time points',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 148,  # U16
+                'values': [
+                    0,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                ],
+            },
+            {
                 'description': 'Time points charge enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 172,  # U16
@@ -93,6 +119,32 @@ specs = [
                 'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
+                'description': 'Target SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 166,  # U16
+                'values': [
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                ],
+            },
+            {
+                'description': 'Time points',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 148,  # U16
+                'values': [
+                    0,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                ],
+            },
+            {
                 'description': 'Time points charge enable',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 172,  # U16
@@ -127,6 +179,32 @@ specs = [
                 'start_address': 109,  # U16
                 'values': [
                     0,
+                ],
+            },
+            {
+                'description': 'Target SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 166,  # U16
+                'values': [
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                ],
+            },
+            {
+                'description': 'Time points',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 148,  # U16
+                'values': [
+                    0,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
                 ],
             },
             {
@@ -228,6 +306,32 @@ specs = [
                     None,
                 ],
                 'mapping': 'values[0] = max_normal_discharge_current;',
+            },
+            {
+                'description': 'Target SOC [%]',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 166,  # U16
+                'values': [
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                    10,
+                ],
+            },
+            {
+                'description': 'Time points',
+                'function_code': 'WriteMultipleRegisters',
+                'start_address': 148,  # U16
+                'values': [
+                    0,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                    2355,
+                ],
             },
             {
                 'description': 'Time points charge enable',
