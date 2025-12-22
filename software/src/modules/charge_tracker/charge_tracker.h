@@ -68,7 +68,7 @@ public:
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs();
-    void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
+    void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const int device_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
 #endif
 
     ConfigRoot last_charges;
@@ -119,6 +119,9 @@ struct RemoteUploadRequest {
 
     /** User filter override (-2 = unknown user -1 = all users, 0+ = specific user) */
     int user_filter = -2;
+
+    /** Device filter override (-2 = all chargers, -1 = local charger, 0+ = specific charger) */
+    int device_filter = -2;
 
     /** Start of the time range to upload, in minutes since Unix epoch */
     uint32_t start_timestamp_min = 0;
