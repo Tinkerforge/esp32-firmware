@@ -781,30 +781,20 @@ static bool is_charger_in_config_await(const char *directory)
 
 static String get_charger_display_name_from_host(const char *directory)
 {
-    const char *b58 = directory == nullptr ? local_uid_str : directory;
+    if (directory == nullptr)
+        return String();
 
     uint32_t uid = 0;
-    if (tf_base58_decode(b58, &uid) != 0) {
-        // Failed to decode;
-        // use passed string as fallback.
-        return String(b58);
+    if (tf_base58_decode(directory, &uid) != 0) {
+        return String(directory);
     }
 
     const char *name = charge_manager.get_charger_name_by_uid(uid);
     if (name != nullptr) {
-        // Charger found.
         return String(name);
     }
 
-    if (directory == nullptr)
-        // Charger not found but this is the local charger.
-        // We are probably not a charge manager.
-        // Return empty string in this case.
-        return String();
-
-    // Charger not found but not the local charger;
-    // use passed string as fallback.
-    return String(b58);
+    return String(directory);
 }
 
 void ChargeTracker::readNRecords(File *f, size_t records_to_read, const char *directory)
