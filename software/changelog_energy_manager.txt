@@ -543,3 +543,6 @@
 
 2025-12-18: 2.4.13 (ef05176e)
 - Fix crash in charge manager initialization
+
+2025-12-22: 2.4.14 (<unknown>)
+- Fix crash while closing or reloading the web interface using the remote access
