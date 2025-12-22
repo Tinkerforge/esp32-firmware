@@ -64,6 +64,7 @@ let x = {
             "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)",
 
             "user_filter_label": "Benutzerfilter",
+            "device_filter_label": "Wallbox-Filter",
             "file_type_label": "Dateityp",
             "language_label": "Sprache",
             "language_german": "Deutsch",
