@@ -152,14 +152,14 @@
 2023-11-03: 1.0.92 (<unknown>)
 - SunSpec Beta 3
 - Add quirks mode for KOSTAL devices: acc32 can be signed
-- Fixed detection of inverter values at night; fixes missing values of SMA inverters
-- Improved performance of SunSpec devices with float models; reduces risk of timeouts during reads
+- Fix detection of inverter values at night; fixes missing values of SMA inverters
+- Improve performance of SunSpec devices with float models; reduces risk of timeouts during reads
 
 2023-11-06: 1.0.93 (<unknown>)
 - SunSpec Beta 4
-- Fixed display of inverter power
-- Fixed display of phase currents of SMA inverters
-- Improved read performance, especially with Modbus RTU bridges
+- Fix display of inverter power
+- Fix display of phase currents of SMA inverters
+- Improve read performance, especially with Modbus RTU bridges
 
 2023-11-17: 1.0.94 (<unknown>)
 - SunSpec Beta 5
@@ -379,7 +379,7 @@
 - Charge Manager: Don't stop all chargers if some are not reachable
 - Remote Access: Changed format of authorization token to be more fault tolerant
 - SunSpec: Add autodetection for quirk for Kostal endian-swapped floats
-- SunSpec: Improved device search for SMA devices
+- SunSpec: Improve device search for SMA devices
 - Modbus TCP: Add support for Eastron SDM630 TCP meter
 - Modbus TCP: Add support for WARP Charger as meter
 - Modbus TCP: Fix sign of grid power for Sungrow string inverter
@@ -542,4 +542,4 @@
 - Update timezone database
 
 2025-12-18: 2.4.13 (ef05176e)
-- Fixed crash in charge manager initialization
+- Fix crash in charge manager initialization
