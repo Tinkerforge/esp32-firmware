@@ -24,6 +24,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <time.h>
+#include <LittleFS.h>
 
 #include "bindings/base58.h"
 
@@ -33,6 +34,7 @@
 #include "build.h"
 #include "options.h"
 #include "tools.h"
+#include "tools/malloc.h"
 #include "cm_phase_rotation.enum.h"
 #include "zero_phase_decision.union.h"
 #include "one_phase_decision.union.h"
@@ -48,6 +50,11 @@ extern char local_uid_str[32];
 extern uint32_t local_uid_num;
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
+
+// Forward declarations of static functions for charger names file
+static int find_charger_entry(File &f, uint32_t uid);
+static int find_empty_slot(File &f);
+static void create_charger_names_file();
 
 // If this is an energy manager, we have exactly one charger and the margin is still the default,
 // double it to react faster if more current is available.
@@ -548,6 +555,9 @@ static void update_uid(uint8_t client_id, cm_state_v1 *v1, Config *config, Charg
     if (config->get("chargers")->get(client_id)->get("uid")->asUint() == 0 && v1->esp32_uid != 0) {
         config->get("chargers")->get(client_id)->get("uid")->updateUint(v1->esp32_uid);
         api.writeConfig("charge_manager/config", config);
+
+        const String &name = config->get("chargers")->get(client_id)->get("name")->asString();
+        charge_manager.rename_charger(v1->esp32_uid, name);
     }
     auto &target = charger_state[client_id];
     target.uid = v1->esp32_uid;
@@ -827,6 +837,20 @@ void ChargeManager::setup()
     // disabled.
     api.restorePersistentConfig("charge_manager/low_level_config", &low_level_config);
 
+    if (!LittleFS.exists(CHARGER_NAMES_FILE)) {
+        logger.printfln("Charger names file does not exist! Creating now.");
+        create_charger_names_file();
+    }
+
+    // Ensure all configured chargers are in the charger names file
+    for (size_t i = 0; i < config.get("chargers")->count(); ++i) {
+        uint32_t uid = config.get("chargers")->get(i)->get("uid")->asUint();
+        const String &name = config.get("chargers")->get(i)->get("name")->asString();
+        if (uid != 0) {
+            this->rename_charger(uid, name);
+        }
+    }
+
     // Always set initialized so that the front-end is displayed.
     initialized = true;
 
@@ -1071,6 +1095,151 @@ const char *ChargeManager::get_charger_name_by_uid(uint32_t uid)
     return nullptr;
 }
 
+static int find_charger_entry(File &f, uint32_t uid)
+{
+    size_t file_size = f.size();
+    uint32_t stored_uid;
+
+    for (size_t i = 0; i < file_size; i += CHARGER_NAME_ENTRY_LENGTH) {
+        f.seek(i, SeekMode::SeekSet);
+        if (f.read((uint8_t *)&stored_uid, sizeof(stored_uid)) != sizeof(stored_uid))
+            continue;
+
+        if (stored_uid == uid) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static int find_empty_slot(File &f)
+{
+    size_t file_size = f.size();
+    uint32_t stored_uid;
+
+    for (size_t i = 0; i < file_size; i += CHARGER_NAME_ENTRY_LENGTH) {
+        f.seek(i, SeekMode::SeekSet);
+        if (f.read((uint8_t *)&stored_uid, sizeof(stored_uid)) != sizeof(stored_uid))
+            continue;
+
+        if (stored_uid == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void create_charger_names_file()
+{
+    logger.printfln("Creating charger names file");
+    File f = LittleFS.open(CHARGER_NAMES_FILE, "w", true);
+    const uint8_t buf[CHARGER_NAME_ENTRY_LENGTH] = {};
+
+    for (int i = 0; i < MAX_TRACKED_CHARGERS; i++)
+        f.write(buf, sizeof(buf));
+}
+
+void ChargeManager::rename_charger(uint32_t uid, const String &display_name)
+{
+    if (uid == 0) {
+        // UID 0 is invalid (used as empty marker)
+        return;
+    }
+
+    File f = LittleFS.open(CHARGER_NAMES_FILE, "r+");
+    if (!f) {
+        logger.printfln("Failed to open charger names file for writing");
+        return;
+    }
+
+    int offset = find_charger_entry(f, uid);
+    if (offset < 0) {
+        offset = find_empty_slot(f);
+        if (offset < 0) {
+            logger.printfln("No empty slot found in charger names file");
+            return;
+        }
+    }
+
+    char buf[CHARGER_NAME_ENTRY_LENGTH] = {0};
+    memcpy(buf, &uid, sizeof(uid));
+    display_name.toCharArray(buf + sizeof(uid), CHARGER_NAME_LENGTH);
+
+    f.seek(offset, SeekMode::SeekSet);
+    f.write((const uint8_t *)buf, sizeof(buf));
+}
+
+size_t ChargeManager::get_charger_display_name(uint32_t uid, char *ret_buf)
+{
+    // First try to get from config (for currently configured chargers)
+    for (const auto &charger : config.get("chargers")) {
+        if (charger.get("uid")->asUint() == uid) {
+            const String &s = charger.get("name")->asString();
+            strncpy(ret_buf, s.c_str(), CHARGER_NAME_LENGTH);
+            return std::min(s.length(), (unsigned int)CHARGER_NAME_LENGTH);
+        }
+    }
+
+    // Fallback to the charger names file
+    File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
+    if (!f) {
+        ret_buf[0] = '\0';
+        return 0;
+    }
+
+    int offset = find_charger_entry(f, uid);
+    if (offset < 0) {
+        ret_buf[0] = '\0';
+        return 0;
+    }
+
+    f.seek(offset + sizeof(uid), SeekMode::SeekSet);
+    f.read((uint8_t *)ret_buf, CHARGER_NAME_LENGTH);
+    return strnlen(ret_buf, CHARGER_NAME_LENGTH);
+}
+
+void ChargeManager::remove_charger_names_file()
+{
+    if (LittleFS.exists(CHARGER_NAMES_FILE))
+        LittleFS.remove(CHARGER_NAMES_FILE);
+}
+
+void ChargeManager::remove_from_charger_names_file(uint32_t uid)
+{
+    if (uid == 0)
+        return;
+
+    // Don't remove if the charger is still in the config
+    if (get_charger_name_by_uid(uid) != nullptr)
+        return;
+
+    File f = LittleFS.open(CHARGER_NAMES_FILE, "r+");
+    if (!f)
+        return;
+
+    int offset = find_charger_entry(f, uid);
+    if (offset < 0)
+        return;
+
+    // Write zeros to mark the entry as empty (UID 0 = empty marker)
+    const uint8_t buf[CHARGER_NAME_ENTRY_LENGTH] = {0};
+    f.seek(offset, SeekMode::SeekSet);
+    f.write(buf, sizeof(buf));
+}
+
+bool ChargeManager::is_charger_tracked(uint32_t uid)
+{
+    if (uid == 0)
+        return false;
+
+    File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
+    if (!f) {
+        return false;
+    }
+
+    return find_charger_entry(f, uid) >= 0;
+}
+
 void ChargeManager::register_urls()
 {
 #if MODULE_POWER_MANAGER_AVAILABLE()
@@ -1216,6 +1385,28 @@ void ChargeManager::register_urls()
         target.known_tag_no_car_timestamp = 0_us;
     }, false);
 
+#if MODULE_WEB_SERVER_AVAILABLE()
+    server.on_HTTPThread("/charge_manager/all_charger_names", HTTP_GET, [](WebServerRequest request) {
+        size_t len = MAX_TRACKED_CHARGERS * CHARGER_NAME_ENTRY_LENGTH;
+        auto buf = heap_alloc_array<char>(len);
+        if (buf == nullptr) {
+            return request.send_plain(507);
+        }
+
+        size_t read = 0;
+
+        {
+            File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
+            if (!f) {
+                return request.send_plain(404);
+            }
+            read = f.read((uint8_t *)buf.get(), len);
+        }
+
+        return request.send_bytes(200, buf.get(), read);
+    });
+#endif
+
     if (static_cm && config.get("enable_watchdog")->asBool()) {
         task_scheduler.scheduleUncancelable([this](){this->check_watchdog();}, 1_s, 1_s);
     }
@@ -1298,6 +1489,41 @@ void ChargeManager::register_events() {
 #endif
 
         this->update_supported_charge_modes(pv, eco);
+        return EventResult::OK;
+    });
+#endif
+
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    // When a charger is removed from the config, check if it has any tracked charges.
+    // If not, remove it from the charger names file.
+    event.registerEvent("charge_manager/config", {"chargers"}, [this](const Config */*chargers_cfg*/) {
+        File f = LittleFS.open(CHARGER_NAMES_FILE, "r");
+        if (!f) {
+            return EventResult::OK;
+        }
+
+        size_t file_size = f.size();
+        for (size_t i = 0; i < file_size; i += CHARGER_NAME_ENTRY_LENGTH) {
+            uint32_t uid = 0;
+            f.seek(i, SeekMode::SeekSet);
+            if (f.read((uint8_t *)&uid, sizeof(uid)) != sizeof(uid))
+                continue;
+
+            if (uid == 0)
+                continue;
+
+            // Check if this charger is still in the config
+            if (get_charger_name_by_uid(uid) != nullptr)
+                continue;
+
+            // Check if this charger has any tracked charges
+            if (charge_tracker.has_tracked_charges(uid))
+                continue;
+
+            // Charger is not in config and has no tracked charges - remove from names file
+            remove_from_charger_names_file(uid);
+        }
+
         return EventResult::OK;
     });
 #endif

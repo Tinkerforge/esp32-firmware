@@ -450,6 +450,20 @@ bool ChargeTracker::is_user_tracked(uint8_t user_id)
     return false;
 }
 
+bool ChargeTracker::has_tracked_charges(uint32_t charger_uid)
+{
+    if (charger_uid == 0)
+        return false;
+
+    // Convert UID to base58 string (directory name)
+    char b58[9] = {0};
+    tf_base58_encode(charger_uid, b58);
+
+    uint32_t first_record = 0;
+    uint32_t last_record = 0;
+    return getChargerChargeRecords(b58, &first_record, &last_record);
+}
+
 void ChargeTracker::removeOldRecords()
 {
     uint32_t file_limit = get_charge_log_file_limit();
@@ -554,6 +568,19 @@ void ChargeTracker::removeOldRecords()
         if ((users_to_delete[user_id / 32] & (1 << (user_id % 32))) != 0) {
             // remove_from_username_file only removes if the user is not configured
             users.remove_from_username_file(user_id);
+        }
+    }
+
+    // Check if the charger that we deleted from still has any charge records.
+    // If not, remove it from the charger names file.
+    if (oldest_dir != nullptr) {
+        uint32_t remaining_first = 0;
+        uint32_t remaining_last = 0;
+        if (!getChargerChargeRecords(oldest_dir, &remaining_first, &remaining_last)) {
+            uint32_t uid = 0;
+            if (tf_base58_decode(oldest_dir, &uid) == 0 && uid != 0) {
+                charge_manager.remove_from_charger_names_file(uid);
+            }
         }
     }
 }
@@ -1356,6 +1383,7 @@ void ChargeTracker::register_urls()
 
         remove_directory(CHARGE_RECORD_FOLDER);
         users.remove_username_file();
+        charge_manager.remove_charger_names_file();
 
         trigger_reboot("removing all tracked charges", 1_s);
     }, true);
