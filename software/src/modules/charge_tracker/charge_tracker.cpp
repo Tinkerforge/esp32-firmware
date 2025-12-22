@@ -185,6 +185,7 @@ void ChargeTracker::pre_setup()
         {"language", Config::Enum(Language::German)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
         {"user_filter", Config::Int8(0)},
+        {"device_filter", Config::Int8(DEVICE_FILTER_ALL_CHARGERS)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
         {"last_upload_timestamp_min", Config::Uint32(0)}
     });
@@ -1561,6 +1562,7 @@ void ChargeTracker::register_urls()
         }
 
         int user_filter = -2;
+        int device_filter = DEVICE_FILTER_ALL_CHARGERS;
         uint32_t start_timestamp_min = 0;
         uint32_t end_timestamp_min = 0;
         Language language = Language::German;
@@ -1600,6 +1602,7 @@ void ChargeTracker::register_urls()
             }
 
             user_filter = doc["user_filter"];
+            device_filter = doc["device_filter"] | DEVICE_FILTER_ALL_CHARGERS;
             start_timestamp_min = doc["start_timestamp_min"];
             end_timestamp_min = doc["end_timestamp_min"];
             uint8_t language_val = doc["language"];
@@ -1647,10 +1650,11 @@ void ChargeTracker::register_urls()
 
         char *letterhead_ptr = letterhead_buf.release();
         ChargeLogGenerationLockHelper *lock_helper_ptr = lock_helper.release();
-        task_scheduler.scheduleOnce([this, cookie, user_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr, remote_access_user_uuid]() {
+        task_scheduler.scheduleOnce([this, cookie, user_filter, device_filter, start_timestamp_min, end_timestamp_min, language, file_type, csv_delimiter, letterhead_ptr, lock_helper_ptr, remote_access_user_uuid]() {
                 this->start_charge_log_upload_for_user(
                 cookie,
                 user_filter,
+                device_filter,
                 start_timestamp_min,
                 end_timestamp_min,
                 language,
@@ -1833,6 +1837,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
             upload_args_ref.file_type = charge_log_send->get("file_type")->asEnum<FileType>();
             upload_args_ref.csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
             upload_args_ref.user_filter = charge_log_send->get("user_filter")->asInt();
+            upload_args_ref.device_filter = charge_log_send->get("device_filter")->asInt();
 
             if (upload_args_ref.file_type == FileType::PDF) {
                 const String &letterhead_string = charge_log_send->get("letterhead")->asString();
@@ -1941,7 +1946,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
                 return send_binary_chunk(remote_client, static_cast<const uint8_t *>(buffer), len);
             },
             upload_args->user_filter,
-            DEVICE_FILTER_ALL_CHARGERS,
+            upload_args->device_filter,
             upload_args->start_timestamp_min,
             upload_args->end_timestamp_min,
             rtc.timestamp_minutes(),
@@ -1949,7 +1954,7 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     } else {
         CSVGenerationParams csv_params;
         csv_params.user_filter = upload_args->user_filter;
-        csv_params.device_filter = DEVICE_FILTER_ALL_CHARGERS;
+        csv_params.device_filter = upload_args->device_filter;
         csv_params.start_timestamp_min = upload_args->start_timestamp_min;
         csv_params.end_timestamp_min = upload_args->end_timestamp_min;
         csv_params.language = upload_args->language;
@@ -2096,11 +2101,12 @@ void ChargeTracker::upload_charge_logs()
     }
 }
 
-void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
+void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const int device_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
 {
     RemoteUploadRequest *task_args = new RemoteUploadRequest;
     task_args->cookie = cookie;
     task_args->user_filter = user_filter;
+    task_args->device_filter = device_filter;
     task_args->start_timestamp_min = start_timestamp_min;
     task_args->end_timestamp_min = end_timestamp_min;
     task_args->language = language;
