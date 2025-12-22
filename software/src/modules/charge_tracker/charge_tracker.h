@@ -55,6 +55,7 @@ public:
     bool setupRecords(const char *directory = nullptr);
     void updateState();
     bool is_user_tracked(uint8_t user_id);
+    bool has_tracked_charges(uint32_t charger_uid);
 
     size_t completeRecordsInLastFile();
     bool currentlyCharging(const char *directory = nullptr);
