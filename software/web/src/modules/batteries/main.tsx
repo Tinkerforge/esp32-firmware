@@ -49,7 +49,7 @@ import { ScheduleRuleCondition } from "../battery_control/schedule_rule_conditio
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index } from "../day_ahead_prices/main";
 //#endif
-import { plugins_init } from "./plugins";
+import { plugins_pre_init, plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
 import { UplotLoader } from "../../ts/components/uplot_loader";
@@ -1442,17 +1442,20 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
     }
 }
 
-
-export function init() {
-    let result = plugins_init();
+export function pre_init() {
+    let result = plugins_pre_init();
 
     for (let plugins of result) {
-        for (let i in plugins) {
-            if (config_plugins[i]) {
-                console.log('Batteries: Overwriting class ID ' + i);
+        for (let battery_class in plugins) {
+            if (config_plugins[battery_class]) {
+                console.log('Batteries: Overwriting battery class ' + battery_class);
             }
 
-            config_plugins[i] = plugins[i];
+            config_plugins[battery_class] = plugins[battery_class];
         }
     }
+}
+
+export function init() {
+    plugins_init();
 }

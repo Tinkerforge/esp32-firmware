@@ -2,10 +2,14 @@ import { BatteryConfigPlugin } from "./types";
 
 {{{imports}}}
 
-export function plugins_init() {
+export function plugins_pre_init() {
     let result: Array<{[battery_class: number]: BatteryConfigPlugin}> = [];
 
-    {{{inits}}}
+    {{{pre_inits}}}
 
     return result;
+}
+
+export function plugins_init() {
+    {{{inits}}}
 }

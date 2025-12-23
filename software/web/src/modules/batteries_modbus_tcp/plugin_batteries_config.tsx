@@ -722,7 +722,7 @@ function import_custom_table(table: RegisterTable)
     return {register_blocks: register_blocks};
 }
 
-export function init() {
+export function pre_init() {
     return {
         [BatteryClassID.ModbusTCP]: {
             name: () => __("batteries_modbus_tcp.content.battery_class"),
@@ -1263,4 +1263,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }
