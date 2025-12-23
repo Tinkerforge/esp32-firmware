@@ -116,5 +116,8 @@ export class Co2AmpelStatus extends Component<{}, Co2AmpelStatusState>
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

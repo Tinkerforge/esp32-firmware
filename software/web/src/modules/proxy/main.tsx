@@ -140,5 +140,8 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

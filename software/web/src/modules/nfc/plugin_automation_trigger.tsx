@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -116,7 +116,7 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
     ]
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.NFC]: {
@@ -128,4 +128,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

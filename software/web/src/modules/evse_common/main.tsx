@@ -21,5 +21,8 @@ export { EVSE, EVSENavbar } from "./evse_content";
 export { EVSESettings, EVSESettingsNavbar } from "./evse_settings";
 export { EVSEStatus } from "./evse_status";
 
+export function pre_init() {
+}
+
 export function init() {
 }

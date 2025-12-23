@@ -368,5 +368,8 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

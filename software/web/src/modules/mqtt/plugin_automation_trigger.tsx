@@ -22,7 +22,7 @@ import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
@@ -107,7 +107,7 @@ function new_mqtt_config(): AutomationTrigger {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.MQTT]: {
@@ -119,4 +119,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

@@ -144,5 +144,8 @@ export class EthernetStatus extends Component
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

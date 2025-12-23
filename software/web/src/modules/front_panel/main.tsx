@@ -248,5 +248,8 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

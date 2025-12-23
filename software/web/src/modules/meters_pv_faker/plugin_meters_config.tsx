@@ -40,7 +40,7 @@ export type PvFakerMetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.PvFaker]: {
             name: () => __("meters_pv_faker.content.meter_class"),
@@ -105,4 +105,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

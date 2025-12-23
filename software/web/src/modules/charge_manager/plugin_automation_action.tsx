@@ -22,7 +22,7 @@ import { h } from "preact";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";
 import * as API from "../../ts/api"
@@ -107,7 +107,7 @@ function new_pm_charge_mode_switch_config(): AutomationAction {
 }
 //#endregion
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.SetManagerCurrent]: {
@@ -126,4 +126,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

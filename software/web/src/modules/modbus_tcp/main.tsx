@@ -141,5 +141,8 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

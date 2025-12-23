@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputNumber } from "../../ts/components/input_number";
@@ -251,7 +251,7 @@ function new_pm_charge_mode_switch_config(): AutomationAction {
 }
 //#endregion
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.SetCurrent]: {
@@ -277,4 +277,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

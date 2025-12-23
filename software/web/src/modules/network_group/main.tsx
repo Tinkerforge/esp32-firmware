@@ -29,5 +29,8 @@ export function NetworkGroupNavbar(props: {children: ComponentChildren, group_re
         </NavbarGroup>);
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

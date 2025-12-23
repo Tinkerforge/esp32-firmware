@@ -29,5 +29,8 @@ export function InterfacesGroupNavbar(props: {children: ComponentChildren, group
         </NavbarGroup>);
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

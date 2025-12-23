@@ -37,7 +37,7 @@ export type EMMetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.EnergyManager]: {
             name: () => __("meters_em.content.meter_class"),
@@ -86,4 +86,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

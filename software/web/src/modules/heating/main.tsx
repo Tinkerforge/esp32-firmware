@@ -743,5 +743,8 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

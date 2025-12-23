@@ -17,13 +17,15 @@ with open('../../options.ts', 'r', encoding='utf-8') as f:
     meters_max_slots = int(match.group(1))
 
 imports = []
+pre_inits = []
 inits = []
 configs = []
 
 for plugin in util.find_frontend_plugins('Meters', 'Config'):
     import_path = PurePath('..', plugin.module_name, plugin.import_name).as_posix()
     imports.append("import * as {0}_config from '{1}'".format(plugin.module_name, import_path))
-    inits.append("result.push({0}_config.init());".format(plugin.module_name))
+    pre_inits.append("result.push({0}_config.pre_init());".format(plugin.module_name))
+    inits.append("{0}_config.init();".format(plugin.module_name))
 
     for interface_name in plugin.interface_names:
         configs.append('{0}_config.{1}'.format(plugin.module_name, interface_name))
@@ -41,5 +43,6 @@ with open('api.ts', 'w', encoding='utf-8') as f:
 
 tfutil.specialize_template("plugins.tsx.template", "plugins.tsx", {
     "{{{imports}}}": '\n'.join(imports),
+    "{{{pre_inits}}}": '\n    '.join(pre_inits),
     "{{{inits}}}": '\n    '.join(inits),
 })

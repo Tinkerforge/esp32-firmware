@@ -31,7 +31,7 @@ import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "./automation_trigger_id.enum";
 import { AutomationActionID } from "./automation_action_id.enum";
 import { Task, AutomationTriggerComponents, AutomationActionComponents } from "./types";
-import { plugins_init } from "./plugins";
+import { plugins_pre_init, plugins_init } from "./plugins";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Tool } from "react-feather";
@@ -353,8 +353,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
     }
 }
 
-export function init() {
-    let result = plugins_init();
+export function pre_init() {
+    let result = plugins_pre_init();
 
     for (let item of result) {
         if (item.trigger_components) {
@@ -377,4 +377,8 @@ export function init() {
             }
         }
     }
+}
+
+export function init() {
+    plugins_init();
 }

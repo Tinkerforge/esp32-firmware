@@ -666,7 +666,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
     }
 }
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.SunSpec]: {
             name: () => __("meters_sun_spec.content.meter_class"),
@@ -677,4 +677,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

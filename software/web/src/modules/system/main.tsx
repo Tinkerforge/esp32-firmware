@@ -185,5 +185,8 @@ util.addApiEventListener('system/last_reset', (v) => {
     }
 })
 
+export function pre_init() {
+}
+
 export function init() {
 }

@@ -420,5 +420,8 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

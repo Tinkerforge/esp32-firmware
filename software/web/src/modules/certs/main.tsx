@@ -145,5 +145,8 @@ export class Certs extends Component<{}, State> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

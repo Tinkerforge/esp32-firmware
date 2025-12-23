@@ -567,5 +567,8 @@ export class SolarForecastStatus extends Component
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import * as util from "../../ts/util";
@@ -98,7 +98,7 @@ function new_pm_grid_power_draw_config(): AutomationTrigger {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.PMPowerAvailable]: {
@@ -117,4 +117,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

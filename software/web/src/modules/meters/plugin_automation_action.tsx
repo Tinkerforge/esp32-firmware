@@ -22,7 +22,7 @@ import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
@@ -72,7 +72,7 @@ function new_meter_reset_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.MeterReset]: {
@@ -84,4 +84,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

@@ -117,5 +117,8 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

@@ -9,6 +9,7 @@ imports = []
 already_imported = set({})
 triggers = []
 actions = []
+pre_inits = []
 inits = []
 
 for plugin in util.find_frontend_plugins('Automation', 'Trigger'):
@@ -17,7 +18,8 @@ for plugin in util.find_frontend_plugins('Automation', 'Trigger'):
     if import_path not in already_imported:
         imports.append("import * as {0}_trigger from '{1}'".format(plugin.module_name, import_path))
         already_imported.add(plugin.module_name)
-        inits.append("result.push({0}_trigger.init());".format(plugin.module_name))
+        pre_inits.append("result.push({0}_trigger.pre_init());".format(plugin.module_name))
+        inits.append("{0}_trigger.init();".format(plugin.module_name))
 
     for interface_name in plugin.interface_names:
         triggers.append('{0}_trigger.{1}'.format(plugin.module_name, interface_name))
@@ -28,7 +30,8 @@ for plugin in util.find_frontend_plugins('Automation', 'Action'):
     if import_path not in already_imported:
         imports.append("import * as {0}_action from '{1}'".format(plugin.module_name, import_path))
         already_imported.add(plugin.module_name)
-        inits.append("result.push({0}_action.init());".format(plugin.module_name))
+        pre_inits.append("result.push({0}_action.pre_init());".format(plugin.module_name))
+        inits.append("{0}_action.init();".format(plugin.module_name))
 
     for interface_name in plugin.interface_names:
         actions.append('{0}_action.{1}'.format(plugin.module_name, interface_name))
@@ -41,5 +44,6 @@ tfutil.specialize_template("api.ts.template", "api.ts", {
 
 tfutil.specialize_template("plugins.tsx.template", "plugins.tsx", {
     "{{{imports}}}": '\n'.join(imports),
+    "{{{pre_inits}}}": '\n    '.join(pre_inits),
     "{{{inits}}}": '\n    '.join(inits),
 })

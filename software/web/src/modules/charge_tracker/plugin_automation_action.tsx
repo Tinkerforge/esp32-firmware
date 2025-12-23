@@ -20,7 +20,7 @@
 
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
 
 export type ChargeTrackerResetAutomationAction = [
@@ -43,7 +43,7 @@ function new_charge_tracker_reset_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             // [AutomationActionID.ChargeTrackerReset]: {
@@ -55,4 +55,7 @@ export function init(): InitResult {
             // },
         },
     };
+}
+
+export function init() {
 }

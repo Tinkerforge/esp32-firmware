@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number"
 import { InputSelect } from "../../ts/components/input_select";
@@ -77,7 +77,7 @@ function new_em_sgready_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.EMSGReadySwitch]: {
@@ -89,4 +89,7 @@ export function init(): InitResult {
             },
         }
     }
+}
+
+export function init() {
 }

@@ -47,4 +47,4 @@ export interface AutomationActionComponent {
 export type AutomationTriggerComponents = {[key: number]: AutomationTriggerComponent};
 export type AutomationActionComponents = {[key: number]: AutomationActionComponent};
 
-export type InitResult = {trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents};
+export type PreInitResult = {trigger_components?: AutomationTriggerComponents, action_components?: AutomationActionComponents};

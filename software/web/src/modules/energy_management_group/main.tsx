@@ -29,5 +29,8 @@ export function EnergyManagementGroupNavbar(props: {children: ComponentChildren,
         </NavbarGroup>);
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

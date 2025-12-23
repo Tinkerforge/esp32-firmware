@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
@@ -63,7 +63,7 @@ function new_evse_gp_output_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.EVSEGPOutput]: {
@@ -75,4 +75,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

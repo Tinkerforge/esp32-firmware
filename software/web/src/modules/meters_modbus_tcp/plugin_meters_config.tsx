@@ -232,7 +232,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 }
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.ModbusTCP]: {
             name: () => __("meters_modbus_tcp.content.meter_class"),
@@ -612,4 +612,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

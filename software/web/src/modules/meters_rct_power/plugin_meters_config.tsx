@@ -57,7 +57,7 @@ function get_default_location(virtual_meter: number) {
     return MeterLocation.Unknown;
 }
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.RCTPower]: {
             name: () => __("meters_rct_power.content.meter_class"),
@@ -152,4 +152,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }
