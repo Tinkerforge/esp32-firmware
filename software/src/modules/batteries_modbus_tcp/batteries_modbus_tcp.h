@@ -75,6 +75,7 @@ private:
 
     ConfigRoot test_config;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> test_table_prototypes;
+    ConfigRoot test_state;
     ConfigRoot test_continue_config;
     ConfigRoot test_stop_config;
 

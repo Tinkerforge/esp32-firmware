@@ -5,6 +5,11 @@
     cookie: number;
 }*/
 
+export interface test_state {
+    slot: number;
+    mode: number;
+}
+
 export interface test_continue {
     cookie: number;
 }

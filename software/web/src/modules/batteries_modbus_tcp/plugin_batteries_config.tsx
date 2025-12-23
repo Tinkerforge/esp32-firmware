@@ -839,6 +839,15 @@ export function pre_init() {
 
                 return clone;
             },
+            report_test_mode: (callback: (battery_slot: number, mode: number) => void) => {
+                console.log("report_test_mode");
+                util.addApiEventListener('batteries_modbus_tcp/test_state', () => {
+                    let state = API.get('batteries_modbus_tcp/test_state');
+
+                    console.log("report_test_mode callback", state.slot, state.mode);
+                    callback(state.slot, state.mode);
+                });
+            },
             get_edit_children: (battery_slot: number, config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
                 let edit_children = [
                     <FormRow label={__("batteries_modbus_tcp.content.display_name")}>
@@ -893,12 +902,12 @@ export function pre_init() {
                 ];
 
                 let battery_mode_names = [
-                    __("batteries_modbus_tcp.content.battery_mode_block"),
-                    __("batteries_modbus_tcp.content.battery_mode_normal"),
-                    __("batteries_modbus_tcp.content.battery_mode_charge_from_excess"),
-                    __("batteries_modbus_tcp.content.battery_mode_charge_from_grid"),
-                    __("batteries_modbus_tcp.content.battery_mode_discharge_to_load"),
-                    __("batteries_modbus_tcp.content.battery_mode_discharge_to_grid"),
+                    __("batteries.content.battery_mode_block"),
+                    __("batteries.content.battery_mode_normal"),
+                    __("batteries.content.battery_mode_charge_from_excess"),
+                    __("batteries.content.battery_mode_charge_from_grid"),
+                    __("batteries.content.battery_mode_discharge_to_load"),
+                    __("batteries.content.battery_mode_discharge_to_grid"),
                 ];
 
                 let battery_mode_order = [

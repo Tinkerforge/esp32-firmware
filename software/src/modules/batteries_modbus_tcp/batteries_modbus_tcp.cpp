@@ -119,6 +119,11 @@ void BatteriesModbusTCP::pre_setup()
         {"cookie", Config::Uint32(0)},
     })};
 
+    test_state = ConfigRoot{Config::Object({
+        {"slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS())},
+        {"mode", Config::Enum(BatteryMode::None)},
+    })};
+
     test_continue_config = ConfigRoot{Config::Object({
         {"cookie", Config::Uint32(0)},
     })};
@@ -261,6 +266,8 @@ void BatteriesModbusTCP::register_urls()
 
         test->state = TestState::Connect;
     }, true);
+
+    api.addState("batteries_modbus_tcp/test_state", &test_state);
 
     api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](String &errmsg) {
         if (test == nullptr) {
@@ -408,6 +415,9 @@ void BatteriesModbusTCP::loop()
             instances[test->slot]->set_paused(true);
         }
 
+        test_state.get("slot")->updateUint(test->slot);
+        test_state.get("mode")->updateEnum(test->mode);
+
         test->state = TestState::TableWriting;
 
 #if defined(__GNUC__)
@@ -435,6 +445,9 @@ void BatteriesModbusTCP::loop()
             BatteryModbusTCP::free_table(test->table);
             test->table = nullptr;
         }
+
+        test_state.get("slot")->updateUint(test->slot);
+        test_state.get("mode")->updateEnum(BatteryMode::None);
 
         if (instances[test->slot] != nullptr) {
             instances[test->slot]->set_paused(false);
