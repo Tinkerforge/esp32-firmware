@@ -1578,42 +1578,42 @@ interface MetersAlertState {
 const ACCEPTABLE_VOLTAGE_L_N_MIN = 207.0; // V
 const ACCEPTABLE_VOLTAGE_L_N_MAX = 253.0; // V
 
-util.addApiEventListener_unchecked('evse/meter_config', () => {
-    const config = API.get_unchecked('evse/meter_config');
-
-    if (!API.hasFeature("meters")) {
-        return;
-    }
-
-    const value_ids = API.get_unchecked(`meters/${config.slot}/value_ids`);
-    const values = API.get_unchecked(`meters/${config.slot}/values`);
-    let voltages_out_of_range: [string, number][] = [];
-
-    if (util.hasValue(value_ids) && value_ids.length > 0 && util.hasValue(values)) {
-        let voltage_l1_n = values[value_ids.indexOf(MeterValueID.VoltageL1N)];
-        let voltage_l2_n = values[value_ids.indexOf(MeterValueID.VoltageL2N)];
-        let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
-
-        if (util.hasValue(voltage_l1_n) && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-            voltages_out_of_range.push(['L1', voltage_l1_n]);
-        }
-
-        if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-            voltages_out_of_range.push(['L2', voltage_l2_n]);
-        }
-
-        if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-            voltages_out_of_range.push(['L3', voltage_l3_n]);
-        }
-    }
-
-    if (voltages_out_of_range.length !== 0) {
-        util.add_status_alert("meters", "danger", () => __("meters.status.voltage_alert_label"), () => __("meters.status.voltage_alert_message")(voltages_out_of_range));
-    } else {
-        util.remove_status_alert("meters");
-    }
-});
-
 export function init() {
     plugins_init();
+
+    util.addApiEventListener_unchecked('evse/meter_config', () => {
+        const config = API.get_unchecked('evse/meter_config');
+
+        if (!API.hasFeature("meters")) {
+            return;
+        }
+
+        const value_ids = API.get_unchecked(`meters/${config.slot}/value_ids`);
+        const values = API.get_unchecked(`meters/${config.slot}/values`);
+        let voltages_out_of_range: [string, number][] = [];
+
+        if (util.hasValue(value_ids) && value_ids.length > 0 && util.hasValue(values)) {
+            let voltage_l1_n = values[value_ids.indexOf(MeterValueID.VoltageL1N)];
+            let voltage_l2_n = values[value_ids.indexOf(MeterValueID.VoltageL2N)];
+            let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
+
+            if (util.hasValue(voltage_l1_n) && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+                voltages_out_of_range.push(['L1', voltage_l1_n]);
+            }
+
+            if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+                voltages_out_of_range.push(['L2', voltage_l2_n]);
+            }
+
+            if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
+                voltages_out_of_range.push(['L3', voltage_l3_n]);
+            }
+        }
+
+        if (voltages_out_of_range.length !== 0) {
+            util.add_status_alert("meters", "danger", () => __("meters.status.voltage_alert_label"), () => __("meters.status.voltage_alert_message")(voltages_out_of_range));
+        } else {
+            util.remove_status_alert("meters");
+        }
+    });
 }

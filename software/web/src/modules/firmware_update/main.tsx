@@ -331,24 +331,23 @@ export function pre_init() {
 }
 
 export function init() {
+    util.addApiEventListener('firmware_update/state', () => {
+        const state = API.get('firmware_update/state');
+
+        if (state && state.rolled_back_version && state.rolled_back_version.length > 0) {
+            const version = API.get('info/version').firmware;
+
+            util.add_status_alert(
+                'firmware_update',
+                'warning',
+                () => __("firmware_update.status.firmware_update"),
+                () => __("firmware_update.status.rolled_back_version")(state.rolled_back_version, version),
+                () => {
+                    API.call("firmware_update/clear_rolled_back_version", {}, () => __("firmware_update.status.clear_rolled_back_version_failed"));
+                }
+            );
+        } else {
+            util.remove_status_alert('firmware_update');
+        }
+    });
 }
-
-util.addApiEventListener('firmware_update/state', () => {
-    const state = API.get('firmware_update/state');
-
-    if (state && state.rolled_back_version && state.rolled_back_version.length > 0) {
-        const version = API.get('info/version').firmware;
-
-        util.add_status_alert(
-            'firmware_update',
-            'warning',
-            () => __("firmware_update.status.firmware_update"),
-            () => __("firmware_update.status.rolled_back_version")(state.rolled_back_version, version),
-            () => {
-                API.call("firmware_update/clear_rolled_back_version", {}, () => __("firmware_update.status.clear_rolled_back_version_failed"));
-            }
-        );
-    } else {
-        util.remove_status_alert('firmware_update');
-    }
-});

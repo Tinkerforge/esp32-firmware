@@ -174,19 +174,18 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
     }
 }
 
-util.addApiEventListener('system/last_reset', (v) => {
-    if (v.data.show_warning) {
-        const version = API.get('info/version');
-        util.add_status_alert("system", "warning", () => __("system.status.system"), () => __("system.status.last_reset")(v.data.reason, version.firmware), () => {
-            API.call("system/hide_last_reset_warning", {}, () => __("system.status.hide_last_reset_warning_failed"));
-        });
-    } else {
-        util.remove_status_alert("system");
-    }
-})
-
 export function pre_init() {
 }
 
 export function init() {
+    util.addApiEventListener('system/last_reset', (v) => {
+        if (v.data.show_warning) {
+            const version = API.get('info/version');
+            util.add_status_alert("system", "warning", () => __("system.status.system"), () => __("system.status.last_reset")(v.data.reason, version.firmware), () => {
+                API.call("system/hide_last_reset_warning", {}, () => __("system.status.hide_last_reset_warning_failed"));
+            });
+        } else {
+            util.remove_status_alert("system");
+        }
+    });
 }
