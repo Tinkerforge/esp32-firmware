@@ -10,6 +10,18 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
+            "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/,
+
+            "test_warnings": "Tests",
+            "test_warning": /*SFN*/(display_name: string, mode_name: string) => `Für Batteriespeicher ${display_name} läuft ein Test: ${mode_name}.`/*NF*/,
+
+            "battery_mode_block": "Laden blockieren, Entladen blockieren",
+            "battery_mode_normal": "Normal Laden, normal Entladen",
+            "battery_mode_charge_from_excess": "Normal Laden, Entladen blockieren",
+            "battery_mode_charge_from_grid": "Laden erzwingen, Entladen blockieren",
+            "battery_mode_discharge_to_load": "Laden blockieren, normal Entladen",
+            "battery_mode_discharge_to_grid": "Laden blockieren, Entladen erzwingen",
+
             "status_charge": "Laden",
             "status_discharge": "Entladen",
             "status_normal": "Normal",

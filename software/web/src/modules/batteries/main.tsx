@@ -802,6 +802,7 @@ interface BatteriesState {
     rules_charge: RuleConfig[];
     rules_discharge: RuleConfig[];
 //#endif
+    test_modes: {[battery_slot: number]: BatteryMode};
 }
 
 export class Batteries extends ConfigComponent<'batteries/config', {}, BatteriesState> {
@@ -822,6 +823,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                   rules_charge: null,
                   rules_discharge: null,
 //#endif
+                  test_modes: {},
               });
 
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
@@ -868,6 +870,19 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         effect(() => this.update_uplot());
 //#endif
 //#endif
+
+        for (let battery_class in config_plugins) {
+            if (config_plugins[battery_class].report_test_mode) {
+                config_plugins[battery_class].report_test_mode((battery_slot: number, mode: number) => {
+                    this.setState((prevState) => ({
+                        test_modes: {
+                            ...prevState.test_modes,
+                            [battery_slot]: mode
+                        }
+                    }));
+                });
+            }
+        }
     }
 
     override async sendSave(topic: 'batteries/config', new_config: API.getType['batteries/config']) {
@@ -1145,11 +1160,30 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         }
 //#endif
 
+        let active_test_modes = Object.keys(this.state.test_modes).filter((battery_slot_str) => this.state.test_modes[parseInt(battery_slot_str)] != BatteryMode.None);
         let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
+        let battery_mode_names = [
+            __("batteries.content.battery_mode_block"),
+            __("batteries.content.battery_mode_normal"),
+            __("batteries.content.battery_mode_charge_from_excess"),
+            __("batteries.content.battery_mode_charge_from_grid"),
+            __("batteries.content.battery_mode_discharge_to_load"),
+            __("batteries.content.battery_mode_discharge_to_grid"),
+        ];
 
         return (
             <SubPage name="batteries" colClasses="col-xl-10">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    {active_test_modes.length > 0 ?
+                        <FormRow label={__("batteries.content.test_warnings")}>
+                            {active_test_modes.map((battery_slot_str) => {
+                                let battery_slot = parseInt(battery_slot_str);
+                                let display_name = this.state.configs[battery_slot][0] != BatteryClassID.None ? this.state.configs[battery_slot][1].display_name : __("batteries.content.battery")(battery_slot);
+
+                                return <Alert variant="warning" className="mb-0">{__("batteries.content.test_warning")(display_name, battery_mode_names[this.state.test_modes[battery_slot]])}</Alert>;
+                            })}
+                        </FormRow> : undefined}
+
 {/*#if MODULE_BATTERY_CONTROL_AVAILABLE*/}
                     <FormRow label={__("batteries.content.status_charge")}>
                         <IndicatorGroup

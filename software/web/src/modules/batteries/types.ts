@@ -29,6 +29,7 @@ export type BatteryConfigPlugin = {
     import_config?: (new_config: BatteryConfig, current_config: BatteryConfig) => BatteryConfig
     export_basename_suffix?: () => string
     export_config?: (config: BatteryConfig) => BatteryConfig
+    report_test_mode?: (callback: (battery_slot: number, mode: number) => void) => void
     get_edit_children: (battery_slot: number, config: BatteryConfig, on_config: (config: BatteryConfig) => void) => ComponentChildren
     hide?: () => Promise<void>
 };
