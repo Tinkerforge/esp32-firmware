@@ -670,9 +670,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     </table>
                 </CollapsedSection>
             </SubPage>
-        )
-            ;
+        );
     }
+}
+
+export function pre_init() {
 }
 
 export function init() {

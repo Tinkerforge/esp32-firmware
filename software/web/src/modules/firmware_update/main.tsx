@@ -327,6 +327,9 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }
 

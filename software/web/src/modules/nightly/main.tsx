@@ -19,6 +19,9 @@
 
 import { underconstruction_gif } from "./underconstruction_gif.embedded";
 
+export function pre_init() {
+}
+
 export function init() {
     let parent = document.querySelector('nav.navbar > a');
     if (parent == null)

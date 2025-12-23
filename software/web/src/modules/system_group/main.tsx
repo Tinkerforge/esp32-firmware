@@ -29,5 +29,8 @@ export function SystemGroupNavbar(props: {children: ComponentChildren, group_ref
         </NavbarGroup>);
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

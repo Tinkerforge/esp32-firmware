@@ -456,5 +456,8 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

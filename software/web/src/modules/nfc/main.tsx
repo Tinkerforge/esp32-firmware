@@ -287,5 +287,8 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

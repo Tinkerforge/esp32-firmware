@@ -37,5 +37,8 @@ export class TutorialPhase1 extends Component {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

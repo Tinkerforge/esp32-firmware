@@ -439,5 +439,8 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

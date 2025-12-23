@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
@@ -170,7 +170,7 @@ function new_pm_block_charge_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.PMPhaseSwitch]: {
@@ -196,4 +196,7 @@ export function init(): InitResult {
             },
         }
     }
+}
+
+export function init() {
 }

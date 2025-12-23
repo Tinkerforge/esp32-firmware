@@ -21,7 +21,7 @@
 import { h, Fragment } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { AutomationAction, InitResult } from "../automation/types";
+import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
@@ -129,7 +129,7 @@ function new_nfc_inject_tag_config(): AutomationAction {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         action_components: {
             [AutomationActionID.NFCInjectTag]: {
@@ -141,4 +141,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

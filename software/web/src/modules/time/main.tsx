@@ -250,5 +250,8 @@ export class TimeStatus extends Component<{}, TimeStatusState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

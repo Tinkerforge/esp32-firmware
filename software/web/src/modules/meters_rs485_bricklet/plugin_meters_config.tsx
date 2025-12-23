@@ -39,7 +39,7 @@ export type RS485BrickletMetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.RS485Bricklet]: {
             name: () => __("meters_rs485_bricklet.content.meter_class"),
@@ -101,4 +101,7 @@ export function init() {
             }
         },
     };
+}
+
+export function init() {
 }

@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -172,7 +172,7 @@ function new_em_sg_ready_switch_config(): AutomationTrigger {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.EMInput]: {
@@ -198,4 +198,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

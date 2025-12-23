@@ -40,7 +40,7 @@ import { MeterLocation } from "../meters/meter_location.enum";
 import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
 import { PageHeader } from "../../ts/components/page_header";
-import { plugins_init } from "./plugins";
+import { plugins_pre_init, plugins_init } from "./plugins";
 import { InputDate } from "../../ts/components/input_date";
 import { InputTime } from "../../ts/components/input_time";
 import { InputText } from "../../ts/components/input_text";
@@ -1557,6 +1557,20 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
     }
 }
 
+export function pre_init() {
+    let result = plugins_pre_init();
+
+    for (let plugins of result) {
+        for (let meter_class in plugins) {
+            if (config_plugins[meter_class]) {
+                console.log('Meters: Overwriting meter class ' + meter_class);
+            }
+
+            config_plugins[meter_class] = plugins[meter_class];
+        }
+    }
+}
+
 interface MetersAlertState {
     evse_meter_slot: number;
 }
@@ -1601,15 +1615,5 @@ util.addApiEventListener_unchecked('evse/meter_config', () => {
 });
 
 export function init() {
-    let result = plugins_init();
-
-    for (let plugins of result) {
-        for (let i in plugins) {
-            if (config_plugins[i]) {
-                console.log('Meters: Overwriting class ID ' + i);
-            }
-
-            config_plugins[i] = plugins[i];
-        }
-    }
+    plugins_init();
 }

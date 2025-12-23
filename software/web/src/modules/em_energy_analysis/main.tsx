@@ -2621,5 +2621,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

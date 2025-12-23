@@ -37,7 +37,7 @@ export type SMASpeedwireMetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.SMASpeedwire]: {
             name: () => __("meters_sma_speedwire.content.meter_class"),
@@ -89,4 +89,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

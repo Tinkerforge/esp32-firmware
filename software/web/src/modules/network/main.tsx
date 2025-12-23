@@ -376,5 +376,8 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

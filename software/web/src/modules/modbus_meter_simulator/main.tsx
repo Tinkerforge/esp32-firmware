@@ -84,5 +84,8 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

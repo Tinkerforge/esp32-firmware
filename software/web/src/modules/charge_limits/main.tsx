@@ -233,5 +233,8 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

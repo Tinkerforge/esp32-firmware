@@ -866,5 +866,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     }
 }
 
+export function pre_init() {
+}
 
-export function init() {}
+export function init() {
+}

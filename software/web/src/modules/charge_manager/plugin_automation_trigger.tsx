@@ -21,7 +21,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 
 export type ChargeManagerWdAutomationTrigger = [
     AutomationTriggerID.ChargeManagerWd,
@@ -43,7 +43,7 @@ function new_charge_manager_wd_config(): AutomationTrigger {
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.ChargeManagerWd]: {
@@ -55,4 +55,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

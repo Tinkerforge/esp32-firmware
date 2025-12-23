@@ -299,5 +299,8 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

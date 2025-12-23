@@ -46,7 +46,7 @@ export type MetaMetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.Meta]: {
             name: () => __("meters_meta.content.meter_class"),
@@ -126,4 +126,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

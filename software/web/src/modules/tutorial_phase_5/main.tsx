@@ -96,5 +96,8 @@ export class TutorialPhase5 extends Component<{}, TutorialPhase5State> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

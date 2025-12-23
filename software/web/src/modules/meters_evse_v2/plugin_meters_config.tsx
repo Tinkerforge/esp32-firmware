@@ -37,7 +37,7 @@ export type EVSEV2MetersConfig = [
     },
 ];
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.EVSEV2]: {
             name: () => __("meters_evse_v2.content.meter_class"),
@@ -87,4 +87,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }

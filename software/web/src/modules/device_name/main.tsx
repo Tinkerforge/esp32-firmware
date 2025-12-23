@@ -63,5 +63,8 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

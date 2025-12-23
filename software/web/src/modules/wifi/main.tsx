@@ -105,5 +105,8 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

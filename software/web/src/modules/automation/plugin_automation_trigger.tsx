@@ -21,7 +21,7 @@
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
-import { AutomationTrigger, InitResult } from "../automation/types";
+import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
@@ -193,7 +193,7 @@ function get_http_edit_children(trigger: HTTPAutomationTrigger, on_trigger: (tri
     ];
 }
 
-export function init(): InitResult {
+export function pre_init(): PreInitResult {
     return {
         trigger_components: {
             [AutomationTriggerID.Cron]: {
@@ -212,4 +212,7 @@ export function init(): InitResult {
             },
         },
     };
+}
+
+export function init() {
 }

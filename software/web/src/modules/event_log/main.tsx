@@ -239,5 +239,8 @@ export class EventLog extends Component<{}, EventLogState> {
     }
 }
 
+export function pre_init() {
+}
+
 export function init() {
 }

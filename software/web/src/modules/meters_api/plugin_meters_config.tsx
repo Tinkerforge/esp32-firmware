@@ -344,7 +344,7 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
     }
 }
 
-export function init() {
+export function pre_init() {
     return {
         [MeterClassID.API]: {
             name: () => __("meters_api.content.meter_class"),
@@ -369,4 +369,7 @@ export function init() {
             },
         },
     };
+}
+
+export function init() {
 }
