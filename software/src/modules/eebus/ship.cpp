@@ -420,36 +420,25 @@ ShipDiscoveryState Ship::discover_ship_peers()
     }
     while (results) {
         String ip_address = "";
-        String first_ip = "";
+        std::vector<String> ip_addresses{};
         while (results->addr) {
-            ip_address = ip_to_string(results->addr->addr);
-            if (first_ip.length() < 1) {
-                first_ip = ip_address;
-            }
-            peer_handler.update_ip_by_ip(first_ip, ip_address);
-            /*
-            if (existing_node == nullptr) {
-                existing_node = peer_handler.get_peer_by_ip(ip_address);
-                logger.printfln("found existing node: %d", existing_node == nullptr);
-                if (existing_node == nullptr) {
-                    peer_handler.new_peer_from_ip(ip_address);
-                    existing_node = peer_handler.get_peer_by_ip(ip_address);
-                } else {
-                    existing_node->ip_address.push_back(ip_address);
-                }
-            } else {
-                if (!existing_node->contains_ip(ip_address)) {
-                    existing_node->ip_address.push_back(ip_address);
-                }
-            }*/
-
+            ip_addresses.push_back(ip_to_string(results->addr->addr));
             results->addr = results->addr->next;
         }
-        ShipNode *existing_node = peer_handler.get_peer_by_ip(ip_address).get();
-        if (ip_address.length() < 1 || existing_node == nullptr) {
+        if (ip_addresses.empty()) {
             results = results->next;
             continue;
         }
+        String txt_vers;
+        String txt_id;
+        String txt_wss_path;
+        String txt_ski;
+        bool txt_autoregister = false;
+        String txt_brand;
+        String txt_model;
+        String txt_type;
+        String dns_name;
+        uint16_t port;
 
         for (int i = 0; i < results->txt_count; i++) {
             mdns_txt_item_t *txt = &results->txt[i];
@@ -458,40 +447,57 @@ ShipDiscoveryState Ship::discover_ship_peers()
             }
             // mandatory fields
             if (strcmp(txt->key, "txtvers") == 0) {
-                existing_node->txt_vers = txt->value;
+                txt_vers = txt->value;
                 //peer_handler.update_vers_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "id") == 0) {
-                existing_node->txt_id = txt->value;
+                txt_id = txt->value;
                 //peer_handler.update_id_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "path") == 0) {
-                existing_node->txt_wss_path = txt->value;
+                txt_wss_path = txt->value;
                 //peer_handler.update_wss_path_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "ski") == 0) {
-                existing_node->txt_ski = txt->value;
+                txt_ski = txt->value;
                 //peer_handler.update_ski_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "register") == 0) {
-                existing_node->txt_autoregister = strcmp(txt->value, "true") == 0;
+                txt_autoregister = strcmp(txt->value, "true") == 0;
                 // peer_handler.update_autoregister_by_ip(ip_address, strcmp(txt->value, "true") == 0);
                 // Optional Fields
             } else if (strcmp(txt->key, "brand") == 0) {
-                existing_node->txt_brand = txt->value;
+                txt_brand = txt->value;
                 //peer_handler.update_brand_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "model") == 0) {
-                existing_node->txt_model = txt->value;
+                txt_model = txt->value;
                 //peer_handler.update_model_by_ip(ip_address, txt->value);
             } else if (strcmp(txt->key, "type") == 0) {
-                existing_node->txt_type = txt->value;
+                txt_type = txt->value;
                 //peer_handler.update_type_by_ip(ip_address, txt->value);
             }
-            if (peer_handler.get_peer_by_ip(ip_address).get()->state != NodeState::Connected) {
-                existing_node->state = NodeState::Discovered;
-                //peer_handler.update_state_by_ip(ip_address, NodeState::Discovered);
-            }
         }
-        if (existing_node->txt_model.length() < 1)
-            existing_node->txt_model = results->instance_name;
-        existing_node->dns_name = String(results->hostname) + ".local";
-        existing_node->port = results->port;
+        if (txt_model.length() < 1)
+            txt_model = results->instance_name;
+        dns_name = String(results->hostname) + ".local";
+        port = results->port;
+        if (txt_vers.isEmpty() || txt_id.isEmpty() || txt_wss_path.isEmpty() || txt_ski.isEmpty()) {
+            eebus.trace_fmtln("Peer with IP %s missing mandatory TXT records, skipping", ip_addresses.front().c_str());
+            results = results->next;
+            continue;
+        }
+        // This is pretty slow as we have to search for the peer again everytime, could be optimized by adding, getting and then setting the values
+        peer_handler.update_vers_by_ski(txt_ski, txt_vers);
+        peer_handler.update_id_by_ski(txt_ski, txt_id);
+        peer_handler.update_wss_path_by_ski(txt_ski, txt_wss_path);
+        peer_handler.update_model_by_ski(txt_ski, txt_model);
+        peer_handler.update_type_by_ski(txt_ski, txt_type);
+        peer_handler.update_brand_by_ski(txt_ski, txt_brand);
+        peer_handler.update_autoregister_by_ski(txt_ski, txt_autoregister);
+        peer_handler.update_dns_name_by_ski(txt_ski, dns_name);
+        peer_handler.update_port_by_ski(txt_ski, port);
+        for (const String &ip : ip_addresses) {
+            peer_handler.update_ip_by_ski(txt_ski, ip);
+        }
+        if (peer_handler.get_peer_by_ski(txt_ski).get()->state != NodeState::Connected) {
+            peer_handler.update_state_by_ski(txt_ski, NodeState::Discovered);
+        }
 
         results = results->next;
     }
@@ -937,6 +943,16 @@ void ShipPeerHandler::initialize_from_config()
         node->trusted = peer->get("trusted")->asBool();
         node->port = static_cast<uint16_t>(peer->get("port")->asUint());
         node->state = NodeState::Disconnected;
+        node->dns_name = peer->get("dns_name")->asString();
+        node->txt_id = peer->get("id")->asString();
+        node->txt_wss_path = peer->get("wss_path")->asString();
+        node->txt_autoregister = peer->get("autoregister")->asBool();
+
+        node->txt_brand = peer->get("model_brand")->asString();
+        node->txt_model = peer->get("model_model")->asString();
+        node->txt_type = peer->get("mode_type")->asString();
+
+
         String ip_list = peer->get("ip")->asString();
         size_t start = 0;
         int end = ip_list.indexOf(';');
@@ -948,6 +964,7 @@ void ShipPeerHandler::initialize_from_config()
         if (start < ip_list.length()) {
             node->ip_address.push_back(ip_list.substring(start));
         }
+
         peers.push_back(node);
     }
 }

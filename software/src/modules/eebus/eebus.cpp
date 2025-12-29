@@ -239,7 +239,7 @@ void EEBus::register_urls()
                         update_peers_config();
                         ship.connect_trusted_peers();
                     },
-                    1_s);
+                    0_s);
 
                 return "scan started";
             }
