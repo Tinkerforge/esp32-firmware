@@ -85,7 +85,7 @@ public:
     /* Updates identified by SKI (txt_ski). Will add a new peer if no existing one was found with the ip */
     std::shared_ptr<ShipNode> get_peer_by_ski(const String &ski);
     void remove_peer_by_ski(const String &ski);
-    void update_ip_by_ski(const String &ski, const String &ip);
+    void update_ip_by_ski(const String &ski, const String &ip, boolean force_front = false);
     void update_port_by_ski(const String &ski, uint16_t port);
     void update_trusted_by_ski(const String &ski, bool trusted);
     void update_state_by_ski(const String &ski, NodeState state);
@@ -117,6 +117,8 @@ public:
 
     void new_peer_from_ski(const String &ski);
     void new_peer_from_ip(const String &ip);
+
+    void initialize_from_config();
 
 private:
     std::vector<std::shared_ptr<ShipNode>> peers{};

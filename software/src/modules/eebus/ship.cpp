@@ -105,6 +105,7 @@ void Ship::setup()
     };
 
     server.register_extra_port(extra_ship_port);
+    peer_handler.initialize_from_config();
 }
 
 void Ship::enable_ship()
@@ -179,6 +180,7 @@ void Ship::setup_wss()
         std::shared_ptr<ShipNode> node = peer_handler.get_peer_by_ip(peer_ip);
         if (node != nullptr) {
             peer_ski = node.get()->txt_ski;
+            peer_handler.update_ip_by_ski(peer_ski, peer_ip, true); // Force the Ip to the front as its actually being used
         } else {
             eebus.trace_fmtln("New incoming SHIP connection from unknown peer %s", peer_ip.c_str());
             peer_handler.update_ip_by_ip(peer_ip, peer_ip);
@@ -558,7 +560,11 @@ void ShipNode::as_json(StringBuilder *sb)
 String ShipNode::ip_address_as_string() const
 {
     String ip_concat;
-    for (size_t i = 0; i < ip_address.size(); ++i) {
+    size_t len = ip_address.size();
+    if (len > 3) {
+        len = 3;
+    } // Maximum return of the first 3 ips
+    for (size_t i = 0; i < len; ++i) {
         if (i > 0) {
             ip_concat += ";";
         }
@@ -604,11 +610,31 @@ void ShipPeerHandler::remove_peer_by_ski(const String &ski)
                 peers.end());
 }
 
-void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip)
+void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, const bool force_front)
 {
     if (const auto peer = get_peer_by_ski(ski)) {
-        if (!peer.get()->contains_ip(ip))
-            peer.get()->ip_address.push_back(ip);
+        if (!peer.get()->contains_ip(ip)) {
+            if (force_front) {
+                peer.get()->ip_address.resize(peer.get()->ip_address.size() + 1);
+                for (int i = peer.get()->ip_address.size() - 1; i >= 0; i--) {
+                    peer.get()->ip_address[i + 1] = peer.get()->ip_address[i];
+                }
+                peer.get()->ip_address[0] = ip;
+            } else {
+                peer.get()->ip_address.push_back(ip);
+            }
+        } else {
+            bool found = false;
+            for (int i = peer.get()->ip_address.size() - 1; i >= 0; i--) {
+                if (found) {
+                    peer.get()->ip_address[i + 1] = peer.get()->ip_address[i];
+                }
+                if (peer.get()->ip_address[i] == ip) {
+                    found = true;
+                }
+            }
+            peer.get()->ip_address[0] = ip;
+        }
     } else {
         new_peer_from_ski(ski);
         update_ip_by_ski(ski, ip);
@@ -894,4 +920,34 @@ void ShipPeerHandler::new_peer_from_ip(const String &ip)
     const std::shared_ptr<ShipNode> node = std::make_shared<ShipNode>();
     node->ip_address.push_back(ip);
     peers.push_back(node);
+}
+void ShipPeerHandler::initialize_from_config()
+{
+    auto config_peers = eebus.config.get("peers");
+
+    const size_t peer_count = config_peers->count();
+    for (size_t i = 0; i < peer_count; i++) {
+        auto peer = config_peers->get(i);
+        auto node = std::make_shared<ShipNode>();
+        node->txt_ski = peer->get("ski")->asString();
+        if (node->txt_ski.isEmpty()) {
+            // Do not add empty SKIs
+            continue;
+        }
+        node->trusted = peer->get("trusted")->asBool();
+        node->port = static_cast<uint16_t>(peer->get("port")->asUint());
+        node->state = NodeState::Disconnected;
+        String ip_list = peer->get("ip")->asString();
+        size_t start = 0;
+        int end = ip_list.indexOf(';');
+        while (end != ip_list.lastIndexOf(';')) {
+            node->ip_address.push_back(ip_list.substring(start, end));
+            start = end + 1;
+            end = ip_list.indexOf(';', start);
+        }
+        if (start < ip_list.length()) {
+            node->ip_address.push_back(ip_list.substring(start));
+        }
+        peers.push_back(node);
+    }
 }

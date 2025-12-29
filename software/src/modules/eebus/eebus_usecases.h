@@ -44,7 +44,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 //#define EEBUS_ENABLE_EVCS_USECASE
 //#define EEBUS_ENABLE_EVCEM_USECASE
-//#define EEBUS_ENABLE_EVCC_USECASE
+#define EEBUS_ENABLE_EVCC_USECASE
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE

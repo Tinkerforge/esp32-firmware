@@ -339,6 +339,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                     <InputText
                                         value={state.add.ip}
+                                        maxlength={150}
                                         onValue={(v) => this.setState({add: {...state.add, ip: v}})}
 
                                     />

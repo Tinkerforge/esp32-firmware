@@ -37,7 +37,7 @@ void EEBus::pre_setup()
 
     // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
-        {"ip", Config::Str("", 7, 1000)}, // Long string as all IPs the device has will be saved. TODO: Do this another way
+        {"ip", Config::Str("0.0.0.0", 7, 150)}, // Store a maximum of 3 ipv6 addresses
         {"port", Config::Uint16(0)},
         {"trusted", Config::Bool(false)},
         {"dns_name", Config::Str("", 0, 63)},
@@ -71,7 +71,7 @@ void EEBus::pre_setup()
 
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 15)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}}), [this](Config &add_peer, ConfigSource source) -> String {
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}}), [this](Config &add_peer, ConfigSource source) -> String {
                               if (add_peer.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
                               }
@@ -158,6 +158,7 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
+
 
     ship.setup();
     update_peers_config();
