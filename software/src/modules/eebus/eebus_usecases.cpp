@@ -1121,7 +1121,7 @@ EvccUsecase::EvccUsecase()
             update_device_config("iso15118-2ed1", true);
             update_identification("12:34:56:78:9a:bc");
             update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
-            update_electrical_connection(0, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
+            update_electrical_connection(100, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
             update_operating_state(false);
         },
         40_s);
@@ -1157,49 +1157,42 @@ MessageReturn EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
                     response["deviceConfigurationKeyValueDescriptionListData"] = generate_device_config_description();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
                     response["deviceConfigurationKeyValueListData"] = generate_device_config_list();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::identificationListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::Identification)) {
                     response["identificationListData"] = generate_identification_description();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceClassification)) {
                     response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                     response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_description();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                     response["electricalConnectionPermittedValueSetListData"] = generate_electrical_connection_values();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis)) {
                     response["deviceDiagnosisStateData"] = generate_state();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             default:;
@@ -1501,8 +1494,9 @@ ElectricalConnectionParameterDescriptionListDataType EvccUsecase::generate_elect
     electrical_connection_description.electricalConnectionParameterDescriptionData.emplace();
 
     ElectricalConnectionParameterDescriptionDataType power_description{};
-    power_description.parameterId = 1;
-    power_description.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::neutral; // Not sure but the spec has no value here, maybe its what we are capable of measuring?
+    power_description.electricalConnectionId = electrical_connection_id;
+    power_description.parameterId = electrical_connection_parameter_id;
+    power_description.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc; // Not sure but the spec has no value here, maybe its what we are capable of measuring?
     power_description.scopeType = ScopeTypeEnumType::acPowerTotal;
     electrical_connection_description.electricalConnectionParameterDescriptionData->push_back(power_description);
     return electrical_connection_description;
@@ -1515,20 +1509,25 @@ ElectricalConnectionPermittedValueSetListDataType EvccUsecase::generate_electric
     electrical_connection_values.electricalConnectionPermittedValueSetData.emplace();
 
     ElectricalConnectionPermittedValueSetDataType permitted_values{};
-    permitted_values.electricalConnectionId = 1;
-    permitted_values.parameterId = 1;
+    permitted_values.electricalConnectionId = electrical_connection_id;
+    permitted_values.parameterId = electrical_connection_parameter_id;
+
     ScaledNumberSetType minmax_power_value_set{};
     ScaledNumberRangeType power_value_range{};
     power_value_range.min->number = min_power_draw;
+    power_value_range.min->scale = 0;
     power_value_range.max->number = max_power_draw;
+    power_value_range.max->scale = 0;
     minmax_power_value_set.range->push_back(power_value_range);
-    permitted_values.permittedValueSet->push_back(minmax_power_value_set);
 
-    ScaledNumberSetType standby_power_value_set{};
+
+    //ScaledNumberSetType standby_power_value_set{};
     ScaledNumberType standby_value_range{};
     standby_value_range.number = standby_power;
-    standby_power_value_set.value->push_back(standby_value_range);
-    permitted_values.permittedValueSet->push_back(standby_power_value_set);
+    //standby_power_value_set.value->push_back(standby_value_range);
+    minmax_power_value_set.value->push_back(standby_value_range);
+    permitted_values.permittedValueSet->push_back(minmax_power_value_set);
+    //permitted_values.permittedValueSet->push_back(standby_power_value_set);
     electrical_connection_values.electricalConnectionPermittedValueSetData->push_back(permitted_values);
     return electrical_connection_values;
 }
@@ -1553,15 +1552,16 @@ EvseccUsecase::EvseccUsecase()
     task_scheduler.scheduleOnce(
         [this]() {
             logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase with a test error");
-            update_operating_state(true, "This is a test error message");
-        },
+            update_operating_state(true, "This is a test error message. It should be displayed. The error state will be resolved in 30 seconds.");
+            task_scheduler.scheduleOnce(
+            [this]() {
+                logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
+                update_operating_state(false, "This is a test error message. It should not be shown");
+            },
+            30_s);
+    },
         50_s);
-    task_scheduler.scheduleOnce(
-        [this]() {
-            logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
-            update_operating_state(false, "This is a test error message. It should not be shown");
-        },
-        200_s);
+
 #endif
 }
 
@@ -2714,7 +2714,7 @@ EEBusUseCases::EEBusUseCases()
     coordinate_ev_charging.set_entity_address({1, 1});
     supported_usecases.push_back(coordinate_ev_charging.get_usecase_type());
 #endif
-#ifdef EEBUS_ENABLE_CEVC_USECASE
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
     usecase_list.push_back(&ev_charging_electricity_measurement);
     ev_charging_electricity_measurement.set_entity_address({1, 1});
     supported_usecases.push_back(ev_charging_electricity_measurement.get_usecase_type());
