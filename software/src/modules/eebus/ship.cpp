@@ -950,7 +950,7 @@ void ShipPeerHandler::initialize_from_config()
 
         node->txt_brand = peer->get("model_brand")->asString();
         node->txt_model = peer->get("model_model")->asString();
-        node->txt_type = peer->get("mode_type")->asString();
+        node->txt_type = peer->get("model_type")->asString();
 
 
         String ip_list = peer->get("ip")->asString();

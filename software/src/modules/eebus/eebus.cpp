@@ -50,7 +50,7 @@ void EEBus::pre_setup()
         {"model_brand", Config::Str("", 0, 32)},
         // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
         {"model_model", Config::Str("", 0, 32)},
-        {"mode_type", Config::Str("", 0, 32)},
+        {"model_type", Config::Str("", 0, 32)},
         {"state", Config::Enum(NodeState::Disconnected)},
     });
 
@@ -326,7 +326,7 @@ void EEBus::update_peers_config()
         peer->get("autoregister")->updateBool(node->txt_autoregister);
         peer->get("model_brand")->updateString(node->txt_brand);
         peer->get("model_model")->updateString(node->txt_model);
-        peer->get("mode_type")->updateString(node->txt_type);
+        peer->get("model_type")->updateString(node->txt_type);
         peer->get("state")->updateEnum(node->state);
     }
     api.writeConfig("eebus/config", &config);
