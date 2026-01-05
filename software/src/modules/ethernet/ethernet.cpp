@@ -347,3 +347,17 @@ bool Ethernet::is_enabled() const
 {
     return runtime_data != nullptr;
 }
+
+void Ethernet::receive_all_multicast()
+{
+    if (!is_enabled()) {
+        return;
+    }
+
+    bool flag = true;
+    const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_S_ALL_MULTICAST, &flag);
+
+    if (err != ESP_OK) {
+        logger.printfln("Set all multicast failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+    }
+}
