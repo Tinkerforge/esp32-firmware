@@ -20,7 +20,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <WiFiUdp.h>
+#include <NetworkUdp.h>
 
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
@@ -81,7 +81,7 @@ private:
     uint32_t power_import_index = 0;
     size_t   obis_value_positions[METERS_SMA_SPEEDWIRE_OBIS_COUNT];
     bool     values_parsed = false;
-    WiFiUDP  udp;
+    NetworkUDP udp;
 
     size_t trace_buffer_index;
 };

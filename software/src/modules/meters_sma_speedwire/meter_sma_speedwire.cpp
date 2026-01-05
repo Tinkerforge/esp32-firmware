@@ -201,10 +201,10 @@ void MeterSMASpeedwire::register_events()
 #endif
 
         // Tested Speedwire products send one packet per second.
-        // Poll twice a second to reduce latency and packet backlog.
+        // Poll every 250ms to reduce latency and packet backlog in case of more than one SpeedWire sender on the network.
         task_scheduler.scheduleUncancelable([this]() {
             parse_packet();
-        }, 500_ms);
+        }, 250_ms);
 
         return EventResult::Deregister;
     });
@@ -288,46 +288,53 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
 
 void MeterSMASpeedwire::parse_packet()
 {
-    if (udp.parsePacket() > 0) {
-        SpeedwirePacket packet;
-        memset(&packet, 0, sizeof(packet));
-
-        const int read_length = udp.read(reinterpret_cast<char*>(&packet), sizeof(packet));
-        const int data_length = parse_header(&packet.header);
-        if (data_length <= 0) {
-            return;
-        }
-
-        const int data_length_with_header = data_length + static_cast<int>(sizeof(SpeedwireHeader));
-        if (read_length < data_length_with_header) {
-            logger.printfln_meter("Speedwire packet too short: %d < %d", read_length, data_length_with_header);
-            return;
-        }
-
-        if (!values_parsed) {
-            parse_values(packet.data, data_length);
-            values_parsed = true;
-        }
-
-        float values[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
-
-        for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
-            size_t position = obis_value_positions[i];
-            if (position == 0) {
-                values[i] = NAN;
-            } else if (position >= static_cast<size_t>(data_length)) {
-                logger.printfln_meter("Access beyond data length for OBIS value %zu: position %zu >= %i", i, position, data_length);
-                values[i] = NAN;
-            } else {
-                const obis_value_mapping &mapping = obis_value_mappings[i];
-                values[i] = mapping.parser_fn(packet.data + position) * mapping.scaling_factor;
-            }
-        }
-
-        values[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = values[power_import_index] - values[power_export_index];
-
-        meters.update_all_values(slot, values);
+    if (udp.parsePacket() <= 0) {
+        return;
     }
+
+    SpeedwirePacket packet;
+
+    const int read_length = udp.read(reinterpret_cast<char *>(&packet), sizeof(packet));
+
+    if (read_length < static_cast<int>(sizeof(packet.header))) {
+        return;
+    }
+
+    const int data_length = parse_header(&packet.header);
+
+    if (data_length <= 0) {
+        return;
+    }
+
+    const int data_length_with_header = data_length + static_cast<int>(sizeof(SpeedwireHeader));
+    if (read_length < data_length_with_header) {
+        logger.printfln_meter("Speedwire packet too short: %d < %d", read_length, data_length_with_header);
+        return;
+    }
+
+    if (!values_parsed) {
+        parse_values(packet.data, data_length);
+        values_parsed = true;
+    }
+
+    float values[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
+
+    for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
+        size_t position = obis_value_positions[i];
+        if (position == 0) {
+            values[i] = NAN;
+        } else if (position >= static_cast<size_t>(data_length)) {
+            logger.printfln_meter("Access beyond data length for OBIS value %zu: position %zu >= %i", i, position, data_length);
+            values[i] = NAN;
+        } else {
+            const obis_value_mapping &mapping = obis_value_mappings[i];
+            values[i] = mapping.parser_fn(packet.data + position) * mapping.scaling_factor;
+        }
+    }
+
+    values[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = values[power_import_index] - values[power_export_index];
+
+    meters.update_all_values(slot, values);
 }
 
 void MeterSMASpeedwire::parse_values(const uint8_t *buf, int buflen)
