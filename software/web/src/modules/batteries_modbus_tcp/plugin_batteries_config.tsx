@@ -840,11 +840,9 @@ export function pre_init() {
                 return clone;
             },
             report_test_mode: (callback: (battery_slot: number, mode: number) => void) => {
-                console.log("report_test_mode");
                 util.addApiEventListener('batteries_modbus_tcp/test_state', () => {
                     let state = API.get('batteries_modbus_tcp/test_state');
 
-                    console.log("report_test_mode callback", state.slot, state.mode);
                     callback(state.slot, state.mode);
                 });
             },
