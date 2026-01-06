@@ -43,7 +43,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 //#define EEBUS_ENABLE_EVCS_USECASE
-//#define EEBUS_ENABLE_EVCEM_USECASE
+#define EEBUS_ENABLE_EVCEM_USECASE
 #define EEBUS_ENABLE_EVCC_USECASE
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
@@ -114,8 +114,70 @@ time_t iso_timestamp_to_unix(const char *iso_timestamp, time_t *t);
 String unix_to_iso_timestamp(time_t unix_time);
 
 String spine_address_to_string(const FeatureAddressType &address);
+
 } // namespace EEBUS_USECASE_HELPERS
 
+// These classes contain the data generator functions for all usecase entities.
+// As some usecases share a function under the same entity and feature, and since we only support full reads or notify messages, the full data has to be generated.
+class EVSEEntity
+{
+public:
+    inline static std::vector<int> entity_address = {1};
+    // LoadControl Feature
+    static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
+    static LoadControlLimitListDataType get_load_control_limit_list_data();
+
+    // DeviceConfiguration
+    static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_list_data();
+    static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list_data();
+
+    // DeviceDiagnosis
+    static DeviceDiagnosisHeartbeatDataType get_heartbeat_data();
+    static DeviceDiagnosisStateDataType get_state_data();
+
+    // ElectricalConnection
+    static ElectricalConnectionCharacteristicListDataType get_electrical_connection_characteristic_list_data();
+
+    // DeviceClassification
+    static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
+
+    // Measurement
+    MeasurementDescriptionListDataType get_measurement_description_list_data();
+    MeasurementConstraintsListDataType get_measurement_constraints_list_data();
+
+    // Bill
+    BillDescriptionListDataType get_bill_description_list_data();
+    BillConstraintsListDataType get_bill_constraints_list_data();
+    BillListDataType get_bill_list_data();
+};
+
+class EVEntity
+{
+public:
+    inline static std::vector<int> entity_address = {1, 1};
+    // DeviceDiagnosis
+    static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_value_description_list();
+    static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list();
+
+    // Identification
+    static IdentificationListDataType get_identification_list_data();
+
+    // DeviceClassification
+    static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
+
+    // ElectricalConnection
+    static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
+    static ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_list_data();
+    static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
+
+    // DeviceDiagnosis
+    static DeviceDiagnosisStateDataType get_diagnosis_state_data();
+
+    // Measurement
+    static MeasurementDescriptionListDataType get_measurement_description_list_data();
+    static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
+    static MeasurementListDataType get_measurement_list_data();
+};
 /**
  * The basic Framework of a EEBUS Usecase.
  * Each usecase has one or multiple features and belongs to an entity
@@ -142,7 +204,6 @@ public:
     {
         return entity_address == address;
     }
-
 
     [[nodiscard]] bool isActive() const
     {
@@ -346,11 +407,12 @@ public:
      */
     void update_billing_data(int id, time_t start_time, time_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent = 100, int grid_cost_percent = 100, int self_produced_energy_percent = 0, int self_produced_cost_percent = 0);
 
-
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::Bill};
     }
+
+    [[nodiscard]] BillListDataType get_bill_list_data() const;
 
 private:
     struct BillEntry {
@@ -367,12 +429,10 @@ private:
 
     BillEntry bill_entries[8]{};
 
-    [[nodiscard]] BillListDataType get_bill_list_data() const;
-
     void update_api() const;
 };
 #endif
-#ifdef EEBUS_ENABLE_EVCS_USECASE
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
 /**
  * The EvcemUsecase Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
  * This should have the same entity address as other entities with the EV actor <br>
@@ -426,6 +486,14 @@ public:
         return {FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};
     }
 
+    // Generators for data types
+    [[nodiscard]] MeasurementDescriptionListDataType get_measurement_description_list() const;
+    [[nodiscard]] MeasurementConstraintsListDataType get_measurement_constraints() const;
+    [[nodiscard]] MeasurementListDataType get_measurement_list() const;
+
+    [[nodiscard]] ElectricalConnectionDescriptionListDataType get_generate_electrical_connection_description() const;
+    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_generate_electrical_connection_parameters() const;
+
 private:
     // Data held about the current charge
     int amps_draw_phase[3]{};  // Amp draw per phase
@@ -443,14 +511,6 @@ private:
     int measurement_limit_energy_min = 0;
     int measurement_limit_energy_max = 1000000;
     int measurement_limit_energy_stepsize = 10;
-
-    // Generators for data types
-    [[nodiscard]] MeasurementDescriptionListDataType generate_measurement_description() const;
-    [[nodiscard]] MeasurementConstraintsListDataType generate_measurement_constraints() const;
-    [[nodiscard]] MeasurementListDataType generate_measurement_list() const;
-
-    [[nodiscard]] ElectricalConnectionDescriptionListDataType generate_electrical_connection_description() const;
-    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_parameters() const;
 
     void update_api() const;
 };
@@ -545,7 +605,7 @@ public:
      */
     void update_operating_state(bool standby);
 
-    bool is_ev_connected() const
+    [[nodiscard]] bool is_ev_connected() const
     {
         return ev_connected;
     }
@@ -553,21 +613,32 @@ public:
     {
         return {FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Identification, FeatureTypeEnumType::DeviceClassification, FeatureTypeEnumType::ElectricalConnection};
     }
+    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_config_description() const;
+    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_config_list() const;
+
+    [[nodiscard]] IdentificationListDataType get_identification_list() const;
+    [[nodiscard]] DeviceClassificationManufacturerDataType get_device_classification_manufacturer() const;
+    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description() const;
+    [[nodiscard]] ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_values() const;
+
+    [[nodiscard]] DeviceDiagnosisStateDataType get_device_diagnosis_state() const;
 
 private:
     void update_api() const;
     bool ev_connected = false;
 
+    // IDs
+    uint16_t electrical_connection_id = 10;
+    uint16_t electrical_connection_parameter_id = 10;
+
     // Server Data
     //DeviceDiagnosis
     CoolString communication_standard = "";
     bool asymmetric_supported = false;
-    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType generate_device_config_description() const;
-    [[nodiscard]] DeviceConfigurationKeyValueListDataType generate_device_config_list() const;
+
     //Identification
     IdentificationTypeEnumType mac_type = IdentificationTypeEnumType::eui64;
     CoolString mac_address = "";
-    [[nodiscard]] IdentificationListDataType generate_identification_description() const;
     //DeviceClassification
     CoolString manufacturer_name = "";
     CoolString manufacturer_code = "";
@@ -579,16 +650,12 @@ private:
     CoolString brand_name = "";
     CoolString manufacturer_label = "";
     CoolString manufacturer_description = "";
-    [[nodiscard]] DeviceClassificationManufacturerDataType generate_manufacturer_description() const;
     //ElectricalConnection
-    uint32_t min_power_draw = 0;
-    uint32_t max_power_draw = 0;
-    uint32_t standby_power = 0;
-    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType generate_electrical_connection_description() const;
-    [[nodiscard]] ElectricalConnectionPermittedValueSetListDataType generate_electrical_connection_values() const;
+    int min_power_draw = 0;
+    int max_power_draw = 0;
+    int standby_power = 0;
     //DeviceDiagnosis
     bool standby_mode = false;
-    [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
 };
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
@@ -628,12 +695,13 @@ public:
         return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::DeviceClassification};
     }
 
+    [[nodiscard]] DeviceDiagnosisStateDataType get_device_diagnosis_state() const;
+    [[nodiscard]] static DeviceClassificationManufacturerDataType get_device_classification_manufacturer();
+
 private:
     // Server Data
     DeviceDiagnosisOperatingStateEnumType operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
     std::string last_error_message;
-    [[nodiscard]] DeviceDiagnosisStateDataType generate_state() const;
-    static DeviceClassificationManufacturerDataType generate_manufacturer_description();
 
     void update_api() const;
 };
@@ -710,6 +778,16 @@ public:
     {
         return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Generic};
     }
+
+    [[nodiscard]] LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
+    [[nodiscard]] LoadControlLimitListDataType get_loadcontrol_limit_list() const;
+
+    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
+    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
+
+    [[nodiscard]] ElectricalConnectionCharacteristicListDataType get_electrical_connection_characteristic() const;
+
+    [[nodiscard]] DeviceDiagnosisHeartbeatDataType get_device_diagnosis_heartbeat_data() const;
 
 private:
     /**
@@ -823,8 +901,6 @@ private:
     bool limit_expired = false;
     // If in limited mode, this shall
     uint64_t limit_endtime_timer = 0;
-    [[nodiscard]] LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
-    [[nodiscard]] LoadControlLimitListDataType get_loadcontrol_limit_list() const;
 
     // Device Configuration Data as required for Scenario 2 - Failsafe values
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
@@ -833,8 +909,6 @@ private:
     time_t failsafe_expiry_endtime = 0;
     uint8_t failsafe_consumption_key_id = 1;
     uint8_t failsafe_duration_key_id = 2;
-    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
-    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
 
     // Heartbeat Data as required for Scenario 3 - Hearbeat
     bool heartbeatEnabled = false;
@@ -843,7 +917,6 @@ private:
     void broadcast_heartbeat();
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
-    [[nodiscard]] ElectricalConnectionCharacteristicListDataType get_electrical_connection_data_constraints() const;
     int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
     int power_consumption_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
 };
@@ -962,7 +1035,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    void handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection);
+    void process_spine_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection);
 
     /**
      * Informs the subscribers of a feature about a change in the data.
@@ -1017,6 +1090,9 @@ public:
 #endif
 
     std::vector<EebusUsecase *> usecase_list{};
+
+    EVSEEntity evse_entity{};
+    EVEntity ev_entity{};
 
 private:
     bool initialized = false;

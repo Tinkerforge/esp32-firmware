@@ -30,6 +30,11 @@
 #include <regex>
 #include <utility>
 
+template <typename T> void insert_vector(std::vector<T> &dest, const std::vector<T> &src)
+{
+    dest.insert(dest.end(), src.begin(), src.end());
+}
+
 void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const
 {
     String function_name = SpineDataTypeHandler::function_to_string(function);
@@ -798,31 +803,31 @@ MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHand
     switch (data->last_cmd) {
         case SpineDataTypeHandler::Function::measurementDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
-                response["measurementDescriptionListData"] = generate_measurement_description();
+                response["measurementDescriptionListData"] = EVEntity::get_measurement_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
         case SpineDataTypeHandler::Function::measurementConstraintsListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
-                response["measurementConstraintsListData"] = generate_measurement_constraints();
+                response["measurementConstraintsListData"] = EVEntity::get_measurement_constraints_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
         case SpineDataTypeHandler::Function::measurementListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
-                response["measurementListData"] = generate_measurement_list();
+                response["measurementListData"] = EVEntity::get_measurement_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
         case SpineDataTypeHandler::Function::electricalConnectionDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
-                response["electricalConnectionDescriptionListData"] = generate_electrical_connection_description();
+                response["electricalConnectionDescriptionListData"] = EVEntity::get_electrical_connection_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
-                response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_parameters();
+                response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
@@ -933,7 +938,7 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
     power_charged_wh = charged_wh;
     power_charged_measured = charged_measured;
 
-    auto measurement_list_data = generate_measurement_list();
+    MeasurementListDataType measurement_list_data = EVEntity::get_measurement_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_list_data, "measurementListData");
     update_api();
 }
@@ -950,13 +955,13 @@ void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, co
     measurement_limit_energy_max = energy_max;
     measurement_limit_energy_stepsize = energy_stepsize;
 
-    auto constraints = generate_measurement_constraints();
+    MeasurementConstraintsListDataType constraints = EVEntity::get_measurement_constraints_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints, "measurementConstraintsListData");
 
     update_api();
 }
 
-MeasurementDescriptionListDataType EvcemUsecase::generate_measurement_description() const
+MeasurementDescriptionListDataType EvcemUsecase::get_measurement_description_list() const
 {
     MeasurementDescriptionListDataType measurement_description{};
     for (uint8_t i = 0; i < 7; i++) {
@@ -983,7 +988,7 @@ MeasurementDescriptionListDataType EvcemUsecase::generate_measurement_descriptio
     return measurement_description;
 }
 
-MeasurementConstraintsListDataType EvcemUsecase::generate_measurement_constraints() const
+MeasurementConstraintsListDataType EvcemUsecase::get_measurement_constraints() const
 {
     MeasurementConstraintsListDataType measurement_constraints{};
     for (uint8_t i = 0; i < 7; i++) {
@@ -1016,7 +1021,7 @@ MeasurementConstraintsListDataType EvcemUsecase::generate_measurement_constraint
     return measurement_constraints;
 }
 
-MeasurementListDataType EvcemUsecase::generate_measurement_list() const
+MeasurementListDataType EvcemUsecase::get_measurement_list() const
 {
     MeasurementListDataType measurement_list{};
     for (uint8_t i = 0; i < 7; i++) {
@@ -1040,7 +1045,7 @@ MeasurementListDataType EvcemUsecase::generate_measurement_list() const
     return measurement_list;
 }
 
-ElectricalConnectionDescriptionListDataType EvcemUsecase::generate_electrical_connection_description() const
+ElectricalConnectionDescriptionListDataType EvcemUsecase::get_generate_electrical_connection_description() const
 {
     ElectricalConnectionDescriptionListDataType electrical_connection_description{};
     ElectricalConnectionDescriptionDataType connection_description_data{};
@@ -1052,7 +1057,7 @@ ElectricalConnectionDescriptionListDataType EvcemUsecase::generate_electrical_co
     return electrical_connection_description;
 }
 
-ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_electrical_connection_parameters() const
+ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::get_generate_electrical_connection_parameters() const
 {
     ElectricalConnectionParameterDescriptionListDataType electrical_connection_parameters{};
     for (uint8_t i = 0; i < 7; i++) {
@@ -1063,20 +1068,14 @@ ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::generate_elec
         if (i < 6) {
             switch (i) {
                 case 0:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::a;
-                    break;
-                case 1:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::b;
-                    break;
-                case 2:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::c;
-                    break;
                 case 3:
                     connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::a;
                     break;
+                case 1:
                 case 4:
                     connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::b;
                     break;
+                case 2:
                 case 5:
                     connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::c;
                     break;
@@ -1155,43 +1154,43 @@ MessageReturn EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
         switch (data->last_cmd) {
             case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
-                    response["deviceConfigurationKeyValueDescriptionListData"] = generate_device_config_description();
+                    response["deviceConfigurationKeyValueDescriptionListData"] = EVEntity::get_device_configuration_value_description_list();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
-                    response["deviceConfigurationKeyValueListData"] = generate_device_config_list();
+                    response["deviceConfigurationKeyValueListData"] = EVEntity::get_device_configuration_value_list();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::identificationListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::Identification)) {
-                    response["identificationListData"] = generate_identification_description();
+                    response["identificationListData"] = EVEntity::get_identification_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceClassification)) {
-                    response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
+                    response["deviceClassificationManufacturerData"] = EVEntity::get_device_classification_manufacturer_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
-                    response["electricalConnectionParameterDescriptionListData"] = generate_electrical_connection_description();
+                    response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
-                    response["electricalConnectionPermittedValueSetListData"] = generate_electrical_connection_values();
+                    response["electricalConnectionPermittedValueSetListData"] = EVEntity::get_electrical_connection_permitted_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis)) {
-                    response["deviceDiagnosisStateData"] = generate_state();
+                    response["deviceDiagnosisStateData"] = EVEntity::get_diagnosis_state_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
@@ -1328,8 +1327,8 @@ void EvccUsecase::update_device_config(const String &comm_standard, bool asym_su
         eebus.trace_fmtln(R"(Usecase EVCC: Invalid communication standard for EV entity device configuration: %s, should be "iso15118-2ed1","iso15118-2ed1" or "iec61851".)", communication_standard.c_str());
         // We continue on regardless and let the peer deal with incorrect values
     }
-    auto generate_dev_desc = generate_device_config_description();
-    auto generate_dev_list = generate_device_config_list();
+    DeviceConfigurationKeyValueDescriptionListDataType generate_dev_desc = EVEntity::get_device_configuration_value_description_list();
+    DeviceConfigurationKeyValueListDataType generate_dev_list = EVEntity::get_device_configuration_value_list();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), generate_dev_list, "deviceConfigurationKeyValueListData");
 
@@ -1340,7 +1339,7 @@ void EvccUsecase::update_identification(String mac, IdentificationTypeEnumType t
 {
     mac_address = std::move(mac);
     mac_type = type;
-    auto identification_desc = generate_identification_description();
+    IdentificationListDataType identification_desc = EVEntity::get_identification_list_data();
 
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Identification), identification_desc, "identificationListData");
     update_api();
@@ -1371,7 +1370,7 @@ void EvccUsecase::update_manufacturer(String name, String code, String serial, S
     brand_name.shrinkToFit();
     manufacturer_description.shrinkToFit();
 
-    auto manufacturer_desc = generate_manufacturer_description();
+    DeviceClassificationManufacturerDataType manufacturer_desc = EVEntity::get_device_classification_manufacturer_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceClassification), manufacturer_desc, "deviceClassificationManufacturerData");
     update_api();
 }
@@ -1381,8 +1380,8 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
     min_power_draw = min_power;
     max_power_draw = max_power;
     standby_power = stby_power;
-    auto electrical_connection_desc = generate_electrical_connection_description();
-    auto electrical_connection_values = generate_electrical_connection_values();
+    ElectricalConnectionParameterDescriptionListDataType electrical_connection_desc = EVEntity::get_electrical_connection_parameter_description_list_data();
+    ElectricalConnectionPermittedValueSetListDataType electrical_connection_values = EVEntity::get_electrical_connection_permitted_list_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), electrical_connection_desc, "electricalConnectionParameterDescriptionListData");
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), electrical_connection_values, "electricalConnectionPermittedValueSetListData");
 
@@ -1392,8 +1391,7 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
 void EvccUsecase::update_operating_state(bool standby)
 {
     standby_mode = standby;
-    auto state = generate_state();
-
+    DeviceDiagnosisStateDataType state = EVEntity::get_diagnosis_state_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), state, "deviceDiagnosisStateData");
     update_api();
 }
@@ -1413,7 +1411,7 @@ void EvccUsecase::update_api() const
     }
 }
 
-DeviceConfigurationKeyValueDescriptionListDataType EvccUsecase::generate_device_config_description() const
+DeviceConfigurationKeyValueDescriptionListDataType EvccUsecase::get_device_config_description() const
 {
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration{};
     device_configuration.deviceConfigurationKeyValueDescriptionData.emplace();
@@ -1432,7 +1430,7 @@ DeviceConfigurationKeyValueDescriptionListDataType EvccUsecase::generate_device_
     return device_configuration;
 }
 
-DeviceConfigurationKeyValueListDataType EvccUsecase::generate_device_config_list() const
+DeviceConfigurationKeyValueListDataType EvccUsecase::get_device_config_list() const
 {
     DeviceConfigurationKeyValueListDataType device_configuration{};
     device_configuration.deviceConfigurationKeyValueData.emplace();
@@ -1448,7 +1446,7 @@ DeviceConfigurationKeyValueListDataType EvccUsecase::generate_device_config_list
     return device_configuration;
 }
 
-IdentificationListDataType EvccUsecase::generate_identification_description() const
+IdentificationListDataType EvccUsecase::get_identification_list() const
 {
     IdentificationListDataType identification_data{};
     identification_data.identificationData.emplace();
@@ -1461,7 +1459,7 @@ IdentificationListDataType EvccUsecase::generate_identification_description() co
     return identification_data;
 }
 
-DeviceClassificationManufacturerDataType EvccUsecase::generate_manufacturer_description() const
+DeviceClassificationManufacturerDataType EvccUsecase::get_device_classification_manufacturer() const
 {
     DeviceClassificationManufacturerDataType manufacturer_data{};
     if (manufacturer_name.length() > 0)
@@ -1488,7 +1486,7 @@ DeviceClassificationManufacturerDataType EvccUsecase::generate_manufacturer_desc
     return manufacturer_data;
 }
 
-ElectricalConnectionParameterDescriptionListDataType EvccUsecase::generate_electrical_connection_description() const
+ElectricalConnectionParameterDescriptionListDataType EvccUsecase::get_electrical_connection_parameter_description() const
 {
     ElectricalConnectionParameterDescriptionListDataType electrical_connection_description{};
     electrical_connection_description.electricalConnectionParameterDescriptionData.emplace();
@@ -1502,7 +1500,7 @@ ElectricalConnectionParameterDescriptionListDataType EvccUsecase::generate_elect
     return electrical_connection_description;
 }
 
-ElectricalConnectionPermittedValueSetListDataType EvccUsecase::generate_electrical_connection_values() const
+ElectricalConnectionPermittedValueSetListDataType EvccUsecase::get_electrical_connection_permitted_values() const
 {
 
     ElectricalConnectionPermittedValueSetListDataType electrical_connection_values{};
@@ -1520,7 +1518,6 @@ ElectricalConnectionPermittedValueSetListDataType EvccUsecase::generate_electric
     power_value_range.max->scale = 0;
     minmax_power_value_set.range->push_back(power_value_range);
 
-
     //ScaledNumberSetType standby_power_value_set{};
     ScaledNumberType standby_value_range{};
     standby_value_range.number = standby_power;
@@ -1532,7 +1529,7 @@ ElectricalConnectionPermittedValueSetListDataType EvccUsecase::generate_electric
     return electrical_connection_values;
 }
 
-DeviceDiagnosisStateDataType EvccUsecase::generate_state() const
+DeviceDiagnosisStateDataType EvccUsecase::get_device_diagnosis_state() const
 {
     DeviceDiagnosisStateDataType state{};
     state.operatingState.emplace();
@@ -1554,12 +1551,12 @@ EvseccUsecase::EvseccUsecase()
             logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase with a test error");
             update_operating_state(true, "This is a test error message. It should be displayed. The error state will be resolved in 30 seconds.");
             task_scheduler.scheduleOnce(
-            [this]() {
-                logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
-                update_operating_state(false, "This is a test error message. It should not be shown");
-            },
-            30_s);
-    },
+                [this]() {
+                    logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
+                    update_operating_state(false, "This is a test error message. It should not be shown");
+                },
+                30_s);
+        },
         50_s);
 
 #endif
@@ -1572,16 +1569,14 @@ MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHan
         switch (data->last_cmd) {
             case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceClassification)) {
-                    response["deviceClassificationManufacturerData"] = generate_manufacturer_description();
+                    response["deviceClassificationManufacturerData"] = EVSEEntity::get_device_classification_manufacturer_data();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis)) {
-                    response["deviceDiagnosisStateData"] = generate_state();
+                    response["deviceDiagnosisStateData"] = EVSEEntity::get_state_data();
                     return {true, true, CmdClassifierType::reply};
-                    ;
                 }
                 break;
             default:;
@@ -1667,12 +1662,12 @@ void EvseccUsecase::update_operating_state(const bool failure, const String &err
         operating_state = DeviceDiagnosisOperatingStateEnumType::normalOperation;
         last_error_message = "";
     }
-    auto state = generate_state();
+    DeviceDiagnosisStateDataType state = EVSEEntity::get_state_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), state, "deviceDiagnosisStateData");
     update_api();
 }
 
-DeviceDiagnosisStateDataType EvseccUsecase::generate_state() const
+DeviceDiagnosisStateDataType EvseccUsecase::get_device_diagnosis_state() const
 {
     DeviceDiagnosisStateDataType state{};
     state.lastErrorCode = last_error_message;
@@ -1680,7 +1675,7 @@ DeviceDiagnosisStateDataType EvseccUsecase::generate_state() const
     return state;
 }
 
-DeviceClassificationManufacturerDataType EvseccUsecase::generate_manufacturer_description()
+DeviceClassificationManufacturerDataType EvseccUsecase::get_device_classification_manufacturer()
 {
 
     DeviceClassificationManufacturerDataType manufacturer{};
@@ -1885,11 +1880,11 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
-            response["loadControlLimitDescriptionListData"] = get_loadcontrol_limit_description();
+            response["loadControlLimitDescriptionListData"] = EVSEEntity::get_load_control_limit_description_list_data();
             return {true, true, CmdClassifierType::reply};
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
-            response["loadControlLimitListData"] = get_loadcontrol_limit_list();
+            response["loadControlLimitListData"] = EVSEEntity::get_load_control_limit_list_data();
             return {true, true, CmdClassifierType::reply};
         }
     }
@@ -1938,8 +1933,8 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
     switch (data->last_cmd) {
         case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
             switch (header.cmdClassifier.get()) {
-                case CmdClassifierType::read:
-                    response["deviceConfigurationKeyValueDescriptionListData"] = get_device_configuration_description();
+            case CmdClassifierType::read:
+                    response["deviceConfigurationKeyValueDescriptionListData"] = EVSEEntity::get_device_configuration_list_data();
                     return {true, true, CmdClassifierType::reply};
                 default:
                     EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported, "This cmdclassifier is not supported on this function");
@@ -1949,7 +1944,7 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
         case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
             switch (header.cmdClassifier.get()) {
                 case CmdClassifierType::read:
-                    response["deviceConfigurationKeyValueListData"] = get_device_configuration_value();
+                    response["deviceConfigurationKeyValueListData"] = EVSEEntity::get_device_configuration_value_list_data();
                     return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::write:
                     if (eebus.usecases->node_management.check_is_bound(header.addressSource.get(), header.addressDestination.get())) {
@@ -1985,16 +1980,13 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
 
 MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
+    // TODO: move heartbeat and this entire feature to a separate class as the LPP usecase needs it aswell
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
         DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
         if (header.cmdClassifier == CmdClassifierType::read) {
 
             // Prepare our own hearbeat information
-            DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-            outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-            outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(60_s);
-            outgoing_heartbeatData.timestamp = std::to_string(rtc.timestamp_minutes());
-            response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
+            response["deviceDiagnosisHeartbeatData"] = get_device_diagnosis_heartbeat_data();
 
             // Initialize  read on their heartbeat
             task_scheduler.scheduleOnce(
@@ -2032,7 +2024,7 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
 MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response) const
 {
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
-        response["electricalConnectionCharacteristicListData"] = get_electrical_connection_data_constraints();
+        response["electricalConnectionCharacteristicListData"] = EVSEEntity::get_electrical_connection_characteristic_list_data();
         return {true, true, CmdClassifierType::reply};
     }
     return {false};
@@ -2065,7 +2057,7 @@ void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
         logger.printfln("Updated failsafe to %d W for %d seconds", failsafe_power_limit_w, failsafe_duration.as<int>());
         update_state();
         update_api();
-        auto data = get_device_configuration_value();
+        DeviceConfigurationKeyValueListDataType data = EVSEEntity::get_device_configuration_value_list_data();
         eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration), data, "deviceConfigurationKeyValueListData");
     }
 }
@@ -2078,7 +2070,7 @@ void LpcUsecase::update_constraints(int power_consumption_max, int power_consump
     if (power_consumption_contract_max_w > 0) {
         power_consumption_contract_max_w = power_consumption_contract_max;
     }
-    auto data = get_electrical_connection_data_constraints();
+    ElectricalConnectionCharacteristicListDataType data = EVSEEntity::get_electrical_connection_characteristic_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), data, "electricalConnectionCharacteristicListData");
 }
 
@@ -2131,7 +2123,7 @@ bool LpcUsecase::update_lpc(bool limit, int current_limit_w, const seconds_t dur
     update_state();
     update_api();
 
-    auto data = get_loadcontrol_limit_list();
+    LoadControlLimitListDataType data = EVSEEntity::get_load_control_limit_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
     return true;
 }
@@ -2410,10 +2402,7 @@ void LpcUsecase::broadcast_heartbeat()
     if constexpr (!EEBUS_LPC_ENABLE_HEARTBEAT) {
         return;
     }
-    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(EEBUS_LPC_HEARTBEAT_INTERVAL);
-    outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(rtc.timestamp_minutes() * 60).c_str();
+    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData = get_device_diagnosis_heartbeat_data();
 
     eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
     eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
@@ -2421,7 +2410,7 @@ void LpcUsecase::broadcast_heartbeat()
         heartbeatCounter++;
     }
 }
-ElectricalConnectionCharacteristicListDataType LpcUsecase::get_electrical_connection_data_constraints() const
+ElectricalConnectionCharacteristicListDataType LpcUsecase::get_electrical_connection_characteristic() const
 {
     ElectricalConnectionCharacteristicListDataType data{};
 
@@ -2448,6 +2437,14 @@ ElectricalConnectionCharacteristicListDataType LpcUsecase::get_electrical_connec
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
 
     return data;
+}
+DeviceDiagnosisHeartbeatDataType LpcUsecase::get_device_diagnosis_heartbeat_data() const
+{
+    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(EEBUS_LPC_HEARTBEAT_INTERVAL);
+    outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(rtc.timestamp_minutes() * 60).c_str();
+    return outgoing_heartbeatData;
 }
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
@@ -2761,7 +2758,7 @@ EEBusUseCases::EEBusUseCases()
     initialized = true; // set to true, otherwise subscriptions will not work
 }
 
-void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
+void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
     // Prepare the handle messages
     eebus_commands_received++;
@@ -2807,6 +2804,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         data->reset();
         return;
     }
+    // Do we need to send a response
     if (send_response.send_response) {
         eebus.trace_fmtln("Usecases: Sending response");
         if (header.ackRequest.has_value() && header.ackRequest.get() && send_response.cmd_classifier != CmdClassifierType::result && header.cmdClassifier != CmdClassifierType::read) {
@@ -2876,6 +2874,179 @@ SpineConnection *EEBusUseCases::get_spine_connection(const FeatureAddressType &s
         }
     }
     return nullptr;
+}
+
+LoadControlLimitDescriptionListDataType EVSEEntity::get_load_control_limit_description_list_data()
+{
+    LoadControlLimitDescriptionListDataType load_control_limit_description_list_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    LoadControlLimitDescriptionListDataType lpc_data = eebus.usecases->limitation_of_power_consumption.get_loadcontrol_limit_description();
+    insert_vector(load_control_limit_description_list_data.loadControlLimitDescriptionData.get(), lpc_data.loadControlLimitDescriptionData.get());
+#endif
+    return load_control_limit_description_list_data;
+}
+
+LoadControlLimitListDataType EVSEEntity::get_load_control_limit_list_data()
+{
+    LoadControlLimitListDataType load_control_limit_list_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    LoadControlLimitListDataType lpc_data = eebus.usecases->limitation_of_power_consumption.get_loadcontrol_limit_list();
+    insert_vector(lpc_data.loadControlLimitData.get(), load_control_limit_list_data.loadControlLimitData.get());
+#endif
+    return load_control_limit_list_data;
+}
+
+DeviceConfigurationKeyValueDescriptionListDataType EVSEEntity::get_device_configuration_list_data()
+{
+    DeviceConfigurationKeyValueDescriptionListDataType device_configuration_description_list_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    DeviceConfigurationKeyValueDescriptionListDataType lpc_data = eebus.usecases->limitation_of_power_consumption.get_device_configuration_description();
+    insert_vector(device_configuration_description_list_data.deviceConfigurationKeyValueDescriptionData.get(), lpc_data.deviceConfigurationKeyValueDescriptionData.get());
+#endif
+    return device_configuration_description_list_data;
+}
+DeviceConfigurationKeyValueListDataType EVSEEntity::get_device_configuration_value_list_data()
+{
+    DeviceConfigurationKeyValueListDataType device_configuration_value_list_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    DeviceConfigurationKeyValueListDataType lpc_data = eebus.usecases->limitation_of_power_consumption.get_device_configuration_value();
+    insert_vector(device_configuration_value_list_data.deviceConfigurationKeyValueData.get(), lpc_data.deviceConfigurationKeyValueData.get());
+#endif
+    return device_configuration_value_list_data;
+}
+DeviceDiagnosisHeartbeatDataType EVSEEntity::get_heartbeat_data()
+{
+    DeviceDiagnosisHeartbeatDataType heartbeat_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    heartbeat_data = eebus.usecases->limitation_of_power_consumption.get_device_diagnosis_heartbeat_data();
+#endif
+    return heartbeat_data;
+}
+DeviceDiagnosisStateDataType EVSEEntity::get_state_data()
+{
+    DeviceDiagnosisStateDataType state_data;
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
+    state_data = eebus.usecases->evse_commissioning_and_configuration.get_device_diagnosis_state();
+#endif
+    return state_data;
+}
+ElectricalConnectionCharacteristicListDataType EVSEEntity::get_electrical_connection_characteristic_list_data()
+{
+    ElectricalConnectionCharacteristicListDataType electrical_connection_characteristic_list_data;
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    ElectricalConnectionCharacteristicListDataType lpc_data = eebus.usecases->limitation_of_power_consumption.get_electrical_connection_characteristic();
+    insert_vector(electrical_connection_characteristic_list_data.electricalConnectionCharacteristicData.get(), lpc_data.electricalConnectionCharacteristicData.get());
+#endif
+    return electrical_connection_characteristic_list_data;
+}
+DeviceClassificationManufacturerDataType EVSEEntity::get_device_classification_manufacturer_data()
+{
+    DeviceClassificationManufacturerDataType manufacturer_data;
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
+    manufacturer_data = EvseccUsecase::get_device_classification_manufacturer();
+#endif
+    return manufacturer_data;
+}
+DeviceConfigurationKeyValueDescriptionListDataType EVEntity::get_device_configuration_value_description_list()
+{
+    DeviceConfigurationKeyValueDescriptionListDataType device_configuration_value_list_data;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    DeviceConfigurationKeyValueDescriptionListDataType evcc_data = eebus.usecases->ev_commissioning_and_configuration.get_device_config_description();
+    insert_vector(device_configuration_value_list_data.deviceConfigurationKeyValueDescriptionData.get(), evcc_data.deviceConfigurationKeyValueDescriptionData.get());
+#endif
+    return device_configuration_value_list_data;
+}
+DeviceConfigurationKeyValueListDataType EVEntity::get_device_configuration_value_list()
+{
+    DeviceConfigurationKeyValueListDataType device_configuration_value_list;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    DeviceConfigurationKeyValueListDataType evcc_data = eebus.usecases->ev_commissioning_and_configuration.get_device_config_list();
+    insert_vector(device_configuration_value_list.deviceConfigurationKeyValueData.get(), evcc_data.deviceConfigurationKeyValueData.get());
+#endif
+    return device_configuration_value_list;
+}
+IdentificationListDataType EVEntity::get_identification_list_data()
+{
+    IdentificationListDataType identification_list_data;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    IdentificationListDataType evcc_data = eebus.usecases->ev_commissioning_and_configuration.get_identification_list();
+    insert_vector(identification_list_data.identificationData.get(), evcc_data.identificationData.get());
+#endif
+    return identification_list_data;
+}
+DeviceClassificationManufacturerDataType EVEntity::get_device_classification_manufacturer_data()
+{
+    DeviceClassificationManufacturerDataType manufacturer_data;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    manufacturer_data = eebus.usecases->ev_commissioning_and_configuration.get_device_classification_manufacturer();
+#endif
+    return manufacturer_data;
+}
+ElectricalConnectionParameterDescriptionListDataType EVEntity::get_electrical_connection_parameter_description_list_data()
+{
+    ElectricalConnectionParameterDescriptionListDataType electrical_connection_parameter_description_list_data;
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    ElectricalConnectionParameterDescriptionListDataType evcem_data = eebus.usecases->ev_charging_electricity_measurement.get_generate_electrical_connection_parameters();
+    insert_vector(electrical_connection_parameter_description_list_data.electricalConnectionParameterDescriptionData.get(), evcem_data.electricalConnectionParameterDescriptionData.get());
+#endif
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    ElectricalConnectionParameterDescriptionListDataType evcc_data = eebus.usecases->ev_commissioning_and_configuration.get_electrical_connection_parameter_description();
+    insert_vector(electrical_connection_parameter_description_list_data.electricalConnectionParameterDescriptionData.get(), evcc_data.electricalConnectionParameterDescriptionData.get());
+#endif
+    return electrical_connection_parameter_description_list_data;
+}
+ElectricalConnectionPermittedValueSetListDataType EVEntity::get_electrical_connection_permitted_list_data()
+{
+    ElectricalConnectionPermittedValueSetListDataType electrical_connection_permitted_value_set_list_data;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    ElectricalConnectionPermittedValueSetListDataType evcc_data = eebus.usecases->ev_commissioning_and_configuration.get_electrical_connection_permitted_values();
+    insert_vector(electrical_connection_permitted_value_set_list_data.electricalConnectionPermittedValueSetData.get(), evcc_data.electricalConnectionPermittedValueSetData.get());
+#endif
+    return electrical_connection_permitted_value_set_list_data;
+}
+ElectricalConnectionDescriptionListDataType EVEntity::get_electrical_connection_description_list_data()
+{
+    ElectricalConnectionDescriptionListDataType electrical_connection_description_list_data;
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    ElectricalConnectionDescriptionListDataType evcem_data = eebus.usecases->ev_charging_electricity_measurement.get_generate_electrical_connection_description();
+    insert_vector(electrical_connection_description_list_data.electricalConnectionDescriptionData.get(), evcem_data.electricalConnectionDescriptionData.get());
+#endif
+    return electrical_connection_description_list_data;
+}
+DeviceDiagnosisStateDataType EVEntity::get_diagnosis_state_data()
+{
+    DeviceDiagnosisStateDataType diagnosis_state_data;
+#ifdef EEBUS_ENABLE_EVCC_USECASE
+    diagnosis_state_data = eebus.usecases->ev_commissioning_and_configuration.get_device_diagnosis_state();
+#endif
+    return diagnosis_state_data;
+}
+MeasurementDescriptionListDataType EVEntity::get_measurement_description_list_data()
+{
+    MeasurementDescriptionListDataType measurement_description_list_data;
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    MeasurementDescriptionListDataType evcem_data = eebus.usecases->ev_charging_electricity_measurement.get_measurement_description_list();
+    insert_vector(measurement_description_list_data.measurementDescriptionData.get(), evcem_data.measurementDescriptionData.get());
+#endif
+    return measurement_description_list_data;
+}
+MeasurementConstraintsListDataType EVEntity::get_measurement_constraints_list_data()
+{
+    MeasurementConstraintsListDataType measurement_constraints_list_data;
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    MeasurementConstraintsListDataType evcem_data = eebus.usecases->ev_charging_electricity_measurement.get_measurement_constraints();
+    insert_vector(measurement_constraints_list_data.measurementConstraintsData.get(), evcem_data.measurementConstraintsData.get());
+#endif
+    return measurement_constraints_list_data;
+}
+MeasurementListDataType EVEntity::get_measurement_list_data()
+{
+    MeasurementListDataType measurement_list_data;
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    MeasurementListDataType evcem_data = eebus.usecases->ev_charging_electricity_measurement.get_measurement_list();
+    insert_vector(measurement_list_data.measurementData.get(), evcem_data.measurementData.get());
+#endif
+    return measurement_list_data;
 }
 
 namespace EEBUS_USECASE_HELPERS

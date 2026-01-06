@@ -68,7 +68,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         return false;
     }
     initial_peer_discovery();
-    eebus.usecases->handle_message(received_header, eebus.data_handler.get(), this);
+    eebus.usecases->process_spine_message(received_header, eebus.data_handler.get(), this);
     return true;
 }
 
