@@ -35,7 +35,6 @@ public:
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;
-    void receive_all_multicast();
 
     void print_con_duration();
 

@@ -196,10 +196,6 @@ void MeterSMASpeedwire::register_events()
 
         logger.printfln_meter("Joined multicast group %s:%u", group, port);
 
-#if MODULE_ETHERNET_AVAILABLE()
-        ethernet.receive_all_multicast();
-#endif
-
         // Tested Speedwire products send one packet per second.
         // Poll every 250ms to reduce latency and packet backlog in case of more than one SpeedWire sender on the network.
         task_scheduler.scheduleUncancelable([this]() {

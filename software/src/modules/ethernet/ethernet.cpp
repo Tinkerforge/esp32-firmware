@@ -42,6 +42,8 @@
 
 extern char local_uid_str[32];
 
+static constexpr uint8_t IGMP_MAC[6] = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x01};
+
 void Ethernet::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -156,6 +158,13 @@ void Ethernet::setup()
             hostname.concat(local_uid_str);
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
+
+            // Manually add a MAC filter to accept IGMP packets because lwIP is bugged and doesn't do it.
+            const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
+
+            if (err != ESP_OK) {
+                logger.printfln("Setting IGMP filter failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
+            }
 
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
@@ -346,18 +355,4 @@ EthernetState Ethernet::get_connection_state() const
 bool Ethernet::is_enabled() const
 {
     return runtime_data != nullptr;
-}
-
-void Ethernet::receive_all_multicast()
-{
-    if (!is_enabled()) {
-        return;
-    }
-
-    bool flag = true;
-    const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_S_ALL_MULTICAST, &flag);
-
-    if (err != ESP_OK) {
-        logger.printfln("Set all multicast failed: %s (%04X)", esp_err_to_name(err), static_cast<unsigned>(err));
-    }
 }
