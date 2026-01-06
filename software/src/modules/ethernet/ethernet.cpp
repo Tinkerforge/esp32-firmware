@@ -158,6 +158,7 @@ void Ethernet::setup()
             hostname.concat(local_uid_str);
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
+            ETH.setRoutePrio(110); // Prefer Ethernet over WiFi, which has priority 100.
 
             // Manually add a MAC filter to accept IGMP packets because lwIP is bugged and doesn't do it.
             const esp_err_t err = esp_eth_ioctl(ETH.handle(), ETH_CMD_ADD_MAC_FILTER, const_cast<uint8_t *>(IGMP_MAC));
