@@ -796,7 +796,6 @@ EvcemUsecase::EvcemUsecase()
         60_s);
 #endif
 }
-
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
@@ -1884,7 +1883,7 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
             return {true, true, CmdClassifierType::reply};
         }
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
-            response["loadControlLimitListData"] = EVSEEntity::get_load_control_limit_list_data();
+            response["loadControlLimitListData"] = get_loadcontrol_limit_list(); // TODO: use evse entity. For some reason that generator function returns empty data for now.
             return {true, true, CmdClassifierType::reply};
         }
     }
