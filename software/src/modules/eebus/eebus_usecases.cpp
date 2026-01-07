@@ -790,7 +790,7 @@ EvcemUsecase::EvcemUsecase()
     task_scheduler.scheduleUncancelable(
         [this]() {
             logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
-            update_measurements(10, 20, 30, 1000, 2000, 3000, this->power_charged_wh + 100);
+            update_measurements(1234, 5678, 9000, 1000, 2000, 3000, this->power_charged_wh + 100);
         },
         60_s,
         60_s);
@@ -928,9 +928,9 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcemUsecase:
 
 void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_phase_2, const int amps_phase_3, const int power_phase_1, const int power_phase_2, const int power_phase_3, const int charged_wh, const bool charged_measured)
 {
-    amps_draw_phase[0] = amps_phase_1;
-    amps_draw_phase[1] = amps_phase_2;
-    amps_draw_phase[2] = amps_phase_3;
+    milliamps_draw_phase[0] = amps_phase_1;
+    milliamps_draw_phase[1] = amps_phase_2;
+    milliamps_draw_phase[2] = amps_phase_3;
     power_draw_phase[0] = power_phase_1;
     power_draw_phase[1] = power_phase_2;
     power_draw_phase[2] = power_phase_3;
@@ -944,9 +944,9 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
 
 void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, const int amps_stepsize, const int power_min, const int power_max, const int power_stepsize, const int energy_min, const int energy_max, const int energy_stepsize)
 {
-    measurement_limit_amps_min = amps_min;
-    measurement_limit_amps_max = amps_max;
-    measurement_limit_amps_stepsize = amps_stepsize;
+    measurement_limit_milliamps_min = amps_min;
+    measurement_limit_milliamps_max = amps_max;
+    measurement_limit_milliamps_stepsize = amps_stepsize;
     measurement_limit_power_min = power_min;
     measurement_limit_power_max = power_max;
     measurement_limit_power_stepsize = power_stepsize;
@@ -994,12 +994,18 @@ MeasurementConstraintsListDataType EvcemUsecase::get_measurement_constraints() c
         MeasurementConstraintsDataType measurement_constraints_data{};
         measurement_constraints_data.measurementId = i + 1;
         if (i < 3) {
-            if (measurement_limit_amps_min >= 0)
-                measurement_constraints_data.valueRangeMin->number = measurement_limit_amps_min;
-            if (measurement_limit_amps_max >= 0)
-                measurement_constraints_data.valueRangeMax->number = measurement_limit_amps_max;
-            if (measurement_limit_amps_stepsize)
-                measurement_constraints_data.valueStepSize->number = measurement_limit_amps_stepsize;
+            if (measurement_limit_milliamps_min >= 0) {
+                measurement_constraints_data.valueRangeMin->number = measurement_limit_milliamps_min;
+                measurement_constraints_data.valueRangeMin->scale = -3; // milliamps
+            }
+            if (measurement_limit_milliamps_max >= 0) {
+                measurement_constraints_data.valueRangeMax->number = measurement_limit_milliamps_max;
+                measurement_constraints_data.valueRangeMax->scale = -3; // milliamps
+            }
+            if (measurement_limit_milliamps_stepsize) {
+                measurement_constraints_data.valueStepSize->number = measurement_limit_milliamps_stepsize;
+                measurement_constraints_data.valueStepSize->scale = -3; // milliamps
+            }
         } else if (i < 6) {
             if (measurement_limit_power_min >= 0)
                 measurement_constraints_data.valueRangeMin->number = measurement_limit_power_min;
@@ -1028,7 +1034,8 @@ MeasurementListDataType EvcemUsecase::get_measurement_list() const
         measurement_data.measurementId = i + 1;
         measurement_data.valueType = MeasurementValueTypeEnumType::value;
         if (i < 3) {
-            measurement_data.value->number = amps_draw_phase[i];
+            measurement_data.value->number = milliamps_draw_phase[i];
+            measurement_data.value->scale = -3; // milliamps
         } else if (i < 6) {
             measurement_data.value->number = power_draw_phase[i - 3];
         } else {
@@ -1097,9 +1104,9 @@ ElectricalConnectionParameterDescriptionListDataType EvcemUsecase::get_generate_
 void EvcemUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("ev_charging_electricity_measurement");
-    api_entry->get("amps_phase_1")->updateUint(amps_draw_phase[0]);
-    api_entry->get("amps_phase_2")->updateUint(amps_draw_phase[1]);
-    api_entry->get("amps_phase_3")->updateUint(amps_draw_phase[2]);
+    api_entry->get("amps_phase_1")->updateUint(milliamps_draw_phase[0]);
+    api_entry->get("amps_phase_2")->updateUint(milliamps_draw_phase[1]);
+    api_entry->get("amps_phase_3")->updateUint(milliamps_draw_phase[2]);
     api_entry->get("power_phase_1")->updateUint(power_draw_phase[0]);
     api_entry->get("power_phase_2")->updateUint(power_draw_phase[1]);
     api_entry->get("power_phase_3")->updateUint(power_draw_phase[2]);
@@ -1932,7 +1939,7 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
     switch (data->last_cmd) {
         case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
             switch (header.cmdClassifier.get()) {
-            case CmdClassifierType::read:
+                case CmdClassifierType::read:
                     response["deviceConfigurationKeyValueDescriptionListData"] = EVSEEntity::get_device_configuration_list_data();
                     return {true, true, CmdClassifierType::reply};
                 default:

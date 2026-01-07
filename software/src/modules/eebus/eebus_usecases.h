@@ -456,9 +456,9 @@ public:
 
     /**
      * Update the measurements. This will inform all subscribers of the new measurements.
-     * @param amps_phase_1 Amps on phase a
-     * @param amps_phase_2 Amps on phase b
-     * @param amps_phase_3 Amps on phase c
+     * @param amps_phase_1 Milliamps on phase a
+     * @param amps_phase_2 Milliamps on phase b
+     * @param amps_phase_3 Milliamps on phase c
      * @param power_phase_1 Total power on phase 1 in watts
      * @param power_phase_2 Total power on phase 2 in watts
      * @param power_phase_3 Total power on phase 3 in watts
@@ -469,9 +469,9 @@ public:
 
     /**
      * Update the constraints of the system. This will inform all subscribers of the new constraints. Values set to negative values will be omitted from the eebus information
-     * @param amps_min Minimum amps in A that can be measured
-     * @param amps_max Maximum amps in A that can be measured
-     * @param amps_stepsize Stepsize of the amps in A measurement
+     * @param amps_min Minimum amps in mA that can be measured
+     * @param amps_max Maximum amps in mA that can be measured
+     * @param amps_stepsize Stepsize of the amps in mA measurement
      * @param power_min Minimum power in w that can be measured
      * @param power_max Maximum power in w  that can be measured
      * @param power_stepsize Stepsize of the power in w  measurement
@@ -496,15 +496,15 @@ public:
 
 private:
     // Data held about the current charge
-    int amps_draw_phase[3]{};  // Amp draw per phase
+    int milliamps_draw_phase[3]{};  // Milliamp draw per phase
     int power_draw_phase[3]{}; // Power per phase
     int power_charged_wh = 0;  // Total charged into the ev during the current session in wh
     bool power_charged_measured = false;
 
     // Constraints
-    int measurement_limit_amps_min = 0;
-    int measurement_limit_amps_max = 32;
-    int measurement_limit_amps_stepsize = 1;
+    int measurement_limit_milliamps_min = 0;
+    int measurement_limit_milliamps_max = 32000;
+    int measurement_limit_milliamps_stepsize = 1;
     int measurement_limit_power_min = 0;
     int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
     int measurement_limit_power_stepsize = 10;
@@ -564,7 +564,7 @@ public:
     void ev_connected_state(bool connected);
     /**
      * Update the device configuration. As required by Scenario 2 and 3 of the EVCC Usecase. This will inform all subscribers of the new configuration.
-     * @param communication_standard The communication standard. Should only be "iso15118-2ed1","iso15118-2ed1" or "iec61851". Will log a tracelog if another value is given.
+     * @param communication_standard The communication standard. Should only be "iso15118-2ed1","iso15118-2ed2" or "iec61851". Will log a tracelog if another value is given.
      * @param asymmetric_supported If asymmetric charging is supported or not.
      */
     void update_device_config(const String &communication_standard, bool asymmetric_supported = false);
