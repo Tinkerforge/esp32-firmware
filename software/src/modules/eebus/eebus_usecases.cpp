@@ -950,9 +950,6 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
         }
     }
 
-    MeasurementListDataType measurement_list_data = EVEntity::get_measurement_list_data();
-    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_list_data, "measurementListData");
-
     bool phase_changed = false;
     for (int i = 0; i < 3; i++) {
         if (phases_measured_before[i] != phases_measured_after[i]) {
@@ -960,6 +957,10 @@ void EvcemUsecase::update_measurements(const int amps_phase_1, const int amps_ph
             break;
         }
     }
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected())
+        return;
+    MeasurementListDataType measurement_list_data = EVEntity::get_measurement_list_data();
+    eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_list_data, "measurementListData");
     if (phase_changed) {
         MeasurementDescriptionListDataType measurement_description = EVEntity::get_measurement_description_list_data();
         MeasurementConstraintsListDataType measurement_constraints_data_elements = EVEntity::get_measurement_constraints_list_data();
@@ -980,6 +981,9 @@ void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, co
     measurement_limit_energy_min = energy_min;
     measurement_limit_energy_max = energy_max;
     measurement_limit_energy_stepsize = energy_stepsize;
+
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected())
+        return;
 
     MeasurementConstraintsListDataType constraints = EVEntity::get_measurement_constraints_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints, "measurementConstraintsListData");
@@ -1373,9 +1377,12 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
 
 void EvccUsecase::ev_connected_state(bool connected)
 {
+    bool changed = (ev_connected != connected);
     entity_active = ev_connected = connected;
-    eebus.usecases->node_management.detailed_discovery_update();
-    update_api();
+    if (changed) {
+        eebus.usecases->node_management.detailed_discovery_update();
+        update_api();
+    }
 }
 
 void EvccUsecase::update_device_config(const String &comm_standard, bool asym_supported)
@@ -1387,6 +1394,8 @@ void EvccUsecase::update_device_config(const String &comm_standard, bool asym_su
         eebus.trace_fmtln(R"(Usecase EVCC: Invalid communication standard for EV entity device configuration: %s, should be "iso15118-2ed1","iso15118-2ed1" or "iec61851".)", communication_standard.c_str());
         // We continue on regardless and let the peer deal with incorrect values
     }
+    if (!ev_connected)
+        return;
     DeviceConfigurationKeyValueDescriptionListDataType generate_dev_desc = EVEntity::get_device_configuration_value_description_list();
     DeviceConfigurationKeyValueListDataType generate_dev_list = EVEntity::get_device_configuration_value_list();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), generate_dev_desc, "deviceConfigurationKeyValueDescriptionData");
@@ -1399,8 +1408,9 @@ void EvccUsecase::update_identification(String mac, IdentificationTypeEnumType t
 {
     mac_address = std::move(mac);
     mac_type = type;
+    if (!ev_connected)
+        return;
     IdentificationListDataType identification_desc = EVEntity::get_identification_list_data();
-
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Identification), identification_desc, "identificationListData");
     update_api();
 }
@@ -1430,6 +1440,9 @@ void EvccUsecase::update_manufacturer(String name, String code, String serial, S
     brand_name.shrinkToFit();
     manufacturer_description.shrinkToFit();
 
+    if (!ev_connected)
+        return;
+
     DeviceClassificationManufacturerDataType manufacturer_desc = EVEntity::get_device_classification_manufacturer_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceClassification), manufacturer_desc, "deviceClassificationManufacturerData");
     update_api();
@@ -1440,6 +1453,10 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
     min_power_draw = min_power;
     max_power_draw = max_power;
     standby_power = stby_power;
+
+    if (!ev_connected)
+        return;
+
     ElectricalConnectionParameterDescriptionListDataType electrical_connection_desc = EVEntity::get_electrical_connection_parameter_description_list_data();
     ElectricalConnectionPermittedValueSetListDataType electrical_connection_values = EVEntity::get_electrical_connection_permitted_list_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), electrical_connection_desc, "electricalConnectionParameterDescriptionListData");
@@ -1451,6 +1468,10 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
 void EvccUsecase::update_operating_state(bool standby)
 {
     standby_mode = standby;
+
+    if (!ev_connected)
+        return;
+
     DeviceDiagnosisStateDataType state = EVEntity::get_diagnosis_state_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), state, "deviceDiagnosisStateData");
     update_api();
@@ -1460,15 +1481,14 @@ void EvccUsecase::update_api() const
 {
     auto api_entry = eebus.eebus_usecase_state.get("ev_commissioning_and_configuration");
     api_entry->get("ev_connected")->updateBool(ev_connected);
-    if (ev_connected) {
-        api_entry->get("communication_standard")->updateString(communication_standard);
-        api_entry->get("asymmetric_charging_supported")->updateBool(asymmetric_supported);
-        api_entry->get("mac_address")->updateString(mac_address);
-        api_entry->get("minimum_power")->updateUint(min_power_draw);
-        api_entry->get("maximum_power")->updateUint(max_power_draw);
-        api_entry->get("standby_power")->updateUint(standby_power);
-        api_entry->get("standby_mode")->updateBool(standby_mode);
-    }
+
+    api_entry->get("communication_standard")->updateString(communication_standard);
+    api_entry->get("asymmetric_charging_supported")->updateBool(asymmetric_supported);
+    api_entry->get("mac_address")->updateString(mac_address);
+    api_entry->get("minimum_power")->updateUint(min_power_draw);
+    api_entry->get("maximum_power")->updateUint(max_power_draw);
+    api_entry->get("standby_power")->updateUint(standby_power);
+    api_entry->get("standby_mode")->updateBool(standby_mode);
 }
 
 DeviceConfigurationKeyValueDescriptionListDataType EvccUsecase::get_device_config_description() const
