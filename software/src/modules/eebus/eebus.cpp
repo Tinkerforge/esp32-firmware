@@ -28,6 +28,8 @@
 #include <LittleFS.h>
 #include <TFJson.h>
 
+#include "tools/malloc.h"
+
 extern char local_uid_str[32];
 
 void EEBus::pre_setup()
@@ -255,6 +257,113 @@ void EEBus::register_urls()
     toggle_module();
 }
 
+static void update_usecases_from_phases(const Config *_phases_cfg) {
+    if (eebus.usecases == nullptr)
+        return;
+
+    bool supports_1p = evse_common.backend->phase_switching_capable() || evse_common.backend->get_phases() == 1;
+    bool supports_3p = evse_common.backend->phase_switching_capable() || evse_common.backend->get_phases() == 3;
+
+    auto incoming = evse_common.get_slots().get(CHARGING_SLOT_INCOMING_CABLE)->get("max_current")->asUint();
+    auto outgoing = evse_common.get_slots().get(CHARGING_SLOT_OUTGOING_CABLE)->get("max_current")->asUint();
+
+    int min_power =                         6000 * (supports_1p ? 1 : 3) * 230;
+    int max_power = std::min(incoming, outgoing) * (supports_3p ? 3 : 1) * 230;
+
+    logger.printfln("Calling evcc.update_electrical_connection(min_power=%d, max_power=%d)", min_power, max_power);
+    eebus.usecases->ev_commissioning_and_configuration.update_electrical_connection(min_power, max_power);
+}
+
+static void update_usecases_from_charger_state(const Config *charger_state_cfg) {
+    if (eebus.usecases == nullptr)
+        return;
+
+    auto charger_state = charger_state_cfg->asUint8();
+
+    // It's fine that we report an EV connected if the charger is in CHARGER_STATE_ERROR.
+    // We will set the EVSECC operating state to faulted below and in this case the spec states:
+    /* If the EVSE has an error [EVSECC-020], the EV may no
+       longer be able to follow the charging plan correctly and updates from the EV may no longer contain
+       valid data.*/
+    logger.printfln("Calling evcc.ev_connected_state(connected=%d)", charger_state != CHARGER_STATE_NOT_PLUGGED_IN);
+    eebus.usecases->ev_commissioning_and_configuration.ev_connected_state(charger_state != CHARGER_STATE_NOT_PLUGGED_IN);
+
+    logger.printfln("Calling evcc.update_device_config(communication_standard=\"%s\")", "iec61851");
+    eebus.usecases->ev_commissioning_and_configuration.update_device_config("iec61851");
+
+    logger.printfln("Calling evcc.update_operating_state(failure=%d)", charger_state == CHARGER_STATE_ERROR);
+    eebus.usecases->evse_commissioning_and_configuration.update_operating_state(charger_state == CHARGER_STATE_ERROR); // TODO: error message
+}
+
+void EEBus::register_events()
+{
+    event.registerEvent("evse/phases_connected", {}, [](const Config *phases_cfg) {
+        update_usecases_from_phases(phases_cfg);
+        return EventResult::OK;
+    });
+
+    event.registerEvent("evse/state", {"charger_state"}, [](const Config *iec_state_cfg) {
+        update_usecases_from_charger_state(iec_state_cfg);
+        return EventResult::OK;
+    });
+
+
+    auto meter_slot = evse_common.get_charger_meter();
+
+    event.registerEvent(meters.get_path(meter_slot, Meters::PathType::ValueIDs), {},
+        [meter_slot](const Config *value_ids) {
+            // TODO: Is this necessary? Stolen from meters_legacy_api.cpp
+            if (value_ids->count() == 0) {
+                logger.printfln("Ignoring blank value IDs update from charger meter.");
+                return EventResult::OK;
+            }
+
+            MeterValueID mvids[] = {
+                MeterValueID::CurrentL1ImExDiff,
+                MeterValueID::CurrentL2ImExDiff,
+                MeterValueID::CurrentL3ImExDiff,
+                MeterValueID::PowerActiveL1ImExDiff,
+                MeterValueID::PowerActiveL2ImExDiff,
+                MeterValueID::PowerActiveL3ImExDiff,
+                MeterValueID::EnergyActiveLSumImport
+            };
+            constexpr size_t VALUE_COUNT = ARRAY_SIZE(mvids);
+
+            uint32_t *index_cache = perm_new_array<uint32_t>(VALUE_COUNT, DRAM);
+
+            meters.fill_index_cache(meter_slot, VALUE_COUNT, mvids, index_cache);
+
+            event.registerEvent(meters.get_path(meter_slot, Meters::PathType::Values), {}, [meter_slot, index_cache](const Config *_) {
+                if (eebus.usecases == nullptr)
+                    return EventResult::OK;
+
+                float values[VALUE_COUNT];
+                meters.get_values_with_cache(meter_slot, values, index_cache, VALUE_COUNT);
+
+                bool charging = charge_tracker.current_charge.get("user_id")->asInt16() != -1;
+                float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
+
+                int charged_wh = !charging ? -1 : ((values[6] - meter_start) * 1000.0f);
+
+                eebus.usecases->ev_charging_electricity_measurement.update_measurements(
+                    (int)(values[0] * 1000.0f),
+                    (int)(values[1] * 1000.0f),
+                    (int)(values[2] * 1000.0f),
+                    (int) values[3],
+                    (int) values[4],
+                    (int) values[5],
+                    charged_wh
+                );
+
+                return EventResult::OK;
+            });
+
+            // Value IDs should only change once
+            return EventResult::Deregister;
+        }
+    );
+}
+
 void EEBus::toggle_module()
 {
     // All peers are unknown when its either toggled or at startup
@@ -266,6 +375,8 @@ void EEBus::toggle_module()
     if (config.get("enable")->asBool()) {
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
+        update_usecases_from_charger_state((const Config *) api.getState("evse/state")->get("charger_state"));
+        update_usecases_from_phases((const Config *) api.getState("evse/phases_connected")->get("phases"));
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.enable_ship();
         logger.printfln("EEBUS Module enabled");
