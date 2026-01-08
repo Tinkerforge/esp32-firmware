@@ -48,6 +48,8 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
+#define EEBUS_ENABLE_MPC_USECASE
+//#define EEBUS_ENABLE_LPP_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -455,7 +457,7 @@ public:
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     /**
-     * Update the measurements. This will inform all subscribers of the new measurements.
+     * Update the measurements. This will inform all subscribers of the new measurements. Amps or power values at or below 0 are ignored and not send.
      * @param amps_phase_1 Milliamps on phase a
      * @param amps_phase_2 Milliamps on phase b
      * @param amps_phase_3 Milliamps on phase c
@@ -491,14 +493,14 @@ public:
     [[nodiscard]] MeasurementConstraintsListDataType get_measurement_constraints() const;
     [[nodiscard]] MeasurementListDataType get_measurement_list() const;
 
-    [[nodiscard]] ElectricalConnectionDescriptionListDataType get_generate_electrical_connection_description() const;
-    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_generate_electrical_connection_parameters() const;
+    [[nodiscard]] ElectricalConnectionDescriptionListDataType get_electrical_connection_description() const;
+    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameters() const;
 
 private:
     // Data held about the current charge
-    int milliamps_draw_phase[3]{};  // Milliamp draw per phase
-    int power_draw_phase[3]{}; // Power per phase
-    int power_charged_wh = 0;  // Total charged into the ev during the current session in wh
+    int milliamps_draw_phase[3]{}; // Milliamp draw per phase
+    int power_draw_phase[3]{};     // Power per phase
+    int power_charged_wh = 0;      // Total charged into the ev during the current session in wh
     bool power_charged_measured = false;
 
     // Constraints
@@ -762,10 +764,10 @@ public:
 
     /**
      * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
-     * @param power_limit_w Power limit in watts.
-     * @param duration Duration in seconds.
+     * @param power_limit_w Power limit in watts. Below -1 the value is ignored
+     * @param duration Duration in seconds. Below or equal to -1 the value is ignored.
      */
-    void update_failsafe(int power_limit_w, seconds_t duration);
+    void update_failsafe(int power_limit_w = -1, seconds_t duration = -1_s);
 
     /**
      * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPC UC TS v1.0.0 3.2.2.2.5.1
@@ -822,7 +824,7 @@ private:
      * Constraints are the maximum power the system is capable of consuming.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
      */
-    MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response) const;
+    static MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
 
     /**
     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
@@ -831,7 +833,7 @@ private:
     * This is the client part of that scenario and will request heartbeats from the energy guard aswell as handle notify messages.
     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
     */
-    MessageReturn generic_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn generic_feature(const HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
 
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
@@ -921,6 +923,7 @@ private:
     int power_consumption_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
 };
 #endif
+
 #ifdef EEBUS_ENABLE_CEVC_USECASE
 /**
  * The CevcUsecase as defined in EEBus UC TS - Coordinate EV Charging V1.0.1.
@@ -1018,6 +1021,40 @@ private:
     std::vector<PowerLimitEntry> power_limits{};
     std::vector<IncentiveSlotEntry> incentives_available{};
 };
+#endif
+
+#ifdef EEBUS_ENABLE_MPC_USECASE
+class MpcUsecase final : public EebusUsecase
+{
+public:
+
+    [[nodiscard]] Usecases get_usecase_type() const override
+    {
+        return Usecases::MPC;
+    }
+
+    /**
+     * \brief Handles a message for a usecase.
+     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+     * @param data The actual Function call and data of the message.
+     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+     * @return The MessageReturn object which contains information about the returned message.
+     */
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
+    * @return
+    */
+    UseCaseInformationDataType get_usecase_information() override;
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Measurement};
+    }
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+};
+
 #endif
 
 /**
