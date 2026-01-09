@@ -355,7 +355,7 @@ ShipDiscoveryState Ship::discover_ship_peers()
         std::vector<String> ip_addresses{};
         char buf[INET6_ADDRSTRLEN];
         while (results->addr) {
-            tf_ipaddr_ntoa(&ip, buf, sizeof(buf));
+            tf_ipaddr_ntoa(&results->addr->addr, buf, sizeof(buf));
             ip_addresses.push_back(String(buf));
             results->addr = results->addr->next;
         }
