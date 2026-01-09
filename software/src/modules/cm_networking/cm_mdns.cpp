@@ -199,7 +199,7 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
         const ip4_addr_t ip4 = ip->u_addr.ip4; // Must copy the address because *ip is temporary.
 
         task_scheduler.scheduleOnce([hname, ip4]() { // Can't access the logger from lwIP context.
-            char ip_str[16];
+            char ip_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip4, ip_str, sizeof(ip_str));
             logger.printfln("Resolved %s to %s", hname, ip_str);
         });
@@ -507,7 +507,7 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
                     device->addr.sin_addr.s_addr  = addr_entry->addr.u_addr.ip4.addr;
                     device->resolve_state = ResolveState::Resolved;
 
-                    char addr_str[16];
+                    char addr_str[INET_ADDRSTRLEN];
                     tf_ip4addr_ntoa(&addr_entry->addr, addr_str, sizeof(addr_str));
                     logger.printfln("Resolved %s to %s (via mDNS scan)", device->hostname, addr_str);
                 }
@@ -523,7 +523,7 @@ void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
 void CMNetworking::add_scan_result_entry(mdns_result_t *entry, TFJsonSerializer *json)
 {
     const char *hostname = entry->hostname == nullptr ? "[no_hostname]" : entry->hostname;
-    char addr_str[16];
+    char addr_str[INET_ADDRSTRLEN];
 
     if (entry->addr != nullptr && entry->addr->addr.type == IPADDR_TYPE_V4) {
         tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));

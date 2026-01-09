@@ -218,9 +218,9 @@ void Ethernet::setup()
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
-            char ip_str[16];
+            char ip_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
-            char gw_str[16];
+            char gw_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
             const uint32_t subnet = ip_info.netmask.addr;
 
@@ -234,7 +234,7 @@ void Ethernet::setup()
 
             const String ip_string{ip_str};
             task_scheduler.scheduleOnce([this, now, ip_string, subnet]() {
-                char subnet_str[16];
+                char subnet_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
                 state.get("ip"    )->updateString(ip_string);

@@ -1257,12 +1257,12 @@ void ModbusTCP::start_server() {
     server.start(
         0, config.get("port")->asUint16(),
         [](uint32_t peer_address, uint16_t port) {
-            char peer_str[16];
+            char peer_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
             logger.printfln("Client %s:%u connected", peer_str, port);
         },
         [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
-            char peer_str[16];
+            char peer_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
             logger.printfln("Client %s:%u disconnected: %s (error %d)", peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },

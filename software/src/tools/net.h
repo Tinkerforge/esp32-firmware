@@ -35,47 +35,47 @@
 
 // lwIP ipaddr
 
-extern inline void tf_ip4addr_ntoa(const ip4_addr_t *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const ip4_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     ip4addr_ntoa_r(addr, buf, buflen);
 }
 
-extern inline void tf_ip4addr_ntoa(const ip_addr_t *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const ip_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(&addr->u_addr.ip4, buf, buflen);
 }
 
 // lwIP inaddr
 
-extern inline void tf_ip4addr_ntoa(const struct in_addr *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const struct in_addr *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(reinterpret_cast<const ip4_addr_t *>(addr), buf, buflen);
 }
 
 // lwIP sockaddr
 
-extern inline void tf_ip4addr_ntoa(const struct sockaddr_in *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const struct sockaddr_in *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(&addr->sin_addr, buf, buflen);
 }
 
-extern inline void tf_ip4addr_ntoa(const struct sockaddr *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const struct sockaddr *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(reinterpret_cast<const struct sockaddr_in *>(addr), buf, buflen);
 }
 
-extern inline void tf_ip4addr_ntoa(const struct sockaddr_storage *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const struct sockaddr_storage *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(reinterpret_cast<const struct sockaddr_in *>(addr), buf, buflen);
 }
 
 // ESP netif IP adresses
 
-extern inline void tf_ip4addr_ntoa(const esp_ip4_addr_t *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const esp_ip4_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(reinterpret_cast<const ip4_addr_t *>(addr), buf, buflen);
 }
 
-extern inline void tf_ip4addr_ntoa(const esp_ip_addr_t *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const esp_ip_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     tf_ip4addr_ntoa(reinterpret_cast<const ip_addr_t *>(addr), buf, buflen);
 }
 
 // TFModbusTCP
 
-extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char *buf, int buflen) {
+extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     ip4addr_ntoa_r(reinterpret_cast<const ip4_addr_t *>(addr), buf, buflen);
 }
 

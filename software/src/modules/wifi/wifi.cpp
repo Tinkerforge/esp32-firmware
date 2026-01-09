@@ -780,16 +780,16 @@ void Wifi::setup()
                 this->runtime_sta->was_connected = true;
 
                 const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
-                char ip_str[16];
+                char ip_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
-                char gw_str[16];
+                char gw_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
                 const uint32_t subnet = ip_info.netmask.addr;
 
                 logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
 
                 task_scheduler.scheduleOnce([this, ip_str, subnet](){
-                    char subnet_str[16];
+                    char subnet_str[INET_ADDRSTRLEN];
                     tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
                     state.get("sta_ip")->updateString(ip_str);
