@@ -30,6 +30,8 @@
 #include "lwip/ip_addr.h"
 #include "lwip/sockets.h"
 
+#include "tools/net.h"
+
 #include "cbv2g/exi_v2gtp.h"
 #include "cbv2g/app_handshake/appHand_Decoder.h"
 #include "cbv2g/app_handshake/appHand_Encoder.h"
@@ -108,8 +110,8 @@ void Common::state_machine_loop()
             return;
         }
 
-        char addr_str[128];
-        inet6_ntoa_r(((struct sockaddr_in6 *)&source_addr)->sin6_addr, addr_str, sizeof(addr_str) - 1);
+        char addr_str[INET6_ADDRSTRLEN];
+        tf_ip6addr_ntoa(&source_addr, addr_str, sizeof(addr_str));
         logger.printfln("Common: Accepted connection from %s", addr_str);
 
         if(fcntl(active_socket, F_SETFL, fcntl(active_socket, F_GETFL) | O_NONBLOCK) < 0) {

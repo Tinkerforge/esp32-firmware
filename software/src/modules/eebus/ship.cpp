@@ -327,74 +327,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
     eebus.trace_fmtln("discover_ship_peers start");
     logger.printfln("EEBUS MDNS Discovery started");
 
-    auto ip_to_string = [](const esp_ip_addr_t &ip) -> String {
-        char buf[80];
-        if (ip.type == ESP_IPADDR_TYPE_V4) {
-            snprintf(buf, sizeof(buf), IPSTR, IP2STR(&ip.u_addr.ip4));
-        } else {
-            const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&ip.u_addr.ip6);
-            uint16_t hextets[8];
-            for (int i = 0; i < 8; ++i) {
-                hextets[i] = (static_cast<uint16_t>(bytes[2 * i]) << 8) | bytes[2 * i + 1];
-            }
-
-            // Find longest sequence of zero hextets (for :: compression)
-            int best_start = -1;
-            int best_len = 0;
-            for (int i = 0; i < 8;) {
-                if (hextets[i] == 0) {
-                    int j = i;
-                    while (j < 8 && hextets[j] == 0)
-                        ++j;
-                    int len = j - i;
-                    if (len > best_len) {
-                        best_start = i;
-                        best_len = len;
-                    }
-                    i = j;
-                } else {
-                    ++i;
-                }
-            }
-            if (best_len < 2) {
-                best_start = -1; // do not compress sequences shorter than 2
-                best_len = 0;
-            }
-
-            // Build shortened IPv6 string
-            char *p = buf;
-            size_t left = sizeof(buf);
-            for (int i = 0; i < 8; ++i) {
-                if (i == best_start) {
-                    int n = snprintf(p, left, "::");
-                    if (n < 0)
-                        break;
-                    p += n;
-                    left = (left > (size_t)n ? left - n : 0);
-                    i += best_len - 1;
-                    continue;
-                }
-
-                int n = snprintf(p, left, "%x", hextets[i]); // no leading zeros, lowercase
-                if (n < 0)
-                    break;
-                p += n;
-                left = (left > (size_t)n ? left - n : 0);
-
-                // Append ':' if not at end and next part isn't the compressed block
-                if (i != 7 && !(best_start != -1 && i + 1 == best_start)) {
-                    if (left > 1) {
-                        *p = ':';
-                        ++p;
-                        --left;
-                    }
-                }
-            }
-            buf[sizeof(buf) - 1] = '\0';
-        }
-        return String(buf);
-    };
-
     if (!network.is_mdns_started()) {
         logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
         eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
@@ -421,8 +353,10 @@ ShipDiscoveryState Ship::discover_ship_peers()
     while (results) {
         String ip_address = "";
         std::vector<String> ip_addresses{};
+        char buf[INET6_ADDRSTRLEN];
         while (results->addr) {
-            ip_addresses.push_back(ip_to_string(results->addr->addr));
+            tf_ipaddr_ntoa(&ip, buf, sizeof(buf));
+            ip_addresses.push_back(String(buf));
             results->addr = results->addr->next;
         }
         if (ip_addresses.empty()) {

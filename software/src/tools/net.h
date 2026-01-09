@@ -33,6 +33,8 @@
     #pragma GCC diagnostic ignored "-Wcast-align"
 #endif
 
+// IPv4
+
 // lwIP ipaddr
 
 extern inline void tf_ip4addr_ntoa(const ip4_addr_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
@@ -78,6 +80,78 @@ extern inline void tf_ip4addr_ntoa(const esp_ip_addr_t *addr, char buf[INET_ADDR
 extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char buf[INET_ADDRSTRLEN], int buflen) {
     ip4addr_ntoa_r(reinterpret_cast<const ip4_addr_t *>(addr), buf, buflen);
 }
+
+
+// IPv6
+
+// lwIP ipaddr
+
+extern inline void tf_ip6addr_ntoa(const ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    ip6addr_ntoa_r(addr, buf, buflen);
+}
+
+extern inline void tf_ip6addr_ntoa(const ip_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(&addr->u_addr.ip6, buf, buflen);
+}
+
+// lwIP inaddr
+
+extern inline void tf_ip6addr_ntoa(const struct in6_addr *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(addr), buf, buflen);
+}
+
+// lwIP sockaddr
+
+extern inline void tf_ip6addr_ntoa(const struct sockaddr_in6 *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(&addr->sin6_addr, buf, buflen);
+}
+
+extern inline void tf_ip6addr_ntoa(const struct sockaddr_storage *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(reinterpret_cast<const struct sockaddr_in6 *>(addr), buf, buflen);
+}
+
+// ESP netif IP adresses
+
+extern inline void tf_ip6addr_ntoa(const esp_ip6_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(addr), buf, buflen);
+}
+
+extern inline void tf_ip6addr_ntoa(const esp_ip_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ip6addr_ntoa(reinterpret_cast<const ip_addr_t *>(addr), buf, buflen);
+}
+
+// TFModbusTCP
+
+
+// IPv4 or v6
+
+// lwIP ipaddr
+
+extern inline void tf_ipaddr_ntoa(const ip_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    ipaddr_ntoa_r(addr, buf, buflen);
+}
+
+
+// lwIP inaddr
+
+// lwIP sockaddr
+
+extern inline void tf_ipaddr_ntoa(const struct sockaddr_storage *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    if (addr->ss_family == AF_INET)
+        tf_ip4addr_ntoa(reinterpret_cast<const struct sockaddr_in *>(addr), buf, buflen);
+    else if (addr->ss_family == AF_INET6)
+        tf_ip6addr_ntoa(reinterpret_cast<const struct sockaddr_in6 *>(addr), buf, buflen);
+    else if (buflen > 0)
+        buf[0] = '\0';
+}
+
+// ESP netif IP adresses
+
+extern inline void tf_ipaddr_ntoa(const esp_ip_addr_t *addr, char buf[INET6_ADDRSTRLEN], int buflen) {
+    tf_ipaddr_ntoa(reinterpret_cast<const ip_addr_t *>(addr), buf, buflen);
+}
+
+// TFModbusTCP
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
