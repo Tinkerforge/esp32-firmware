@@ -2026,9 +2026,12 @@ void RemoteAccess::run_management()
     switch (command->command_id) {
         case management_command_id::Connect: {
             remote_connections[conn_idx].id = static_cast<uint8_t>(command->connection_no);
-            if (conn != nullptr && conn->is_peer_up(nullptr, nullptr)) {
+            // Check if connection is already established or currently being set up
+            if ((conn != nullptr && conn->is_peer_up(nullptr, nullptr)) || remote_connections[conn_idx].in_progress) {
                 return;
             }
+
+            remote_connections[conn_idx].in_progress = true;
 
             uint8_t conn_no = static_cast<uint8_t>(command->connection_no);
 
@@ -2051,17 +2054,21 @@ void RemoteAccess::run_management()
             local_port = find_next_free_port(local_port);
             if (local_port == 0) {
                 logger.printfln("No free port found for remote access connection");
+                remote_connections[conn_idx].in_progress = false;
                 return;
             }
 
-            dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+            dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no, conn_idx](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
                 connect_remote_access(conn_no, local_port);
+                // Clear in_progress flag after connection setup is initiated
+                remote_connections[conn_idx].in_progress = false;
             }, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
 
         case management_command_id::Disconnect: {
             remote_connections[conn_idx].id = 255;
+            remote_connections[conn_idx].in_progress = false;
             if (conn == nullptr) {
                 logger.printfln("Not found");
                 break;
@@ -2087,6 +2094,8 @@ void RemoteAccess::close_all_remote_connections() {
         now.tv_sec = 0;
     }
     for (uint8_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
+        // Always clear in_progress flag when closing all connections
+        remote_connections[i].in_progress = false;
         if (remote_connections[i].conn != nullptr) {
             auto conn_state = connection_state.get(i + 1);
             logger.printfln("Closing connection %lu for user %lu",

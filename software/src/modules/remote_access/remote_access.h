@@ -42,6 +42,7 @@ struct HttpResponse {
 struct Connection {
     uint8_t id;
     std::unique_ptr<WireGuard> conn = nullptr;
+    bool in_progress = false;
 };
 
 struct WgKey {
