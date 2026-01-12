@@ -34,7 +34,7 @@ index c6bb97f..27f7b70 100644
 -    version: "1.4.1"
 -    require: public
 -    rules:
--      - if: "target not in [esp32c2, esp32p4]"
+-      - if: "target not in [esp32c2, esp32p4, esp32c61]"
 --
 2.47.0
 

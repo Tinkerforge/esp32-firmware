@@ -1,0 +1,38 @@
+From 1cc7ddb898e2708a8de0ca564eb20b7fdfa18d41 Mon Sep 17 00:00:00 2001
+From: MattiasTF <117294155+MattiasTF@users.noreply.github.com>
+Date: Tue, 23 Dec 2025 19:12:51 +0100
+Subject: [PATCH] tcp: Fix lingering in LAST_ACK state
+
+Fix blocking forever in close() when the remote side closed the connection first
+and the local side had unacked data but no unsent data.
+
+Trigger TCP_EVENT_SENT in LAST_ACK state even when no data was acked
+so that the ACK for a lone FIN can correctly end the linger period.
+---
+ src/core/tcp_in.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/core/tcp_in.c b/src/core/tcp_in.c
+index f4d34af8..5646e1c1 100644
+--- a/src/core/tcp_in.c
++++ b/src/core/tcp_in.c
+@@ -482,6 +482,16 @@ tcp_input(struct pbuf *p, struct netif *inp)
+             }
+           }
+           recv_acked = 0;
++#if LWIP_SO_LINGER
++        } else if (pcb->state == LAST_ACK) {
++          /* If SO_LINGER is enabled and the connection is in LAST_ACK state,
++             the "sent" function must be called even with 0 bytes acked
++             so that the final ACK can trigger the end of the linger period. */
++          TCP_EVENT_SENT(pcb, 0, err);
++          if (err == ERR_ABRT) {
++            goto aborted;
++          }
++#endif
+         }
+         if (tcp_input_delayed_close(pcb)) {
+           goto aborted;
+-- 
+2.47.3
+

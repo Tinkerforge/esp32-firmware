@@ -1,0 +1,29 @@
+From 105e7d371a1996077f69ba25c216c0548dae6815 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Thu, 8 Jan 2026 18:57:48 +0100
+Subject: [PATCH] lwip: Adjust ARP options
+
+- Disable ARP queueing to avoid queueing up to 5 charge manager packets for each unresponsive controlled charger.
+- Increase ARP table size from 10 to 68 so that all 64 controlled chargers can be cached.
+---
+ components/lwip/port/include/lwipopts.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/components/lwip/port/include/lwipopts.h b/components/lwip/port/include/lwipopts.h
+index dbebe0693e..66e474cc2b 100644
+--- a/components/lwip/port/include/lwipopts.h
++++ b/components/lwip/port/include/lwipopts.h
+@@ -160,7 +160,9 @@ extern "C" {
+  * startup time. Set this to 1 if you know your application sends more than one
+  * packet in a row to an IP address that is not in the ARP cache.
+  */
+-#define ARP_QUEUEING                    1
++#define ARP_QUEUEING                    0
++
++#define ARP_TABLE_SIZE                  68
+ 
+ #ifdef CONFIG_LWIP_DHCPS_STATIC_ENTRIES
+ #define ETHARP_SUPPORT_STATIC_ENTRIES   1
+-- 
+2.47.3
+

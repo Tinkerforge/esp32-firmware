@@ -1,0 +1,33 @@
+From dd705a1a7a27cb183d9dc4cbe8a57166f9ad22ff Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 12 Jan 2026 17:38:20 +0100
+Subject: [PATCH] Freeze managed components
+
+Prevent the build system from overwriting the managed components for every build.
+This will allow us to patch them.
+This change cannot be added to the arduino-esp32 git because the components have to be downloaded first.
+---
+ idf_component.yml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/idf_component.yml b/idf_component.yml
+index dd783e537..fa841ab60 100644
+--- a/idf_component.yml
++++ b/idf_component.yml
+@@ -35,10 +35,13 @@ dependencies:
+   espressif/mdns:
+     version: "^1.2.3"
+     require: public
++    override_path: ../../managed_components/espressif__mdns
+   espressif/libsodium:
+     version: "^1.0.20~1"
+     require: public
++    override_path: ../../managed_components/espressif__libsodium
+   joltwallet/littlefs:
+     version: "^1.10.2"
++    override_path: ../../managed_components/joltwallet__littlefs
+ examples:
+   - path: ./idf_component_examples/hello_world
+-- 
+2.47.3
+
