@@ -1776,11 +1776,18 @@ static bool port_valid(uint16_t port)
     return port_valid;
 }
 
+// returning 0 means no free port found
 static uint16_t find_next_free_port(uint16_t port)
 {
-    while (!port_valid(port)) {
+    // the largest port we call this funtion with is 51825 so simply adding 100 is safe
+    while (!port_valid(port) && port < port + 100) {
         port++;
     }
+
+    if (port >= port + 100) {
+        return 0;
+    }
+
     return port;
 }
 
@@ -1831,6 +1838,10 @@ void RemoteAccess::connect_management()
     management = std::make_unique<WireGuard>();
 
     const uint16_t local_port = find_next_free_port(51820);
+    if (local_port == 0) {
+        logger.printfln("No free port found for management connection");
+        return;
+    }
     this->setup_inner_socket();
     // management->begin copys the keys.
     management->begin(internal_ip,
@@ -2037,6 +2048,10 @@ void RemoteAccess::run_management()
                 conn->end();
             }
             local_port = find_next_free_port(local_port);
+            if (local_port == 0) {
+                logger.printfln("No free port found for remote access connection");
+                return;
+            }
 
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
