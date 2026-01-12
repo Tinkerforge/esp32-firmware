@@ -99,6 +99,7 @@ void NTP::setup()
     // As we use our own sntp_sync_time function, we do not need to register the cb function.
     // sntp_set_time_sync_notification_cb(ntp_sync_cb);
 
+    // Getting SNTP servers from DHCP should be enabled before setting up Ethernet or WiFi.
     esp_sntp_servermode_dhcp(set_servers_from_dhcp);
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
 
@@ -109,21 +110,12 @@ void NTP::setup()
     // client will query all servers round-robin, including unset ones.
     esp_sntp_setservername(0, ntp_server1.isEmpty() ? ntp_server2.c_str() : ntp_server1.c_str());
     esp_sntp_setservername(1, ntp_server2.isEmpty() ? ntp_server1.c_str() : ntp_server2.c_str());
-
-#if MODULE_NETWORK_AVAILABLE()
-    if (set_servers_from_dhcp) {
-        // To hook into DHCP, SNTP must be initialized before starting Ethernet or WiFi.
-        esp_sntp_init();
-    }
-#else
-    esp_sntp_init();
-#endif
 }
 
 void NTP::register_events()
 {
+    if (config.get("enable")->asBool()) {
 #if MODULE_NETWORK_AVAILABLE()
-    if (config.get("enable")->asBool() && !config.get("use_dhcp")->asBool()) {
         network.on_network_connected([this](const Config *connected) {
             if (connected->asBool()) {
                 esp_sntp_init();
@@ -133,8 +125,10 @@ void NTP::register_events()
 
             return EventResult::OK;
         });
-    }
+#else
+        esp_sntp_init();
 #endif
+    }
 }
 
 void NTP::set_synced(bool synced)
