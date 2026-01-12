@@ -534,15 +534,6 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
 EvcsUsecase::EvcsUsecase()
 {
     update_api();
-#ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce(
-        [this]() {
-            logger.printfln("EEBUS Usecase test enabled. Updating ChargingSummary");
-            update_billing_data(1, 299921, 3242662, 245233, 1242, 75, 90, 25, 10);
-            update_billing_data(2, 5622123, 5655611, 23677, 1242, 50, 100, 50, 0);
-        },
-        30_s);
-#endif
 }
 
 UseCaseInformationDataType EvcsUsecase::get_usecase_information()
@@ -783,19 +774,9 @@ void EvcsUsecase::update_api() const
     }
 }
 #endif
+
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-EvcemUsecase::EvcemUsecase()
-{
-#ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleUncancelable(
-        [this]() {
-            logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
-            update_measurements(1234, 5678, 9000, 1000, 2000, 3000, this->power_charged_wh + 100);
-        },
-        60_s,
-        60_s);
-#endif
-}
+EvcemUsecase::EvcemUsecase() = default;
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
@@ -1176,19 +1157,6 @@ void EvcemUsecase::update_api() const
 EvccUsecase::EvccUsecase()
 {
     entity_active = false; // Disable entity until an EV is connected
-#ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce(
-        [this]() {
-            logger.printfln("EEBUS Usecase test enabled. Updating EvccUsecase");
-            ev_connected_state(true);
-            update_device_config("iso15118-2ed1", true);
-            update_identification("12:34:56:78:9a:bc");
-            update_manufacturer("VW", "0", "00001", "1.0", "0.1", "Volkswagen", "1", "Skoda", "VW", "");
-            update_electrical_connection(100, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 800);
-            update_operating_state(false);
-        },
-        40_s);
-#endif
 }
 
 UseCaseInformationDataType EvccUsecase::get_usecase_information()
@@ -1623,24 +1591,7 @@ DeviceDiagnosisStateDataType EvccUsecase::get_device_diagnosis_state() const
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
 
-EvseccUsecase::EvseccUsecase()
-{
-#ifdef EEBUS_DEV_TEST_ENABLE
-    task_scheduler.scheduleOnce(
-        [this]() {
-            logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase with a test error");
-            update_operating_state(true, "This is a test error message. It should be displayed. The error state will be resolved in 30 seconds.");
-            task_scheduler.scheduleOnce(
-                [this]() {
-                    logger.printfln("EEBUS Usecase test enabled. Updating EvseccUsecase to normal operation");
-                    update_operating_state(false, "This is a test error message. It should not be shown");
-                },
-                30_s);
-        },
-        50_s);
-
-#endif
-}
+EvseccUsecase::EvseccUsecase() = default;
 
 MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -1775,6 +1726,7 @@ void EvseccUsecase::update_api() const
     api_entry->get("evse_failure_description")->updateString(last_error_message.c_str());
 }
 #endif
+
 #ifdef EEBUS_ENABLE_LPC_USECASE
 LpcUsecase::LpcUsecase()
 {
