@@ -75,23 +75,33 @@ static const MeterRCTPower::ValueSpec inverter_rct_value_specs[] = {
 static_assert(ARRAY_SIZE(inverter_value_ids) == ARRAY_SIZE(inverter_rct_value_specs));
 
 static const MeterValueID grid_value_ids[] = {
+    MeterValueID::VoltageL1N,
+    MeterValueID::VoltageL2N,
+    MeterValueID::VoltageL3N,
     MeterValueID::PowerActiveL1ImExDiff,
     MeterValueID::PowerActiveL2ImExDiff,
     MeterValueID::PowerActiveL3ImExDiff,
     MeterValueID::PowerActiveLSumImExDiff,
     MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyActiveLSumImport,
-    MeterValueID::FrequencyLAvg,
+    MeterValueID::FrequencyL1,
+    MeterValueID::FrequencyL2,
+    MeterValueID::FrequencyL3,
 };
 
 static const MeterRCTPower::ValueSpec grid_rct_value_specs[] = {
+    {0x93F976AB,  1.0f},   // Grid phase 1 voltage [V]       / rb485.u_l_grid[0]
+    {0x7A9091EA,  1.0f},   // Grid phase 2 voltage [V]       / rb485.u_l_grid[1]
+    {0x21EE7CBB,  1.0f},   // Grid phase 3 voltage [V]       / rb485.u_l_grid[2]
     {0x27BE51D9,  1.0f},   // Grid power phase 1 [W]         / g_sync.p_ac_sc[0]
     {0xF5584F90,  1.0f},   // Grid power phase 2 [W]         / g_sync.p_ac_sc[1]
     {0xB221BCFA,  1.0f},   // Grid power phase 3 [W]         / g_sync.p_ac_sc[2]
     {0x91617C58,  1.0f},   // Total grid power [W]           / g_sync.p_ac_grid_sum_lp
     {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh] / energy.e_grid_feed_total
     {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]    / energy.e_grid_load_total
-    {0x1C4A665F,  1.0f},   // Grid frequency [Hz]            / grid_pll[0].f
+    {0x9558AD8A,  1.0f},   // Grid phase1 frequency [Hz]     / rb485.f_grid[0]
+    {0xFAE429C5,  1.0f},   // Grid phase2 frequency [Hz]     / rb485.f_grid[1]
+    {0x0104EB6A,  1.0f},   // Grid phase3 frequency [Hz]     / rb485.f_grid[2]
 };
 
 static_assert(ARRAY_SIZE(grid_value_ids) == ARRAY_SIZE(grid_rct_value_specs));
