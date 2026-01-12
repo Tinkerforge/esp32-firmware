@@ -1779,12 +1779,13 @@ static bool port_valid(uint16_t port)
 // returning 0 means no free port found
 static uint16_t find_next_free_port(uint16_t port)
 {
-    // the largest port we call this funtion with is 51825 so simply adding 100 is safe
-    while (!port_valid(port) && port < port + 100) {
+    // the largest port we call this function with is 51825 so simply adding 100 is safe
+    const uint16_t start_port = port;
+    while (!port_valid(port) && port < start_port + 100) {
         port++;
     }
 
-    if (port >= port + 100) {
+    if (port >= start_port + 100) {
         return 0;
     }
 
