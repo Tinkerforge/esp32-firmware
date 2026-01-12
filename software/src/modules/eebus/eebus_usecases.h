@@ -27,6 +27,7 @@ EVCC -> EV Commissioning and Configuration. Implemented according to EEBus_UC_TS
 EVSECC -> EVSE Commissioning and Configuration. Implemented according to EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.0.pdf
 LPC -> Limitation of Power Consumption. Implemented according to EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
 CEVC -> Coordinate EV Charging. Implemented according to EEBUS_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
+OPEV -> Overload Protection by EV Charging Current curtailment. Implemented According to EEBUS_UC_TS_OverloadProtectionByEVChargingCurrentCurtailment_V1.0.1b.pdf
 Sometimes the following references are used e.g. LPC-905, these refer to rules laid out in the spec and can be found in the according technical spec.
 */
 
@@ -48,8 +49,9 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
-#define EEBUS_ENABLE_MPC_USECASE
+//#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
+#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -168,6 +170,9 @@ public:
     static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
 
     // ElectricalConnection
+    inline static int evcemElectricalConnectionIdOffset = 0;
+    inline static int evccElectricalConnectionIdOffset = 10;
+    inline static int opevElectricalConnectionIdOffset = 20;
     static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
     static ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_list_data();
     static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
@@ -176,9 +181,15 @@ public:
     static DeviceDiagnosisStateDataType get_diagnosis_state_data();
 
     // Measurement
+    inline static int evcemMeasurementIdOffset = 0;
     static MeasurementDescriptionListDataType get_measurement_description_list_data();
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
+
+    // LoadControl
+    inline static int opevLoadcontrolIdOffset = 0;
+    static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
+    static LoadControlLimitListDataType get_load_control_limit_list_data();
 };
 /**
  * The basic Framework of a EEBUS Usecase.
@@ -414,7 +425,7 @@ public:
         return {FeatureTypeEnumType::Bill};
     }
 
-    [[nodiscard]] BillListDataType get_bill_list_data() const;
+    void get_bill_list_data(BillListDataType *data) const;
 
 private:
     struct BillEntry {
@@ -489,12 +500,12 @@ public:
     }
 
     // Generators for data types
-    [[nodiscard]] MeasurementDescriptionListDataType get_measurement_description_list() const;
-    [[nodiscard]] MeasurementConstraintsListDataType get_measurement_constraints() const;
-    [[nodiscard]] MeasurementListDataType get_measurement_list() const;
+    void get_measurement_description_list(MeasurementDescriptionListDataType *data) const;
+    void get_measurement_constraints(MeasurementConstraintsListDataType *data) const;
+    void get_measurement_list(MeasurementListDataType *data) const;
 
-    [[nodiscard]] ElectricalConnectionDescriptionListDataType get_electrical_connection_description() const;
-    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameters() const;
+    void get_electrical_connection_description(ElectricalConnectionDescriptionListDataType *data) const;
+    void get_electrical_connection_parameters(ElectricalConnectionParameterDescriptionListDataType *data) const;
 
 private:
     // Data held about the current charge
@@ -615,13 +626,13 @@ public:
     {
         return {FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Identification, FeatureTypeEnumType::DeviceClassification, FeatureTypeEnumType::ElectricalConnection};
     }
-    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_config_description() const;
-    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_config_list() const;
+    void get_device_config_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
+    void get_device_config_list(DeviceConfigurationKeyValueListDataType *data) const;
 
-    [[nodiscard]] IdentificationListDataType get_identification_list() const;
-    [[nodiscard]] DeviceClassificationManufacturerDataType get_device_classification_manufacturer() const;
-    [[nodiscard]] ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description() const;
-    [[nodiscard]] ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_values() const;
+    void get_identification_list(IdentificationListDataType *data) const;
+    void get_device_classification_manufacturer(DeviceClassificationManufacturerDataType *data) const;
+    void get_electrical_connection_parameter_description(ElectricalConnectionParameterDescriptionListDataType *data) const;
+    void get_electrical_connection_permitted_values(ElectricalConnectionPermittedValueSetListDataType *data) const;
 
     [[nodiscard]] DeviceDiagnosisStateDataType get_device_diagnosis_state() const;
 
@@ -697,8 +708,8 @@ public:
         return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::DeviceClassification};
     }
 
-    [[nodiscard]] DeviceDiagnosisStateDataType get_device_diagnosis_state() const;
-    [[nodiscard]] static DeviceClassificationManufacturerDataType get_device_classification_manufacturer();
+    void get_device_diagnosis_state(DeviceDiagnosisStateDataType *data) const;
+    static void get_device_classification_manufacturer(DeviceClassificationManufacturerDataType *data);
 
 private:
     // Server Data
@@ -781,13 +792,13 @@ public:
         return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Generic};
     }
 
-    [[nodiscard]] LoadControlLimitDescriptionListDataType get_loadcontrol_limit_description() const;
-    [[nodiscard]] LoadControlLimitListDataType get_loadcontrol_limit_list() const;
+    void get_loadcontrol_limit_description(LoadControlLimitDescriptionListDataType *data) const;
+    void get_loadcontrol_limit_list(LoadControlLimitListDataType *data) const;
 
-    [[nodiscard]] DeviceConfigurationKeyValueListDataType get_device_configuration_value() const;
-    [[nodiscard]] DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_description() const;
+    void get_device_configuration_value(DeviceConfigurationKeyValueListDataType *data) const;
+    void get_device_configuration_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
 
-    [[nodiscard]] ElectricalConnectionCharacteristicListDataType get_electrical_connection_characteristic() const;
+    void get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const;
 
     [[nodiscard]] DeviceDiagnosisHeartbeatDataType get_device_diagnosis_heartbeat_data() const;
 
@@ -931,7 +942,6 @@ private:
  * Actor: EV <br>
  * Features (Functions): TimeSeries (timeSeriesDescriptionListData, timeSeriesConstraintsListData, timeSeriesListData), IncentiveTable (incentiveTableDescriptionData, incentiveTableConstraintsData, incentiveTableData), DeviceDiagnosis (deviceDiagnosisHeartbeatData), ElectricalConnection (electricalConnectionCharacteristicListData)   <br>
 */
-
 class CevcUsecase final : public EebusUsecase
 {
 public:
@@ -1000,15 +1010,15 @@ public:
 private:
     // Functions
     // Timeseries Feature
-    [[nodiscard]] TimeSeriesDescriptionListDataType read_time_series_description() const;
-    [[nodiscard]] TimeSeriesConstraintsListDataType read_time_series_constraints() const;
-    [[nodiscard]] TimeSeriesListDataType read_time_series_list() const;
+    void read_time_series_description(TimeSeriesDescriptionListDataType *data) const;
+    void read_time_series_constraints(TimeSeriesConstraintsListDataType *data) const;
+    void read_time_series_list(TimeSeriesListDataType *data) const;
     MessageReturn write_time_series_list(HeaderType &header, SpineOptional<TimeSeriesListDataType> data, JsonObject response);
     // IncentiveTable Feature
-    [[nodiscard]] IncentiveTableDescriptionDataType read_incentive_table_description() const;
+    void read_incentive_table_description(IncentiveTableDescriptionDataType *data) const;
     MessageReturn write_incentive_table_description(HeaderType &header, SpineOptional<IncentiveTableDescriptionDataType> data, JsonObject response);
-    [[nodiscard]] IncentiveTableConstraintsDataType read_incentive_table_constraints() const;
-    [[nodiscard]] IncentiveTableDataType read_incentive_table_data() const;
+    void read_incentive_table_constraints(IncentiveTableConstraintsDataType *data) const;
+    void read_incentive_table_data(IncentiveTableDataType *data) const;
     MessageReturn write_incentive_table_data(HeaderType &header, SpineOptional<IncentiveTableDataType> data, JsonObject response);
 
     // Data held and transmitted
@@ -1027,7 +1037,6 @@ private:
 class MpcUsecase final : public EebusUsecase
 {
 public:
-
     [[nodiscard]] Usecases get_usecase_type() const override
     {
         return Usecases::MPC;
@@ -1054,9 +1063,46 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 };
-
 #endif
 
+#ifdef EEBUS_ENABLE_OPEV_USECASE
+/**
+ * The OpevUsecase as defined in EEBus UC TS - Overload Protection by EV Charging Current Curtailment V1.0.1b
+ * This should have the same entity address as other entities with the EV <br>
+ * Actor: EV <br>
+ * Features (Functions): LoadControl (loadControlLimitDescriptionListData, loadControlLimitListData),ElectricalConnection (electricalConnectionParameterDescriptionLostData)   <br>
+*/
+class OpevUsecase final : public EebusUsecase
+{
+public:
+    [[nodiscard]] Usecases get_usecase_type() const override
+    {
+        return Usecases::OPEV;
+    };
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
+    * @return
+    */
+    UseCaseInformationDataType get_usecase_information() override;
+
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::ElectricalConnection};
+    }
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    void get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data) const;
+    void get_load_control_limit_list_data(LoadControlLimitListDataType *data) const;
+
+    void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const;
+    void get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const;
+
+private:
+};
+#endif
 /**
  * The central Interface for EEBus UseCases.
  */
@@ -1124,6 +1170,9 @@ public:
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
     CevcUsecase coordinate_ev_charging{};
+#endif
+#ifdef EEBUS_ENABLE_OPEV_USECASE
+    OpevUsecase overload_protection_by_ev_charging_current_curtailment{};
 #endif
 
     std::vector<EebusUsecase *> usecase_list{};
