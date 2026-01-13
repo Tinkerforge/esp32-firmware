@@ -30,6 +30,7 @@
 #include <lwip/pbuf.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
+#include <esp_random.h>
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
 #include <sodium.h>
@@ -1134,11 +1135,12 @@ void RemoteAccess::register_events()
         if (connected->asBool()) {
             // Start task if not scheduled yet.
             if (!this->task_id) {
+                millis_t jitter = millis_t{esp_random() % 3000};
                 this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
                     if (!this->management_request_done && !this->management_auth_failed) {
                         this->resolve_management();
                     }
-                }, 30_s);
+                }, 30_s + jitter, 30_s + jitter);
             }
         } else {
             // Cancel task if currently scheduled.
