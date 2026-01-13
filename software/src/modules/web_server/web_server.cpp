@@ -936,8 +936,9 @@ int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
         chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
 
-        // "When you are finished sending all your chunks, you must call this function with buf_len as 0."
-        httpd_resp_send_chunk(req, nullptr, 0);
+        // When a send error ocurred, don't attempt to send a zero-length chunk to cleanly terminate the transfer.
+        // Abort the connection uncleanly instead, to tell the other side that data loss ocurred.
+        // We might not be able to get the zero-length chunk out anyway and would risk triggering a watchdog.
     }
     return result;
 }
