@@ -812,6 +812,9 @@ class Stage3:
             # Set meter voltages to voltages if there's no energy meter connected
             # (i.e. this is not a Pro): voltages are checked first.
             meter_voltages = voltages
+            # Also set meter phases to phases.
+            # This results in the same check being run twice below, which is fine(tm)
+            p_meter = p_type2
         else:
             print('Energy meter measured voltages as {0}'.format(meter_voltages), ' expecting ', p_meter)
 
