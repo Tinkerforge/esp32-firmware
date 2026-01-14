@@ -224,7 +224,7 @@ let x = {
                         <td>Additional meter values</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API Documentation</a></span> : undefined}</td>
+                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/en/docs/interfaces/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API Documentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>
