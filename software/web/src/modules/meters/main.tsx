@@ -1590,7 +1590,7 @@ export function init() {
 
         const value_ids = API.get_unchecked(`meters/${config.slot}/value_ids`);
         const values = API.get_unchecked(`meters/${config.slot}/values`);
-        let voltages_out_of_range: [string, number][] = [];
+        let voltages_out_of_range: [string, string][] = [];
 
         if (util.hasValue(value_ids) && value_ids.length > 0 && util.hasValue(values)) {
             let voltage_l1_n = values[value_ids.indexOf(MeterValueID.VoltageL1N)];
@@ -1598,15 +1598,15 @@ export function init() {
             let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
 
             if (util.hasValue(voltage_l1_n) && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L1', voltage_l1_n]);
+                voltages_out_of_range.push(['L1', util.toLocaleFixed(voltage_l1_n, 1)]);
             }
 
             if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L2', voltage_l2_n]);
+                voltages_out_of_range.push(['L2', util.toLocaleFixed(voltage_l2_n, 1)]);
             }
 
             if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L3', voltage_l3_n]);
+                voltages_out_of_range.push(['L3', util.toLocaleFixed(voltage_l3_n, 1)]);
             }
         }
 
