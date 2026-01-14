@@ -40,7 +40,7 @@ let x = {
                 <tbody>
                     <tr>
                         <td>0</td>
-                        <td>Modbus table version</td>
+                        <td>Register table version</td>
                         <td>uint32</td>
                         <td>---</td>
                         <td>Current version: 4</td>
@@ -68,15 +68,15 @@ let x = {
                     </tr>
                     <tr>
                         <td>8</td>
-                        <td>Firmware build timestamp</td>
+                        <td>Firmware timestamp</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Unix timestamp of the point in time when the firmware was built. For example 0x66558ADE for firmware
-                            2.4.0+66558ade (1716882142 in decimal), i.e. 04/28/2024 07:42:22 UTC.</td>
+                        <td>Unix timestamp of the time when the firmware was built. For example 0x66558ADE for firmware
+                            2.4.0+66558ade (1716882142 in decimal), corresponding to May 28 2024 07:42:22 UTC.</td>
                     </tr>
                     <tr>
                         <td>10</td>
-                        <td>Box ID</td>
+                        <td>Charger ID</td>
                         <td>uint32</td>
                         <td>---</td>
                         <td>Decoded form of the base58 UID used for the default hostname, SSID, etc. For example 185460 for X8A.</td>
@@ -131,7 +131,7 @@ let x = {
                         <td>Start timestamp (min)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>A unix timestamp in <strong>minutes</strong> that indices the start of the current charge. 0 if there was no
+                        <td>A Unix timestamp in <strong>minutes</strong> indicating the start time of the current charge. 0 if there was no
                             time sync available.</td>
                     </tr>
                     <tr>
@@ -139,7 +139,7 @@ let x = {
                         <td>Charging time (s)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Duration of the current charge in seconds. Available even without NTP sync.</td>
+                        <td>Duration of the current charge in seconds. Available even without time synchronization.</td>
                     </tr>
                     <tr>
                         <td>1010</td>
@@ -178,16 +178,16 @@ let x = {
                         <td>
                             <ul>
                                 <li>0: No meter available</li>
-                                <li>1: SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP1 only)</span> : undefined}</li>
-                                <li>2: SDM630</li>
-                                <li>3: SDM72 V2</li>
-                                <li>4: SDM72CTM</li>
-                                <li>5: SDM630MCT V2</li>
-                                <li>6: DSZ15DZMOD</li>
-                                <li>7: DEM4A</li>
-                                <li>8: DMED341MID7ER</li>
-                                <li>9: DSZ16DZE</li>
-                                <li>10: WM3M4C</li>
+                                <li>1: Eastron SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP1 only)</span> : undefined}</li>
+                                <li>2: Eastron SDM630</li>
+                                <li>3: Eastron SDM72 V2</li>
+                                <li>4: Eastron SDM72CTM</li>
+                                <li>5: Eastron SDM630MCT V2</li>
+                                <li>6: Eltako DSZ15DZMOD</li>
+                                <li>7: YTL DEM4A</li>
+                                <li>8: Lovato DMED341MID7ER</li>
+                                <li>9: Eltako DSZ16DZE</li>
+                                <li>10: Iskra WM3M4C</li>
                             </ul>
                         </td>
                     </tr>
@@ -203,35 +203,35 @@ let x = {
                         <td>Absolute energy (kWh)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The charged energy since manufacturing of the energy meter.</td>
+                        <td>The energy charged since manufacturing of the energy meter.</td>
                     </tr>
                     <tr>
                         <td>2006</td>
                         <td>Relative energy (kWh)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The charged energy since the last reset (see holding register 2000).</td>
+                        <td>The energy charged since the last reset (see holding register 2000).</td>
                     </tr>
                     <tr>
                         <td>2008</td>
                         <td>Energy this charge</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The charged energy since the start of the current charge.</td>
+                        <td>The energy charged since the start of the current charge.</td>
                     </tr>
                     <tr>
                         <td>2100 to 2268</td>
-                        <td>More meter values</td>
+                        <td>Additional meter values</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
                         <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API Documentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>
-                        <td>Phases connected</td>
+                        <td>Connected phases</td>
                         <td>uint32</td>
                         <td>phase_switch</td>
-                        <td>The number of phases connected to the vehicle</td>
+                        <td>The number of phases connected to the vehicle (1 or 3).</td>
                     </tr>
                     <tr>
                         <td>3102</td>
@@ -239,7 +239,7 @@ let x = {
                         <td>uint32</td>
                         <td>phase_switch</td>
                         <td>
-                            The current state of the phase switch control:
+                            Current state of the phase switch control:
                             <ul>
                                 <li>0: Ready to switch phases.</li>
                                 <li>1: Phase switch disabled in settings.</li>
@@ -261,22 +261,22 @@ let x = {
                         <td>uint32</td>
                         <td>nfc</td>
                         <td>Time in milliseconds since the last NFC tag was seen. An age less than 1000 ms usually indicates that the
-                            tag is currently held to the charger.</td>
+                            tag is currently being held to the charger.</td>
                     </tr>
                     <tr>
-                        <td>4012 bis 4013</td>
+                        <td>4012 to 4013</td>
                         <td>Type of the last NFC tag</td>
                         <td>uint8 (4x)</td>
                         <td>nfc</td>
                         <td>
-                            Type of the last seen NFC tag as ASCII coded hex string.
+                            Type of the last seen NFC tag as ASCII-encoded hex string.
                             <ul>
                                 <li>"0000": Mifare Classic</li>
-                                <li>"0001": NFC Forum Typ 1</li>
-                                <li>"0002": NFC Forum Typ 2</li>
-                                <li>"0003": NFC Forum Typ 3</li>
-                                <li>"0004": NFC Forum Typ 4</li>
-                                <li>"0005": NFC Forum Typ 5</li>
+                                <li>"0001": NFC Forum Type 1</li>
+                                <li>"0002": NFC Forum Type 2</li>
+                                <li>"0003": NFC Forum Type 3</li>
+                                <li>"0004": NFC Forum Type 4</li>
+                                <li>"0005": NFC Forum Type 5</li>
                             </ul>
                         </td>
                     </tr>
@@ -300,7 +300,7 @@ let x = {
                         <td>Charge release</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td><strong>Deprecated. Use coil 1000 instead!</strong> 0 to block charging; a value not equal to 0 to allow
+                        <td><strong>Deprecated. Use coil 1000 instead!</strong> 0 to block charging; a value other than 0 to allow
                             charging.</td>
                     </tr>
                     <tr>
@@ -317,8 +317,8 @@ let x = {
                         <td>evse</td>
                         <td>
                             Controls the LED in the charger's front button. <strong>Blink pattern and duration must be written with a single
-                            Modbus command! To also set the blink color{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP3 only)</span> : undefined},
-                            registers 1004 to and including 1013 must be written with a single command.</strong> The setting "Status LED control"
+                            Modbus command! To also set the color{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP3 only)</span> : undefined},
+                            registers 1004 up to and including 1013 must be written with a single command.</strong> The setting "Status LED control"
                             must be enabled to be able to control the LED.
 
                             <ul>
@@ -329,7 +329,7 @@ let x = {
                                 <li>1001: known NFC tag seen</li>
                                 <li>1002: unknown NFC tag seen</li>
                                 <li>1003: NFC tag required</li>
-                                <li>2001 to 2010: blink 1 to 10 times</li>
+                                <li>2001 to 2010: Error blink 1 to 10 times</li>
                             </ul>
                         </td>
                     </tr>
@@ -338,7 +338,7 @@ let x = {
                         <td>Front LED blink duration</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>The duration in milliseconds that the blink pattern set in register 1004 shall be shown. At most 65536 ms
+                        <td>The duration in milliseconds for which the blink pattern set in register 1004 shall be shown. At most 65536 ms
                             are supported.</td>
                     </tr>
                     <tr>
@@ -346,21 +346,21 @@ let x = {
                         <td>Front LED blink hue</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Hue of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 359 (°) are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
+                        <td>Hue of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color space</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 359 (°) are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1010</td>
                         <td>Front LED blink saturation</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Saturation of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
+                        <td>Saturation of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color space</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1012</td>
                         <td>Front LED blink value</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Value of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
+                        <td>Value of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color space</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>2000</td>
@@ -384,24 +384,24 @@ let x = {
                         <td>
                             By writing the registers 4000 up to and including 4013 a NFC tag can be injected (as if using the API nfc/inject_tag):
                             <ul>
-                                <li>Register 4000 to 4009: The tag's ID as ASCII coded hex string.</li>
+                                <li>Register 4000 to 4009: The tag's ID as ASCI-encoded hex string.</li>
                                 <li>
                                     Register 4010 and 4011:
                                     <ul>
-                                        <li>"0001": The injected tag can only a start charge (as if using the API nfc/inject_tag_start)</li>
-                                        <li>"0002": The injected tag can only a stop charge (as if using the API nfc/inject_tag_stop)</li>
+                                        <li>"0001": The injected tag can only start a charge (as if using the API nfc/inject_tag_start)</li>
+                                        <li>"0002": The injected tag can only stop a charge (as if using the API nfc/inject_tag_stop)</li>
                                         <li>all other values: The injected tag can start and stop a charge (as if using the API nfc/inject_tag)</li>
                                     </ul>
                                 </li>
                                 <li>
-                                    Register 4012 and 4013: The tag's type as ASCII coded hex string:
+                                    Register 4012 and 4013: The tag's type as ASCI-encoded hex string:
                                     <ul>
                                         <li>"0000": Mifare Classic</li>
-                                        <li>"0001": NFC Forum Typ 1</li>
-                                        <li>"0002": NFC Forum Typ 2</li>
-                                        <li>"0003": NFC Forum Typ 3</li>
-                                        <li>"0004": NFC Forum Typ 4</li>
-                                        <li>"0005": NFC Forum Typ 5</li>
+                                        <li>"0001": NFC Forum Type 1</li>
+                                        <li>"0002": NFC Forum Type 2</li>
+                                        <li>"0003": NFC Forum Type 3</li>
+                                        <li>"0004": NFC Forum Type 4</li>
+                                        <li>"0005": NFC Forum Type 5</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -414,7 +414,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>4010 to 4011</td>
-                        <td>Usage of the NFC tag to inject</td>
+                        <td>Allowed action of the NFC tag to inject</td>
                         <td>uint8 (4x)</td>
                         <td>nfc</td>
                         <td>See description of holding registers 4000 to 4009.</td>
@@ -447,7 +447,7 @@ let x = {
                         <td>bool</td>
                         <td>---</td>
                         <td>An energy meter and hardware to read it via RS485 is available. This feature will bet set if an energy meter
-                            is read successfully at least once via Modbus.</td>
+                            has been read successfully at least once via Modbus.</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -581,7 +581,7 @@ let x = {
                         <td>bool</td>
                         <td>evse</td>
                         <td>false or 0 to block charging. true or 1 to allow charging. Sets the same charge release that is used via the
-                            web interface, the API or (depending on the button configuration) the button.</td>
+                            web interface, the evse/[start/stop]_charging API or (depending on the button configuration) the button.</td>
                     </tr>
                     <tr>
                         <td>1100</td>

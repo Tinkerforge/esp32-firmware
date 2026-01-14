@@ -147,8 +147,7 @@ let x = {
                         <td>Erlaubter Ladestrom</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Maximal erlaubter Ladestrom, der dem Fahrzeug zur Verfügung gestellt wird. Dieser Strom ist das Minimum
-                            der Stromgrenzen aller Ladeslots.</td>
+                        <td>Maximal erlaubter Ladestrom, der dem Fahrzeug zur Verfügung gestellt wird. Minimum aller eaktiven Ladestromgrenzen.</td>
                     </tr>
                     <tr>
                         <td>1012 bis 1050</td>
@@ -180,22 +179,22 @@ let x = {
                         <td>
                             <ul>
                                 <li>0: Kein Stromzähler verfügbar</li>
-                                <li>1: SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (nur WARP1)</span> : undefined}</li>
-                                <li>2: SDM630</li>
-                                <li>3: SDM72 V2</li>
-                                <li>4: SDM72CTM</li>
-                                <li>5: SDM630MCT V2</li>
-                                <li>6: DSZ15DZMOD</li>
-                                <li>7: DEM4A</li>
-                                <li>8: DMED341MID7ER</li>
-                                <li>9: DSZ16DZE</li>
-                                <li>10: WM3M4C</li>
+                                <li>1: Eastron SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (nur WARP1)</span> : undefined}</li>
+                                <li>2: Eastron SDM630</li>
+                                <li>3: Eastron SDM72 V2</li>
+                                <li>4: Eastron SDM72CTM</li>
+                                <li>5: Eastron SDM630MCT V2</li>
+                                <li>6: Eltako DSZ15DZMOD</li>
+                                <li>7: YTL DEM4A</li>
+                                <li>8: Lovato DMED341MID7ER</li>
+                                <li>9: Eltako DSZ16DZE</li>
+                                <li>10: Iskra WM3M4C</li>
                             </ul>
                         </td>
                     </tr>
                     <tr>
                         <td>2002</td>
-                        <td>Ladeleistung (W)</td>
+                        <td>Leistung (W)</td>
                         <td>float32</td>
                         <td>meter</td>
                         <td>Die aktuelle Ladeleistung in Watt.</td>
@@ -262,7 +261,7 @@ let x = {
                         <td>Alter des letzten NFC-Tags</td>
                         <td>uint32</td>
                         <td>nfc</td>
-                        <td>Zeit in Millisekunden seitdem das zuletzt erkannten NFC-Tag das letzte mal erkannt wurde. Zeiten &lt;
+                        <td>Zeit in Millisekunden seitdem das zuletzt erkannten NFC-Tag das letzte mal erkannt wurde. Zeiten kleiner
                             1000 ms bedeuten typischerweise, dass das Tag gerade an die Wallbox gehalten wird.</td>
                     </tr>
                     <tr>
@@ -417,7 +416,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>4010 bis 4011</td>
-                        <td>Verwendungszweck des vorgetäuschten NFC-Tags</td>
+                        <td>Erlaubte Aktion des vorgetäuschten NFC-Tags</td>
                         <td>uint8 (4x)</td>
                         <td>nfc</td>
                         <td>Siehe Beschreibung der Holding Register 4000 bis 4009.</td>
@@ -471,7 +470,7 @@ let x = {
                         <td>Feature "phase_switch" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Hardware und Konfiguration erlauben eine Phasenumschaltung.</td>
+                        <td>Hardware und Konfiguration erlauben eine Umschaltung zwischen ein- und dreiphasigem Laden.</td>
                     </tr>
                     <tr>
                         <td>5</td>
