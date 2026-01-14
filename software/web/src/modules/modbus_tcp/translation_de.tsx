@@ -147,7 +147,7 @@ let x = {
                         <td>Erlaubter Ladestrom</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Maximal erlaubter Ladestrom, der dem Fahrzeug zur Verfügung gestellt wird. Minimum aller eaktiven Ladestromgrenzen.</td>
+                        <td>Maximal erlaubter Ladestrom, der dem Fahrzeug zur Verfügung gestellt wird. Minimum aller aktiven Ladestromgrenzen.</td>
                     </tr>
                     <tr>
                         <td>1012 bis 1050</td>

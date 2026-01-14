@@ -47,21 +47,21 @@ let x = {
                     </tr>
                     <tr>
                         <td>2</td>
-                        <td>Firmware Version Major</td>
+                        <td>Firmware version major</td>
                         <td>uint32</td>
                         <td>---</td>
                         <td>For example 2 for firmware 2.4.0+66558ade</td>
                     </tr>
                     <tr>
                         <td>4</td>
-                        <td>Firmware Version Minor</td>
+                        <td>Firmware version minor</td>
                         <td>uint32</td>
                         <td>---</td>
                         <td>For example 4 for firmware 2.4.0+66558ade</td>
                     </tr>
                     <tr>
                         <td>6</td>
-                        <td>Firmware Version Patch</td>
+                        <td>Firmware version patch</td>
                         <td>uint32</td>
                         <td>---</td>
                         <td>For example 0 for firmware 2.4.0+66558ade</td>
@@ -136,7 +136,7 @@ let x = {
                     </tr>
                     <tr>
                         <td>1008</td>
-                        <td>Charging time (s)</td>
+                        <td>Charging duration (s)</td>
                         <td>uint32</td>
                         <td>evse</td>
                         <td>Duration of the current charge in seconds. Available even without time synchronization.</td>
@@ -196,7 +196,7 @@ let x = {
                         <td>Power (W)</td>
                         <td>float32</td>
                         <td>meter</td>
-                        <td>The current charging power in watt.</td>
+                        <td>The current charging power in watts.</td>
                     </tr>
                     <tr>
                         <td>2004</td>
