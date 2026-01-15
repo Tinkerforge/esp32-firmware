@@ -10,6 +10,8 @@ let x = {
         "content": {
             "batteries": "Battery Control",
 
+            "experimental": "The battery control is experimental and subject to change.",
+
             "battery": /*SFN*/(slot: number|"?") => "Battery #" + slot/*NF*/,
 
             "test_warnings": "Tests",

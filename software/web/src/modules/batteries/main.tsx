@@ -1181,6 +1181,8 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
         return (
             <SubPage name="batteries" colClasses="col-xl-10">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <Alert variant="warning"> {__("batteries.content.experimental")}</Alert>
+
                     {active_test_modes.length > 0 ?
                         <FormRow label={__("batteries.content.test_warnings")}>
                             {active_test_modes.map((battery_slot_str) => {

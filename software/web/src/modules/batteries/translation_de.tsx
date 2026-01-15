@@ -10,6 +10,8 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
+            "experimental": "Die Speichersteuerung ist experimentell; Änderungen vorbehalten.",
+
             "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/,
 
             "test_warnings": "Tests",
