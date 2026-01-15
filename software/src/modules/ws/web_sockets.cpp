@@ -716,7 +716,7 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
 #if MODULE_WATCHDOG_AVAILABLE()
     this->watchdog_handle = watchdog.add(
         "websocket_worker",
-        "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
+        "WebSocket worker timed out. Web server deadlocked or busy?",
         WEB_SERVER_DEAD_TIMEOUT,
         WEB_SERVER_DEAD_TIMEOUT,
         true); // Force the initial deadline to WEB_SERVER_DEAD_TIMEOUT (currently 5 minutes). The firmware is accepted as good after 7 minutes.
