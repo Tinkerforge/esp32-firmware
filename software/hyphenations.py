@@ -1008,6 +1008,9 @@ de_hyph = [
     "gleich-zei-tig",
     "Pa-ket-grö-ße",
     "öf-fent-li-cher",
+    "Strom-preis-plan",
+    "Schnell-la-dung",
+
 ]
 
 en_hyph = [
