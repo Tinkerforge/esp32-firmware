@@ -81,6 +81,7 @@ interface RulesEditorState {
 
 interface RulesEditorProps {
     rules: RuleConfig[];
+    active_rule: number;
     on_rules: (rules: RuleConfig[]) => void;
 }
 
@@ -477,6 +478,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         this.props.on_rules(this.props.rules.filter((r, k) => k !== i));
                         return true;
                     },
+                    indicator: this.props.active_rule == i ? "primary" : undefined,
                 }
             })}
             addEnabled={this.props.rules.length < options.BATTERY_CONTROL_MAX_RULES_PER_TYPE}
@@ -1126,6 +1128,8 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
         const battery_control_state = API.get("battery_control/state");
+        let active_charge_rule = battery_control_state.active_charge_rule;
+        let active_discharge_rule = battery_control_state.active_charge_rule;
         let status_charge: number;
         let status_discharge: number;
 
@@ -1158,6 +1162,9 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                 status_charge = -1;
                 status_discharge = -1;
         }
+//#else
+        let active_charge_rule: number = null;
+        let active_discharge_rule: number = null;
 //#endif
 
         let active_test_modes = Object.keys(this.state.test_modes).filter((battery_slot_str) => this.state.test_modes[parseInt(battery_slot_str)] != BatteryMode.None);
@@ -1455,7 +1462,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
                     <FormSeparator heading={__("batteries.content.rules_charge")} />
                     <div class="form-group">
-                        <RulesEditor rules={this.state.rules_charge} on_rules={(rules: RuleConfig[]) => {
+                        <RulesEditor rules={this.state.rules_charge} active_rule={active_charge_rule} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_charge: rules});
                             this.setDirty(true);
                         }} />
@@ -1463,7 +1470,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 
                     <FormSeparator heading={__("batteries.content.rules_discharge")} />
                     <div class="form-group">
-                        <RulesEditor rules={this.state.rules_discharge} on_rules={(rules: RuleConfig[]) => {
+                        <RulesEditor rules={this.state.rules_discharge} active_rule={active_discharge_rule} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_discharge: rules});
                             this.setDirty(true);
                         }} />
