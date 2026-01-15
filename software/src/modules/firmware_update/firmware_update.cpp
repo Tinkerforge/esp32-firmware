@@ -1025,7 +1025,7 @@ int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *pa
         return -1;
     }
 
-    if (ota_data.ota_state != old_ota_state) {
+    if (old_ota_state != ESP_OTA_IMG_UNDEFINED && ota_data.ota_state != old_ota_state) {
         return 0;
     }
 
