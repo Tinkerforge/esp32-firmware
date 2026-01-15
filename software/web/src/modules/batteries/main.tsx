@@ -1129,7 +1129,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
         const battery_control_state = API.get("battery_control/state");
         let active_charge_rule = battery_control_state.active_charge_rule;
-        let active_discharge_rule = battery_control_state.active_charge_rule;
+        let active_discharge_rule = battery_control_state.active_discharge_rule;
         let status_charge: number;
         let status_discharge: number;
 
