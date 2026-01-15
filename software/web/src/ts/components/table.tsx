@@ -48,6 +48,7 @@ export interface TableRow {
     onEditImport?: (json: string) => Promise<void>;
     onEditExport?: () => Promise<string>;
     editExportBasename?: string;
+    indicator?: string;
 }
 
 export interface TableProps {
@@ -125,6 +126,7 @@ export class Table extends Component<TableProps, TableState> {
                     {props.columnNames.filter((name) => name.length > 0).length > 0 ?
                         <thead>
                             <tr>
+                                <th class="p-0"></th>
                                 {props.columnNames.map((columnName) => (
                                     <th scope="col" style="vertical-align: middle;">{columnName}</th>
                                 ))}
@@ -139,6 +141,7 @@ export class Table extends Component<TableProps, TableState> {
                     <tbody>
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
+                                <td class="p-0" style={row.indicator !== undefined ? `min-width: 5px; background-color: var(--${row.indicator})` : ""}></td>
                                 {row.columnValues.map((value, k) => (
                                     <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                         {row.extraValue && k == 0 ?
@@ -180,6 +183,7 @@ export class Table extends Component<TableProps, TableState> {
                             </tr>
                             {row.extraValue ?
                                 <tr key={row.extraKey} class="table-extra-value">
+                                    <td class="p-0"></td>
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
                                         <Collapse in={state.showRowExtra[i]}>
                                             <div>
@@ -192,6 +196,7 @@ export class Table extends Component<TableProps, TableState> {
                         </>)}
                         {props.onAddShow ?
                         <tr>
+                            <td class="p-0"></td>
                             <td colSpan={props.columnNames.length} style={"vertical-align: middle; width: 100%;" + (props.rows.length == 0 ? " border-top: none;" : "")}>
                                 {props.addMessage}
                             </td>
@@ -218,7 +223,7 @@ export class Table extends Component<TableProps, TableState> {
                         let needs_body = card_fields.length > 0 || (row.extraValue && state.showRowExtra[i]);
 
                         return <><Card className="mb-3">
-                        <div class="card-header d-flex justify-content-between align-items-center p-2d5" style={needs_body ? "" : "border-bottom: 0;"}>
+                        <div class={"card-header d-flex justify-content-between align-items-center p-2d5" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">
                                 {row.extraValue ?
                                     <span class="row mx-n1 align-items-center">
