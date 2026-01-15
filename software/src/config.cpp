@@ -956,46 +956,57 @@ size_t Config::string_length() const
     return Config::apply_visitor(string_length_visitor{}, this->value);
 }
 
-DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const
+Config::to_json_result Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     // Asserts checked in ::json_size.
-    DynamicJsonDocument doc(json_size(true));
+    const auto capacity_needed = json_size(true);
+
+    to_json_result result = {
+        .doc                    = DynamicJsonDocument{capacity_needed},
+        .failed_allocation_size = 0,
+    };
+
+    // Check for allocation failure
+    if (result.doc.capacity() < capacity_needed) {
+        result.failed_allocation_size = capacity_needed;
+        return result;
+    }
 
     JsonVariant var;
     if (is<Config::ConfObject>()) {
-        var = doc.to<JsonObject>();
+        var = result.doc.to<JsonObject>();
     } else if (is<Config::ConfArray>() || is<Config::ConfUnion>() || is<Config::ConfTuple>()) {
-        var = doc.to<JsonArray>();
+        var = result.doc.to<JsonArray>();
     } else {
-        var = doc.as<JsonVariant>();
+        var = result.doc.as<JsonVariant>();
     }
     Config::apply_visitor(::to_json{var, keys_to_censor, keys_to_censor_len}, this->value);
-    return doc;
+    return result;
 }
 
 void Config::save_to_file(File &file)
 {
     // Asserts checked in ::to_json.
-    auto doc = this->to_json(nullptr, 0);
+    to_json_result result = this->to_json(nullptr, 0);
 
-    if (doc.overflowed()) {
-        auto capacity = doc.capacity();
-        if (capacity == 0) {
-            logger.printfln("JSON doc overflow while writing file %s! Doc capacity is zero but needed %u.", file.name(), json_size(false));
-        } else {
-            logger.printfln("JSON doc overflow while writing file %s! Doc capacity is %u. Truncated doc follows.", file.name(), capacity);
-
-            String str;
-            serializeJson(doc, str);
-            char *wbuffer = str.begin();
-            size_t len = str.length();
-
-            // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
-            wbuffer[len] = '\n';
-            logger.print_plain(wbuffer, len + 1);
-        }
+    if (result.failed_allocation_size > 0) {
+        logger.printfln("JSON doc allocation failure while writing file %s; needed %u.", file.name(), result.failed_allocation_size);
+        return; // Don't wipe existing file.
     }
-    serializeJson(doc, file);
+
+    if (result.doc.overflowed()) {
+        logger.printfln("JSON doc overflow while writing file %s! Doc capacity is %u. Truncated doc follows.", file.name(), result.doc.capacity());
+
+        String str;
+        serializeJson(result.doc, str);
+        char *wbuffer = str.begin();
+        size_t len = str.length();
+
+        // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
+        wbuffer[len] = '\n';
+        logger.print_plain(wbuffer, len + 1);
+    }
+    serializeJson(result.doc, file);
 }
 
 void Config::write_to_stream(Print &output)
@@ -1006,26 +1017,26 @@ void Config::write_to_stream(Print &output)
 void Config::write_to_stream_except(Print &output, const char *const *keys_to_censor, size_t keys_to_censor_len)
 {
     // Asserts checked in ::to_json.
-    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
+    to_json_result result = this->to_json(keys_to_censor, keys_to_censor_len);
 
-    if (doc.overflowed()) {
-        auto capacity = doc.capacity();
-        if (capacity == 0) {
-            logger.printfln("JSON doc overflow while writing to stream! Doc capacity is zero but needed %u.", json_size(false));
-        } else {
-            logger.printfln("JSON doc overflow while writing to stream! Doc capacity is %u. Truncated doc follows.", capacity);
-
-            String str;
-            serializeJson(doc, str);
-            char *wbuffer = str.begin();
-            size_t len = str.length();
-
-            // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
-            wbuffer[len] = '\n';
-            logger.print_plain(wbuffer, len + 1);
-        }
+    if (result.failed_allocation_size > 0) {
+        logger.printfln("JSON doc allocation failure while writing to stream; needed %u.", result.failed_allocation_size);
+        return; // Nothing to output.
     }
-    serializeJson(doc, output);
+
+    if (result.doc.overflowed()) {
+        logger.printfln("JSON doc overflow while writing to stream! Doc capacity is %u. Truncated doc follows.", result.doc.capacity());
+
+        String str;
+        serializeJson(result.doc, str);
+        char *wbuffer = str.begin();
+        size_t len = str.length();
+
+        // Overwrite zero-termination with newline. This is safe because print_plain doen't require termination and the container String is discarded afterwards.
+        wbuffer[len] = '\n';
+        logger.print_plain(wbuffer, len + 1);
+    }
+    serializeJson(result.doc, output);
 }
 
 String Config::to_string() const
@@ -1036,57 +1047,59 @@ String Config::to_string() const
 String Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len) const
 {
     // Asserts checked in ::to_json.
-    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
+    to_json_result result = this->to_json(keys_to_censor, keys_to_censor_len);
 
-    String result;
-    serializeJson(doc, result);
+    String str;
+
+    if (result.failed_allocation_size > 0) {
+        logger.printfln("JSON doc allocation failure while converting to string; needed %u.", result.failed_allocation_size);
+        return str; // Nothing to convert.
+    }
+
+    serializeJson(result.doc, str);
 
     // Check for overflow after serializing: Allows to print truncated doc.
-    if (doc.overflowed()) {
-        auto capacity = doc.capacity();
-        if (capacity == 0) {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
-        } else {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
+    if (result.doc.overflowed()) {
+        logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", result.doc.capacity());
 
-            char *wbuffer = result.begin();
-            size_t len = result.length();
+        char *wbuffer = str.begin();
+        const size_t len = str.length();
 
-            // Temporarily overwrite zero-termination with newline, to avoid copying the whole string to add the newline. This is safe because print_plain doesn't require termination.
-            wbuffer[len] = '\n';
-            logger.print_plain(wbuffer, len + 1);
-            wbuffer[len] = 0;
-        }
+        // Temporarily overwrite zero-termination with newline, to avoid copying the whole string to add the newline. This is safe because print_plain doesn't require termination.
+        wbuffer[len] = '\n';
+        logger.print_plain(wbuffer, len + 1);
+        wbuffer[len] = 0;
     }
-    return result;
+    return str;
 }
 
 void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_censor_len, StringWriter *sw) const
 {
     // Asserts checked in ::to_json.
-    auto doc = this->to_json(keys_to_censor, keys_to_censor_len);
+    to_json_result result = this->to_json(keys_to_censor, keys_to_censor_len);
+
+    if (result.failed_allocation_size > 0) {
+        logger.printfln("JSON doc allocation failure while converting into StringWriter; needed %u.", result.failed_allocation_size);
+        return; // Nothing to convert.
+    }
+
     char *ptr = sw->getRemainingPtr();
 
     // serializeJson only adds the null terminator if there is enough room in the buffer.
     // To detect truncation, allow writing one byte more than what is still remaining.
     // StringWriter always keeps one byte extra to be able to null-terminate, so writing one byte extra is safe.
     auto remaining_before = sw->getRemainingLength();
-    size_t written = serializeJson(doc, ptr, sw->getRemainingLength() + 1);
+    size_t written = serializeJson(result.doc, ptr, sw->getRemainingLength() + 1);
 
     // If serializeJson has written the extra byte from above, the output is truncated.
     bool truncated = written == remaining_before + 1;
 
     sw->setLength(sw->getLength() + written);
 
-    if (doc.overflowed()) {
-        auto capacity = doc.capacity();
-        if (capacity == 0) {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is zero but needed %u.", json_size(false));
-        } else {
-            logger.printfln("JSON doc overflow while converting to string! Doc capacity is %u. Truncated doc follows.", capacity);
-            logger.print_plain(ptr, written);
-            logger.print_plain("\n", 1);
-        }
+    if (result.doc.overflowed()) {
+        logger.printfln("JSON doc overflow while converting into StringWriter! Doc capacity is %u. Truncated doc follows.", result.doc.capacity());
+        logger.print_plain(ptr, written);
+        logger.print_plain("\n", 1);
     }
 
     if (truncated) {

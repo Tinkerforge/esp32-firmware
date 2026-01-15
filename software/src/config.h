@@ -1155,7 +1155,12 @@ private:
         esp_system_abort("Can't fill array, Config is not an array or tuple");
     }
 
-    DynamicJsonDocument to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
+    struct to_json_result {
+        DynamicJsonDocument doc;
+        size_t failed_allocation_size;
+    };
+
+    to_json_result to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const;
 
 public:
     size_t fillFloatArray(float *arr, size_t elements);
