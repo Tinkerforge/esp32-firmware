@@ -121,7 +121,7 @@ export class Table extends Component<TableProps, TableState> {
     render(props: TableProps, state: TableState) {
         return (
             <>
-                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`} style={props.invalid ? "border-color: red;" : undefined}><Card.Body style="padding: 0;">
+                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`} style={props.invalid ? "border-color: red;" : undefined}><Card.Body style="padding: 0; overflow-x: auto;">
                 <table class="table" style="font-size: 1rem; margin-bottom: 0;">
                     {props.columnNames.filter((name) => name.length > 0).length > 0 ?
                         <thead>
