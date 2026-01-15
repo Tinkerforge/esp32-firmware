@@ -628,6 +628,29 @@ def find_module_space(modules, name_space):
 
     return None, -1
 
+def get_finalized_list(list_name):
+    injections = {}
+
+    for line in env.GetProjectOption(list_name + '_injections').splitlines():
+        placeholder, replacements = line.split(':', 1)
+        placeholder = placeholder.strip()
+        replacements = [x.strip() for x in replacements.strip().split(',')]
+
+        injections.setdefault(placeholder, []).extend(replacements)
+
+    entries = []
+
+    for entry in env.GetProjectOption(list_name).splitlines():
+        entry = entry.strip()
+        m = re.match(r'^<([^>]+)>$', entry)
+
+        if m == None:
+            entries.append(entry)
+        else:
+            entries += injections.get(m.group(1), [])
+
+    return entries
+
 def preprocess_web(frontend_modules_under):
     with tfutil.ChangedDirectory('web'):
         try:
@@ -1077,7 +1100,7 @@ def main():
     with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'w', encoding='utf-8') as f:
         f.write(firmware_basename)
 
-    frontend_modules = [util.FlavoredName(x).get() for x in ['Web Server'] + env.GetProjectOption("custom_frontend_modules").splitlines()]
+    frontend_modules = [util.FlavoredName(x).get() for x in ['Web Server'] + get_finalized_list('custom_frontend_modules')]
 
     if nightly:
         for frontend_module in frontend_modules:
@@ -1106,7 +1129,7 @@ def main():
             sys.exit(1)
 
     frontend_components = []
-    for entry in env.GetProjectOption("custom_frontend_components").splitlines():
+    for entry in get_finalized_list('custom_frontend_components'):
         m = re.match(r'^\s*([^|\$]+)(?:\s*\|\s*([^|\$]+))?(?:\s*\$\s*(Open|Close))?\s*$', entry)
 
         if m == None:
@@ -1138,7 +1161,7 @@ def main():
             frontend_components.append(FrontendComponent(module, component, None))
 
     frontend_status_components = []
-    for entry in env.GetProjectOption("custom_frontend_status_components").splitlines():
+    for entry in get_finalized_list('custom_frontend_status_components'):
         parts = [x.strip() for x in entry.split('|')]
 
         if len(parts) == 1:
@@ -1168,7 +1191,7 @@ def main():
     excluded_backend_modules = list(os.listdir('src/modules'))
     # The order 'Task Scheduler', 'Event Log', 'API' must be exactly this one:
     # API::setup migrates the config and expects that tasks can be scheduled and the logger is initialized
-    backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + env.GetProjectOption("custom_backend_modules").splitlines()]
+    backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + get_finalized_list('custom_backend_modules')]
 
     if nightly:
         for backend_module in backend_modules:
