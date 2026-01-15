@@ -977,97 +977,91 @@ void EvcemUsecase::update_constraints(const int amps_min, const int amps_max, co
 
 void EvcemUsecase::get_measurement_description_list(MeasurementDescriptionListDataType *data) const
 {
-    for (uint8_t i = 0; i < 7; i++) {
+    struct Entrydata {
+        uint8_t id;
+        MeasurementTypeEnumType type;
+        UnitOfMeasurementEnumType unit;
+        ScopeTypeEnumType scope;
+    };
+    const std::array<Entrydata, 7> entries{{
+        {id_x_1, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
+        {id_x_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
+        {id_x_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
+        {id_x_4, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
+        {id_x_5, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
+        {id_x_6, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
+        {id_x_7, MeasurementTypeEnumType::energy, UnitOfMeasurementEnumType::Wh, ScopeTypeEnumType::charge},
+    }};
+
+    for (const auto &entrydata : entries) {
         MeasurementDescriptionDataType measurement_description_data{};
-        measurement_description_data.measurementId = EVEntity::evcemMeasurementIdOffset + i + 1;
-        if (i < 3) {
-            if (milliamps_draw_phase[i] <= 0) {
-                continue;
-            }
-            measurement_description_data.measurementType = MeasurementTypeEnumType::current;
-            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
-            measurement_description_data.unit = UnitOfMeasurementEnumType::A;
-            measurement_description_data.scopeType = ScopeTypeEnumType::acCurrent;
-        } else if (i < 6) {
-            if (power_draw_phase[i - 3] <= 0) {
-                continue;
-            }
-            measurement_description_data.measurementType = MeasurementTypeEnumType::power;
-            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
-            measurement_description_data.unit = UnitOfMeasurementEnumType::W;
-            measurement_description_data.scopeType = ScopeTypeEnumType::acPower;
-        } else {
-            measurement_description_data.measurementType = MeasurementTypeEnumType::energy;
-            measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
-            measurement_description_data.unit = UnitOfMeasurementEnumType::Wh;
-            measurement_description_data.scopeType = ScopeTypeEnumType::charge;
-        }
+        measurement_description_data.measurementId = entrydata.id;
+        measurement_description_data.unit = entrydata.unit;
+        measurement_description_data.scopeType = entrydata.scope;
+        measurement_description_data.measurementType = entrydata.type;
+        measurement_description_data.commodityType = CommodityTypeEnumType::electricity;
         data->measurementDescriptionData->push_back(measurement_description_data);
     }
 }
 
 void EvcemUsecase::get_measurement_constraints(MeasurementConstraintsListDataType *data) const
 {
-    for (uint8_t i = 0; i < 7; i++) {
+    struct Entrydata {
+        uint8_t id;
+        int min;
+        int max;
+        int stepsize;
+        int scale;
+    };
+
+    const std::array<Entrydata, 7> entries{{
+        {id_x_1, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
+        {id_x_2, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
+        {id_x_3, measurement_limit_milliamps_min, measurement_limit_milliamps_max, measurement_limit_milliamps_stepsize, -3},
+        {id_x_4, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
+        {id_x_5, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
+        {id_x_6, measurement_limit_power_min, measurement_limit_power_max, measurement_limit_power_stepsize, 0},
+        {id_x_7, measurement_limit_energy_min, measurement_limit_energy_max, measurement_limit_energy_stepsize, 0},
+    }};
+
+    for (const auto &entrydata : entries) {
         MeasurementConstraintsDataType measurement_constraints_data{};
-        measurement_constraints_data.measurementId = EVEntity::evcemMeasurementIdOffset + i + 1;
-        if (i < 3) {
-            if (milliamps_draw_phase[i] <= 0) {
-                continue;
-            }
-            if (measurement_limit_milliamps_min >= 0) {
-                measurement_constraints_data.valueRangeMin->number = measurement_limit_milliamps_min;
-                measurement_constraints_data.valueRangeMin->scale = -3; // milliamps
-            }
-            if (measurement_limit_milliamps_max >= 0) {
-                measurement_constraints_data.valueRangeMax->number = measurement_limit_milliamps_max;
-                measurement_constraints_data.valueRangeMax->scale = -3; // milliamps
-            }
-            if (measurement_limit_milliamps_stepsize) {
-                measurement_constraints_data.valueStepSize->number = measurement_limit_milliamps_stepsize;
-                measurement_constraints_data.valueStepSize->scale = -3; // milliamps
-            }
-        } else if (i < 6) {
-            if (power_draw_phase[i - 3] <= 0) {
-                continue;
-            }
-            if (measurement_limit_power_min >= 0)
-                measurement_constraints_data.valueRangeMin->number = measurement_limit_power_min;
-            if (measurement_limit_power_max >= 0)
-                measurement_constraints_data.valueRangeMax->number = measurement_limit_power_max;
-            if (measurement_limit_power_stepsize)
-                measurement_constraints_data.valueStepSize->number = measurement_limit_power_stepsize;
-        } else {
-            if (measurement_limit_energy_min >= 0)
-                measurement_constraints_data.valueRangeMin->number = measurement_limit_power_min;
-            if (measurement_limit_power_max >= 0)
-                measurement_constraints_data.valueRangeMax->number = measurement_limit_power_max;
-            if (measurement_limit_power_stepsize)
-                measurement_constraints_data.valueStepSize->number = measurement_limit_power_stepsize;
-        }
+        measurement_constraints_data.measurementId = entrydata.id;
+        measurement_constraints_data.valueRangeMin->number = entrydata.min;
+        measurement_constraints_data.valueRangeMin->scale = entrydata.scale;
+        measurement_constraints_data.valueRangeMax->number = entrydata.max;
+        measurement_constraints_data.valueRangeMax->scale = entrydata.scale;
+        measurement_constraints_data.valueStepSize->number = entrydata.stepsize;
+        measurement_constraints_data.valueStepSize->scale = entrydata.scale;
         data->measurementConstraintsData->push_back(measurement_constraints_data);
     }
 }
 
 void EvcemUsecase::get_measurement_list(MeasurementListDataType *data) const
 {
-    for (uint8_t i = 0; i < 7; i++) {
+    struct Entrydata {
+        uint8_t id;
+        int value;
+        int scale;
+    };
+
+    const std::array<Entrydata, 7> entries{{
+        {id_x_1, milliamps_draw_phase[0], -3},
+        {id_x_2, milliamps_draw_phase[1], -3},
+        {id_x_3, milliamps_draw_phase[2], -3},
+        {id_x_4, power_draw_phase[0], 0},
+        {id_x_5, power_draw_phase[1], 0},
+        {id_x_6, power_draw_phase[2], 0},
+        {id_x_7, power_charged_wh, 0},
+    }};
+
+    for (const auto &entry : entries) {
         MeasurementDataType measurement_data{};
-        measurement_data.measurementId = EVEntity::evcemMeasurementIdOffset + i + 1;
+        measurement_data.measurementId = entry.id;
         measurement_data.valueType = MeasurementValueTypeEnumType::value;
-        if (i < 3) {
-            if (milliamps_draw_phase[i] <= 0) {
-                continue;
-            }
-            measurement_data.value->number = milliamps_draw_phase[i];
-            measurement_data.value->scale = -3; // milliamps
-        } else if (i < 6) {
-            if (power_draw_phase[i - 3] <= 0) {
-                continue;
-            }
-            measurement_data.value->number = power_draw_phase[i - 3];
-        } else {
-            measurement_data.value->number = power_charged_wh;
+        measurement_data.value->number = entry.value;
+        measurement_data.value->scale = entry.scale;
+        if (entry.id == id_x_7) {
             if (power_charged_measured) {
                 measurement_data.valueSource = MeasurementValueSourceEnumType::measuredValue;
             } else {
@@ -1081,7 +1075,7 @@ void EvcemUsecase::get_measurement_list(MeasurementListDataType *data) const
 void EvcemUsecase::get_electrical_connection_description(ElectricalConnectionDescriptionListDataType *data) const
 {
     ElectricalConnectionDescriptionDataType connection_description_data{};
-    connection_description_data.electricalConnectionId = 1; // TODO: Move this ID to entity
+    connection_description_data.electricalConnectionId = id_y_1;
     connection_description_data.powerSupplyType = ElectricalConnectionVoltageTypeEnumType::ac;
     connection_description_data.positiveEnergyDirection = EnergyDirectionEnumType::consume;
     data->electricalConnectionDescriptionData->push_back(connection_description_data);
@@ -1089,43 +1083,35 @@ void EvcemUsecase::get_electrical_connection_description(ElectricalConnectionDes
 
 void EvcemUsecase::get_electrical_connection_parameters(ElectricalConnectionParameterDescriptionListDataType *data) const
 {
-    for (uint8_t i = 0; i < 7; i++) {
+    struct Entrydata {
+        uint8_t parameterId;
+        uint8_t measurementId;
+        ElectricalConnectionPhaseNameEnumType phases;
+        bool to_be_added;
+    };
+    const std::array<Entrydata, 7> entries{{
+        {id_z_1, id_x_1, ElectricalConnectionPhaseNameEnumType::a, milliamps_draw_phase[0] > 0},
+        {id_z_2, id_x_2, ElectricalConnectionPhaseNameEnumType::b, milliamps_draw_phase[1] > 0},
+        {id_z_3, id_x_3, ElectricalConnectionPhaseNameEnumType::c, milliamps_draw_phase[2] > 0},
+        {id_z_4, id_x_4, ElectricalConnectionPhaseNameEnumType::a, power_draw_phase[0] > 0},
+        {id_z_5, id_x_5, ElectricalConnectionPhaseNameEnumType::b, power_draw_phase[1] > 0},
+        {id_z_6, id_x_6, ElectricalConnectionPhaseNameEnumType::c, power_draw_phase[2] > 0},
+        {id_z_7, id_x_7, ElectricalConnectionPhaseNameEnumType::abc, true},
+    }};
+
+    for (const auto &entry : entries) {
+        if (!entry.to_be_added)
+            continue;
+
         ElectricalConnectionParameterDescriptionDataType connection_parameters_data{};
-        connection_parameters_data.parameterId = i + 1;        // This is a new ID
-        connection_parameters_data.measurementId = i + 1;      // This should be the same as the measurement IDs in other function
-        connection_parameters_data.electricalConnectionId = 1; // This refers to the electrical connection in the connection description function
-        if (i < 6) {
-            if (i < 3) {
-                if (milliamps_draw_phase[i] <= 0) {
-                    continue;
-                }
-            } else if (i < 6) {
-                if (power_draw_phase[i - 3] <= 0) {
-                    continue;
-                }
-            }
-            switch (i) {
-                case 0:
-                case 3:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::a;
-                    break;
-                case 1:
-                case 4:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::b;
-                    break;
-                case 2:
-                case 5:
-                    connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::c;
-                    break;
-                default:
-                    break;
-            }
-            if (i < 3) {
-                connection_parameters_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-            }
-        } else {
+        connection_parameters_data.parameterId = entry.parameterId;
+        connection_parameters_data.measurementId = entry.measurementId;
+        connection_parameters_data.electricalConnectionId = id_y_1;
+        connection_parameters_data.acMeasuredPhases = entry.phases;
+        if (entry.parameterId == id_z_1 || entry.parameterId == id_z_2 || entry.parameterId == id_z_3) {
+            connection_parameters_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+        } else if (entry.parameterId == id_z_7) {
             connection_parameters_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-            connection_parameters_data.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc;
             connection_parameters_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::real;
         }
         data->electricalConnectionParameterDescriptionData->push_back(connection_parameters_data);
@@ -1149,6 +1135,7 @@ void EvcemUsecase::update_api() const
 EvccUsecase::EvccUsecase()
 {
     entity_active = false; // Disable entity until an EV is connected
+    ev_connected = false;
 }
 
 UseCaseInformationDataType EvccUsecase::get_usecase_information()
@@ -1337,6 +1324,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
 
 void EvccUsecase::ev_connected_state(bool connected)
 {
+    logger.printfln("EV connected: %d, previous: %d", connected, ev_connected);
     bool changed = (ev_connected != connected);
     entity_active = ev_connected = connected;
     if (changed) {
@@ -2645,6 +2633,7 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
 }
 #endif
 
+#ifdef EEBUS_ENABLE_OPEV_USECASE
 MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
@@ -2657,8 +2646,12 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             break;
         case SpineDataTypeHandler::Function::loadControlLimitListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::LoadControl)) {
-                response["measurementConstraintsListData"] = EVEntity::get_measurement_constraints_list_data();
-                return {true, true, CmdClassifierType::reply};
+                if (header.cmdClassifier == CmdClassifierType::read) {
+                    response["loadControlLimitListData"] = EVEntity::get_load_control_limit_list_data();
+                    return {true, true, CmdClassifierType::reply};
+                }
+                if (header.cmdClassifier == CmdClassifierType::write) {
+                }
             }
             break;
         case SpineDataTypeHandler::Function::measurementListData:
@@ -2684,6 +2677,7 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
     return {false};
     return {};
 }
+
 UseCaseInformationDataType OpevUsecase::get_usecase_information()
 {
     UseCaseInformationDataType opev_usecase;
@@ -2704,9 +2698,13 @@ UseCaseInformationDataType OpevUsecase::get_usecase_information()
     opev_usecase.address = opev_usecase_feature_address;
     return opev_usecase;
 }
+
 NodeManagementDetailedDiscoveryEntityInformationType OpevUsecase::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return entity;
+    }
     entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::EV;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
@@ -2715,11 +2713,13 @@ NodeManagementDetailedDiscoveryEntityInformationType OpevUsecase::get_detailed_d
     // We focus on returning the mandatory fields.
     return entity;
 }
+
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::get_detailed_discovery_feature_information() const
 {
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
-
-    // See EEBUS UC TS LimitationOfPowerConsumption v1.0.0.pdf 3.2.2.2.1
+    if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
+        return features;
+    }
 
     // The following functions are needed by the LoadControl Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature{};
@@ -2766,10 +2766,145 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::
 
     return features;
 }
-void OpevUsecase::get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data) const
+
+void OpevUsecase::get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data)
 {
-    // TODO: implement opev
+    const std::array<std::pair<uint8_t, uint8_t>, 3> id_pairs{{
+        {id_x_1, id_z_1},
+        {id_x_2, id_z_2},
+        {id_x_3, id_z_3},
+    }};
+
+    for (const auto &p : id_pairs) {
+        LoadControlLimitDescriptionDataType loadControlLimitDescriptionData{};
+        loadControlLimitDescriptionData.limitId = p.first;
+        loadControlLimitDescriptionData.limitType = LoadControlLimitTypeEnumType::maxValueLimit;
+        loadControlLimitDescriptionData.limitCategory = LoadControlCategoryEnumType::obligation;
+        loadControlLimitDescriptionData.measurementId = p.second;
+        loadControlLimitDescriptionData.unit = UnitOfMeasurementEnumType::A;
+        loadControlLimitDescriptionData.scopeType = ScopeTypeEnumType::overloadProtection;
+        data->loadControlLimitDescriptionData->push_back(loadControlLimitDescriptionData);
+    }
 }
+
+void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType *data) const
+{
+    constexpr std::array<uint8_t, 3> ids_used{{
+        id_x_1,
+        id_x_2,
+        id_x_3,
+    }};
+    for (size_t i = 0; i < ids_used.size(); ++i) {
+        uint8_t p = ids_used[i];
+        LoadControlLimitDataType loadControlLimitData{};
+        loadControlLimitData.limitId = p;
+        loadControlLimitData.isLimitChangeable = limit_changeable();
+        loadControlLimitData.isLimitActive = limit_active;
+        loadControlLimitData.value->number = limit_per_phase_milliamps[i];
+        loadControlLimitData.value->scale = -3;
+        data->loadControlLimitData->push_back(loadControlLimitData);
+    }
+}
+
+void OpevUsecase::get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data)
+{
+    struct Entrydata {
+        uint8_t param_id;
+        uint8_t measure_id;
+        ElectricalConnectionPhaseNameEnumType phase;
+    };
+
+    constexpr std::array<Entrydata, 3> entrydata{{
+        {id_i_1, id_z_1, ElectricalConnectionPhaseNameEnumType::a},
+        {id_i_2, id_z_2, ElectricalConnectionPhaseNameEnumType::a},
+        {id_i_3, id_z_3, ElectricalConnectionPhaseNameEnumType::a},
+    }};
+    for (const auto &entry : entrydata) {
+        ElectricalConnectionParameterDescriptionDataType parameter_description{};
+        parameter_description.electricalConnectionId = id_j_1;
+        parameter_description.parameterId = entry.param_id;
+        parameter_description.measurementId = entry.measure_id;
+        parameter_description.acMeasuredPhases = entry.phase;
+
+        data->electricalConnectionParameterDescriptionData->push_back(parameter_description);
+    }
+}
+
+void OpevUsecase::get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const
+{
+    constexpr std::array<uint8_t, 3> ids_used{{
+        id_i_1,
+        id_i_2,
+        id_i_3,
+    }};
+    for (const auto &id : ids_used) {
+        ElectricalConnectionPermittedValueSetDataType permittedValueSetData{};
+        permittedValueSetData.electricalConnectionId = id_j_1;
+        permittedValueSetData.parameterId = id;
+        ScaledNumberSetType permittedValueSet{};
+        ScaledNumberRangeType range{};
+        // TODO: We can actually dictate which values can be set here. For now we allow everything between min and max but maybe in future only allow full amp values between 0 and 32A?
+        range.min->number = limit_milliamps_min;
+        range.min->scale = -3;
+        range.max->number = limit_milliamps_max;
+        range.max->scale = -3;
+        permittedValueSet.range->push_back(range);
+        permittedValueSetData.permittedValueSet->push_back(permittedValueSet);
+        data->electricalConnectionPermittedValueSetData->push_back(permittedValueSetData);
+    }
+}
+void OpevUsecase::update_limits(int limit_phase_1_milliamps, int limit_phase_2_milliamps, int limit_phase_3_milliamps, bool active)
+{
+    // TODO: check if limits can be applied
+    limit_per_phase_milliamps[0] = limit_phase_1_milliamps >= 0 ? limit_phase_1_milliamps : limit_per_phase_milliamps[0];
+    limit_per_phase_milliamps[1] = limit_phase_2_milliamps >= 0 ? limit_phase_2_milliamps : limit_per_phase_milliamps[1];
+    limit_per_phase_milliamps[2] = limit_phase_3_milliamps >= 0 ? limit_phase_3_milliamps : limit_per_phase_milliamps[2];
+    limit_active = active;
+}
+bool OpevUsecase::limit_changeable() const
+{
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    if (eebus.usecases->limitation_of_power_consumption.limit_is_active())
+        return false;
+#endif
+    return limit_changeable_allowed;
+}
+MessageReturn OpevUsecase::write_load_control_limit_list_data(HeaderType &header, SpineOptional<LoadControlLimitListDataType> data, JsonObject response)
+{
+    if (!data.has_value()) {
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "No load control limit data provided");
+        return {true, true, CmdClassifierType::result};
+    }
+    int limit_phase_a = -1;
+    int limit_phase_b = -1;
+    int limit_phase_c = -1;
+    bool limit_enabled = false;
+
+    for (const auto &limit_data : data->loadControlLimitData.get()) {
+        switch (limit_data.limitId.get()) {
+            case id_x_1: // TODO: Scalednumbertype berechnen
+                limit_phase_a = limit_data.value->number.get();
+                limit_enabled = limit_active || limit_data.isLimitActive.get();
+                break;
+            case id_x_2:
+                limit_phase_b = limit_data.value->number.get();
+                limit_enabled = limit_active || limit_data.isLimitActive.get();
+                break;
+            case id_x_3:
+                limit_phase_c = limit_data.value->number.get();
+                limit_enabled = limit_active || limit_data.isLimitActive.get();
+                break;
+            default:
+                break;
+        }
+    }
+    // TODO: check if limit can be applied
+    update_limits(limit_phase_a, limit_phase_b, limit_phase_c, limit_enabled);
+    logger.printfln("OPEV: New limits received: L1: %d mA, L2: %d mA, L3: %d mA, active: %s", limit_per_phase_milliamps[0], limit_per_phase_milliamps[1], limit_per_phase_milliamps[2], limit_active ? "true" : "false");
+    return {true, false, CmdClassifierType::reply};
+}
+#endif
+
 EEBusUseCases::EEBusUseCases()
 {
     // Entity Addresses should be consistent so all actors are under the same entity
@@ -3133,7 +3268,7 @@ LoadControlLimitDescriptionListDataType EVEntity::get_load_control_limit_descrip
 {
     LoadControlLimitDescriptionListDataType load_control_limit_description_list_data;
 
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
+#ifdef EEBUS_ENABLE_OPEV_USECASE
     eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_load_control_limit_description_list_data(&load_control_limit_description_list_data);
 #endif
 

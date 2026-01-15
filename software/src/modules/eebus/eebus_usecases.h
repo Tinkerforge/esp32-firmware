@@ -51,7 +51,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
+//#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -170,9 +170,11 @@ public:
     static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
 
     // ElectricalConnection
-    inline static int evcemElectricalConnectionIdOffset = 0;
-    inline static int evccElectricalConnectionIdOffset = 10;
-    inline static int opevElectricalConnectionIdOffset = 20;
+    static constexpr int evcemElectricalConnectionIdOffset = 0;
+    static constexpr int evccElectricalConnectionIdOffset = 10;
+    static constexpr int opevElectricalConnectionIdOffset = 20;
+    static constexpr int evcemElectricalconnectionParameterIdOffset = 0;
+    static constexpr int opevElectricalconnectionParameterIdOffset = 10;
     static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
     static ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_list_data();
     static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
@@ -181,13 +183,14 @@ public:
     static DeviceDiagnosisStateDataType get_diagnosis_state_data();
 
     // Measurement
-    inline static int evcemMeasurementIdOffset = 0;
+    static constexpr int evcemMeasurementIdOffset = 0;
     static MeasurementDescriptionListDataType get_measurement_description_list_data();
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
 
     // LoadControl
-    inline static int opevLoadcontrolIdOffset = 0;
+    static constexpr int opevLoadcontrolIdOffset = 0;
+    static constexpr int opevMeasurementIdOffset = 10;
     static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
     static LoadControlLimitListDataType get_load_control_limit_list_data();
 };
@@ -507,6 +510,23 @@ public:
     void get_electrical_connection_description(ElectricalConnectionDescriptionListDataType *data) const;
     void get_electrical_connection_parameters(ElectricalConnectionParameterDescriptionListDataType *data) const;
 
+    // IDs as they are used in Overload Protection by EV Charging Current Curtailment V1.0.1b 3.2.1.2 in the definition of the features
+    static constexpr uint8_t id_x_1 = EVEntity::evcemMeasurementIdOffset + 1;
+    static constexpr uint8_t id_x_2 = EVEntity::evcemMeasurementIdOffset + 2;
+    static constexpr uint8_t id_x_3 = EVEntity::evcemMeasurementIdOffset + 3;
+    static constexpr uint8_t id_x_4 = EVEntity::evcemMeasurementIdOffset + 4;
+    static constexpr uint8_t id_x_5 = EVEntity::evcemMeasurementIdOffset + 5;
+    static constexpr uint8_t id_x_6 = EVEntity::evcemMeasurementIdOffset + 6;
+    static constexpr uint8_t id_x_7 = EVEntity::evcemMeasurementIdOffset + 7;
+    static constexpr uint8_t id_y_1 = EVEntity::evcemElectricalConnectionIdOffset + 1;
+    static constexpr uint8_t id_z_1 = EVEntity::evcemElectricalconnectionParameterIdOffset + 1;
+    static constexpr uint8_t id_z_2 = EVEntity::evcemElectricalconnectionParameterIdOffset + 2;
+    static constexpr uint8_t id_z_3 = EVEntity::evcemElectricalconnectionParameterIdOffset + 3;
+    static constexpr uint8_t id_z_4 = EVEntity::evcemElectricalconnectionParameterIdOffset + 4;
+    static constexpr uint8_t id_z_5 = EVEntity::evcemElectricalconnectionParameterIdOffset + 5;
+    static constexpr uint8_t id_z_6 = EVEntity::evcemElectricalconnectionParameterIdOffset + 6;
+    static constexpr uint8_t id_z_7 = EVEntity::evcemElectricalconnectionParameterIdOffset + 7;
+
 private:
     // Data held about the current charge
     int milliamps_draw_phase[3]{}; // Milliamp draw per phase
@@ -802,6 +822,11 @@ public:
 
     [[nodiscard]] DeviceDiagnosisHeartbeatDataType get_device_diagnosis_heartbeat_data() const;
 
+    [[nodiscard]] bool limit_is_active() const
+    {
+        return limit_active;
+    }
+
 private:
     /**
      * The Load Control feature as required for Scenario 1 - Control active power consumption.
@@ -1066,6 +1091,15 @@ public:
 #endif
 
 #ifdef EEBUS_ENABLE_OPEV_USECASE
+#ifndef EEBUS_ENABLE_EVCC_USECASE
+#error "OPEV Usecase requires EVCC Usecase to be enabled"
+#endif
+#ifndef EEBUS_ENABLE_EVCEM_USECASE
+#error "OPEV Usecase requires EVCEM Usecase to be enabled"
+#endif
+
+// TODO: the OPEV usecase could not yet be tested as EEBUS-GO implements an older version of it with different functions.
+// EEBUS-GO reads the limitations from loadControlConstraintsListData whereas in version v1.0.1b the limits are sent using the electricalConnection feature
 /**
  * The OpevUsecase as defined in EEBus UC TS - Overload Protection by EV Charging Current Curtailment V1.0.1b
  * This should have the same entity address as other entities with the EV <br>
@@ -1094,13 +1128,42 @@ public:
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
-    void get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data) const;
+    void get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data);
     void get_load_control_limit_list_data(LoadControlLimitListDataType *data) const;
 
-    void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const;
+    static void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data);
     void get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const;
 
+    void update_limits(int limit_phase_1_milliamps, int limit_phase_2_milliamps, int limit_phase_3_milliamps, bool active = false);
+    inline void allow_limitation(bool allowed)
+    {
+        limit_changeable_allowed = allowed;
+    }
+
+    // IDs as they are used in Overload Protection by EV Charging Current Curtailment V1.0.1b 3.2.1.2 in the definition of the features
+    // May be used to link to other ids in other usecases
+    static constexpr uint8_t id_x_1 = EVEntity::opevLoadcontrolIdOffset + 1;
+    static constexpr uint8_t id_x_2 = EVEntity::opevLoadcontrolIdOffset + 2;
+    static constexpr uint8_t id_x_3 = EVEntity::opevLoadcontrolIdOffset + 3;
+    static constexpr uint8_t id_z_1 = EvcemUsecase::id_x_1; // Should be the measurement entry on EVCEM
+    static constexpr uint8_t id_z_2 = EvcemUsecase::id_x_2;
+    static constexpr uint8_t id_z_3 = EvcemUsecase::id_x_3;
+    static constexpr uint8_t id_i_1 = EVEntity::opevElectricalconnectionParameterIdOffset + 1;
+    static constexpr uint8_t id_i_2 = EVEntity::opevElectricalconnectionParameterIdOffset + 2;
+    static constexpr uint8_t id_i_3 = EVEntity::opevElectricalconnectionParameterIdOffset + 3;
+    static constexpr uint8_t id_j_1 = EVEntity::opevElectricalConnectionIdOffset + 1;
+
 private:
+    [[nodiscard]] bool limit_changeable() const;
+    // Values of the usecase
+    int limit_per_phase_milliamps[3] = {32000,32000,32000};
+    bool limit_active = false;
+    bool limit_changeable_allowed = true;
+    int limit_milliamps_min = 0;
+    int limit_milliamps_max = 32000;
+
+    //write functions
+    MessageReturn write_load_control_limit_list_data(HeaderType &header, SpineOptional<LoadControlLimitListDataType> data, JsonObject response);
 };
 #endif
 /**
