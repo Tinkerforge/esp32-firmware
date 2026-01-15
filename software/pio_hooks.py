@@ -631,8 +631,13 @@ def find_module_space(modules, name_space):
 def get_finalized_list(list_name):
     injections = {}
 
-    for line in env.GetProjectOption(list_name + '_injections').splitlines():
-        placeholder, replacements = line.split(':', 1)
+    for entry in env.GetProjectOption(list_name + '_injections').splitlines():
+        entry = entry.strip()
+
+        if len(entry) == 0:
+            continue
+
+        placeholder, replacements = entry.split(':', 1)
         placeholder = placeholder.strip()
         replacements = [x.strip() for x in replacements.strip().split(',')]
 
@@ -641,6 +646,11 @@ def get_finalized_list(list_name):
     entries = []
 
     for entry in env.GetProjectOption(list_name).splitlines():
+        entry = entry.strip()
+
+        if len(entry) == 0:
+            continue
+
         entry = entry.strip()
         m = re.match(r'^<([^>]+)>$', entry)
 
