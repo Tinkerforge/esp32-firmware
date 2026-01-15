@@ -269,8 +269,15 @@ void WebSockets::keepAliveCloseDead_async(int fd)
     // Sometimes a fd is reused so fast that the keep alive does not notice
     // the closed fd before it is reopened as normal HTTP connection.
     // This should probably be removed because it should be called from the HTTP thread only.
-    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP) {
-        logger.printfln("keepAliveCloseDead_async encountered fd reused for HTTP");
+    const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(httpd, fd);
+
+    if (ws_client_info == HTTPD_WS_CLIENT_HTTP) {
+        logger.printfln("keepAliveCloseDead_async encountered fd %i reused for HTTP", fd);
+        return;
+    }
+
+    if (ws_client_info == HTTPD_WS_CLIENT_INVALID) {
+        logger.printfln("keepAliveCloseDead_async encountered invalid fd %i with no associated session", fd);
         return;
     }
 
@@ -288,8 +295,15 @@ void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
     // Don't kill this socket if it is a HTTP socket:
     // Sometimes a fd is reused so fast that the keep alive does not notice
     // the closed fd before it is reopened as normal HTTP connection.
-    if (httpd_ws_get_fd_info(httpd, fd) == HTTPD_WS_CLIENT_HTTP) {
-        logger.printfln("keepAliveCloseDead_HTTPThread encountered fd reused for HTTP");
+    const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(httpd, fd);
+
+    if (ws_client_info == HTTPD_WS_CLIENT_HTTP) {
+        logger.printfln("keepAliveCloseDead_HTTPThread encountered fd %i reused for HTTP", fd);
+        return;
+    }
+
+    if (ws_client_info == HTTPD_WS_CLIENT_INVALID) {
+        logger.printfln("keepAliveCloseDead_HTTPThread encountered invalid fd %i with no associated session", fd);
         return;
     }
 
