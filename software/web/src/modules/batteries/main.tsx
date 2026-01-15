@@ -1057,7 +1057,7 @@ export class Batteries extends ConfigComponent<'batteries/config', {}, Batteries
                     break;
                 }
 
-                sample_percent = get_price_from_index(i) / 1000.0;
+                sample_percent = get_price_from_index(i, false) / 1000.0;
 
                 for (let j = 0; j < quarter_multiplier; j++) {
                     data.values[0].push(sample_time);
