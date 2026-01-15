@@ -81,6 +81,7 @@ public:
     int change_running_partition_from_pending_verify_to_valid(bool silent = false);
     int change_running_partition_from_pending_verify_to_new(bool silent = false);
     int change_update_partition_from_aborted_to_invalid(bool silent = false);
+    int change_update_partition_to_invalid(bool silent = false);
 
 private:
     int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
@@ -141,4 +142,5 @@ private:
     //uint32_t last_version_timestamp;
     bool check_for_update_in_progress = false;
     bool install_firmware_in_progress = false;
+    bool mark_update_partition_invalid = true;
 };

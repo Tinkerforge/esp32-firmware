@@ -459,6 +459,7 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
             Update.abort();
             return InstallState::FlashBeginFailed;
         }
+        mark_update_partition_invalid = true;
 
         firmware_info.reset();
 
@@ -521,6 +522,11 @@ InstallState FirmwareUpdate::handle_firmware_chunk(size_t chunk_offset, uint8_t 
         size_t to_skip = FIRMWARE_OFFSET - chunk_offset;
         start += to_skip;
         len -= to_skip;
+    }
+
+    if (mark_update_partition_invalid) {
+        task_scheduler.await([this](){ this->change_update_partition_to_invalid(); });
+        mark_update_partition_invalid = false;
     }
 
     size_t written = Update.write(start, len);
@@ -1099,6 +1105,21 @@ int FirmwareUpdate::change_update_partition_from_aborted_to_invalid(bool silent)
     return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_INVALID, silent);
 }
 
+int FirmwareUpdate::change_update_partition_to_invalid(bool silent)
+{
+    const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
+
+    if (update_partition == nullptr) {
+        if (!silent) {
+            logger.printfln("Could not get update partition");
+        }
+
+        return -1;
+    }
+
+    return change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_UNDEFINED, ESP_OTA_IMG_INVALID, silent);
+}
+
 bool FirmwareUpdate::is_vehicle_blocking_update() const
 {
 #if MODULE_EM_V1_AVAILABLE() && !MODULE_EVSE_COMMON_AVAILABLE()
@@ -1657,8 +1678,20 @@ void FirmwareUpdate::read_app_partition_state()
     // one might actually contain a stable firmware. changing from aborted/aborted app partition state to
     // pending-verify/new results in the bootloader chosing the other partition if the running app partition
     // crashes. this way the system can find the stable firmware, if there is one.
-    if (app0_state == ESP_OTA_IMG_ABORTED && app1_state == ESP_OTA_IMG_ABORTED) {
-        logger.printfln("Trying to recover from an aborted/aborted app partition state");
+    //
+    // We now also mark the update partition as invalid as soon as the first byte of an OTA update is written.
+    // (Technically cleared, because the OTA mechanism clears the first bytes (i.e. the checksum) when starting
+    // the update but writes them in the end).
+    // If the update is aborted, the update partition stays invalid. If the running partition is still in
+    // pending-verify and then crashes, it changes to invalid. The bootloader will then either attempt to boot
+    // the invalid partition and fail (because the checksum is wrong) and the boot the aborted partition, or
+    // will boot the aborted partition again. In this case the code below changes the (now again) running
+    // partition from aborted to pending-verify but will leave the invalid partition as is.
+    // Note that we don't explicitly check for aborted/invalid but only whether the running partition is aborted.
+    // This is sufficient because the bootloader will never boot an aborted partition if there is another one
+    // that is new, pending-verify or valid.
+    if ((app0_running && app0_state == ESP_OTA_IMG_ABORTED) || (app1_running && app1_state == ESP_OTA_IMG_ABORTED)) {
+        logger.printfln("Trying to recover from an aborted/aborted or aborted/invalid app partition state");
 
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
