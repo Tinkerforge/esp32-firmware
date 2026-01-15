@@ -132,8 +132,8 @@ void WebSockets::work(void *arg)
 
 esp_err_t WebSockets::ws_handler(httpd_req_t *req)
 {
+    uint8_t small_payload_buffer[4]; // Close frames usually have two bytes payload.
     httpd_ws_frame_t ws_pkt;
-    uint8_t *buf = NULL;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
     // First receive the full ws message
@@ -144,19 +144,25 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         return ret;
     }
 
-    if (ws_pkt.len) {
-        /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
-        buf = static_cast<uint8_t *>(calloc(1, ws_pkt.len + 1));
-        if (buf == NULL) {
-            logger.printfln("Failed to calloc memory for buf");
-            return ESP_ERR_NO_MEM;
+    if (ws_pkt.len > 0) {
+        // Buffer 1 byte larger so that null termination can be added for text frames
+
+        if (ws_pkt.len < std::size(small_payload_buffer)) {
+            ws_pkt.payload = small_payload_buffer;
+        } else {
+            ws_pkt.payload = static_cast<uint8_t *>(malloc(ws_pkt.len + 1));
+            if (ws_pkt.payload == nullptr) {
+                logger.printfln("Failed to allocate payload buffer");
+                return ESP_ERR_NO_MEM;
+            }
         }
-        ws_pkt.payload = buf;
         /* Set max_len = ws_pkt.len to get the frame payload */
         ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
         if (ret != ESP_OK) {
             //logger.printfln("httpd_ws_recv_frame failed with %d", ret);
-            free(buf);
+            if (ws_pkt.payload != small_payload_buffer) {
+                free(ws_pkt.payload);
+            }
             return ret;
         }
     }
@@ -181,7 +187,8 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (frame_type == HTTPD_WS_TYPE_TEXT) {
-        // If it was a TEXT message, print it
+        // If it was a TEXT message, terminate and print it
+        ws_pkt.payload[ws_pkt.len] = 0;
         logger.printfln("Ignoring received packet with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
         // FIXME: input handling
     } else if (frame_type == HTTPD_WS_TYPE_BINARY) {
@@ -206,7 +213,9 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         logger.printfln("Received unexpected frame type=%u final=%i len=%zu", static_cast<unsigned>(ws_pkt.type), ws_pkt.final, ws_pkt.len);
     }
 
-    free(buf);
+    if (ws_pkt.payload != nullptr && ws_pkt.payload != small_payload_buffer) {
+        free(ws_pkt.payload);
+    }
     return ESP_OK;
 }
 
