@@ -180,6 +180,7 @@ public:
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
     void register_extra_port(WebServerExtraPortData *port_data);
+    bool is_https_only();
 
 #ifdef DEBUG_FS_ENABLE
     void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
@@ -206,4 +207,5 @@ private:
     std::function<bool(WebServerRequest)> auth_fn;
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
     WebServerExtraPortData *extra_ports;
+    bool https_only = false;
 };

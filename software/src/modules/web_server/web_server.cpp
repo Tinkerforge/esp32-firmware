@@ -189,6 +189,9 @@ void WebServer::post_setup()
 
         listen_port_handlers[ssl_configs_used] = default_handlers;
         ssl_configs_used++;
+    } else {
+        // No HTTP -> HTTPS only
+        https_only = true;
     }
 
     while (extra_ports != nullptr) {
@@ -713,6 +716,15 @@ void WebServer::register_extra_port(WebServerExtraPortData *port_data)
 
     port_data->next = extra_ports;
     extra_ports = port_data;
+}
+
+bool WebServer::is_https_only()
+{
+    if (boot_stage < BootStage::REGISTER_URLS) {
+        esp_system_abort("HTTP(S) state unknown; web server not started yet");
+    }
+
+    return https_only;
 }
 
 const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
