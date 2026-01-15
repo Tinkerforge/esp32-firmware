@@ -745,7 +745,7 @@ void WebSockets::start(const char *uri, const char *state_path, const char *supp
     }
 }
 
-static constexpr char reboot_close_payload[] = {0x03, 0xE9, 'R', 'e', 'b', 'o', 'o', 't'}; // Code 1001: Going away
+static constexpr char reboot_close_payload[] = {0x03,0xE9,'E','S','P',' ','r','e','b','o','o','t'}; // Code 1001: Going away
 
 void WebSockets::stop() {
     if (!this->running) {
