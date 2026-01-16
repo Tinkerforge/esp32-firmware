@@ -51,7 +51,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
-//#define EEBUS_ENABLE_OPEV_USECASE
+#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -826,6 +826,10 @@ public:
     {
         return limit_active;
     }
+    [[nodiscard]] int get_current_limit_w() const
+    {
+        return current_active_consumption_limit_w;
+    }
 
 private:
     /**
@@ -1134,10 +1138,26 @@ public:
     static void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data);
     void get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const;
 
+    /**
+     * Update the limits possible with the OPEV usecase. This will inform all subscribers of the new limits.
+     * @param limit_phase_1_milliamps
+     * @param limit_phase_2_milliamps
+     * @param limit_phase_3_milliamps
+     * @param active if the limit shall be activated right away. Default is false.
+     */
     void update_limits(int limit_phase_1_milliamps, int limit_phase_2_milliamps, int limit_phase_3_milliamps, bool active = false);
     inline void allow_limitation(bool allowed)
     {
         limit_changeable_allowed = allowed;
+    }
+    [[nodiscard]] bool limit_changeable() const;
+    [[nodiscard]] std::array<int, 3> get_limit_milliamps() const
+    {
+        return {limit_per_phase_milliamps[0], limit_per_phase_milliamps[1], limit_per_phase_milliamps[2]};
+    }
+    [[nodiscard]] bool limit_is_active() const
+    {
+        return limit_active;
     }
 
     // IDs as they are used in Overload Protection by EV Charging Current Curtailment V1.0.1b 3.2.1.2 in the definition of the features
@@ -1154,9 +1174,8 @@ public:
     static constexpr uint8_t id_j_1 = EVEntity::opevElectricalConnectionIdOffset + 1;
 
 private:
-    [[nodiscard]] bool limit_changeable() const;
     // Values of the usecase
-    int limit_per_phase_milliamps[3] = {32000,32000,32000};
+    int limit_per_phase_milliamps[3] = {32000, 32000, 32000};
     bool limit_active = false;
     bool limit_changeable_allowed = true;
     int limit_milliamps_min = 0;
