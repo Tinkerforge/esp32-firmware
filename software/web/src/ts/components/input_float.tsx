@@ -116,7 +116,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     }
 
     return <div class={"input-group " + (props.class ? props.class : "")}>
-    {toChildArray(props.children).length > 0 ? <div class="input-group-prepend">{props.children}</div> : undefined}
+    {toChildArray(props.children).length > 0 ? props.children : undefined}
     <input class="form-control no-spin"
                id={id}
                type="number"
@@ -138,49 +138,44 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                inputMode="decimal"
                style="min-width: 5em;"
                required={props.required}/>
-    {'unit' in props || ('onValue' in props && !props.readonly) ?
-        <div class="input-group-append">
-            {'unit' in props ?
-                <div class={"form-control input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
-                    {props.unit}
-                </div>
-                : undefined
-            }
-            {'onValue' in props && !props.readonly ?
-                <>
-                    <Button variant="primary"
-                            disabled={props.disabled || (props.value == props.min)}
-                            className="form-control px-1"
-                            style="margin-right: .125rem !important;"
-                            onClick={() => {
-                                let v = props.value;
-                                let target = (v % pow10 === 0) ? (v - pow10) : (v - (v % pow10));
+    {'unit' in props ?
+        <span class={"input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
+            {props.unit}
+        </span>
+        : undefined
+    }
+    {'onValue' in props && !props.readonly ?
+        <>
+            <Button variant="primary"
+                    disabled={props.disabled || (props.value == props.min)}
+                    className="px-1"
+                    style="margin-right: .125rem !important;"
+                    onClick={() => {
+                        let v = props.value;
+                        let target = (v % pow10 === 0) ? (v - pow10) : (v - (v % pow10));
 
-                                setTarget(target);
-                            }}>
-                        <Minus/>
-                    </Button>
-                    <Button variant="primary"
-                            disabled={props.disabled || (props.value == props.max)}
-                            className="form-control px-1 rounded-right"
-                            onClick={() => {
-                                let v = props.value;
-                                let target = (v - (v % pow10)) + pow10;
+                        setTarget(target);
+                    }}>
+                <Minus/>
+            </Button>
+            <Button variant="primary"
+                    disabled={props.disabled || (props.value == props.max)}
+                    className="px-1"
+                    onClick={() => {
+                        let v = props.value;
+                        let target = (v - (v % pow10)) + pow10;
 
-                                setTarget(target);
-                            }}>
-                        <Plus/>
-                    </Button>
-                </>
-                : undefined
-            }
-        </div>
+                        setTarget(target);
+                    }}>
+                <Plus/>
+            </Button>
+        </>
         : undefined
     }
     {!('onValue' in props) || !props.showMinMax ? null :
         <ButtonGroup className="flex-wrap">
             <Button variant="primary"
-                    className="ml-2"
+                    className="ms-2"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
                         setTarget(props.min);

@@ -102,33 +102,33 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
 
     return <ListGroupItem>
         <div class="row justify-content-end">
-            <div class="col-auto pr-2 mb-2">
-                <span class="pr-2"><User/></span>
+            <div class="col-auto pe-2 mb-2">
+                <span class="pe-2"><User/></span>
                 <span style="vertical-align: middle;">{display_name}</span>
             </div>
             <div class="col px-0" />
-            <div class="col-auto pl-2 mb-2">
+            <div class="col-auto ps-2 mb-2">
                 <span style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
-                <span class="pl-2"><BatteryCharging/></span>
+                <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
         <div class={"row justify-content-end" + (have_charge_cost ? "" : " mb-n2")}>
-            <div class="col-auto pr-2 mb-2">
-                <span class="pr-2"><Calendar/></span>
+            <div class="col-auto pe-2 mb-2">
+                <span class="pe-2"><Calendar/></span>
                 <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
             </div>
             <div class="col px-0" />
-            <div class="col-auto pl-2 mb-2">
+            <div class="col-auto ps-2 mb-2">
                 <span style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span>
-                <span class="pl-2"><Clock/></span>
+                <span class="ps-2"><Clock/></span>
             </div>
         </div>
         {have_charge_cost ?
             <div class="row justify-content-end mb-n2">
                 <div class="col px-0" />
-                <div class="col-auto pl-2 mb-2">
+                <div class="col-auto ps-2 mb-2">
                     <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
-                    <span class="pl-2">{wallet_icon}</span>
+                    <span class="ps-2">{wallet_icon}</span>
                 </div>
             </div> : undefined}
     </ListGroupItem>
@@ -294,9 +294,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             await this.testSendChargeLog();
                         }}
                     >
-                        <span class="mr-2"><Send size={16}/></span>
+                        <span class="me-2"><Send size={16}/></span>
                         {this.state.generator_state === GenerationState.ManualRemoteSend ? __("charge_tracker.content.sending") : __("charge_tracker.content.test_send")}
-                        {this.state.generator_state === GenerationState.ManualRemoteSend && <Spinner animation="border" size="sm" as="span" class="ml-2"/>}
+                        {this.state.generator_state === GenerationState.ManualRemoteSend && <Spinner animation="border" size="sm" as="span" class="ms-2"/>}
                     </Button>
                 ),
                 onRemoveClick: async () => {
@@ -557,9 +557,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                     await this.testSendChargeLog();
                                 }}
                             >
-                                <span class="mr-2"><Send size={16}/></span>
+                                <span class="me-2"><Send size={16}/></span>
                                 {this.state.generator_state === GenerationState.ManualRemoteSend ? __("charge_tracker.content.sending") : __("charge_tracker.content.test_send")}
-                                <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={this.state.generator_state !== GenerationState.ManualRemoteSend}/>
+                                <Spinner animation="border" size="sm" as="span" className="ms-2" hidden={this.state.generator_state !== GenerationState.ManualRemoteSend}/>
                             </Button>
                         }
                     />
@@ -592,13 +592,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
             return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
-        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown className="col-12 col-sm pr-0 pl-sm-3 pl-0 mt-2 mt-sm-0">
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown className="col-12 col-sm pe-0 ps-sm-3 ps-0 mt-2 mt-sm-0">
             <Dropdown.Toggle className="w-100 text-nowrap" disabled={state.generator_state !== GenerationState.Ready}>
-                <span class="mr-2">
+                <span class="me-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
                 </span>
                     <Mail />
-                <Spinner animation="border" size="sm" className="ml-2" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
+                <Spinner animation="border" size="sm" className="ms-2" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {sendEmailDropdownItems}
@@ -629,10 +629,10 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
-                    <div class="row no-gutters">
+                    <div class="row g-0">
                         <div class="col-md-6">
                             <div class="input-group">
-                                <div class="input-group-prepend"><span class="input-group-text">{__("charge_tracker.content.from")}</span></div>
+                                <span class="input-group-text">{__("charge_tracker.content.from")}</span>
                                 <InputDate className="charge-tracker-input-group-prepend"
                                         date={state.start_date}
                                         onDate={(d: Date) => this.setState({start_date: d})}
@@ -641,7 +641,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         </div>
                         <div class="col-md-6">
                             <div class="input-group">
-                                <div class="input-group-prepend charge-tracker-input-group-append"><span class="input-group-text">{__("charge_tracker.content.to")}</span></div>
+                                <span class="charge-tracker-input-group-append input-group-text">{__("charge_tracker.content.to")}</span>
                                 <InputDate className="charge-tracker-input-group-prepend"
                                         date={state.end_date}
                                         onDate={(d: Date) => this.setState({end_date: d})}
@@ -676,7 +676,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 <Collapse in={state.file_type == "0"}>
                     <div>
                         <FormRow label={__("charge_tracker.content.pdf_letterhead")} label_muted={__("charge_tracker.content.pdf_letterhead_muted")}>
-                            <textarea name="letterhead" class="text-monospace form-control" id="letterhead" value={state.pdf_letterhead} onInput={(e) => {
+                            <textarea name="letterhead" class="font-monospace form-control" id="letterhead" value={state.pdf_letterhead} onInput={(e) => {
                                 let value = (e.target as HTMLInputElement).value;
                                 if (new Blob([value]).size <= 512)
                                     this.setState({pdf_letterhead: value});
@@ -729,11 +729,11 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 this.setState({show_spinner: false});
                             }
                         }}>
-                            <span class="mr-2">
+                            <span class="me-2">
                                 {state.file_type === "0" ? __("charge_tracker.content.download_btn_pdf") : __("charge_tracker.content.download_btn")}
                             </span>
                             <Download/>
-                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                            <Spinner animation="border" size="sm" as="span" className="ms-2" hidden={!state.show_spinner}/>
                         </Button>
                         {sendEmailDropdown}
                     </Row>

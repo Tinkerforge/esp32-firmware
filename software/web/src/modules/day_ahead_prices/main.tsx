@@ -376,7 +376,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     <div class="row mx-n1">
                         <div class="col-md-6 px-1">
                             <div class="input-group">
-                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                                <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                 <InputText
                                     value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
                                 />
@@ -384,7 +384,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         </div>
                         <div class="col-md-6 px-1">
                             <div class="input-group">
-                                <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                                <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                 <InputText
                                     value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
                                 />
@@ -446,7 +446,7 @@ export class DayAheadPricesStatus extends Component
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                            <span class="heating-fixed-size input-group-text">{__("today")}</span>
                             <InputText
                                 value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
                             />
@@ -454,7 +454,7 @@ export class DayAheadPricesStatus extends Component
                     </div>
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                            <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                             <InputText
                                 value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
                             />

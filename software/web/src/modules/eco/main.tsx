@@ -407,7 +407,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                                                                state.state.chargers.length == 0 ? -1 : state.state.chargers[0].start,
                                                                state.state.chargers.length == 0 ? -1 : state.state.chargers[0].amount)}>
                     <div class="input-group">
-                        <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">{__("eco.status.departure")}</span></div>
+                        <span class="eco-fixed-size input-group-text">{__("eco.status.departure")}</span>
                         <InputSelect
                             disabled={state.charge_plan.enable}
                             items={[
@@ -427,7 +427,7 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                     </div>
 
                 <div class="input-group flex-nowrap mt-2">
-                        <div class="input-group-prepend"><span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span></div>
+                        <span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span>
                         {/*TODO: fix rounded corners*/}
                         <InputNumber
                             disabled={state.charge_plan.enable}

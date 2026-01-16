@@ -152,14 +152,14 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 
 //#if MODULE_NFC_AVAILABLE
         let nfc_tag_list = this.get_nfc_tag_list();
-        let nfc_start_button = <Dropdown className="flex-grow-1 mr-2">
+        let nfc_start_button = <Dropdown className="flex-grow-1 me-2">
                 <Dropdown.Toggle variant="primary"
                                  id={useId()}
-                                 className="form-control rounded-right"
+                                 className="form-control rounded-end"
                                  disabled={!(state.state.iec61851_state == 1 && (state.slots[4].max_current == 0 || state.slots[6].max_current == 0))}>
                     {__("evse.status.start_charging")}
                 </Dropdown.Toggle>
-                <Dropdown.Menu alignRight>
+                <Dropdown.Menu align="end">
                     <Dropdown.Header class="text-wrap">{nfc_tag_list.length > 0 ? __("evse.status.start_charge_for_user") : __("evse.status.start_charge_no_tags")}</Dropdown.Header>
                     {nfc_tag_list}
                 </Dropdown.Menu>
@@ -167,7 +167,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
 //#endif
 
         let evse_start_button = <Button
-                className="form-control mr-2 rounded-right"
+                className="form-control me-2 rounded-end"
                 disabled={!(state.state.iec61851_state == 1 && state.slots[4].max_current == 0)}
                 onClick={() =>  API.call('evse/start_charging', {}, () => __("evse.script.start_charging_failed"))}>
                 {__("evse.status.start_charging")}
@@ -213,7 +213,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                         {evse_start_button}
 {/*#endif*/}
                         <Button
-                            className="form-control rounded-left"
+                            className="form-control rounded-start"
                             disabled={!(state.state.charger_state == 2 || state.state.charger_state == 3 || (state.state.iec61851_state == 1 && state.slots[4].max_current != 0))}
                             onClick={() => {
 {/*#if MODULE_NFC_AVAILABLE*/}

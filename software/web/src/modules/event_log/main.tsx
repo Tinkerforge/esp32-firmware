@@ -228,9 +228,9 @@ export class EventLog extends Component<{}, EventLogState> {
                     <Button variant="primary" className="form-control" onClick={() => this.download_debug_report()} style="height: unset;">
                         <span class="text-nowrap">{__("event_log.content.debug_report")}</span>{" "}
                         <span class="text-nowrap">
-                            <span class="ml-1 mr-2">{__("event_log.content.debug_report_no_passwords")}</span>
+                            <span class="ms-1 me-2">{__("event_log.content.debug_report_no_passwords")}</span>
                             <Download/>
-                            <Spinner animation="border" size="sm" as="span" className="ml-2" hidden={!state.show_spinner}/>
+                            <Spinner animation="border" size="sm" as="span" className="ms-2" hidden={!state.show_spinner}/>
                         </span>
                     </Button>
                 </div>

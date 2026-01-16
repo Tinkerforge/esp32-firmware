@@ -261,15 +261,15 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 onClick={selectable ? () => {this.props.onResultSelected(result)} : undefined}
                 style={selectable ? "" : "cursor: default; background-color: #eeeeee !important;"}>
             <div class="d-flex w-100 justify-content-between">
-                <span class="h5 text-left">{result.display_name}</span>
+                <span class="h5 text-start">{result.display_name}</span>
                 {selectable ? undefined :
-                    <span class="text-right" style="color:red">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
+                    <span class="text-end" style="color:red">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
                 }
             </div>
             <div class="d-flex w-100 justify-content-between">
-                <span class="text-left">{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</span>
+                <span class="text-start">{__("meters_sun_spec.content.config_device_address")}: {result.device_address}</span>
                 <span class="text-center">{__("meters_sun_spec.content.config_serial_number")}: {result.serial_number}</span>
-                <span class="text-right">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</span>
+                <span class="text-end">{__("meters_sun_spec.content.config_model_id")}: {translate_unchecked(`meters_sun_spec.content.model_${result.model_id}`)} [{result.model_id}] / {result.model_instance}</span>
             </div>
         </ListGroupItem>;
     }
@@ -397,7 +397,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             disabled={this.state.running || this.state.log.length == 0}
                             className="form-control"
                             onClick={() => util.downloadToTimestampedFile(this.state.log, __("meters_sun_spec.content.scan_log_file"), "txt", "text/plain")}>
-                        <span class="mr-2">{__("meters_sun_spec.content.scan_log")}</span>
+                        <span class="me-2">{__("meters_sun_spec.content.scan_log")}</span>
                         <Download/>
                     </Button>
                 </FormRow></>

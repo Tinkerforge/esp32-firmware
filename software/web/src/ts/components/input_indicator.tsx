@@ -52,9 +52,7 @@ export function InputIndicator(props: InputIndicatorProps) {
 
     return <div class="input-group">
         {inner}
-        <div class="input-group-append">
-            <Button variant={props.resetVariant} className="form-control rounded-right" type="button" onClick={props.onReset}>{props.resetText}</Button>
-        </div>
+        <Button variant={props.resetVariant} type="button" onClick={props.onReset}>{props.resetText}</Button>
     </div>;
 }
 
