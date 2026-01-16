@@ -1140,7 +1140,7 @@ void RemoteAccess::register_events()
                     if (!this->management_request_done && !this->management_auth_failed) {
                         this->resolve_management();
                     }
-                }, 30_s + jitter, 30_s + jitter);
+                }, 30_s + jitter, jitter);
             }
         } else {
             // Cancel task if currently scheduled.
