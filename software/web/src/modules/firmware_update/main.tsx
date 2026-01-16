@@ -275,7 +275,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                                     onClick={() => this.setState({check_state: CheckState.InProgress, install_state: InstallState.Idle, install_progress: 0}, () => API.call("firmware_update/check_for_update", null, () => ""))}
                                     disabled={this.state.check_state == CheckState.InProgress || this.state.install_state == InstallState.InProgress}>
                                 {__("firmware_update.content.check_for_update")}
-                                <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={this.state.check_state != CheckState.InProgress}></span>
+                                <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={this.state.check_state != CheckState.InProgress}></span>
                             </Button>
                         </FormRow>
 
@@ -295,12 +295,10 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                                             ? this.state.update_version + this.format_build_extra(this.state.update_version, '')
                                             : __("firmware_update.content.no_update")}>
                                         {this.state.update_version.length > 0
-                                            ? <div class="input-group-append">
-                                                <Button variant="primary"
-                                                        type="button"
-                                                        onClick={() => this.setState({install_origin: InstallOrigin.InstallFirmware, install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, () => __("firmware_update.script.install_failed")))}
-                                                        disabled={this.state.install_state == InstallState.InProgress}>{__("firmware_update.content.install_update")}</Button>
-                                            </div>
+                                            ? <Button variant="primary"
+                                                    type="button"
+                                                    onClick={() => this.setState({install_origin: InstallOrigin.InstallFirmware, install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, () => __("firmware_update.script.install_failed")))}
+                                                    disabled={this.state.install_state == InstallState.InProgress}>{__("firmware_update.content.install_update")}</Button>
                                             : undefined
                                         }
                                     </InputText>

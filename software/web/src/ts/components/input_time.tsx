@@ -106,7 +106,7 @@ export function InputTime(props: InputTimeProps) {
                     <ArrowLeft/>
                 </Button>
                 <Button variant="primary"
-                        className="form-control px-1 rounded-right"
+                        className="form-control px-1 rounded-end"
                         onClick={() => {
                             let date = valueToDate(dateToValue(props.date));
 

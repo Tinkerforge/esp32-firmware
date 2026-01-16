@@ -145,7 +145,7 @@ export class Table extends Component<TableProps, TableState> {
                                 {row.columnValues.map((value, k) => (
                                     <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                         {row.extraValue && k == 0 ?
-                                            <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="mr-2" size="sm"
+                                            <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="me-2" size="sm"
                                                 onClick={() => {
                                                     let showRowExtra = state.showRowExtra.concat();
                                                     showRowExtra[i] = !showRowExtra[i];
@@ -158,7 +158,7 @@ export class Table extends Component<TableProps, TableState> {
                                 <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
                                     <Button variant="primary"
                                             size="sm"
-                                            className="mr-2"
+                                            className="me-2"
                                             onClick={async () => {
                                                 await row.onEditShow();
                                                 this.setState({showEditModal: i});
@@ -227,7 +227,7 @@ export class Table extends Component<TableProps, TableState> {
                             <h5 class="text-break" style="margin-bottom: 0;">
                                 {row.extraValue ?
                                     <span class="row mx-n1 align-items-center">
-                                        <span class="col-auto px-1"><Button className="mr-2" size="sm"
+                                        <span class="col-auto px-1"><Button className="me-2" size="sm"
                                             onClick={() => {
                                                 let showRowExtra = state.showRowExtra.concat();
                                                 showRowExtra[i] = !showRowExtra[i];
@@ -243,7 +243,7 @@ export class Table extends Component<TableProps, TableState> {
                             <div style="white-space: nowrap; vertical-align: middle;">
                                 <Button variant="primary"
                                         size="sm"
-                                        className="ml-2"
+                                        className="ms-2"
                                         onClick={async () => {
                                             await row.onEditShow();
                                             this.setState({showEditModal: i});
@@ -254,7 +254,7 @@ export class Table extends Component<TableProps, TableState> {
                                 </Button>
                                 <Button variant="danger"
                                         size="sm"
-                                        className="ml-2"
+                                        className="ms-2"
                                         onClick={async () => {
                                             if (await row.onRemoveClick()) {
                                                 let showRowExtra = state.showRowExtra.concat();
@@ -292,7 +292,7 @@ export class Table extends Component<TableProps, TableState> {
                             <div style="white-space: nowrap; vertical-align: middle;">
                             <Button variant="primary"
                                     size="sm"
-                                    className="ml-2"
+                                    className="ms-2"
                                     onClick={async () => {
                                         await props.onAddShow();
                                         this.setState({showAddModal: true});

@@ -213,7 +213,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                     }} />
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_time")}>
-                                <div class="row no-gutters">
+                                <div class="row g-0">
                                     <div class="col-md-4 input-group">
                                         <InputSelect
                                             placeholder={__("select")}
@@ -235,8 +235,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         />
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="input-group pl-2">
-                                            <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span></div>
+                                        <div class="input-group ps-2">
+                                            <span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
                                                 disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
@@ -249,7 +249,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                                 }}
                                                 value={Math.trunc(this.state.edit_rule_config.time_start / 60).toString()}
                                             />
-                                            <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                            <span class="input-group-text">:</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
                                                 disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
@@ -265,8 +265,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="input-group pl-2">
-                                            <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span></div>
+                                        <div class="input-group ps-2">
+                                            <span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
                                                 disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
@@ -279,7 +279,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                                 }}
                                                 value={Math.trunc(this.state.edit_rule_config.time_end / 60).toString()}
                                             />
-                                            <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                            <span class="input-group-text">:</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
                                                 disabled={this.state.edit_rule_config.time_cond == RuleCondition.Ignore}
@@ -524,7 +524,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             }} />
                     </FormRow>,
                     <FormRow label={__("batteries.content.edit_rule_time")}>
-                        <div class="row no-gutters">
+                        <div class="row g-0">
                             <div class="col-md-4 input-group">
                                 <InputSelect
                                     placeholder={__("select")}
@@ -546,8 +546,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 />
                             </div>
                             <div class="col-md-4">
-                                <div class="input-group pl-2">
-                                    <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span></div>
+                                <div class="input-group ps-2">
+                                    <span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
                                         disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
@@ -560,7 +560,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         }}
                                         value={Math.trunc(this.state.add_rule_config.time_start / 60).toString()}
                                     />
-                                    <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                    <span class="input-group-text">:</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
                                         disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
@@ -576,8 +576,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="input-group pl-2">
-                                    <div class="input-group-prepend"><span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span></div>
+                                <div class="input-group ps-2">
+                                    <span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
                                         disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}
@@ -590,7 +590,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         }}
                                         value={Math.trunc(this.state.add_rule_config.time_end / 60).toString()}
                                     />
-                                    <div class="input-group-append input-group-prepend"><span class="input-group-text">:</span></div>
+                                    <span class="input-group-text">:</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
                                         disabled={this.state.add_rule_config.time_cond == RuleCondition.Ignore}

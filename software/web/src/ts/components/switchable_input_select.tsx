@@ -65,20 +65,20 @@ export function SwitchableInputSelect(props: SwitchableInputSelectProps) {
     const invalidFeedback = props.invalidFeedback ? <div class="invalid-feedback" hidden={props.hidden}>{props.invalidFeedback}</div> : undefined;
 
     return (
-        <div class="row no-gutters input-group rounded">
-            <div class="d-none d-sm-block input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (switch_label_min_width ? ("min-width: " + switch_label_min_width) : "")}>
-                <input type="checkbox" class="custom-control-input" id={label_desktop_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
-                <label class="custom-control-label" for={label_desktop_id}>{checked ? switch_label_active : switch_label_inactive}</label>
+        <div class="input-group flex-nowrap rounded">
+            <div class="d-none d-sm-block input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (switch_label_min_width ? ("min-width: " + switch_label_min_width) : "")}>
+                <input type="checkbox" class="form-check-input" id={label_desktop_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
+                <label class="form-check-label" for={label_desktop_id}>{checked ? switch_label_active : switch_label_inactive}</label>
             </div>
-            <div class="d-block d-sm-none input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
-                <input type="checkbox" class="custom-control-input" id={label_mobile_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
-                <label class="custom-control-label" for={label_mobile_id}></label>
+            <div class="d-block d-sm-none input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
+                <input type="checkbox" class="form-check-input" id={label_mobile_id} checked={checked} onClick={onSwitch} disabled={props.disabled} />
+                <label class="form-check-label" for={label_mobile_id}></label>
             </div>
             <select
                 {...p}
                 value={value}
                 disabled={!checked || props.disabled}
-                class={(className ?? "") + " form-control custom-select"}
+                class={(className ?? "") + " form-control form-select"}
                 style={style ?? ""}
                 id={id}
                 onInput={(e) => onValue((e.target as HTMLSelectElement).value)}

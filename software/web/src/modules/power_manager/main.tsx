@@ -155,7 +155,7 @@ export class PowerManagerStatus extends Component {
                         <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
-                                className="m-1 rounded-left rounded-right"
+                                className="m-1 rounded-start rounded-end"
                                 variant={!phases_bt ? "success" : "primary"}
                                 disabled={!phases_bt || state.external_control != 0}
                                 onClick={() => this.change_phase(1)}>
@@ -163,7 +163,7 @@ export class PowerManagerStatus extends Component {
                             </Button>
                             <Button
                                 style="display: flex;align-items: center;justify-content: center;"
-                                className="m-1 rounded-left rounded-right"
+                                className="m-1 rounded-start rounded-end"
                                 variant={phases_bt ? "success" : "primary"}
                                 disabled={phases_bt || state.external_control != 0}
                                 onClick={() => this.change_phase(3)}>

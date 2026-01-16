@@ -619,7 +619,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
                             disabled={start_button_disabled}>
                             {__("batteries_modbus_tcp.content.test_start")}
                         </Dropdown.Toggle>
-                        <Dropdown.Menu alignRight>
+                        <Dropdown.Menu align="end">
                             <Dropdown.Header class="text-wrap">{__("batteries_modbus_tcp.content.test_mode")}</Dropdown.Header>
                             {this.props.modes.map(mode =>
                                 <Dropdown.Item

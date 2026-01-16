@@ -342,14 +342,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <InputText
                             readonly={true}
                             value={get_remaining_minutes()}>
-                            <div class="input-group-append">
-                                <Button
-                                    className="form-control rounded-right"
-                                    variant="primary"
-                                    onClick={() => API.call('heating/reset_holding_time', {}, () => "")}>
-                                    {__("heating.content.update_now")}
-                                </Button>
-                            </div>
+                            <Button
+                                variant="primary"
+                                onClick={() => API.call('heating/reset_holding_time', {}, () => "")}>
+                                {__("heating.content.update_now")}
+                            </Button>
                         </InputText>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")} help={__("heating.content.sg_ready_output1_help")}>
@@ -519,7 +516,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
                                     />
@@ -527,7 +524,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                     <InputText
                                         value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
                                     />
@@ -539,7 +536,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("today")}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
                                     />
@@ -547,7 +544,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("tomorrow")}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                     <InputText
                                         value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
                                     />
@@ -559,7 +556,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         <div class="row mx-n1">
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span>
                                     <InputText
                                         value={state.heating_state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
@@ -567,7 +564,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             </div>
                             <div class="col-md-6 px-1">
                                 <div class="input-group">
-                                    <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span></div>
+                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span>
                                     <InputText
                                         value={state.heating_state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
                                     />
@@ -723,7 +720,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span></div>
+                            <span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span>
                             <InputText
                                 value={this.state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
                             />
@@ -731,7 +728,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                     </div>
                     <div class="col-md-6 px-1">
                         <div class="input-group">
-                            <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span></div>
+                            <span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span>
                             <InputText
                                 value={this.state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
                             />
