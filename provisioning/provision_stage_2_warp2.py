@@ -596,13 +596,11 @@ def main(stage3, scanner):
         result["uid"] = scanner.qr_esp_uid
         ssid = scanner.qr_hardware_type + "-" + scanner.qr_esp_uid
         host = ssid + ".local"
-        event_log = connect_to_ethernet(ssid, "event_log")[0].decode('utf-8')
 
-        m = re.search(r"WARP{gen} (?:CHARGER|Charger) V(\d+).(\d+).(\d+)".format(gen=scanner.qr_gen), event_log)
-        if not m:
-            fatal_error("Failed to find version number in event log!" + event_log)
+        info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
+        print(info_version)
 
-        version = [int(x) for x in m.groups()]
+        version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
         latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
 
         if version > latest_version:

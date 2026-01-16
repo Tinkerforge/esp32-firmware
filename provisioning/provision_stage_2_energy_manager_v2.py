@@ -112,21 +112,16 @@ class EnergyManagerV2Tester:
 
         self.ssid = hardware_type + "-" + esp_uid_qr
 
-        event_log = connect_to_ethernet(self.ssid, "event_log")[0].decode('utf-8')
-        print(event_log)
+        ethernet_state = json.loads(connect_to_ethernet(self.ssid, "ethernet/state")[0].decode('utf-8'))
+        print(ethernet_state)
 
-        macs = re.findall(re.compile(r'ethernet         \| Connected: 100 Mbps Full Duplex, MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})'), event_log)
-        if len(macs) == 0:
-            self.fatal_error("Failed to find MAC address in event log!")
-        self.mac = macs[0]
+        self.mac = ethernet_state["mac"]
 
-        m = re.search(r"(?:WARP ENERGY MANAGER 2.0|WARP Energy Manager 2.0|SMART ENERGY BROKER) V(\d+).(\d+).(\d+)", event_log)
-        if not m:
-            self.fatal_error("Failed to find version number in event log!" + event_log)
+        info_version = json.loads(connect_to_ethernet(self.ssid, "info/version")[0].decode('utf-8'))
+        print(info_version)
 
-        version = [int(x) for x in m.groups()]
+        version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
         latest_version = [int(x) for x in re.search(r"{0}_firmware_(\d+)_(\d+)_(\d+).bin".format(self.firmware_type), wem_brick_path).groups()]
-
 
         if version > latest_version:
             self.fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
