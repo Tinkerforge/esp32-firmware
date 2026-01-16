@@ -16,7 +16,7 @@ selected disabled   variant   clickable   symbol
 function ChargeModeButton(props: {selected: boolean, disabled: boolean, mode: ConfigChargeMode, name: string, setMode: (x: ConfigChargeMode) => void}) {
     return <Button
         style="display: flex;align-items: center;justify-content: center;"
-        className="m-1 rounded-left rounded-right"
+        className="m-1 rounded-start rounded-end"
         variant={props.selected ? "success" : (props.disabled ? "secondary" : "primary")}
         disabled={props.disabled}
         onClick={() => props.setMode(props.mode)}>

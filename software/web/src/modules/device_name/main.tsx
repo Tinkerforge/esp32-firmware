@@ -52,10 +52,8 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
                     API.save("info/display_name", state, () => __("device_name.script.save_failed"));
                 }}>
-                    <InputText class={hide_save ? "rounded-right" : undefined} maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
-                        <div class="input-group-append">
-                            <Button className="form-control rounded-right" type="submit" hidden={hide_save} disabled={hide_save}><Save/></Button>
-                        </div>
+                    <InputText class={hide_save ? "rounded-end" : undefined} maxLength={32} value={state.display_name} onValue={(v) => this.setState({display_name: v})} required>
+                        <Button type="submit" hidden={hide_save} disabled={hide_save}><Save/></Button>
                     </InputText>
                 </form>
             </PageHeader>

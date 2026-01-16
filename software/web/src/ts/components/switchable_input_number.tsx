@@ -66,14 +66,14 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
     }
 
     return (
-        <div class="row no-gutters input-group rounded">
-            <div class="d-none d-sm-block input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
-                <input type="checkbox" class="custom-control-input" id={label_desktop_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-                <label class="custom-control-label" for={label_desktop_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
+        <div class="input-group flex-nowrap rounded">
+            <div class="d-none d-sm-block input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0.6rem; border-bottom-right-radius: 0; border-top-right-radius: 0; text-align: left; " + (props.switch_label_min_width ? ("min-width: " + props.switch_label_min_width) : "")}>
+                <input type="checkbox" class="form-check-input" id={label_desktop_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+                <label class="form-check-label" for={label_desktop_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
             </div>
-            <div class="d-block d-sm-none input-group-prepend input-group-text custom-control custom-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
-                <input type="checkbox" class="custom-control-input" id={label_mobile_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-                <label class="custom-control-label" for={label_mobile_id}></label>
+            <div class="d-block d-sm-none input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
+                <input type="checkbox" class="form-check-input" id={label_mobile_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+                <label class="form-check-label" for={label_mobile_id}></label>
             </div>
             <input class="form-control no-spin"
                 ref={input}
@@ -91,48 +91,46 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 onClick={undefined}
                 disabled={!props.checked || props.disabled}
             />
-            <div class="input-group-append">
-                {props.unit ? <div class="form-control input-group-text">{props.unit}</div> : undefined}
-                <Button variant="primary"
-                        disabled={!props.checked || props.value == props.min || props.disabled}
-                        className="form-control px-1"
-                        style="margin-right: .125rem !important;"
-                        onClick={() => {
-                            if (!props.checked || props.disabled) {
-                                return;
-                            }
+            {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
+            <Button variant="primary"
+                    disabled={!props.checked || props.value == props.min || props.disabled}
+                    className="px-1"
+                    style="margin-right: .125rem !important;"
+                    onClick={() => {
+                        if (!props.checked || props.disabled) {
+                            return;
+                        }
 
-                            if (util.hasValue(props.value) && !isNaN(props.value)) {
-                                props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
-                            }
-                            else {
-                                props.onValue(props.min as number);
-                            }
+                        if (util.hasValue(props.value) && !isNaN(props.value)) {
+                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                        }
+                        else {
+                            props.onValue(props.min as number);
+                        }
 
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <Minus/>
-                </Button>
-                <Button variant="primary"
-                        disabled={!props.checked || props.value == props.max || props.disabled}
-                        className="form-control px-1 rounded-right"
-                        onClick={() => {
-                            if (!props.checked || props.disabled) {
-                                return;
-                            }
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <Minus/>
+            </Button>
+            <Button variant="primary"
+                    disabled={!props.checked || props.value == props.max || props.disabled}
+                    className="px-1"
+                    onClick={() => {
+                        if (!props.checked || props.disabled) {
+                            return;
+                        }
 
-                            if (util.hasValue(props.value) && !isNaN(props.value)) {
-                                props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
-                            }
-                            else {
-                                props.onValue(props.max as number);
-                            }
+                        if (util.hasValue(props.value) && !isNaN(props.value)) {
+                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                        }
+                        else {
+                            props.onValue(props.max as number);
+                        }
 
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <Plus/>
-                </Button>
-            </div>
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <Plus/>
+            </Button>
             {invalidFeedback}
         </div>
     );

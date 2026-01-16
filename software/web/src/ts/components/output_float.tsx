@@ -59,18 +59,16 @@ export function OutputFloat(props: OutputFloatProps) {
 
     return (
         <div class={"input-group" + (props.small ? " input-group-sm" : "")}>
-            <input class={"form-control" + (props.small ? " form-control-sm" : "") + " no-spin text-right text-monospace " + (props.class ? props.class : "")}
+            <input class={"form-control" + (props.small ? " form-control-sm" : "") + " no-spin text-end font-monospace " + (props.class ? props.class : "")}
                    style={pad_right}
                    id={id}
                    type="text"
                    readonly
                    value={val}/>
             {props.maxUnitLengthOnPage == 0 && props.unit == "" ? undefined :
-                <div class="input-group-append">
-                    <div class={"form-control" + (props.small ? " form-control-sm" : "") + " input-group-text"} style={`width: ${maxUnitLength + 1.5}rem;`}>
-                        {props.unit}
-                    </div>
-                </div>
+                <span class={"input-group-text" + (props.small ? " input-group-text-sm" : "")} style={`width: ${maxUnitLength + 1.5}rem;`}>
+                    {props.unit}
+                </span>
             }
         </div>
     );

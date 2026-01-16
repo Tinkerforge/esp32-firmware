@@ -2,6 +2,8 @@
     min-width: 110px;
 }
 
+// Bootstrap 5: input-group-prepend/append no longer exist
+// These custom classes handle responsive border radius adjustments
 @media (max-width: 768px) {
     .eco-input-group-append {
         margin-left: 0px;
@@ -11,19 +13,21 @@
         margin-right: 0px;
     }
 
-    .input-group-prepend:not(.eco-input-group-append) .input-group-text {
+    .eco-input-group-prepend.input-group-text {
         border-bottom-left-radius: 0;
     }
 
-    .input-group-prepend.eco-input-group-append .input-group-text {
+    .eco-input-group-append.input-group-text {
         border-top-left-radius: 0;
     }
 
-    .input-group-prepend:not(.eco-input-group-append) + input {
+    .eco-input-group-prepend + input,
+    .eco-input-group-prepend + select {
         border-bottom-right-radius: 0;
     }
 
-    .input-group-prepend.eco-input-group-append + input {
+    .eco-input-group-append + input,
+    .eco-input-group-append + select {
         border-top-right-radius: 0;
     }
 }
@@ -33,7 +37,7 @@
         margin-left: -1px;
     }
 
-    .eco-input-group-append .input-group-text {
+    .eco-input-group-append.input-group-text {
         border-bottom-left-radius: 0;
         border-top-left-radius: 0;
     }
@@ -42,7 +46,7 @@
         margin-right: -1px;
     }
 
-    .eco-input-group-prepend .input-group-text {
+    .eco-input-group-prepend.input-group-text {
         border-bottom-right-radius: 0;
         border-top-right-radius: 0;
     }

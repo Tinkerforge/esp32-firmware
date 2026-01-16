@@ -71,7 +71,7 @@ function Charger (props: {i: number,
                 </FormRow>
 
                 <FormRow label="Last switch">
-                    <div class="row no-gutters justify-content-center">
+                    <div class="row g-0 justify-content-center">
                         <div class="col">
                             <InputText value={(props.ll_state.ls == 0 ? 0 : util.format_timespan_ms(uptime - props.ll_state.ls))}/>
                         </div>
@@ -79,7 +79,7 @@ function Charger (props: {i: number,
                 </FormRow>
 
                 <FormRow label="Last plug in">
-                    <div class="row no-gutters justify-content-center">
+                    <div class="row g-0 justify-content-center">
                         <div class="col">
                             <InputText value={(props.ll_state.lp == 0 ? 0 : util.format_timespan_ms(uptime - props.ll_state.lp))}/>
                         </div>
@@ -92,7 +92,7 @@ function Charger (props: {i: number,
 
 
                 <FormRow label="Last wakeup">
-                    <div class="row no-gutters justify-content-center">
+                    <div class="row g-0 justify-content-center">
                         <div class="col">
                             <InputText value={(props.ll_state.lw == 0 ? 0 : util.format_timespan_ms(uptime - props.ll_state.lw))}/>
                         </div>
@@ -105,7 +105,7 @@ function Charger (props: {i: number,
 
 
                 <FormRow label="Ignore requested">
-                    <div class="row no-gutters justify-content-center">
+                    <div class="row g-0 justify-content-center">
                         <div class="col">
                             <InputText value={((props.ll_state.ip == 0) || (props.ll_state.ip - uptime < 0) ? 0 : util.format_timespan_ms(props.ll_state.ip - uptime))}/>
                         </div>

@@ -186,8 +186,8 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         return <>
                     <FormRow label={this.props.description} label_muted={this.props.description_muted}>
                         <div class="input-group pb-2">
-                            <Button variant="primary" className="form-control rounded-right mr-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{__("component.debug_logger.debug_start")}</Button>
-                            <Button variant="primary" className="form-control rounded-left" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{__("component.debug_logger.debug_stop")}</Button>
+                            <Button variant="primary" className="form-control rounded-end me-2" onClick={() => {this.debug_start()}} disabled={debug_running}>{__("component.debug_logger.debug_start")}</Button>
+                            <Button variant="primary" className="form-control rounded-start" onClick={() => {this.debug_stop()}} disabled={!debug_running}>{__("component.debug_logger.debug_stop")}</Button>
                         </div>
                         <InputText value={debug_status}/>
                     </FormRow>

@@ -34,9 +34,9 @@ export function Switch(props: SwitchProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
 
     // borderless-form-control sets background-color to white. unset the background-color to make the switch work on every background
-    let inner = <div class="borderless-form-control custom-control custom-switch" style="background-color: unset;">
-            <input type="checkbox" class="custom-control-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
-            <label class="custom-control-label" for={id}>{props.desc}</label>
+    let inner = <div class="borderless-form-control form-check form-switch" style="background-color: unset;">
+            <input type="checkbox" class="form-check-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+            <label class="form-check-label" for={id}>{props.desc}</label>
         </div>;
 
     if (props.className !== undefined && props.className != "")

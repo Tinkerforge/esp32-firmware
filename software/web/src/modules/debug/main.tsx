@@ -370,8 +370,8 @@ export class Debug extends Component {
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
                     <div class="input-group pb-2">
-                        <Button variant="primary" className="form-control rounded-right mr-2" onClick={util.pauseWebSockets}>{__("debug.content.websocket_pause")}</Button>
-                        <Button variant="primary" className="form-control rounded-left" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
+                        <Button variant="primary" className="form-control rounded-end me-2" onClick={util.pauseWebSockets}>{__("debug.content.websocket_pause")}</Button>
+                        <Button variant="primary" className="form-control rounded-start" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
                     </div>
                 </FormRow>
             </SubPage>

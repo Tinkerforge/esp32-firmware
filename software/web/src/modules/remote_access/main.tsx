@@ -842,10 +842,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                         </FormRow>
                         <FormRow label={__("remote_access.content.ping")}>
                             <div class="input-group">
-                                <Button className="form-control mr-2 rounded-right" onClick={() => {
+                                <Button className="form-control me-2 rounded-end" onClick={() => {
                                     API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"));
                                 }}>{__("remote_access.content.start_ping")}</Button>
-                                <Button className="form-control rounded-left" onClick={() => {
+                                <Button className="form-control rounded-start" onClick={() => {
                                     API.call("remote_access/stop_ping", {}, () => __("remote_access.content.stop_ping_failed"));
                                 }}>{__("remote_access.content.stop_ping")}</Button>
                             </div>

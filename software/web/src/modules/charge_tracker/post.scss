@@ -11,6 +11,8 @@
     }
 }
 
+// Bootstrap 5: input-group-prepend/append no longer exist
+// These custom classes handle responsive border radius adjustments
 @media (max-width: 768px) {
     .charge-tracker-input-group-append {
         margin-left: 0px;
@@ -20,19 +22,21 @@
         margin-right: 0px;
     }
 
-    .input-group-prepend:not(.charge-tracker-input-group-append) .input-group-text {
+    .charge-tracker-input-group-prepend.input-group-text {
         border-bottom-left-radius: 0;
     }
 
-    .input-group-prepend.charge-tracker-input-group-append .input-group-text {
+    .charge-tracker-input-group-append.input-group-text {
         border-top-left-radius: 0;
     }
 
-    .input-group-prepend:not(.charge-tracker-input-group-append) + input {
+    .charge-tracker-input-group-prepend + input,
+    .charge-tracker-input-group-prepend + select {
         border-bottom-right-radius: 0;
     }
 
-    .input-group-prepend.charge-tracker-input-group-append + input {
+    .charge-tracker-input-group-append + input,
+    .charge-tracker-input-group-append + select {
         border-top-right-radius: 0;
     }
 }
@@ -42,7 +46,7 @@
         margin-left: -1px;
     }
 
-    .charge-tracker-input-group-append .input-group-text {
+    .charge-tracker-input-group-append.input-group-text {
         border-bottom-left-radius: 0;
         border-top-left-radius: 0;
     }
@@ -51,7 +55,7 @@
         margin-right: -1px;
     }
 
-    .charge-tracker-input-group-prepend .input-group-text {
+    .charge-tracker-input-group-prepend.input-group-text {
         border-bottom-right-radius: 0;
         border-top-right-radius: 0;
     }

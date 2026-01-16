@@ -60,9 +60,7 @@ export function OutputDatetime(props: OutputDatetimeProps) {
     return (
         <div class="input-group">
             {inner}
-            <div class="input-group-append">
-                <button class="btn btn-primary form-control rounded-right" type="button" onClick={props.onClick} disabled={props.buttonDisabled}>{props.buttonText}</button>
-            </div>
+            <button class="btn btn-primary" type="button" onClick={props.onClick} disabled={props.buttonDisabled}>{props.buttonText}</button>
         </div>
 
     );

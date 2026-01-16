@@ -91,7 +91,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
         return (
             <>
                 <div class={"input-group rounded" + (this.state.shake ? " shake" : "")}>
-                    <input class={"form-control" + (props.showAlways && props.hideClear ? " rounded-right" : "")}
+                    <input class={"form-control" + (props.showAlways && props.hideClear ? " rounded-end" : "")}
                         id={id}
                         type={state.show || props.showAlways ? "text" : "password"}
                         value={props.value ?? ""}
@@ -111,17 +111,15 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                         disabled={toBeCleared}
                         {...props}
                     />
-                    <div class="input-group-append">
-                        { props.showAlways ? null :
-                            <Button variant="primary" className={"px-1" + (props.hideClear ? " rounded-right" : "")} style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
-                        }
-                        { props.hideClear ? null :
-                            <div class="input-group-text custom-control custom-switch rounded-right" style="padding-left: 2.75rem; padding-right: 0.5rem;">
-                                <input id={id+"-clear"} type="checkbox" class="custom-control-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
-                                <label class="custom-control-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
-                            </div>
-                        }
-                    </div>
+                    { props.showAlways ? null :
+                        <Button variant="primary" className={"px-1" + (props.hideClear ? " rounded-end" : "")} style="line-height: 20px;" onClick={() => this.setState({show: !state.show})} disabled={toBeCleared}>{state.show ? <EyeOff/> : <Eye/>}</Button>
+                    }
+                    { props.hideClear ? null :
+                        <div class="input-group-text form-check form-switch rounded-end" style="padding-left: 2.75rem; padding-right: 0.5rem;">
+                            <input id={id+"-clear"} type="checkbox" class="form-check-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
+                            <label class="form-check-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
+                        </div>
+                    }
                     {invalidFeedback}
                 </div>
                 <div class="mt-2" hidden={!util.capsLockActive()}>{__("component.input_password.capslock_enabled")}</div>

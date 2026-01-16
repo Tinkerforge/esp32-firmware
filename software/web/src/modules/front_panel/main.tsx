@@ -167,12 +167,10 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
 */
     get_tile_config(tile_index: number, tile_items: [string, string][]) {
         return <FormRow label="">
-            <div class="row no-gutters">
+            <div class="row g-0">
                 <div class="col-md-12">
                     <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">{__("front_panel.content.setting")}</span>
-                        </div>
+                        <span class="input-group-text">{__("front_panel.content.setting")}</span>
                         <InputSelect
                             className="front-panel-input-group-prepend"
                             items={tile_items}

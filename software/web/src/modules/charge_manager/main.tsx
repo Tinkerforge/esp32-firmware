@@ -558,7 +558,7 @@ function CMStatusCharger(props: {
                 </div>
                 <div class={"card-body " + c_body_classes}>
                     <h5 class={"card-title my-0"}><Button
-                        className="mr-2"
+                        className="me-2"
                         size="sm"
                         onClick={() => setShowDetails(!showDetails)}>
                         <ChevronRight {...{class: showDetails ? "rotated-chevron" : "unrotated-chevron"} as any}/>

@@ -199,15 +199,15 @@ export class App extends Component<AppProps, AppState> {
 
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0 pb-2 pt-2"} hidden={util.is_native_median_app()}>
-                <a href={navbarHref}><img id="navbar-logo" class="pt-2 pb-2 pl-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
-                <button class="navbar-toggler d-md-none collapsed pt-2 mr-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
+                <a href={navbarHref}><img id="navbar-logo" class="pt-2 pb-2 ps-3" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 72px);" alt="logo"/></a>
+                <button class="navbar-toggler d-md-none collapsed pt-2 me-3" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                     <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                 </button>
                 {/* show inline status here? */}
             </nav>
 
             <Container fluid>
-            <Tab.Container activeKey={this.state.sub_page} onSelect={(sub_page) => {
+            <Tab.Container activeKey={this.state.sub_page} transition={false} onSelect={(sub_page) => {
                     let sub_page_changed = this.state.sub_page != sub_page;
 
                     if (sub_page_changed || this.state.sidebar_open) {
@@ -226,7 +226,7 @@ export class App extends Component<AppProps, AppState> {
                         </div>
                     </nav>
                     </Collapse>
-                    <main id="main" class={util.is_native_median_app() ? "col px-4": "col-md-9 ml-sm-auto col-lg-10 px-md-4"} style={this.state.visible ? undefined : "visibility: hidden;"}>
+                    <main id="main" class={util.is_native_median_app() ? "col px-4": "col-md-9 ms-sm-auto col-lg-10 px-md-4"} style={this.state.visible ? undefined : "visibility: hidden;"}>
                         <Tab.Content>
                             <div class={util.is_native_median_app() ? "alert_placeholder-app" : "alert_placeholder"}>
                                 {util.get_alerts().map((alert) => <Alert className="custom-alert" key={alert.id} variant={alert.variant} onClose={() => util.remove_alert(alert.id)} dismissible><strong>{alert.title()}</strong> {alert.text()}</Alert>)}
@@ -250,7 +250,7 @@ export class App extends Component<AppProps, AppState> {
                                             hideClear
                                         />
                                     </FormRow>
-                                    <div class="form-group text-right">
+                                    <div class="form-group text-end">
                                         <button id="main_login_button" type="submit" form="main_login_form" class="btn btn-primary">{__("main.login_button")}</button>
                                     </div>
                                 </form>

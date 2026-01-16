@@ -49,7 +49,7 @@ export class OutputTextarea extends Component<OutputTextareaProps, {}> {
              style=`resize: ${resize}; width: 100%; white-space: pre; line-height: 1.2; text-shadow: none; font-size: 0.875rem;`,
              ...rest} = props;
 
-        return <textarea class={"text-monospace form-control " + (props.moreClass ?? "")}
+        return <textarea class={"font-monospace form-control " + (props.moreClass ?? "")}
                          readOnly
                          id={useId()}
                          rows={rows}

@@ -197,7 +197,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             <div class="col-auto text-wrap" style="font-size: 1.1rem">{display_name}</div>
                         </div>
                         <div class="row align-items-center">
-                            <div class="col">{ap.encryption == 0 ? <Unlock {...{class: "mr-2"} as any}/> : <Lock {...{class: "mr-2"} as any}/>}</div>
+                            <div class="col">{ap.encryption == 0 ? <Unlock {...{class: "me-2"} as any}/> : <Lock {...{class: "me-2"} as any}/>}</div>
                             <div class="col-auto">{ap.bssid}</div>
                         </div>
                 </ListGroupItem>
@@ -387,9 +387,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                     maxLength={32}
                                     value={state.ssid}
                                     onValue={this.set("ssid")}>
-                                <div class="input-group-append">
-                                    <Button className="form-control rounded-right" variant="primary" onClick={() => this.start_scan()}>{__("wifi.content.sta_scan")}</Button>
-                                </div>
+                                <Button variant="primary" onClick={() => this.start_scan()}>{__("wifi.content.sta_scan")}</Button>
                             </InputText>
                     </FormRow>
 

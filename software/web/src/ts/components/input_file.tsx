@@ -32,8 +32,8 @@ interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,
     onUploadStart?: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,
     onUploadError: (error: string | XMLHttpRequest) => void,
-    browse: string
-    select_file: string
+    browse?: string  // Deprecated: no longer used in Bootstrap 5
+    select_file?: string  // Deprecated: no longer used in Bootstrap 5
     upload: string,
     uploading?: string,
     url: string,
@@ -73,16 +73,10 @@ export function InputFile(props: InputFileProps) {
 
     return (<>
         <div class="input-group" hidden={uploading || util.hasValue(props.progress_override)}>
-            <div class="custom-file">
-                <input type="file" class="custom-file-input form-control" accept={props.accept}
-                    onChange={(ev) => setFile((ev.target as HTMLInputElement).files[0])}
-                    id={id}/>
-                <label class="custom-file-label form-control rounded-left"
-                    for={id} data-browse={props.browse}>{file ? file.name : props.select_file}</label>
-            </div>
-            <div class="input-group-append">
-                <Button className="form-control" variant="primary" onClick={upload} disabled={file == null}>{props.upload}</Button>
-            </div>
+            <input type="file" class="form-control" accept={props.accept}
+                onChange={(ev) => setFile((ev.target as HTMLInputElement).files[0])}
+                id={id}/>
+            <Button variant="primary" onClick={upload} disabled={file == null}>{props.upload}</Button>
         </div>
         <div hidden={!uploading && !util.hasValue(props.progress_override)}>
             <Progress class="mb-1" progress={util.hasValue(props.progress_override) ? props.progress_override : progress} />

@@ -70,7 +70,7 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
 
         let sta_row = !state.sta_config.enable_sta ? <></>
             : <FormRow label={__("wifi.status.wifi_connection")}
-                       label_infix={<span class="pl-2 pr-2" style="vertical-align: top;">{wifi_symbol(state.state.sta_rssi)}</span>}
+                       label_infix={<span class="ps-2 pe-2" style="vertical-align: top;">{wifi_symbol(state.state.sta_rssi)}</span>}
                        label_muted={state.state.sta_ip != "0.0.0.0" ? state.state.sta_ip : ""}>
                 <IndicatorGroup
                     style="width: 100%"

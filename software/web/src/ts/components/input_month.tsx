@@ -83,45 +83,43 @@ export function InputMonth(props: InputMonthProps) {
     return (
         <div class="input-group">
             {inner}
-            <div class="input-group-append">
-                <Button variant="primary"
-                        className="form-control px-1"
-                        style="margin-right: .125rem !important;"
-                        onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
+            <Button variant="primary"
+                    className="px-1"
+                    style="margin-right: .125rem !important;"
+                    onClick={() => {
+                        let date = valueToDate(dateToValue(props.date));
 
-                            if (props.buttons == "year") {
-                                date.setFullYear(date.getFullYear() - 1);
-                            }
+                        if (props.buttons == "year") {
+                            date.setFullYear(date.getFullYear() - 1);
+                        }
 
-                            if (props.buttons == "month") {
-                                date.setMonth(date.getMonth() - 1);
-                            }
+                        if (props.buttons == "month") {
+                            date.setMonth(date.getMonth() - 1);
+                        }
 
-                            props.onDate(date);
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <ArrowLeft/>
-                </Button>
-                <Button variant="primary"
-                        className="form-control px-1 rounded-right"
-                        onClick={() => {
-                            let date = valueToDate(dateToValue(props.date));
+                        props.onDate(date);
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <ArrowLeft/>
+            </Button>
+            <Button variant="primary"
+                    className="px-1"
+                    onClick={() => {
+                        let date = valueToDate(dateToValue(props.date));
 
-                            if (props.buttons == "year") {
-                                date.setFullYear(date.getFullYear() + 1);
-                            }
+                        if (props.buttons == "year") {
+                            date.setFullYear(date.getFullYear() + 1);
+                        }
 
-                            if (props.buttons == "month") {
-                                date.setMonth(date.getMonth() + 1);
-                            }
+                        if (props.buttons == "month") {
+                            date.setMonth(date.getMonth() + 1);
+                        }
 
-                            props.onDate(date);
-                            input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                        }}>
-                    <ArrowRight/>
-                </Button>
-            </div>
+                        props.onDate(date);
+                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                    }}>
+                <ArrowRight/>
+            </Button>
         </div>
     );
 }

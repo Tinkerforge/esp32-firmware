@@ -228,10 +228,10 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                     {unauth_seen_tags.length > 0 ?
                                         <ListGroup>{
                                             unauth_seen_tags.map(t => <ListGroupItem key={t.tag_id} action type="button" onClick={() => this.setState({addTag: {...state.addTag, tag_id: t.tag_id, tag_type: t.tag_type}})}>
-                                                <h5 class="mb-1 pr-2">{t.tag_id}</h5>
+                                                <h5 class="mb-1 pe-2">{t.tag_id}</h5>
                                                 <div class="d-flex w-100 justify-content-between">
-                                                    <span class="text-left">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
-                                                    <span class="text-right">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
+                                                    <span class="text-start">{translate_unchecked(`nfc.content.type_${t.tag_type}`)}</span>
+                                                    <span class="text-end">{__("nfc.content.last_seen") + util.format_timespan_ms(t.last_seen) + __("nfc.content.last_seen_suffix")}</span>
                                                 </div>
                                                 </ListGroupItem>)
                                         }</ListGroup>

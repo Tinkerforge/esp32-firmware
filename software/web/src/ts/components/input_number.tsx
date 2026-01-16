@@ -64,7 +64,7 @@ export function InputNumber(props: InputNumberProps) {
     }
 
     return <div class="input-group">
-        {toChildArray(props.children).length > 0 ? <div class="input-group-prepend">{props.children}</div> : undefined}
+        {toChildArray(props.children).length > 0 ? props.children : undefined}
         <input class="form-control no-spin"
                 ref={input}
                 id={id}
@@ -81,41 +81,39 @@ export function InputNumber(props: InputNumberProps) {
                 value={util.hasValue(props.value) ? props.value : ""}
                 readonly={props.onValue === undefined || props.readonly}
         />
-        {props.unit || (props.onValue && !props.readonly) ? <div class="input-group-append">
-            {props.unit ? <div class="form-control input-group-text">{props.unit}</div> : undefined}
-            {props.onValue && !props.readonly ? <>
-            <Button variant="primary"
-                    disabled={props.value == props.min || props.disabled || props.readonly}
-                    className="form-control px-1"
-                    style="margin-right: .125rem !important;"
-                    onClick={() => {
-                        if (util.hasValue(props.value) && !isNaN(props.value)) {
-                            props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
-                        }
-                        else {
-                            props.onValue(props.min as number);
-                        }
+        {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
+        {props.onValue && !props.readonly ? <>
+        <Button variant="primary"
+                disabled={props.value == props.min || props.disabled || props.readonly}
+                className="px-1"
+                style="margin-right: .125rem !important;"
+                onClick={() => {
+                    if (util.hasValue(props.value) && !isNaN(props.value)) {
+                        props.onValue(util.clamp(props.min as number, props.value - 1, props.max as number));
+                    }
+                    else {
+                        props.onValue(props.min as number);
+                    }
 
-                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                    }}>
-                <Minus/>
-            </Button>
-            <Button variant="primary"
-                    disabled={props.value == props.max || props.disabled || props.readonly}
-                    className="form-control px-1 rounded-right"
-                    onClick={() => {
-                        if (util.hasValue(props.value) && !isNaN(props.value)) {
-                            props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
-                        }
-                        else {
-                            props.onValue(props.max as number);
-                        }
+                    input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                }}>
+            <Minus/>
+        </Button>
+        <Button variant="primary"
+                disabled={props.value == props.max || props.disabled || props.readonly}
+                className="px-1"
+                onClick={() => {
+                    if (util.hasValue(props.value) && !isNaN(props.value)) {
+                        props.onValue(util.clamp(props.min as number, props.value + 1, props.max as number));
+                    }
+                    else {
+                        props.onValue(props.max as number);
+                    }
 
-                        input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-                    }}>
-                <Plus/>
-            </Button> </> : null}
-        </div> : null }
+                    input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
+                }}>
+            <Plus/>
+        </Button> </> : null}
         {invalidFeedback}
     </div>;
 }

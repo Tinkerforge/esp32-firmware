@@ -401,7 +401,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             }}
                         />
                         <Button
-                            className="form-control rounded-right"
+                            className="form-control rounded-end"
                             variant="primary"
                             onClick={async () => {
                                 await API.call('eebus/scan', {});

@@ -145,7 +145,7 @@ export class ItemModal extends Component<ItemModalProps, any> {
                                 {__("component.item_modal.export_button")}
                             </Button>: undefined}
                             {onImport || onExport ?
-                                <div class="mr-auto" />: undefined}
+                                <div class="me-auto" />: undefined}
                             {additionalFooterButtons}
                             {no_variant && no_text ?
                             <Button variant={no_variant} onClick={async () => await onHide()}>
