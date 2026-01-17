@@ -187,13 +187,13 @@ body {
     position: sticky;
     top: 0;
     z-index: 1010;
-    background: white;
+    background: var(--bs-body-bg);
 }
 
 .sticky-under-top {
     position: sticky;
     z-index: 1010;
-    background: white;
+    background: var(--bs-body-bg);
 }
 
 @media (max-width: 575.98px) {
@@ -682,6 +682,31 @@ table ul {
 
 .form-row-help p:last-child {
     margin-bottom: 0;
+}
+
+/*
+ * Reconstruct Bootstrap 4's btn-outline-secondary hover behavior
+ */
+.help-circle {
+    color: var(--bs-secondary);
+    border-radius: 50%;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+
+    &:hover {
+        color: #fff;
+        background-color: var(--bs-secondary);
+    }
+}
+
+.help-circle-expanded {
+    color: #fff;
+    background-color: var(--bs-dark);
+    border-radius: 50%;
+
+    &:hover {
+        color: #fff;
+        background-color: var(--bs-dark);
+    }
 }
 
 input.borderless-form-control:disabled, input.form-control:disabled {
