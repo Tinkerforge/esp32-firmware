@@ -104,6 +104,8 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
         let legend_show = true;
         let x_height = (this.props.x_include_date ? 55 : 35) - (legend_show ? 5 : 0);
 
+        let chartColors = util.getChartColors();
+
         let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
@@ -134,6 +136,13 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
             ],
             axes: [
                 {
+                    stroke: chartColors.axisText,
+                    grid: {
+                        stroke: chartColors.gridStroke,
+                    },
+                    ticks: {
+                        stroke: chartColors.axisStroke,
+                    },
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: x_height,
                     incrs: [
@@ -182,6 +191,13 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
                     },
                 },
                 {
+                    stroke: chartColors.axisText,
+                    grid: {
+                        stroke: chartColors.gridStroke,
+                    },
+                    ticks: {
+                        stroke: chartColors.axisStroke,
+                    },
                     label: this.props.y_label,
                     labelSize: this.y_label_size,
                     labelGap: 0,
@@ -290,7 +306,7 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
                                 ctx.translate(offset, offset);
                                 ctx.beginPath();
                                 ctx.lineWidth = lineWidth;
-                                ctx.strokeStyle = 'rgb(0,0,0,0.2)';
+                                ctx.strokeStyle = chartColors.axisStroke;
                                 ctx.moveTo(x0, y);
                                 ctx.lineTo(x1, y);
                                 ctx.stroke();
