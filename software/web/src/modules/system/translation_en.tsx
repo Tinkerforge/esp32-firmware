@@ -67,7 +67,13 @@ let x = {
             "system_language_help": "Sets the system language to the specified language. If \"Auto-detect browser language\" is disabled, the browser's language settings are ignored and the specified system language is also used on the website.",
             "german": "German",
             "english": "English",
-            "detect_browser_language": "Auto-detect browser language"
+            "detect_browser_language": "Auto-detect browser language",
+
+            "color_scheme": "Color scheme",
+            "color_scheme_desc": "Sets the color scheme for the web interface",
+            "color_scheme_browser": "Use browser setting",
+            "color_scheme_light": "Light",
+            "color_scheme_dark": "Dark"
         },
         "script": {
             "factory_reset_init": "Formatting configuration partition and rebooting...",

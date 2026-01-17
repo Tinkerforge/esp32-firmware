@@ -80,6 +80,10 @@ void System::pre_setup()
         {"detect_browser_language", Config::Bool(true)}
     })};
 
+    theme_config = ConfigRoot{Config::Object({
+        {"color_scheme", Config::Enum(ColorScheme::Browser)}
+    })};
+
     esp_reset_reason_t reason = esp_reset_reason();
 
     last_reset = Config::Object({
@@ -91,6 +95,7 @@ void System::pre_setup()
 void System::setup()
 {
     api.restorePersistentConfig("system/i18n_config", &i18n_config);
+    api.restorePersistentConfig("system/theme_config", &theme_config);
 
     initialized = true;
 }
@@ -98,6 +103,7 @@ void System::setup()
 void System::register_urls()
 {
     api.addPersistentConfig("system/i18n_config", &i18n_config);
+    api.addPersistentConfig("system/theme_config", &theme_config);
     api.addState("system/last_reset", &last_reset);
 
     server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {

@@ -67,7 +67,13 @@ let x = {
             "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browsersprache automatisch erkennen\" deaktiviert ist, werden die Spracheinstellungen des Browsers ignoriert und auf der Webseite wird auch die angegebene Systemsprache genutzt.",
             "german": "Deutsch",
             "english": "Englisch",
-            "detect_browser_language": "Browsersprache automatisch erkennen"
+            "detect_browser_language": "Browsersprache automatisch erkennen",
+
+            "color_scheme": "Farbschema",
+            "color_scheme_desc": "Setzt das Farbschema für die Weboberfläche",
+            "color_scheme_browser": "Browsereinstellung verwenden",
+            "color_scheme_light": "Hell",
+            "color_scheme_dark": "Dunkel"
         },
         "script": {
             "factory_reset_init": "Formatiere Konfigurationspartition und starte neu...",
