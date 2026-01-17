@@ -130,7 +130,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                 <div class={props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses}>
                     <div class="row">
                         {label}
-                        {props.help ? <span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s; cursor: pointer;"} as any}/></span> : undefined}
+                        {props.help ? <span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"help-circle" + (state.help_expanded ? " help-circle-expanded" : ""), style:"cursor: pointer;"} as any}/></span> : undefined}
                     </div>
                 </div>
                 {inner}
