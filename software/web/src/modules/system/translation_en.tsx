@@ -69,7 +69,13 @@ let x = {
                 `The browser user interface is set to ${browser_language_name} [${browser_locale}], so numbers, times and dates will be displayed in ${browser_language_name}. The web interface is set to ${web_interface_language_name} [${web_interface_language}], so texts will be displayed in ${web_interface_language_name}.`/*NF*/,
             "german": "German",
             "english": "English",
-            "detect_browser_language": "Auto-detect browser language"
+            "detect_browser_language": "Auto-detect browser language",
+
+            "color_scheme": "Color scheme",
+            "color_scheme_desc": "Sets the color scheme for the web interface",
+            "color_scheme_browser": "Use browser setting",
+            "color_scheme_light": "Light",
+            "color_scheme_dark": "Dark"
         },
         "script": {
             "factory_reset_init": "Formatting configuration partition and rebooting...",

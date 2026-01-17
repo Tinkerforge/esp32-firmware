@@ -84,6 +84,8 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             padding = [null, null, null, null];
         }
 
+        let chartColors = util.getChartColors();
+
         let options: uPlot.Options = {
             ...this.get_size(),
             pxAlign: 0,
@@ -114,10 +116,15 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             ],
             axes: [
                 {
+                    stroke: chartColors.axisText,
+                    grid: {
+                        stroke: chartColors.gridStroke,
+                    },
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: 1,// with size = 0 the width of the whole plot changes relative to the power plot
                     ticks: {
-                        size: 0
+                        size: 0,
+                        stroke: chartColors.axisStroke,
                     },
                     incrs: [
                         60,
@@ -139,6 +146,13 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
                     side: 0, // top
                 },
                 {
+                    stroke: chartColors.axisText,
+                    grid: {
+                        stroke: chartColors.gridStroke,
+                    },
+                    ticks: {
+                        stroke: chartColors.axisStroke,
+                    },
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: (self: uPlot, values: string[], axisIdx: number, cycleNum: number): number => {
                         let size = 0;

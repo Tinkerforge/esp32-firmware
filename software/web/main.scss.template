@@ -19,6 +19,12 @@ $min-contrast-ratio: 3;
 // Not sure which is better, but it looks unfamiliar on first sight
 $font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
+// Dark mode customizations
+$body-bg-dark: #1e1e1e;
+$body-secondary-bg-dark: #2d2d2d;
+$body-tertiary-bg-dark: #3a3a3a;
+$border-color-dark: #495057;
+
 @import "../node_modules/bootstrap/scss/functions";
 @import "../node_modules/bootstrap/scss/variables";
 @import "../node_modules/bootstrap/scss/variables-dark";
@@ -684,9 +690,8 @@ table ul {
     margin-bottom: 0;
 }
 
-/*
- * Reconstruct Bootstrap 4's btn-outline-secondary hover behavior
- */
+
+// Reconstruct Bootstrap 4's btn-outline-secondary hover behavior
 .help-circle {
     color: var(--bs-secondary);
     border-radius: 50%;
@@ -713,12 +718,159 @@ input.borderless-form-control:disabled, input.form-control:disabled {
     color: #6c757d;
 }
 
-/*
- * Bootstrap 5: Fix height mismatch between form-control and input-group-text containing a form-switch
- * The switch/checkbox inside input-group-text can cause 1px height differences due to
- * form-check margins and line-height calculations
- */
+
+// Bootstrap 5: Change some styling to match Boostrap 4
+.form-control[readonly] {
+    background-color: var(--bs-secondary-bg);
+}
+.input-group-text {
+    background-color: var(--bs-secondary-bg);
+}
+input[type="file"].form-control::file-selector-button {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+input[type="file"].form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
 .input-group > .input-group-text.form-check {
     margin-bottom: 0;
     min-height: calc(1.5em + .75rem + calc(var(--bs-border-width) * 2));
+}
+
+// Dark mode customizations
+$link-color-dark: $link-color;
+$link-hover-color-dark: $link-hover-color;
+
+:root {
+    --chart-axis-stroke: rgba(0, 0, 0, 0.1);
+    --chart-axis-text: black;
+    --chart-grid-stroke: rgba(0, 0, 0, 0.1);
+}
+
+.u-legend {
+    color: $body-color;
+}
+
+[data-bs-theme="dark"] {
+    // Chart colors
+    --chart-axis-stroke: rgba(255, 255, 255, 0.2);
+    --chart-axis-text: #adb5bd;
+    --chart-grid-stroke: rgba(255, 255, 255, 0.1);
+
+    // Sidebar
+    .sidebar {
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar .nav-link {
+        color: #c9cdd1;
+    }
+
+    .sidebar .nav-link.active {
+        color: var(--bs-primary);
+    }
+
+    @media (hover: hover) {
+        .sidebar .nav-link:hover {
+            color: var(--bs-primary);
+        }
+    }
+
+    .sidebar .nav-link.disabled {
+        color: #6c757d;
+    }
+
+    // Sidebar and card backgrounds
+    .bg-light {
+        background-color: #252525 !important;
+    }
+
+    .nav-nested {
+        background-color: #1c1c1c;
+        box-shadow: rgba(255, 255, 255, 0.1) -1px 0px 0px inset;
+    }
+
+    // Sticky elements backgrounds
+    .sticky-top-app,
+    .sticky-under-top {
+        background: var(--bs-body-bg);
+    }
+
+    // Text muted dark mode
+    .text-muted {
+        color: rgba(255, 255, 255, 0.66) !important;
+    }
+
+    .text-muted-sm {
+        color: rgba(255, 255, 255, 0.66) !important;
+    }
+
+    // Form progress
+    .form-progress {
+        background-color: #3a3a3a;
+    }
+
+    // Disabled button outlines
+    .btn-outline-primary.disabled, .btn-outline-primary:disabled,
+    .btn-outline-secondary.disabled, .btn-outline-secondary:disabled,
+    .btn-outline-success.disabled, .btn-outline-success:disabled,
+    .btn-outline-danger.disabled, .btn-outline-danger:disabled,
+    .btn-outline-warning.disabled, .btn-outline-warning:disabled,
+    .btn-outline-info.disabled, .btn-outline-info:disabled,
+    .btn-outline-dark.disabled, .btn-outline-dark:disabled {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    // Disabled form controls
+    input.borderless-form-control:disabled, input.form-control:disabled {
+        color: #adb5bd;
+    }
+
+    // Tab header shadow
+    .tab-header-shadow {
+        box-shadow: 0 .25rem .5rem -.6rem rgba(0, 0, 0, 0.5) !important;
+    }
+
+    // uPlot chart styles
+    .uplot,
+    .uplot *,
+    .u-legend,
+    .u-legend th,
+    .u-legend td,
+    .u-series,
+    .u-series th,
+    .u-series td,
+    .u-value {
+        color: #c9cdd1 !important;
+    }
+    .uplot {
+        background-color: var(--bs-body-bg);
+    }
+    .u-legend {
+        background-color: var(--bs-body-bg);
+    }
+
+    // Cards
+    .card {
+        background-color: #252525;
+
+        > div {
+            overflow: hidden;
+            border-radius: inherit;
+        }
+
+        .uplot {
+            background-color: var(--bs-body-bg);
+        }
+
+        .u-legend {
+            background-color: var(--bs-body-bg);
+        }
+    }
 }

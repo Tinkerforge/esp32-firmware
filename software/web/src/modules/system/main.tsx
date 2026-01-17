@@ -32,6 +32,24 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
 import { Language } from "../../ts/language";
+import { ColorScheme } from "./color_scheme.enum";
+
+export function applyTheme(color_scheme: number) {
+    let effectiveTheme: string;
+    switch (color_scheme) {
+        case ColorScheme.Light:
+            effectiveTheme = "light";
+            break;
+        case ColorScheme.Dark:
+            effectiveTheme = "dark";
+            break;
+        case ColorScheme.Browser:
+        default:
+            effectiveTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "dark" : "light";
+            break;
+    }
+    document.documentElement.setAttribute("data-bs-theme", effectiveTheme);
+}
 
 export function SystemNavbar() {
     return <NavbarItem name="system" module="system" title={__("system.navbar.system")} symbol={<Settings />} />;
@@ -39,6 +57,7 @@ export function SystemNavbar() {
 
 interface SystemState {
     version: API.getType["info/version"],
+    theme_config: API.getType["system/theme_config"],
 }
 
 type SystemI18nConfig = API.getType["system/i18n_config"];
@@ -68,6 +87,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
 
         this.state = {
             version: null,
+            theme_config: {color_scheme: ColorScheme.Browser},
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -78,10 +98,32 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             window.dispatchEvent(new Event('languagechange'));
         });
 
+        util.addApiEventListener('system/theme_config', () => {
+            let theme_config = API.get("system/theme_config");
+            this.setState({theme_config: theme_config});
+            if (theme_config) {
+                applyTheme(theme_config.color_scheme);
+            }
+        });
+
         set_languages_getter(() => get_languages(API.get("system/i18n_config")));
     }
 
-    render(props: {}, state: SystemI18nConfig) {
+    override async sendSave(topic: "system/i18n_config", config: API.getType["system/i18n_config"]) {
+        // Save theme_config
+        await API.save("system/theme_config", this.state.theme_config, this.error_string);
+        // Save i18n_config
+        await super.sendSave(topic, config);
+    }
+
+    override async sendReset(topic: "system/i18n_config") {
+        // Reset theme_config
+        await API.reset("system/theme_config", this.error_string, this.reboot_string);
+        // Reset i18n_config
+        await super.sendReset(topic);
+    }
+
+    render(props: {}, state: SystemI18nConfig & SystemState) {
         if (!util.render_allowed())
             return <SubPage name="system" />;
 
@@ -130,6 +172,22 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                                 </div>
                             </div>
                         </div>
+                    </FormRow>
+
+                    <FormRow label={__("system.content.color_scheme")} label_muted={__("system.content.color_scheme_desc")}>
+                        <InputSelect
+                            items={[
+                                [ColorScheme.Browser.toString(), __("system.content.color_scheme_browser")],
+                                [ColorScheme.Light.toString(), __("system.content.color_scheme_light")],
+                                [ColorScheme.Dark.toString(), __("system.content.color_scheme_dark")]
+                            ]}
+                            value={state.theme_config.color_scheme.toString()}
+                            onValue={(v) => {
+                                let color_scheme = parseInt(v);
+                                this.setState({theme_config: {color_scheme: color_scheme}});
+                                applyTheme(color_scheme);
+                            }}
+                        />
                     </FormRow>
 
                     <FormRow label={__("system.content.reboot")} label_muted={__("system.content.reboot_desc")}>
@@ -189,6 +247,15 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
 }
 
 export function pre_init() {
+    // Listen for system theme changes when using browser preference
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            let theme_config = API.get_unchecked("system/theme_config");
+            if (theme_config && theme_config.color_scheme === ColorScheme.Browser) {
+                applyTheme(ColorScheme.Browser);
+            }
+        });
+    }
 }
 
 export function init() {
@@ -200,6 +267,13 @@ export function init() {
             });
         } else {
             util.remove_status_alert("system");
+        }
+    });
+
+    util.addApiEventListener('system/theme_config', () => {
+        let theme_config = API.get("system/theme_config");
+        if (theme_config) {
+            applyTheme(theme_config.color_scheme);
         }
     });
 }

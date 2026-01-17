@@ -69,7 +69,13 @@ let x = {
                 `Die Sprache der Benutzeroberfläche des Browsers ist auf ${browser_language_name} [${browser_locale}] eingestellt, sodass Zahlen, Uhrzeiten und Daten in ${browser_language_name} angezeigt werden. Die Sprache des Webinterfaces ist auf ${web_interface_language_name} [${web_interface_language}] eingestellt, sodass Texte in ${web_interface_language_name} angezeigt werden.`/*NF*/,
             "german": "Deutsch",
             "english": "Englisch",
-            "detect_browser_language": "Browser-Sprache automatisch erkennen"
+            "detect_browser_language": "Browser-Sprache automatisch erkennen",
+
+            "color_scheme": "Farbschema",
+            "color_scheme_desc": "Setzt das Farbschema für die Weboberfläche",
+            "color_scheme_browser": "Browsereinstellung verwenden",
+            "color_scheme_light": "Hell",
+            "color_scheme_dark": "Dunkel"
         },
         "script": {
             "factory_reset_init": "Formatiere Konfigurationspartition und starte neu...",

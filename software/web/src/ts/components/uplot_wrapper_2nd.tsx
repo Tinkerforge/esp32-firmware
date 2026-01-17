@@ -133,6 +133,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
 
         let legend_show = (this.props.legend_show === undefined) || this.props.legend_show;
         let x_height = (this.props.x_include_date ? 55 : 35) - (legend_show ? 5 : 0);
+        let chartColors = util.getChartColors();
 
         let options: uPlot.Options = {
             ...this.get_size(),
@@ -164,8 +165,13 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
             ],
             axes: [
                 {
+                    stroke: chartColors.axisText,
                     grid: {
-                        show: (this.props.grid_show === undefined) || this.props.grid_show
+                        show: (this.props.grid_show === undefined) || this.props.grid_show,
+                        stroke: chartColors.gridStroke,
+                    },
+                    ticks: {
+                        stroke: chartColors.axisStroke,
                     },
                     font: '12px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                     size: x_height,
@@ -219,6 +225,13 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                     },
                 },
                 {
+                    stroke: chartColors.axisText,
+                    grid: {
+                        stroke: chartColors.gridStroke,
+                    },
+                    ticks: {
+                        stroke: chartColors.axisStroke,
+                    },
                     label: this.props.y_label,
                     labelSize: this.y_label_size,
                     labelGap: 0,
@@ -432,6 +445,10 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
 
         if (this.props.y2_enable === true) {
             options.axes.push({
+                stroke: chartColors.axisText,
+                ticks: {
+                    stroke: chartColors.axisStroke,
+                },
                 label: this.props.y2_label,
                 labelSize: this.y2_label_size,
                 labelGap: 0,

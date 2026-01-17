@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "color_scheme.enum.h"
 
 class System final : public IModule
 {
@@ -36,5 +37,6 @@ public:
 private:
     bool factory_reset_running = false;
     ConfigRoot i18n_config;
+    ConfigRoot theme_config;
     ConfigRoot last_reset;
 };

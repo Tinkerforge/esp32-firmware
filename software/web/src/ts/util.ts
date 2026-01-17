@@ -1148,3 +1148,18 @@ export function copyToClipboard(text: string) {
         unsecuredCopyToClipboard(text);
     }
 }
+
+// Get chart colors from CSS variables for uplot.
+// uplot does not automatically adapt to dark mode changes.
+export function getChartColors() {
+    const style = getComputedStyle(document.documentElement);
+    return {
+        axisStroke: style.getPropertyValue('--chart-axis-stroke').trim() || 'rgba(0, 0, 0, 0.1)',
+        axisText: style.getPropertyValue('--chart-axis-text').trim() || 'black',
+        gridStroke: style.getPropertyValue('--chart-grid-stroke').trim() || 'rgba(0, 0, 0, 0.1)',
+    };
+}
+
+export function isDarkMode(): boolean {
+    return document.documentElement.getAttribute('data-bs-theme') === 'dark';
+}
