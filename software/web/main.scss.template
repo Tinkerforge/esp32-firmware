@@ -686,6 +686,16 @@ table ul {
     }
 }
 
+.form-row-help {
+    background-color: #ffffe7;
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .form-row-help {
+    background-color: #3d3d00;
+    color: #e9ecef;
+}
+
 .form-row-help p:last-child {
     margin-bottom: 0;
 }
