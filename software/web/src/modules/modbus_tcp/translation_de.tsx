@@ -23,7 +23,7 @@ let x = {
             "debug": "Debug-Client",
             "table_docu": "Register-Dokumentation",
             "table_content": <>
-                <thead class="thead-light">
+                <thead>
                     <tr>
                         <th scope="col">Registeradresse</th>
                         <th scope="col">Name</th>

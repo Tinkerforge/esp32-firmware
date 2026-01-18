@@ -315,6 +315,14 @@ body {
     font-size: 0.75rem;
 }
 
+.table > thead {
+    background-color: #e9ecef;
+
+    > tr > th {
+        background-color: inherit;
+    }
+}
+
 .btn-outline-primary.disabled, .btn-outline-primary:disabled {
     border-color: rgba(0,0,0,.125) !important;
     color: rgba(0,0,0,.66) !important;
@@ -825,6 +833,14 @@ $link-hover-color-dark: $link-hover-color;
 
     .text-muted-sm {
         color: rgba(255, 255, 255, 0.66) !important;
+    }
+
+    .table > thead {
+        background-color: #3a3a3a;
+
+        > tr > th {
+            background-color: inherit;
+        }
     }
 
     // Disabled button outlines

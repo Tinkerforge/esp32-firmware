@@ -94,7 +94,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
 
                     <FormRow label={__("proxy.content.bricklet_table")}>
                         <Table hover borderless>
-                            <thead class="thead-light">
+                            <thead>
                                 <tr>
                                     <th scope="col">{__("proxy.content.port")}</th>
                                     <th scope="col">{__("proxy.content.UID")}</th>
@@ -114,7 +114,7 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
 
                     <FormRow label={__("proxy.content.error_counters")}>
                         <Table hover borderless>
-                            <thead class="thead-light">
+                            <thead>
                                 <tr>
                                     <th scope="col">{__("proxy.content.port")}</th>
                                     <th scope="col">{__("proxy.content.spitfp_checksum")}</th>

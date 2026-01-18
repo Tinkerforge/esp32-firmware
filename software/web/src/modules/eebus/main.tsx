@@ -430,7 +430,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         Some knowledge about the implemented usecases is recommended.</p>
 
                     <table class="table table-bordered table-sm">
-                        <thead class="thead-light">
+                        <thead>
                         <tr>
                             <th>Usecase</th>
                             <th>Details</th>
