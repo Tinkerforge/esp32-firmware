@@ -46,6 +46,7 @@ import { Table, TableRow } from "ts/components/table";
 import { useState, useEffect } from "preact/hooks";
 import { StatusSection } from "ts/components/status_section";
 import { IndicatorGroup } from "ts/components/indicator_group";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
@@ -870,4 +871,65 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("remote_access", {
+        get_status: () => {
+            const state = API.get("remote_access/state");
+            const config = API.get("remote_access/config");
+
+            if (!config?.enable) {
+                return {
+                    id: "remote_access",
+                    name: () => __("remote_access.navbar.remote_access"),
+                    status: ModuleStatus.Disabled,
+                    priority: 600,
+                    href: "#remote_access"
+                };
+            }
+
+            if (!state || state.length === 0) {
+                return {
+                    id: "remote_access",
+                    name: () => __("remote_access.navbar.remote_access"),
+                    status: ModuleStatus.Disabled, // Or Warning?
+                    priority: 600,
+                    href: "#remote_access"
+                };
+            }
+
+            // state[0] is the main connection state, state[1+] are client connections
+            const main_state = state[0]?.state;
+            const active_clients = state.slice(1).filter((c: any) => c.state !== 1).length;
+
+            if (active_clients > 0) {
+                return {
+                    id: "remote_access",
+                    name: () => __("remote_access.navbar.remote_access"),
+                    status: ModuleStatus.Ok,
+                    text: () => __("remote_access.status.connected_to_clients")(active_clients),
+                    priority: 600,
+                    href: "#remote_access"
+                };
+            } else if (main_state === 2) { // 2 = connected to relay
+                // connected to relay but no clients
+                return {
+                    id: "remote_access",
+                    name: () => __("remote_access.navbar.remote_access"),
+                    status: ModuleStatus.Ok,
+                    text: () => __("remote_access.status.connected"),
+                    priority: 600,
+                    href: "#remote_access"
+                };
+            } else {
+                // disconnected
+                return {
+                    id: "remote_access",
+                    name: () => __("remote_access.navbar.remote_access"),
+                    status: ModuleStatus.Error,
+                    text: () => __("remote_access.status.disconnected"),
+                    priority: 600,
+                    href: "#remote_access"
+                };
+            }
+        }
+    });
 }

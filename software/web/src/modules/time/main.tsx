@@ -36,6 +36,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { Clock } from "react-feather";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { OutputDatetime } from "../../ts/components/output_datetime";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function TimeNavbar() {
     return <NavbarItem name="time" module="ntp" title={__("time.navbar.time")} symbol={<Clock />} />;
@@ -44,6 +45,13 @@ export function TimeNavbar() {
 type TimeConfig = API.getType["ntp/config"] & API.getType["rtc/config"];
 
 type RTCTime = API.getType['rtc/time'];
+
+function get_rtc_date(): Date {
+    const p = (i: number) => util.leftPad(i, 0, 2);
+    const t = API.get('rtc/time');
+    return new Date(
+        `${t.year}-${p(t.month)}-${p(t.day)}T${p(t.hour)}:${p(t.minute)}:${p(t.second)}.000Z`);
+}
 
 export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<TimeStatus>}, API.getType['rtc/config']> {
     first_render: boolean = true;
@@ -117,10 +125,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
         let splt = state.timezone.split("/");
 
-        const p = (i: number) => util.leftPad(i, 0, 2);
-        let t = API.get('rtc/time');
-        let date = new Date(
-            `${t.year}-${p(t.month)}-${p(t.day)}T${p(t.hour)}:${p(t.minute)}:${p(t.second)}.000Z`);
+        let date = get_rtc_date();
 
         return (
             <SubPage name="time">
@@ -254,4 +259,49 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("ntp", {
+        get_status: () => {
+            const config = API.get("ntp/config");
+            const state = API.get("ntp/state");
+
+            if (!config.enable) {
+                return {
+                    id: "ntp",
+                    name: () => __("time.status.time"),
+                    status: ModuleStatus.Disabled,
+                    text: () => __("time.status.disabled"),
+                    priority: 500,
+                    href: "#time"
+                };
+            }
+
+            if (!state.synced) {
+                return {
+                    id: "ntp",
+                    name: () => __("time.status.time"),
+                    status: ModuleStatus.Warning,
+                    text: () => __("time.status.not_synced"),
+                    priority: 500,
+                    href: "#time"
+                };
+            }
+
+            const format_time = () => {
+                const date = get_rtc_date();
+                if (isNaN(date.getTime())) {
+                    return __("time.status.not_synced");
+                }
+                return util.toIsoString(date).replace("T", ", ");
+            };
+
+            return {
+                id: "ntp",
+                name: () => __("time.status.time"),
+                status: ModuleStatus.Ok,
+                text: format_time,
+                priority: 500,
+                href: "#time"
+            };
+        }
+    });
 }

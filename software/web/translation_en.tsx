@@ -120,6 +120,14 @@ let x = {
         "uplot": {
             "fullscreen": "Full screen",
             "fullscreen_chart": "Full screen Chart"
+        },
+        "header_status": {
+            "status": "Status",
+            "legend_ok": "OK",
+            "legend_warning": "Warning",
+            "legend_error": "Error",
+            "legend_disabled": "Disabled",
+            "show_disabled": "Show disabled"
         }
     },
     "util": {

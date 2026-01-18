@@ -40,6 +40,7 @@ import { StatusSection } from "../../ts/components/status_section";
 import { CheckCircle, Circle, Sun } from "react-feather";
 import { get_allowed_charge_modes } from "modules/charge_manager/main";
 import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 const METER_SLOT_BATTERY_NO_BATTERY = 255;
 
@@ -424,4 +425,43 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("power_manager", {
+        get_status: () => {
+            const config = API.get("power_manager/config");
+            const state = API.get("power_manager/state");
+
+            // Check if power manager / PV excess is enabled
+            const is_em = API.hasModule("em_common");
+            const enabled = is_em ? config?.enabled : config?.excess_charging_enable;
+
+            if (!enabled) {
+                return {
+                    id: "power_manager",
+                    name: () => __("power_manager.navbar.pv_excess_settings"),
+                    status: ModuleStatus.Disabled,
+                    priority: 750,
+                    href: "#pv_excess_settings"
+                };
+            }
+
+            // Check for configuration errors
+            if (state?.config_error_flags > 0) {
+                return {
+                    id: "power_manager",
+                    name: () => __("power_manager.navbar.pv_excess_settings"),
+                    status: ModuleStatus.Warning,
+                    priority: 750,
+                    href: "#pv_excess_settings"
+                };
+            }
+
+            return {
+                id: "power_manager",
+                name: () => __("power_manager.navbar.pv_excess_settings"),
+                status: ModuleStatus.Ok,
+                priority: 750,
+                href: "#pv_excess_settings"
+            };
+        }
+    });
 }
