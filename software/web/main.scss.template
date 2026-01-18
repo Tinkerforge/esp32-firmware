@@ -306,16 +306,6 @@ body {
   }
 }
 
-.form-progress {
-  display: -ms-flexbox;
-  display: flex;
-  overflow: hidden;
-  line-height: 0;
-  font-size: 0.75rem;
-  background-color: #e9ecef;
-  border-radius: 0.25rem;
-}
-
 .text-muted {
     color: rgba(0,0,0,.66) !important;
 }
@@ -835,11 +825,6 @@ $link-hover-color-dark: $link-hover-color;
 
     .text-muted-sm {
         color: rgba(255, 255, 255, 0.66) !important;
-    }
-
-    // Form progress
-    .form-progress {
-        background-color: #3a3a3a;
     }
 
     // Disabled button outlines
