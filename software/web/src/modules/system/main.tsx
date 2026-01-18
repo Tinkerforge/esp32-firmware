@@ -48,7 +48,12 @@ export function applyTheme(color_scheme: number) {
             effectiveTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "dark" : "light";
             break;
     }
+
+    const previousTheme = document.documentElement.getAttribute("data-bs-theme");
     document.documentElement.setAttribute("data-bs-theme", effectiveTheme);
+    if (previousTheme !== effectiveTheme) {
+        window.dispatchEvent(new Event('themechange'));
+    }
 }
 
 export function SystemNavbar() {
