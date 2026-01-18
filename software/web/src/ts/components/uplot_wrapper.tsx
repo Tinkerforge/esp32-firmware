@@ -357,6 +357,33 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
         if (this.props.on_mount) {
             this.props.on_mount();
         }
+
+        // Listen for theme changes to update chart colors
+        window.addEventListener('themechange', () => {
+            this.update_theme_colors();
+        });
+    }
+
+    update_theme_colors() {
+        if (!this.uplot) {
+            return;
+        }
+
+        const chart_colors = util.getChartColors();
+
+        for (const axis of this.uplot.axes) {
+            axis.stroke = () => chart_colors.axisText;
+
+            if (axis.grid) {
+                axis.grid.stroke = () => chart_colors.gridStroke;
+            }
+
+            if (axis.ticks) {
+                axis.ticks.stroke = () => chart_colors.axisStroke;
+            }
+        }
+
+        this.uplot.redraw(false, true);
     }
 
     render() {
