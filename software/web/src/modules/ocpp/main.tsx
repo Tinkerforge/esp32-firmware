@@ -34,6 +34,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { InputSelect } from "../../ts/components/input_select";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function OcppNavbar() {
     return (
@@ -372,4 +373,65 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("ocpp", {
+        get_status: () => {
+            const state = API.get("ocpp/state");
+            const config = API.get("ocpp/config");
+
+            if (!config?.enable) {
+                return {
+                    id: "ocpp",
+                    name: () => __("ocpp.navbar.ocpp"),
+                    status: ModuleStatus.Disabled,
+                    priority: 500,
+                    href: "#ocpp"
+                };
+            }
+
+            // Based on charge_point_state and connected
+            const cps = state?.charge_point_state;
+            if (cps === 0 || cps === 1 || cps === 3) {
+                // Booting, pending, rejected
+                return {
+                    id: "ocpp",
+                    name: () => __("ocpp.navbar.ocpp"),
+                    status: ModuleStatus.Warning,
+                    text: () => __("ocpp.status.connecting"),
+                    priority: 500,
+                    href: "#ocpp"
+                };
+            } else if (cps === 2) {
+                // Accepted
+                if (state?.connected) {
+                    return {
+                        id: "ocpp",
+                        name: () => __("ocpp.navbar.ocpp"),
+                        status: ModuleStatus.Ok,
+                        text: () => __("ocpp.status.connected"),
+                        priority: 500,
+                        href: "#ocpp"
+                    };
+                } else {
+                    return {
+                        id: "ocpp",
+                        name: () => __("ocpp.navbar.ocpp"),
+                        status: ModuleStatus.Warning,
+                        text: () => __("ocpp.status.connecting"),
+                        priority: 500,
+                        href: "#ocpp"
+                    };
+                }
+            } else {
+                // Error states (4, 5, 6, etc.)
+                return {
+                    id: "ocpp",
+                    name: () => __("ocpp.navbar.ocpp"),
+                    status: ModuleStatus.Error,
+                    text: () => __("ocpp.status.error"),
+                    priority: 500,
+                    href: "#ocpp"
+                };
+            }
+        }
+    });
 }

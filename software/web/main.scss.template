@@ -495,6 +495,23 @@ body {
 
 {{{module_post_imports}}}
 
+// Header status
+.header-status {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 0.5rem;
+}
+@include media-breakpoint-up(md) {
+    .header-status {
+        margin-right: 1rem;
+    }
+}
+#header-status-dropdown::after {
+    // Hide the default dropdown caret on the status button
+    display: none;
+}
+
 .message-box-body {
     font-size: 1rem;
 }

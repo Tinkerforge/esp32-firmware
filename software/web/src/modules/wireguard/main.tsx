@@ -39,6 +39,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
 import { InputHost } from "ts/components/input_host";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export function WireguardNavbar() {
     return (
@@ -253,4 +254,50 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("wireguard", {
+        get_status: () => {
+            const state = API.get("wireguard/state");
+            const config = API.get("wireguard/config");
+
+            if (!config?.enable) {
+                return {
+                    id: "wireguard",
+                    name: () => __("wireguard.navbar.wireguard"),
+                    status: ModuleStatus.Disabled,
+                    priority: 700,
+                    href: "#wireguard"
+                };
+            }
+
+            switch (state?.state) {
+                case 3: // connected
+                    return {
+                        id: "wireguard",
+                        name: () => __("wireguard.navbar.wireguard"),
+                        status: ModuleStatus.Ok,
+                        text: () => __("wireguard.status.connected"),
+                        priority: 700,
+                        href: "#wireguard"
+                    };
+                case 1: // waiting for timesync
+                case 2: // not connected
+                    return {
+                        id: "wireguard",
+                        name: () => __("wireguard.navbar.wireguard"),
+                        status: ModuleStatus.Warning,
+                        text: () => __("wireguard.status.not_connected"),
+                        priority: 700,
+                        href: "#wireguard"
+                    };
+                default: // not configured (0)
+                    return {
+                        id: "wireguard",
+                        name: () => __("wireguard.navbar.wireguard"),
+                        status: ModuleStatus.Disabled,
+                        priority: 700,
+                        href: "#wireguard"
+                    };
+            }
+        }
+    });
 }
