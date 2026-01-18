@@ -190,7 +190,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
             return '\u2022'.repeat(u.password.length);
         }
 
-        return <span style="color: rgb(85,85,85);">{__("component.input_password.unchanged")}</span>;
+        return <span class="text-muted">{__("component.input_password.unchanged")}</span>;
     }
 
     http_auth_allowed() {
@@ -389,7 +389,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                         user.username,
                                         user.display_name,
                                         util.toLocaleFixed(user.current / 1000, 3) + ' A',
-                                        this.user_has_password(user) ? this.get_password_replacement(user) : <span style="color: rgb(85,85,85);">{__("users.script.login_disabled")}</span>
+                                        this.user_has_password(user) ? this.get_password_replacement(user) : <span class="text-muted">{__("users.script.login_disabled")}</span>
                                     ],
                                     editTitle: __("users.content.edit_user_title"),
                                     onEditShow: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
