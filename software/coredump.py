@@ -235,6 +235,7 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--interactive", action='store_true', help="Don't exit gdb immediately")
     parser.add_argument("-l", "--local-source", action='store_true', help="Don't checkout firmware git, use local copy")
     parser.add_argument("-e", "--elf")
+    parser.add_argument("-C", "--commit-id")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-c", "--coredump-elf")
@@ -333,8 +334,9 @@ if __name__ == '__main__':
                 with tempfile.TemporaryDirectory(prefix="coredump-git-") as d:
                     os.system(f"git clone --shared --no-checkout {script_path}/.. {d}")
                     with ChangedDirectory(d):
-                        os.system(f"git checkout --quiet {tf_coredump_data['firmware_commit_id']}")
-                        commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', tf_coredump_data['firmware_commit_id']]))
+                        commit_id = args.commit_id if args.commit_id else tf_coredump_data['firmware_commit_id']
+                        os.system(f"git checkout --quiet {commit_id}")
+                        commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', commit_id]))
                         for (dirpath, dirnames, filenames) in os.walk('software/src'):
                             for filename in filenames:
                                 os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
