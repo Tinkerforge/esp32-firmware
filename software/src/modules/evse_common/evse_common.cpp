@@ -475,6 +475,7 @@ void EvseCommon::register_urls()
             list_changed = true;
             this->supported_charge_modes.replace(supported_mode_len, Config::Enum(ConfigChargeMode::Default));
 
+#if MODULE_EVSE_V2_AVAILABLE()
             // Also update evse_common/translation* when changing colors here!
             constexpr uint16_t h_4[] {
                 0, 120, 60, 180, 0, 0, 0, 0
@@ -507,12 +508,12 @@ void EvseCommon::register_urls()
             };
 
             if (supported_mode_len == 4)
-                backend->set_enumerate_configuration(h_4, s_4, v_4);
+                evse_v2.set_enumerate_configuration(h_4, s_4, v_4);
             else if (supported_mode_len == 2)
-                backend->set_enumerate_configuration(h_2, s_2, v_2);
+                evse_v2.set_enumerate_configuration(h_2, s_2, v_2);
             else
-                backend->set_enumerate_configuration(h_0, s_0, v_0);
-
+                evse_v2.set_enumerate_configuration(h_0, s_0, v_0);
+#endif
         } else {
             for (size_t i = 0; i < supported_mode_len; ++i) {
                 list_changed |= this->supported_charge_modes.get(i)->asEnum<ConfigChargeMode>() != supported_modes[i];
@@ -549,9 +550,11 @@ void EvseCommon::register_urls()
             }
         }
 
+#if MODULE_EVSE_V2_AVAILABLE()
         for (size_t i = 0; i < supported_mode_len; ++i)
             if (this->supported_charge_modes.get(i)->asEnum<ConfigChargeMode>() == mode)
-                backend->set_enumerate_value(i);
+                evse_v2.set_enumerate_value(i);
+#endif
 
     });
 
