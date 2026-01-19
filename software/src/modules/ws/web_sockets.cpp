@@ -830,8 +830,14 @@ void WebSockets::notify_unclean_close(struct sock_db *session)
 {
     keepAliveRemove(session->fd);
 
-    if (on_client_disconnect_fn != nullptr && session->ctx != nullptr) {
-        WebSocketsClient *client = static_cast<WebSocketsClient *>(session->ctx);
+    WebSocketsClient *client = static_cast<WebSocketsClient *>(session->ctx);
+
+    if (client == nullptr) {
+        logger.printfln("Uncleanly closed session via fd %i has no WebSocketsClient", session->fd);
+        return;
+    }
+
+    if (on_client_disconnect_fn != nullptr) {
         on_client_disconnect_fn(client, false);
     }
 }
