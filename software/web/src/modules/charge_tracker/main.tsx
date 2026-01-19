@@ -115,11 +115,11 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
         <div class={"row justify-content-end" + (have_charge_cost ? "" : " mb-n2")}>
             <div class="col-auto pr-2 mb-2">
                 <span class="pr-2"><Calendar/></span>
-                <span style="vertical-align: middle;">{timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
+                <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
             </div>
             <div class="col px-0" />
             <div class="col-auto pl-2 mb-2">
-                <span style="vertical-align: middle;">{format_timespan(props.charge.charge_duration)}</span>
+                <span style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span>
                 <span class="pl-2"><Clock/></span>
             </div>
         </div>
