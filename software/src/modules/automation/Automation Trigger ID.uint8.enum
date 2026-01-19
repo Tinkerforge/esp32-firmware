@@ -21,3 +21,7 @@ EM Input
 Day Ahead Price Now
 EM Relay Switch
 EM SG Ready Switch
+Vendor Trigger 3 = 252 // Reserved for downstream extensions
+Vendor Trigger 2 = 253 // Reserved for downstream extensions
+Vendor Trigger 1 = 254 // Reserved for downstream extensions
+Vendor Trigger 0 = 255 // Reserved for downstream extensions

@@ -16,3 +16,7 @@ PM Limit Max Current
 PM Block Charge
 EM SG Ready Switch
 EVSE Charge Mode
+Vendor Action 3 = 252 // Reserved for downstream extensions
+Vendor Action 2 = 253 // Reserved for downstream extensions
+Vendor Action 1 = 254 // Reserved for downstream extensions
+Vendor Action 0 = 255 // Reserved for downstream extensions
