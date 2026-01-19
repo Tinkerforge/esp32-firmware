@@ -21,6 +21,10 @@
 #include "web_sockets.h"
 #include "web_sockets_client.h"
 
+#ifdef DEBUG_FS_ENABLE
+#include <freertos/task.h>
+#endif
+
 WebSocketsClient::~WebSocketsClient()
 {
     if (ctx != nullptr) {
@@ -31,9 +35,23 @@ WebSocketsClient::~WebSocketsClient()
 
 bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
-    ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
-    bool result = ws->send_ws_work_item(&wi);
-    return result;
+#ifdef DEBUG_FS_ENABLE
+    const char *task_name = pcTaskGetName(nullptr);
+
+    if (strcmp(task_name, "httpd") != 0) {
+        esp_system_abort("sendOwnedNoFreeBlocking_HTTPThread can only be called from the HTTP thread");
+    }
+#endif
+
+    httpd_ws_frame ws_pkt = {
+        .final      = true, // Doesn't matter, frame is not fragmented.
+        .fragmented = false,
+        .type       = ws_type,
+        .payload    = reinterpret_cast<uint8_t *>(payload),
+        .len        = payload_len,
+    };
+
+    return ws->send_ws_item_direct(fd, &ws_pkt);
 }
 
 void WebSocketsClient::close_HTTPThread()

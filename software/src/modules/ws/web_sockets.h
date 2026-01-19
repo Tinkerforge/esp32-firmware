@@ -79,6 +79,7 @@ private:
     void cleanUpQueue();
     bool queueFull();
 
+    [[nodiscard]] bool send_ws_item_direct(int fd, httpd_ws_frame *ws_pkt);
     bool send_ws_work_item(const ws_work_item *wi);
 
     static void work(void *arg);

@@ -84,14 +84,31 @@ bool WebSockets::queueFull()
     return false;
 }
 
+// Send a payload to a single destination. If a write fails, return false and let the callers handle session closing.
+// This function is intended to be used from within the initial WS request and thus cannot close the WS session directly.
+// Closing the WS session directly from within the initial WS request would leak the WebSocketClient object because the session context isn't freed.
+bool WebSockets::send_ws_item_direct(int fd, httpd_ws_frame *ws_pkt)
+{
+    if (httpd_ws_get_fd_info(this->httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET) {
+        logger.printfln("send_ws_item_direct encountered non-WS fd %i", fd);
+        return false;
+    }
+
+    return httpd_ws_send_frame_async(this->httpd, fd, ws_pkt) == ESP_OK;
+}
+
+// Send a work item to multiple destinations. If a write fails, close the WS session.
+// Unlike send_ws_item_direct, this function is only allowed to be called after the initial WS request has finished.
+// Calling this function from within the initial WS request would leak the WebSocketClient object because the session context isn't freed.
 bool WebSockets::send_ws_work_item(const ws_work_item *wi)
 {
-    httpd_ws_frame_t ws_pkt;
-    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-
-    ws_pkt.payload = reinterpret_cast<uint8_t *>(wi->payload);
-    ws_pkt.len = wi->payload_len;
-    ws_pkt.type = wi->ws_type;
+    httpd_ws_frame ws_pkt = {
+        .final      = true, // Doesn't matter, frame is not fragmented.
+        .fragmented = false,
+        .type       = wi->ws_type,
+        .payload    = reinterpret_cast<uint8_t *>(wi->payload),
+        .len        = wi->payload_len,
+    };
 
     bool result = true;
 
