@@ -14,7 +14,7 @@ let x = {
             "error": "Error",
             "managed_boxes": "Managed chargers",
             "available_current": "Available current",
-            "mode": "charge mode",
+            "mode": "Charge Mode",
             "mode_muted": "Updates the charge mode of all controlled chargers"
         },
         "navbar": {
