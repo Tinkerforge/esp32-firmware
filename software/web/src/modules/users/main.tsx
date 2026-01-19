@@ -19,6 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import { toLocaleFixed } from "../../ts/i18n";
 import YaMD5 from "../../ts/yamd5";
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
@@ -382,13 +383,13 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     columnValues: [
                                         user.username,
                                         user.display_name,
-                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
+                                        toLocaleFixed(user.current / 1000, 3) + ' A',
                                         this.user_has_password(user) ? <Check/> : ''
                                     ],
                                     fieldValues: [
                                         user.username,
                                         user.display_name,
-                                        util.toLocaleFixed(user.current / 1000, 3) + ' A',
+                                        toLocaleFixed(user.current / 1000, 3) + ' A',
                                         this.user_has_password(user) ? this.get_password_replacement(user) : <span style="color: rgb(85,85,85);">{__("users.script.login_disabled")}</span>
                                     ],
                                     editTitle: __("users.content.edit_user_title"),

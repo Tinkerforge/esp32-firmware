@@ -18,7 +18,7 @@
  */
 
 import * as util from "../util";
-
+import { toLocaleFixed } from "../i18n";
 import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { register_id_context_component_type } from "./form_row";
@@ -43,8 +43,8 @@ export function OutputFloat(props: OutputFloatProps) {
     let val_0 = "";
 
     if (util.hasValue(props.value)) {
-        val = util.toLocaleFixed(props.value / pow10, props.digits);
-        val_0 = util.toLocaleFixed(props.value / pow10, 0);
+        val = toLocaleFixed(props.value / pow10, props.digits);
+        val_0 = toLocaleFixed(props.value / pow10, 0);
     }
 
     let maxFracDigits = props.maxFractionalDigitsOnPage === undefined ? 3 : props.maxFractionalDigitsOnPage;

@@ -2,7 +2,7 @@
 import { h } from "preact";
 import * as options from "./src/options";
 import { __ } from "./src/ts/translation";
-import { toLocaleFixed } from "./src/ts/util";
+import { toLocaleFixed } from "./src/ts/i18n";
 let x = {
     "main": {
         "title": `${options.PRODUCT_NAME} Webinterface`,

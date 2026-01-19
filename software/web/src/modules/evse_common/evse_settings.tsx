@@ -20,6 +20,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import { toLocaleFixed } from "../../ts/i18n";
 import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
@@ -215,24 +216,24 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         let energy_items: [string, string][] = [
             ["0", __("charge_limits.content.unlimited")],
-            ["5000", util.toLocaleFixed(5, 0) + " kWh"],
-            ["10000", util.toLocaleFixed(10, 0) + " kWh"],
-            ["15000", util.toLocaleFixed(15, 0) + " kWh"],
-            ["20000", util.toLocaleFixed(20, 0) + " kWh"],
-            ["25000", util.toLocaleFixed(25, 0) + " kWh"],
-            ["30000", util.toLocaleFixed(30, 0) + " kWh"],
-            ["40000", util.toLocaleFixed(40, 0) + " kWh"],
-            ["50000", util.toLocaleFixed(50, 0) + " kWh"],
-            ["60000", util.toLocaleFixed(60, 0) + " kWh"],
-            ["70000", util.toLocaleFixed(70, 0) + " kWh"],
-            ["80000", util.toLocaleFixed(80, 0) + " kWh"],
-            ["90000", util.toLocaleFixed(90, 0) + " kWh"],
-            ["100000", util.toLocaleFixed(100, 0) + " kWh"],
+            ["5000", toLocaleFixed(5, 0) + " kWh"],
+            ["10000", toLocaleFixed(10, 0) + " kWh"],
+            ["15000", toLocaleFixed(15, 0) + " kWh"],
+            ["20000", toLocaleFixed(20, 0) + " kWh"],
+            ["25000", toLocaleFixed(25, 0) + " kWh"],
+            ["30000", toLocaleFixed(30, 0) + " kWh"],
+            ["40000", toLocaleFixed(40, 0) + " kWh"],
+            ["50000", toLocaleFixed(50, 0) + " kWh"],
+            ["60000", toLocaleFixed(60, 0) + " kWh"],
+            ["70000", toLocaleFixed(70, 0) + " kWh"],
+            ["80000", toLocaleFixed(80, 0) + " kWh"],
+            ["90000", toLocaleFixed(90, 0) + " kWh"],
+            ["100000", toLocaleFixed(100, 0) + " kWh"],
             ["custom", __("charge_limits.content.custom_energy_limit")]
         ]
         let conf_idx = energy_items.findIndex(x => x[0] == s.energy_wh.toString());
         if (conf_idx == -1)
-            energy_items.splice(1, 0, [s.energy_wh.toString(), (s.energy_wh % 1000 == 0 ? util.toLocaleFixed(s.energy_wh / 1000, 0) : util.toLocaleFixed(s.energy_wh / 1000.0, 3)) + " kWh"]);
+            energy_items.splice(1, 0, [s.energy_wh.toString(), (s.energy_wh % 1000 == 0 ? toLocaleFixed(s.energy_wh / 1000, 0) : toLocaleFixed(s.energy_wh / 1000.0, 3)) + " kWh"]);
 
         const energy_settings = <FormRow label={__("charge_limits.content.energy")} label_muted={__("charge_limits.content.energy_muted")}>
             <InputSelect items={energy_items}

@@ -22,6 +22,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import { toLocaleFixed } from "../../ts/i18n";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component } from "preact";
 import { Button, Dropdown } from "react-bootstrap";
@@ -85,9 +86,9 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
         }
 
         if (real_maximum == 32000)
-            return util.toLocaleFixed(real_maximum / 1000.0, 3) + " A";
+            return toLocaleFixed(real_maximum / 1000.0, 3) + " A";
 
-        let rm_string = (real_maximum == 0) ? __("evse.script.acc_blocked") : (util.toLocaleFixed(real_maximum / 1000.0, 3)  + " A");
+        let rm_string = (real_maximum == 0) ? __("evse.script.acc_blocked") : (toLocaleFixed(real_maximum / 1000.0, 3)  + " A");
 
         let status_string = rm_string + " " + __("evse.script.by") + " ";
 

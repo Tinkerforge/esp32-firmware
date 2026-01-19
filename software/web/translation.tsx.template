@@ -19,8 +19,7 @@
  */
 
 import { h, Fragment, VNode } from "preact";
-import { signal, Signal } from "@preact/signals-core";
-import { toLocaleFixed } from "./util";
+import { toLocaleFixed, toLocaleString, get_active_language } from "./i18n";
 import * as options from "../options";
 {{{additional_imports}}}
 
@@ -48,45 +47,8 @@ type DeepKeys<T, S extends string> =
             : keyof T & string
     : ""
 
-// get_languages can be overwritten by a module that can provide a function that returnes a user-specified preferred language.
-// If no such module exists the languages preferred by the browser are used.
-let get_languages: () => readonly string[] = () => navigator.languages;
-export function update_languages_function(f: () => readonly string[]) {
-    get_languages = f;
-}
-
-let active_language: Signal<string> = signal("en");
-function update_active_language() {
-    const languages = get_languages();
-    for (let language of languages) {
-        language = language.substr(0, 2);
-
-        if (language in translation) {
-            if (active_language.value != language) {
-                active_language.value = language;
-            }
-            return;
-        }
-
-        console.log("Sorry, got no translation for " + language);
-    }
-
-    if (active_language.value != 'en') {
-        active_language.value = 'en';
-    }
-}
-window.addEventListener('languagechange', update_active_language);
-// Call update_active_language once initially.
-// If system module is not used this has to be called once so the first
-// language from navigator.languages is used, if there is no languagechange event.
-update_active_language();
-
-export function get_active_language() {
-    return active_language;
-}
-
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
-    let subtranslation: any = translation[active_language.value];
+    let subtranslation: any = translation[get_active_language()];
 
     let key_parts = key.split(".");
     while (subtranslation !== undefined && key_parts.length > 0) {

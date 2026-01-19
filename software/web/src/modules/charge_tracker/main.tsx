@@ -22,8 +22,10 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
+import { toLocaleFixed } from "../../ts/i18n";
 import { h, Fragment, Component, RefObject } from "preact";
-import { __, get_active_language } from "../../ts/translation";
+import { get_active_language } from "../../ts/i18n";
+import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
@@ -106,18 +108,18 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
             </div>
             <div class="col px-0" />
             <div class="col-auto pl-2 mb-2">
-                <span style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
+                <span style="vertical-align: middle;">{props.charge.energy_charged === null ? "N/A" : toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
                 <span class="pl-2"><BatteryCharging/></span>
             </div>
         </div>
         <div class={"row justify-content-end" + (have_charge_cost ? "" : " mb-n2")}>
             <div class="col-auto pr-2 mb-2">
                 <span class="pr-2"><Calendar/></span>
-                <span style="vertical-align: middle;">{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
+                <span style="vertical-align: middle;">{timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
             </div>
             <div class="col px-0" />
             <div class="col-auto pl-2 mb-2">
-                <span style="vertical-align: middle;">{util.format_timespan(props.charge.charge_duration)}</span>
+                <span style="vertical-align: middle;">{format_timespan(props.charge.charge_duration)}</span>
                 <span class="pl-2"><Clock/></span>
             </div>
         </div>
@@ -125,7 +127,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
             <div class="row justify-content-end mb-n2">
                 <div class="col px-0" />
                 <div class="col-auto pl-2 mb-2">
-                    <span style="vertical-align: middle;">{util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
+                    <span style="vertical-align: middle;">{toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
                     <span class="pl-2">{wallet_icon}</span>
                 </div>
             </div> : undefined}
@@ -488,7 +490,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
-        const language = get_active_language().value != 'de' ? Language.English : Language.German;
+        const language = get_active_language() != 'de' ? Language.English : Language.German;
         const payload = {
             api_not_final_acked: true,
             language: language,
@@ -569,7 +571,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
                 let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
-                const language = get_active_language().value != 'de' ? Language.English : Language.German;
+                const language = get_active_language() != 'de' ? Language.English : Language.German;
 
                 await API.call("charge_tracker/send_charge_log", {
                     api_not_final_acked: true,
@@ -698,7 +700,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                             try {
                                 if (state.file_type === "0") {
-                                    const language = get_active_language().value != 'de' ? Language.English : Language.German;
+                                    const language = get_active_language() != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
                                         language: language,

@@ -18,7 +18,7 @@
  */
 
 import * as util from "../util";
-
+import { toLocaleFixed } from "../i18n";
 import { h, Context, Fragment, ComponentChildren, toChildArray } from "preact";
 import { useId, useContext, useRef, useState } from "preact/hooks";
 import { Button, ButtonGroup } from "react-bootstrap";
@@ -86,7 +86,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
         // does not raise an exception, instead only a warning on the console is shown.
         // So to make everyone happy, we use user agent detection.
         propValue = fractional_numbers_require_localization
-            ? util.toLocaleFixed(props.value / pow10, props.digits)
+            ? toLocaleFixed(props.value / pow10, props.digits)
             : (props.value / pow10).toFixed(props.digits);
     }
 
@@ -186,13 +186,13 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                         setTarget(props.min);
                     }}
                     >
-                {((floatMin - Math.trunc(floatMin) < Math.pow(10, -props.digits)) ? Math.trunc(floatMin) : util.toLocaleFixed(floatMin, props.digits)) + " " + props.unit}
+                {((floatMin - Math.trunc(floatMin) < Math.pow(10, -props.digits)) ? Math.trunc(floatMin) : toLocaleFixed(floatMin, props.digits)) + " " + props.unit}
             </Button>
             <Button variant="primary" onClick={() => {
                         setTarget(props.max);
                     }}
                     >
-                {((floatMax - Math.trunc(floatMax) < Math.pow(10, -props.digits)) ? Math.trunc(floatMax) : util.toLocaleFixed(floatMax, props.digits)) + " " + props.unit}
+                {((floatMax - Math.trunc(floatMax) < Math.pow(10, -props.digits)) ? Math.trunc(floatMax) : toLocaleFixed(floatMax, props.digits)) + " " + props.unit}
             </Button>
         </ButtonGroup>
     }

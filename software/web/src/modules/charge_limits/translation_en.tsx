@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
-import { toLocaleFixed } from "../../ts/util";
+import { toLocaleFixed } from "../../ts/i18n";
 let x = {
     "charge_limits": {
         "content": {

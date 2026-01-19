@@ -20,6 +20,7 @@
 import { ComponentChildren, createRef, RefObject } from "preact";
 import * as API from "./api";
 import { __, removeUnicodeHacks } from "./translation";
+import { toLocaleFixed, toLocaleString } from "./i18n";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
@@ -152,20 +153,6 @@ export function format_timespan(secs: number) {
     }
 
     return dayString + hourString + minString + secString;
-}
-
-let number_formats: {[id: number]: Intl.NumberFormat} = {};
-
-export function toLocaleFixed(i: number, fractionDigits?: number) {
-    if (fractionDigits === undefined) {
-        fractionDigits = 0;
-    }
-
-    if (!number_formats[fractionDigits]) {
-        number_formats[fractionDigits] = new Intl.NumberFormat(undefined, {minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits});
-    }
-
-    return number_formats[fractionDigits].format(i);
 }
 
 let wsReconnectTimeout: number = null;
@@ -626,7 +613,7 @@ function timestamp_to_date(timestamp: number, time_fmt: any) {
     let fmt = Object.assign({}, date_fmt, time_fmt);
 
     let date = new Date(timestamp);
-    let result = date.toLocaleString([], fmt);
+    let result = toLocaleString(date, fmt);
 
     let date_result = date.toLocaleDateString([], date_fmt);
     let time_result = date.toLocaleTimeString([], time_fmt);

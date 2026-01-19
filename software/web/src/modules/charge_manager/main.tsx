@@ -21,6 +21,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import { toLocaleFixed } from "../../ts/i18n";
 import { h, Component, ComponentChild, Fragment, toChildArray } from "preact";
 import { useState } from "preact/hooks";
 import { translate_unchecked, __ } from "../../ts/translation";
@@ -503,9 +504,9 @@ function CMStatusCharger(props: {
 
     let cur = c.ac / 1000.0;
     let p = c.ap;
-    let kw = util.toLocaleFixed(cur * p * 230 / 1000.0, 3);
+    let kw = toLocaleFixed(cur * p * 230 / 1000.0, 3);
 
-    let c_status_text = `${util.toLocaleFixed(cur, 3)} A @ ${p}p = ${kw} kW ${__("charge_manager.script.ampere_allocated")}`;
+    let c_status_text = `${toLocaleFixed(cur, 3)} A @ ${p}p = ${kw} kW ${__("charge_manager.script.ampere_allocated")}`;
 
     if (last_update >= 10)
         c_status_text += "; " + __("charge_manager.script.last_update_prefix") + " " + util.format_timespan(last_update) + (__("charge_manager.script.last_update_suffix"));

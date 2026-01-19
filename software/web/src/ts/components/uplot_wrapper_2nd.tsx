@@ -23,6 +23,7 @@ import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
+import { toLocaleFixed, toLocaleString, get_active_locale } from "../i18n";
 import uPlot from "uplot";
 import type { UplotFlagsWrapper } from './uplot_wrapper_3rd';
 
@@ -193,20 +194,20 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
 
                         for (let i = 0; i < splits.length; ++i) {
                             let date = new Date(splits[i] * 1000);
-                            let value = date.toLocaleString([], this.props.x_format);
+                            let value = toLocaleString(date, this.props.x_format);
 
                             if (this.props.x_include_date && foundIncr >= 3600) {
-                                let year = date.toLocaleString([], {year: 'numeric'});
-                                let month_and_day = date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+                                let year = toLocaleString(date, {year: 'numeric'});
+                                let month_and_day = toLocaleString(date, {month: '2-digit', day: '2-digit'});
 
                                 if (year != last_year) {
-                                    value += '\n' + date.toLocaleString([], {year: 'numeric', month: '2-digit', day: '2-digit'});
+                                    value += '\n' + toLocaleString(date, {year: 'numeric', month: '2-digit', day: '2-digit'});
                                     last_year = year;
                                     last_month_and_day = month_and_day;
                                 }
 
                                 if (month_and_day != last_month_and_day) {
-                                    value += '\n' + date.toLocaleString([], {month: '2-digit', day: '2-digit'});
+                                    value += '\n' + toLocaleString(date, {month: '2-digit', day: '2-digit'});
                                     last_month_and_day = month_and_day;
                                 }
                             }
@@ -268,7 +269,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                                     values[i] = '';
                                 }
                                 else {
-                                    values[i] = util.toLocaleFixed(splits[i], digits);
+                                    values[i] = toLocaleFixed(splits[i], digits);
                                 }
 
                                 if (last_value == values[i]) {
@@ -483,7 +484,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                                 values[i] = '';
                             }
                             else {
-                                values[i] = util.toLocaleFixed(splits[i], digits);
+                                values[i] = toLocaleFixed(splits[i], digits);
                             }
 
                             if (last_value == values[i]) {
@@ -520,6 +521,12 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
 
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
+
+        effect(() => {
+            // redraw on locale change
+            let x = get_active_locale();
+            this.uplot.redraw(true, true);
+        });
 
         try {
             this.observer = new ResizeObserver(() => {
@@ -652,7 +659,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                         prefix = this.data.extra_names[seriesIdx][this.data.extras[seriesIdx][idx]] + ' / ';
                     }
 
-                    return prefix + util.toLocaleFixed(this.data.values[seriesIdx][idx], y_digits) + " " + y_unit;
+                    return prefix + toLocaleFixed(this.data.values[seriesIdx][idx], y_digits) + " " + y_unit;
                 }
 
                 return null;

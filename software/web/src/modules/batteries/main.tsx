@@ -22,6 +22,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
+import { toLocaleFixed } from "../../ts/i18n";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component, ComponentChild, createRef } from "preact";
 import { effect } from "@preact/signals-core";
@@ -183,7 +184,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         rule_config.desc,
                         get_column_time_cond(rule_config),
                         get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
-                        get_column_cond(rule_config.price_cond, `${util.toLocaleFixed(rule_config.price_th / 10, 1)} ct`),
+                        get_column_cond(rule_config.price_cond, `${toLocaleFixed(rule_config.price_th / 10, 1)} ct`),
                         get_column_cond(rule_config.forecast_cond, `${rule_config.forecast_th} kWh`),
                         get_column_schedule_cond(rule_config.schedule_cond),
                         get_column_fast_chg_cond(rule_config.fast_chg_cond),

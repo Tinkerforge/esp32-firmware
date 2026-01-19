@@ -20,6 +20,7 @@
 
 import { h } from "preact";
 import { __ } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/i18n";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
@@ -60,19 +61,19 @@ function get_charge_limits_edit_children(action: ChargeLimitsAutomationAction, o
     const energy_items: [string, string][] = [
         ["-1", __("charge_limits.automation.unchanged")],
         ["0", __("charge_limits.automation.unlimited")],
-        ["5000", util.toLocaleFixed(5, 0) + " kWh"],
-        ["10000", util.toLocaleFixed(10, 0) + " kWh"],
-        ["15000", util.toLocaleFixed(15, 0) + " kWh"],
-        ["20000", util.toLocaleFixed(20, 0) + " kWh"],
-        ["25000", util.toLocaleFixed(25, 0) + " kWh"],
-        ["30000", util.toLocaleFixed(30, 0) + " kWh"],
-        ["40000", util.toLocaleFixed(40, 0) + " kWh"],
-        ["50000", util.toLocaleFixed(50, 0) + " kWh"],
-        ["60000", util.toLocaleFixed(60, 0) + " kWh"],
-        ["70000", util.toLocaleFixed(70, 0) + " kWh"],
-        ["80000", util.toLocaleFixed(80, 0) + " kWh"],
-        ["90000", util.toLocaleFixed(90, 0) + " kWh"],
-        ["100000", util.toLocaleFixed(100, 0) + " kWh"],
+        ["5000", toLocaleFixed(5, 0) + " kWh"],
+        ["10000", toLocaleFixed(10, 0) + " kWh"],
+        ["15000", toLocaleFixed(15, 0) + " kWh"],
+        ["20000", toLocaleFixed(20, 0) + " kWh"],
+        ["25000", toLocaleFixed(25, 0) + " kWh"],
+        ["30000", toLocaleFixed(30, 0) + " kWh"],
+        ["40000", toLocaleFixed(40, 0) + " kWh"],
+        ["50000", toLocaleFixed(50, 0) + " kWh"],
+        ["60000", toLocaleFixed(60, 0) + " kWh"],
+        ["70000", toLocaleFixed(70, 0) + " kWh"],
+        ["80000", toLocaleFixed(80, 0) + " kWh"],
+        ["90000", toLocaleFixed(90, 0) + " kWh"],
+        ["100000", toLocaleFixed(100, 0) + " kWh"],
     ];
 
     const duration_items: [string, string][] = [

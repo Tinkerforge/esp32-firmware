@@ -22,6 +22,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
+import { toLocaleFixed } from "../../ts/i18n";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
 import { Button, ButtonGroup, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
@@ -976,9 +977,9 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                 return {
                                     columnValues: [
                                         get_meter_name(this.state.configs_table, meter_slot),
-                                        util.hasValue(power) ? util.toLocaleFixed(power, 0) + " W" : undefined,
-                                        util.hasValue(energy_import) ? util.toLocaleFixed(energy_import, 3) + " kWh" : undefined,
-                                        util.hasValue(energy_export) ? util.toLocaleFixed(energy_export, 3) + " kWh" : undefined,
+                                        util.hasValue(power) ? toLocaleFixed(power, 0) + " W" : undefined,
+                                        util.hasValue(energy_import) ? toLocaleFixed(energy_import, 3) + " kWh" : undefined,
+                                        util.hasValue(energy_export) ? toLocaleFixed(energy_export, 3) + " kWh" : undefined,
                                         util.compareArrays(phases, ["?", "?", "?"]) ? undefined : <ButtonGroup>
                                             {phases.map((phase) =>
                                                 <Button disabled size="sm" variant={phase_variant[phase]}>
@@ -1498,7 +1499,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Sun/></div>
                                                 <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['pv'] + "px;"}>
-                                                    <div ref={this.power_sum_ref['pv']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(Math.abs(pv_power_sum))} W</div>
+                                                    <div ref={this.power_sum_ref['pv']} class="meters-status-power-sums-text-main">{toLocaleFixed(Math.abs(pv_power_sum))} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {grid_power_sum !== null ?
@@ -1512,7 +1513,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                     </svg>
                                                 </div>
                                                 <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['grid'] + "px;"}>
-                                                    <div ref={this.power_sum_ref['grid']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</div>
+                                                    <div ref={this.power_sum_ref['grid']} class="meters-status-power-sums-text-main">{toLocaleFixed(grid_power_sum)} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {battery_power_sum !== null || battery_soc_avg !== null ?
@@ -1523,11 +1524,11 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                         <div class="col"></div>
                                                         <div class="col-auto">
                                                             {battery_power_sum !== null && battery_soc_avg !== null
-                                                                ? <><div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main text-left">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                                    <div class="meters-status-power-sums-text-sub text-left">{util.toLocaleFixed(battery_power_sum)} W</div></>
+                                                                ? <><div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main text-left">{toLocaleFixed(battery_soc_avg)} %</div>
+                                                                    <div class="meters-status-power-sums-text-sub text-left">{toLocaleFixed(battery_power_sum)} W</div></>
                                                                 : (battery_soc_avg !== null
-                                                                    ? <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                                    : <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
+                                                                    ? <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{toLocaleFixed(battery_soc_avg)} %</div>
+                                                                    : <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{toLocaleFixed(battery_power_sum)} W</div>
                                                                 )}
                                                         </div>
                                                     </div>
@@ -1537,7 +1538,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Home/></div>
                                                 <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['load'] + "px;"}>
-                                                    <div ref={this.power_sum_ref['load']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</div>
+                                                    <div ref={this.power_sum_ref['load']} class="meters-status-power-sums-text-main">{toLocaleFixed(load_power_sum)} W</div>
                                                 </div>
                                             </div> : undefined}
                                     </div>
@@ -1598,15 +1599,15 @@ export function init() {
             let voltage_l3_n = values[value_ids.indexOf(MeterValueID.VoltageL3N)];
 
             if (util.hasValue(voltage_l1_n) && (voltage_l1_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l1_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L1', util.toLocaleFixed(voltage_l1_n, 1)]);
+                voltages_out_of_range.push(['L1', toLocaleFixed(voltage_l1_n, 1)]);
             }
 
             if (util.hasValue(voltage_l2_n) && voltage_l2_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l2_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l2_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L2', util.toLocaleFixed(voltage_l2_n, 1)]);
+                voltages_out_of_range.push(['L2', toLocaleFixed(voltage_l2_n, 1)]);
             }
 
             if (util.hasValue(voltage_l3_n) && voltage_l3_n > PHASE_CONNECTED_VOLTAGE_THRESHOLD && (voltage_l3_n < ACCEPTABLE_VOLTAGE_L_N_MIN || voltage_l3_n > ACCEPTABLE_VOLTAGE_L_N_MAX)) {
-                voltages_out_of_range.push(['L3', util.toLocaleFixed(voltage_l3_n, 1)]);
+                voltages_out_of_range.push(['L3', toLocaleFixed(voltage_l3_n, 1)]);
             }
         }
 
