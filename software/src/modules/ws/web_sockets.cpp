@@ -118,6 +118,7 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
         }
 
         if (httpd_ws_get_fd_info(this->httpd, wi->fds[i]) != HTTPD_WS_CLIENT_WEBSOCKET) {
+            logger.printfln("send_ws_work_item encountered non-WS fd %i", wi->fds[i]);
             continue;
         }
 
@@ -487,6 +488,11 @@ bool WebSockets::sendToClientOwned(char *payload, size_t payload_len, int fd, ht
 
 bool WebSockets::haveActiveClient()
 {
+    if (boot_stage < BootStage::REGISTER_URLS) {
+        // Can't have any clients yet but keep_alive_fds might not have been initialized yet.
+        return false;
+    }
+
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] != -1)
