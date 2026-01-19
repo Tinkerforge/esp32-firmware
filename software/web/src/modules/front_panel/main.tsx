@@ -189,6 +189,20 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
         </FormRow>
     }
 
+    get_default_value(tile_type: TileType) {
+        switch (tile_type) {
+            case TileType.Empty:               return null;
+            case TileType.Charger:             return 0;
+            case TileType.ChargeManagement:    return null;
+            case TileType.Meter:               return 0;
+            case TileType.DayAheadPrices:      return 0;
+            case TileType.SolarForecast:       return 0;
+            case TileType.EnergyManagerStatus: return null;
+            case TileType.HeatingStatus:       return null;
+            default:                           return undefined;
+        }
+    }
+
     render(props: {}, state: FrontPanelConfig) {
         if (!util.render_allowed()) {
             return <SubPage name="front_panel" />;
@@ -231,7 +245,8 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                                             value={state.tiles[tile_index][0]}
                                             onValue={(v) => {
                                                 let tiles = state.tiles;
-                                                tiles[tile_index] = [parseInt(v), state.tiles[tile_index][1]];
+                                                let tile_type = parseInt(v);
+                                                tiles[tile_index] = [tile_type, this.get_default_value(tile_type)];
                                                 this.setState({tiles: tiles})}
                                             }
                                         />
