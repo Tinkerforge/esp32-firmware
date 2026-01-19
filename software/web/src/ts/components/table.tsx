@@ -141,9 +141,9 @@ export class Table extends Component<TableProps, TableState> {
                     <tbody>
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
-                                <td class="p-0" style={row.indicator !== undefined ? `min-width: 5px; background-color: var(--${row.indicator})` : ""}></td>
+                                <td class="p-0" style={(row.indicator !== undefined ? `min-width: 5px; background-color: var(--${row.indicator});` : "") + (row.extraValue ? " border-bottom: none;" : "")}></td>
                                 {row.columnValues.map((value, k) => (
-                                    <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
+                                    <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                         {row.extraValue && k == 0 ?
                                             <span class="row mx-n1 align-items-center"><span class="col-auto px-1"><Button className="me-2" size="sm"
                                                 onClick={() => {
@@ -155,7 +155,7 @@ export class Table extends Component<TableProps, TableState> {
                                                 </Button></span><span class="col px-1">{value}</span></span> : value}
                                     </td>
                                 ))}
-                                <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "")}>
+                                <td class={row.extraValue ? "pb-0" : undefined} style={"width: 1%; white-space: nowrap; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                     <Button variant="primary"
                                             size="sm"
                                             className="me-2"
