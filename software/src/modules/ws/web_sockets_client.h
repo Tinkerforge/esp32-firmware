@@ -28,7 +28,11 @@ public:
     WebSocketsClient(int fd_, WebSockets *ws_) : fd(fd_), ws(ws_) {};
     ~WebSocketsClient();
 
-    bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool send_async(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool sendOwned_async(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    [[nodiscard]] bool sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+
+    void close_async();
     void close_HTTPThread();
 
     void *setCtx(void *ctx);

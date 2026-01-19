@@ -33,6 +33,16 @@ WebSocketsClient::~WebSocketsClient()
     }
 }
 
+bool WebSocketsClient::send_async(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+{
+    return ws->sendToClient(payload, payload_len, fd, ws_type);
+}
+
+bool WebSocketsClient::sendOwned_async(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+{
+    return ws->sendToClientOwned(payload, payload_len, fd, ws_type);
+}
+
 bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
 #ifdef DEBUG_FS_ENABLE
@@ -54,8 +64,21 @@ bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t 
     return ws->send_ws_item_direct(fd, &ws_pkt);
 }
 
+void WebSocketsClient::close_async()
+{
+    ws->keepAliveCloseDead_async(fd);
+}
+
 void WebSocketsClient::close_HTTPThread()
 {
+#ifdef DEBUG_FS_ENABLE
+    const char *task_name = pcTaskGetName(nullptr);
+
+    if (strcmp(task_name, "httpd") != 0) {
+        esp_system_abort("close_HTTPThread can only be called from the HTTP thread");
+    }
+#endif
+
     ws->keepAliveCloseDead_HTTPThread(fd);
 }
 
