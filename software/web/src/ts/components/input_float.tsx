@@ -144,6 +144,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
         </span>
         : undefined
     }
+    {invalidFeedback}
     {'onValue' in props && !props.readonly ?
         <>
             <Button variant="primary"
@@ -193,7 +194,6 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
             </Button>
         </ButtonGroup>
     }
-    {invalidFeedback}
 </div>
 }
 

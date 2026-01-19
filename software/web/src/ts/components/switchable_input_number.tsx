@@ -92,6 +92,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 disabled={!props.checked || props.disabled}
             />
             {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
+            {invalidFeedback}
             <Button variant="primary"
                     disabled={!props.checked || props.value == props.min || props.disabled}
                     className="px-1"
@@ -131,7 +132,6 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                     }}>
                 <Plus/>
             </Button>
-            {invalidFeedback}
         </div>
     );
 }
