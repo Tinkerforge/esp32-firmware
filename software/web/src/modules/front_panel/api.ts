@@ -1,17 +1,7 @@
-// TODO: use enum generator.
-const enum TileType {
-    EmptyTile           = 0,
-    Wallbox             = 1,
-    ChargeManagement    = 2,
-    Meter               = 3,
-    DayAheadPrices      = 4,
-    SolarForecast       = 5,
-    EnergyManagerStatus = 6,
-    HeatingStatus       = 7,
-}
+import { TileType } from "./tile_type.enum";
 
-type TileTypeEmptyTile = [TileType.EmptyTile, null];
-type TileTypeWallbox = [TileType.Wallbox, number];
+type TileTypeEmpty = [TileType.Empty, null];
+type TileTypeCharger = [TileType.Charger, number];
 type TileTypeChargeManagement = [TileType.ChargeManagement, null];
 type TileTypeMeter = [TileType.Meter, number];
 type TileTypeDayAheadPrices = [TileType.DayAheadPrices, number];
@@ -20,8 +10,8 @@ type TileTypeEnergyManagerStatus = [TileType.EnergyManagerStatus, null];
 type TileTypeHeatingStatus = [TileType.HeatingStatus, null];
 
 type TileConfig =
-    TileTypeEmptyTile |
-    TileTypeWallbox |
+    TileTypeEmpty |
+    TileTypeCharger |
     TileTypeChargeManagement |
     TileTypeMeter |
     TileTypeDayAheadPrices |

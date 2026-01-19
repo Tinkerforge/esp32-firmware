@@ -25,6 +25,7 @@
 #include "bindings/bricklet_warp_front_panel.h"
 #include "module_available.h"
 #include "tools/libxz/xz.h"
+#include "tile_type.enum.h"
 
 #define FRONT_PANEL_TILES 6
 #define TILE_TYPES 8
@@ -63,17 +64,6 @@ public:
     void flash_data_done_callback();
 
 private:
-    enum class TileType : uint8_t {
-        EmptyTile           = 0,
-        Charger             = 1,
-        ChargeManagement    = 2,
-        Meter               = 3,
-        DayAheadPrices      = 4,
-        SolarForecast       = 5,
-        EnergyManagerStatus = 6,
-        HeatingStatus       = 7,
-    };
-
     enum class DAPType : uint8_t {
         CurrentPrice = 0,
         AveragePriveToday = 1,

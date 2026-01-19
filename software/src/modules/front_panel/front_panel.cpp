@@ -67,12 +67,12 @@ void FrontPanel::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
-    tile_prototypes[0] = {TileType::EmptyTile,           *Config::Null()};
-    tile_prototypes[1] = {TileType::Charger,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
+    tile_prototypes[0] = {TileType::Empty,               *Config::Null()};
+    tile_prototypes[1] = {TileType::Charger,              Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
     tile_prototypes[2] = {TileType::ChargeManagement,    *Config::Null()};
-    tile_prototypes[3] = {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_MAX_SLOTS)};
-    tile_prototypes[4] = {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)};
-    tile_prototypes[5] = {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)};
+    tile_prototypes[3] = {TileType::Meter,                Config::Uint(0, 0, FRONT_PANEL_METERS_MAX_SLOTS)};
+    tile_prototypes[4] = {TileType::DayAheadPrices,       Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)};
+    tile_prototypes[5] = {TileType::SolarForecast,        Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)};
     tile_prototypes[6] = {TileType::EnergyManagerStatus, *Config::Null()};
     tile_prototypes[7] = {TileType::HeatingStatus,       *Config::Null()};
 
@@ -80,7 +80,7 @@ void FrontPanel::pre_setup()
             {"enable", Config::Bool(true)},
             {"tiles", Config::Tuple(FRONT_PANEL_TILES, Config::Union<TileType>(
                 *Config::Null(),
-                TileType::EmptyTile,
+                TileType::Empty,
                 tile_prototypes,
                 TILE_TYPES
             ))}
@@ -255,7 +255,7 @@ void FrontPanel::register_urls()
 
     api.addCommand("front_panel/blank", Config::Null(), {}, [this](String &/*errmsg*/) {
         for (size_t i = 0; i < 6; i++) {
-            update_front_page_empty_tile(i,  TileType::EmptyTile, 0);
+            update_front_page_empty_tile(i, TileType::Empty, 0);
         }
     }, true);
 #endif
@@ -286,7 +286,7 @@ void FrontPanel::pre_reboot()
             continue;
         }
 
-        update_front_page_empty_tile(i, TileType::EmptyTile, 0);
+        update_front_page_empty_tile(i, TileType::Empty, 0);
     }
 
     tf_warp_front_panel_set_status_bar(
@@ -673,7 +673,7 @@ void FrontPanel::update_front_page()
         int result = TF_E_OK;
 
         switch (type) {
-            case TileType::EmptyTile:
+            case TileType::Empty:
                 result = update_front_page_empty_tile(i, type, 0);
                 break;
             case TileType::Charger:

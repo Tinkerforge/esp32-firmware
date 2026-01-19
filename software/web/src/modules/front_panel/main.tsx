@@ -34,6 +34,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { MeterValueID } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { get_managed_chargers } from "../charge_manager/chargers";
+import { TileType } from "./tile_type.enum";
 
 const FRONT_PANEL_TILES = 6;
 
@@ -44,36 +45,37 @@ export function FrontPanelNavbar() {
 type FrontPanelConfig = API.getType["front_panel/config"];
 
 export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
-    static options_tile(): [string, string][] { return [
-        ["0", __("front_panel.content.empty_tile")],
-        ["1", __("front_panel.content.wallbox")],
-        ["2", __("front_panel.content.charge_management")],
-        ["3", __("front_panel.content.meter")],
-        ["4", __("front_panel.content.day_ahead_price")],
-        ["5", __("front_panel.content.solar_forecast")],
-        ["6", __("front_panel.content.energy_manager_status")],
-        ["7", __("front_panel.content.heating_status")],
-    ]}
+    static options_tile(): [string, string][] {
+        return [
+            [TileType.Empty.toString(),               __("front_panel.content.empty")],
+            [TileType.Charger.toString(),             __("front_panel.content.charger")],
+            [TileType.ChargeManagement.toString(),    __("front_panel.content.charge_management")],
+            [TileType.Meter.toString(),               __("front_panel.content.meter")],
+            [TileType.DayAheadPrices.toString(),      __("front_panel.content.day_ahead_prices")],
+            [TileType.SolarForecast.toString(),       __("front_panel.content.solar_forecast")],
+            [TileType.EnergyManagerStatus.toString(), __("front_panel.content.energy_manager_status")],
+            [TileType.HeatingStatus.toString(),       __("front_panel.content.heating_status")],
+        ];
+    }
 
-    static options_wallbox_unknown(): [string, string][] { return [...Array(32).keys()].map((i) => [
+    static options_charger_unknown(): [string, string][] { return [...Array(32).keys()].map((i) => [
         i.toString(),
-        __("front_panel.content.wallbox") + " " + i + " (" + __("front_panel.content.unconfigured") + ")"
+        __("front_panel.content.charger") + " " + i + " (" + __("front_panel.content.unconfigured") + ")"
     ])}
 
-    static options_wallbox(): [string, string][] {
-        const wallboxes = get_managed_chargers();
-        let wallbox_slots = FrontPanel.options_wallbox_unknown();
+    static options_charger(): [string, string][] {
+        const chargers = get_managed_chargers();
+        let charger_slots = FrontPanel.options_charger_unknown();
 
-        wallboxes.forEach((wallbox) => {
-            const index = wallbox_slots.findIndex(([id]) => id === wallbox[0]);
+        chargers.forEach((charger) => {
+            const index = charger_slots.findIndex(([id]) => id === charger[0]);
             if (index !== -1) {
-                wallbox_slots[index] = wallbox;
+                charger_slots[index] = charger;
             }
         });
 
-        return wallbox_slots;
+        return charger_slots;
     }
-
 
     static options_meter_unkown(): [string, string][] { return [...Array(7).keys()].map((i) => [
         i.toString(), __("front_panel.content.meter") + " " + i + " (" + __("front_panel.content.unconfigured") + ")"
@@ -234,10 +236,10 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                                             }
                                         />
                                     </FormRow>
-                                    {state.tiles[tile_index][0] === 1 && (this.get_tile_config(tile_index, FrontPanel.options_wallbox()))}
-                                    {state.tiles[tile_index][0] === 3 && (this.get_tile_config(tile_index, FrontPanel.options_meter()))}
-                                    {state.tiles[tile_index][0] === 4 && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices()))}
-                                    {state.tiles[tile_index][0] === 5 && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast()))}
+                                    {state.tiles[tile_index][0] === TileType.Charger        && (this.get_tile_config(tile_index, FrontPanel.options_charger()))}
+                                    {state.tiles[tile_index][0] === TileType.Meter          && (this.get_tile_config(tile_index, FrontPanel.options_meter()))}
+                                    {state.tiles[tile_index][0] === TileType.DayAheadPrices && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices()))}
+                                    {state.tiles[tile_index][0] === TileType.SolarForecast  && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast()))}
                                 </div>
                             })}
                         </div>
