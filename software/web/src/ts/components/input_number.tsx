@@ -82,6 +82,7 @@ export function InputNumber(props: InputNumberProps) {
                 readonly={props.onValue === undefined || props.readonly}
         />
         {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}
+        {invalidFeedback}
         {props.onValue && !props.readonly ? <>
         <Button variant="primary"
                 disabled={props.value == props.min || props.disabled || props.readonly}
@@ -114,7 +115,6 @@ export function InputNumber(props: InputNumberProps) {
                 }}>
             <Plus/>
         </Button> </> : null}
-        {invalidFeedback}
     </div>;
 }
 
