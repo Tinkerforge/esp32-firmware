@@ -81,8 +81,8 @@ function InputTextInternal<T extends InputTextInternalProps>(props: util.NoExtra
         return <div class="input-group">
                 {prefixChildren}
                 {inner}
-                {props.children}
                 {invalidFeedbackDiv}
+                {props.children}
             </div>
     }
 
