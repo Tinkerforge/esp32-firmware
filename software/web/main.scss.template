@@ -663,25 +663,25 @@ table ul {
 
 // This is the _second_ nested modal!
 .modal-backdrop-1 {
-    z-index: 1051 !important;
+    z-index: 1060 !important;
 }
 .modal-1 {
-    z-index: 1052 !important;
+    z-index: 1065 !important;
 }
 
 .modal-backdrop-2 {
-    z-index: 1053 !important;
+    z-index: 1070 !important;
 }
 .modal-2 {
-    z-index: 1054 !important;
+    z-index: 1075 !important;
 }
 
 .modal-backdrop-3 {
-    z-index: 1055 !important;
+    z-index: 1080 !important;
 }
 
 .modal-3 {
-    z-index: 1056 !important;
+    z-index: 1085 !important;
 }
 
 .table-card-mode .card-body .form-group,
