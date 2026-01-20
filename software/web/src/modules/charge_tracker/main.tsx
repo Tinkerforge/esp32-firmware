@@ -112,7 +112,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
             </div>
             <div class="col px-0" />
             <div class="col-auto ps-2 mb-2">
-                <span style={{verticalAlign: "middle"}}>{props.charge.energy_charged === null ? "N/A" : util.util.toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
+                <span style={{verticalAlign: "middle"}}>{props.charge.energy_charged === null ? "N/A" : toLocaleFixed(props.charge.energy_charged, 3)} kWh</span>
                 <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
@@ -142,7 +142,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <div class="col px-0" />
                 {have_charge_cost ?
                     <div class="col-auto ps-2 mb-2">
-                        <span style={{verticalAlign: "middle"}}>{util.util.toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
+                        <span style={{verticalAlign: "middle"}}>{toLocaleFixed(props.electricity_price / 100 * props.charge.energy_charged / 100, 2)} €</span>
                         <span class="ps-2">{wallet_icon}</span>
                     </div> : undefined}
             </div> : undefined}
