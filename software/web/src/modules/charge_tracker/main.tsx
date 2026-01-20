@@ -488,7 +488,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
-        const language = get_active_language().value != 'de' ? Language.English : Language.German;
+        const language = get_active_language() != 'de' ? Language.English : Language.German;
         const payload = {
             api_not_final_acked: true,
             language: language,
@@ -569,7 +569,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
                 let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
-                const language = get_active_language().value != 'de' ? Language.English : Language.German;
+                const language = get_active_language() != 'de' ? Language.English : Language.German;
 
                 await API.call("charge_tracker/send_charge_log", {
                     api_not_final_acked: true,
@@ -698,7 +698,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                             try {
                                 if (state.file_type === "0") {
-                                    const language = get_active_language().value != 'de' ? Language.English : Language.German;
+                                    const language = get_active_language() != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
                                         language: language,

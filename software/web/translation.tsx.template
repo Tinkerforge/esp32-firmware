@@ -82,7 +82,7 @@ window.addEventListener('languagechange', update_active_language);
 update_active_language();
 
 export function get_active_language() {
-    return active_language;
+    return active_language.value;
 }
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {
