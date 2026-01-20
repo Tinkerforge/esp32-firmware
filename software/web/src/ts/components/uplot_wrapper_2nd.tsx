@@ -364,7 +364,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                                 ctx.translate(offset, offset);
                                 ctx.beginPath();
                                 ctx.lineWidth = lineWidth;
-                                ctx.strokeStyle = 'rgb(0,0,0,0.2)';
+                                ctx.strokeStyle = util.getChartColors().axisStroke;
                                 ctx.moveTo(x0, y);
                                 ctx.lineTo(x1, y);
                                 ctx.stroke();
@@ -431,7 +431,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                                         ctx.lineWidth = 1;
                                         let metrics   = ctx.measureText(line.text);
                                         let text_mid  = metrics.width/2 + (xn-x)/2;
-                                        ctx.fillStyle = `rgba(32, 32, 32, 1)`;
+                                        ctx.fillStyle = util.getChartColors().axisText;
                                         ctx.fillText(line.text, x + text_mid, 12 * devicePixelRatio + (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent) / 2);
                                         ctx.restore();
                                     }

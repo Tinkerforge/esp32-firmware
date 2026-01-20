@@ -208,8 +208,8 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
             padding: padding,
             plugins: [
                 uPlotTimelinePlugin({
-                    fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : 'rgb(0, 0, 0, 0.1)',
-                    stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : 'rgb(0, 0, 0)',
+                    fill: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_fills && this.data.value_fills[seriesIdx] ? this.data.value_fills[seriesIdx][value] : util.getChartColors().gridStroke,
+                    stroke: (seriesIdx: number, dataIdx: number, value: any) => this.data.value_strokes && this.data.value_strokes[seriesIdx] ? this.data.value_strokes[seriesIdx][value] : util.getChartColors().axisText,
                     bar_height: this.bar_height,
                     bar_spacing: this.bar_spacing,
                 }),

@@ -306,7 +306,7 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
                                 ctx.translate(offset, offset);
                                 ctx.beginPath();
                                 ctx.lineWidth = lineWidth;
-                                ctx.strokeStyle = chartColors.axisStroke;
+                                ctx.strokeStyle = util.getChartColors().axisStroke;
                                 ctx.moveTo(x0, y);
                                 ctx.lineTo(x1, y);
                                 ctx.stroke();
