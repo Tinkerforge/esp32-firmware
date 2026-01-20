@@ -328,7 +328,7 @@ void Debug::setup()
 }
 
 #ifdef DEBUG_FS_ENABLE
-const char * const fs_browser_header = "<script>"
+static constexpr char fs_browser_header[] = "<script>"
 "if (!window.location.toString().endsWith('/')) {"
     "window.location = window.location + '/';"
 "}"
@@ -365,9 +365,9 @@ const char * const fs_browser_header = "<script>"
     "await fetch(window.location + name, {method: 'DELETE'});"
     "window.location.reload();"
 "}"
-"</script>";
+"</script>\n";
 
-const char * const fs_browser_footer =
+static constexpr char fs_browser_footer[] =
 "<br>"
 "<hr>"
 "<br>"
@@ -394,42 +394,68 @@ const char * const fs_browser_footer =
     "<textarea id=newFileContent placeholder='File content' cols=80 rows=25></textarea>"
     "<br>"
     "<button type=button onClick=createFile()>Create file</button>"
-"</div>";
+"</div>\n";
 
+static constexpr char fs_browser_up_button[] = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href='..'>..</a><br>\n";
 
-static WebServerRequestReturnProtect browse_get(WebServerRequest &request, String path) {
-    if (path.length() > 1 && path[path.length() - 1] == '/')
-        path = path.substring(0, path.length() - 1);
+static WebServerRequestReturnProtect browse_get(WebServerRequest &request, CoolString path) {
+    const size_t path_length = path.length();
+    if (path_length > 1 && path[path_length - 1] == '/') {
+        path.setLength(static_cast<int>(path_length - 1));
+    }
 
-    if (!LittleFS.exists(path))
+    if (!LittleFS.exists(path)) {
         return request.send_plain(404, "File " + path + " not found");
+    }
+
+    char buf[2048];
 
     File f = LittleFS.open(path);
     if (!f.isDirectory()) {
-        char buf[256];
         request.beginChunkedResponse_plain(200);
         while (f.available()) {
-            size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
+            const size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
             SEND_CHUNK_OR_FAIL_LEN(request, buf, read);
         }
         return request.endChunkedResponse();
     } else {
         request.beginChunkedResponse_html(200);
         SEND_CHUNK_OR_FAIL(request, fs_browser_header);
-        String header = "<h1>" + String(f.path()) + "</h1><br>\n";
-        SEND_CHUNK_OR_FAIL(request, header);
 
-        if (path.length() > 1) {
-            String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href='..'>..</a><br>\n";
-
-            SEND_CHUNK_OR_FAIL(request, up);
+        {
+            String header = "<h1>" + path + "</h1>\n";
+            SEND_CHUNK_OR_FAIL(request, header);
         }
 
-        File file = f.openNextFile();
-        while(file) {
-            String s = "<button type=button onclick=\"deleteFile('/" + String(file.name()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=" + String(file.name()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
-            SEND_CHUNK_OR_FAIL(request, s);
-            file = f.openNextFile();
+        if (path.length() > 1) {
+            SEND_CHUNK_OR_FAIL(request, fs_browser_up_button);
+        }
+
+        StringWriter sw{buf, std::size(buf)};
+
+        while (true) {
+            File file = f.openNextFile();
+
+            if (!file) {
+                break;
+            }
+
+            const bool is_directory = file.isDirectory();
+            const char *fname = file.name();
+            const size_t fname_len = strlen(fname);
+
+            sw.puts("<button type=button onclick=\"deleteFile('/");
+            sw.puts(fname, fname_len);
+            sw.puts("')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=\"");
+            sw.puts(fname, fname_len);
+            if (is_directory) sw.putc('/');
+            sw.puts("\">");
+            sw.puts(fname, fname_len);
+            if (is_directory) sw.putc('/');
+            sw.puts("</a><br>\n");
+
+            SEND_CHUNK_OR_FAIL(request, sw);
+            sw.clear();
         }
 
         SEND_CHUNK_OR_FAIL(request, fs_browser_footer);
@@ -438,9 +464,11 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest &request, Strin
     }
 }
 
-static WebServerRequestReturnProtect browse_delete(WebServerRequest &request, String path) {
-    if (path.length() > 1 && path[path.length() - 1] == '/')
-        path = path.substring(0, path.length() - 1);
+static WebServerRequestReturnProtect browse_delete(WebServerRequest &request, CoolString path) {
+    const size_t path_length = path.length();
+    if (path_length > 1 && path[path_length - 1] == '/') {
+        path.setLength(static_cast<int>(path_length - 1));
+    }
 
     if (!LittleFS.exists(path))
         return request.send_plain(404, "File " + path + " not found");
@@ -457,10 +485,12 @@ static WebServerRequestReturnProtect browse_delete(WebServerRequest &request, St
     }
 }
 
-static WebServerRequestReturnProtect browse_put(WebServerRequest &request, String path) {
-    bool create_directory = path.length() > 1 && path[path.length() - 1] == '/';
-    if (create_directory)
-        path = path.substring(0, path.length() - 1);
+static WebServerRequestReturnProtect browse_put(WebServerRequest &request, CoolString path) {
+    const size_t path_length = path.length();
+    bool create_directory = path_length > 1 && path[path_length - 1] == '/';
+    if (create_directory) {
+        path.setLength(static_cast<int>(path_length - 1));
+    }
 
     if (LittleFS.exists(path)) {
         File f = LittleFS.open(path);
