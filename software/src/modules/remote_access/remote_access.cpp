@@ -1196,6 +1196,14 @@ void RemoteAccess::update_connection_state(uint8_t conn_idx, uint8_t user, uint8
     }
 }
 
+void RemoteAccess::management_auth_fail()
+{
+    this->management_auth_failed = true;
+    logger.printfln("Management authentication failed (401) - not reconnecting");
+    config.get("enable")->updateBool(false);
+    api.writeConfig("remote_access/config", &config);
+}
+
 void RemoteAccess::run_request_with_next_stage(const String &url,
                                                esp_http_client_method_t method,
                                                const char *body,
@@ -1211,13 +1219,12 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                     case AsyncHTTPSClientError::HTTPStatusError: {
                         if (strstr(url.c_str(), "/management") != nullptr) {
                             if (!this->management_request_failed) {
-                                logger.printfln("Management request failed with HTTP-Error-Code %i", event->error_http_status);
                                 this->management_request_failed = true;
+
                                 if (event->error_http_status == 401) {
-                                    this->management_auth_failed = true;
-                                    logger.printfln("Management authentication failed (401) - not reconnecting");
-                                    config.get("enable")->updateBool(false);
-                                    api.writeConfig("remote_access/config", &config);
+                                    this->management_auth_fail();
+                                } else {
+                                    logger.printfln("Management request failed with HTTP-Error-Code %i", event->error_http_status);
                                 }
                             }
                         } else {
@@ -1245,8 +1252,15 @@ void RemoteAccess::run_request_with_next_stage(const String &url,
                     default:
                         if (strstr(url.c_str(), "/management") != nullptr) {
                             if (!this->management_request_failed) {
-                                logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), static_cast<uint8_t>(event->error));
                                 this->management_request_failed = true;
+
+                                if (event->error == AsyncHTTPSClientError::HTTPClientError && event->error_http_client == ESP_ERR_NOT_SUPPORTED) {
+                                    // This specific error is returned by the ESP HTTP client if a 401 error has a chunked body and no authentication header.
+                                    // It's a 401 either way, so treat it as such.
+                                    this->management_auth_fail();
+                                } else {
+                                    logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), static_cast<uint8_t>(event->error));
+                                }
                             }
                         } else {
                             char err_buf[64];

@@ -83,6 +83,7 @@ private:
     void login(const Config &user_config, const String &login_key);
     void update_registration_state(RegistrationState state, const String &message = String());
     void update_connection_state(uint8_t conn_idx, uint8_t user, uint8_t connection, uint8_t state_value);
+    void management_auth_fail();
     void request_cleanup();
     void cleanup_after();
     bool user_already_registered(const String &email);
