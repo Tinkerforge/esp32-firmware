@@ -893,6 +893,12 @@ $link-hover-color-dark: $link-hover-color;
             border-radius: inherit;
         }
 
+        > .card-header,
+        > .card-body,
+        > .card-footer {
+            border-radius: 0;
+        }
+
         .uplot {
             background-color: var(--bs-body-bg);
         }
