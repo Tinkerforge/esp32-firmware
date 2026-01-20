@@ -23,6 +23,7 @@ import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
 import * as plot from "../plot";
+import { get_active_language } from "../translation";
 import uPlot from "uplot";
 
 export const enum UplotPath {
@@ -310,6 +311,12 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
 
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
+
+        effect(() => {
+            // redraw on language change
+            let x = get_active_language();
+            this.uplot.redraw(true, true);
+        });
 
         try {
             this.observer = new ResizeObserver(() => {
