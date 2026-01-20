@@ -51,30 +51,31 @@ type DeepKeys<T, S extends string> =
 // get_languages can be overwritten by a module that can provide a function that returnes a user-specified preferred language.
 // If no such module exists the languages preferred by the browser are used.
 let get_languages: () => readonly string[] = () => navigator.languages;
-export function update_languages_function(f: () => readonly string[]) {
+export function set_languages_getter(f: () => readonly string[]) {
     get_languages = f;
+}
+
+export function select_language(languages: readonly string[]) {
+    for (let language of languages) {
+        language = language.substring(0, 2);
+
+        if (language in translation) {
+            return language;
+        }
+    }
+
+    return "en";
 }
 
 let active_language: Signal<string> = signal("en");
 function update_active_language() {
-    const languages = get_languages();
-    for (let language of languages) {
-        language = language.substr(0, 2);
+    let language = select_language(get_languages());
 
-        if (language in translation) {
-            if (active_language.value != language) {
-                active_language.value = language;
-            }
-            return;
-        }
-
-        console.log("Sorry, got no translation for " + language);
-    }
-
-    if (active_language.value != 'en') {
-        active_language.value = 'en';
+    if (active_language.value != language) {
+        active_language.value = language;
     }
 }
+
 window.addEventListener('languagechange', update_active_language);
 // Call update_active_language once initially.
 // If system module is not used this has to be called once so the first

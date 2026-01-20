@@ -64,10 +64,12 @@ let x = {
             "reboot_desc": null,
 
             "system_language": "Systemsprache",
-            "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browsersprache automatisch erkennen\" deaktiviert ist, werden die Spracheinstellungen des Browsers ignoriert und auf der Webseite wird auch die angegebene Systemsprache genutzt.",
+            "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browser-Sprache automatisch erkennen\" deaktiviert ist, dann werden die Spracheinstellungen des Browsers ignoriert und das Webinterface nutzt auch die angegebene Systemsprache.",
+            "system_language_warning": /*SFN*/(browser_locale: string, browser_language_name: string, web_interface_language: string, web_interface_language_name: string) =>
+                `Die Sprache der Benutzeroberfläche des Browsers ist auf ${browser_language_name} [${browser_locale}] eingestellt. Zahlen, Uhrzeiten und Daten werden in ${browser_language_name} angezeigt. Während die Sprache des Webinterfaces auf ${web_interface_language_name} [${web_interface_language}] eingestellt ist. Texte werden in ${web_interface_language_name} angezeigt.`/*NF*/,
             "german": "Deutsch",
             "english": "Englisch",
-            "detect_browser_language": "Browsersprache automatisch erkennen"
+            "detect_browser_language": "Browser-Sprache automatisch erkennen"
         },
         "script": {
             "factory_reset_init": "Formatiere Konfigurationspartition und starte neu...",

@@ -21,7 +21,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h } from "preact";
-import { __, update_languages_function } from "../../ts/translation";
+import { __, set_languages_getter, get_active_language, select_language } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -43,6 +43,24 @@ interface SystemState {
 
 type SystemI18nConfig = API.getType["system/i18n_config"];
 
+function get_languages(i18n_config: SystemI18nConfig) {
+    let languages = [];
+
+    if (i18n_config && !i18n_config.detect_browser_language) {
+        switch (i18n_config.language) {
+            case Language.German:
+                languages.push("de");
+                break;
+
+            case Language.English:
+                languages.push("en");
+                break;
+        }
+    }
+
+    return languages.concat(navigator.languages);
+}
+
 export class System extends ConfigComponent<"system/i18n_config", {}, SystemState> {
     constructor() {
         super('system/i18n_config',
@@ -60,18 +78,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             window.dispatchEvent(new Event('languagechange'));
         });
 
-        update_languages_function(() =>  {
-            let i18n_config = API.get("system/i18n_config");
-
-            if (!i18n_config || i18n_config.detect_browser_language) {
-                return navigator.languages;
-            }
-
-            switch (i18n_config.language) {
-                case Language.German:  return ["de"].concat(navigator.languages);
-                case Language.English: return ["en"].concat(navigator.languages);
-            }
-        });
+        set_languages_getter(() => get_languages(API.get("system/i18n_config")));
     }
 
     render(props: {}, state: SystemI18nConfig) {
@@ -84,6 +91,13 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             show_config_reset = true;
         }
 
+        let i18n_display_names = new Intl.DisplayNames([get_active_language()], {type: "language"});
+        let browser_locale = Intl.NumberFormat().resolvedOptions().locale;
+        let browser_language = browser_locale.substring(0, 2);
+        let browser_language_name = i18n_display_names.of(browser_locale);
+        let web_interface_language = select_language(get_languages(state));
+        let web_interface_language_name = i18n_display_names.of(web_interface_language);
+
         return (
             <SubPage name="system">
                 <ConfigForm id="system_config_form"
@@ -93,7 +107,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("system.content.system_language")} help={__("system.content.system_language_help")}>
+                    <FormRow label={__("system.content.system_language")} help={__("system.content.system_language_help")} show_warning={browser_language != web_interface_language} warning={__("system.content.system_language_warning")(browser_locale, browser_language_name, web_interface_language, web_interface_language_name)}>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="input-group">

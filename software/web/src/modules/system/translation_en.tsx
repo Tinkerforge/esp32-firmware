@@ -64,7 +64,9 @@ let x = {
             "reboot_desc": null,
 
             "system_language": "System language",
-            "system_language_help": "Sets the system language to the specified language. If \"Auto-detect browser language\" is disabled, the browser's language settings are ignored and the specified system language is also used on the website.",
+            "system_language_help": "Sets the system language to the specified language. If \"Auto-detect browser language\" is disabled, the browser's language settings are ignored and the specified system language is also used for the web interface.",
+            "system_language_warning": /*SFN*/(browser_locale: string, browser_language_name: string, web_interface_language: string, web_interface_language_name: string) =>
+                `The browser user interface is set to ${browser_language_name} [${browser_locale}]. Numbers, times and dates will be displayed in ${browser_language_name}. While the web interface is set to ${web_interface_language_name} [${web_interface_language}]. Texts will be displayed in ${web_interface_language_name}.`/*NF*/,
             "german": "German",
             "english": "English",
             "detect_browser_language": "Auto-detect browser language"
