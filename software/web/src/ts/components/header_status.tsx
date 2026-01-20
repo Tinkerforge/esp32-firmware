@@ -24,13 +24,40 @@ import { StatusVariant } from "./header_status_dropdown";
 import { HeaderStatusDropdown } from "./header_status_dropdown";
 import { get_all_statuses, get_overall_status, ModuleStatus, ModuleStatusEntry } from "../status_registry";
 
-function status_to_variant(status: ModuleStatus): StatusVariant {
+export function status_to_variant(status: ModuleStatus): StatusVariant {
     switch (status) {
         case ModuleStatus.Ok: return "success";
         case ModuleStatus.Warning: return "warning";
         case ModuleStatus.Error: return "danger";
         case ModuleStatus.Disabled: return "disabled";
     }
+}
+
+// Mobile status button for use on the status page when in native app mode
+export function MobileStatusButton() {
+    const entries = get_all_statuses();
+
+    if (entries.length === 0) {
+        return null;
+    }
+
+    const overall_status = get_overall_status(entries);
+    const overall_variant = status_to_variant(overall_status);
+
+    const dropdown_entries = entries.map(entry => ({
+        label: entry.name(),
+        variant: status_to_variant(entry.status),
+        detail: entry.text ? entry.text() : undefined,
+        href: entry.href
+    }));
+
+    return (
+        <HeaderStatusDropdown
+            entries={dropdown_entries}
+            overall_variant={overall_variant}
+            mobile={true}
+        />
+    );
 }
 
 interface HeaderStatusState {

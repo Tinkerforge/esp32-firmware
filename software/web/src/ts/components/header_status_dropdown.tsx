@@ -20,7 +20,7 @@
 import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { Dropdown } from "react-bootstrap";
-import { Activity, ChevronDown, ChevronRight } from "react-feather";
+import { Activity, ChevronsDown, ChevronDown, ChevronRight } from "react-feather";
 import { __ } from "../translation";
 
 export type StatusVariant = "success" | "warning" | "danger" | "disabled";
@@ -35,6 +35,7 @@ interface StatusEntry {
 interface HeaderStatusDropdownProps {
     entries: StatusEntry[];
     overall_variant: StatusVariant;
+    mobile?: boolean;
 }
 
 function variant_to_bg_class(variant: StatusVariant): string {
@@ -77,17 +78,34 @@ export function HeaderStatusDropdown(props: HeaderStatusDropdownProps) {
     const enabled_entries = props.entries.filter(e => e.variant !== "disabled");
     const disabled_entries = props.entries.filter(e => e.variant === "disabled");
 
+    // Mobile variant: horizontal layout, shown on mobile *or* native app
+    // Desktop variant: vertical layout, shown only on desktop (md+)
+    const toggle_class = props.mobile
+        ? "d-flex align-items-center gap-2 px-3 rounded-0 border-0 h-100 status-button-mobile"
+        : "d-none d-md-flex flex-column align-items-center justify-content-center gap-1 h-100 px-3 rounded-0 border-0";
+
     return (
-        <Dropdown align="end">
+        <Dropdown align={props.mobile ? "start" : "end"} className={props.mobile ? "d-flex align-self-stretch" : "h-100"}>
             <Dropdown.Toggle
                 variant={props.overall_variant === "disabled" ? "secondary" : props.overall_variant}
-                className="btn-sm rounded-pill d-inline-flex align-items-center gap-1"
-                id="header-status-dropdown"
+                className={toggle_class}
+                id={props.mobile ? "status-button-mobile" : "header-status-dropdown"}
             >
-                <Activity size={18} />
-                <span class="d-none d-md-inline">
-                    {__("component.header_status.status")}
-                </span>
+                {props.mobile ? (
+                    <>
+                        <Activity size={18} />
+                        <span>{__("component.header_status.status")}</span>
+                        <ChevronsDown size={14} />
+                    </>
+                ) : (
+                    <>
+                        <span class="d-flex align-items-center gap-1">
+                            <Activity size={18} />
+                            <span style="font-size: 1rem;">{__("component.header_status.status")}</span>
+                        </span>
+                        <ChevronsDown size={14} />
+                    </>
+                )}
             </Dropdown.Toggle>
 
             <Dropdown.Menu style={{minWidth: "180px", zIndex: 1030}}>

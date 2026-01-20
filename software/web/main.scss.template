@@ -502,11 +502,23 @@ body {
 }
 @include media-breakpoint-up(md) {
     .header-status {
-        margin-right: 1rem;
+        margin-right: 0;
+        height: $navbar-height;
     }
 }
 #header-status-dropdown::after {
     // Hide the default dropdown caret on the status button
+    display: none;
+}
+
+// Mobile status button on the status page
+// Used in a flex container on the status page header
+.status-button-mobile {
+    border-radius: 0 !important;
+}
+
+#status-button-mobile::after {
+    // Hide the default dropdown caret
     display: none;
 }
 
