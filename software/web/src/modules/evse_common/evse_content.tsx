@@ -300,7 +300,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     </FormRow>
 
                     <FormRow label={__("evse.content.evse_version")}>
-                        <InputText value={(hardware_cfg.evse_version / 10).toFixed(1)}/>
+                        <InputText value={(hardware_cfg.evse_version / 10).toFixed(1) /* not localized, because we always want a dot here*/}/>
                     </FormRow>
 
                     <FormRow label={__("evse.content.evse_fw_version")}>
