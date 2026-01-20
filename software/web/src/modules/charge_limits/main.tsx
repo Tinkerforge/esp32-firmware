@@ -21,7 +21,6 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
-import { toLocaleFixed } from "../../ts/i18n";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { StatusSection } from "../../ts/components/status_section";
@@ -146,7 +145,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                     else if (energy < 0)
                         energy = 0;
 
-                    ret = toLocaleFixed(energy, 3) + " kWh";
+                    ret = util.toLocaleFixed(energy, 3) + " kWh";
                 }
 
                 return ret;
@@ -154,19 +153,19 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
 
             let energy_items: [string, string][] = [
                 ["0", __("charge_limits.content.unlimited")],
-                ["5000", toLocaleFixed(5, 0) + " kWh"],
-                ["10000", toLocaleFixed(10, 0) + " kWh"],
-                ["15000", toLocaleFixed(15, 0) + " kWh"],
-                ["20000", toLocaleFixed(20, 0) + " kWh"],
-                ["25000", toLocaleFixed(25, 0) + " kWh"],
-                ["30000", toLocaleFixed(30, 0) + " kWh"],
-                ["40000", toLocaleFixed(40, 0) + " kWh"],
-                ["50000", toLocaleFixed(50, 0) + " kWh"],
-                ["60000", toLocaleFixed(60, 0) + " kWh"],
-                ["70000", toLocaleFixed(70, 0) + " kWh"],
-                ["80000", toLocaleFixed(80, 0) + " kWh"],
-                ["90000", toLocaleFixed(90, 0) + " kWh"],
-                ["100000", toLocaleFixed(100, 0) + " kWh"],
+                ["5000", util.toLocaleFixed(5, 0) + " kWh"],
+                ["10000", util.toLocaleFixed(10, 0) + " kWh"],
+                ["15000", util.toLocaleFixed(15, 0) + " kWh"],
+                ["20000", util.toLocaleFixed(20, 0) + " kWh"],
+                ["25000", util.toLocaleFixed(25, 0) + " kWh"],
+                ["30000", util.toLocaleFixed(30, 0) + " kWh"],
+                ["40000", util.toLocaleFixed(40, 0) + " kWh"],
+                ["50000", util.toLocaleFixed(50, 0) + " kWh"],
+                ["60000", util.toLocaleFixed(60, 0) + " kWh"],
+                ["70000", util.toLocaleFixed(70, 0) + " kWh"],
+                ["80000", util.toLocaleFixed(80, 0) + " kWh"],
+                ["90000", util.toLocaleFixed(90, 0) + " kWh"],
+                ["100000", util.toLocaleFixed(100, 0) + " kWh"],
                 ["custom", __("charge_limits.content.custom_energy_limit")]
             ];
 
@@ -174,21 +173,21 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                 for (let i = 1; i < energy_items.length; ++i) {
                     if (energy_items[i][0] == "custom")
                         continue;
-                    energy_items[i][1] += ` (~ ${toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
+                    energy_items[i][1] += ` (~ ${util.toLocaleFixed(electricity_price / 10000 * parseFloat(energy_items[i][0]) / 1000, 2)} €)`
                 }
             }
 
             let energy_placeholder = __("charge_limits.content.unlimited");
 
             if (config_in_use.energy_wh != 0)
-                energy_placeholder = (config_in_use.energy_wh % 1000 == 0 ? toLocaleFixed(config_in_use.energy_wh / 1000, 0) : toLocaleFixed(config_in_use.energy_wh / 1000.0, 3)) + " kWh | " + get_energy_left() + __("charge_limits.content.left");
+                energy_placeholder = (config_in_use.energy_wh % 1000 == 0 ? util.toLocaleFixed(config_in_use.energy_wh / 1000, 0) : util.toLocaleFixed(config_in_use.energy_wh / 1000.0, 3)) + " kWh | " + get_energy_left() + __("charge_limits.content.left");
 
             let conf_idx = energy_items.findIndex(x => x[0] == config.energy_wh.toString());
             if (conf_idx == -1)
                 energy_items = [[config.energy_wh.toString(),
-                                    toLocaleFixed(config.energy_wh / 1000.0, 3)
+                                    util.toLocaleFixed(config.energy_wh / 1000.0, 3)
                                     + " kWh "
-                                    + (electricity_price > 0 ? ` (~ ${toLocaleFixed(electricity_price / 10000 * config.energy_wh / 1000, 2)} €)` : "")
+                                    + (electricity_price > 0 ? ` (~ ${util.toLocaleFixed(electricity_price / 10000 * config.energy_wh / 1000, 2)} €)` : "")
                                     + __("charge_limits.content.configured")],
                                 ...energy_items];
             else

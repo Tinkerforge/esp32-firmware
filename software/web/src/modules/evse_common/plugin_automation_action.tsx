@@ -20,7 +20,6 @@
 
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { toLocaleFixed } from "../../ts/i18n";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
@@ -51,7 +50,7 @@ export type EvseLedAutomationAction = [
 ];
 
 function get_set_current_table_children(action: EvseAutomationAction) {
-    return __("evse.automation.automation_action_text")(toLocaleFixed(action[1].current / 1000, 3));
+    return __("evse.automation.automation_action_text")(util.toLocaleFixed(action[1].current / 1000, 3));
 }
 
 function get_set_current_edit_children(action: EvseAutomationAction, on_action: (action: AutomationAction) => void) {

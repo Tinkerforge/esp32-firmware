@@ -374,12 +374,8 @@ let x = """
 
 # Additional lines that are allowed in translation_*.tsx files
 TSX_ADDITIONAL_HEADER_LINES = [
-    'import { toLocaleFixed } from "../../ts/i18n";',
-    'import { toLocaleFixed } from "./src/ts/i18n";',
-    'import { toLocaleString } from "../../ts/i18n";',
-    'import { toLocaleString } from "./src/ts/i18n";',
-    'import { toLocaleFixed, toLocaleString } from "../../ts/i18n";',
-    'import { toLocaleFixed, toLocaleString } from "./src/ts/i18n";',
+    'import { toLocaleFixed } from "../../ts/util";',
+    'import { toLocaleFixed } from "./src/ts/util";',
     'import { __ } from "../../ts/translation";',
     'import { __ } from "./src/ts/translation";',
     'import { removeUnicodeHacks } from "../../ts/translation";',

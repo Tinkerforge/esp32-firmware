@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
-import { toLocaleFixed } from "../../ts/i18n";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "automation": {
         "navbar": {

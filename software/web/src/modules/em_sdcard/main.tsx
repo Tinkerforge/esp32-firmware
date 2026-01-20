@@ -20,7 +20,6 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { toLocaleFixed } from "../../ts/i18n";
 import { h, Fragment, Component } from "preact";
 import { Button         } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
@@ -131,7 +130,7 @@ export class EMSDcard extends Component {
                     <InputText value={card_type}/>
                 </FormRow>
                 <FormRow label={__("em_sdcard.content.card_size")}>
-                    <InputText value={toLocaleFixed((state.sector_count * state.sector_size) / 1000000000, 2) + " GB (" + toLocaleFixed((state.sector_count * state.sector_size) / 1073741824, 2) + " GiB)"}/>
+                    <InputText value={((state.sector_count * state.sector_size) / 1000000000).toFixed(2) + " GB (" + ((state.sector_count * state.sector_size) / 1073741824).toFixed(2) + " GiB)"}/>
                 </FormRow>
                 <FormRow label={__("em_sdcard.content.sector_size")}>
                     <InputText value={state.sector_size.toString() + " " + __("em_sdcard.content.bytes")}/>

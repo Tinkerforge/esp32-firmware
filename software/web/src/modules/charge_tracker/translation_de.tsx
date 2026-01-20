@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { toLocaleFixed } from "../../ts/i18n";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "charge_tracker": {
         "status": {

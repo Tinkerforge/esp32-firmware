@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import * as options from "../../options";
-import { toLocaleFixed } from "../../ts/i18n";
+import { toLocaleFixed } from "../../ts/util";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "power_manager": {

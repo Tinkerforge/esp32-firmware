@@ -20,7 +20,6 @@
 
 import { h } from "preact";
 import * as util from "../../ts/util";
-import { toLocaleFixed } from "../../ts/i18n";
 import { __ } from "../../ts/translation";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { AutomationAction, PreInitResult } from "../automation/types";
@@ -39,7 +38,7 @@ export type SetManagerCurrentAutomationAction = [
 ];
 
 function get_set_manager_current_table_children(action: SetManagerCurrentAutomationAction) {
-    return __("charge_manager.automation.automation_action_text")(toLocaleFixed(action[1].current / 1000, 3));
+    return __("charge_manager.automation.automation_action_text")(util.toLocaleFixed(action[1].current / 1000, 3));
 }
 
 function get_set_manager_current_edit_children(action: SetManagerCurrentAutomationAction, on_action: (action: AutomationAction) => void) {

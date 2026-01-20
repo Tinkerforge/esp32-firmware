@@ -20,7 +20,6 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
-import { toLocaleFixed, toLocaleString } from "../../ts/i18n";
 import { createRef, h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
@@ -343,9 +342,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
                 return <>
                     {place_or_error}
-                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")   }</span><span class="col-8">{toLocaleString(new Date(plane_state.last_check * 60 * 1000))}</span></div>
-                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{plane_state.last_sync  == 0 ? __("solar_forecast.content.not_yet_queried") : toLocaleString(new Date(plane_state.last_sync  * 60 * 1000))}</span></div>
-                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")           }</span><span class="col-8">{plane_state.next_check == 0 ? __("solar_forecast.content.unknown")         : toLocaleString(new Date(plane_state.next_check * 60 * 1000))}</span></div>
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")   }</span><span class="col-8">{new Date(plane_state.last_check * 60 * 1000).toLocaleString()}</span></div>
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{plane_state.last_sync  == 0 ? __("solar_forecast.content.not_yet_queried") : new Date(plane_state.last_sync  * 60 * 1000).toLocaleString()}</span></div>
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")           }</span><span class="col-8">{plane_state.next_check == 0 ? __("solar_forecast.content.unknown")         : new Date(plane_state.next_check * 60 * 1000).toLocaleString()}</span></div>
                 </>;
             }
         }
@@ -425,11 +424,11 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 extraValue: get_plane_info(active_plane_index),
                                 columnValues: [
                                     plane_config.name,
-                                    toLocaleFixed(plane_config.lat / 10000, 4) + "°",
-                                    toLocaleFixed(plane_config.long / 10000, 4) + "°",
+                                    util.toLocaleFixed(plane_config.lat / 10000, 4) + "°",
+                                    util.toLocaleFixed(plane_config.long / 10000, 4) + "°",
                                     plane_config.dec + "°",
                                     plane_config.az + "°",
-                                    toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
+                                    util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
                                 ],
                                 editTitle: __("solar_forecast.content.edit_plane_config_title"),
                                 onEditShow: async () => this.setState({plane_config_tmp: {...plane_config}}),

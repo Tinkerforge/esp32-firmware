@@ -21,8 +21,7 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h } from "preact";
-import { set_languages_getter } from "../../ts/i18n";
-import { __ } from "../../ts/translation";
+import { __, update_languages_function } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -61,7 +60,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             window.dispatchEvent(new Event('languagechange'));
         });
 
-        set_languages_getter(() =>  {
+        update_languages_function(() =>  {
             let i18n_config = API.get("system/i18n_config");
 
             if (!i18n_config || i18n_config.detect_browser_language) {
@@ -69,9 +68,8 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
             }
 
             switch (i18n_config.language) {
-                case Language.German:  return ["de-DE"].concat(navigator.languages);
-                case Language.English: return ["en-US"].concat(navigator.languages);
-                default:               return navigator.languages;
+                case Language.German:  return ["de"].concat(navigator.languages);
+                case Language.English: return ["en"].concat(navigator.languages);
             }
         });
     }

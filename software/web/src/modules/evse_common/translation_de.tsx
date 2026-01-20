@@ -2,7 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
-import { toLocaleFixed } from "../../ts/i18n";
+import { toLocaleFixed } from "../../ts/util";
 import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
 let x = {
     "evse": {

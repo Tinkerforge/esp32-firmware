@@ -22,7 +22,6 @@
 import { h, Component, RefObject, createRef } from "preact";
 import { effect } from "@preact/signals-core";
 import * as util from "../util";
-import { get_active_locale } from "../i18n";
 import uPlot from "uplot";
 import type { UplotWrapperB } from "./uplot_wrapper_2nd";
 import { UplotData } from "./uplot_wrapper_2nd";
@@ -280,12 +279,6 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
         let div = this.div_ref.current;
         this.uplot = new uPlot(options, [], div);
-
-        effect(() => {
-            // redraw on locale change
-            let x = get_active_locale();
-            this.uplot.redraw(true, true);
-        });
 
         try {
             this.observer = new ResizeObserver(() => {

@@ -22,7 +22,6 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { toLocaleFixed } from "../../ts/i18n";
 import { h, Component, Fragment, RefObject } from "preact";
 import { Button } from "react-bootstrap";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
@@ -45,7 +44,7 @@ export function EVSENavbar() {
     return <NavbarItem name="evse" title={__("evse.navbar.evse")} symbol={<BatteryCharging />} hidden={!API.hasModule("evse_v2") && !API.hasModule("evse")} />;
 }
 
-let toDisplayCurrent = (x: number) => toLocaleFixed(x / 1000.0, 3) + " A"
+let toDisplayCurrent = (x: number) => util.toLocaleFixed(x / 1000.0, 3) + " A"
 
 export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
     override render(props: {}, s: {}) {
@@ -301,7 +300,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     </FormRow>
 
                     <FormRow label={__("evse.content.evse_version")}>
-                        <InputText value={(hardware_cfg.evse_version / 10).toFixed(1) /* not localized, because we always want a dot here*/}/>
+                        <InputText value={(hardware_cfg.evse_version / 10).toFixed(1)}/>
                     </FormRow>
 
                     <FormRow label={__("evse.content.evse_fw_version")}>
@@ -335,7 +334,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         </FormRow>
 
                         <FormRow label={__("evse.content.cp_pwm_dc")}>
-                            <InputText value={toLocaleFixed(ll_state.cp_pwm_duty_cycle / 10, 1) + " %"}/>
+                            <InputText value={util.toLocaleFixed(ll_state.cp_pwm_duty_cycle / 10, 1) + " %"}/>
                         </FormRow>
 
                         <FormRow label={__("evse.content.adc_values")} label_muted={__("evse.content.adc_names")(is_evse_v2)}>
@@ -352,7 +351,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             <div class="row mx-n1">
                                 {ll_state.voltages.map((x, i) => (
                                     <div key={i} class="mb-1 col-6 px-1">
-                                        <InputText value={toLocaleFixed(x / 1000.0, 3) + " V"}/>
+                                        <InputText value={util.toLocaleFixed(x / 1000.0, 3) + " V"}/>
                                     </div>
                                 ))}
                             </div>
@@ -408,7 +407,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         {!is_evse_v3 ? undefined :
                         <>
                             <FormRow label={__("evse.content.temperature")}>
-                                <InputText value={toLocaleFixed(ll_state.temperature / 100, 2) + " °C"} />
+                                <InputText value={util.toLocaleFixed(ll_state.temperature / 100, 2) + " °C"} />
                             </FormRow>
 
                             <FormRow label={__("evse.content.phases_current")}>
