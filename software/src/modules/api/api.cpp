@@ -565,7 +565,9 @@ bool API::dump_all_registrations(WebServerRequest &request, StringWriter &sw, co
             esp_system_abort("API info buffer was too small!");
         }
 
-        request.sendChunk(sw);
+        if (request.sendChunk(sw) != ESP_OK) {
+            return false;
+        }
 
         sw.clear();
         sw.puts(",\n");
@@ -619,13 +621,17 @@ static bool print_regs_to_debug_report(std::span<T> regs, StringWriter &sw, WebS
         });
 
         if (result != TaskScheduler::AwaitResult::Done) {
-            request.sendChunk("Failed to generate debug report: task timed out");
+            if (request.sendChunk("Failed to generate debug report: task timed out") != ESP_OK) {
+                return false;
+            }
             request.endChunkedResponse();
             return false;
         }
 
         if (!done && sw.getLength() == 0) {
-            request.sendChunk("Failed to generate debug report: truncated");
+            if (request.sendChunk("Failed to generate debug report: truncated") != ESP_OK) {
+                return false;
+            }
             request.endChunkedResponse();
             return false;
         }
@@ -633,8 +639,7 @@ static bool print_regs_to_debug_report(std::span<T> regs, StringWriter &sw, WebS
         if (terminator != nullptr)
             sw.puts(terminator, terminator_len);
 
-        if (request.sendChunk(sw.getPtr(), sw.getLength()) != ESP_OK) {
-            request.endChunkedResponse();
+        if (request.sendChunk(sw) != ESP_OK) {
             return false;
         }
 
@@ -658,7 +663,7 @@ void API::register_urls()
         StringWriter sw{buf.get(), BUF_SIZE};
 
         sw.putc('[');
-        request.sendChunk(sw);
+        SEND_CHUNK_OR_FAIL(request, sw);
         sw.clear();
 
         bool success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
@@ -687,7 +692,7 @@ void API::register_urls()
         });
 
         if (!success) {
-            return request.endChunkedResponse();
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
         }
 
         success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
@@ -716,7 +721,7 @@ void API::register_urls()
         });
 
         if (!success) {
-            return request.endChunkedResponse();
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
         }
 
         success = dump_all_registrations(request, sw, [this, &sw](size_t i) -> bool {
@@ -744,7 +749,7 @@ void API::register_urls()
         });
 
         if (!success) {
-            return request.endChunkedResponse();
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
         }
 
         WebServerHandler *handlers;
@@ -772,7 +777,7 @@ void API::register_urls()
                 esp_system_abort("API info buffer was too small!");
             }
 
-            request.sendChunk(sw);
+            SEND_CHUNK_OR_FAIL(request, sw);
 
             sw.clear();
             sw.puts(",\n");
@@ -782,7 +787,7 @@ void API::register_urls()
 
         sw.clear();     // Discard final comma and newline.
         sw.puts("]\n"); // Be nice and end the file with a newline.
-        request.sendChunk(sw);
+        SEND_CHUNK_OR_FAIL(request, sw);
 
         return request.endChunkedResponse();
     });
@@ -868,14 +873,17 @@ void API::register_urls()
             // json.endObject();
             size_t to_send = json.end();
             request.beginChunkedResponse_json(200);
-            request.sendChunk(buf.get(), to_send);
+            SEND_CHUNK_OR_FAIL_LEN(request, buf.get(), to_send);
         } // Drop JsonSerializer to prevent accidentially using it below.
 
         StringWriter sw{buf.get(), BUF_SIZE};
 
-        print_regs_to_debug_report(this->states, sw, request, nullptr);
-        print_regs_to_debug_report(this->commands, sw, request, nullptr);
-        print_regs_to_debug_report(this->responses, sw, request, "}");
+        if (!print_regs_to_debug_report(this->states,    sw, request, nullptr) ||
+            !print_regs_to_debug_report(this->commands,  sw, request, nullptr) ||
+            !print_regs_to_debug_report(this->responses, sw, request, "}")) {
+
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
+        }
 
         return request.endChunkedResponse();
     });

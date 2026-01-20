@@ -499,11 +499,11 @@ void Meters::register_urls()
                 sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(sb);
+            SEND_CHUNK_OR_FAIL(request, sb);
             sb.clear();
         }
 
-        request.sendChunk("]}", 2);
+        SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
 
         return request.endChunkedResponse();
     });
@@ -529,11 +529,11 @@ void Meters::register_urls()
                 sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(sb);
+            SEND_CHUNK_OR_FAIL(request, sb);
             sb.clear();
         }
 
-        request.sendChunk("]}", 2);
+        SEND_CHUNK_OR_FAIL_LEN(request, "]}", 2);
 
         return request.endChunkedResponse();
     });

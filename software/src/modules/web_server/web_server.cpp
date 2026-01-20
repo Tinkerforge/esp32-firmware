@@ -925,7 +925,7 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
     chunkedResponseState = ChunkedResponseState::Started;
 }
 
-int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
+esp_err_t WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
 {
     switch (chunkedResponseState) {
         case ChunkedResponseState::Failed:
@@ -943,10 +943,10 @@ int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
     if (chunk_len == 0)
         logger.printfln("BUG: sendChunk was called with chunk_len == 0! Use endChunkedResponse!");
 
-    auto result = httpd_resp_send_chunk(req, chunk, static_cast<ssize_t>(chunk_len));
+    const esp_err_t result = httpd_resp_send_chunk(req, chunk, static_cast<ssize_t>(chunk_len));
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
-        printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned>(result));
+        printf("Failed to send response chunk: %s (0x%04x)\n", esp_err_to_name(result), static_cast<unsigned>(result));
 
         // When a send error ocurred, don't attempt to send a zero-length chunk to cleanly terminate the transfer.
         // Abort the connection uncleanly instead, to tell the other side that data loss ocurred.

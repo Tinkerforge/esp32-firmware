@@ -410,29 +410,29 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest &request, Strin
         request.beginChunkedResponse_plain(200);
         while (f.available()) {
             size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
-            request.sendChunk(buf, read);
+            SEND_CHUNK_OR_FAIL_LEN(request, buf, read);
         }
         return request.endChunkedResponse();
     } else {
         request.beginChunkedResponse_html(200);
-        request.sendChunk(fs_browser_header);
+        SEND_CHUNK_OR_FAIL(request, fs_browser_header);
         String header = "<h1>" + String(f.path()) + "</h1><br>\n";
-        request.sendChunk(header);
+        SEND_CHUNK_OR_FAIL(request, header);
 
         if (path.length() > 1) {
             String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href='..'>..</a><br>\n";
 
-            request.sendChunk(up);
+            SEND_CHUNK_OR_FAIL(request, up);
         }
 
         File file = f.openNextFile();
         while(file) {
             String s = "<button type=button onclick=\"deleteFile('/" + String(file.name()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=" + String(file.name()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
-            request.sendChunk(s);
+            SEND_CHUNK_OR_FAIL(request, s);
             file = f.openNextFile();
         }
 
-        request.sendChunk(fs_browser_footer);
+        SEND_CHUNK_OR_FAIL(request, fs_browser_footer);
 
         return request.endChunkedResponse();
     }

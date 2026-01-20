@@ -122,13 +122,7 @@ void EventLog::register_urls()
                 event_buf.peek_offset(chunk_buf + i, index + i);
             }
 
-            int result = request.sendChunk(chunk_buf, to_write);
-            if (result != ESP_OK) {
-                if (result != ESP_ERR_HTTPD_RESP_SEND) { // Don't log connection closed during transfer. This happens when the front-end is reloaded after a websocket reconnect.
-                    Serial.printf("/event_log sendChunk failed: %s (0x%X)\n", esp_err_to_name(result), static_cast<unsigned int>(result)); // Can't write to the event log while holding the event_buf_mutex.
-                }
-                break;
-            }
+            SEND_CHUNK_OR_FAIL_LEN(request, chunk_buf, to_write);
         }
 
         return request.endChunkedResponse();
@@ -149,15 +143,20 @@ void EventLog::register_urls()
 
             char buf[128];
             size_t written = snprintf(buf, ARRAY_SIZE(buf), "__begin_%.100s__\n", trace_buffer.name);
-            request.sendChunk(buf, written);
 
-            if (first_len > 0)
-                request.sendChunk(first_chunk, first_len);
-            if (second_len > 0)
-                request.sendChunk(second_chunk, second_len);
+            SEND_CHUNK_OR_FAIL_LEN(request, buf, written);
+
+            if (first_len > 0) {
+                SEND_CHUNK_OR_FAIL_LEN(request, first_chunk, first_len);
+            }
+
+            if (second_len > 0) {
+                SEND_CHUNK_OR_FAIL_LEN(request, second_chunk, second_len);
+            }
 
             written = snprintf(buf, ARRAY_SIZE(buf), "__end_%.100s__\n", trace_buffer.name);
-            request.sendChunk(buf, written);
+
+            SEND_CHUNK_OR_FAIL_LEN(request, buf, written);
         }
 
         return request.endChunkedResponse();
@@ -290,11 +289,11 @@ void EventLog::register_urls()
                 avail_out -= out_bytes;
 
                 if (avail_out == 0) {
-                    int result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf));
+                    const esp_err_t result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf));
 
                     if (result != ESP_OK) {
                         printfln_prefixed("event_log", 9, "trace_log compressed chunk sending failed: %i", result);
-                        return request.endChunkedResponse();
+                        return WebServerRequestReturnProtect{.error = result};
                     }
 
                     next_out = buf->outbuf;
@@ -321,25 +320,25 @@ void EventLog::register_urls()
 
             avail_out -= out_bytes;
 
-            int result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf) - avail_out);
+            const esp_err_t result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf) - avail_out);
 
             next_out = buf->outbuf;
             avail_out = ARRAY_SIZE(buf->outbuf);
 
             if (result != ESP_OK) {
                 printfln_prefixed("event_log", 9, "trace_log final compressed chunk sending failed: %i", result);
-                return request.endChunkedResponse();
+                return WebServerRequestReturnProtect{.error = result};
             }
         } while (t_status != TDEFL_STATUS_DONE);
 
         {
             uint32_t gzip_tail[2] = {crc32, uncompressed_len};
 
-            int result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
+            const esp_err_t result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
 
             if (result != ESP_OK) {
                 printfln_prefixed("event_log", 9, "trace_log gzip tail sending failed: %i", result);
-                return request.endChunkedResponse();
+                return WebServerRequestReturnProtect{.error = result};
             }
         }
 

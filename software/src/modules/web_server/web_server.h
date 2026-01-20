@@ -37,6 +37,20 @@
 constexpr size_t WEB_SERVER_MAX_PORTS = 3;
 static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);
 
+#define SEND_CHUNK_OR_FAIL(REQUEST, CHUNK) do { \
+    const esp_err_t _send_err = REQUEST.sendChunk(CHUNK); \
+    if (_send_err != ESP_OK) { \
+        return WebServerRequestReturnProtect{.error = _send_err}; \
+    } \
+} while (false)
+
+#define SEND_CHUNK_OR_FAIL_LEN(REQUEST, CHUNK, CHUNK_LENGTH) do { \
+    const esp_err_t _send_err = REQUEST.sendChunk(CHUNK, CHUNK_LENGTH); \
+    if (_send_err != ESP_OK) { \
+        return WebServerRequestReturnProtect{.error = _send_err}; \
+    } \
+} while (false)
+
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
 // Any low-level handling errors can be passed inside,
@@ -76,10 +90,10 @@ public:
     inline void beginChunkedResponse_html(uint16_t code) { return beginChunkedResponse(code, "text/html; charset=utf-8"); }
     inline void beginChunkedResponse_pdf(uint16_t code) { return beginChunkedResponse(code, "application/pdf"); }
 
-    int sendChunk(const char *chunk, size_t chunk_len);
-    inline int sendChunk(const char *chunk) { return sendChunk(chunk, strlen(chunk)); }
-    inline int sendChunk(const String &chunk) { return sendChunk(chunk.c_str(), chunk.length()); }
-    inline int sendChunk(const StringWriter &chunk) { return sendChunk(chunk.getPtr(), chunk.getLength()); }
+    [[nodiscard]]        esp_err_t sendChunk(const char *chunk, size_t chunk_len);
+    [[nodiscard]] inline esp_err_t sendChunk(const char *chunk        ) { return sendChunk(chunk,          strlen(chunk)); }
+    [[nodiscard]] inline esp_err_t sendChunk(const String &chunk      ) { return sendChunk(chunk.c_str(),  chunk.length()); }
+    [[nodiscard]] inline esp_err_t sendChunk(const StringWriter &chunk) { return sendChunk(chunk.getPtr(), chunk.getLength()); }
 
     WebServerRequestReturnProtect endChunkedResponse();
 

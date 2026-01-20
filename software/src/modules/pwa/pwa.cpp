@@ -28,8 +28,10 @@ void Pwa::register_urls()
         String response = device_name.display_name.get("display_name")->asString();
         response += "\"}";
         request.beginChunkedResponse_json(200);
-        request.sendChunk(manifest_data, manifest_length);
-        request.sendChunk(response);
+
+        SEND_CHUNK_OR_FAIL_LEN(request, manifest_data, manifest_length);
+        SEND_CHUNK_OR_FAIL(request, response);
+
         return request.endChunkedResponse();
     });
 }

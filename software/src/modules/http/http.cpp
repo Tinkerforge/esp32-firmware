@@ -47,7 +47,9 @@ public:
 protected:
     bool write_impl(const char *buf, size_t buf_size)
     {
-        int result = request->sendChunk(buf, buf_size);
+        // FIXME: sendChunk failures probably aren't propagated upwards properly.
+        // The HTTP callback should return any sendChunk failures.
+        const esp_err_t result = request->sendChunk(buf, buf_size);
 
         if (result != ESP_OK) {
             printf("sendChunk failed: %d\n", result);

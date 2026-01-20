@@ -220,15 +220,17 @@ void Coredump::register_urls()
 
         for (size_t i = 0; i < size; i += BUFFER_SIZE) {
             size_t to_send = std::min(BUFFER_SIZE, size - i);
-            if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
-                request.sendChunk("\n\nESP_FLASH_READ failed. Core dump truncated");
-                break;
+            ret = esp_flash_read(NULL, buffer, addr + i, to_send);
+
+            if (ret != ESP_OK) {
+                logger.printfln("esp_flash_read failed: %s (0x%04x)", esp_err_to_name(ret), static_cast<unsigned>(ret));
+                return WebServerRequestReturnProtect{.error = ESP_FAIL};
             }
 
             size_t to_skip = 0;
 
             if (i == 0 && to_send >= 4) {
-                char elf_header[4] = {0x7F, 'E', 'L', 'F'};
+                constexpr char elf_header[4] = {0x7F, 'E', 'L', 'F'};
 
                 for (size_t k = 0; k <= to_send - 4; ++k) {
                     if (memcmp(buffer + k, elf_header, 4) == 0) {
@@ -242,7 +244,7 @@ void Coredump::register_urls()
                 }
             }
 
-            request.sendChunk(buffer + to_skip, to_send - to_skip);
+            SEND_CHUNK_OR_FAIL_LEN(request, buffer + to_skip, to_send - to_skip);
         }
 
         return request.endChunkedResponse();

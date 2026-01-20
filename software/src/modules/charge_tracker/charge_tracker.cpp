@@ -861,7 +861,7 @@ void ChargeTracker::register_urls()
             File f = LittleFS.open(chargeRecordFilename(i));
             int read = f.read((uint8_t *)url_buf.get(), CHARGE_RECORD_MAX_FILE_SIZE);
             int trunc = read - (read % CHARGE_RECORD_SIZE);
-            request.sendChunk(url_buf.get(), trunc);
+            SEND_CHUNK_OR_FAIL_LEN(request, url_buf.get(), trunc);
         }
         return request.endChunkedResponse();
     });
@@ -963,11 +963,14 @@ void ChargeTracker::register_urls()
             letterhead_lines = read_letterhead_lines(letterhead);
         }
 
-        const auto callback = [this, &request](const void *data, size_t len) -> int {
+        const auto callback = [this, &request](const void *data, size_t len) -> esp_err_t {
             // sendChunk complains if called with length == 0, because this indicates the end of the chunked response.
             // endChunkedResponse is called after the PDF generation is done.
             if (len == 0)
                 return ESP_OK;
+
+            // FIXME: sendChunk failures probably aren't propagated upwards properly.
+            // The HTTP callback should return any sendChunk failures.
             return request.sendChunk(static_cast<const char *>(data), len);
         };
 
@@ -1040,7 +1043,9 @@ void ChargeTracker::register_urls()
             csv_params.electricity_price = this->config.get("electricity_price")->asUint();
         });
 
-        const auto callback = [this, &request](const char* buffer, size_t len) -> int {
+        const auto callback = [this, &request](const char* buffer, size_t len) -> esp_err_t {
+            // FIXME: sendChunk failures probably aren't propagated upwards properly.
+            // The HTTP callback should return any sendChunk failures.
             return request.sendChunk(buffer, len);
         };
 
