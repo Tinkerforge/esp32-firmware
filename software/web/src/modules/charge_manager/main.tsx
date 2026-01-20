@@ -543,7 +543,7 @@ function CMStatusCharger(props: {
     let mode = props.charge_mode
     let mode_found = supported_charge_modes.indexOf(mode) >= 0;
 
-    return  <div class={"card " + (props.charger_index + 1 == props.charger_count ? "mb-0" : "")}>
+    return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
                 <div class="card-header">
                     <div class="row align-items-center mx-n1">
                         <div class="col px-1"><h5 class="m-0">{name_link}</h5></div>
@@ -676,7 +676,6 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
         let controls_only_self = false && (state.config.chargers.length == 1
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
-        let row_count = Math.ceil(cards.length / 2);
 
         return <StatusSection name="charge_manager">
 
@@ -706,12 +705,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
 
             {controls_only_self ? null :
                 <FormRow label={__("charge_manager.status.managed_boxes")}>
-                    {util.range(row_count).map(i =>
-                        <div class={"card-deck" + (i + 1 < row_count ? " mb-3" : "")}>
-                            {cards[2 * i]}
-                            {cards.length > (2 * i + 1) ? cards[2 * i + 1] : undefined}
-                        </div>)
-                    }
+                    <div class="row row-cols-1 row-cols-lg-2 g-3">
+                        {cards.map(card => <div class="col">{card}</div>)}
+                    </div>
                 </FormRow>
             }
         </StatusSection>;
