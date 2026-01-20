@@ -36,6 +36,8 @@
 #define METER_SLOT_BATTERY_NO_BATTERY (255)
 
 static constexpr micros_t PHASE_SWITCH_TIMEOUT = 2_min;
+static constexpr micros_t MAX_PV_METER_AGE           = 125_s; // Reject stale meter data older than 2 minutes
+static constexpr micros_t MAX_DYNAMIC_LOAD_METER_AGE =  65_s; // Reject stale meter data older than 1 minute, which is the Modbus TCP reconnect time.
 
 void PowerManager::pre_setup()
 {
@@ -703,18 +705,18 @@ static int32_t update_mavg_filter(int32_t filter_input, PowerManager::mavg_filte
 void PowerManager::update_data()
 {
 #if MODULE_METERS_AVAILABLE()
-    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
+    if (meters.get_power(meter_slot_power, &power_at_meter_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
         power_at_meter_raw_w = NAN;
     }
 
     low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
 
     if (have_battery) {
-        if (meters.get_power(meter_slot_battery_power, &power_at_battery_raw_w) != MeterValueAvailability::Fresh) {
+        if (meters.get_power(meter_slot_battery_power, &power_at_battery_raw_w, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
             power_at_battery_raw_w = NAN;
         }
 
-        if (meters.get_soc(meter_slot_battery_power, &battery_soc_raw) != MeterValueAvailability::Fresh) {
+        if (meters.get_soc(meter_slot_battery_power, &battery_soc_raw, MAX_PV_METER_AGE) != MeterValueAvailability::Fresh) {
             battery_soc_raw = NAN;
         }
 
@@ -742,7 +744,7 @@ void PowerManager::update_data()
 
     float meter_currents[INDEX_CACHE_CURRENT_COUNT];
 #if MODULE_METERS_AVAILABLE()
-    MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents);
+    MeterValueAvailability ret = meters.get_currents(meter_slot_currents, meter_currents, MAX_DYNAMIC_LOAD_METER_AGE);
     if (ret != MeterValueAvailability::Fresh)
 #else
     // Unconditionally execute block
