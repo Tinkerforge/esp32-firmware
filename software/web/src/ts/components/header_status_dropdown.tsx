@@ -22,6 +22,7 @@ import { useState } from "preact/hooks";
 import { Dropdown } from "react-bootstrap";
 import { Activity, ChevronsDown, ChevronDown, ChevronRight } from "react-feather";
 import { __ } from "../translation";
+import * as API from "../api";
 
 export type StatusVariant = "success" | "warning" | "danger" | "disabled";
 
@@ -69,6 +70,29 @@ function LegendDot({ variant }: { variant: StatusVariant }) {
     return (
         <span class={`rounded-circle ${variant_to_bg_class(variant)}`}
               style="width: 6px; height: 6px;"></span>
+    );
+}
+
+function DropdownDeviceInfo() {
+    let name_and_type = <strong>Unknown name and firmware type:<br/>Device name module missing!<br/></strong>;
+    let uid = "";
+
+    const info_name = API.get_unchecked("info/name");
+    if (info_name !== null) {
+        const display_name = API.get_unchecked("info/display_name")?.display_name;
+        name_and_type = <><strong>{display_name}</strong><br/>{info_name.display_type}<br/></>;
+        if (info_name.name != display_name) {
+            uid = " | " + info_name.uid;
+        }
+    }
+
+    const [version, timestamp] = API.get("info/version").firmware.split("+");
+
+    return (
+        <div class="px-3 py-2 text-muted text-center small w-100">
+            {name_and_type}
+            <strong>{version}</strong>{"+"+timestamp}{uid}
+        </div>
     );
 }
 
@@ -152,6 +176,12 @@ export function HeaderStatusDropdown(props: HeaderStatusDropdownProps) {
                         </span>
                     }
                 </div>
+                {props.mobile && (
+                    <>
+                        <Dropdown.Divider />
+                        <DropdownDeviceInfo />
+                    </>
+                )}
             </Dropdown.Menu>
         </Dropdown>
     );
