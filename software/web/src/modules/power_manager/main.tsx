@@ -426,6 +426,9 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("power_manager", {
+        name: () => __("power_manager.navbar.pv_excess_settings"),
+        priority: 750,
+        href: "#pv_excess_settings",
         get_status: () => {
             const config = API.get("power_manager/config");
             const state = API.get("power_manager/state");
@@ -435,33 +438,15 @@ export function init() {
             const enabled = is_em ? config?.enabled : config?.excess_charging_enable;
 
             if (!enabled) {
-                return {
-                    id: "power_manager",
-                    name: () => __("power_manager.navbar.pv_excess_settings"),
-                    status: ModuleStatus.Disabled,
-                    priority: 750,
-                    href: "#pv_excess_settings"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             // Check for configuration errors
             if (state?.config_error_flags > 0) {
-                return {
-                    id: "power_manager",
-                    name: () => __("power_manager.navbar.pv_excess_settings"),
-                    status: ModuleStatus.Warning,
-                    priority: 750,
-                    href: "#pv_excess_settings"
-                };
+                return {status: ModuleStatus.Warning};
             }
 
-            return {
-                id: "power_manager",
-                name: () => __("power_manager.navbar.pv_excess_settings"),
-                status: ModuleStatus.Ok,
-                priority: 750,
-                href: "#pv_excess_settings"
-            };
+            return {status: ModuleStatus.Ok};
         }
     });
 }

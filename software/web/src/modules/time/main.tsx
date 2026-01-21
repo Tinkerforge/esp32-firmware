@@ -260,29 +260,24 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("ntp", {
+        name: () => __("time.status.time"),
+        priority: 500,
+        href: "#time",
         get_status: () => {
             const config = API.get("ntp/config");
             const state = API.get("ntp/state");
 
             if (!config.enable) {
                 return {
-                    id: "ntp",
-                    name: () => __("time.status.time"),
                     status: ModuleStatus.Disabled,
-                    text: () => __("time.status.disabled"),
-                    priority: 500,
-                    href: "#time"
+                    text: () => __("time.status.disabled")
                 };
             }
 
             if (!state.synced) {
                 return {
-                    id: "ntp",
-                    name: () => __("time.status.time"),
                     status: ModuleStatus.Warning,
-                    text: () => __("time.status.not_synced"),
-                    priority: 500,
-                    href: "#time"
+                    text: () => __("time.status.not_synced")
                 };
             }
 
@@ -295,12 +290,8 @@ export function init() {
             };
 
             return {
-                id: "ntp",
-                name: () => __("time.status.time"),
                 status: ModuleStatus.Ok,
-                text: format_time,
-                priority: 500,
-                href: "#time"
+                text: format_time
             };
         }
     });

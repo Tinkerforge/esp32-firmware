@@ -112,104 +112,68 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("wifi_sta", {
+        name: () => __("wifi.navbar.wifi_sta"),
+        priority: 850,
+        href: "#wifi_sta",
         get_status: () => {
             const state = API.get("wifi/state");
             const config = API.get("wifi/sta_config");
 
             if (!config?.enable_sta) {
-                return {
-                    id: "wifi_sta",
-                    name: () => __("wifi.navbar.wifi_sta"),
-                    status: ModuleStatus.Disabled,
-                    priority: 850,
-                    href: "#wifi_sta"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             switch (state?.connection_state) {
                 case WifiState.Connected:
                     return {
-                        id: "wifi_sta",
-                        name: () => __("wifi.navbar.wifi_sta"),
                         status: ModuleStatus.Ok,
-                        text: () => state.sta_ip,
-                        priority: 850,
-                        href: "#wifi_sta"
+                        text: () => state.sta_ip
                     };
                 case WifiState.Connecting:
                     return {
-                        id: "wifi_sta",
-                        name: () => __("wifi.navbar.wifi_sta"),
                         status: ModuleStatus.Warning,
-                        text: () => __("wifi.status.connecting"),
-                        priority: 850,
-                        href: "#wifi_sta"
+                        text: () => __("wifi.status.connecting")
                     };
                 default: // WifiState.NotConfigured, WifiState.NotConnected
                     return {
-                        id: "wifi_sta",
-                        name: () => __("wifi.navbar.wifi_sta"),
                         status: ModuleStatus.Error,
-                        text: () => __("wifi.status.not_connected"),
-                        priority: 850,
-                        href: "#wifi_sta"
+                        text: () => __("wifi.status.not_connected")
                     };
             }
         }
     });
 
     register_status_provider("wifi_ap", {
+        name: () => __("wifi.navbar.wifi_ap"),
+        priority: 840,
+        href: "#wifi_ap",
         get_status: () => {
             const state = API.get("wifi/state");
             const config = API.get("wifi/ap_config");
 
             if (!config?.enable_ap) {
-                return {
-                    id: "wifi_ap",
-                    name: () => __("wifi.navbar.wifi_ap"),
-                    status: ModuleStatus.Disabled,
-                    priority: 840,
-                    href: "#wifi_ap"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             // ap_state: 0=disabled, 1=enabled, 2=fallback_inactive, 3=fallback_active
             switch (state?.ap_state) {
                 case 1: // enabled
                     return {
-                        id: "wifi_ap",
-                        name: () => __("wifi.navbar.wifi_ap"),
                         status: ModuleStatus.Ok,
-                        text: () => __("wifi.status.enabled"),
-                        priority: 840,
-                        href: "#wifi_ap"
+                        text: () => __("wifi.status.enabled")
                     };
                 case 2: // fallback_inactive
                     return {
-                        id: "wifi_ap",
-                        name: () => __("wifi.navbar.wifi_ap"),
                         status: ModuleStatus.Ok,
-                        text: () => __("wifi.status.fallback_inactive"),
-                        priority: 840,
-                        href: "#wifi_ap"
+                        text: () => __("wifi.status.fallback_inactive")
                     };
                 case 3: // fallback_active
                     return {
-                        id: "wifi_ap",
-                        name: () => __("wifi.navbar.wifi_ap"),
                         status: ModuleStatus.Warning, // Maybe error even when sta connection failed?
-                        text: () => __("wifi.status.fallback_active"),
-                        priority: 840,
-                        href: "#wifi_ap"
+                        text: () => __("wifi.status.fallback_active")
                     };
                 default: // 0 = disabled
-                    return {
-                        id: "wifi_ap",
-                        name: () => __("wifi.navbar.wifi_ap"),
-                        status: ModuleStatus.Disabled,
-                        priority: 840,
-                        href: "#wifi_ap"
-                    };
+                    return {status: ModuleStatus.Disabled};
             }
         }
     });
