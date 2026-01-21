@@ -127,7 +127,8 @@ export function init() {
                 case WifiState.Connected:
                     return {
                         status: ModuleStatus.Ok,
-                        text: () => state.sta_ip
+                        text: () => state.sta_ip,
+                        icon: () => wifi_symbol(state.sta_rssi, 18)
                     };
                 case WifiState.Connecting:
                     return {
