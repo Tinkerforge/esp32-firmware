@@ -45,9 +45,7 @@ EebusHeartBeat::EebusHeartBeat()
     // Send out heartbeat
     heartbeat_send_task = task_scheduler.scheduleWithFixedDelay(
         [this]() {
-            DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
-            auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
-            logger.printfln("Heartbeat usecase: sent heartbeat to %d subscribers", subs);
+            send_heartbeat_to_subs();
         },
         heartbeat_interval);
 }
@@ -98,8 +96,7 @@ void EebusHeartBeat::update_heartbeat_interval(seconds_t interval)
     task_scheduler.cancel(heartbeat_send_task);
     heartbeat_send_task = task_scheduler.scheduleOnce(
         [this]() {
-            DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
-            eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+            send_heartbeat_to_subs();
         },
         heartbeat_interval);
 }
@@ -157,6 +154,12 @@ void EebusHeartBeat::emit_timeout() const
     for (EebusUsecase *uc : registered_usecases) {
         uc->receive_heartbeat_timeout();
     }
+}
+void EebusHeartBeat::send_heartbeat_to_subs()
+{
+    DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
+    auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+    eebus.trace_fmtln("heartbeat_sent to %d subscribers", subs);
 }
 void EebusHeartBeat::emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data)
 {
@@ -2056,52 +2059,6 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
     return {false};
 }
 
-/*
-MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
-{
-    // TODO: move heartbeat and this entire feature to a separate class as the LPP usecase needs it aswell
-    if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
-        DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
-        if (header.cmdClassifier == CmdClassifierType::read) {
-
-            // Prepare our own hearbeat information
-            response["deviceDiagnosisHeartbeatData"] = get_device_diagnosis_heartbeat_data();
-
-            // Initialize  read on their heartbeat
-            task_scheduler.scheduleOnce(
-                [this, header]() {
-                    auto connection = EEBusUseCases::get_spine_connection(header.addressSource.get());
-                    auto device_diag_peer = connection->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::server, "limitationOfPowerConsumption", "EnergyGuard");
-                    FeatureAddressType feat_addr = get_feature_address(feature_addresses.at(FeatureTypeEnumType::Generic));
-                    if (device_diag_peer.size() != 1) {
-                        eebus.trace_fmtln("LPC Usecase: DeviceDiagnosis heartbeat read: Unexpected number of DeviceDiagnosis feature addresses found: %d", device_diag_peer.size());
-                    }
-                    for (auto &addr : device_diag_peer) {
-                        if (connection->heartbeat_subscription_active)
-                            continue;
-                        send_full_read(feat_addr.feature.get(), addr, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
-                        eebus.usecases->node_management.subscribe_to_feature(feat_addr, addr, FeatureTypeEnumType::DeviceDiagnosis);
-                        connection->heartbeat_subscription_active = true;
-                    }
-                },
-                0_ms);
-            heartbeatEnabled = true;
-            got_heartbeat(60_s); // Initial timeout
-            return {true, true, CmdClassifierType::reply};
-        }
-        if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
-            // Just reset timeout here. Resetting on replies is not quite conform but its still possible
-            // This shouldnt actually be called.
-            got_heartbeat();
-            return {true, false};
-        }
-    }
-
-    return {false};
-}
-TODO: Cleanup
-*/
-
 MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
@@ -2111,22 +2068,6 @@ MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header,
     return {false};
 }
 
-/*
-MessageReturn LpcUsecase::generic_feature(const HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
-{
-    if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
-        if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
-            // Just reset timeout here. Resetting on replies is not quite conform but its still possible
-            String timeout_string = data->devicediagnosisheartbeatdatatype->heartbeatTimeout.get().c_str();
-            const seconds_t time_out = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(data->devicediagnosisheartbeatdatatype->heartbeatTimeout.get());
-            got_heartbeat(time_out);
-        }
-        return {true, false};
-    }
-    return {false};
-}
-TODO: Cleanup
-*/
 void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
 {
     // TODO: Do sanity checks on these failsafe limits
@@ -2290,27 +2231,6 @@ void LpcUsecase::receive_heartbeat_timeout()
     update_state();
     update_api();
 }
-/*
-void LpcUsecase::got_heartbeat(seconds_t timeout)
-{
-    // TODO: Clean up old heartbeat from this
-    heartbeat_received = true;
-    update_state();
-    update_api();
-    if (timeout > 60_s) {
-        timeout = 60_s;
-    }
-
-    task_scheduler.cancel(heartbeat_timeout_task);
-    heartbeat_timeout_task = task_scheduler.scheduleOnce(
-        [this]() {
-            this->heartbeat_received = false;
-            logger.printfln("No Heartbeat received from control box. Switching to failsafe or unlimited/autonomous mode");
-            update_state();
-            update_api();
-        },
-        timeout);
-}*/
 
 void LpcUsecase::init_state()
 {
@@ -2458,22 +2378,6 @@ void LpcUsecase::get_device_configuration_description(DeviceConfigurationKeyValu
     failsafe_duration_description.valueType = DeviceConfigurationKeyValueTypeType::duration;
     data->deviceConfigurationKeyValueDescriptionData->push_back(failsafe_duration_description);
 }
-
-/*
-//TODO: cleanup
-void LpcUsecase::broadcast_heartbeat()
-{
-    if constexpr (!EEBUS_LPC_ENABLE_HEARTBEAT) {
-        return;
-    }
-    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData = get_device_diagnosis_heartbeat_data();
-
-    eebus.data_handler->devicediagnosisheartbeatdatatype = outgoing_heartbeatData;
-    eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-    if (eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
-        heartbeatCounter++;
-    }
-}*/
 
 void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const
 {

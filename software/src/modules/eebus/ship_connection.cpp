@@ -126,10 +126,17 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
     if (ws_pkt->final) {
         message_incoming->multipart_index = SIZE_MAX;
+        ws_mode = WebsocketMode::HttpThreadCb;
         state_machine_next_step();
     } else {
         eebus.trace_fmtln("Non-final ws_pkt received. Awaiting further parts");
     }
+    if (ws_mode == WebsocketMode::HttpThreadCbFail) {
+        // TODO: Provide return value to indicate failure
+    } else {
+        // TODO: Provide return value to indicate success
+    }
+    ws_mode = WebsocketMode::TaskScheduler;
 }
 
 void ShipConnection::schedule_close(const millis_t delay_ms, const String &reason)
@@ -177,7 +184,11 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
         if (ws_client == nullptr) {
             eebus.trace_fmtln("Attempted send_cmi on closed connection");
         } else {
-            ws_client->sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
+            if (ws_mode == WebsocketMode::HttpThreadCb) {
+                ws_mode = ws_client->sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY) ? WebsocketMode::HttpThreadCbSuccess : WebsocketMode::HttpThreadCbFail;
+            } else {
+                ws_client->send_async(payload, 2, HTTPD_WS_TYPE_BINARY);
+            }
         }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server, payload, 2, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
@@ -192,6 +203,7 @@ void ShipConnection::send_current_outgoing_message()
     }
     if (!message_outgoing) {
         eebus.trace_fmtln("message_outgoing is NULL!");
+        logger.printfln("an error occurred while sending a message. Check tracelog for details.");
         return;
     }
     if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
@@ -205,7 +217,11 @@ void ShipConnection::send_current_outgoing_message()
         if (ws_client == nullptr) {
             eebus.trace_fmtln("Attempted send_current_outgoing on closed connection");
         } else {
-            ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+            if (ws_mode == WebsocketMode::HttpThreadCb) {
+                ws_mode = ws_client->sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY) ? WebsocketMode::HttpThreadCbSuccess : WebsocketMode::HttpThreadCbFail;
+            } else {
+                ws_client->send_async((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+            }
         }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server, reinterpret_cast<const char *>(message_outgoing->data), message_outgoing->length, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
@@ -228,19 +244,25 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     message_outgoing->length = length;
     */
 
-    auto buffer = new char[length + 1];
+    char *buffer = static_cast<char *>(ps_malloc(length + 1));
+
     buffer[0] = static_cast<char>(msg_classifier);
     memcpy(buffer + 1, str, length);
+
     if (role == Role::Server) {
         if (ws_client == nullptr) {
             eebus.trace_fmtln("Attempted send_string on closed connection");
         } else {
-            ws_client->sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+            if (ws_mode == WebsocketMode::HttpThreadCb) {
+                ws_mode = ws_client->sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY) ? WebsocketMode::HttpThreadCbSuccess : WebsocketMode::HttpThreadCbFail;
+            } else {
+                ws_client->send_async(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+            }
         }
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server, buffer, length + 1, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
     }
-    delete[] buffer;
+    //delete[] buffer;
 
     //send_current_outgoing_message();
 }
@@ -254,6 +276,7 @@ void ShipConnection::send_data_message(JsonVariant payload)
         [[maybe_unused]] auto tmp = data.payload = payload;
 
         String data_to_send = data.type_to_json();
+        ws_mode = WebsocketMode::TaskScheduler;
         send_string(data_to_send.c_str(), data_to_send.length(), 2);
     } else {
         eebus.trace_fmtln("send_data_message: Connection not in done state. Actual State: %d", (int)state);

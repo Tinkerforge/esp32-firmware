@@ -59,6 +59,13 @@ struct ShipNode;      // Forward declaration to avoid circular dependency
 class ShipConnection
 {
 public:
+    enum class WebsocketMode : uint8_t {
+        HttpThreadCb = 0, // Signal that we are in a HTTP thread callback
+        HttpThreadCbSuccess, // Signal that we are in a HTTP thread callback and the operation was successful
+        HttpThreadCbFail, // Signal that we are in a HTTP thread callback and the operation failed
+        TaskScheduler, // Signal that we are in the task scheduler context. This is the default and should be set after the callback is handled.
+    };
+
     // SHIP 13.4.1
     enum class Role : uint8_t {
         Client,
@@ -109,12 +116,13 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
 
     WebSocketsClient *ws_client = nullptr;
-    tf_websocket_client_handle_t ws_server;
+    tf_websocket_client_handle_t ws_server = nullptr;
     Role role;
     std::shared_ptr<ShipNode> peer_node;
     unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
     bool closing_scheduled = false;
+    WebsocketMode ws_mode = WebsocketMode::TaskScheduler;
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     /**
@@ -129,7 +137,7 @@ public:
      * @param ws_config The WebSocket server handle to connect to
      * @param node The ShipNode representing the peer we are connecting to
      */
-    ShipConnection(const tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node);
+    ShipConnection(tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node);
 
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;

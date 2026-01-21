@@ -218,7 +218,7 @@ void Ship::setup_wss()
     });
 
     // Websocket data received handler
-    web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
+    web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt ) {
         if (!eebus.is_enabled()) {
             eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
             return;
@@ -229,8 +229,8 @@ void Ship::setup_wss()
             eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection attached to WS client with fd %d", client->getFd());
             return;
         }
-
         ship_connection->frame_received(ws_pkt);
+
     });
 
     // Start websocket on the HTTPS server

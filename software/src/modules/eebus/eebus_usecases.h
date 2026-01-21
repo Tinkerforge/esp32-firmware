@@ -1255,6 +1255,7 @@ public:
 
 private:
     void emit_timeout() const;
+    void send_heartbeat_to_subs();
     void emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data);
 
     std::vector<FeatureAddressType> heartbeat_targets{};
