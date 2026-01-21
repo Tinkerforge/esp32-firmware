@@ -4,7 +4,7 @@ import { __ } from "../../ts/translation";
 let x = {
     "remote_access": {
         "status": {
-            "remote_access": "Remote Access",
+            "remote_access": "Remote access",
             "label_muted": /*SFN*/ (since: string) => `since ${since}`/*NF*/,
             "since_start": "since reboot",
             "connected": "Connected to server",
