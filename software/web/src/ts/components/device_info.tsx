@@ -42,7 +42,7 @@ export function DeviceInfo() {
     }
     let [version, timestamp] = API.get("info/version").firmware.split("+")
 
-    return <div class="pt-2 mx-3 text-muted text-center" style="border-top: 1px rgba(0,0,0,.1) solid;">
+    return <div class="pt-2 mx-3 text-muted text-center border-top">
         <small>
         {name_and_type}
         <strong>{version}</strong>{"+" + timestamp}{uid}
