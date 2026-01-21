@@ -195,6 +195,25 @@ std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureT
     }
     return feature_addresses;
 }
+FeatureAddressType SpineConnection::get_address_of_feature(const std::vector<AddressEntityType>& entity_target, FeatureTypeEnumType feature, RoleType role)
+{
+    if (!detailed_discovery_data_received) {
+        eebus.trace_fmtln("SPINE: WARNING: Attempted to get a feature address without full discovery data");
+        return {};
+    }
+
+    for (auto entities : detailed_discovery_data.entityInformation.get()) {
+        if (entities.description->entityAddress->entity == entity_target) {
+            for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
+                if (feature_info.description->featureType == feature && feature_info.description->role == role) {
+                    return feature_info.description->featureAddress.get();
+                }
+            }
+        }
+    }
+    return {};
+}
+
 bool SpineConnection::validate_header(HeaderType &header)
 {
     bool error_found = false;

@@ -118,8 +118,18 @@ public:
      */
     std::vector<FeatureAddressType> get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor);
 
+    /**
+    * Gets the address of a feature under an entity.
+    * @param entity_target
+    * @param feature The feature to get the address for.
+    * @param role What role the feature should have. Defaults to server.
+    * @return
+    */
+    FeatureAddressType get_address_of_feature(const std::vector<AddressEntityType>& entity_target, FeatureTypeEnumType feature, RoleType role = RoleType::server);
+
     // Subscription state
     bool heartbeat_subscription_active = false;
+
 private:
     // This is to hold the state of the connection regarding discovery and usecase information.
     NodeManagementDetailedDiscoveryDataType detailed_discovery_data{};

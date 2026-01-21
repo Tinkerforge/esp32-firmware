@@ -35,6 +35,143 @@ template <typename T> void insert_vector(std::vector<T> &dest, const std::vector
     dest.insert(dest.end(), src.begin(), src.end());
 }
 
+EebusHeartBeat::EebusHeartBeat()
+{
+    heartbeat_received_timeout_task = task_scheduler.scheduleOnce(
+        [this]() {
+            emit_timeout();
+        },
+        120_s); // Add some buffer time
+    // Send out heartbeat
+    heartbeat_send_task = task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
+            auto subs = eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+            logger.printfln("Heartbeat usecase: sent heartbeat to %d subscribers", subs);
+        },
+        heartbeat_interval);
+}
+DeviceDiagnosisHeartbeatDataType EebusHeartBeat::read_heartbeat()
+{
+    timeval time_v{};
+    rtc.clock_synced(&time_v);
+
+    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+    outgoing_heartbeatData.heartbeatCounter = heartbeat_counter++;
+    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(heartbeat_interval);
+    outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(time_v.tv_sec).c_str();
+    return outgoing_heartbeatData;
+}
+
+void EebusHeartBeat::initialize_heartbeat_on_feature(FeatureAddressType &target, Usecases sending_usecase, bool expect_notify)
+{
+    for (Usecases uc : usecases_enabled) {
+        if (uc == sending_usecase) {
+            // Heartbeat already initialized for this usecase
+            return;
+        }
+    }
+    usecases_enabled.push_back(sending_usecase);
+    heartbeat_targets.push_back(target);
+    // Subscribe to heartbeat notifications from target
+    if (expect_notify) {
+        task_scheduler.scheduleOnce(
+            [this, target]() mutable {
+                auto connection = EEBusUseCases::get_spine_connection(target);
+                // The other device should only have on device diagnosis feature. We look for it
+                auto device_diag_peer = connection->get_address_of_feature(target.entity.get(), FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
+                FeatureAddressType sending_feature = get_feature_address(feature_addresses.at(FeatureTypeEnumType::Generic));
+                if (device_diag_peer.feature.has_value()) {
+                    eebus.trace_fmtln("Attempted to subscribe to a heartbeat but peer has no heartbeat feature");
+                    return;
+                }
+                send_full_read(feature_addresses.at(FeatureTypeEnumType::Generic), sending_feature, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
+                eebus.usecases->node_management.subscribe_to_feature(sending_feature, target, FeatureTypeEnumType::DeviceDiagnosis);
+                connection->heartbeat_subscription_active = true;
+            },
+            0_ms);
+    }
+}
+void EebusHeartBeat::update_heartbeat_interval(seconds_t interval)
+{
+    heartbeat_interval = interval;
+    task_scheduler.cancel(heartbeat_send_task);
+    heartbeat_send_task = task_scheduler.scheduleOnce(
+        [this]() {
+            DeviceDiagnosisHeartbeatDataType heartbeat_data = read_heartbeat();
+            eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), heartbeat_data, "deviceDiagnosisHeartbeatData");
+        },
+        heartbeat_interval);
+}
+MessageReturn EebusHeartBeat::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+{
+    if (data->last_cmd != SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData) {
+        return {false};
+    }
+    switch (header.cmdClassifier.get()) {
+        case CmdClassifierType::read:
+            eebus.trace_fmtln("EebusHeartBeat: Command identified as DeviceDiagnosisHeartbeatData with a read command");
+            emit_heartbeat_received(data->devicediagnosisheartbeatdatatype.get());
+
+            response["deviceDiagnosisHeartbeatData"] = read_heartbeat();
+            return {true, true, CmdClassifierType::reply};
+        case CmdClassifierType::notify:
+        case CmdClassifierType::reply:
+            emit_heartbeat_received(data->devicediagnosisheartbeatdatatype.get());
+            return {true, false};
+        default:
+            return {false, false};
+    }
+}
+NodeManagementDetailedDiscoveryEntityInformationType EebusHeartBeat::get_detailed_discovery_entity_information() const
+{
+    return {};
+}
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EebusHeartBeat::get_detailed_discovery_feature_information() const
+{
+    NodeManagementDetailedDiscoveryFeatureInformationType server_feature{};
+    server_feature.description->featureAddress->entity = this->entity_address;
+    server_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
+    server_feature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
+    server_feature.description->role = RoleType::server;
+
+    FunctionPropertyType heartbeat_property{};
+    heartbeat_property.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
+    heartbeat_property.possibleOperations->read = PossibleOperationsReadType{};
+    server_feature.description->supportedFunction->push_back(heartbeat_property);
+
+    NodeManagementDetailedDiscoveryFeatureInformationType client_feature{};
+    client_feature.description->featureAddress->entity = this->entity_address;
+    client_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::Generic);
+    client_feature.description->featureType = FeatureTypeEnumType::Generic;
+    client_feature.description->role = RoleType::client;
+
+    FunctionPropertyType generic_heartbeat_property{};
+    generic_heartbeat_property.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
+    client_feature.description->supportedFunction->push_back(generic_heartbeat_property);
+
+    return {server_feature, client_feature};
+}
+void EebusHeartBeat::emit_timeout() const
+{
+    for (EebusUsecase *uc : registered_usecases) {
+        uc->receive_heartbeat_timeout();
+    }
+}
+void EebusHeartBeat::emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data)
+{
+    task_scheduler.cancel(heartbeat_received_timeout_task);
+    for (EebusUsecase *uc : registered_usecases) {
+        uc->receive_heartbeat();
+    }
+    seconds_t timeout = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(heartbeat_data.heartbeatTimeout.get());
+    heartbeat_received_timeout_task = task_scheduler.scheduleOnce(
+        [this]() {
+            emit_timeout();
+        },
+        timeout + 1_s); // Add some buffer time
+}
+
 void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAddressType receiver, SpineDataTypeHandler::Function function) const
 {
     String function_name = SpineDataTypeHandler::function_to_string(function);
@@ -184,7 +321,7 @@ NodeManagementUseCaseDataType NodeManagementEntity::get_usecase_data() const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (EebusUsecase *uc : usecase_interface->usecase_list) {
-        if (uc->get_usecase_type() != Usecases::NMC) {
+        if (uc->get_usecase_type() != Usecases::NMC && uc->get_usecase_type() != Usecases::HEARTBEAT) {
             node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
         }
     }
@@ -1689,23 +1826,14 @@ LpcUsecase::LpcUsecase()
             // Initialize DeviceConfiguration feature
             //update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
 
-            // Initialize DeviceDiagnosis feature
-            task_scheduler.scheduleUncancelable(
-                [this]() {
-                    broadcast_heartbeat();
-                    update_state();
-                    update_api();
-                },
-                120_s,
-                EEBUS_LPC_HEARTBEAT_INTERVAL - 2_s); //
             // Initialize ElectricalConnection feature
             //update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
             //update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
 
+            eebus.usecases->evse_heartbeat.register_usecase_for_heartbeat(this);
+            eebus.usecases->evse_heartbeat.set_autosubscribe(true);
             update_state();
             update_api();
-
-
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
 }
@@ -1740,12 +1868,8 @@ MessageReturn LpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandle
             return load_control_feature(header, data, response);
         case FeatureTypeEnumType::DeviceConfiguration:
             return deviceConfiguration_feature(header, data, response);
-        case FeatureTypeEnumType::DeviceDiagnosis:
-            return device_diagnosis_feature(header, data, response);
         case FeatureTypeEnumType::ElectricalConnection:
             return electricalConnection_feature(header, data, response);
-        case FeatureTypeEnumType::Generic:
-            return generic_feature(header, data, response);
         default:;
     }
     return {false};
@@ -1813,20 +1937,6 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     deviceConfigurationFeature.description->supportedFunction->push_back(deviceConfigurationKeyValueListData);
     features.push_back(deviceConfigurationFeature);
 
-    // The following functions are needed by the DeviceDiagnosis Server Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
-    deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-    deviceDiagnosisFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
-    deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    deviceDiagnosisFeature.description->role = RoleType::server;
-
-    //deviceDiagnosisHeartBeatData
-    FunctionPropertyType deviceDiagnosisHeartBeatData{};
-    deviceDiagnosisHeartBeatData.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
-    deviceDiagnosisHeartBeatData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceDiagnosisFeature.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
-    features.push_back(deviceDiagnosisFeature);
-
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
     electricalConnectionFeature.description->featureAddress->entity = entity_address;
@@ -1840,20 +1950,6 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     electricalConnectionCharacteristicsListData.possibleOperations->read = PossibleOperationsReadType{};
     electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionCharacteristicsListData);
     features.push_back(electricalConnectionFeature);
-
-    // The following functions are needed by the DeviceDiagnosis Client Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisClient{};
-    deviceDiagnosisClient.description->featureAddress->entity = entity_address;
-    deviceDiagnosisClient.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::Generic);
-    deviceDiagnosisClient.description->featureType = FeatureTypeEnumType::Generic;
-    deviceDiagnosisClient.description->role = RoleType::client;
-
-    //deviceDiagnosisHeartBeatData
-    FunctionPropertyType deviceDiagnosisClientHeartBeatData{};
-    deviceDiagnosisClientHeartBeatData.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
-    //deviceDiagnosisClientHeartBeatData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceDiagnosisClient.description->supportedFunction->push_back(deviceDiagnosisHeartBeatData);
-    features.push_back(deviceDiagnosisClient);
 
     return features;
 }
@@ -1960,6 +2056,7 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
     return {false};
 }
 
+/*
 MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     // TODO: move heartbeat and this entire feature to a separate class as the LPP usecase needs it aswell
@@ -2002,6 +2099,8 @@ MessageReturn LpcUsecase::device_diagnosis_feature(HeaderType &header, SpineData
 
     return {false};
 }
+TODO: Cleanup
+*/
 
 MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response)
 {
@@ -2012,6 +2111,7 @@ MessageReturn LpcUsecase::electricalConnection_feature(const HeaderType &header,
     return {false};
 }
 
+/*
 MessageReturn LpcUsecase::generic_feature(const HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
@@ -2025,7 +2125,8 @@ MessageReturn LpcUsecase::generic_feature(const HeaderType &header, SpineDataTyp
     }
     return {false};
 }
-
+TODO: Cleanup
+*/
 void LpcUsecase::update_failsafe(int power_limit_w, seconds_t duration)
 {
     // TODO: Do sanity checks on these failsafe limits
@@ -2176,8 +2277,23 @@ void LpcUsecase::update_state()
             break;
     }
 }
+void LpcUsecase::receive_heartbeat()
+{
+    heartbeat_received = true;
+    update_state();
+    update_api();
+}
+void LpcUsecase::receive_heartbeat_timeout()
+{
+    heartbeat_received = false;
+    logger.printfln("No Heartbeat received from control box. Switching to failsafe or unlimited/autonomous mode");
+    update_state();
+    update_api();
+}
+/*
 void LpcUsecase::got_heartbeat(seconds_t timeout)
 {
+    // TODO: Clean up old heartbeat from this
     heartbeat_received = true;
     update_state();
     update_api();
@@ -2194,9 +2310,7 @@ void LpcUsecase::got_heartbeat(seconds_t timeout)
             update_api();
         },
         timeout);
-}
-
-
+}*/
 
 void LpcUsecase::init_state()
 {
@@ -2345,6 +2459,8 @@ void LpcUsecase::get_device_configuration_description(DeviceConfigurationKeyValu
     data->deviceConfigurationKeyValueDescriptionData->push_back(failsafe_duration_description);
 }
 
+/*
+//TODO: cleanup
 void LpcUsecase::broadcast_heartbeat()
 {
     if constexpr (!EEBUS_LPC_ENABLE_HEARTBEAT) {
@@ -2357,7 +2473,8 @@ void LpcUsecase::broadcast_heartbeat()
     if (eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis), outgoing_heartbeatData, "deviceDiagnosisHeartBeatData") > 0) {
         heartbeatCounter++;
     }
-}
+}*/
+
 void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const
 {
     ElectricalConnectionCharacteristicDataType power_consumption_max{};
@@ -2382,15 +2499,9 @@ void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCh
     contractual_power_consumption_max.unit = UnitOfMeasurementEnumType::W;
     electrical_connection_characteristic_list.electricalConnectionCharacteristicData->push_back(contractual_power_consumption_max);*/
 }
-DeviceDiagnosisHeartbeatDataType LpcUsecase::get_device_diagnosis_heartbeat_data() const
-{
-    DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
-    outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
-    outgoing_heartbeatData.heartbeatTimeout = EEBUS_USECASE_HELPERS::iso_duration_to_string(EEBUS_LPC_HEARTBEAT_INTERVAL);
-    outgoing_heartbeatData.timestamp = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(rtc.timestamp_minutes() * 60).c_str();
-    return outgoing_heartbeatData;
-}
+
 #endif
+
 #ifdef EEBUS_ENABLE_CEVC_USECASE
 CevcUsecase::CevcUsecase() = default;
 
@@ -2892,10 +3003,14 @@ EEBusUseCases::EEBusUseCases()
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
     std::vector<Usecases> supported_usecases{};
+
     // EVSE Actors
+    usecase_list.push_back(&evse_heartbeat);
+    evse_heartbeat.set_entity_address(EVSEEntity::entity_address);
+    supported_usecases.push_back(evse_heartbeat.get_usecase_type());
 #ifdef EEBUS_ENABLE_EVCS_USECASE
     usecase_list.push_back(&charging_summary);
-    charging_summary.set_entity_address({1});
+    charging_summary.set_entity_address(EVSEEntity::entity_address);
     supported_usecases.push_back(charging_summary.get_usecase_type());
 #endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
@@ -2908,7 +3023,11 @@ EEBusUseCases::EEBusUseCases()
     evse_commissioning_and_configuration.set_entity_address(EVSEEntity::entity_address);
     supported_usecases.push_back(evse_commissioning_and_configuration.get_usecase_type());
 #endif
+
     // EV actors
+    usecase_list.push_back(&ev_heartbeat);
+    ev_heartbeat.set_entity_address(EVEntity::entity_address);
+    supported_usecases.push_back(ev_heartbeat.get_usecase_type());
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     usecase_list.push_back(&ev_commissioning_and_configuration);
     ev_commissioning_and_configuration.set_entity_address(EVEntity::entity_address); // EVCC entity is "under" the ChargingSummary entity and therefore the first value
@@ -2930,8 +3049,10 @@ EEBusUseCases::EEBusUseCases()
     supported_usecases.push_back(overload_protection_by_ev_charging_current_curtailment.get_usecase_type());
 #endif
 
+    // Map out the features used and assign feature addresses
     std::map<std::pair<std::vector<int>, int>, FeatureTypeEnumType> features;
-    int feature_index = 5;
+    constexpr int feature_step_size = 2;
+    int feature_index = feature_step_size;
     for (EebusUsecase *uc : usecase_list) {
         auto entity = uc->get_entity_address();
         for (FeatureTypeEnumType feature_type_needed : uc->get_supported_features()) {
@@ -2950,7 +3071,7 @@ EEBusUseCases::EEBusUseCases()
                 } else {
                     features[{entity, feature_index}] = feature_type_needed;
                     uc->set_feature_address(feature_index, feature_type_needed);
-                    feature_index += 5;
+                    feature_index += feature_step_size;
                 }
             }
         }
@@ -2982,6 +3103,7 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     const FeatureAddressType destination_address = header.addressDestination.get();
 
     // If its a result, no further processing. If the result is an error, log it
+    // TODO: send the results back to the usecase that sent the original command?
     if (data->last_cmd == SpineDataTypeHandler::Function::resultData) {
         eebus.trace_fmtln("Usecases: Received resultData, no further processing");
         ResultDataType result_data = data->resultdatatype.get();
@@ -2994,6 +3116,7 @@ void EEBusUseCases::process_spine_message(HeaderType &header, SpineDataTypeHandl
     // Identify the usecase by matching the entity address and checking if the usecase has that feature. This needs to be this extensive as multiple usecases may share a feature.
     // Currently no two usecases have the same function but once they do, this and the usecases need to be updated
     bool found_dest_entity = false;
+
     for (EebusUsecase *entity : usecase_list) {
         if (header.addressDestination->entity.has_value() && entity->matches_entity_address(header.addressDestination->entity.get()) && !found_dest_entity) {
             send_response = entity->handle_message(header, data, responseObj);
@@ -3121,14 +3244,7 @@ DeviceConfigurationKeyValueListDataType EVSEEntity::get_device_configuration_val
 #endif
     return device_configuration_value_list_data;
 }
-DeviceDiagnosisHeartbeatDataType EVSEEntity::get_heartbeat_data()
-{
-    DeviceDiagnosisHeartbeatDataType heartbeat_data;
-#ifdef EEBUS_ENABLE_LPC_USECASE
-    heartbeat_data = eebus.usecases->limitation_of_power_consumption.get_device_diagnosis_heartbeat_data();
-#endif
-    return heartbeat_data;
-}
+
 DeviceDiagnosisStateDataType EVSEEntity::get_state_data()
 {
     DeviceDiagnosisStateDataType state_data;

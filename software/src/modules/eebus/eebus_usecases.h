@@ -36,6 +36,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "build.h"
 
 #include "config.h"
+#include "eebus_usecases.h"
 #include "lpc_state.enum.h"
 #include "options.h"
 #include "spine_connection.h"
@@ -51,7 +52,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
+//#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -136,7 +137,6 @@ public:
     static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list_data();
 
     // DeviceDiagnosis
-    static DeviceDiagnosisHeartbeatDataType get_heartbeat_data();
     static DeviceDiagnosisStateDataType get_state_data();
 
     // ElectricalConnection
@@ -260,6 +260,14 @@ public:
     [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
     [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
 
+    virtual void receive_heartbeat()
+    {
+    }
+
+    virtual void receive_heartbeat_timeout()
+    {
+    }
+
 protected:
     std::vector<int> entity_address{}; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
 
@@ -267,6 +275,11 @@ protected:
     std::map<FeatureTypeEnumType, AddressFeatureType> feature_addresses{}; // The feature addresses of the features in this usecase.
     [[nodiscard]] FeatureTypeEnumType get_feature_by_address(AddressFeatureType feature_address) const;
 
+    /**
+     * Get a FeatureAddressType for the given feature type for the current usecase.
+     * @param feature
+     * @return
+     */
     [[nodiscard]] FeatureAddressType get_feature_address(AddressFeatureType feature) const
     {
         FeatureAddressType address{};
@@ -809,7 +822,8 @@ public:
 
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
-        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Generic};
+        // The feature "DeviceDiagnosis" is handled by a separate heartbeat handler as it can be shared accross multiple usecases
+        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::ElectricalConnection};
     }
 
     void get_loadcontrol_limit_description(LoadControlLimitDescriptionListDataType *data) const;
@@ -820,8 +834,6 @@ public:
 
     void get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const;
 
-    [[nodiscard]] DeviceDiagnosisHeartbeatDataType get_device_diagnosis_heartbeat_data() const;
-
     [[nodiscard]] bool limit_is_active() const
     {
         return limit_active;
@@ -830,6 +842,8 @@ public:
     {
         return current_active_consumption_limit_w;
     }
+    void receive_heartbeat() override;
+    void receive_heartbeat_timeout() override;
 
 private:
     /**
@@ -856,7 +870,7 @@ private:
      * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
      * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
      */
-    MessageReturn device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    // Handled in the common heartbeat handler
 
     /**
      * The Electrical Connection feature as required for Scenario 4 - Constraints.
@@ -866,19 +880,9 @@ private:
      */
     static MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
 
-    /**
-    * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
-    * Implements a heartbeat mechanism to ensure that the energy guard is still online and reachable, if not it enters the failsafe state.
-    * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
-    * This is the client part of that scenario and will request heartbeats from the energy guard aswell as handle notify messages.
-    * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
-    */
-    MessageReturn generic_feature(const HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
     // State handling
     // State machine as described in LPC UC TS v1.0.0 2.3
     void update_state();
-    void got_heartbeat(seconds_t timeout = 60_s);
     LPCState lpc_state = LPCState::Startup;
     uint64_t state_change_timeout_task = 0;
     bool heartbeat_received = false;
@@ -921,8 +925,6 @@ private:
 
     void update_api() const;
 
-    void apply_limit() const;
-
     // LoadControl configuration as required for scenario 1 - Control Active Power
     // If a limit was received since startup
     bool limit_received = false;
@@ -951,12 +953,6 @@ private:
     time_t failsafe_expiry_endtime = 0;
     uint8_t failsafe_consumption_key_id = 1;
     uint8_t failsafe_duration_key_id = 2;
-
-    // Heartbeat Data as required for Scenario 3 - Hearbeat
-    bool heartbeatEnabled = false;
-    uint64_t heartbeatCounter = 0;
-    uint64_t heartbeat_timeout_task = 0;
-    void broadcast_heartbeat();
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
     int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
@@ -1185,6 +1181,96 @@ private:
     MessageReturn write_load_control_limit_list_data(HeaderType &header, SpineOptional<LoadControlLimitListDataType> data, JsonObject response);
 };
 #endif
+
+class EebusHeartBeat : public EebusUsecase
+{
+public:
+    EebusHeartBeat();
+    /**
+     * Read the current heartbeat information.
+     * @return
+     */
+    DeviceDiagnosisHeartbeatDataType read_heartbeat();
+
+    /**
+     * Initialize a heartbeat on a feature. This triggers a subscribtion to the heartbeat feature on the target.
+     * If a target wants a heartbeat from us, it has to create a subscription.
+     * @param target Target entity address of the heartbeat target.
+     * @param sending_usecase The usecase that is requesting the heartbeat to be sent.
+     * @param expect_notify If true, a subscription will be created to receive heartbeat notifications.
+     */
+    void initialize_heartbeat_on_feature(FeatureAddressType &target, Usecases sending_usecase, bool expect_notify = true);
+
+    /**
+     * Update the interval. This resets the notify timer and timeout timer.
+     * @param interval
+     */
+    void update_heartbeat_interval(seconds_t interval = 30_s);
+
+    /**
+     * List of targets the heartbeat is sent to.
+     * @return
+     */
+    [[nodiscard]] std::vector<FeatureAddressType> get_heartbeat_targets() const
+    {
+        return heartbeat_targets;
+    }
+    [[nodiscard]] Usecases get_usecase_type() const override
+    {
+        return Usecases::HEARTBEAT;
+    }
+    /**
+     * Handle messages designated for devicediagnosis:heartbeat feature.
+     * @param header
+     * @param data
+     * @param response
+     * @return
+     */
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+
+    UseCaseInformationDataType get_usecase_information() override
+    {
+        return {};
+    };
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Generic}; // Generic is the client feature that is needed for reads
+    }
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    void register_usecase_for_heartbeat(EebusUsecase *usecase)
+    {
+        registered_usecases.push_back(usecase);
+    }
+
+    /**
+     * If autosubscribe is enabled, the heartbeat handler will automatically subscribe to heartbeats reads on a new connection
+     * @param enable
+     */
+    void set_autosubscribe(bool enable)
+    {
+        autosubscribe = enable;
+    }
+
+private:
+    void emit_timeout() const;
+    void emit_heartbeat_received(DeviceDiagnosisHeartbeatDataType &heartbeat_data);
+
+    std::vector<FeatureAddressType> heartbeat_targets{};
+    std::vector<Usecases> usecases_enabled{};
+    std::vector<EebusUsecase *> registered_usecases{};
+
+    seconds_t heartbeat_interval = 30_s;
+
+    uint32_t heartbeat_counter = 0;
+
+    uint64_t heartbeat_received_timeout_task = 0;
+    uint64_t heartbeat_send_task = 0;
+
+    bool autosubscribe = false;
+};
+
 /**
  * The central Interface for EEBus UseCases.
  */
@@ -1261,6 +1347,8 @@ public:
 
     EVSEEntity evse_entity{};
     EVEntity ev_entity{};
+    EebusHeartBeat evse_heartbeat{};
+    EebusHeartBeat ev_heartbeat{};
 
 private:
     bool initialized = false;
