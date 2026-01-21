@@ -256,10 +256,10 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
 
         return <ListGroupItem
                 key={result.model_id}
-                action
+                action={selectable}
                 type="button"
-                onClick={selectable ? () => {this.props.onResultSelected(result)} : undefined}
-                style={selectable ? "" : "cursor: default; background-color: #eeeeee !important;"}>
+                disabled={!selectable}
+                onClick={selectable ? () => {this.props.onResultSelected(result)} : undefined}>
             <div class="d-flex w-100 justify-content-between">
                 <span class="h5 text-start">{result.display_name}</span>
                 {selectable ? undefined :
