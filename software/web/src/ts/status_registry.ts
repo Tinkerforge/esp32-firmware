@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { ComponentChildren } from "preact";
+
 export const enum ModuleStatus {
     Disabled = 0,
     Ok = 1,
@@ -26,7 +28,8 @@ export const enum ModuleStatus {
 
 export interface StatusResult {
     status: ModuleStatus;
-    text?: () => string; // Optional detail text (e.g., IP address, "Connecting...")
+    text?: () => string; // Optional detail text (e.g. IP address, "Connecting...")
+    icon?: () => ComponentChildren; // Optional icon (e.g. WiFi signal strength)
 }
 
 export interface ModuleStatusEntry {
@@ -34,6 +37,7 @@ export interface ModuleStatusEntry {
     name: () => string;
     status: ModuleStatus;
     text?: () => string;
+    icon?: () => ComponentChildren;
     priority: number;
     href?: string;
 }

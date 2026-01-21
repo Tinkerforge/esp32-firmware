@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Fragment } from "preact";
+import { h, Fragment, ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { Dropdown } from "react-bootstrap";
 import { Activity, ChevronsDown, ChevronDown, ChevronRight } from "react-feather";
@@ -30,6 +30,7 @@ interface StatusEntry {
     label: string;
     variant: StatusVariant;
     detail?: string;
+    icon?: ComponentChildren;
     href?: string;
 }
 
@@ -59,6 +60,9 @@ function StatusEntryItem({ entry }: { entry: StatusEntry }) {
             <span class={`rounded-circle ${variant_to_bg_class(entry.variant)}`}
                   style="width: 8px; height: 8px; flex-shrink: 0;"></span>
             <span class="flex-grow-1">{entry.label}</span>
+            {entry.icon && (
+                <span class="d-flex align-items-center text-secondary" style="flex-shrink: 0;">{entry.icon}</span>
+            )}
             {entry.detail && (
                 <span class="small text-secondary">{entry.detail}</span>
             )}

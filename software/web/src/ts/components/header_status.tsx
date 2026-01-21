@@ -48,6 +48,7 @@ export function MobileStatusButton() {
         label: entry.name(),
         variant: status_to_variant(entry.status),
         detail: entry.text ? entry.text() : undefined,
+        icon: entry.icon ? entry.icon() : undefined,
         href: entry.href
     }));
 
@@ -110,6 +111,7 @@ export class HeaderStatus extends Component<{}, HeaderStatusState> {
             label: entry.name(),
             variant: status_to_variant(entry.status),
             detail: entry.text ? entry.text() : undefined,
+            icon: entry.icon ? entry.icon() : undefined,
             href: entry.href
         }));
 
