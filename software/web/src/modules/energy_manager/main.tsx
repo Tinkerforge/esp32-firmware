@@ -29,6 +29,8 @@ import { register_status_provider, ModuleStatus } from "../../ts/status_registry
 
 export class EnergyManagerStatus extends Component {
     render() {
+        return <StatusSection name="energy_manager" />;
+
         if (!util.render_allowed())
             return <StatusSection name="energy_manager" />
 

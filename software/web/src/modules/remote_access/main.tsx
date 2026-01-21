@@ -70,6 +70,8 @@ export class RemoteAccessStatus extends Component<{}, RemoteAccessStatusState> {
     }
 
     render(props: never, state: RemoteAccessStatusState) {
+        return <StatusSection name="remote_access" />;
+
         if (!util.render_allowed || !state.config || !state.config.enable) {
             return <StatusSection name="remote_access" />;
         }

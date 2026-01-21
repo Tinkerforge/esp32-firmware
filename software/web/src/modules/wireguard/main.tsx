@@ -230,6 +230,8 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
 
 export class WireguardStatus extends Component {
     render() {
+        return <StatusSection name="wireguard" />;
+
         if (!util.render_allowed() || !API.get("wireguard/config").enable)
             return <StatusSection name="wireguard" />;
 
