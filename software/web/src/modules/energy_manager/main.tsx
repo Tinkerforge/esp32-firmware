@@ -25,6 +25,7 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormRow        } from "../../ts/components/form_row";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { StatusSection  } from "../../ts/components/status_section";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 export class EnergyManagerStatus extends Component {
     render() {
@@ -85,4 +86,77 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("energy_manager", {
+        get_status: () => {
+            if (!API.hasFeature("energy_manager")) {
+                return {
+                    id: "energy_manager",
+                    name: () => __("energy_manager.status.status"),
+                    status: ModuleStatus.Error,
+                    text: () => __("energy_manager.status.no_bricklet"),
+                    priority: 850,
+                    href: "#status"
+                };
+            }
+
+            const state = API.get("energy_manager/state");
+            const error_flags_contactor = state.error_flags & 0x00010000;
+            const error_flags_internal  = state.error_flags & 0x7F000000;
+            const error_flags_config    = state.error_flags & 0x80000000;
+            const error_flags_network   = state.error_flags & 0x00000002;
+
+            if (error_flags_contactor) {
+                return {
+                    id: "energy_manager",
+                    name: () => __("energy_manager.status.status"),
+                    status: ModuleStatus.Error,
+                    text: () => __("energy_manager.status.error_contactor"),
+                    priority: 850,
+                    href: "#status"
+                };
+            }
+
+            if (error_flags_internal) {
+                return {
+                    id: "energy_manager",
+                    name: () => __("energy_manager.status.status"),
+                    status: ModuleStatus.Error,
+                    text: () => __("energy_manager.status.error_internal"),
+                    priority: 850,
+                    href: "#status"
+                };
+            }
+
+            if (error_flags_config) {
+                return {
+                    id: "energy_manager",
+                    name: () => __("energy_manager.status.status"),
+                    status: ModuleStatus.Error,
+                    text: () => __("energy_manager.status.error_config"),
+                    priority: 850,
+                    href: "#status"
+                };
+            }
+
+            if (error_flags_network) {
+                return {
+                    id: "energy_manager",
+                    name: () => __("energy_manager.status.status"),
+                    status: ModuleStatus.Warning,
+                    text: () => __("energy_manager.status.error_network"),
+                    priority: 850,
+                    href: "#status"
+                };
+            }
+
+            return {
+                id: "energy_manager",
+                name: () => __("energy_manager.status.status"),
+                status: ModuleStatus.Ok,
+                text: () => __("energy_manager.status.error_ok"),
+                priority: 850,
+                href: "#status"
+            };
+        }
+    });
 }

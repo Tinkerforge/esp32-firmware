@@ -37,6 +37,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function minus1_to_nan(val: number) {
     return val == -1 ? NaN : val;
@@ -571,4 +572,41 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("solar_forecast", {
+        get_status: () => {
+            const config = API.get("solar_forecast/config");
+            const state = API.get("solar_forecast/state");
+
+            if (!config.enable) {
+                return {
+                    id: "solar_forecast",
+                    name: () => __("solar_forecast.navbar.solar_forecast"),
+                    status: ModuleStatus.Disabled,
+                    priority: 600,
+                    href: "#solar_forecast"
+                };
+            }
+
+            // -1 = no data available yet
+            if (state.wh_today == -1) {
+                return {
+                    id: "solar_forecast",
+                    name: () => __("solar_forecast.navbar.solar_forecast"),
+                    status: ModuleStatus.Warning,
+                    text: () => __("solar_forecast.content.no_data"),
+                    priority: 600,
+                    href: "#solar_forecast"
+                };
+            }
+
+            return {
+                id: "solar_forecast",
+                name: () => __("solar_forecast.navbar.solar_forecast"),
+                status: ModuleStatus.Ok,
+                text: () => util.toLocaleFixed(get_kwh_today(), 1) + " kWh",
+                priority: 600,
+                href: "#solar_forecast"
+            };
+        }
+    });
 }

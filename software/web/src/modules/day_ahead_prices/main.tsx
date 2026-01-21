@@ -38,6 +38,7 @@ import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_w
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
+import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function get_timestamp_today_00_00_in_seconds() {
     return Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
@@ -470,4 +471,41 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("day_ahead_prices", {
+        get_status: () => {
+            const config = API.get("day_ahead_prices/config");
+            const state = API.get("day_ahead_prices/state");
+
+            if (!config.enable) {
+                return {
+                    id: "day_ahead_prices",
+                    name: () => __("day_ahead_prices.navbar.day_ahead_prices"),
+                    status: ModuleStatus.Disabled,
+                    priority: 600,
+                    href: "#day_ahead_prices"
+                };
+            }
+
+            // INT32_MAX = current price not available yet
+            if (state.current_price == 0x7fffffff) {
+                return {
+                    id: "day_ahead_prices",
+                    name: () => __("day_ahead_prices.navbar.day_ahead_prices"),
+                    status: ModuleStatus.Warning,
+                    text: () => __("day_ahead_prices.content.no_data"),
+                    priority: 600,
+                    href: "#day_ahead_prices"
+                };
+            }
+
+            return {
+                id: "day_ahead_prices",
+                name: () => __("day_ahead_prices.navbar.day_ahead_prices"),
+                status: ModuleStatus.Ok,
+                text: () => util.get_value_with_unit(get_current_price(false, false), "ct/kWh", 2, 1000),
+                priority: 600,
+                href: "#day_ahead_prices"
+            };
+        }
+    });
 }
