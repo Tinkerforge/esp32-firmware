@@ -30,63 +30,40 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("evse", {
+        name: () => __("evse.navbar.evse"),
+        priority: 950,
+        href: "#evse",
         get_status: () => {
             const state = API.get("evse/state");
 
             switch (state?.charger_state) {
                 case 0: // Not connected
                     return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
                         status: ModuleStatus.Ok,
-                        text: () => __("evse.status.not_connected"),
-                        priority: 950,
-                        href: "#evse"
+                        text: () => __("evse.status.not_connected")
                     };
                 case 1: // Waiting for charge release
                     return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
                         status: ModuleStatus.Warning, // Maybe also OK?
-                        text: () => __("evse.status.waiting_for_charge_release"),
-                        priority: 950,
-                        href: "#evse"
+                        text: () => __("evse.status.waiting_for_charge_release")
                     };
                 case 2: // Ready to charge
                     return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
                         status: ModuleStatus.Ok,
-                        text: () => __("evse.status.ready_to_charge"),
-                        priority: 950,
-                        href: "#evse"
+                        text: () => __("evse.status.ready_to_charge")
                     };
                 case 3: // Charging
                     return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
                         status: ModuleStatus.Ok,
-                        text: () => __("evse.status.charging"),
-                        priority: 950,
-                        href: "#evse"
+                        text: () => __("evse.status.charging")
                     };
                 case 4: // Error
                     return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
                         status: ModuleStatus.Error,
-                        text: () => __("evse.status.error"),
-                        priority: 950,
-                        href: "#evse"
+                        text: () => __("evse.status.error")
                     };
                 default:
-                    return {
-                        id: "evse",
-                        name: () => __("evse.navbar.evse"),
-                        status: ModuleStatus.Ok,
-                        priority: 950,
-                        href: "#evse"
-                    };
+                    return {status: ModuleStatus.Ok};
             }
         }
     });

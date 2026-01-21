@@ -719,29 +719,22 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("charge_manager", {
+        name: () => __("charge_manager.navbar.charge_manager_settings"),
+        priority: 800,
+        href: "#charge_manager_settings",
         get_status: () => {
             const state = API.get("charge_manager/state");
             const config = API.get("charge_manager/config");
 
             if (!config?.enable_charge_manager) {
-                return {
-                    id: "charge_manager",
-                    name: () => __("charge_manager.navbar.charge_manager_settings"),
-                    status: ModuleStatus.Disabled,
-                    priority: 800,
-                    href: "#charge_manager_settings"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             const charger_count = config.chargers?.length ?? 0;
             if (charger_count === 0) {
                 return {
-                    id: "charge_manager",
-                    name: () => __("charge_manager.navbar.charge_manager_settings"),
                     status: ModuleStatus.Warning,
-                    text: () => __("charge_manager.status.not_configured"),
-                    priority: 800,
-                    href: "#charge_manager_chargers"
+                    text: () => __("charge_manager.status.not_configured")
                 };
             }
 
@@ -749,12 +742,8 @@ export function init() {
             const has_error = state?.chargers?.some(c => c.s === CASState.Error);
             if (has_error || state?.state === 2) {
                 return {
-                    id: "charge_manager",
-                    name: () => __("charge_manager.navbar.charge_manager_settings"),
                     status: ModuleStatus.Error,
-                    text: () => __("charge_manager.status.error"),
-                    priority: 800,
-                    href: "#charge_manager_settings"
+                    text: () => __("charge_manager.status.error")
                 };
             }
 
@@ -765,12 +754,8 @@ export function init() {
                 : `${charger_count}`;
 
             return {
-                id: "charge_manager",
-                name: () => __("charge_manager.navbar.charge_manager_settings"),
                 status: ModuleStatus.Ok,
-                text: () => text,
-                priority: 800,
-                href: "#charge_manager_settings"
+                text: () => text
             };
         }
     });

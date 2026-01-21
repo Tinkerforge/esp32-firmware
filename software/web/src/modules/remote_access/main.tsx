@@ -872,28 +872,19 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("remote_access", {
+        name: () => __("remote_access.navbar.remote_access"),
+        priority: 600,
+        href: "#remote_access",
         get_status: () => {
             const state = API.get("remote_access/state");
             const config = API.get("remote_access/config");
 
             if (!config?.enable) {
-                return {
-                    id: "remote_access",
-                    name: () => __("remote_access.navbar.remote_access"),
-                    status: ModuleStatus.Disabled,
-                    priority: 600,
-                    href: "#remote_access"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             if (!state || state.length === 0) {
-                return {
-                    id: "remote_access",
-                    name: () => __("remote_access.navbar.remote_access"),
-                    status: ModuleStatus.Disabled, // Or Warning?
-                    priority: 600,
-                    href: "#remote_access"
-                };
+                return {status: ModuleStatus.Disabled}; // Or Warning?
             }
 
             // state[0] is the main connection state, state[1+] are client connections
@@ -902,32 +893,20 @@ export function init() {
 
             if (active_clients > 0) {
                 return {
-                    id: "remote_access",
-                    name: () => __("remote_access.navbar.remote_access"),
                     status: ModuleStatus.Ok,
-                    text: () => __("remote_access.status.connected_to_clients")(active_clients),
-                    priority: 600,
-                    href: "#remote_access"
+                    text: () => __("remote_access.status.connected_to_clients")(active_clients)
                 };
             } else if (main_state === 2) { // 2 = connected to relay
                 // connected to relay but no clients
                 return {
-                    id: "remote_access",
-                    name: () => __("remote_access.navbar.remote_access"),
                     status: ModuleStatus.Ok,
-                    text: () => __("remote_access.status.connected"),
-                    priority: 600,
-                    href: "#remote_access"
+                    text: () => __("remote_access.status.connected")
                 };
             } else {
                 // disconnected
                 return {
-                    id: "remote_access",
-                    name: () => __("remote_access.navbar.remote_access"),
                     status: ModuleStatus.Error,
-                    text: () => __("remote_access.status.disconnected"),
-                    priority: 600,
-                    href: "#remote_access"
+                    text: () => __("remote_access.status.disconnected")
                 };
             }
         }

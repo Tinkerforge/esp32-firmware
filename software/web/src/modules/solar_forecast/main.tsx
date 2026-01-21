@@ -573,39 +573,28 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("solar_forecast", {
+        name: () => __("solar_forecast.navbar.solar_forecast"),
+        priority: 600,
+        href: "#solar_forecast",
         get_status: () => {
             const config = API.get("solar_forecast/config");
             const state = API.get("solar_forecast/state");
 
             if (!config.enable) {
-                return {
-                    id: "solar_forecast",
-                    name: () => __("solar_forecast.navbar.solar_forecast"),
-                    status: ModuleStatus.Disabled,
-                    priority: 600,
-                    href: "#solar_forecast"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             // -1 = no data available yet
             if (state.wh_today == -1) {
                 return {
-                    id: "solar_forecast",
-                    name: () => __("solar_forecast.navbar.solar_forecast"),
                     status: ModuleStatus.Warning,
-                    text: () => __("solar_forecast.content.no_data"),
-                    priority: 600,
-                    href: "#solar_forecast"
+                    text: () => __("solar_forecast.content.no_data")
                 };
             }
 
             return {
-                id: "solar_forecast",
-                name: () => __("solar_forecast.navbar.solar_forecast"),
                 status: ModuleStatus.Ok,
-                text: () => util.toLocaleFixed(get_kwh_today(), 1) + " kWh",
-                priority: 600,
-                href: "#solar_forecast"
+                text: () => __("solar_forecast.content.solar_forecast_today_label") + ": " + util.toLocaleFixed(get_kwh_today(), 1) + " kWh"
             };
         }
     });

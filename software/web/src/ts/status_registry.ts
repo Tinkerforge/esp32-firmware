@@ -24,18 +24,25 @@ export const enum ModuleStatus {
     Error = 3
 }
 
-// Displayed in the header status dropdown
+export interface StatusResult {
+    status: ModuleStatus;
+    text?: () => string; // Optional detail text (e.g., IP address, "Connecting...")
+}
+
 export interface ModuleStatusEntry {
-    id: string; // Unique identifier
+    id: string;
     name: () => string;
     status: ModuleStatus;
-    text?: () => string; // Optional detail text function (e.g., IP address, "Connecting...")
-    priority: number; // priority for sorting, 0 = low
-    href?: string; // Optional link to configuration page (e.g., "#ethernet")
+    text?: () => string;
+    priority: number;
+    href?: string;
 }
 
 export interface StatusProviderConfig {
-    get_status: () => ModuleStatusEntry | ModuleStatusEntry[] | null;
+    name: () => string;
+    priority: number;
+    href?: string;
+    get_status: () => StatusResult | null;
 }
 
 // Registry of all status providers
@@ -48,15 +55,17 @@ export function register_status_provider(module_id: string, config: StatusProvid
 export function get_all_statuses(): ModuleStatusEntry[] {
     const entries: ModuleStatusEntry[] = [];
 
-    for (const [_id, config] of status_providers) {
+    for (const [id, config] of status_providers) {
         try {
             const result = config.get_status();
             if (result) {
-                if (Array.isArray(result)) {
-                    entries.push(...result);
-                } else {
-                    entries.push(result);
-                }
+                entries.push({
+                    id: id,
+                    name: config.name,
+                    priority: config.priority,
+                    href: config.href,
+                    ...result
+                });
             }
         } catch (e) {
             console.error(`Error getting status from provider:`, e);

@@ -306,56 +306,35 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("mqtt", {
+        name: () => __("mqtt.navbar.mqtt"),
+        priority: 500,
+        href: "#mqtt",
         get_status: () => {
             const state = API.get("mqtt/state");
             const config = API.get("mqtt/config");
 
             if (!config?.enable_mqtt) {
-                return {
-                    id: "mqtt",
-                    name: () => __("mqtt.navbar.mqtt"),
-                    status: ModuleStatus.Disabled,
-                    priority: 500,
-                    href: "#mqtt"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             switch (state?.connection_state) {
                 case MqttConnectionState.Connected:
                     return {
-                        id: "mqtt",
-                        name: () => __("mqtt.navbar.mqtt"),
                         status: ModuleStatus.Ok,
-                        text: () => __("mqtt.status.connected"),
-                        priority: 500,
-                        href: "#mqtt"
+                        text: () => __("mqtt.status.connected")
                     };
                 case MqttConnectionState.NotConnected:
                     return {
-                        id: "mqtt",
-                        name: () => __("mqtt.navbar.mqtt"),
                         status: ModuleStatus.Error,
-                        text: () => __("mqtt.status.not_connected"),
-                        priority: 500,
-                        href: "#mqtt"
+                        text: () => __("mqtt.status.not_connected")
                     };
                 case MqttConnectionState.Error:
                     return {
-                        id: "mqtt",
-                        name: () => __("mqtt.navbar.mqtt"),
                         status: ModuleStatus.Error,
-                        text: () => __("mqtt.status.error"),
-                        priority: 500,
-                        href: "#mqtt"
+                        text: () => __("mqtt.status.error")
                     };
                 default: // MqttConnectionState.NotConfigured
-                    return {
-                        id: "mqtt",
-                        name: () => __("mqtt.navbar.mqtt"),
-                        status: ModuleStatus.Disabled,
-                        priority: 500,
-                        href: "#mqtt"
-                    };
+                    return {status: ModuleStatus.Disabled};
             }
         }
     });

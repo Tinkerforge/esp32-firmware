@@ -151,47 +151,32 @@ export function pre_init() {
 
 export function init() {
     register_status_provider("ethernet", {
+        name: () => __("ethernet.navbar.ethernet"),
+        priority: 900,
+        href: "#ethernet",
         get_status: () => {
             const state = API.get("ethernet/state");
             const config = API.get("ethernet/config");
 
             if (!config?.enable_ethernet) {
-                return {
-                    id: "ethernet",
-                    name: () => __("ethernet.navbar.ethernet"),
-                    status: ModuleStatus.Disabled,
-                    priority: 900,
-                    href: "#ethernet"
-                };
+                return {status: ModuleStatus.Disabled};
             }
 
             switch (state?.connection_state) {
                 case EthernetState.Connected:
                     return {
-                        id: "ethernet",
-                        name: () => __("ethernet.navbar.ethernet"),
                         status: ModuleStatus.Ok,
-                        text: () => state.ip,
-                        priority: 900,
-                        href: "#ethernet"
+                        text: () => state.ip
                     };
                 case EthernetState.Connecting:
                     return {
-                        id: "ethernet",
-                        name: () => __("ethernet.navbar.ethernet"),
                         status: ModuleStatus.Warning,
-                        text: () => __("ethernet.status.connecting"),
-                        priority: 900,
-                        href: "#ethernet"
+                        text: () => __("ethernet.status.connecting")
                     };
                 default:
                     return {
-                        id: "ethernet",
-                        name: () => __("ethernet.navbar.ethernet"),
                         status: ModuleStatus.Ok,
-                        text: () => __("ethernet.status.not_connected"),
-                        priority: 900,
-                        href: "#ethernet"
+                        text: () => __("ethernet.status.not_connected")
                     };
             }
         }
