@@ -299,7 +299,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                     <Collapse in={s.phase_switching_mode == 3}>
                         <div>
                             <FormRow label="">
-                                <div style="color:red">
+                                <div class="text-danger">
                                     {__("power_manager.content.external_control_notification")}
                                 </div>
                             </FormRow>

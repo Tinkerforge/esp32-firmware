@@ -263,7 +263,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             <div class="d-flex w-100 justify-content-between">
                 <span class="h5 text-start">{result.display_name}</span>
                 {selectable ? undefined :
-                    <span class="text-end" style="color:red">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
+                    <span class="text-end text-danger">{preferred_model_id !== null ? __("meters_sun_spec.content.model_other_preferred")(preferred_model_id) : __("meters_sun_spec.content.model_no_supported")}</span>
                 }
             </div>
             <div class="d-flex w-100 justify-content-between">

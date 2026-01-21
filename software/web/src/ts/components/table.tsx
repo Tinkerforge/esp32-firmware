@@ -305,7 +305,7 @@ export class Table extends Component<TableProps, TableState> {
                     </Card>
                     : undefined}
                 </div>
-                {props.invalid ? <div style="color: red;" class="mt-1 mb-0">{props.invalidFeedback}</div> : undefined}
+                {props.invalid ? <div class="text-danger mt-1 mb-0">{props.invalidFeedback}</div> : undefined}
 
                 <ItemModal
                     onCheck={async () => {
