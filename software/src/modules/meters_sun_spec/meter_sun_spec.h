@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "modules/meters/imeter.h"
+#include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "config.h"
@@ -96,6 +97,7 @@ private:
 
     uint32_t quirks = 0;
     IMetersSunSpecParser *model_parser;
+    MeterLocation location;
 
     bool check_phase_voltages = false;
     uint32_t phase_voltage_index_cache[3];

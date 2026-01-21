@@ -25,7 +25,6 @@
 #include "models/model_001.h"
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"
-#include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 
 #include "gcc_warnings.h"
@@ -97,6 +96,8 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown && default_location != MeterLocation::Unknown) {
         ephemeral_config->get("location")->updateEnum(default_location);
     }
+
+    location = ephemeral_config->get("location")->asEnum<MeterLocation>();
 
     if (model_parser == nullptr) {
         logger.printfln_meter("No parser available for model %u", model_id);
@@ -615,6 +616,19 @@ void MeterSunSpec::scan_next()
                         else if (strncmp(m->Mn, "TQ-Systems GmbH", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
+                        }
+                        else if (strncmp(m->Mn, "Fronius", 32) == 0) {
+                            if (model_id >= 200 && model_id < 300 && location == MeterLocation::Load) {
+                                // in the Fronius world model import is posivtive and export is negative,
+                                // the same as in our world model. but in the Fronius world model loads
+                                // are viewed from the perspective of the inverter, not viewed from the
+                                // perspective of the load itself. this means that a load that is importing
+                                // has a positive power value in our world model, but in the Fronius world
+                                // model the inverter is exporting to the load, resulting in a negative
+                                // power value reported by the meter. therefore, we need to invert the power
+                                // value reported by Fronius load meters.
+                                quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+                            }
                         }
 
                         if (quirks) {
