@@ -1197,7 +1197,7 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
-    bool write_success = true;
+    ChunkedResponseResult write_result;
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
@@ -1210,20 +1210,20 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 
         response->begin(true);
 
-        if (write_success) {
-            write_success = response->write("[");
+        if (write_result) {
+            write_result = response->write("[");
         }
     }
 
     if (metadata->next_offset != data_chunk_offset) {
         logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, stream out of sync (%hu != %hu)", metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1237,29 +1237,29 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
         actual_length = 60;
     }
 
-    if (metadata->write_comma && write_success) {
-        write_success = response->write(",");
+    if (metadata->write_comma && write_result) {
+        write_result = response->write(",");
     }
 
-    for (i = 0; i < actual_length && write_success; i += sizeof(Wallbox5minData)) {
+    for (i = 0; i < actual_length && write_result; i += sizeof(Wallbox5minData)) {
         p = (Wallbox5minData *)&data_chunk_data[i];
 
         if ((p->flags & FLAGS_NO_DATA) == 0) {
-            write_success = response->writef("%u", p->flags);
+            write_result = response->writef("%u", p->flags);
         } else {
             p->power = UINT16_MAX;
-            write_success = response->writef("null");
+            write_result = response->writef("null");
         }
 
-        if (write_success) {
+        if (write_result) {
             if (p->power != UINT16_MAX) {
-                write_success = response->writef(",%u", p->power);
+                write_result = response->writef(",%u", p->power);
             } else {
-                write_success = response->writef(",null");
+                write_result = response->writef(",null");
             }
 
-            if (write_success && i < actual_length - sizeof(Wallbox5minData)) {
-                write_success = response->write(",");
+            if (write_result && i < actual_length - sizeof(Wallbox5minData)) {
+                write_result = response->write(",");
             }
         }
     }
@@ -1269,9 +1269,9 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 
     if (metadata->next_offset >= data_length) {
         if (metadata->utc_end_slots > 0) {
-            if (!write_success) {
+            if (!write_result) {
                 response->flush();
-                response->end("write error");
+                response->end(write_result);
 
                 em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
             } else {
@@ -1301,7 +1301,7 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
 
                         if (ownership_guard2.have_ownership()) {
                             response->flush();
-                            response->end("continuation error");
+                            response->end(ChunkedResponseResult{ESP_FAIL, "Failed to continue getting wallbox 5min data point"});
                         }
 
                         em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
@@ -1310,12 +1310,12 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
             }
         }
         else {
-            if (write_success) {
-                write_success = response->write("]");
+            if (write_result) {
+                write_result = response->write("]");
             }
 
-            write_success &= response->flush();
-            response->end(write_success ? "" : "write error");
+            write_result &= response->flush();
+            response->end(write_result);
 
             em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         }
@@ -1323,8 +1323,8 @@ static void wallbox_5min_data_points_handler(void *do_not_use, uint16_t data_len
         return;
     }
 
-    if (!write_success) {
-        response->end("write error");
+    if (!write_result) {
+        response->end(write_result);
 
         em_common.wem_register_sd_wallbox_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1411,19 +1411,21 @@ void EMEnergyAnalysis::history_wallbox_5min_response(IChunkedResponse *response,
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
+            ChunkedResponseResult write_result;
+
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox 5min data point: seqnum %lu, error %i", seqnum, rc);
+                write_result = response->writef("Failed to get wallbox 5min data point: seqnum %lu, error %i", seqnum, rc);
                 logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, error %i", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
+                write_result = response->writef("Failed to get wallbox 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
                 logger.printfln("Failed to get wallbox 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
             }
 
-            response->flush();
-            response->end("");
+            write_result &= response->flush();
+            response->end(write_result);
         }
     }
     else {
@@ -1454,7 +1456,7 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
-    bool write_success = true;
+    ChunkedResponseResult write_result;
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
@@ -1467,8 +1469,8 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
 
         response->begin(true);
 
-        if (write_success) {
-            write_success = response->write("[");
+        if (write_result) {
+            write_result = response->write("[");
         }
     }
 
@@ -1476,12 +1478,12 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
         logger.printfln("Failed to get wallbox daily data point: seqnum %lu, stream out of sync (%hu != %hu)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1494,19 +1496,19 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
         actual_length = 15;
     }
 
-    if (metadata->write_comma && write_success) {
-        write_success = response->write(",");
+    if (metadata->write_comma && write_result) {
+        write_result = response->write(",");
     }
 
-    for (i = 0; i < actual_length && write_success; ++i) {
+    for (i = 0; i < actual_length && write_result; ++i) {
         if (data_chunk_data[i] != UINT32_MAX) {
-            write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
+            write_result = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
         } else {
-            write_success = response->write("null");
+            write_result = response->write("null");
         }
 
-        if (write_success && i < actual_length - 1) {
-            write_success = response->write(",");
+        if (write_result && i < actual_length - 1) {
+            write_result = response->write(",");
         }
     }
 
@@ -1514,19 +1516,19 @@ static void wallbox_daily_data_points_handler(void *do_not_use,
     metadata->next_offset += 15;
 
     if (metadata->next_offset >= data_length) {
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
-    if (!write_success) {
-        response->end("write error");
+    if (!write_result) {
+        response->end(write_result);
 
         em_common.wem_register_sd_wallbox_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1571,19 +1573,21 @@ void EMEnergyAnalysis::history_wallbox_daily_response(IChunkedResponse *response
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
+            ChunkedResponseResult write_result;
+
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get wallbox daily data point: seqnum %lu, error %i", seqnum, rc);
+                write_result = response->writef("Failed to get wallbox daily data point: seqnum %lu, error %i", seqnum, rc);
                 logger.printfln("Failed to get wallbox daily data point: seqnum %lu, error %i", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get wallbox daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
+                write_result = response->writef("Failed to get wallbox daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
                 logger.printfln("Failed to get wallbox daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
             }
 
-            response->flush();
-            response->end("");
+            write_result &= response->flush();
+            response->end(write_result);
         }
     }
     else {
@@ -1619,7 +1623,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
-    bool write_success = true;
+    ChunkedResponseResult write_result;
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
@@ -1632,8 +1636,8 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
         response->begin(true);
 
-        if (write_success) {
-            write_success = response->write("[");
+        if (write_result) {
+            write_result = response->write("[");
         }
     }
 
@@ -1641,12 +1645,12 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
         logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, stream out of sync (%hu != %hu)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1655,17 +1659,17 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
     uint16_t actual_length = data_length - data_chunk_offset;
 
     if (actual_length >= sizeof(EnergyManager5MinData)) {
-        if (metadata->write_comma && write_success) {
-            write_success = response->write(",", 1);
+        if (metadata->write_comma && write_result) {
+            write_result = response->write(",", 1);
         }
 
         EnergyManager5MinData *p = (EnergyManager5MinData *)data_chunk_data;
 
-        if (write_success) {
+        if (write_result) {
             if ((p->flags & FLAGS_NO_DATA) == 0) {
-                write_success = response->writef("%u", p->flags);
+                write_result = response->writef("%u", p->flags);
             } else {
-                write_success = response->writef("null");
+                write_result = response->writef("null");
 
                 for (int k = 0; k < 7; ++k) {
                     p->power[k] = INT32_MAX;
@@ -1675,21 +1679,21 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
             }
         }
 
-        if (write_success) {
-            for (int k = 0; k < 7 && write_success; ++k) {
+        if (write_result) {
+            for (int k = 0; k < 7 && write_result; ++k) {
                 if (p->power[k] != INT32_MAX) {
-                    write_success = response->writef(",%ld", p->power[k]);
+                    write_result = response->writef(",%ld", p->power[k]);
                 } else {
-                    write_success = response->writef(",null");
+                    write_result = response->writef(",null");
                 }
             }
         }
 
-        if (write_success) {
+        if (write_result) {
             if (p->price_bits != UINT32_MAX) {
-                write_success = response->writef(",%.3f", (double)(int32_t)p->price_bits / 1000.0); // mct/kWh -> ct/kWh
+                write_result = response->writef(",%.3f", (double)(int32_t)p->price_bits / 1000.0); // mct/kWh -> ct/kWh
             } else {
-                write_success = response->writef(",null");
+                write_result = response->writef(",null");
             }
         }
     }
@@ -1703,9 +1707,9 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
     if (metadata->next_offset >= data_length) {
         if (metadata->utc_end_slots > 0) {
-            if (!write_success) {
+            if (!write_result) {
                 response->flush();
-                response->end("write error");
+                response->end(write_result);
 
                 em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
             } else {
@@ -1734,7 +1738,7 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
 
                         if (ownership_guard2.have_ownership()) {
                             response->flush();
-                            response->end("continuation error");
+                            response->end(ChunkedResponseResult{ESP_FAIL, "Failed to continue getting energy manager 5min data point"});
                         }
 
                         em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
@@ -1743,12 +1747,12 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
             }
         }
         else {
-            if (write_success) {
-                write_success = response->write("]");
+            if (write_result) {
+                write_result = response->write("]");
             }
 
-            write_success &= response->flush();
-            response->end(write_success ? "" : "write error");
+            write_result &= response->flush();
+            response->end(write_result);
 
             em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         }
@@ -1756,8 +1760,8 @@ static void energy_manager_5min_data_points_handler(void *do_not_use,
         return;
     }
 
-    if (!write_success) {
-        response->end("write error");
+    if (!write_result) {
+        response->end(write_result);
 
         em_common.wem_register_sd_energy_manager_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1842,19 +1846,21 @@ void EMEnergyAnalysis::history_energy_manager_5min_response(IChunkedResponse *re
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
+            ChunkedResponseResult write_result;
+
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager 5min data point: seqnum %lu, error %i", seqnum, rc);
+                write_result = response->writef("Failed to get energy manager 5min data point: seqnum %lu, error %i", seqnum, rc);
                 logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, error %i", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
+                write_result = response->writef("Failed to get energy manager 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
                 logger.printfln("Failed to get energy manager 5min data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
             }
 
-            response->flush();
-            response->end("");
+            write_result &= response->flush();
+            response->end(write_result);
         }
     }
     else {
@@ -1884,7 +1890,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
 {
     StreamMetadata *metadata = (StreamMetadata *)user_data;
     IChunkedResponse *response = metadata->response;
-    bool write_success = true;
+    ChunkedResponseResult write_result;
     OwnershipGuard ownership_guard(metadata->response_ownership, metadata->response_owner_id);
 
     if (!ownership_guard.have_ownership()) {
@@ -1897,8 +1903,8 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
 
         response->begin(true);
 
-        if (write_success) {
-            write_success = response->write("[");
+        if (write_result) {
+            write_result = response->write("[");
         }
     }
 
@@ -1906,12 +1912,12 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
         logger.printfln("Failed to get energy manager daily data point: seqnum %lu, stream out of sync (%hu != %hu)",
                         metadata->seqnum, metadata->next_offset, data_chunk_offset);
 
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -1924,8 +1930,8 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
         actual_length = 15;
     }
 
-    if (metadata->write_comma && write_success) {
-        write_success = response->write(",");
+    if (metadata->write_comma && write_result) {
+        write_result = response->write(",");
     }
 
     // the data is stored as:
@@ -1936,7 +1942,7 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     memmove(&data_chunk_data[1], &data_chunk_data[2], sizeof(uint32_t) * 6);
     data_chunk_data[7] = energy_export_0;
 
-    for (i = 0; i < actual_length && write_success; ++i) {
+    for (i = 0; i < actual_length && write_result; ++i) {
         if (i == 14) {
             if (data_chunk_data[i] != UINT32_MAX) {
                 int32_t price_min = price_from_10bit((data_chunk_data[i] >> 20) & 0x3FF);
@@ -1944,43 +1950,43 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
                 int32_t price_max = price_from_10bit( data_chunk_data[i]        & 0x3FF);
 
                 if (price_min != INT32_MAX) {
-                    write_success = response->writef("%ld", price_min);
+                    write_result = response->writef("%ld", price_min);
                 }
                 else {
-                    write_success = response->writef("null");
+                    write_result = response->writef("null");
                 }
 
-                if (write_success) {
+                if (write_result) {
                     if (price_avg != INT32_MAX) {
-                        write_success = response->writef(",%ld", price_avg);
+                        write_result = response->writef(",%ld", price_avg);
                     }
                     else {
-                        write_success = response->writef(",null");
+                        write_result = response->writef(",null");
                     }
                 }
 
-                if (write_success) {
+                if (write_result) {
                     if (price_max != INT32_MAX) {
-                        write_success = response->writef(",%ld", price_max);
+                        write_result = response->writef(",%ld", price_max);
                     }
                     else {
-                        write_success = response->writef(",null");
+                        write_result = response->writef(",null");
                     }
                 }
             } else {
-                write_success = response->write("null,null,null");
+                write_result = response->write("null,null,null");
             }
         }
         else {
             if (data_chunk_data[i] != UINT32_MAX) {
-                write_success = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
+                write_result = response->writef("%.2f", (double)data_chunk_data[i] / 100.0); // daWh -> kWh
             } else {
-                write_success = response->write("null");
+                write_result = response->write("null");
             }
         }
 
-        if (write_success && i < actual_length - 1) {
-            write_success = response->write(",");
+        if (write_result && i < actual_length - 1) {
+            write_result = response->write(",");
         }
     }
 
@@ -1988,19 +1994,19 @@ static void energy_manager_daily_data_points_handler(void *do_not_use,
     metadata->next_offset += 15;
 
     if (metadata->next_offset >= data_length) {
-        if (write_success) {
-            write_success = response->write("]");
+        if (write_result) {
+            write_result = response->write("]");
         }
 
-        write_success &= response->flush();
-        response->end(write_success ? "" : "write error");
+        write_result &= response->flush();
+        response->end(write_result);
 
         em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
     }
 
-    if (!write_success) {
-        response->end("write error");
+    if (!write_result) {
+        response->end(write_result);
 
         em_common.wem_register_sd_energy_manager_daily_data_points_low_level_callback(nullptr, nullptr);
         return;
@@ -2026,19 +2032,21 @@ void EMEnergyAnalysis::history_energy_manager_daily_response(IChunkedResponse *r
         OwnershipGuard ownership_guard(response_ownership, response_owner_id);
 
         if (ownership_guard.have_ownership()) {
+            ChunkedResponseResult write_result;
+
             response->begin(false);
 
             if (rc != TF_E_OK) {
-                response->writef("Failed to get energy manager daily data point: seqnum %lu, error %i", seqnum, rc);
+                write_result = response->writef("Failed to get energy manager daily data point: seqnum %lu, error %i", seqnum, rc);
                 logger.printfln("Failed to get energy manager daily data point: seqnum %lu, error %i", seqnum, rc);
             }
             else if (status != 0) {
-                response->writef("Failed to get energy manager daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
+                write_result = response->writef("Failed to get energy manager daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
                 logger.printfln("Failed to get energy manager daily data point: seqnum %lu, status (%s, %hhu)", seqnum, get_data_status_string(status), status);
             }
 
-            response->flush();
-            response->end("");
+            write_result &= response->flush();
+            response->end(write_result);
         }
     }
     else {

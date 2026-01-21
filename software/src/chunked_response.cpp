@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "chunked_resp"
+
 #include "chunked_response.h"
 
 #include <stdarg.h>
@@ -25,23 +27,24 @@
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "tools/printf.h"
 
 void QueuedChunkedResponse::begin(bool success)
 {
-    call([this, success]{internal->begin(success); return true;});
+    (void)call([this, success]{internal->begin(success); return ChunkedResponseResult{};});
 }
 
 void QueuedChunkedResponse::alive()
 {
-    call([this]{internal->alive(); return true;});
+    (void)call([this]{internal->alive(); return ChunkedResponseResult{};});
 }
 
-bool QueuedChunkedResponse::write_impl(const char *buf, size_t buf_size)
+ChunkedResponseResult QueuedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 {
     return call([this, buf, buf_size]{return internal->write(buf, buf_size);});
 }
 
-void QueuedChunkedResponse::end(String error)
+void QueuedChunkedResponse::end(ChunkedResponseResult result)
 {
     {
         std::lock_guard<std::mutex> guard(mutex);
@@ -51,19 +54,19 @@ void QueuedChunkedResponse::end(String error)
         }
     }
 
-    call([this, &error]{internal->end(error); is_running = false; return true;});
+    (void)call([this, &result]{internal->end(result); is_running = false; return ChunkedResponseResult{};});
 
     {
         std::lock_guard<std::mutex> guard(mutex);
 
-        end_error = error;
+        end_result = result;
         has_ended = true;
     }
 
     condition.notify_one();
 }
 
-String QueuedChunkedResponse::wait()
+ChunkedResponseResult QueuedChunkedResponse::wait()
 {
     std::unique_lock<std::mutex> lock(mutex, std::defer_lock_t()); // don't lock immediatly
 
@@ -71,17 +74,17 @@ String QueuedChunkedResponse::wait()
         lock.lock();
 
         if (!condition.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this]{return have_function;})) {
-            String error = "condition timeout, no function";
+            ChunkedResponseResult result{ESP_FAIL, "Condition timeout, no function"};
 
-            internal->end(error);
+            internal->end(result);
 
-            end_error = error;
+            end_result = result;
             has_ended = true;
 
             lock.unlock();
             condition.notify_one();
 
-            return end_error;
+            return end_result;
         }
 
         result = function();
@@ -97,29 +100,28 @@ String QueuedChunkedResponse::wait()
     lock.lock();
 
     if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return has_ended;})) {
-        end_error = "condition timeout, not ended";
+        end_result = {ESP_FAIL, "Condition timeout, has not ended"};
     }
 
     lock.unlock();
 
-    return end_error;
+    return end_result;
 }
 
-bool QueuedChunkedResponse::call(std::function<bool(void)> &&local_function)
+ChunkedResponseResult QueuedChunkedResponse::call(std::function<ChunkedResponseResult(void)> &&local_function)
 {
     std::unique_lock<std::mutex> lock(mutex);
 
     if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return !have_result || has_ended;})) {
         lock.unlock();
-        logger.printfln("Condition timeout, has result or not ended");
 
-        return false;
+        return ChunkedResponseResult{ESP_FAIL, "Condition timeout, has result or has not ended"};
     }
 
     if (has_ended) {
         lock.unlock();
 
-        return false;
+        return ChunkedResponseResult{ESP_FAIL, "Has ended"};
     }
 
     function = std::move(local_function);
@@ -132,18 +134,17 @@ bool QueuedChunkedResponse::call(std::function<bool(void)> &&local_function)
 
     if (!condition.wait_for(lock, std::chrono::seconds(10), [this]{return have_result || has_ended;})) {
         lock.unlock();
-        logger.printfln("Condition timeout, no result or did not ended");
 
-        return false;
+        return ChunkedResponseResult{ESP_FAIL, "Condition timeout, has no result or has not ended"};
     }
 
     if (has_ended) {
         lock.unlock();
 
-        return false;
+        return ChunkedResponseResult{ESP_FAIL, "Has ended"};
     }
 
-    bool local_result = result;
+    ChunkedResponseResult local_result = result;
     have_result = false;
 
     lock.unlock();
@@ -163,7 +164,7 @@ void BufferedChunkedResponse::alive()
     internal->alive();
 }
 
-bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
+ChunkedResponseResult BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 {
     if (buf_size <= pending_free()) {
         // buffer can be stored fully
@@ -171,7 +172,7 @@ bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
 
         pending_used += buf_size;
 
-        return true;
+        return ChunkedResponseResult{};
     }
 
     if (pending_used > 0) {
@@ -185,8 +186,10 @@ bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
         buf += to_store;
         buf_size -= to_store;
 
-        if (!flush()) {
-            return false;
+        ChunkedResponseResult result = flush();
+
+        if (!result) {
+            return result;
         }
     }
 
@@ -198,27 +201,28 @@ bool BufferedChunkedResponse::write_impl(const char *buf, size_t buf_size)
     }
     else {
         // remaining buffer is bigger than storage, write it directly
-        if (!internal->write(buf, buf_size)) {
-            printf("internal write failed\n");
-            return false;
+        ChunkedResponseResult result = internal->write(buf, buf_size);
+
+        if (!result) {
+            return result;
         }
     }
 
-    return true;
+    return ChunkedResponseResult{};
 }
 
-bool BufferedChunkedResponse::writef(const char *fmt, ...)
+ChunkedResponseResult BufferedChunkedResponse::writef(const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
-    bool result = vwritef(fmt, args);
+    ChunkedResponseResult result = vwritef(fmt, args);
     va_end(args);
 
     return result;
 }
 
-bool BufferedChunkedResponse::vwritef(const char *fmt, va_list args)
+ChunkedResponseResult BufferedChunkedResponse::vwritef(const char *fmt, va_list args)
 {
     va_list args_copy;
 
@@ -227,8 +231,9 @@ bool BufferedChunkedResponse::vwritef(const char *fmt, va_list args)
     va_end(args_copy);
 
     if (required_or_error < 0) {
-        printf("vsnprintf(1) failed: %d\n", required_or_error);
-        return false;
+        logger.printfln("vsnprintf(1) failed: %d", required_or_error);
+
+        return ChunkedResponseResult{ESP_FAIL, "vsnprintf(1) failed"};
     }
 
     // +1 because vsnprintf always returns the length it would
@@ -238,49 +243,54 @@ bool BufferedChunkedResponse::vwritef(const char *fmt, va_list args)
     size_t required = required_or_error + 1;
 
     if (required > sizeof(pending)) {
-        printf("vsnprintf buffer too small, required: %zu, available: %zu\n", required, sizeof(pending));
-        return false;
+        logger.printfln("vsnprintf buffer too small, required: %zu, available: %zu\n", required, sizeof(pending));
+
+        return ChunkedResponseResult{ESP_FAIL, "vsnprintf buffer too small"};
     }
 
     if (required > pending_free()) {
-        if (!flush()) {
-            return false;
+        ChunkedResponseResult result = flush();
+
+        if (!result) {
+            return result;
         }
     }
 
     int written_or_error = vsnprintf(pending_ptr(), pending_free(), fmt, args);
 
     if (written_or_error < 0) {
-        printf("vsnprintf(2) failed: %d\n", written_or_error);
-        return false;
+        logger.printfln("vsnprintf(2) failed: %d", written_or_error);
+
+        return ChunkedResponseResult{ESP_FAIL, "vsnprintf(2) failed"};
     }
 
     pending_used += written_or_error;
 
-    return true;
+    return ChunkedResponseResult{};
 }
 
-bool BufferedChunkedResponse::flush()
+ChunkedResponseResult BufferedChunkedResponse::flush()
 {
     if (pending_used > 0) {
-        if (!internal->write(pending, pending_used)) {
-            printf("internal write failed\n");
-            return false;
+        ChunkedResponseResult result = internal->write(pending, pending_used);
+
+        if (!result) {
+            return result;
         }
 
         pending_used = 0;
     }
 
-    return true;
+    return ChunkedResponseResult{};
 }
 
-void BufferedChunkedResponse::end(String error)
+void BufferedChunkedResponse::end(ChunkedResponseResult result)
 {
     if (pending_used > 0) {
         printf("end with unflushed data\n");
     }
 
-    internal->end(error);
+    internal->end(result);
 }
 
 size_t BufferedChunkedResponse::pending_free()

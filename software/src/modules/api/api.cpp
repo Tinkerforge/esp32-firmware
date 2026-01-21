@@ -383,15 +383,16 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, ICh
 
         if (!message.isEmpty()) {
             OwnershipGuard ownership_guard(response_ownership, response_owner_id);
+            ChunkedResponseResult write_result;
 
             if (!ownership_guard.have_ownership()) {
                 return;
             }
 
             response->begin(false);
-            response->write(message.c_str(), message.length());
-            response->flush();
-            response->end("");
+            write_result = response->write(message.c_str(), message.length());
+            write_result &= response->flush();
+            response->end(write_result);
 
             return;
         }

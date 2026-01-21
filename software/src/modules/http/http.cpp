@@ -37,27 +37,23 @@ public:
     {
     }
 
-    void end(String error)
+    void end(ChunkedResponseResult result)
     {
-        if (error.isEmpty()) {
+        if (result) {
             request->endChunkedResponse();
         }
     }
 
 protected:
-    bool write_impl(const char *buf, size_t buf_size)
+    ChunkedResponseResult write_impl(const char *buf, size_t buf_size)
     {
-        // FIXME: sendChunk failures probably aren't propagated upwards properly.
-        // The HTTP callback should return any sendChunk failures.
-        const esp_err_t result = request->sendChunk(buf, buf_size);
+        esp_err_t result = request->sendChunk(buf, buf_size);
 
         if (result != ESP_OK) {
-            printf("sendChunk failed: %d\n", result);
-
-            return false;
+            return ChunkedResponseResult{result, "sendChunk failed"};
         }
 
-        return true;
+        return ChunkedResponseResult{};
     }
 
 private:
@@ -233,14 +229,14 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t re
             api.callResponse(api.responses[respidx], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
         });
 
-    String error = queued_response.wait();
+    ChunkedResponseResult result = queued_response.wait();
 
-    if (!error.isEmpty()) {
-        logger.printfln("Response processing failed after update: %s (%s %s)", error.c_str(), req.methodString(), req.uriCStr());
+    if (!result) {
+        logger.printfln("Response processing failed after update: %s (%s %s)", result.message, req.methodString(), req.uriCStr());
     }
 
     response_ownership.next();
-    return WebServerRequestReturnProtect{};
+    return WebServerRequestReturnProtect{.error = result.code};
 }
 
 WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest &req, const api_match_data &match_data)
