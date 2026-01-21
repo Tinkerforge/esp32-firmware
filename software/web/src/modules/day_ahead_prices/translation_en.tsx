@@ -11,7 +11,7 @@ let x = {
         "content": {
             "day_ahead_prices": "Dynamic Tariff",
             "enable_day_ahead_prices": "Dynamic tariff enabled",
-            "no_data": "No data available!",
+            "no_data": "No data available",
             "loading": "Loading data...",
             "time": "Time of day",
             "electricity_price": "Electricity price",

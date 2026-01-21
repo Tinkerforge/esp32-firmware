@@ -11,7 +11,7 @@ let x = {
         "content": {
             "day_ahead_prices": "Dynamischer Strompreis",
             "enable_day_ahead_prices": "Dynamischer Strompreis aktiviert",
-            "no_data": "Keine Daten vorhanden!",
+            "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",
             "time": "Uhrzeit",
             "electricity_price": "Strompreis",
