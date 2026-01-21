@@ -1010,6 +1010,7 @@ de_hyph = [
     "öf-fent-li-cher",
     "Strom-preis-plan",
     "Schnell-la-dung",
+    "Be-nut-zer-ober-flä-che",
 
 ]
 
@@ -1019,8 +1020,8 @@ en_hyph = [
     "Alter-native",
     "autho-ri-za-tion",
     "Autho-rized",
-    "auto-matic-ally",
-    "Auto-matic-ally",
+    "auto-mati-cally",
+    "Auto-mati-cally",
     "Cali-bration",
     "charac-ters",
     "communi-cation",
@@ -1165,7 +1166,7 @@ en_hyph = [
     "Trans-former",
     "ca-pac-i-tive",
     "over-ridden",
-    "reset-table",
+    "re-settable",
     "manu-fac-turer",
     "ex-ter-nal-ly",
     "back-ground",
@@ -1275,7 +1276,7 @@ en_hyph = [
     "pri-or-i-tized",
     "dec-li-na-tion",
     "re-con-nect-ing",
-    "com-pat-i-bi-li-ty",
+    "com-pat-i-bil-i-ty",
     "lim-i-ta-tions",
     "al-lo-ca-tion",
     "De-ac-ti-vat-ing",
