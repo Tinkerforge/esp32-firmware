@@ -121,7 +121,7 @@ export class Table extends Component<TableProps, TableState> {
     render(props: TableProps, state: TableState) {
         return (
             <>
-                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`} style={props.invalid ? "border-color: red;" : undefined}><Card.Body style="padding: 0; overflow-x: auto;">
+                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block` + (props.invalid ? " border-danger" : "")}><Card.Body style="padding: 0; overflow-x: auto;">
                 <table class="table" style="font-size: 1rem; margin-bottom: 0;">
                     {props.columnNames.filter((name) => name.length > 0).length > 0 ?
                         <thead>
@@ -286,7 +286,7 @@ export class Table extends Component<TableProps, TableState> {
                         </Card></>
                     })}
                     {props.onAddShow ?
-                    <Card className="mb-0" style={props.invalid ? "border-color: red;" : ""}>
+                    <Card className={"mb-0" + (props.invalid ? " border-danger" : "")}>
                         <div class="card-body d-flex justify-content-between align-items-center p-2d5">
                             <div class="text-break" style="font-size: 1rem;">{props.addMessage}</div>
                             <div style="white-space: nowrap; vertical-align: middle;">
