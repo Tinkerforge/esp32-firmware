@@ -54,6 +54,13 @@ static inline bool is_kostal(const char *manufacturer)
     return strncmp(manufacturer, "KOSTAL", 32) == 0 || strncmp(manufacturer, "KOSTAL Solar Electric GmbH", 32) == 0;
 }
 
+// Do a prefix match to accept any KOSTAL Smart Energy Meter. Known models
+// are "KOSTAL Smart Energy Meter G1" and "KOSTAL Smart Energy Meter G2"
+static inline bool is_kostal_smart_energy_meter(const char *model)
+{
+    return strncmp(model, "KOSTAL Smart Energy Meter", 25) == 0;
+}
+
 static const uint16_t scan_base_addresses[] {
     40000,
     50000,
@@ -562,8 +569,8 @@ void MeterSunSpec::scan_next()
                         if (is_kostal(m->Mn)) {
                             bool acc32_is_int32 = true;
 
-                            if (strncmp(m->Md, "KOSTAL Smart Energy Meter", 25) == 0) {
-                                // create null-terminated string from unterminated character sequence
+                            if (is_kostal_smart_energy_meter(m->Md) == 0) {
+                                // create null-terminated string from non-terminated character sequence
                                 char version_str[17];
                                 memcpy(version_str, m->Vr, 16);
                                 version_str[16] = 0;
@@ -574,6 +581,7 @@ void MeterSunSpec::scan_next()
                                     logger.printfln_meter("Could not parse KOSTAL Smart Energy Meter version: %s", version_str);
                                 }
                                 else if (version.compare(SemanticVersion{2, 6, 0}) >= 0) {
+                                    // KOSTAL fixed this bug in version 2.6.0
                                     acc32_is_int32 = false;
                                 }
                             }
