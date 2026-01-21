@@ -124,6 +124,8 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 export class EthernetStatus extends Component
 {
     render() {
+        return <StatusSection name="ethernet" />;
+
         if (!util.render_allowed() || !API.get('ethernet/config').enable_ethernet)
             return <StatusSection name="ethernet" />
 

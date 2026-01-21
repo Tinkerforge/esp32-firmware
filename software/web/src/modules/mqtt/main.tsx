@@ -281,6 +281,8 @@ export class MqttStatus extends Component<{}, MqttStatusState> {
     }
 
     render(props: {}, state: MqttStatusState) {
+        return <StatusSection name="mqtt" />;
+
         if (!util.render_allowed() || !state.config.enable_mqtt)
             return <StatusSection name="mqtt" />;
 

@@ -350,6 +350,7 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
             return <StatusSection name="ocpp" />;
 
         return <StatusSection name="ocpp">
+                /*
                 <FormRow label={__("ocpp.status.ocpp")}>
                     <IndicatorGroup
                         style="width: 100%"
@@ -361,6 +362,7 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
                             ["danger", __("ocpp.status.error")]
                         ]}/>
                 </FormRow>
+                */
 
                 <FormRow label={__("ocpp.status.status")}>
                         <InputText value={this.getStatusLine()} />

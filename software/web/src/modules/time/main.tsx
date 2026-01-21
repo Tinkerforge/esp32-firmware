@@ -236,6 +236,8 @@ export class TimeStatus extends Component<{}, TimeStatusState> {
     }
 
     render(props: {}, state: TimeStatusState) {
+        return <StatusSection name="time" />;
+
         if (!util.render_allowed() || !state.config.enable)
             return <StatusSection name="time" />;
 

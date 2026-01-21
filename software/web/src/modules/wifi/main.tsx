@@ -67,6 +67,8 @@ export class WifiStatus extends Component<{}, WifiStatusState> {
     }
 
     render(props: {}, state: WifiStatusState) {
+        return <StatusSection name="wifi" />;
+
         if (!util.render_allowed())
             return <StatusSection name="wifi" />;
 
