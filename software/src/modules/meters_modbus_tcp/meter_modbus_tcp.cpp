@@ -350,6 +350,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::GoodweInverter:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
         goodwe_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<GoodweInverterVirtualMeter>();
+        goodwe_inverter.grid_detect_state = goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Grid ? GoodweGridDetectState::Reading : GoodweGridDetectState::Idle;
         goodwe_inverter.battery_1_mode = -1;
         goodwe_inverter.battery_2_mode = -1;
         table = get_goodwe_inverter_table(slot, goodwe_inverter.virtual_meter);
@@ -918,6 +919,12 @@ bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
             && shelly_pro_3em.device_profile == ShellyPro3EMDeviceProfile::Monophase);
 }
 
+bool MeterModbusTCP::is_goodwe_inverter_grid_meter() const
+{
+    return table_id == MeterModbusTCPTableID::GoodweInverter
+        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Grid;
+}
+
 bool MeterModbusTCP::is_goodwe_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::GoodweInverter
@@ -1094,6 +1101,24 @@ void MeterModbusTCP::read_done_callback()
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
+        }
+        else if (generic_read_request.result == TFModbusTCPClientTransactionResult::ModbusIllegalDataAddress &&
+                 is_goodwe_inverter_grid_meter() &&
+                 goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading &&
+                 generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal) {
+            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected32bitEnergy;
+            table = &goodwe_inverter_grid_32bit_energy_table;
+
+            logger.printfln_meter("Goodwe inverter with 32-bit grid energy registers detected (reading 64-bit grid energy register returns error)");
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+
+            read_allowed = true;
+            read_index = 0;
+            register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+            prepare_read();
+            return;
         }
 
         read_allowed = true;
@@ -1489,6 +1514,30 @@ void MeterModbusTCP::parse_next()
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_goodwe_inverter_grid_meter() &&
+        goodwe_inverter.grid_detect_state == GoodweGridDetectState::Reading &&
+        generic_read_request.start_address == GoodweInverterGridDetectAddress::ActiveEnergyTotalBuyTotal) {
+        if (c64.u == UINT64_MAX) {
+            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected32bitEnergy;
+            table = &goodwe_inverter_grid_32bit_energy_table;
+            logger.printfln_meter("Goodwe inverter with 32-bit grid energy registers detected (reading 64-bit grid energy register returns invalid value)");
+        }
+        else {
+            goodwe_inverter.grid_detect_state = GoodweGridDetectState::Detected64bitEnergy;
+            table = &goodwe_inverter_grid_64bit_energy_table;
+            logger.printfln_meter("Goodwe inverter with 64-bit grid energy registers detected");
+        }
+
+        meters.declare_value_ids(slot, table->ids, table->ids_length);
 
         read_allowed = true;
         read_index = 0;

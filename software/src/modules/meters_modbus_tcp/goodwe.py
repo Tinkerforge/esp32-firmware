@@ -51,8 +51,23 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Inverter Grid',
+        'name': 'Goodwe Inverter Grid Detect',
         'virtual_meter': ('Goodwe Inverter', 'Grid'),
+        'default_location': 'Grid',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Active Energy Total Buy Total [0.01 kWh]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 36120,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Goodwe Inverter Grid {variant}',
+        'variants': ['32bit Energy', '64bit Energy'],
         'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
@@ -162,18 +177,84 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
-                'name': 'Active Energy Total Sell [0.01 kWh]',
+                'name': 'Energy Total Sell [0.001 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 36015,
+                'value_type': 'F32BE',
+                'scale_factor': 0.001,
+                'variants': ['32bit Energy'],
+            },
+            {
+                'name': 'Energy Total Buy [0.001 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 36017,
+                'value_type': 'F32BE',
+                'scale_factor': 0.001,
+                'variants': ['32bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Sell R [0.01 kWh]',
+                'value_id': 'EnergyActiveL1Export',
+                'start_address': 36092,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Sell S [0.01 kWh]',
+                'value_id': 'EnergyActiveL2Export',
+                'start_address': 36096,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Sell T [0.01 kWh]',
+                'value_id': 'EnergyActiveL3Export',
+                'start_address': 36100,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Sell Total [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 36104,
                 'value_type': 'U64BE',
                 'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
             },
             {
-                'name': 'Active Energy Total Buy [0.01 kWh]',
+                'name': 'Active Energy Total Buy R [0.01 kWh]',
+                'value_id': 'EnergyActiveL1Import',
+                'start_address': 36108,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Buy S [0.01 kWh]',
+                'value_id': 'EnergyActiveL2Import',
+                'start_address': 36112,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Buy T [0.01 kWh]',
+                'value_id': 'EnergyActiveL3Import',
+                'start_address': 361016,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
+            },
+            {
+                'name': 'Active Energy Total Buy Total [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 36120,
                 'value_type': 'U64BE',
                 'scale_factor': 0.01,
+                'variants': ['64bit Energy'],
             },
         ],
     },
@@ -228,6 +309,9 @@ specs = [
             {
                 'name': 'Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
+                # FIXME: this is the combined energy of all batteries. this is okay if there is
+                # only one battery or both are read combined, but reading both batteries individually
+                # results in reporting the combined energy twice
                 'start_address': 35206,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -235,6 +319,9 @@ specs = [
             {
                 'name': 'Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
+                # FIXME: this is the combined energy of all batteries. this is okay if there is
+                # only one battery or both are read combined, but reading both batteries individually
+                # results in reporting the combined energy twice
                 'start_address': 35209,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -283,6 +370,9 @@ specs = [
             {
                 'name': 'Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
+                # FIXME: this is the combined energy of all batteries. this is okay if there is
+                # only one battery or both are read combined, but reading both batteries individually
+                # results in reporting the combined energy twice
                 'start_address': 35206,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
@@ -290,6 +380,9 @@ specs = [
             {
                 'name': 'Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
+                # FIXME: this is the combined energy of all batteries. this is okay if there is
+                # only one battery or both are read combined, but reading both batteries individually
+                # results in reporting the combined energy twice
                 'start_address': 35209,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,

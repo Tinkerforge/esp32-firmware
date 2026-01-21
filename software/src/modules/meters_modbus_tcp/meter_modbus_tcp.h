@@ -104,6 +104,7 @@ private:
     bool is_deye_hybrid_inverter_pv_meter() const;
     bool is_alpha_ess_hybrid_inverter_pv_meter() const;
     bool is_shelly_pro_xem_monophase() const;
+    bool is_goodwe_inverter_grid_meter() const;
     bool is_goodwe_inverter_battery_meter() const;
     bool is_goodwe_inverter_pv_meter() const;
     bool is_solax_hybrid_inverter_pv_meter() const;
@@ -147,6 +148,13 @@ private:
     uint16_t register_buffer[METER_MODBUS_TCP_REGISTER_BUFFER_SIZE];
     size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
     size_t register_start_address;
+
+    enum class GoodweGridDetectState {
+        Idle,
+        Reading,
+        Detected32bitEnergy,
+        Detected64bitEnergy,
+    };
 
     union {
         // Sungrow hybrid inverter
@@ -251,6 +259,7 @@ private:
         // GoodWe inverter
         struct {
             GoodweInverterVirtualMeter virtual_meter;
+            GoodweGridDetectState grid_detect_state;
             int battery_1_mode;
             int battery_2_mode;
             float battery_1_voltage;
