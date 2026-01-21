@@ -13,7 +13,7 @@ let x = {
             "enable_solar_forecast_muted": /*FFN*/(api_url: string) => <>Die Prognose wird von <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> abgefragt.</>/*NF*/,
             "planes": "PV-Flächen",
             "plane": "PV-Fläche",
-            "no_data": "Keine Daten vorhanden!",
+            "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",
             "plane_config_name": "Anzeigename",
             "plane_config_latitude": "Breitengrad",
