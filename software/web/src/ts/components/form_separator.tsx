@@ -47,7 +47,7 @@ export class FormSeparator extends Component<FormSeparatorProps, {}> {
                 <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
                     <div class="pb-3">
                         <div class="card">
-                            <div class="card-body p-3 form-row-help" style="background: #ffffe7;">
+                            <div class="card-body p-3 form-row-help">
                                 {props.help}
                             </div>
                         </div>
