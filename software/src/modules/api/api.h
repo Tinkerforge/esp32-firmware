@@ -215,6 +215,7 @@ public:
     static const char *build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len);
 
 private:
+    void push_state_updates();
     bool already_registered(const char *path, size_t path_len, const char *api_type);
 
     void executeCommand(const CommandRegistration &reg, Config::ConfUpdate payload);

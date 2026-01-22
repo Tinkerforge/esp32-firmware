@@ -87,62 +87,12 @@ void API::setup()
     version.get("config")->updateString(config_version);
     version.get("config_type")->updateString(config_type);
 
-    task_scheduler.scheduleUncancelable([this]() {
-        bool skip_high_latency_states = state_update_counter % 4 != 0;
-        ++state_update_counter;
-
-        const size_t states_count = states.size();
-
-        for (size_t state_idx = 0; state_idx < states_count; ++state_idx) {
-            const auto &reg = states[state_idx];
-
-            if (skip_high_latency_states && !reg.get_low_latency())
-                continue;
-
-            const size_t backend_count = this->backends.size();
-
-            uint8_t to_send = reg.config->was_updated(static_cast<uint8_t>((1 << backend_count) - 1));
-            // If the config was not updated for any API, we don't have to serialize the payload.
-            if (to_send == 0) {
-                continue;
-            }
-
-            uint8_t sent = 0;
-            String payload;
-
-            for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
-                if ((to_send & (1 << backend_idx)) == 0)
-                    continue;
-
-                switch (this->backends[backend_idx]->wantsStateUpdate(state_idx)) {
-                    case IAPIBackend::WantsStateUpdate::Later:
-                        break;
-
-                    case IAPIBackend::WantsStateUpdate::No:
-                        sent |= 1 << backend_idx;
-                        break;
-
-
-                    case IAPIBackend::WantsStateUpdate::AsString:
-                        if (payload.length() == 0) {
-                            // This assumes that no config can be serialized to an empty string.
-                            // This will probably hold because an empty string is not valid JSON.
-                            payload = reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
-                        }
-                        [[fallthrough]];
-
-                    case IAPIBackend::WantsStateUpdate::AsConfig:
-                        if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
-                            sent |= 1 << backend_idx;
-                        break;
-
-                    default: break;
-                }
-            }
-
-            reg.config->clear_updated(sent);
-        }
-    }, 250_ms, 250_ms);
+    // Use nested tasks to schedule the first API state push after all other start-up tasks have finished at the beginning of the loop stage.
+    task_scheduler.scheduleOnce([this]() {
+        task_scheduler.scheduleUncancelable([this]() {
+            push_state_updates();
+        }, 250_ms);
+    });
 
     reg_collector = new RegistrationCollector;
     reg_collector->states.reserve(300);
@@ -153,6 +103,64 @@ void API::setup()
     this->responses = std::span{reg_collector->responses.data(), reg_collector->responses.size()};
 
     initialized = true;
+}
+
+void API::push_state_updates()
+{
+    bool skip_high_latency_states = state_update_counter % 4 != 0;
+    ++state_update_counter;
+
+    const size_t states_count = states.size();
+
+    for (size_t state_idx = 0; state_idx < states_count; ++state_idx) {
+        const auto &reg = states[state_idx];
+
+        if (skip_high_latency_states && !reg.get_low_latency())
+            continue;
+
+        const size_t backend_count = this->backends.size();
+
+        uint8_t to_send = reg.config->was_updated(static_cast<uint8_t>((1 << backend_count) - 1));
+        // If the config was not updated for any API, we don't have to serialize the payload.
+        if (to_send == 0) {
+            continue;
+        }
+
+        uint8_t sent = 0;
+        String payload;
+
+        for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
+            if ((to_send & (1 << backend_idx)) == 0)
+                continue;
+
+            switch (this->backends[backend_idx]->wantsStateUpdate(state_idx)) {
+                case IAPIBackend::WantsStateUpdate::Later:
+                    break;
+
+                case IAPIBackend::WantsStateUpdate::No:
+                    sent |= 1 << backend_idx;
+                    break;
+
+
+                case IAPIBackend::WantsStateUpdate::AsString:
+                    if (payload.length() == 0) {
+                        // This assumes that no config can be serialized to an empty string.
+                        // This will probably hold because an empty string is not valid JSON.
+                        payload = reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
+                    }
+                    [[fallthrough]];
+
+                case IAPIBackend::WantsStateUpdate::AsConfig:
+                    if (this->backends[backend_idx]->pushStateUpdate(state_idx, payload, reg.path))
+                        sent |= 1 << backend_idx;
+                    break;
+
+                default: break;
+            }
+        }
+
+        reg.config->clear_updated(sent);
+    }
 }
 
 String API::getLittleFSConfigPath(const String &path, bool tmp) {

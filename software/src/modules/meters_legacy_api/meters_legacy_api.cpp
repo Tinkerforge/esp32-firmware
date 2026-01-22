@@ -221,10 +221,6 @@ void MetersLegacyAPI::setup()
 
     legacy_all_values_update = Config::Tuple(METER_ALL_VALUES_LEGACY_COUNT, Config::Float(NAN));
     // END from old api_meter.cpp pre_setup()
-
-    task_scheduler.scheduleOnce([this]() {
-        this->show_blank_value_id_update_warnings = true;
-    }, 250_ms);
 }
 
 void MetersLegacyAPI::register_urls()
@@ -354,6 +350,10 @@ void MetersLegacyAPI::register_events()
             return on_value_ids_change(event_value_ids);
         });
     }
+
+    task_scheduler.scheduleOnce([this]() {
+        this->show_blank_value_id_update_warnings = true;
+    }, 250_ms);
 }
 
 uint32_t MetersLegacyAPI::get_linked_meter_slot()
