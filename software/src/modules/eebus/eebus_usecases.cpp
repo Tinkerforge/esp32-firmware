@@ -63,29 +63,23 @@ DeviceDiagnosisHeartbeatDataType EebusHeartBeat::read_heartbeat()
 
 void EebusHeartBeat::initialize_heartbeat_on_feature(FeatureAddressType &target, Usecases sending_usecase, bool expect_notify)
 {
-    for (Usecases uc : usecases_enabled) {
-        if (uc == sending_usecase) {
-            // Heartbeat already initialized for this usecase
-            return;
-        }
-    }
-    usecases_enabled.push_back(sending_usecase);
     heartbeat_targets.push_back(target);
     // Subscribe to heartbeat notifications from target
     if (expect_notify) {
         task_scheduler.scheduleOnce(
-            [this, target]() mutable {
-                auto connection = EEBusUseCases::get_spine_connection(target);
-                // The other device should only have on device diagnosis feature. We look for it
-                auto device_diag_peer = connection->get_address_of_feature(target.entity.get(), FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
-                FeatureAddressType sending_feature = get_feature_address(feature_addresses.at(FeatureTypeEnumType::Generic));
-                if (device_diag_peer.feature.has_value()) {
-                    eebus.trace_fmtln("Attempted to subscribe to a heartbeat but peer has no heartbeat feature");
+            [=, this]() mutable {
+                const auto connection = EEBusUseCases::get_spine_connection(target);
+                if (connection == nullptr)
+                    return;
+                FeatureAddressType remote_device_diag = connection->get_address_of_feature(target.entity.get(), FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
+                FeatureAddressType local_client = get_feature_address(feature_addresses.at(FeatureTypeEnumType::Generic));
+                if (connection->is_subscribed(local_client, remote_device_diag)) {
+                    eebus.trace_fmtln("EebusHeartBeat: Already subscribed to heartbeat notifications from target device %s", EEBUS_USECASE_HELPERS::spine_address_to_string(remote_device_diag).c_str());
                     return;
                 }
-                send_full_read(feature_addresses.at(FeatureTypeEnumType::Generic), sending_feature, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
-                eebus.usecases->node_management.subscribe_to_feature(sending_feature, target, FeatureTypeEnumType::DeviceDiagnosis);
-                connection->heartbeat_subscription_active = true;
+                eebus.trace_fmtln("EebusHeartBeat: Subscribing to heartbeat notifications from target device %s", EEBUS_USECASE_HELPERS::spine_address_to_string(remote_device_diag).c_str());
+                send_full_read(feature_addresses.at(FeatureTypeEnumType::Generic), remote_device_diag, SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData);
+                eebus.usecases->node_management.subscribe_to_feature(local_client, remote_device_diag, FeatureTypeEnumType::DeviceDiagnosis);
             },
             0_ms);
     }
@@ -108,8 +102,6 @@ MessageReturn EebusHeartBeat::handle_message(HeaderType &header, SpineDataTypeHa
     switch (header.cmdClassifier.get()) {
         case CmdClassifierType::read:
             eebus.trace_fmtln("EebusHeartBeat: Command identified as DeviceDiagnosisHeartbeatData with a read command");
-            emit_heartbeat_received(data->devicediagnosisheartbeatdatatype.get());
-
             response["deviceDiagnosisHeartbeatData"] = read_heartbeat();
             return {true, true, CmdClassifierType::reply};
         case CmdClassifierType::notify:
@@ -273,6 +265,12 @@ MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineData
         case SpineDataTypeHandler::Function::nodeManagementSubscriptionData:
         case SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall:
         case SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall:
+            if (header.cmdClassifier.get() == CmdClassifierType::reply || header.cmdClassifier.get() == CmdClassifierType::notify) {
+                if (const auto conn = EEBusUseCases::get_spine_connection(header.addressSource.get())) {
+                    conn->update_subscription_data(data->nodemanagementsubscriptiondatatype.get());
+                }
+                return {true, false};
+            }
             eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
             return handle_subscription(header, data, response);
 
@@ -481,8 +479,7 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
             // We are supposed consider the featuretype of the feature
             //SpineOptional<FeatureTypeEnumType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
-            // TODO: Check if anything else is bound to the feature. Only one device may be bound. If the connection does still exist, we reject the binding request. Otherwise the binding is cleared up
-            if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get())) {
+            if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get()) && eebus.usecases->get_spine_connection(header.addressSource.get()) != nullptr) {
                 eebus.trace_fmtln("Binding requested but is already bound");
             } else {
                 binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
@@ -2231,6 +2228,13 @@ void LpcUsecase::receive_heartbeat_timeout()
     update_state();
     update_api();
 }
+void LpcUsecase::inform_spineconnection_usecase_update(SpineConnection *conn)
+{
+    auto peers = conn->get_address_of_feature(FeatureTypeEnumType::DeviceDiagnosis, RoleType::client, "limitationOfPowerConsumption", "EnergyGuard");
+    for (FeatureAddressType &peer : peers) {
+        eebus.usecases->evse_heartbeat.initialize_heartbeat_on_feature(peer, Usecases::LPC, true);
+    }
+}
 
 void LpcUsecase::init_state()
 {
@@ -3431,5 +3435,18 @@ String spine_address_to_string(const FeatureAddressType &address)
         out += std::to_string(address.feature.get());
     }
     return {out.c_str()};
+}
+bool compare_spine_addresses(const FeatureAddressType &addr1, const FeatureAddressType &addr2)
+{
+    if (addr1.device.get() != addr2.device) {
+        return false;
+    }
+    if (addr1.entity.get() != addr2.entity) {
+        return false;
+    }
+    if (addr1.feature.get() != addr2.feature) {
+        return false;
+    }
+    return true;
 }
 } // namespace EEBUS_USECASE_HELPERS

@@ -120,6 +120,8 @@ String unix_to_iso_timestamp(time_t unix_time);
 
 String spine_address_to_string(const FeatureAddressType &address);
 
+bool compare_spine_addresses(const FeatureAddressType &addr1, const FeatureAddressType &addr2);
+
 } // namespace EEBUS_USECASE_HELPERS
 
 // These classes contain the data generator functions for all usecase entities.
@@ -260,11 +262,25 @@ public:
     [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features.
     [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
 
+    /**
+     * If the usecase utilizes heartbeats, this function is called when a heartbeat is received and should be implemented on the usecase.
+     */
     virtual void receive_heartbeat()
     {
     }
 
+    /**
+    * If the usecase utilizes heartbeats, this function is called when a heartbeat timeout occurs and should be implemented on the usecase.
+    */
     virtual void receive_heartbeat_timeout()
+    {
+    }
+
+    /**
+     * When the supported usecases or supported entities change, this function is called to inform the usecase about the change.
+     * @param conn
+     */
+    virtual void inform_spineconnection_usecase_update(SpineConnection *conn)
     {
     }
 
@@ -844,6 +860,8 @@ public:
     }
     void receive_heartbeat() override;
     void receive_heartbeat_timeout() override;
+
+    void inform_spineconnection_usecase_update(SpineConnection *conn) override;
 
 private:
     /**

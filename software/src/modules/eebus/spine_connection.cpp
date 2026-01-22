@@ -132,6 +132,13 @@ bool SpineConnection::check_known_address(const FeatureAddressType &address)
             return true;
         }
     }
+    if (detailed_discovery_data_received) {
+        for (auto feature_info : detailed_discovery_data.featureInformation.get()) {
+            if (feature_info.description->featureAddress.get().device.get() == address.device.get() && feature_info.description->featureAddress.get().feature.get() == address.feature.get() && feature_info.description->featureAddress.get().entity.get() == address.entity.get()) {
+                return true;
+            }
+        }
+    }
     return false;
 }
 
@@ -173,6 +180,17 @@ void SpineConnection::eebus_active(bool active) const
     }
     eebus.update_peers_config();
 }
+bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType remote)
+{
+    if (!subscription_data_received)
+        return false;
+    for (const auto &subscription : subscription_data.subscriptionEntry.get()) {
+        if (EEBUS_USECASE_HELPERS::compare_spine_addresses(subscription.clientAddress.get(), local) && EEBUS_USECASE_HELPERS::compare_spine_addresses(subscription.serverAddress.get(), remote)) {
+            return true;
+        }
+    }
+    return true;
+}
 std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
 {
     if (!detailed_discovery_data_received || !use_case_data_received) {
@@ -195,7 +213,7 @@ std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureT
     }
     return feature_addresses;
 }
-FeatureAddressType SpineConnection::get_address_of_feature(const std::vector<AddressEntityType>& entity_target, FeatureTypeEnumType feature, RoleType role)
+FeatureAddressType SpineConnection::get_address_of_feature(const std::vector<AddressEntityType> &entity_target, FeatureTypeEnumType feature, RoleType role)
 {
     if (!detailed_discovery_data_received) {
         eebus.trace_fmtln("SPINE: WARNING: Attempted to get a feature address without full discovery data");
@@ -242,4 +260,11 @@ void SpineConnection::check_ack_expired()
             ack_waiting.erase(key);
         }
     }
+}
+void SpineConnection::inform_usecases_supported_functionalities()
+{
+    if (detailed_discovery_data_received && use_case_data_received)
+        for (EebusUsecase *uc : eebus.usecases->usecase_list) {
+            uc->inform_spineconnection_usecase_update(this);
+        }
 }

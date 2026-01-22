@@ -68,7 +68,7 @@ public:
     void check_message_counter();
 
     /**
-     * Check if the peer of this connection has used this address as sender before.
+     * Check if the peer of this connection has used this address as sender before or if its otherwise known to this connection.
      * @param address The address to check if it is known.
      * @return True if the address is known, false if it is not known.
      */
@@ -102,12 +102,21 @@ public:
     {
         detailed_discovery_data_received = true;
         detailed_discovery_data = data;
+        inform_usecases_supported_functionalities();
     }
     void update_use_case_data(const NodeManagementUseCaseDataType &data)
     {
         use_case_data_received = true;
         use_case_data = data;
+        inform_usecases_supported_functionalities();
     }
+    void update_subscription_data(const NodeManagementSubscriptionDataType &data)
+    {
+        subscription_data_received = true;
+        subscription_data = data;
+    }
+
+    bool is_subscribed(FeatureAddressType local, FeatureAddressType remote);
     /**
      * Gets the address of a feature for a given role and use case.
      * @param feature The feature to get the address for.
@@ -125,17 +134,18 @@ public:
     * @param role What role the feature should have. Defaults to server.
     * @return
     */
-    FeatureAddressType get_address_of_feature(const std::vector<AddressEntityType>& entity_target, FeatureTypeEnumType feature, RoleType role = RoleType::server);
+    FeatureAddressType get_address_of_feature(const std::vector<AddressEntityType> &entity_target, FeatureTypeEnumType feature, RoleType role = RoleType::server);
 
     // Subscription state
-    bool heartbeat_subscription_active = false;
 
 private:
     // This is to hold the state of the connection regarding discovery and usecase information.
     NodeManagementDetailedDiscoveryDataType detailed_discovery_data{};
     NodeManagementUseCaseDataType use_case_data{};
+    NodeManagementSubscriptionDataType subscription_data{};
     bool detailed_discovery_data_received = false;
     bool use_case_data_received = false;
+    bool subscription_data_received = false;
     bool initial_peer_discovery_started = false;
     void initial_peer_discovery();
 
@@ -151,4 +161,6 @@ private:
     uint64_t ack_check_timer = 0;
 
     uint64_t update_api_timer = 0;
+
+    void inform_usecases_supported_functionalities();
 };
