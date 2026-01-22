@@ -183,7 +183,7 @@ void EMV2::register_urls()
 {
     this->DeviceModule::register_urls();
 
-    api.addCommand("energy_manager/outputs_update", &outputs_update, {}, [this](String &errmsg) {
+    api.addCommand("energy_manager/outputs_update", &outputs_update, {}, [this](Language /*language*/, String &errmsg) {
         // 2x SG Ready, 2x Relay
         uint8_t new_values[4];
         this->outputs_update.fillUint8Array(new_values, ARRAY_SIZE(new_values));

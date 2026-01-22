@@ -78,7 +78,18 @@ void System::pre_setup()
     i18n_config = ConfigRoot{Config::Object({
         {"language", Config::Enum(Language::German)},
         {"detect_browser_language", Config::Bool(true)}
-    })};
+    }),
+    [this](Config &update, ConfigSource source) -> String {
+        Language language = update.get("language")->asEnum<Language>();
+
+        if (language == Language::Default) {
+            return "Default is not allowed";
+        }
+
+        api.set_default_language(language);
+
+        return "";
+    }};
 
     esp_reset_reason_t reason = esp_reset_reason();
 
@@ -108,7 +119,7 @@ void System::register_urls()
         return req.send_html(200, recovery_html_data, recovery_html_length);
     });
 
-    api.addCommand("factory_reset", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
+    api.addCommand("factory_reset", Config::Confirm(), {Config::confirm_key}, [this](Language /*language*/, String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
             errmsg = "Factory reset NOT requested";
             return;
@@ -121,7 +132,7 @@ void System::register_urls()
         }, 3_s);
     }, true);
 
-    api.addCommand("config_reset", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
+    api.addCommand("config_reset", Config::Confirm(), {Config::confirm_key}, [this](Language /*language*/, String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
             errmsg = "Config reset NOT requested";
             return;
@@ -151,7 +162,7 @@ void System::register_urls()
         }, 3_s);
     }, true);
 
-    api.addCommand("system/hide_last_reset_warning", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("system/hide_last_reset_warning", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         last_reset.get("show_warning")->updateBool(false);
     }, true);
 }

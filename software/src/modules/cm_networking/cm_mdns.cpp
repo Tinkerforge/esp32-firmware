@@ -143,7 +143,7 @@ static void add_wem_services() {
 
 void CMNetworking::register_urls()
 {
-    api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("charge_manager/scan", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
 #if MODULE_NETWORK_AVAILABLE()
         if (!network.is_mdns_started()) {
             errmsg = "Cannot scan for chargers: mDNS is disabled or failed to start.";

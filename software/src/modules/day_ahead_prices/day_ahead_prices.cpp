@@ -149,7 +149,7 @@ void DayAheadPrices::register_urls()
     }, PRICE_UPDATE_INTERVAL, 0_ms, true);
 
 #ifdef DEBUG_FS_ENABLE
-    api.addCommand("day_ahead_prices/debug_price_update", &debug_price_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("day_ahead_prices/debug_price_update", &debug_price_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         const int32_t fake_price = debug_price_update.asInt();
 
         state.get("current_price")->updateInt(fake_price);

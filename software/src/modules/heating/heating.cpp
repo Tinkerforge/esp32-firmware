@@ -119,7 +119,7 @@ void Heating::register_urls()
 {
     api.addPersistentConfig("heating/config", &config);
     api.addState("heating/state",             &state);
-    api.addCommand("heating/reset_holding_time", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("heating/reset_holding_time", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->last_sg_ready_change = 0;
         this->update();
     }, true);
@@ -127,7 +127,7 @@ void Heating::register_urls()
     // We dont want a persistent config since we dont want to save this across reboots.
     // This is why the config is build manually here.
     api.addState("heating/sgr_blocking_override", &sgr_blocking_override);
-    api.addCommand("heating/sgr_blocking_override_update", &sgr_blocking_override, {}, [this](String &/*errmsg*/) {
+    api.addCommand("heating/sgr_blocking_override_update", &sgr_blocking_override, {}, [this](Language /*language*/, String &/*errmsg*/) {
         task_scheduler.cancel(this->override_task_id);
         this->override_task_id = 0;
 
@@ -150,7 +150,7 @@ void Heating::register_urls()
         }, timeout);
     }, true);
 
-    api.addCommand("heating/toggle_sgr_blocking", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("heating/toggle_sgr_blocking", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         em_v2.set_sg_ready_output(0, !sg_ready_output_0);
         last_sg_ready_change = rtc.timestamp_minutes();
@@ -158,7 +158,7 @@ void Heating::register_urls()
         state.get("sgr_blocking")->updateBool(!state.get("sgr_blocking")->asBool());
     }, true);
 
-    api.addCommand("heating/toggle_sgr_extended", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("heating/toggle_sgr_extended", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         if (this->is_p14enwg_active()) {
             errmsg = "Cannot toggle SG Ready output 2 when §14 EnWG is active.";
             return;

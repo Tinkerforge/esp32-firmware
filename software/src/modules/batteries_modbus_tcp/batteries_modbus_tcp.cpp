@@ -133,7 +133,7 @@ void BatteriesModbusTCP::pre_setup()
 
 void BatteriesModbusTCP::register_urls()
 {
-    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](Language /*language*/, String &errmsg) {
         BatteryModbusTCPTableID table_id = test_config.get("table")->getTag<BatteryModbusTCPTableID>();
         Config *table_config = static_cast<Config *>(test_config.get("table")->get());
 
@@ -269,7 +269,7 @@ void BatteriesModbusTCP::register_urls()
 
     api.addState("batteries_modbus_tcp/test_state", &test_state);
 
-    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language /*language*/, String &errmsg) {
         if (test == nullptr) {
             return;
         }
@@ -284,7 +284,7 @@ void BatteriesModbusTCP::register_urls()
         test->last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("batteries_modbus_tcp/test_stop", &test_stop_config, {}, [this](String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_stop", &test_stop_config, {}, [this](Language /*language*/, String &errmsg) {
         if (test == nullptr) {
             return;
         }

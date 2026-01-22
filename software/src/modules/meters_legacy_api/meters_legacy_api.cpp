@@ -242,11 +242,11 @@ void MetersLegacyAPI::register_urls()
     api.addState("meter/last_reset", &legacy_last_reset);
     // meter/error_counters registered in meters module
 
-    api.addCommand("meter/reset", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("meter/reset", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         errmsg = api.callCommand(meters.get_path(this->linked_meter_slot, Meters::PathType::Reset).c_str());
     }, true);
 
-    api.addCommand("meter/state_update", &legacy_state_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("meter/state_update", &legacy_state_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (!this->meter_writable) {
             logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
@@ -254,7 +254,7 @@ void MetersLegacyAPI::register_urls()
         logger.printfln("Meter %hhu state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
     }, false);
 
-    api.addCommand("meter/values_update", &legacy_values_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("meter/values_update", &legacy_values_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (!this->meter_writable) {
             logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
@@ -274,7 +274,7 @@ void MetersLegacyAPI::register_urls()
         meters.finish_update(this->linked_meter_slot);
     }, false);
 
-    api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (!this->meter_writable) {
             logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
@@ -298,7 +298,7 @@ void MetersLegacyAPI::register_urls()
         }
     }, false);
 
-    api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (!this->meter_writable) {
             logger.printfln("Meter in slot %hhu cannot be updated via the API. Only an API meter can be updated", this->linked_meter_slot);
             return;

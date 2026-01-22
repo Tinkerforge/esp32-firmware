@@ -161,7 +161,7 @@ String API::getLittleFSConfigPath(const String &path, bool tmp) {
     return (tmp ? String("/config/.") : String("/config/")) + path_copy;
 }
 
-void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action)
 {
     if (boot_stage != BootStage::REGISTER_URLS)
         esp_system_abort("Registering APIs is only allowed in register_urls!");
@@ -221,7 +221,7 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 #endif
 }
 
-void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &)> &&callback, bool is_action)
+void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action)
 {
     this->addCommand(perm_strdup(path.c_str()), config, keys_to_censor_in_debug_report, std::move(callback), is_action);
 }
@@ -359,12 +359,12 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
         ktc.push_back(k);
     }
 
-    addCommand(path + "_update", config, ktc, [path, config, conf_modified](String &/*errmsg*/) {
+    addCommand(path + "_update", config, ktc, [path, config, conf_modified](Language /*language*/, String &/*errmsg*/) {
         API::writeConfig(path, config);
         conf_modified->get("modified")->updateUint(3);
     }, false);
 
-    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified](String &/*errmsg*/) {
+    addCommand(path + "_reset", Config::Null(), {}, [path, conf_modified](Language /*language*/, String &/*errmsg*/) {
         API::removeConfig(path);
         conf_modified->get("modified")->updateUint(1);
     }, true);
@@ -372,7 +372,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
     return true;
 }
 
-void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
+void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, Language language, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
     if (!running_in_main_task()) {
         logger.printfln("Don't use API::callResponse in non-main thread!");
         return;
@@ -398,10 +398,14 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_
         }
     }
 
-    reg.callback(response, response_ownership, response_owner_id);
+    if (language == Language::Default) {
+        language = default_language;
+    }
+
+    reg.callback(language, response, response_ownership, response_owner_id);
 }
 
-void API::addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback)
+void API::addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, ResponseCallback &&callback)
 {
     if (boot_stage != BootStage::REGISTER_URLS)
         esp_system_abort("Registering APIs is only allowed in register_urls!");
@@ -911,7 +915,7 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_len, const Config::Key *config_path, size_t config_path_len)
+String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_len, Language language, const Config::Key *config_path, size_t config_path_len)
 {
     if (running_in_main_task()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
@@ -919,8 +923,12 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
 
     String result;
 
+    if (language == Language::Default) {
+        language = default_language;
+    }
+
     auto await_result = task_scheduler.await(
-        [&result, reg, payload, payload_len, config_path, config_path_len]() mutable {
+        [&result, reg, payload, payload_len, language, config_path, config_path_len]() mutable {
             if (payload == nullptr && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
                 return;
@@ -934,7 +942,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
                 result = "suffix not allowed for null configs";
             }
 
-            reg.callback(result);
+            reg.callback(language, result);
         });
 
     if (await_result == TaskScheduler::AwaitResult::Timeout) {
@@ -947,7 +955,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, const std::function<void(const String &errmsg)> &done_cb, API::SuffixPath &&suffix_path)
+void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, Language language, const std::function<void(const String &errmsg)> &done_cb, API::SuffixPath &&suffix_path)
 {
     if (running_in_main_task()) {
         String err = "callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!";
@@ -968,8 +976,12 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
     // so we *still* have to do this by hand.
     char *suffix_ptr = suffix_path.suffix.release();
 
+    if (language == Language::Default) {
+        language = default_language;
+    }
+
     task_scheduler.scheduleOnce(
-        [reg, payload_copy, payload_len, done_cb, suffix_ptr, path = suffix_path.path]() mutable {
+        [reg, payload_copy, payload_len, language, done_cb, suffix_ptr, path = suffix_path.path]() mutable {
             String result;
 
             defer {
@@ -990,11 +1002,11 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
                 }
             }
 
-            reg.callback(result);
+            reg.callback(language, result);
         });
 }
 
-String API::callCommand(const char *path, const Config::ConfUpdate &payload)
+String API::callCommand(const char *path, const Config::ConfUpdate &payload, Language language)
 {
     if (!running_in_main_task()) {
         return "Use char *, size_t overload of callCommand in non-main thread!";
@@ -1032,7 +1044,11 @@ String API::callCommand(const char *path, const Config::ConfUpdate &payload)
         return error;
     }
 
-    reg->callback(error);
+    if (language == Language::Default) {
+        language = default_language;
+    }
+
+    reg->callback(language, error);
 
     return error;
 }

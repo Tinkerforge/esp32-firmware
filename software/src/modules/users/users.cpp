@@ -537,7 +537,7 @@ void Users::register_urls()
         }});
     }
 
-    api.addCommand("users/modify", &modify, {"digest_hash", "display_name", "username"}, [this](String &errmsg) {
+    api.addCommand("users/modify", &modify, {"digest_hash", "display_name", "username"}, [this](Language /*language*/, String &errmsg) {
         auto id = modify.get("id")->asUint();
 
         Config *user = nullptr;
@@ -580,7 +580,7 @@ void Users::register_urls()
     }, true);
 
     api.addState("users/config", &config, {"digest_hash"}, {"display_name", "username"});
-    api.addCommand("users/add", &add, {"digest_hash", "display_name", "username"}, [this](String &/*errmsg*/) {
+    api.addCommand("users/add", &add, {"digest_hash", "display_name", "username"}, [this](Language /*language*/, String &/*errmsg*/) {
         auto user = config.get("users")->add();
 
         user->get("id")->updateUint(add.get("id")->asUint());
@@ -596,7 +596,7 @@ void Users::register_urls()
         this->rename_user(user->get("id")->asUint(), user->get("username")->asString(), user->get("display_name")->asString());
     }, true);
 
-    api.addCommand("users/remove", &remove, {}, [this](String &/*errmsg*/) {
+    api.addCommand("users/remove", &remove, {}, [this](Language /*language*/, String &/*errmsg*/) {
         size_t idx = std::numeric_limits<size_t>::max();
         for (size_t i = 0; i < config.get("users")->count(); ++i) {
             if (config.get("users")->get(i)->get("id")->asUint() == remove.get("id")->asUint()) {
@@ -632,7 +632,7 @@ void Users::register_urls()
         }
     }, true);
 
-    api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("users/http_auth_update", &http_auth_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enable = http_auth_update.get("enabled")->asBool();
         if (!enable) {
             server.runInHTTPThread([](void *arg) {

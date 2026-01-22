@@ -56,7 +56,7 @@ void EMSDcard::register_urls()
 {
     api.addState("energy_manager/sdcard_state", &state);
 
-    api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
+    api.addCommand("energy_manager/sdcard_format", Config::Confirm(), {Config::confirm_key}, [this](Language /*language*/, String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
             errmsg = "SD card format NOT initiated";
             return;

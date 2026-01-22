@@ -93,7 +93,7 @@ void MetersSunSpec::pre_setup()
 
 void MetersSunSpec::register_urls()
 {
-    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](String &errmsg) {
+    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](Language /*language*/, String &errmsg) {
         if (scan != nullptr) {
             errmsg = "Another scan is already in progress, please try again later!";
             return;
@@ -117,7 +117,7 @@ void MetersSunSpec::register_urls()
         scan_printfln("Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &errmsg) {
+    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](Language /*language*/, String &errmsg) {
         if (scan == nullptr) {
             return;
         }
@@ -132,7 +132,7 @@ void MetersSunSpec::register_urls()
         scan->last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](String &errmsg) {
+    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](Language /*language*/, String &errmsg) {
         if (scan == nullptr) {
             return;
         }

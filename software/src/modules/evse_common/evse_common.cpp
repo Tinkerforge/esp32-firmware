@@ -567,7 +567,7 @@ void EvseCommon::register_urls()
     }, 100_ms, 100_ms);
 
     api.addState("evse/charge_mode", &charge_mode);
-    api.addCommand("evse/charge_mode_update", &charge_mode, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/charge_mode_update", &charge_mode, {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->request_charge_mode_until = now_us() + CHARGE_MODE_REQUEST_TIMEOUT;
     }, false);
 
@@ -602,18 +602,18 @@ void EvseCommon::register_urls()
     api.addState("evse/indicator_led", &indicator_led);
 
     //Actions
-    api.addCommand("evse/stop_charging", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/stop_charging", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
             backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 0);
     }, true);
 
-    api.addCommand("evse/start_charging", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/start_charging", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         if (state.get("iec61851_state")->asUint() != IEC_STATE_A)
             backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOSTART_BUTTON, 32000);
     }, true);
 
     api.addState("evse/external_current", &external_current);
-    api.addCommand("evse/external_current_update", &external_current_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/external_current_update", &external_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         const uint32_t current = external_current_update.get("current")->asUint();
         // Only reset the watchdog if this was a "valid" current.
         // We don't want to return an error if this current is invalid to not break home automation UIs.
@@ -623,19 +623,19 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/external_clear_on_disconnect", &external_clear_on_disconnect);
-    api.addCommand("evse/external_clear_on_disconnect_update", &external_clear_on_disconnect_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/external_clear_on_disconnect_update", &external_clear_on_disconnect_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         backend->set_charging_slot_clear_on_disconnect(CHARGING_SLOT_EXTERNAL, external_clear_on_disconnect_update.get("clear_on_disconnect")->asBool());
     }, false);
 
     api.addState("evse/management_current", &management_current);
 
     api.addState("evse/boost_mode", &boost_mode);
-    api.addCommand("evse/boost_mode_update", &boost_mode_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/boost_mode_update", &boost_mode_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         backend->set_boost_mode(boost_mode_update.get("enabled")->asBool());
     }, true);
 
     api.addState("evse/auto_start_charging", &auto_start_charging);
-    api.addCommand("evse/auto_start_charging_update", &auto_start_charging_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/auto_start_charging_update", &auto_start_charging_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         // 1. set auto start
         // 2. make persistent
         // 3. fake a start/stop charging
@@ -662,14 +662,14 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/global_current", &global_current);
-    api.addCommand("evse/global_current_update", &global_current_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/global_current_update", &global_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         uint16_t current = global_current_update.get("current")->asUint();
         backend->set_charging_slot_max_current(CHARGING_SLOT_GLOBAL, current);
         apply_slot_default(CHARGING_SLOT_GLOBAL, current, true, false);
     }, false);
 
     api.addState("evse/management_enabled", &management_enabled);
-    api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/management_enabled_update", &management_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = management_enabled_update.get("enabled")->asBool();
 
         if (enabled == management_enabled.get("enabled")->asBool())
@@ -688,7 +688,7 @@ void EvseCommon::register_urls()
 
     api.addState("evse/user_current", &user_current);
     api.addState("evse/user_enabled", &user_enabled);
-    api.addCommand("evse/user_enabled_update", &user_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/user_enabled_update", &user_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = user_enabled_update.get("enabled")->asBool();
 
         if (enabled == user_enabled.get("enabled")->asBool())
@@ -715,7 +715,7 @@ void EvseCommon::register_urls()
     // However removing the API is a breaking change and calling evse/external_enabled_update with false
     // should set the slot to 32 A to unblock the charger.
     api.addState("evse/external_enabled", &external_enabled);
-    api.addCommand("evse/external_enabled_update", &external_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/external_enabled_update", &external_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = external_enabled_update.get("enabled")->asBool();
 
         if (enabled == external_enabled.get("enabled")->asBool())
@@ -726,12 +726,12 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/external_defaults", &external_defaults);
-    api.addCommand("evse/external_defaults_update", &external_defaults_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/external_defaults_update", &external_defaults_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         apply_slot_default(CHARGING_SLOT_EXTERNAL, external_defaults_update.get("current")->asUint(), true, external_defaults_update.get("clear_on_disconnect")->asBool());
     }, false);
 
     api.addState("evse/modbus_tcp_enabled", &modbus_enabled);
-    api.addCommand("evse/modbus_tcp_enabled_update", &modbus_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/modbus_tcp_enabled_update", &modbus_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = modbus_enabled_update.get("enabled")->asBool();
 
         if (enabled == modbus_enabled.get("enabled")->asBool())
@@ -755,7 +755,7 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/ocpp_enabled", &ocpp_enabled);
-    api.addCommand("evse/ocpp_enabled_update", &ocpp_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/ocpp_enabled_update", &ocpp_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = ocpp_enabled_update.get("enabled")->asBool();
 
         if (enabled == ocpp_enabled.get("enabled")->asBool())
@@ -772,7 +772,7 @@ void EvseCommon::register_urls()
     }, false);
 
     api.addState("evse/eebus_enabled", &eebus_enabled);
-    api.addCommand("evse/eebus_enabled_update", &eebus_enabled_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/eebus_enabled_update", &eebus_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         bool enabled = eebus_enabled_update.get("enabled")->asBool();
 
         if (enabled == eebus_enabled.get("enabled")->asBool())
@@ -807,7 +807,7 @@ void EvseCommon::register_urls()
     }
 
     api.addState("evse/automation_current", &automation_current);
-    api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         backend->set_charging_slot_max_current(CHARGING_SLOT_AUTOMATION, automation_current_update.get("current")->asUint());
     }, false); //TODO: should this be an action?
 #endif

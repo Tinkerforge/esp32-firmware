@@ -314,14 +314,14 @@ void RemoteAccess::register_urls()
         "remote_access/start_ping",
         Config::Null(),
         {},
-        [this](String & err) {
+        [this](Language /*language*/, String &errmsg) {
             if (ping != nullptr) {
-                err = "Ping already started";
+                errmsg = "Ping already started";
                 return;
             }
             int start_err = start_ping();
             if (start_err != 0) {
-                err = "Failed to start ping: " + String(start_err);
+                errmsg = "Failed to start ping: " + String(start_err);
             }
         },
         true);
@@ -330,7 +330,7 @@ void RemoteAccess::register_urls()
         "remote_access/stop_ping",
         Config::Null(),
         {},
-        [this](String & /*errmsg*/) {
+        [this](Language /*language*/, String &/*errmsg*/) {
             stop_ping();
         },
         true);
@@ -339,7 +339,7 @@ void RemoteAccess::register_urls()
         "remote_access/config_update",
         &registration_config,
         {"password", "email"},
-        [this](String & /*errmsg*/) {
+        [this](Language /*language*/, String &/*errmsg*/) {
             config.get("enable")->updateBool(registration_config.get("enable")->asBool());
             config.get("relay_host")->updateString(registration_config.get("relay_host")->asString());
             config.get("relay_port")->updateUint(registration_config.get("relay_port")->asUint());
@@ -353,7 +353,7 @@ void RemoteAccess::register_urls()
         "remote_access/config_reset",
         Config::Null(),
         {},
-        [this](String & /*errmsg*/) {
+        [this](Language /*language*/, String &/*errmsg*/) {
             API::removeConfig("remote_access/config");
 
             for (uint8_t user_id = 0; user_id < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; user_id++) {

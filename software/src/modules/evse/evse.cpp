@@ -121,7 +121,7 @@ void EVSE::pre_setup()
 void EVSE::post_register_urls()
 {
     api.addState("evse/user_calibration", &user_calibration);
-    api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](String &/*errmsg*/) {
+    api.addCommand("evse/user_calibration_update", &user_calibration, {}, [this](Language /*language*/, String &/*errmsg*/) {
         int16_t resistance_880[14];
         user_calibration.get("resistance_880")->fillInt16Array(resistance_880, ARRAY_SIZE(resistance_880));
 

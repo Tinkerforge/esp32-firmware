@@ -167,7 +167,7 @@ void Certs::register_urls()
 {
     api.addState("certs/state", &state);
 
-    api.addCommand("certs/add", &add, {}, [this](String &errmsg) {
+    api.addCommand("certs/add", &add, {}, [this](Language /*language*/, String &errmsg) {
         if (add.get("cert")->asString().isEmpty()) {
             errmsg = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
             return;
@@ -202,7 +202,7 @@ void Certs::register_urls()
         this->update_state();
     }, true);
 
-    api.addCommand("certs/modify", &add, {}, [this](String &errmsg) {
+    api.addCommand("certs/modify", &add, {}, [this](Language /*language*/, String &errmsg) {
         uint8_t cert_id = add.get("id")->asUint8();
         bool found = false;
         for (const auto &cert: state.get("certs")) {
@@ -237,7 +237,7 @@ void Certs::register_urls()
         this->update_state();
     }, true);
 
-    api.addCommand("certs/remove", &remove, {}, [this](String &errmsg) {
+    api.addCommand("certs/remove", &remove, {}, [this](Language /*language*/, String &errmsg) {
         uint8_t cert_id = remove.get("id")->asUint8();
 
         String path = get_cert_path(cert_id);

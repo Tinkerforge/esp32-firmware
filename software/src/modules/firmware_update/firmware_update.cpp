@@ -665,11 +665,11 @@ void FirmwareUpdate::register_urls()
     api.addState("firmware_update/state", &state);
     api.addState("firmware_update/install_state", &install_state, {}, {}, true);
 
-    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         check_for_update();
     }, true);
 
-    api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this](String &/*errmsg*/) {
+    api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this](Language /*language*/, String &/*errmsg*/) {
         install_state.get("origin")->updateEnum(InstallOrigin::InstallFirmware);
         install_state.get("progress")->updateUint(0);
 
@@ -721,7 +721,7 @@ void FirmwareUpdate::register_urls()
 #endif
     }, true);
 
-    api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/override_signature", &override_signature, {}, [this](Language /*language*/, String &errmsg) {
 #if signature_sodium_public_key_length != 0
         char json_buf[64] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
@@ -754,25 +754,25 @@ void FirmwareUpdate::register_urls()
 #endif
     }, true);
 
-    api.addCommand("firmware_update/reboot_app0", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/reboot_app0", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         boot_other_partition("app0", errmsg);
     }, true);
 
-    api.addCommand("firmware_update/reboot_app1", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/reboot_app1", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         boot_other_partition("app1", errmsg);
     }, true);
 
-    api.addCommand("firmware_update/reboot_other", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/reboot_other", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         boot_other_partition(nullptr, errmsg);
     }, true);
 
-    api.addCommand("firmware_update/clear_rolled_back_version", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/clear_rolled_back_version", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         if (change_update_partition_from_aborted_to_invalid() > 0) {
             state.get("rolled_back_version")->updateString("");
         }
     }, true);
 
-    api.addCommand("firmware_update/validate", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/validate", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         change_running_partition_from_pending_verify_to_valid();
     }, true);
 

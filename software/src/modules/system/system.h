@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "language.enum.h"
+#include "../api/language.enum.h"
 
 class System final : public IModule
 {

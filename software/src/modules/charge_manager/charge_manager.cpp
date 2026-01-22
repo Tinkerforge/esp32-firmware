@@ -772,7 +772,7 @@ void ChargeManager::register_urls()
     api.addState("charge_manager/low_level_state", &low_level_state);
 
     api.addState("charge_manager/available_current", &available_current);
-    api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("charge_manager/available_current_update", &available_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         uint32_t current = this->available_current_update.get("current")->asUint();
         this->available_current.get("current")->updateUint(current);
         this->last_available_current_update = now_us();
@@ -787,7 +787,7 @@ void ChargeManager::register_urls()
     }, false);
 
 #ifdef DEBUG_FS_ENABLE
-    api.addCommand("charge_manager/debug_limits_update", &debug_limits_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("charge_manager/debug_limits_update", &debug_limits_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         auto expiration = now_us() + 240_s;
         for(size_t i = 0; i < 4; ++i) {
             this->limits.raw[i] = debug_limits_update.get("raw")->get(i)->asInt();
@@ -801,7 +801,7 @@ void ChargeManager::register_urls()
 #endif
 
     api.addState("charge_manager/charge_modes", &charge_mode);
-    api.addCommand("charge_manager/charge_modes_update", &charge_mode, {}, [this](String &errmsg) {
+    api.addCommand("charge_manager/charge_modes_update", &charge_mode, {}, [this](Language /*language*/, String &errmsg) {
         for (size_t i = 0; i < charger_count; ++i) {
             auto new_mode = config_cm_to_cm(this->charge_mode.get(i)->asEnum<ConfigChargeMode>());
             charger_state[i].charge_mode = new_mode;
@@ -812,7 +812,7 @@ void ChargeManager::register_urls()
 
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &pm_charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &pm_charge_mode_update, {}, [this](String &errmsg) {
+    api.addCommand("power_manager/charge_mode_update", &pm_charge_mode_update, {}, [this](Language /*language*/, String &errmsg) {
         auto new_ccm = this->pm_charge_mode_update.get("mode")->asEnum<ConfigChargeMode>();
         auto mode_is_persistent = this->pm_default_charge_mode == ConfigChargeMode::Default;
 

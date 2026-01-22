@@ -173,13 +173,13 @@ void Ocpp::register_urls()
     api.addState("ocpp/state", &state);
     api.addState("ocpp/configuration", &configuration);
 #endif
-    api.addCommand("ocpp/reset", Config::Null(), {}, [](String &/*errmsg*/) {
+    api.addCommand("ocpp/reset", Config::Null(), {}, [](Language /*language*/, String &/*errmsg*/) {
         remove_directory("/ocpp");
     }, true);
 
 #ifdef OCPP_DEBUG
     api.addFeature("ocpp_debug");
-    api.addCommand("ocpp/change_configuration", &change_configuration, {}, [this](String &/*errmsg*/) {
+    api.addCommand("ocpp/change_configuration", &change_configuration, {}, [this](Language /*language*/, String &/*errmsg*/) {
         auto status = cp->changeConfig(change_configuration.get("key")->asEphemeralCStr(), change_configuration.get("value")->asEphemeralCStr());
         logger.printfln("Change config %s status %s", change_configuration.get("key")->asEphemeralCStr(), ChangeConfigurationResponseStatusStrings[(size_t) status]);
     }, true);

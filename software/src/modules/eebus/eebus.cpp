@@ -325,7 +325,7 @@ void EEBus::register_urls()
         "eebus/add",
         &add_peer,
         {},
-        [this](String &errmsg) {
+        [this](Language /*language*/, String &errmsg) {
             if (!initialized) {
                 eebus.trace_fmtln("Tried adding or editing peer while EEBUS is disabled");
                 return;
@@ -351,7 +351,7 @@ void EEBus::register_urls()
         "eebus/remove",
         &remove_peer,
         {"ski"},
-        [this](String &errmsg) {
+        [this](Language /*language*/, String &errmsg) {
             if (!config.get("enable")->asBool()) {
                 eebus.trace_fmtln("Tried removing peer while EEBUS is disabled");
                 return;
@@ -370,7 +370,7 @@ void EEBus::register_urls()
         "eebus/scan",
         &scan_command,
         {},
-        [this](String &errmsg) {
+        [this](Language /*language*/, String &errmsg) {
             if (!config.get("enable")->asBool()) {
                 return "EEBUS is disabled";
             }

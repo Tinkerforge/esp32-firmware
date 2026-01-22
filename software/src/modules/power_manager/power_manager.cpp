@@ -491,7 +491,7 @@ void PowerManager::register_urls()
         automation.set_enabled(AutomationActionID::PMPhaseSwitch, true);
 #endif
 
-        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](String &errmsg) {
+        api.addCommand("power_manager/external_control_update", &external_control_update, {}, [this](Language /*language*/, String &errmsg) {
             this->switch_phases(external_control_update.get("phases_wanted")->asUint(), errmsg, true);
         }, true);
 

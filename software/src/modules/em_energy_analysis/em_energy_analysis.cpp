@@ -110,10 +110,10 @@ void EMEnergyAnalysis::register_urls()
         return;
     }
 
-    api.addResponse("energy_manager/history_wallbox_5min",         &history_wallbox_5min,         {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_wallbox_daily",        &history_wallbox_daily,        {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_energy_manager_5min",  &history_energy_manager_5min,  {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_5min_response(response, ownership, owner_id);});
-    api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_wallbox_5min",         &history_wallbox_5min,         {}, [this](Language /*language*/, IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_wallbox_daily",        &history_wallbox_daily,        {}, [this](Language /*language*/, IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_wallbox_daily_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_5min",  &history_energy_manager_5min,  {}, [this](Language /*language*/, IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_5min_response(response, ownership, owner_id);});
+    api.addResponse("energy_manager/history_energy_manager_daily", &history_energy_manager_daily, {}, [this](Language /*language*/, IChunkedResponse *response, Ownership *ownership, uint32_t owner_id){history_energy_manager_daily_response(response, ownership, owner_id);});
 }
 
 void EMEnergyAnalysis::register_events()

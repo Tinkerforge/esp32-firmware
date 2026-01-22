@@ -113,7 +113,7 @@ static void report_transfer(uint32_t cookie, TFGenericTCPClientTransferDirection
 
 void ModbusTCPDebug::register_urls()
 {
-    api.addCommand("modbus_tcp_debug/transact", &transact_config, {}, [this](String &errmsg) {
+    api.addCommand("modbus_tcp_debug/transact", &transact_config, {}, [this](Language /*language*/, String &errmsg) {
         uint32_t cookie = transact_config.get("cookie")->asUint();
 
         if (client != nullptr) {

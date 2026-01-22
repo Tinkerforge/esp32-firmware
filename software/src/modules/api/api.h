@@ -28,6 +28,7 @@
 #include "config.h"
 #include "chunked_response.h"
 #include "tools/allocator.h"
+#include "language.enum.h"
 
 // Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct StateRegistration {
@@ -51,12 +52,14 @@ struct StateRegistration {
     const uint32_t data;
 };
 
+typedef std::function<void(Language language, String &errmsg)> CommandCallback;
+
 // Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct CommandRegistration {
     const char *const path;
     const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
-    const std::function<void(String &)> callback;
+    const CommandCallback callback;
 
     // asm("" : : "r" (data)); forces 32 bit access
     [[gnu::always_inline]] uint8_t get_path_len()                           const { asm("" : : "r" (data)); return (data >> 24) & 0xFF; }
@@ -71,11 +74,13 @@ struct CommandRegistration {
     const uint32_t data;
 };
 
+typedef std::function<void(Language language, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id)> ResponseCallback;
+
 struct ResponseRegistration {
     const char *const path;
     const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
-    const std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
+    const ResponseCallback callback;
 
     const uint8_t path_len;
     const uint8_t keys_to_censor_in_debug_report_len;
@@ -128,14 +133,14 @@ public:
     void register_events() override;
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    String callCommand(CommandRegistration &reg, char *payload, size_t payload_len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String callCommand(CommandRegistration &reg, char *payload, size_t payload_len, Language language = Language::Default, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, const std::function<void(const String &errmsg)> &done_cb, SuffixPath &&suffix_path = SuffixPath{});
+    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, Language language, const std::function<void(const String &errmsg)> &done_cb, SuffixPath &&suffix_path = SuffixPath{});
 
-    String callCommand(const char *path, const Config::ConfUpdate &payload = {});
+    String callCommand(const char *path, const Config::ConfUpdate &payload = {}, Language language = Language::Default);
 
-    void callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
+    void callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, Language language, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
 
     const Config *getState(const char *path, bool log_if_not_found = true, size_t path_len = 0);
     const Config *getState(const String &path, bool log_if_not_found = true);
@@ -143,14 +148,14 @@ public:
     void addFeature(const char *name);
 
     // Prefer this version of addCommand over the one below.
-    void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
-    void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(String &errmsg)> &&callback, bool is_action);
+    void addCommand(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action);
+    void addCommand(const String &path,      ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, CommandCallback &&callback, bool is_action);
 
     void addState(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
     void addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {}, bool low_latency = false);
 
     bool addPersistentConfig(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor = {}, const std::vector<const char *> &keys_to_censor_in_debug_report = {});
-    void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(IChunkedResponse *, Ownership *, uint32_t)> &&callback);
+    void addResponse(const char * const path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, ResponseCallback &&callback);
 
     bool hasFeature(const char *name);
 
@@ -163,6 +168,8 @@ public:
     static String getLittleFSConfigPath(const String &path, bool tmp = false);
 
     size_t registerBackend(IAPIBackend *backend);
+
+    inline void set_default_language(Language language) { default_language = language; }
 
     std::span<StateRegistration> states;
     std::span<CommandRegistration> commands;
@@ -225,4 +232,5 @@ private:
         std::vector<ResponseRegistration> responses;
     };
     RegistrationCollector *reg_collector;
+    Language default_language = Language::German;
 };

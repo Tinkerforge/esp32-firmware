@@ -448,17 +448,17 @@ void NFC::register_urls()
 {
     api.addState("nfc/seen_tags", &seen_tags, {}, {"tag_id", "tag_type"});
     api.addPersistentConfig("nfc/config", &config, {}, {"tag_id", "tag_type"});
-    api.addCommand("nfc/inject_tag", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
+    api.addCommand("nfc/inject_tag", &inject_tag, {"tag_id", "tag_type"}, [this](Language /*language*/, String &/*errmsg*/) {
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_ANY;
     }, true);
 
-    api.addCommand("nfc/inject_tag_start", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
+    api.addCommand("nfc/inject_tag_start", &inject_tag, {"tag_id", "tag_type"}, [this](Language /*language*/, String &/*errmsg*/) {
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_START;
     }, true);
 
-    api.addCommand("nfc/inject_tag_stop", &inject_tag, {"tag_id", "tag_type"}, [this](String &/*errmsg*/) {
+    api.addCommand("nfc/inject_tag_stop", &inject_tag, {"tag_id", "tag_type"}, [this](Language /*language*/, String &/*errmsg*/) {
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_STOP;
     }, true);

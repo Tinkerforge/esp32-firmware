@@ -40,7 +40,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
 import { CSVFlavor } from "./csv_flavor.enum";
-import { Language } from "../system/language.enum";
+import { Language } from "../api/language.enum";
 import { GenerationState } from "./generation_state.enum";
 
 export function ChargeTrackerNavbar() {

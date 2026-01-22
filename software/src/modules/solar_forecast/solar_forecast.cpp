@@ -164,7 +164,7 @@ void SolarForecast::register_urls()
     });
 
 #ifdef DEBUG_FS_ENABLE
-    api.addCommand("solar_forecast/debug_forecast_update", &debug_forecast_update, {}, [this](String &/*errmsg*/) {
+    api.addCommand("solar_forecast/debug_forecast_update", &debug_forecast_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
         const int32_t wh_fake_forecast = debug_forecast_update.asInt();
 
         state.get("wh_today"          )->updateInt(wh_fake_forecast);

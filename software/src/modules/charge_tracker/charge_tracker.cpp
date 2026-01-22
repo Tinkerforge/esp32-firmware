@@ -34,7 +34,7 @@
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
 #include "generation_state.enum.h"
-#include "../system/language.enum.h"
+#include "../api/language.enum.h"
 #include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
@@ -870,7 +870,7 @@ void ChargeTracker::register_urls()
     api.addState("charge_tracker/current_charge", &current_charge, {}, {"tag_id", "tag_type"});
     api.addState("charge_tracker/state", &state);
 
-    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {
+    api.addCommand("charge_tracker/remove_all_charges", Config::Confirm(), {Config::confirm_key}, [this](Language /*language*/, String &errmsg) {
         if (!Config::Confirm()->get(Config::ConfirmKey())->asBool()) {
             errmsg = "Tracked charges will NOT be removed";
             return;

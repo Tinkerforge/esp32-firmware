@@ -1,4 +1,4 @@
-import { Language } from "./language.enum";
+import { Language } from "../api/language.enum";
 
 export interface i18n_config {
     language: Language;

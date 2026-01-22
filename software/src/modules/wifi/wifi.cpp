@@ -1087,7 +1087,7 @@ void Wifi::register_urls()
 {
     api.addState("wifi/state", &state, {}, {"sta_mac", "sta_bssid", "ap_bssid"});
 
-    api.addCommand("wifi/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("wifi/scan", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         start_scan();
     }, true);
 

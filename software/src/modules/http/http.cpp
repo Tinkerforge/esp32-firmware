@@ -128,6 +128,35 @@ enum class HttpTriggerMethod : uint8_t {
 };
 #endif
 
+static Language get_accept_language(WebServerRequest req)
+{
+    String accept_language = req.header("Accept-Language");
+    const char *p = accept_language.c_str();
+
+    while (*p != '\0') {
+        while (*p == ' ') {
+            ++p;
+        }
+
+        if (strncmp(p, "de", 2) == 0) {
+            return Language::German;
+        }
+        else if (strncmp(p, "en", 2) == 0) {
+            return Language::English;
+        }
+
+        while (*p != '\0' && *p != ',') {
+            ++p;
+        }
+
+        if (*p == ',') {
+            ++p;
+        }
+    }
+
+    return Language::Default;
+}
+
 void Http::pre_setup()
 {
     api.registerBackend(this);
@@ -191,16 +220,19 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         return req.send_plain(400);
     }
 
+    Language language = get_accept_language(req);
     String message;
+
     if (bytes_written == 0 && reg.config->is_null()) {
-        message = api.callCommand(reg, nullptr, 0, suffix_path.path.data(), suffix_path.path.size());
+        message = api.callCommand(reg, nullptr, 0, language, suffix_path.path.data(), suffix_path.path.size());
     } else {
-        message = api.callCommand(reg, recv_buf, bytes_written, suffix_path.path.data(), suffix_path.path.size());
+        message = api.callCommand(reg, recv_buf, bytes_written, language, suffix_path.path.data(), suffix_path.path.size());
     }
 
     if (message.isEmpty()) {
         return req.send_plain(200);
     }
+
     return req.send_plain(400, message);
 }
 
@@ -219,14 +251,15 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t re
         return req.send_plain(400);
     }
 
+    Language language = get_accept_language(req);
     uint32_t response_owner_id = response_ownership.current();
     HTTPChunkedResponse http_response(&req);
     QueuedChunkedResponse queued_response(&http_response, 500);
     BufferedChunkedResponse buffered_response(&queued_response);
 
     task_scheduler.scheduleOnce(
-        [this, respidx, &recv_buf, bytes_written, &buffered_response, response_owner_id] {
-            api.callResponse(api.responses[respidx], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
+        [this, respidx, &recv_buf, bytes_written, language, &buffered_response, response_owner_id] {
+            api.callResponse(api.responses[respidx], recv_buf, bytes_written, language, &buffered_response, &response_ownership, response_owner_id);
         });
 
     ChunkedResponseResult result = queued_response.wait();

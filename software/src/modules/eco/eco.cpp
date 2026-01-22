@@ -125,7 +125,7 @@ void Eco::register_urls()
     api.addState("eco/state",             &state);
 
     api.addState("eco/charge_plan", &charge_plan);
-    api.addCommand("eco/charge_plan_update", &charge_plan, {}, [this](String &/*errmsg*/) {
+    api.addCommand("eco/charge_plan_update", &charge_plan, {}, [this](Language /*language*/, String &/*errmsg*/) {
         api.writeConfig("eco/charge_plan", &charge_plan);
         state.get("last_save")->updateUint(rtc.timestamp_minutes());
         update();

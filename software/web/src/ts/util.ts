@@ -19,7 +19,7 @@
 
 import { ComponentChildren, createRef, RefObject } from "preact";
 import * as API from "./api";
-import { __, removeUnicodeHacks } from "./translation";
+import { __, get_active_language, removeUnicodeHacks } from "./translation";
 import { AsyncModal } from "./components/async_modal";
 import { api_cache } from "./api_defs";
 import { batch, signal, Signal } from "@preact/signals-core";
@@ -740,6 +740,7 @@ export function upload(url: string, data: Blob | ArrayBuffer, urgent: boolean, p
                 });
 
                 xhr.open("POST", url, true);
+                xhr.setRequestHeader("Accept-Language", get_active_language());
                 xhr.setRequestHeader("X-Connection-Id", connection_id);
                 xhr.timeout = timeout_ms;
                 if (contentType)
@@ -768,7 +769,7 @@ export function download(url: string, urgent: boolean, timeout_ms: number = 10*1
                     if (remoteAccessMode) {
                         url = path + (url.startsWith("/") ? "" : "/") + url;
                     }
-                    response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
+                    response = await fetch(url, {signal: abort.signal, headers: {"Accept-Language": get_active_language(), "X-Connection-Id": connection_id}});
                 } catch (e) {
                     window.clearTimeout(timeout);
                     throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
@@ -810,8 +811,9 @@ export function put(url: string, payload: any, urgent: boolean, timeout_ms: numb
                         method: "PUT",
                         credentials: 'same-origin',
                         headers: {
-                            "Content-Type": "application/json; charset=utf-8",
+                            "Accept-Language": get_active_language(),
                             "X-Connection-Id": connection_id,
+                            "Content-Type": "application/json; charset=utf-8",
                         },
                         body: JSON.stringify(payload)})
                 } catch (e) {

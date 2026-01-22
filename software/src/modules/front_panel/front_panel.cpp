@@ -172,7 +172,7 @@ void FrontPanel::register_urls()
 
     this->DeviceModule::register_urls();
 
-    api.addCommand("front_panel/reflash_map", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("front_panel/reflash_map", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->start_reflash_map();
     }, true);
 
@@ -237,7 +237,7 @@ void FrontPanel::register_urls()
         return request.send_plain(500, "Failed to receive file");
     });
 
-    api.addCommand("front_panel/erase", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("front_panel/erase", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         int rc = tf_warp_front_panel_erase_flash(&device, NULL);
         if (rc != TF_E_OK) {
             logger.printfln("Erase failed: %i", rc);
@@ -245,7 +245,7 @@ void FrontPanel::register_urls()
         }
     }, true);
 
-    api.addCommand("front_panel/redraw", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("front_panel/redraw", Config::Null(), {}, [this](Language /*language*/, String &errmsg) {
         int rc = tf_warp_front_panel_redraw_everything(&device);
         if (rc != TF_E_OK) {
             logger.printfln("Redraw failed: %i", rc);
@@ -253,7 +253,7 @@ void FrontPanel::register_urls()
         }
     }, true);
 
-    api.addCommand("front_panel/blank", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("front_panel/blank", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         for (size_t i = 0; i < 6; i++) {
             update_front_page_empty_tile(i, TileType::Empty, 0);
         }
