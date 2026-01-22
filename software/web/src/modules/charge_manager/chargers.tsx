@@ -501,7 +501,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                                         }}>
                                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                                     <div class="flex-grow-1 col p-2">
-                                                        <div class="row m-0 w-100 justify-content-between">
+                                                        <div class="row m-0 mb-2 w-100 justify-content-between">
                                                             <span class="col p-0 h5 text-start mb-0">{s.display_name}</span>
                                                             {s.error == 0 ? null :
                                                                 <span class="col-auto p-0 text-end text-danger">{translate_unchecked(`charge_manager.content.scan_error_${s.error}`)}</span>
