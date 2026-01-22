@@ -141,7 +141,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
 }
 
 void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
-                                                         const char *host, uint16_t port, char *buf, size_t buf_len)
+                                                         const char *host, uint16_t port, char *buf, size_t buf_len, Language language)
 {
     const char *shared;
 
@@ -152,11 +152,11 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
         break;
 
     case  TFGenericTCPClientPoolShareLevel::Secondary:
-        shared = " (shared connection)";
+        shared = language == Language::English ? " (shared connection)" : " (geteilte Verbindung)";
         break;
 
     default:
-        shared = " <unknown>";
+        shared = language == Language::English ? " (<unknown>)" : " (<unbekannt>)";
         break;
     }
 
@@ -168,77 +168,95 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
     else if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
         if (error_number == EINVAL) {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s, no DNS server available%s",
+                     language == Language::English
+                     ? "Could not resolve hostname %s, no DNS server available%s"
+                     : "Konnte Hostname %s nicht auflösen, kein DNS Server verfügbar%s",
                      host, shared);
         }
         else if (error_number >= 0) {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s%s: %s (%d)",
+                     language == Language::English
+                     ? "Could not resolve hostname %s%s: %s (%d)"
+                     : "Konnte Hostname %s nicht auflösen%s: %s (%d)",
                      host, shared,
                      strerror(error_number), error_number);
         }
         else {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s%s",
+                     language == Language::English
+                     ? "Could not resolve hostname %s%s"
+                     : "Konnte Hostname %s nicht auflösen%s",
                      host, shared);
         }
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
-                 "Could not connect to %s:%u%s: %s / %s (%d)",
+                 language == Language::English
+                 ? "Could not connect to %s:%u%s: %s / %s (%d)"
+                 : "Konnte nicht zu %s:%u verbinden%s: %s / %s (%d)",
                  host, port, shared,
                  get_tf_generic_tcp_client_connect_result_name(result),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
-                 "Could not connect to %s:%u%s: %s",
+                 language == Language::English
+                 ? "Could not connect to %s:%u%s: %s"
+                 : "Konnte nicht zu %s:%u verbinden%s: %s",
                  host, port, shared,
                  get_tf_generic_tcp_client_connect_result_name(result));
     }
 }
 
 void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level,
-                                                             const char *host, uint16_t port, char *buf, size_t buf_len)
+                                                             const char *host, uint16_t port, char *buf, size_t buf_len, Language language)
 {
     const char *shared;
 
     switch (share_level) {
     case TFGenericTCPClientPoolShareLevel::Undefined:
     case TFGenericTCPClientPoolShareLevel::Primary:
-        shared = "Disconnected from";
+        shared = "";
         break;
 
     case TFGenericTCPClientPoolShareLevel::Secondary:
-        shared = "Unshared existing connection to";
+        shared = language == Language::English ? " (shared connection)" : " (geteilte Verbindung)";
         break;
 
     default:
-        shared = "<Unknown>";
+        shared = language == Language::English ? " (<unknown>)" : " (<unbekannt>)";
         break;
     }
 
     if (reason == TFGenericTCPClientDisconnectReason::Requested) {
         snprintf(buf, buf_len,
-                 "%s %s:%u",
-                 shared, host, port);
+                 language == Language::English
+                 ? "Disconnected from %s:%u%s"
+                 : "Verbindung zu %s:%u getrennt%s",
+                 host, port, shared);
     }
     else if (reason == TFGenericTCPClientDisconnectReason::Forced) {
         snprintf(buf, buf_len,
-                 "%s %s:%u by force",
-                 shared, host, port);
+                 language == Language::English
+                 ? "Disconnected from %s:%u by force%s"
+                 : "Verbindung zu %s:%u durch Zwang getrennt%s",
+                 host, port, shared);
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
-                 "%s %s:%u: %s / %s (%d)",
-                 shared, host, port,
+                 language == Language::English
+                 ? "Disconnected from %s:%u%s: %s / %s (%d)"
+                 : "Verbindung zu %s:%u getrennt%s: %s / %s (%d)",
+                 host, port, shared,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
-                 "%s %s:%u: %s",
-                 shared, host, port,
+                 language == Language::English
+                 ? "Disconnected from %s:%u%s: %s"
+                 : "Verbindung zu %s:%u getrennt%s: %s",
+                 host, port, shared,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
 }

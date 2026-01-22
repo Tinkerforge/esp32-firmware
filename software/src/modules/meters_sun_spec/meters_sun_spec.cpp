@@ -93,14 +93,17 @@ void MetersSunSpec::pre_setup()
 
 void MetersSunSpec::register_urls()
 {
-    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("meters_sun_spec/scan", &scan_config, {}, [this](Language language, String &errmsg) {
         if (scan != nullptr) {
-            errmsg = "Another scan is already in progress, please try again later!";
+            errmsg = language == Language::English
+                     ? "Another scan is already in progress, please try again later!"
+                     : "Eine andere Suche läuft bereits, bitte später noch einmal versuchen!";
             return;
         }
 
         scan = new_psram_or_dram<Scan>();
 
+        scan->language             = language;
         scan->host                 = scan_config.get("host")->asString();
         scan->port                 = scan_config.get("port")->asUint16();
         scan->device_address_first = scan_config.get("device_address_first")->asUint8();
@@ -114,10 +117,12 @@ void MetersSunSpec::register_urls()
         scan->device_address = scan->device_address_first;
         scan->last_keep_alive = now_us();
 
-        scan_printfln("Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
+        scan_printfln(scan->language == Language::English
+                      ? "Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]"
+                      : "Beginne Suche [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](Language language, String &errmsg) {
         if (scan == nullptr) {
             return;
         }
@@ -125,14 +130,15 @@ void MetersSunSpec::register_urls()
         uint32_t cookie = scan_continue_config.get("cookie")->asUint();
 
         if (cookie != scan->cookie) {
-            errmsg = "Cannot continue another scan";
+            errmsg = language == Language::English ? "Cannot continue another scan" : "Kann keine andere Suche fortsetzen";
             return;
         }
 
+        scan->language        = language;
         scan->last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("meters_sun_spec/scan_abort", &scan_abort_config, {}, [this](Language language, String &errmsg) {
         if (scan == nullptr) {
             return;
         }
@@ -140,11 +146,12 @@ void MetersSunSpec::register_urls()
         uint32_t cookie = scan_abort_config.get("cookie")->asUint();
 
         if (cookie != scan->cookie) {
-            errmsg = "Cannot abort another scan";
+            errmsg = language == Language::English ? "Cannot abort another scan" : "Kann keine andere Suche abbrechen";
             return;
         }
 
-        scan->abort = true;
+        scan->language = language;
+        scan->abort    = true;
     }, true);
 }
 
@@ -159,7 +166,9 @@ void MetersSunSpec::loop()
     }
 
     if (!scan->abort && deadline_elapsed(scan->last_keep_alive + 10_s)) {
-        const char *message = "Aborting scan because no continue call was received for more than 10 seconds";
+        const char *message = scan->language == Language::English
+                              ? "Aborting scan because no continue call was received for more than 10 seconds"
+                              : "Breche Suche ab, da für mehr als 10 Sekunden kein Fortsetzen-Aufruf empfangen wurde";
 
         logger.printfln("%s", message);
         scan_printfln("%s", message);
@@ -174,7 +183,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Connecting to %s:%u", scan->host.c_str(), scan->port);
+        scan_printfln(scan->language == Language::English ? "Connecting to %s:%u" : "Verbinde zu %s:%u", scan->host.c_str(), scan->port);
         scan->state = ScanState::Connecting;
 
         modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port,
@@ -182,7 +191,7 @@ void MetersSunSpec::loop()
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf));
+                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
                 scan_printfln("%s", buf);
 
                 scan->state = ScanState::Done;
@@ -195,7 +204,7 @@ void MetersSunSpec::loop()
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             char buf[256] = "";
 
-            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf));
+            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf), scan->language);
             scan_printfln("%s", buf);
 
             scan->client = nullptr;
@@ -215,7 +224,9 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Done: {
-            scan_printfln(scan->abort ? "Scan aborted" : "Scan finished");
+            scan_printfln(scan->language == Language::English
+                          ? (scan->abort ? "Scan aborted" : "Scan finished")
+                          : (scan->abort ? "Suche abgebrochen" : "Suche abgeschlossen"));
             scan_flush_log();
 
 #if MODULE_WS_AVAILABLE()
@@ -351,7 +362,7 @@ void MetersSunSpec::loop()
                 }
 
                 if (result == TFModbusTCPClientTransactionResult::Timeout && scan->read_retries > 0) {
-                    scan_printfln("Reading timed out, retrying");
+                    scan_printfln(scan->language == Language::English ? "Reading timed out, retrying" : "Lesen dauert zu lange, versuche es erneut");
 
                     --scan->read_retries;
                     scan->read_delay_deadline = now_us() + 100_ms + static_cast<micros_t>(esp_random() % 2400000);
@@ -390,9 +401,13 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Using device address %u\n"
-                      "Using base address %u\n"
-                      "Reading SunSpec ID",
+        scan_printfln(scan->language == Language::English
+                      ? "Using device address %u\n"
+                        "Using base address %u\n"
+                        "Reading SunSpec ID"
+                      : "Verwende Geräteadresse %u\n"
+                        "Verwende Basisadresse %u\n"
+                        "Lese SunSpec ID",
                       scan->device_address,
                       base_addresses[scan->base_address_index]);
 
@@ -413,20 +428,25 @@ void MetersSunSpec::loop()
             uint32_t sun_spec_id = scan->deserializer.read_uint32();
 
             if (sun_spec_id == SUN_SPEC_ID) {
-                scan_printfln("SunSpec ID found");
+                scan_printfln(scan->language == Language::English ? "SunSpec ID found" : "SunSpec ID gefunden");
 
                 scan->state = ScanState::ReadModelID;
             }
             else {
                 // this is not an error, this might just be no SunSpec device
-                scan_printfln("No SunSpec ID found [sun-spec-id: 0x%08lx]", sun_spec_id);
+                scan_printfln(scan->language == Language::English
+                              ? "No SunSpec ID found [sun-spec-id: 0x%08lx]"
+                              : "Keine SunSpec ID gefunden [sun-spec-id: 0x%08lx]",
+                              sun_spec_id);
 
                 scan->state = ScanState::NextBaseAddress;
             }
         }
         else {
             // this is not an error, this might just be no SunSpec device
-            scan_printfln("Could not read SunSpec ID [error: %s (%d)%s%s]",
+            scan_printfln(scan->language == Language::English
+                          ? "Could not read SunSpec ID [error: %s (%d)%s%s]"
+                          : "Konnte SunSpec ID nicht lesen [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result),
                           scan->read_error_message != nullptr ? " / " : "",
@@ -443,7 +463,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Common Model block");
+        scan_printfln(scan->language == Language::English ? "Reading Common Model block" : "Lese Common Model Block");
 
         scan->read_size = 65; // don't read optional padding, skip it later
         scan->read_state = ScanState::ReadCommonModelBlockDone;
@@ -469,12 +489,19 @@ void MetersSunSpec::loop()
 
             uint16_t device_address = scan->deserializer.read_uint16();
 
-            scan_printfln("  Manufacturer Name: %s\n"
-                          "  Model Name: %s\n"
-                          "  Options: %s\n"
-                          "  Version: %s\n"
-                          "  Serial Number: %s\n"
-                          "  Device Address: %u",
+            scan_printfln(scan->language == Language::English
+                          ? "  Manufacturer Name: %s\n"
+                            "  Model Name: %s\n"
+                            "  Options: %s\n"
+                            "  Version: %s\n"
+                            "  Serial Number: %s\n"
+                            "  Device Address: %u"
+                          : "  Herstellername: %s\n"
+                            "  Modellname: %s\n"
+                            "  Optionen: %s\n"
+                            "  Version: %s\n"
+                            "  Seriennummer: %s\n"
+                            "  Geräteadresse: %u",
                           scan->common_manufacturer_name,
                           scan->common_model_name,
                           options,
@@ -483,7 +510,7 @@ void MetersSunSpec::loop()
                           device_address);
 
             if (scan->block_length == 66) {
-                scan_printfln("Skipping Common Model padding");
+                scan_printfln(scan->language == Language::English ? "Skipping Common Model padding" : "Überspringe Common Model Padding");
 
                 ++scan->read_address; // skip padding
             }
@@ -491,7 +518,9 @@ void MetersSunSpec::loop()
             scan->state = ScanState::ReadModelID;
         }
         else {
-            scan_printfln("Error: Could not read Common Model block [error: %s (%d)%s%s]",
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Common Model block [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Common Model Block nicht lesen [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result),
                           scan->read_error_message != nullptr ? " / " : "",
@@ -509,7 +538,10 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Model ID [address: %zu]", scan->read_address);
+        scan_printfln(scan->language == Language::English
+                      ? "Reading Model ID [address: %zu]"
+                      : "Lese Model ID [address: %zu]",
+                      scan->read_address);
 
         scan->read_size = 1;
         scan->read_state = ScanState::ReadModelIDDone;
@@ -526,25 +558,28 @@ void MetersSunSpec::loop()
         if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
             scan->model_id = scan->deserializer.read_uint16();
 
-            scan_printfln("Found Model %u", scan->model_id);
+            scan_printfln(scan->language == Language::English
+                          ? "Found Model %u"
+                          : "Model %u gefunden",
+                          scan->model_id);
 
             if (scan->model_id == 3) {
-                scan_printfln("Assuming block length of 58 registers");
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 58 registers" : "Nehme Blocklänge von 58 Registern an");
                 scan->read_address += 1 + 58; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else if (scan->model_id == 4) {
-                scan_printfln("Assuming block length of 60 registers");
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 60 registers" : "Nehme Blocklänge von 60 Registern an");
                 scan->read_address += 1 + 60; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else if (scan->model_id == 5) {
-                scan_printfln("Assuming block length of 88 registers");
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 88 registers" : "Nehme Blocklänge von 88 Registern an");
                 scan->read_address += 1 + 88; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
             else if (scan->model_id == 6) {
-                scan_printfln("Assuming block length of 90 registers");
+                scan_printfln(scan->language == Language::English ? "Assuming block length of 90 registers" : "Nehme Blocklänge von 90 Registern an");
                 scan->read_address += 1 + 90; // skip model length and block
                 scan->state = ScanState::ReadModelID;
             }
@@ -553,7 +588,9 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Error: Could not read Model ID [error: %s (%d)%s%s]",
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Model ID [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Model ID nicht lesen [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result),
                           scan->read_error_message != nullptr ? " / " : "",
@@ -571,7 +608,10 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Model %u block length [address: %zu]", scan->model_id, scan->read_address);
+        scan_printfln(scan->language == Language::English
+                      ? "Reading Model %u block length [address: %zu]"
+                      : "Lese Model %u Blocklänge [address: %zu]",
+                      scan->model_id, scan->read_address);
 
         scan->read_size = 1;
         scan->read_state = ScanState::ReadModelBlockLengthDone;
@@ -589,10 +629,15 @@ void MetersSunSpec::loop()
             size_t block_length = scan->deserializer.read_uint16();
 
             if (scan->model_id == NON_IMPLEMENTED_UINT16) {
-                scan_printfln("End Model found [model-id: %u, block-length: %zu]", scan->model_id, block_length);
+                scan_printfln(scan->language == Language::English
+                              ? "End Model found [model-id: %u, block-length: %zu]"
+                              : "End Model gefunden [model-id: %u, block-length: %zu]",
+                              scan->model_id, block_length);
 
                 if (block_length != 0 && block_length != NON_IMPLEMENTED_UINT16) { // accept non-implemented block length as Sungrow quirk
-                    scan_printfln("Error: End Model has unsupported block length");
+                    scan_printfln(scan->language == Language::English
+                                  ? "Error: End Model has unexpected block length"
+                                  : "Fehler: End Model hat unerwartetet Blocklänge");
 
                     scan->error_state = ScanState::NextDeviceAddress;
                     scan->state = ScanState::ReportError;
@@ -602,10 +647,15 @@ void MetersSunSpec::loop()
                 }
             }
             else if (scan->model_id == COMMON_MODEL_ID) {
-                scan_printfln("Common Model found [model-id: %u, block-length: %zu]", scan->model_id, block_length);
+                scan_printfln(scan->language == Language::English
+                              ? "Common Model found [model-id: %u, block-length: %zu]"
+                              : "Common Model gefunden [model-id: %u, block-length: %zu]",
+                              scan->model_id, block_length);
 
                 if (block_length != 65 && block_length != 66) {
-                    scan_printfln("Error: Common Model has unsupported block length");
+                    scan_printfln(scan->language == Language::English
+                                  ? "Error: Common Model has unexpected block length"
+                                  : "Fehler: Common Model hat unerwartetet Blocklänge");
 
                     scan->error_state = scan_get_next_state_after_read_error();
                     scan->state = ScanState::ReportError;
@@ -643,7 +693,9 @@ void MetersSunSpec::loop()
                     ++scan->model_instances[scan->model_id];
                 }
 
-                scan_printfln("%s Model found [model-id/instance: %u/%u, block-length: %zu]",
+                scan_printfln(scan->language == Language::English
+                              ? "%s Model found [model-id/instance: %u/%u, block-length: %zu]"
+                              : "%s Model gefunden [model-id/instance: %u/%u, block-length: %zu]",
                               model_name, scan->model_id, scan->model_instances.at(scan->model_id), block_length);
 
                 // FIXME: validate block length
@@ -653,7 +705,9 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Error: Could not read Model %u block length [error: %s (%d)%s%s]",
+            scan_printfln(scan->language == Language::English
+                          ? "Error: Could not read Model %u block length [error: %s (%d)%s%s]"
+                          : "Fehler: Konnte Model %u Blocklänge nicht lesen [error: %s (%d)%s%s]",
                           scan->model_id,
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result),
