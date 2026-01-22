@@ -80,7 +80,7 @@ private:
     WebServerRequestReturnProtect api_handler_put(WebServerRequest &req, api_match_data &match_data);
     WebServerRequestReturnProtect api_handler_run(WebServerRequest &req, api_match_data &match_data);
 
-    WebServerRequestReturnProtect run_response(WebServerRequest req, size_t respidx);
+    WebServerRequestReturnProtect run_response(WebServerRequest &req, size_t respidx);
 
     Ownership response_ownership;
 };

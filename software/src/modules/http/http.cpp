@@ -128,7 +128,7 @@ enum class HttpTriggerMethod : uint8_t {
 };
 #endif
 
-static Language get_accept_language(WebServerRequest req)
+static Language get_accept_language(WebServerRequest &req)
 {
     String accept_language = req.header("Accept-Language");
     const char *p = accept_language.c_str();
@@ -180,7 +180,7 @@ void Http::setup()
     initialized = true;
 }
 
-static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx, const API::SuffixPath &suffix_path = {})
+static WebServerRequestReturnProtect run_command(WebServerRequest &req, size_t cmdidx, const API::SuffixPath &suffix_path = {})
 {
     CommandRegistration &reg = api.commands[cmdidx];
 
@@ -236,7 +236,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     return req.send_plain(400, message);
 }
 
-WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t respidx)
+WebServerRequestReturnProtect Http::run_response(WebServerRequest &req, size_t respidx)
 {
     // Check stack usage after increasing buffer size.
     char recv_buf[2048];
