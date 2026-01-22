@@ -43,7 +43,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
         const hide_save = state.display_name == API.get('info/display_name').display_name;
 
-        const make_device_name_form = () => <form onSubmit={(e: Event) => {
+        const make_device_name_form = () => <form class="w-100" onSubmit={(e: Event) => {
             e.preventDefault();
             e.stopPropagation();
             if (!(e.target as HTMLFormElement).checkValidity())
@@ -63,7 +63,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
         // Note: In native app, main has px-4 padding, so we use negative margins (ms-n4, me-n4) to extend to edges
         const status_button_header = (
             <div class={is_native_app ? "row mb-3 sticky-top-app ms-n4 me-n4" : "d-md-none row mb-3 sticky-under-top"}>
-                <div class={is_native_app ? "col ps-0 pe-4" : "col ps-0 pe-3"}>
+                <div class={is_native_app ? "col ps-0 pe-4" : "col ps-0"}>
                     <div class="d-flex align-items-stretch border-bottom">
                         <MobileStatusButton />
                         <div class="flex-grow-1 d-flex align-items-center py-2 ps-3">
@@ -76,7 +76,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
         const desktop_header = !is_native_app && (
             <div class="d-none d-md-block">
-                <PageHeader title={__("device_name.status.status")} titleClass="col-auto" childrenClass="col">
+                <PageHeader title={__("device_name.status.status")} titleClass="col-lg-4" childrenClass="col-lg-8">
                     {make_device_name_form()}
                 </PageHeader>
             </div>
