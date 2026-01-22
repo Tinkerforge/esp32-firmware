@@ -26,6 +26,7 @@
 #include "config.h"
 #include "options.h"
 #include "battery_modbus_tcp_table_id.enum.h"
+#include "modules/api/language.enum.h"
 #include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/modbus_tcp_client/modbus_function_code.enum.h"
@@ -49,6 +50,7 @@ public:
     typedef std::function<void(void)> TableWriterFinishedFunction;
 
     struct TableWriter {
+        Language language;
         uint64_t task_id = 0;
         uint32_t slot;
         TFModbusTCPSharedClient *client = nullptr;
@@ -68,7 +70,8 @@ public:
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
     static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
-                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished);
+                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished,
+                                            Language language = Language::English);
     static void destroy_table_writer(TableWriter *writer);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :

@@ -133,7 +133,7 @@ void BatteriesModbusTCP::pre_setup()
 
 void BatteriesModbusTCP::register_urls()
 {
-    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test", &test_config, {}, [this](Language language, String &errmsg) {
         BatteryModbusTCPTableID table_id = test_config.get("table")->getTag<BatteryModbusTCPTableID>();
         Config *table_config = static_cast<Config *>(test_config.get("table")->get());
 
@@ -147,14 +147,17 @@ void BatteriesModbusTCP::register_urls()
         };
 
         if (test != nullptr) {
-            errmsg = "Another test is already in progress, please try again later!";
+            errmsg = language == Language::English
+                     ? "Another test is already in progress, please try again later!"
+                     : "Ein anderer Test läuft bereits, bitte später noch einmal versuchen!";
             return;
         }
 
         test = new Test;
 
-        test_printfln("Starting test");
+        test_printfln(language == Language::English ? "Starting test" : "Starte Test");
 
+        test->language = language;
         test->slot = test_config.get("slot")->asUint();
         test->host = test_config.get("host")->asString();
         test->port = static_cast<uint16_t>(test_config.get("port")->asUint());
@@ -175,7 +178,7 @@ void BatteriesModbusTCP::register_urls()
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Invalid custom table");
+                test_printfln(test->language == Language::English ? "Invalid custom table" : "Ungültige benutzerdefinerte Tabelle");
                 return;
             }
 
@@ -188,7 +191,10 @@ void BatteriesModbusTCP::register_urls()
             load_victron_energy_gx_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Victron Energy GX mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown Victron Energy GX mode: %u"
+                              : "Unbekannter Victron Energy GX Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -201,7 +207,10 @@ void BatteriesModbusTCP::register_urls()
             load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Deye Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown Deye Hybrid Inverter mode: %u"
+                              : "Unbekannter Deye Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -214,7 +223,10 @@ void BatteriesModbusTCP::register_urls()
             load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Alpha ESS Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown Alpha ESS Hybrid Inverter mode: %u"
+                              : "Unbekannter Alpha ESS Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -227,7 +239,10 @@ void BatteriesModbusTCP::register_urls()
             load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Hailei Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown Hailei Hybrid Inverter mode: %u"
+                              : "Unbekannter Hailei Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -240,7 +255,10 @@ void BatteriesModbusTCP::register_urls()
             load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown Sungrow Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown Sungrow Hybrid Inverter mode: %u"
+                              : "Unbekannter Sungrow Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
@@ -253,14 +271,20 @@ void BatteriesModbusTCP::register_urls()
             load_sma_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
-                test_printfln("Unknown SMA Hybrid Inverter mode: %u", static_cast<uint8_t>(test->mode));
+                test_printfln(test->language == Language::English
+                              ? "Unknown SMA Hybrid Inverter mode: %u"
+                              : "Unbekannter SMA Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
                 return;
             }
 
             break;
 
         default:
-            test_printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
+            test_printfln(test->language == Language::English
+                          ? "Unknown table: %u"
+                          : "Unbekannte Tabelle: %u",
+                          static_cast<uint8_t>(table_id));
             return;
         }
 
@@ -269,7 +293,7 @@ void BatteriesModbusTCP::register_urls()
 
     api.addState("batteries_modbus_tcp/test_state", &test_state);
 
-    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_continue", &test_continue_config, {}, [this](Language language, String &errmsg) {
         if (test == nullptr) {
             return;
         }
@@ -277,14 +301,15 @@ void BatteriesModbusTCP::register_urls()
         uint32_t cookie = test_continue_config.get("cookie")->asUint();
 
         if (cookie != test->cookie) {
-            errmsg = "Cannot continue another test";
+            errmsg = language == Language::English ? "Cannot continue another test" : "Kann keinen anderen Test fortsetzen";
             return;
         }
 
+        test->language        = language;
         test->last_keep_alive = now_us();
     }, true);
 
-    api.addCommand("batteries_modbus_tcp/test_stop", &test_stop_config, {}, [this](Language /*language*/, String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/test_stop", &test_stop_config, {}, [this](Language language, String &errmsg) {
         if (test == nullptr) {
             return;
         }
@@ -292,11 +317,12 @@ void BatteriesModbusTCP::register_urls()
         uint32_t cookie = test_stop_config.get("cookie")->asUint();
 
         if (cookie != test->cookie) {
-            errmsg = "Cannot stop another test";
+            errmsg = language == Language::English ? "Cannot stop another test" : "Kann keinen anderen Test stoppen";
             return;
         }
 
-        test->stop = true;
+        test->language = language;
+        test->stop     = true;
     }, true);
 }
 
@@ -311,7 +337,9 @@ void BatteriesModbusTCP::loop()
     }
 
     if (!test->stop && deadline_elapsed(test->last_keep_alive + 10_s)) {
-        const char *message = "Stopping test because no continue call was received for more than 10 seconds";
+        const char *message = test->language == Language::English
+                              ? "Stopping test because no continue call was received for more than 10 seconds"
+                              : "Stoppe Test, da für mehr als 10 Sekunden kein Fortsetzen-Aufruf empfangen wurde";
 
         logger.printfln("%s", message);
         test_printfln("%s", message);
@@ -326,7 +354,7 @@ void BatteriesModbusTCP::loop()
             break;
         }
 
-        test_printfln("Connecting to %s:%u", test->host.c_str(), test->port);
+        test_printfln(test->language == Language::English ? "Connecting to %s:%u" : "Verbinde zu %s:%u", test->host.c_str(), test->port);
 
         test->reconnect = false;
         test->state = TestState::Connecting;
@@ -338,7 +366,7 @@ void BatteriesModbusTCP::loop()
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf));
+                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
                 test_printfln("%s", buf);
 
                 test->state = TestState::Done;
@@ -353,7 +381,7 @@ void BatteriesModbusTCP::loop()
 
             char buf[256] = "";
 
-            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf));
+            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, test->host.c_str(), test->port, buf, sizeof(buf), test->language);
             test_printfln("%s", buf);
 
             test->client = nullptr;
@@ -382,7 +410,9 @@ void BatteriesModbusTCP::loop()
         break;
 
     case TestState::Done: {
-            test_printfln(test->stop ? "Test stopped" : "Test finished");
+            test_printfln(test->language == Language::English
+                          ? (test->stop ? "Test stopped" : "Test finished")
+                          : (test->stop ? "Test gestoppt" : "Test abgeschlossen"));
             test_flush_log();
 
 #if MODULE_WS_AVAILABLE()
@@ -424,13 +454,15 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        test->writer = BatteryModbusTCP::create_table_writer(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client), test->device_address, test->repeat_interval, test->mode, test->table,
+        test->writer = BatteryModbusTCP::create_table_writer(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
+                                                             test->device_address, test->repeat_interval, test->mode, test->table,
         [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
         [this]() {
             test->state = TestState::DestroyTableWriter;
-        });
+        },
+        test->language);
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif

@@ -29,8 +29,10 @@
 class GenericTCPClientConnectorBase
 {
 public:
-    static void format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level, const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
-    static void format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level, const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
+    static void format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
+                                     const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
+    static void format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level,
+                                         const char *host, uint16_t port, char *buf, size_t buf_len, Language language = Language::English);
 
 protected:
     GenericTCPClientConnectorBase(const char *event_log_prefix_override_, const char *event_log_message_prefix_) :

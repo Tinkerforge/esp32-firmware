@@ -141,7 +141,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
 }
 
 void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
-                                                         const char *host, uint16_t port, char *buf, size_t buf_len, Language language)
+                                                         const char *host, uint16_t port, char *buf, size_t buf_len, Language language /*= Language::English*/)
 {
     const char *shared;
 
@@ -209,7 +209,7 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
 }
 
 void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level,
-                                                             const char *host, uint16_t port, char *buf, size_t buf_len, Language language)
+                                                             const char *host, uint16_t port, char *buf, size_t buf_len, Language language /*= Language::English*/)
 {
     const char *shared;
 
