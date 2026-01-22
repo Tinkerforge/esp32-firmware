@@ -92,14 +92,14 @@ static void (*const slot_debug_info_fns[CONFIG_TYPES])(SlotDebugInfo *slot_info)
     &get_slot_debug_info<Config::ConfInt>,
     &get_slot_debug_info<Config::ConfUint32>,
     &get_slot_debug_info<Config::ConfInt32>,
+    &get_slot_debug_info<Config::ConfUint53>,
+    &get_slot_debug_info<Config::ConfInt52>,
     &get_slot_debug_info<Config::ConfFloat>,
     &get_slot_debug_info<Config::ConfString>,
     &get_slot_debug_info<Config::ConfArray>,
+    &get_slot_debug_info<Config::ConfTuple>,
     &get_slot_debug_info<Config::ConfObject>,
     &get_slot_debug_info<Config::ConfUnion>,
-    &get_slot_debug_info<Config::ConfUint53>,
-    &get_slot_debug_info<Config::ConfInt52>,
-    &get_slot_debug_info<Config::ConfTuple>,
 };
 
 void Debug::pre_setup()
@@ -173,14 +173,14 @@ void Debug::pre_setup()
         {"conf_int_buf_size", Config::Uint32(0)},
         {"conf_uint32_buf_size", Config::Uint32(0)},
         {"conf_int32_buf_size", Config::Uint32(0)},
+        {"conf_uint53_buf_size", Config::Uint32(0)},
+        {"conf_int52_buf_size", Config::Uint32(0)},
         {"conf_float_buf_size", Config::Uint32(0)},
         {"conf_string_buf_size", Config::Uint32(0)},
         {"conf_array_buf_size", Config::Uint32(0)},
+        {"conf_tuple_buf_size", Config::Uint32(0)},
         {"conf_object_buf_size", Config::Uint32(0)},
         {"conf_union_buf_size", Config::Uint32(0)},
-        {"conf_uint53_buf_size", Config::Uint32(0)},
-        {"conf_int52_buf_size", Config::Uint32(0)},
-        {"conf_tuple_buf_size", Config::Uint32(0)},
         {"ipsock_cur", Config::Uint8(0)},
         {"ipsock_hwm", Config::Uint8(0)},
         {"api_states",    Config::Uint16(0)},
@@ -246,14 +246,14 @@ void Debug::setup()
         state_slow.get("conf_int_buf_size"   )->updateUint(get_allocated_slot_memory<Config::ConfInt>());
         state_slow.get("conf_uint32_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfUint32>());
         state_slow.get("conf_int32_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfInt32>());
+        state_slow.get("conf_uint53_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfUint53>());
+        state_slow.get("conf_int52_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfInt52>());
         state_slow.get("conf_float_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfFloat>());
         state_slow.get("conf_string_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfString>());
         state_slow.get("conf_array_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfArray>());
+        state_slow.get("conf_tuple_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfTuple>());
         state_slow.get("conf_object_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfObject>());
         state_slow.get("conf_union_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfUnion>());
-        state_slow.get("conf_uint53_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfUint53>());
-        state_slow.get("conf_int52_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfInt52>());
-        state_slow.get("conf_tuple_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfTuple>());
 
         for (size_t i = 0; i < CONFIG_TYPES; i++) {
             SlotDebugInfo slot_info;
