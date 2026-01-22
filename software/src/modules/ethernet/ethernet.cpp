@@ -143,12 +143,12 @@ void Ethernet::setup()
     state.get("connection_state")->updateEnum(runtime_data->connection_state);
 
     runtime_data->was_connected = false;
-    runtime_data->last_connected = 0_us;
 
     Network.begin();
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
-            logger.printfln("Started");
+            const uint32_t t_startup = (now_us() - this->runtime_data->last_connected).as<uint32_t>() / 1000;
+            logger.printfln("Started after %lums", t_startup);
 
 #if MODULE_NETWORK_AVAILABLE()
             const String &hostname = network.get_hostname();
@@ -316,6 +316,8 @@ void Ethernet::setup()
 
     ETH.setTaskStackSize(2304);
 
+    runtime_data->last_connected = now_us();
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
 
@@ -325,9 +327,7 @@ void Ethernet::setup()
 #endif
 
     const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, uxTaskPriorityGet(nullptr) + 1, nullptr, 1); // Priority of current task + 1
-    if (ret == pdPASS) {
-        logger.printfln("Starting");
-    } else {
+    if (ret != pdPASS) {
         logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
         if (!ETH.begin()) {
             logger.printfln("Start failed. PHY broken?");
