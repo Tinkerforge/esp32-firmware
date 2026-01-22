@@ -238,12 +238,6 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     eebus.trace_fmtln("ShipConnection::send_string: Sending Message classified as %d with length %d:", msg_classifier, length);
     eebus.trace_strln(str, length);
 
-    /*
-    message_outgoing->data[0] = msg_classifier;
-    memcpy(&message_outgoing->data[1], str, length);
-    message_outgoing->length = length;
-    */
-
     char *buffer = static_cast<char *>(ps_malloc(length + 1));
 
     buffer[0] = static_cast<char>(msg_classifier);
@@ -262,9 +256,7 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     } else if (role == Role::Client) {
         tf_websocket_client_send_bin(ws_server, buffer, length + 1, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS), pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
     }
-    //delete[] buffer;
-
-    //send_current_outgoing_message();
+    free_any(buffer);
 }
 
 void ShipConnection::send_data_message(JsonVariant payload)
