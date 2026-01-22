@@ -53,7 +53,7 @@ public:
      * @param callback Function called with generated CSV data chunks
      * @return true if generation was successful, false on error
      */
-    void generateCSV(const CSVGenerationParams& params,
+    int generateCSV(const CSVGenerationParams& params,
                      std::function<int(const char* data, size_t length)> callback);
 
     /**

@@ -975,7 +975,10 @@ void ChargeTracker::register_urls()
         };
 
         request.beginChunkedResponse(200, "application/pdf");
-        this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
+        int rc = this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, language, letterhead, letterhead_lines, &request);
+        if (rc != 0)
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
+
         return request.endChunkedResponse();
     });
 
@@ -1051,7 +1054,9 @@ void ChargeTracker::register_urls()
 
         request.beginChunkedResponse(200, "text/csv");
         CSVChargeLogGenerator csv_generator;
-        csv_generator.generateCSV(csv_params, std::move(callback));
+        int rc = csv_generator.generateCSV(csv_params, std::move(callback));
+        if (rc < 0)
+            return WebServerRequestReturnProtect{.error = ESP_FAIL};
         return request.endChunkedResponse();
     });
 
@@ -1620,7 +1625,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
 }
 #endif
 
-void ChargeTracker::generate_pdf(
+int ChargeTracker::generate_pdf(
     std::function<int(const void *buffer, size_t len)> &&callback,
     int user_filter,
     uint32_t start_timestamp_min,
@@ -1661,7 +1666,7 @@ void ChargeTracker::generate_pdf(
         } else {
             logger.printfln("Failed to generate PDF: Task timed out");
         }
-        return;
+        return -1;
     }
     {
         char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
@@ -1716,7 +1721,7 @@ search_done:
         } else {
             logger.printfln("Failed to generate PDF: No memory");
         }
-        return;
+        return -1;
     }
     for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
         display_name_cache[i].length = UINT32_MAX;
@@ -1798,7 +1803,7 @@ search_done:
     bool any_charges_tracked = charge_records > 0;
     if (!any_charges_tracked)
         charge_records = 1;
-    init_pdf_generator(callback,
+    int rc = init_pdf_generator(callback,
                        (language == Language::English) ? "WARP Charge Log" : "WARP Ladelog",
                        stats_buf, (electricity_price == 0) ? 5 : 6,
                        letterhead, letterhead_lines,
@@ -1864,6 +1869,8 @@ search_done:
         return lines_generated;
     });
     free(display_name_cache);
+
+    return rc;
 }
 
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {

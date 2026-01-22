@@ -331,7 +331,7 @@ bool CSVChargeLogGenerator::readChargeRecords(uint32_t first_record, uint32_t la
     return true;
 }
 
-void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
+int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                                         std::function<esp_err_t(const char* data, size_t length)> callback) {
     std::lock_guard<std::mutex> lock(charge_tracker.records_mutex);
 
@@ -349,13 +349,16 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     int header_result = callback(final_header.c_str(), final_header.length());
     if (header_result != ESP_OK) {
         logger.printfln("Failed to send CSV header. Cancelling CSV generation.");
-        return;
+        return -1;
     }
 
+    // TODO use unique_ptr_any here
     display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
-    if (!display_name_cache) {
+    defer { free(display_name_cache); };
+
+    if (display_name_cache == nullptr) {
         logger.printfln("Failed to generate CSV: No memory");
-        return;
+        return -1;
     }
     for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
         display_name_cache[i].length = UINT32_MAX;
@@ -364,7 +367,7 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
     String accumulated_data;
     accumulated_data.reserve(MAX_ACCUMULATED);
 
-    readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
+    int rc = readChargeRecords(charge_tracker.first_charge_record, charge_tracker.last_charge_record,
         [&](const uint8_t* record_data, size_t record_size, bool last) -> esp_err_t {
             const Charge* record = reinterpret_cast<const Charge*>(record_data);
 
@@ -435,15 +438,19 @@ void CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
             return callback_result;
         });
 
+    if (rc < 0)
+        return rc;
+
     // This might not be necessary if accumulated_data is cleared on error as well.
     if (accumulated_data.length() > 0) {
         int callback_result = callback(accumulated_data.c_str(), accumulated_data.length());
         if (callback_result < 0) {
             logger.printfln("Failed to send final CSV data chunk.");
+            return callback_result;
         }
     }
 
-    free(display_name_cache);
+    return 0;
 }
 
 String CSVChargeLogGenerator::generateCSVString(const CSVGenerationParams& params) {

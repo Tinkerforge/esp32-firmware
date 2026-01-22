@@ -406,8 +406,8 @@ int init_pdf_generator(std::function<int(const void *data, size_t len)> &write_c
         return pdf_add_multiple_text_spacing(pdf_doc, NULL, lines_string, lines, 6, FONT_SIZE, LEFT_MARGIN, table_text_offset, PDF_BLACK, 0, LINE_HEIGHT * 1.2, table_column_offsets);
     });
 
-    pdf_save_file(pdf);
+    int rc = pdf_save_file(pdf);
     pdf_destroy(pdf);
 
-    return 0;
+    return rc;
 }

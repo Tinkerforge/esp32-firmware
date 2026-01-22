@@ -1088,7 +1088,7 @@ int pdf_save_file(struct pdf_doc *pdf)
 
     pdf_flush_write_buf(pdf, pdf->write_buf_size);
 
-    return 0;
+    return pdf->write_error_occurred ? -1 : 0;
 }
 
 static int pdf_add_stream(struct pdf_doc *pdf, const char *buffer)
