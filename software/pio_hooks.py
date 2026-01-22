@@ -496,6 +496,13 @@ def hyphenate(s, key, lang):
     # "escape" them with a string that is probably not used in keys but does not form a word boundary: 'ÄÖÜÄÖÜ'
     s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace(".", "ÄÖÜÄÖÜ")}")', s)
 
+    # Escape style attributes to prevent hyphenation of CSS property names like "background-color"
+    style_placeholders = []
+    def escape_style(match):
+        style_placeholders.append(match.group(0))
+        return f'___STYLE_{len(style_placeholders) - 1}___'
+    s = re.sub(r'style=\{[^}]+\}|style="[^"]+"', escape_style, s)
+
     def repl(m: re.Match):
         word = m.group(0)
 
@@ -515,6 +522,10 @@ def hyphenate(s, key, lang):
             return word
 
     s = re.sub(r'\w+', repl, s)
+
+    # Reverse escaping of style attributes.
+    for i, style in enumerate(style_placeholders):
+        s = s.replace(f'___STYLE_{i}___', style)
 
     # Reverse escaping of translation keys.
     s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace("ÄÖÜÄÖÜ", ".")}")', s)
