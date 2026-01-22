@@ -851,7 +851,7 @@ class Stage3:
         while self.read_meter_qr_code(allow_no_detection=True) != '01':
             self.beep_notify()
 
-            while my_input('Bring electrical tester to step 01/15 and press y + return to continue') != 'y':
+            while my_input('Bring electrical tester to step 01/15 and press y + return to continue. Press "Memory Organzier", header, back, select next free (without green blob) test, select innermost test, press play twice') != 'y':
                 pass
 
         while self.is_meter_connected_to_usb():
