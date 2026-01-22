@@ -208,14 +208,8 @@ char *format_meter_slot(uint32_t slot)
 void Meters::pre_setup()
 {
     for (MeterSlot &meter_slot : meter_slots) {
-        meter_slot.value_ids = Config::Array({},
-            Config::get_prototype_uint16_0(),
-            0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfUint>()
-        );
-        meter_slot.values = Config::Array({},
-            Config::get_prototype_float_nan(),
-            0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfFloat>()
-        );
+        meter_slot.value_ids = Config::Tuple({});
+        meter_slot.values    = Config::Tuple({});
 
         meter_slot.values_last_updated_at = micros_t{INT64_MIN};
         meter_slot.values_last_changed_at = micros_t{INT64_MIN};
@@ -1255,14 +1249,14 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     }
     meter_slot.value_combiner_filters_data = filter_data_compact;
 
-    value_ids.reserve(total_value_id_count);
+    //value_ids.reserve(total_value_id_count);
+    value_ids.replace(total_value_id_count, Config::Uint16(0));
 
     for (uint32_t i = 0; i < total_value_id_count; i++) {
-        auto val = value_ids.add();
-        val->updateUint(static_cast<uint32_t>(total_value_ids[i]));
+        value_ids.get(i)->updateUint(static_cast<uint32_t>(total_value_ids[i]));
     }
 
-    values.setCount(total_value_id_count);
+    values.replace(total_value_id_count, Config::Float(NAN));
 
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER]          = meters_find_id_index(total_value_ids, total_value_id_count, {
                                                                                             MeterValueID::PowerActiveLSumImExDiff,
