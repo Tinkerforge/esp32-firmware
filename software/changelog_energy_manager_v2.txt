@@ -235,7 +235,7 @@
 2025-12-22: 1.3.14 (c1f09919)
 - Fix crash while closing or reloading the web interface using the remote access
 
-2026-01-22: 1.3.15 (<unknown>)
+2026-01-22: 1.3.15 (78c7dbd6)
 - Stop all chargers if PV excess charging or dynamic load management don't receive necessary meter values anymore
 - Always prefer ethernet connection over WiFi connection
 - Show warning if web interface and browser UI locale differ
