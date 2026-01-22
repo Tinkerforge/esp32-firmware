@@ -1001,26 +1001,21 @@ String WebServerRequest::header(const char *header_name)
 {
     auto buf_len = httpd_req_get_hdr_value_len(req, header_name) + 1;
     if (buf_len == 1) {
-        return "";
+        return {};
     }
 
     CoolString result;
     if (!result.reserve(buf_len)) {
-        return "";
+        return {};
     }
 
     char *buf = result.begin();
     /* Copy null terminated value string into buffer */
     if (httpd_req_get_hdr_value_str(req, header_name, buf, buf_len) != ESP_OK) {
-        return "";
+        return {};
     }
     result.setLength(static_cast<int>(buf_len));
     return result;
-}
-
-size_t WebServerRequest::contentLength()
-{
-    return req->content_len;
 }
 
 int WebServerRequest::receive(char *buf, size_t buf_len)

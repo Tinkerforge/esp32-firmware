@@ -103,7 +103,7 @@ public:
 
     String header(const char *header_name);
 
-    size_t contentLength();
+    inline size_t contentLength() { return req->content_len; }
 
     [[gnu::warn_unused_result]]
     int receive(char *buf, size_t buf_len);
