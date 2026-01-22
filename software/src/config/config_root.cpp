@@ -45,11 +45,11 @@ String ConfigRoot::update_from_file(File &&file)
 
 // Intentionally take a non-const char * here:
 // This allows ArduinoJson to deserialize in zero-copy mode
-String ConfigRoot::update_from_cstr(char *c, size_t len, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path, size_t config_path_len)
 {
     ASSERT_MAIN_THREAD();
     Config copy;
-    String err = this->get_updated_copy(c, len, &copy, ConfigSource::API, config_path, config_path_len);
+    String err = this->get_updated_copy(payload, payload_len, &copy, ConfigSource::API, config_path, config_path_len);
     if (!err.isEmpty())
         return err;
 
@@ -94,10 +94,10 @@ static String get_updated_copy_error(DeserializationError error, size_t payload_
     return String(buf, sw.getLength());
 }
 
-String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
 {
     DynamicJsonDocument doc(this->json_size(true));
-    DeserializationError error = deserializeJson(doc, c, payload_len);
+    DeserializationError error = deserializeJson(doc, payload, payload_len);
 
     if (error.code() != DeserializationError::Ok) {
         return get_updated_copy_error(error, payload_len);

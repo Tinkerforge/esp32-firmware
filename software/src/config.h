@@ -1237,8 +1237,8 @@ public:
 
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode
-    String update_from_cstr(char *c, size_t payload_len,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
-    String get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
     String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);

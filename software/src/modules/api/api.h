@@ -128,14 +128,14 @@ public:
     void register_events() override;
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    String callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String callCommand(CommandRegistration &reg, char *payload, size_t payload_len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb, SuffixPath &&suffix_path=SuffixPath{});
+    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, const std::function<void(const String &errmsg)> &done_cb, SuffixPath &&suffix_path = SuffixPath{});
 
     String callCommand(const char *path, const Config::ConfUpdate &payload = {});
 
-    void callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
+    void callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
 
     const Config *getState(const char *path, bool log_if_not_found = true, size_t path_len = 0);
     const Config *getState(const String &path, bool log_if_not_found = true);

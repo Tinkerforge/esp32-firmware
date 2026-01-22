@@ -372,14 +372,14 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
     return true;
 }
 
-void API::callResponse(ResponseRegistration &reg, char *payload, size_t len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
+void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_len, IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id) {
     if (!running_in_main_task()) {
         logger.printfln("Don't use API::callResponse in non-main thread!");
         return;
     }
 
-    if (len != 0 || !reg.config->is_null()) {
-        String message = reg.config->update_from_cstr(payload, len);
+    if (payload_len != 0 || !reg.config->is_null()) {
+        String message = reg.config->update_from_cstr(payload, payload_len);
 
         if (!message.isEmpty()) {
             OwnershipGuard ownership_guard(response_ownership, response_owner_id);
@@ -911,7 +911,7 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path, size_t config_path_len)
+String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_len, const Config::Key *config_path, size_t config_path_len)
 {
     if (running_in_main_task()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
@@ -920,14 +920,14 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len, con
     String result;
 
     auto await_result = task_scheduler.await(
-        [&result, reg, payload, len, config_path, config_path_len]() mutable {
+        [&result, reg, payload, payload_len, config_path, config_path_len]() mutable {
             if (payload == nullptr && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
                 return;
             }
 
             if (payload != nullptr) {
-                result = reg.config->update_from_cstr(payload, len, config_path, config_path_len);
+                result = reg.config->update_from_cstr(payload, payload_len, config_path, config_path_len);
                 if (!result.isEmpty())
                     return;
             } else if (config_path_len > 0) {
@@ -947,7 +947,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len, con
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb, API::SuffixPath &&suffix_path)
+void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t payload_len, const std::function<void(const String &errmsg)> &done_cb, API::SuffixPath &&suffix_path)
 {
     if (running_in_main_task()) {
         String err = "callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!";
@@ -955,13 +955,13 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
         return;
     }
 
-    char *cpy = static_cast<char *>(malloc(len));
-    if (cpy == nullptr) {
+    char *payload_copy = static_cast<char *>(malloc(payload_len));
+    if (payload_copy == nullptr) {
         String err = "callCommandNonBlocking: Failed to allocate payload copy!";
         done_cb(err);
         return;
     }
-    memcpy(cpy, payload, len);
+    memcpy(payload_copy, payload, payload_len);
 
     // We use C++ >= 14, so suffix_path could be moved into the lambda capture list.
     // However std::function requires that all captured variables can be copy-constructed,
@@ -969,22 +969,22 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
     char *suffix_ptr = suffix_path.suffix.release();
 
     task_scheduler.scheduleOnce(
-        [reg, cpy, len, done_cb, suffix_ptr, path = suffix_path.path]() mutable {
+        [reg, payload_copy, payload_len, done_cb, suffix_ptr, path = suffix_path.path]() mutable {
             String result;
 
             defer {
                 done_cb(result);
-                free(cpy);
+                free(payload_copy);
                 delete[] suffix_ptr;
             };
 
-            if ((cpy == nullptr || len == 0) && !reg.config->is_null()) {
+            if ((payload_copy == nullptr || payload_len == 0) && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
                 return;
             }
 
-            if (cpy != nullptr) {
-                result = reg.config->update_from_cstr(cpy, len, path.data(), path.size());
+            if (payload_copy != nullptr) {
+                result = reg.config->update_from_cstr(payload_copy, payload_len, path.data(), path.size());
                 if (!result.isEmpty()) {
                     return;
                 }
