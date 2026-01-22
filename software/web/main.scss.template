@@ -778,6 +778,12 @@ input[type="file"].form-control:hover:not(:disabled):not([readonly])::file-selec
     margin-bottom: 0;
     min-height: calc(1.5em + .75rem + calc(var(--bs-border-width) * 2));
 }
+// Make form-select inside input-group size to content when it's the first child.
+// In BS4, selects as prepend elements had width:auto behavior. BS5 changed to flex:1 1 auto.
+.input-group > .form-select:first-child {
+    flex: 0 0 auto;
+    width: auto;
+}
 
 // Dark mode customizations
 $link-color-dark: $link-color;
