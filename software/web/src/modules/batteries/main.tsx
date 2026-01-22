@@ -214,7 +214,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                             </FormRow>,
                             <FormRow label={__("batteries.content.edit_rule_time")}>
                                 <div class="row g-0">
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mb-1 mb-md-0">
                                         <InputSelect
                                             placeholder={__("select")}
                                             items={[
@@ -234,8 +234,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                             value={this.state.edit_rule_config.time_cond.toString()}
                                         />
                                     </div>
-                                    <div class="col-md-8">
-                                        <div class="input-group ps-2">
+                                    <div class="col-md-8 d-flex flex-wrap ps-md-2">
+                                        <div class="input-group flex-nowrap flex-grow-1 mb-1">
                                             <span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
@@ -262,6 +262,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                                 }}
                                                 value={(this.state.edit_rule_config.time_start % 60).toString()}
                                             />
+                                        </div>
+                                        <div class="input-group flex-nowrap flex-grow-1">
                                             <span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span>
                                             <InputSelect
                                                 required={this.state.edit_rule_config.time_cond != RuleCondition.Ignore}
@@ -521,7 +523,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     </FormRow>,
                     <FormRow label={__("batteries.content.edit_rule_time")}>
                         <div class="row g-0">
-                            <div class="col-md-4">
+                            <div class="col-md-4 mb-1 mb-md-0">
                                 <InputSelect
                                     placeholder={__("select")}
                                     items={[
@@ -541,8 +543,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                     value={this.state.add_rule_config.time_cond.toString()}
                                 />
                             </div>
-                            <div class="col-md-8">
-                                <div class="input-group ps-2">
+                            <div class="col-md-8 d-flex flex-wrap ps-md-2">
+                                <div class="input-group flex-nowrap flex-grow-1 mb-1">
                                     <span class="input-group-text">{__("batteries.content.edit_rule_time_start")}</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
@@ -569,6 +571,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         }}
                                         value={(this.state.add_rule_config.time_start % 60).toString()}
                                     />
+                                </div>
+                                <div class="input-group flex-nowrap flex-grow-1">
                                     <span class="input-group-text">{__("batteries.content.edit_rule_time_end")}</span>
                                     <InputSelect
                                         required={this.state.add_rule_config.time_cond != RuleCondition.Ignore}
