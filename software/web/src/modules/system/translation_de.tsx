@@ -66,7 +66,7 @@ let x = {
             "system_language": "Systemsprache",
             "system_language_help": "Setzt die Systemsprache auf die angegebene Sprache. Wenn \"Browser-Sprache automatisch erkennen\" deaktiviert ist, dann werden die Spracheinstellungen des Browsers ignoriert und das Webinterface nutzt auch die angegebene Systemsprache.",
             "system_language_warning": /*SFN*/(browser_locale: string, browser_language_name: string, web_interface_language: string, web_interface_language_name: string) =>
-                `Die Sprache der Benutzeroberfläche des Browsers ist auf ${browser_language_name} [${browser_locale}] eingestellt. Zahlen, Uhrzeiten und Daten werden in ${browser_language_name} angezeigt. Während die Sprache des Webinterfaces auf ${web_interface_language_name} [${web_interface_language}] eingestellt ist. Texte werden in ${web_interface_language_name} angezeigt.`/*NF*/,
+                `Die Sprache der Benutzeroberfläche des Browsers ist auf ${browser_language_name} [${browser_locale}] eingestellt, sodass Zahlen, Uhrzeiten und Daten in ${browser_language_name} angezeigt werden. Die Sprache des Webinterfaces ist auf ${web_interface_language_name} [${web_interface_language}] eingestellt, sodass Texte in ${web_interface_language_name} angezeigt werden.`/*NF*/,
             "german": "Deutsch",
             "english": "Englisch",
             "detect_browser_language": "Browser-Sprache automatisch erkennen"
