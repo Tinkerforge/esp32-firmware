@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "modules.h"
+#include "language.h"
 #include "index_html.embedded.h"
 #include "bindings/hal_common.h"
 #include "build.h"
@@ -34,6 +35,7 @@
 #include "gcc_warnings.h"
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
+Language default_language = Language::German;
 
 static IModule **loop_array = nullptr;
 static size_t loop_array_size = 0;

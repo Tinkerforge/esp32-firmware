@@ -23,6 +23,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
+#include "language.h"
 #include "bindings/errors.h"
 #include "tools.h"
 #include "tools/malloc.h"
@@ -36,7 +37,6 @@
 
 static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
-
 
 #if MODULE_CM_NETWORKING_AVAILABLE()
 #define FRONT_PANEL_CONTROLLED_CHARGES (MAX_CONTROLLED_CHARGERS - 1)
@@ -424,13 +424,9 @@ int FrontPanel::update_front_page_empty_tile(const uint8_t index, const TileType
     );
 }
 
-const char* FrontPanel::get_i18n_string(const char *key_en, const char *key_de)
+const char *FrontPanel::get_i18n_string(const char *key_en, const char *key_de)
 {
-#if MODULE_SYSTEM_AVAILABLE()
-    return (system_.get_system_language() == Language::English) ? key_en : key_de;
-#else
-    return key_de;
-#endif
+    return default_language == Language::English ? key_en : key_de;
 }
 
 int FrontPanel::update_front_page_charger(const uint8_t index, const TileType type, const uint8_t param)

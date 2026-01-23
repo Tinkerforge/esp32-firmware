@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "module.h"
+#include "language.h"
 #include "battery_modbus_tcp.h"
 #include "battery_modbus_tcp_table_id.enum.h"
-#include "modules/api/language.enum.h"
 #include "modules/batteries/ibattery_generator.h"
 
 #if defined(__GNUC__)

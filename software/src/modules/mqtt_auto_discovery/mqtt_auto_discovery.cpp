@@ -29,6 +29,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
+#include "language.h"
 
 void MqttAutoDiscovery::pre_setup()
 {
@@ -198,11 +199,7 @@ void MqttAutoDiscovery::announce_next_topic(uint32_t topic_num)
             if (static_info) { // No static info? Skip topic.
                 const String &client_name = mqtt.client_name;
                 const String &topic_prefix = mqtt.global_topic_prefix;
-#if MODULE_SYSTEM_AVAILABLE()
-                const char *name = (system_.get_system_language() == Language::English) ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
-#else
-                const char *name = mqtt_discovery_topic_infos[topic_num].name_de;
-#endif
+                const char *name = default_language == Language::English ? mqtt_discovery_topic_infos[topic_num].name_en : mqtt_discovery_topic_infos[topic_num].name_de;
 
                 // FIXME: convert to StringBuilder and TFJson
                 String payload;

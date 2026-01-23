@@ -4,7 +4,7 @@
 import { FileType } from "./file_type.enum";
 import { CSVFlavor } from "./csv_flavor.enum";
 //#endif
-import { Language } from "../api/language.enum";
+import { Language } from "../../ts/language";
 import { GenerationState } from "./generation_state.enum";
 
 interface Charge {

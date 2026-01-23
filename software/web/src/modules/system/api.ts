@@ -1,4 +1,4 @@
-import { Language } from "../api/language.enum";
+import { Language } from "../../ts/language";
 
 export interface i18n_config {
     language: Language;

@@ -26,9 +26,9 @@
 
 #include "module.h"
 #include "config.h"
+#include "language.h"
 #include "chunked_response.h"
 #include "tools/allocator.h"
-#include "language.enum.h"
 
 // Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct StateRegistration {
@@ -169,8 +169,6 @@ public:
 
     size_t registerBackend(IAPIBackend *backend);
 
-    inline void set_default_language(Language language) { default_language = language; }
-
     std::span<StateRegistration> states;
     std::span<CommandRegistration> commands;
     std::span<ResponseRegistration> responses;
@@ -233,5 +231,4 @@ private:
         std::vector<ResponseRegistration> responses;
     };
     RegistrationCollector *reg_collector;
-    Language default_language = Language::German;
 };

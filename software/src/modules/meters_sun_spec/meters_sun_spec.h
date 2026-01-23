@@ -26,7 +26,7 @@
 #include <lwip/ip_addr.h>
 
 #include "module.h"
-#include "modules/api/language.enum.h"
+#include "language.h"
 #include "modules/meters/imeter_generator.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "config.h"

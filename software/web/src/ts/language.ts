@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2026 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,24 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#pragma once
+export const enum Language {
+    Default = -1,
+    German = 0,
+    English = 1,
 
-#include "module.h"
-#include "config.h"
-
-class System final : public IModule
-{
-public:
-    System() {}
-
-    void pre_setup() override;
-    void setup() override;
-    void register_urls() override;
-
-    void factory_reset(bool restart_esp = true);
-
-private:
-    bool factory_reset_running = false;
-    ConfigRoot i18n_config;
-    ConfigRoot last_reset;
-};
+    _min = Default,
+    _max = English,
+}

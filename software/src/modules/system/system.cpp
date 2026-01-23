@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "language.h"
 #include "./recovery_html.embedded.h"
 
 extern int8_t green_led_pin;
@@ -68,11 +69,6 @@ void System::factory_reset(bool restart_esp)
     }
 }
 
-Language System::get_system_language()
-{
-    return i18n_config.get("language")->asEnum<Language>();
-}
-
 void System::pre_setup()
 {
     i18n_config = ConfigRoot{Config::Object({
@@ -86,7 +82,7 @@ void System::pre_setup()
             return "Default is not allowed";
         }
 
-        api.set_default_language(language);
+        default_language = language;
 
         return "";
     }};

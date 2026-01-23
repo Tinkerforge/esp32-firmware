@@ -26,6 +26,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "language.h"
 #include "tools/malloc.h"
 #include "tools/fs.h"
 #include "tools/printf.h"
@@ -34,7 +35,6 @@
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
 #include "generation_state.enum.h"
-#include "../api/language.enum.h"
 #include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512

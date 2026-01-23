@@ -24,7 +24,7 @@
 #include <TFGenericTCPClientPool.h>
 
 #include "tools.h"
-#include "modules/api/language.enum.h"
+#include "language.h"
 
 class GenericTCPClientConnectorBase
 {

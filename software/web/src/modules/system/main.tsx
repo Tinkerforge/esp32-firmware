@@ -31,7 +31,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
-import { Language } from "../api/language.enum";
+import { Language } from "../../ts/language";
 
 export function SystemNavbar() {
     return <NavbarItem name="system" module="system" title={__("system.navbar.system")} symbol={<Settings />} />;
