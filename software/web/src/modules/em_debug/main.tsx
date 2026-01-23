@@ -139,8 +139,8 @@ export class EMDebug extends Component {
                                 <IndicatorGroup vertical key={j} class="mb-1 col px-1"
                                     value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                     items={[
-                                        ["primary", __("em_debug.content.high")],
-                                        ["secondary", __("em_debug.content.low")]
+                                        ["primary",   __(j <= 1 ? "em_debug.content.high" : "em_debug.content.closed")],
+                                        ["secondary", __(j <= 1 ? "em_debug.content.low"  : "em_debug.content.open"  )]
                                     ]} />
                             ))}
                         </div>
@@ -168,8 +168,8 @@ export class EMDebug extends Component {
                                     <IndicatorGroup vertical key={j} class="mb-1 col px-1"
                                         value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                         items={[
-                                            ["primary", __("em_debug.content.high")],
-                                            ["secondary", __("em_debug.content.low")]
+                                            ["primary", __("em_debug.content.closed")],
+                                            ["secondary", __("em_debug.content.open")]
                                         ]} />
                                 ))}
                             </div>

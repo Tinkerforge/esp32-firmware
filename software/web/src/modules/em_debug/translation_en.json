@@ -33,6 +33,8 @@
 
             "low": "Low",
             "high": "High",
+            "open": "Open",
+            "closed": "Closed",
 
             "reset_description": "Actions",
             "reset_description_muted": "",
