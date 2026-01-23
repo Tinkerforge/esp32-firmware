@@ -75,7 +75,6 @@ let x = {
             "language_english": "English",
             "letterhead_label": "Letterhead",
             "target_user": "Remote access user",
-            "target_user_placeholder": "Select user",
             "charge_log_email_send_config": "Email send configuration",
             "charge_log_email_send_add_modal_title": "Add email send configuration",
             "charge_log_email_send_edit_modal_title": "Edit email send configuration",

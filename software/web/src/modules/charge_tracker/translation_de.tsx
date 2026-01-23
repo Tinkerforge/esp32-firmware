@@ -75,7 +75,6 @@ let x = {
             "language_english": "Englisch",
             "letterhead_label": "Briefkopf",
             "target_user": "Fernzugriffsbenutzer",
-            "target_user_placeholder": "Benutzer auswählen",
             "charge_log_email_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_email_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
             "charge_log_email_send_edit_modal_title": "E-Mail-Versandkonfiguration bearbeiten",
