@@ -98,23 +98,6 @@ void Heating::setup()
     }
 }
 
-void Heating::register_events()
-{
-    if (startup_delay_task_id != 0) {
-        if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
-            event.registerEvent("day_ahead_prices/state", {}, [this](const Config * /*cfg*/) {
-                return this->check_startup_delay_event();
-            });
-        }
-
-        if (config.get("yield_forecast")->asBool()) {
-            event.registerEvent("solar_forecast/state", {}, [this](const Config * /*cfg*/) {
-                return this->check_startup_delay_event();
-            });
-        }
-    }
-}
-
 void Heating::register_urls()
 {
     api.addPersistentConfig("heating/config", &config);
@@ -174,6 +157,23 @@ void Heating::register_urls()
     task_scheduler.scheduleWallClock([this]() {
         this->update();
     }, HEATING_UPDATE_INTERVAL, 0_ms, true);
+}
+
+void Heating::register_events()
+{
+    if (startup_delay_task_id != 0) {
+        if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
+            event.registerEvent("day_ahead_prices/state", {}, [this](const Config * /*cfg*/) {
+                return this->check_startup_delay_event();
+            });
+        }
+
+        if (config.get("yield_forecast")->asBool()) {
+            event.registerEvent("solar_forecast/state", {}, [this](const Config * /*cfg*/) {
+                return this->check_startup_delay_event();
+            });
+        }
+    }
 }
 
 bool Heating::is_active()
