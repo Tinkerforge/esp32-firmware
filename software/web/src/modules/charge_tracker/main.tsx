@@ -407,25 +407,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     ]}
                 />
             </FormRow>
-            <Collapse in={this.state.new_remote_upload_config.file_type === 1}>
-                <div>
-                    <FormRow label={__("charge_tracker.content.csv_flavor")}>
-                        <InputSelect
-                            value={this.state.new_remote_upload_config.csv_delimiter.toString()}
-                            onValue={v => this.setState({
-                                new_remote_upload_config: {
-                                    ...this.state.new_remote_upload_config,
-                                    csv_delimiter: parseInt(v) as CSVFlavor
-                                }
-                            })}
-                            items={[
-                                [CSVFlavor.Excel.toString(), __("charge_tracker.content.csv_flavor_excel")],
-                                [CSVFlavor.RFC4180.toString(), __("charge_tracker.content.csv_flavor_rfc4180")]
-                            ]}
-                        />
-                    </FormRow>
-                </div>
-            </Collapse>
             <FormRow label={__("charge_tracker.content.language_label")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.language.toString()}
@@ -457,6 +438,25 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 });
                             }}
                             rows={3}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
+            <Collapse in={this.state.new_remote_upload_config.file_type === 1}>
+                <div>
+                    <FormRow label={__("charge_tracker.content.csv_flavor")}>
+                        <InputSelect
+                            value={this.state.new_remote_upload_config.csv_delimiter.toString()}
+                            onValue={v => this.setState({
+                                new_remote_upload_config: {
+                                    ...this.state.new_remote_upload_config,
+                                    csv_delimiter: parseInt(v) as CSVFlavor
+                                }
+                            })}
+                            items={[
+                                [CSVFlavor.Excel.toString(), __("charge_tracker.content.csv_flavor_excel")],
+                                [CSVFlavor.RFC4180.toString(), __("charge_tracker.content.csv_flavor_rfc4180")]
+                            ]}
                         />
                     </FormRow>
                 </div>
