@@ -54,7 +54,6 @@ public:
      * @brief Generate CSV data and stream it through the callback function
      * @param params Generation parameters (format, filters, etc.)
      * @param callback Function called with generated CSV data chunks
-     * @return true if generation was successful, false on error
      */
     int generateCSV(const CSVGenerationParams& params,
                      std::function<int(const char* data, size_t length)> callback);
