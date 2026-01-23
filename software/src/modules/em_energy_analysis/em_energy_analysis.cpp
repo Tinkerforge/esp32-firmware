@@ -100,7 +100,6 @@ void EMEnergyAnalysis::setup()
 
     task_scheduler.scheduleWallClock([this]() {collect_data_points();}, 5_min, 100_ms, true);
     task_scheduler.scheduleUncancelable([this]() {set_pending_data_points();}, 15_s, 100_ms);
-    task_scheduler.scheduleOnce([this]() {this->show_blank_value_id_update_warnings = true;}, 250_ms);
 }
 
 void EMEnergyAnalysis::register_urls()
@@ -148,6 +147,10 @@ void EMEnergyAnalysis::register_events()
             return EventResult::Deregister;
         });
     }
+
+    task_scheduler.scheduleOnce([this]() {
+        this->show_blank_value_id_update_warnings = true;
+    }, 250_ms);
 }
 
 void EMEnergyAnalysis::update_history_meter_power(uint32_t slot, float power /* W, must not be NaN */)
