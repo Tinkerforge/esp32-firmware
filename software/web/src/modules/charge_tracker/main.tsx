@@ -239,7 +239,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
-    getRemoteUploadConfigTableRows(): TableRow[] {
+    getRemoteUploadConfigTableRows(user_filter_items: [string, string][]): TableRow[] {
         const remote_upload_configs = this.state.remote_upload_configs;
         const users_config = API.get('users/config');
 
@@ -272,7 +272,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     });
                 },
                 editTitle: __("charge_tracker.content.charge_log_email_send_edit_modal_title"),
-                onEditGetChildren: () => this.onAddRemoteUploadConfigGetChildren(),
+                onEditGetChildren: () => this.onAddRemoteUploadConfigGetChildren(user_filter_items),
                 editAdditionalFooterButtons: (
                     <Button
                         variant="info"
@@ -375,9 +375,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         this.setDirty(true);
     }
 
-    onAddRemoteUploadConfigGetChildren() {
-        const users_config = API.get("users/config").users;;
-        const user_items: [string, string][] = users_config.map(u => [u.id.toString(), u.username]);
+    onAddRemoteUploadConfigGetChildren(user_filter_items: [string, string][]) {
         const remote_access_config = API.get("remote_access/config").users;
         const remote_access_user_items: [string, string][] = remote_access_config.map(u => [u.id.toString(), u.email]);
 
@@ -391,11 +389,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             user_filter: parseInt(v)
                         }
                     })}
-                    items={[
-                        ["-2", __("charge_tracker.script.all_users")],
-                        ["-1", __("charge_tracker.script.deleted_users")],
-                        ...user_items
-                    ]}
+                    items={user_filter_items}
                 />
             </FormRow>
             <FormRow label={__("charge_tracker.content.file_type_label")}>
@@ -535,12 +529,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             __("charge_tracker.content.file_type"),
                             __("charge_tracker.content.target_user"),
                         ]}
-                        rows={this.getRemoteUploadConfigTableRows()}
+                        rows={this.getRemoteUploadConfigTableRows(user_filter_items)}
                         addEnabled={state.remote_upload_configs.length < options.REMOTE_ACCESS_MAX_USERS}
                         addTitle={__("charge_tracker.content.charge_log_email_send_add_modal_title")}
                         addMessage={__("charge_tracker.content.charge_log_send_add_message")(state.remote_upload_configs.length, options.REMOTE_ACCESS_MAX_USERS)}
                         onAddShow={() => this.onAddRemoteUploadConfigShow()}
-                        onAddGetChildren={() => this.onAddRemoteUploadConfigGetChildren()}
+                        onAddGetChildren={() => this.onAddRemoteUploadConfigGetChildren(user_filter_items)}
                         onAddSubmit={() => this.onAddRemoteUploadConfigSubmit()}
                         addAdditionalFooterButtons={
                             <Button
