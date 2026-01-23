@@ -31,7 +31,7 @@ import * as util from "../../ts/util";
 export type EMRelayAutomationAction = [
     AutomationActionID.EMRelaySwitch,
     {
-        index: number;
+        index?: number;
         closed: boolean;
     },
 ];
@@ -86,13 +86,22 @@ function get_em_relay_edit_children(action: EMRelayAutomationAction, on_action: 
 function new_em_relay_config(): AutomationAction {
     const em_version = API.get("energy_manager/state").em_version;
 
-    return [
-        AutomationActionID.EMRelaySwitch,
-        {
-            index: 0,
-            closed: true,
-        },
-    ];
+    if (em_version == 1) {
+        return [
+            AutomationActionID.EMRelaySwitch,
+            {
+                closed: true,
+            },
+        ];
+    } else {
+        return [
+            AutomationActionID.EMRelaySwitch,
+            {
+                index: 0,
+                closed: true,
+            },
+        ];
+    }
 }
 
 export function pre_init(): PreInitResult {
