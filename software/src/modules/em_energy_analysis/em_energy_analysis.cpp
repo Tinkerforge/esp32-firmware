@@ -29,8 +29,7 @@
 #include "modules/charge_manager/charge_manager_private.h"
 #include "tools/hexdump.h"
 
-static constexpr micros_t MAX_DATA_AGE = 30_s;
-#define DATA_INTERVAL_5MIN 5 // minutes
+static constexpr micros_t MAX_DATA_AGE = 5_min;
 #define MAX_PENDING_DATA_POINTS 250
 
 #if MODULE_EM_V1_AVAILABLE()
@@ -371,7 +370,6 @@ void EMEnergyAnalysis::collect_data_points()
         int32_t price_avg = INT32_MAX; // ct/kWh
         int32_t price_max = INT32_MAX; // ct/kWh
 
-        micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
         MeterValueAvailability availability;
 
         for (uint32_t slot = 0; slot < METERS_MAX_SLOTS_RECORDED; ++slot) {
@@ -380,7 +378,7 @@ void EMEnergyAnalysis::collect_data_points()
             }
 
             float total_import; // kWh
-            availability = meters.get_energy_import(slot, &total_import, max_age);
+            availability = meters.get_energy_import(slot, &total_import, MAX_DATA_AGE);
             if (availability == MeterValueAvailability::Fresh) {
                 if (!isnan(total_import)) {
                     have_data = true;
@@ -396,7 +394,7 @@ void EMEnergyAnalysis::collect_data_points()
             }
 
             float total_export; // kWh
-            availability = meters.get_energy_export(slot, &total_export, max_age);
+            availability = meters.get_energy_export(slot, &total_export, MAX_DATA_AGE);
             if (availability == MeterValueAvailability::Fresh) {
                 if (!isnan(total_export)) {
                     have_data = true;
