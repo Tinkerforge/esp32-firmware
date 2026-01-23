@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "heating": "Heating",
+            "heating_disabled": <>Heating control is disabled because SG Ready output automation rules exist. To use heating control, remove all SG Ready output <a href="#automation">{__("automation.content.automation")}</a> rules.</>,
             "override": "Override",
             "override_blocking": "Override blocking operation",
             "discard_override": "Cancel",

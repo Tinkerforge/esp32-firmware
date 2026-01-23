@@ -19,6 +19,7 @@ export interface config {
 }
 
 export interface state {
+    automation_override: boolean;
     sgr_blocking: boolean;
     sgr_extended: boolean;
     p14enwg: boolean;

@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "heating": "Heizung",
+            "heating_disabled": <>Die Heizungssteuerung ist deaktiviert, da Automatisierungsregeln existieren, die die SG-Ready-Ausgänge schalten. Um die Heizungssteuerung zu nutzen, müssen alle Regeln der <a href="#automation">{__("automation.content.automation")}</a> entfernt werden, die SG-Ready-Ausgänge schalten.</>,
             "override": "Aufheben",
             "override_blocking": "Blockierenden Betrieb aufheben",
             "discard_override": "Abbrechen",

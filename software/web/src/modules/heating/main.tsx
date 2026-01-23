@@ -41,7 +41,7 @@ import { InputText } from "../../ts/components/input_text";
 import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
 import { StatusSection } from "../../ts/components/status_section";
-import { Button } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 import { ControlPeriod } from "./control_period.enum";
 import { sgr_blocking_override, state } from "./api";
 
@@ -321,6 +321,9 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
+
+                    {state.heating_state.automation_override && <Alert variant="warning">{__("heating.content.heating_disabled")}</Alert>}
+
                     <FormRow label={__("heating.content.meter_slot_grid_power")} label_muted={__("heating.content.meter_slot_grid_power_muted")}>
                         <InputSelect
                             placeholder={meter_available ? __("select") : __("heating.content.meter_slot_grid_power_none")}
@@ -621,6 +624,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
         super();
 
         this.state = {
+            automation_override: false,
             sgr_blocking: false,
             sgr_extended: false,
             p14enwg: false,
