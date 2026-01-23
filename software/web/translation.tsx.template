@@ -22,6 +22,7 @@ import { h, Fragment, VNode } from "preact";
 import { signal, Signal } from "@preact/signals-core";
 import { toLocaleFixed } from "./util";
 import * as options from "../options";
+import { Language } from "./language";
 {{{additional_imports}}}
 
 {{{translation}}}
@@ -84,6 +85,14 @@ update_active_language();
 
 export function get_active_language() {
     return active_language.value;
+}
+
+export function get_active_language_enum() {
+    if (active_language.value == "de") {
+        return Language.German;
+    }
+
+    return Language.English;
 }
 
 function translate<S extends string>(key: string): GetDictValue<S, Translation> {

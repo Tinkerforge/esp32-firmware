@@ -23,7 +23,7 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h, Fragment, Component, RefObject } from "preact";
-import { __, get_active_language } from "../../ts/translation";
+import { __, get_active_language, get_active_language_enum } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
@@ -164,7 +164,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   new_remote_upload_config: {
                     user_filter: -2,
                     file_type: 0,
-                    language: Language.German,
+                    language: get_active_language_enum(),
                     letterhead: "",
                     user_id: 0,
                     csv_delimiter: CSVFlavor.Excel,
@@ -359,7 +359,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             new_remote_upload_config: {
                 user_filter: -2,
                 file_type: 0,
-                language: Language.German,
+                language: get_active_language_enum(),
                 letterhead: "",
                 user_id: 0,
                 csv_delimiter: CSVFlavor.Excel,
@@ -488,10 +488,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
-        const language = get_active_language() != 'de' ? Language.English : Language.German;
         const payload = {
             api_not_final_acked: true,
-            language: language,
+            language: get_active_language_enum(),
             start_timestamp_min: start_minutes,
             end_timestamp_min: end_minutes,
             user_filter: user_filter,
@@ -569,11 +568,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
                 let end_minutes = date_to_minutes(state.end_date, 'end_of_day');
 
-                const language = get_active_language() != 'de' ? Language.English : Language.German;
-
                 await API.call("charge_tracker/send_charge_log", {
                     api_not_final_acked: true,
-                    language: language,
+                    language: get_active_language_enum(),
                     start_timestamp_min: start_minutes,
                     end_timestamp_min: end_minutes,
                     user_filter: parseInt(state.user_filter),
@@ -698,10 +695,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                             try {
                                 if (state.file_type === "0") {
-                                    const language = get_active_language() != 'de' ? Language.English : Language.German;
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
-                                        language: language,
+                                        language: get_active_language_enum(),
                                         start_timestamp_min: start_minutes,
                                         end_timestamp_min: end_minutes,
                                         user_filter: parseInt(state.user_filter),
