@@ -154,7 +154,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("ethernet", {
         name: () => __("ethernet.navbar.ethernet"),
-        priority: 900,
         href: "#ethernet",
         get_status: () => {
             const state = API.get("ethernet/state");

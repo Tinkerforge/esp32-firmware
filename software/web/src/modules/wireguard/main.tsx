@@ -258,7 +258,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("wireguard", {
         name: () => __("wireguard.navbar.wireguard"),
-        priority: 700,
         href: "#wireguard",
         get_status: () => {
             const state = API.get("wireguard/state");

@@ -263,7 +263,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("ntp", {
         name: () => __("time.status.time"),
-        priority: 500,
         href: "#time",
         get_status: () => {
             const config = API.get("ntp/config");

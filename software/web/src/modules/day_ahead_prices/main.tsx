@@ -473,7 +473,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("day_ahead_prices", {
         name: () => __("day_ahead_prices.navbar.day_ahead_prices"),
-        priority: 600,
         href: "#day_ahead_prices",
         get_status: () => {
             const config = API.get("day_ahead_prices/config");

@@ -31,7 +31,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("evse", {
         name: () => __("evse.navbar.evse"),
-        priority: 950,
         href: "#evse",
         get_status: () => {
             const state = API.get("evse/state");

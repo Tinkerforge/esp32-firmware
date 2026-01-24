@@ -574,7 +574,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("solar_forecast", {
         name: () => __("solar_forecast.navbar.solar_forecast"),
-        priority: 600,
         href: "#solar_forecast",
         get_status: () => {
             const config = API.get("solar_forecast/config");

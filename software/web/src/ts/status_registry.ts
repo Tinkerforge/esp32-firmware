@@ -38,13 +38,12 @@ export interface ModuleStatusEntry {
     status: ModuleStatus;
     text?: () => string;
     icon?: () => ComponentChildren;
-    priority: number;
+    order: number;
     href?: string;
 }
 
 export interface StatusProviderConfig {
     name: () => string;
-    priority: number;
     href?: string;
     get_status: () => StatusResult | null;
 }
@@ -59,6 +58,7 @@ export function register_status_provider(module_id: string, config: StatusProvid
 export function get_all_statuses(): ModuleStatusEntry[] {
     const entries: ModuleStatusEntry[] = [];
 
+    let order = 0;
     for (const [id, config] of status_providers) {
         try {
             const result = config.get_status();
@@ -66,7 +66,7 @@ export function get_all_statuses(): ModuleStatusEntry[] {
                 entries.push({
                     id: id,
                     name: config.name,
-                    priority: config.priority,
+                    order: order++,
                     href: config.href,
                     ...result
                 });
@@ -80,9 +80,9 @@ export function get_all_statuses(): ModuleStatusEntry[] {
     const enabled = entries.filter(e => e.status !== ModuleStatus.Disabled);
     const disabled = entries.filter(e => e.status === ModuleStatus.Disabled);
 
-    // Sort by priority descending (higher priority = shown first)
-    enabled.sort((a, b) => b.priority - a.priority);
-    disabled.sort((a, b) => b.priority - a.priority);
+    // Sort by registration order (lower = shown first)
+    enabled.sort((a, b) => a.order - b.order);
+    disabled.sort((a, b) => a.order - b.order);
 
     // Enabled entries first, then disabled at the bottom
     return [...enabled, ...disabled];

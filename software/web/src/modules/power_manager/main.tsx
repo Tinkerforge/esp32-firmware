@@ -427,7 +427,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("power_manager", {
         name: () => __("power_manager.navbar.pv_excess_settings"),
-        priority: 750,
         href: "#pv_excess_settings",
         get_status: () => {
             const config = API.get("power_manager/config");
