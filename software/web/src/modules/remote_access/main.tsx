@@ -875,7 +875,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("remote_access", {
         name: () => __("remote_access.navbar.remote_access"),
-        priority: 600,
         href: "#remote_access",
         get_status: () => {
             const state = API.get("remote_access/state");

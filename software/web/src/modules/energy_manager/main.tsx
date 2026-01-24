@@ -90,7 +90,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("energy_manager", {
         name: () => __("energy_manager.status.status"),
-        priority: 850,
         href: "#status",
         get_status: () => {
             if (!API.hasFeature("energy_manager")) {

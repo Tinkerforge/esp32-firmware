@@ -115,7 +115,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("wifi_sta", {
         name: () => __("wifi.navbar.wifi_sta"),
-        priority: 850,
         href: "#wifi_sta",
         get_status: () => {
             const state = API.get("wifi/state");
@@ -148,7 +147,6 @@ export function init() {
 
     register_status_provider("wifi_ap", {
         name: () => __("wifi.navbar.wifi_ap"),
-        priority: 840,
         href: "#wifi_ap",
         get_status: () => {
             const state = API.get("wifi/state");

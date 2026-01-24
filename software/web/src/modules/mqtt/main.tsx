@@ -309,7 +309,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("mqtt", {
         name: () => __("mqtt.navbar.mqtt"),
-        priority: 500,
         href: "#mqtt",
         get_status: () => {
             const state = API.get("mqtt/state");

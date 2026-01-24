@@ -377,7 +377,6 @@ export function pre_init() {
 export function init() {
     register_status_provider("ocpp", {
         name: () => __("ocpp.navbar.ocpp"),
-        priority: 500,
         href: "#ocpp",
         get_status: () => {
             const state = API.get("ocpp/state");
