@@ -23,7 +23,8 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
 import { h, Fragment, Component, RefObject } from "preact";
-import { __, get_active_language, get_active_language_enum } from "../../ts/translation";
+import { effect } from "@preact/signals-core";
+import { __, get_active_language_enum } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputText } from "../../ts/components/input_text";
@@ -57,6 +58,7 @@ interface S {
     start_date: Date;
     end_date: Date;
     file_type: string;
+    language: string;
     pdf_letterhead: string;
     csv_flavor: "excel" | "rfc4180";
     show_spinner: boolean;
@@ -156,6 +158,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
               () => __("charge_tracker.script.reboot_content_changed"), {
                   user_filter: "-2",
                   file_type: "0",
+                  language: null,
                   csv_flavor: 'excel',
                   start_date: new Date(NaN),
                   end_date: new Date(NaN),
@@ -173,6 +176,15 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   next_upload_timestamp_min: 0,
 //#endif
               });
+
+        effect(() => {
+            // set initial value on language change
+            let language_enum = get_active_language_enum();
+
+            if (util.render_allowed() && this.state.language == null) {
+                this.setState({language: language_enum.toString()});
+            }
+        });
 
         util.addApiEventListener('charge_tracker/state', () => {
             this.setState({...API.get('charge_tracker/state')});
@@ -479,12 +491,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 //#endif
 
-    async downloadCSVChargeLog(flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
+    async downloadCSVChargeLog(language: number, flavor: 'excel' | 'rfc4180', user_filter: number, start_minutes: number, end_minutes: number, price?: number) {
         const csvFlavorEnum = flavor === 'excel' ? 0 : 1; // CSVFlavor.Excel = 0, RFC4180 = 1
 
         const payload = {
             api_not_final_acked: true,
-            language: get_active_language_enum(),
+            language: language,
             start_timestamp_min: start_minutes,
             end_timestamp_min: end_minutes,
             user_filter: user_filter,
@@ -493,7 +505,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         try {
             const csv = await API.call("charge_tracker/csv", payload, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-            util.downloadToTimestampedFile(csv, __("charge_tracker.content.charge_log_file"), "csv", flavor === 'excel' ? "text/csv; charset=windows-1252; header=present" : "text/csv; charset=utf-8; header=present");
+            util.downloadToTimestampedFile(csv, language == Language.German ? "Ladelog" : "charge-log", "csv", flavor === 'excel' ? "text/csv; charset=windows-1252; header=present" : "text/csv; charset=utf-8; header=present");
         } catch (err) {
             util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err);
         }
@@ -564,7 +576,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                 await API.call("charge_tracker/send_charge_log", {
                     api_not_final_acked: true,
-                    language: get_active_language_enum(),
+                    language: parseInt(state.language),
                     start_timestamp_min: start_minutes,
                     end_timestamp_min: end_minutes,
                     user_filter: parseInt(state.user_filter),
@@ -650,6 +662,17 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     />
                 </FormRow>
 
+                <FormRow label={__("charge_tracker.content.language_label")}>
+                    <InputSelect
+                        value={state.language}
+                        onValue={this.set("language")}
+                        items={[
+                            [Language.German.toString(), __("charge_tracker.content.language_german")],
+                            [Language.English.toString(), __("charge_tracker.content.language_english")]
+                        ]}
+                    />
+                </FormRow>
+
                 <Collapse in={state.file_type == "0"}>
                     <div>
                         <FormRow label={__("charge_tracker.content.pdf_letterhead")} label_muted={__("charge_tracker.content.pdf_letterhead_muted")}>
@@ -691,16 +714,16 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 if (state.file_type === "0") {
                                     let pdf = await API.call("charge_tracker/pdf", {
                                         api_not_final_acked: true,
-                                        language: get_active_language_enum(),
+                                        language: parseInt(state.language),
                                         start_timestamp_min: start_minutes,
                                         end_timestamp_min: end_minutes,
                                         user_filter: parseInt(state.user_filter),
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-                                    util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
+                                    util.downloadToTimestampedFile(pdf, parseInt(state.language) == Language.German ? "Ladelog" : "charge-log", "pdf", "application/pdf");
                                 } else {
                                     // Download CSV
-                                    await this.downloadCSVChargeLog(state.csv_flavor, parseInt(state.user_filter), start_minutes, end_minutes, state.electricity_price);
+                                    await this.downloadCSVChargeLog(parseInt(state.language), state.csv_flavor, parseInt(state.user_filter), start_minutes, end_minutes, state.electricity_price);
                                 }
                             } finally {
                                 this.setState({show_spinner: false});
