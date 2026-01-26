@@ -59,7 +59,7 @@ void NFC::pre_setup()
 
     config_authorized_tags_prototype = Config::Object({
         {"user_id", Config::Uint8(0)},
-        {"tag_type", Config::Uint(0, 0, 5)},
+        {"tag_type", Config::Uint(0, 0, 6)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     });
 
@@ -139,7 +139,7 @@ void NFC::pre_setup()
     }};
 
     inject_tag = ConfigRoot{Config::Object({
-        {"tag_type", Config::Uint(0, 0, 5)},
+        {"tag_type", Config::Uint(0, 0, 6)},
         {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
     }), [this](Config &cfg, ConfigSource source) -> String {
         String id_copy = cfg.get("tag_id")->asString();
@@ -165,7 +165,7 @@ void NFC::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::NFC,
         Config::Object({
-            {"tag_type", Config::Uint(0, 0, 5)},
+            {"tag_type", Config::Uint(0, 0, 6)},
             {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)}
         }),
         nullptr,
@@ -175,7 +175,7 @@ void NFC::pre_setup()
     automation.register_action(
         AutomationActionID::NFCInjectTag,
         Config::Object({
-            {"tag_type", Config::Uint(0, 0, 5)},
+            {"tag_type", Config::Uint(0, 0, 6)},
             {"tag_id", Config::Str("", 0, NFC_TAG_ID_STRING_LENGTH)},
             {"action", Config::Uint(0, 0, 2)}
         }),

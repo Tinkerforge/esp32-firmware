@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-10-25.      *
+ * This file was automatically generated on 2026-01-26.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -328,6 +328,11 @@ typedef struct TF_NFC {
  * \ingroup TF_NFC
  */
 #define TF_NFC_TAG_TYPE_TYPE5 5
+
+/**
+ * \ingroup TF_NFC
+ */
+#define TF_NFC_TAG_TYPE_PHONE 6
 
 /**
  * \ingroup TF_NFC
