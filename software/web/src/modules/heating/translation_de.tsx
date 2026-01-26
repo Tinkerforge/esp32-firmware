@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "heating": {
         "status": {},
@@ -8,7 +9,7 @@ let x = {
         },
         "content": {
             "heating": "Heizung",
-            "heating_disabled": <>Die Heizungssteuerung ist deaktiviert, da Automatisierungsregeln existieren, die die SG-Ready-Ausgänge schalten. Um die Heizungssteuerung zu nutzen, müssen alle Regeln der <a href="#automation">{__("automation.content.automation")}</a> entfernt werden, die SG-Ready-Ausgänge schalten.</>,
+            "heating_disabled": <>Die Heizungssteuerung ist deaktiviert, da Automatisierungsregeln existieren, die die SG-Ready-Ausgänge schalten. Um die Heizungssteuerung zu nutzen, müssen alle Regeln der <a href={removeUnicodeHacks("#automation")}>{__("automation.content.automation")}</a> entfernt werden, die SG-Ready-Ausgänge schalten.</>,
             "override": "Aufheben",
             "override_blocking": "Blockierenden Betrieb aufheben",
             "discard_override": "Abbrechen",
