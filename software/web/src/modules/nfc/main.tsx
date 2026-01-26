@@ -19,17 +19,18 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { h, Fragment, createRef, RefObject } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { ListGroup, ListGroupItem, Alert, Button } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { FormSeparator } from "../../ts/components/form_separator";
 
 export function NFCNavbar() {
     return (
@@ -49,6 +50,7 @@ interface NFCState {
 
 export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
     currentlyEditing: string;
+    tableRef: RefObject<Table> = createRef();
 
     constructor() {
         super('nfc/config',
@@ -72,6 +74,38 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         util.addApiEventListener('users/config', () => {
             this.setState({userCfg: API.get('users/config')});
         });
+    }
+
+    getPhoneNfcId = (): string | null => {
+        if (!util.is_native_median_app()) {
+            return null;
+        }
+        const nfc = (window as any).tinkerforge_nfc;
+        if (nfc?.isSupported?.() && typeof nfc.getDeviceId === 'function') {
+            return nfc.getDeviceId();
+        }
+        return null;
+    }
+
+    openAddModalWithPhoneId = async () => {
+        const phoneNfcId = this.getPhoneNfcId();
+        if (!phoneNfcId) return;
+
+        // Pre-fill the add tag form with phone NFC ID
+        this.currentlyEditing = "";
+        this.setState({
+            addTag: {
+                tag_id: phoneNfcId,
+                user_id: 0,
+                tag_type: 6  // NFC_TAG_TYPE_PHONE
+            },
+            hasDoubledTags: false
+        });
+
+        // Open the add modal via the table ref
+        if (this.tableRef.current) {
+            (this.tableRef.current as any).setState({ showAddModal: true });
+        }
 
        /* util.addApiEventListener('nfc/seen_tags', () => {
             console.log("nfc seen_tags");
@@ -137,6 +171,14 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
             }
         }
 
+        // Check phone NFC status
+        const isNativeApp = util.is_native_median_app();
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const phoneNfcId = this.getPhoneNfcId();
+        const phoneNfcAlreadyRegistered = phoneNfcId && state.authorized_tags.some(
+            tag => ((tag.tag_id === phoneNfcId) && (tag.tag_type === 6))
+        );
+
         return (
             <SubPage name="nfc">
                 <ConfigForm id="nfc_config_form" title={__("nfc.content.nfc")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -155,6 +197,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                     </FormRow>
                     <FormRow label={__("nfc.content.tags")}>
                         <Table
+                            ref={this.tableRef}
                             tableTill="md"
                             columnNames={[__("nfc.content.table_tag_id"), __("nfc.content.table_tag_type"), __("nfc.content.table_user_id"), __("nfc.content.table_last_seen")]}
                             rows={state.authorized_tags.map((tag, i) =>
@@ -193,6 +236,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                                     ["3",__("nfc.content.type_3")],
                                                     ["4",__("nfc.content.type_4")],
                                                     ["5",__("nfc.content.type_5")],
+                                                    ["6",__("nfc.content.type_6")],
                                                 ]}
                                                 value={state.editTag.tag_type.toString()}
                                                 onValue={(v) => this.setState({editTag: {...state.editTag, tag_type: parseInt(v)}})} />
@@ -259,6 +303,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                             ["3",__("nfc.content.type_3")],
                                             ["4",__("nfc.content.type_4")],
                                             ["5",__("nfc.content.type_5")],
+                                            ["6",__("nfc.content.type_6")],
                                         ]}
                                         placeholder={__("select")}
                                         value={state.addTag.tag_type.toString()}
@@ -282,6 +327,23 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                             />
                     </FormRow>
                 </ConfigForm>
+
+                <FormSeparator heading={__("nfc.content.tap_to_unlock")}/>
+                {!isNativeApp ?
+                    <Alert variant="warning">{__("nfc.content.tap_to_unlock_no_app")}</Alert>
+                : isIOS ?
+                    <Alert variant="info">{__("nfc.content.tap_to_unlock_ios")}</Alert>
+                : !phoneNfcId ?
+                    <Alert variant="warning">{__("nfc.content.tap_to_unlock_not_supported")}</Alert>
+                : phoneNfcAlreadyRegistered ?
+                    <Alert variant="success">{__("nfc.content.tap_to_unlock_activated")} ({phoneNfcId})</Alert>
+                :
+                    <FormRow label={__("nfc.content.tap_to_unlock_add")} label_muted={__("nfc.content.tap_to_unlock_your_id") + phoneNfcId}>
+                        <Button variant="primary" className="form-control" onClick={this.openAddModalWithPhoneId} disabled={state.authorized_tags.length >= MAX_AUTHORIZED_TAGS}>
+                            {__("nfc.content.tap_to_unlock_add_btn")}
+                        </Button>
+                    </FormRow>
+                }
             </SubPage>
         );
     }
