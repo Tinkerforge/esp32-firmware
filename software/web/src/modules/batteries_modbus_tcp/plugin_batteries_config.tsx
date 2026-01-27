@@ -1105,7 +1105,7 @@ export function pre_init() {
                                     required
                                     digits={3}
                                     min={0}
-                                    max={5000}
+                                    max={65535}
                                     unit="kW"
                                     value={config[1].table[1].force_charge_power}
                                     onValue={(v) => {
@@ -1117,7 +1117,7 @@ export function pre_init() {
                                     required
                                     digits={3}
                                     min={0}
-                                    max={5000}
+                                    max={65535}
                                     unit="kW"
                                     value={config[1].table[1].force_discharge_power}
                                     onValue={(v) => {

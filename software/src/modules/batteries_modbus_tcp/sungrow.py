@@ -13,12 +13,12 @@ table_prototypes = [
         },
         {
             'name': 'force_charge_power',
-            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
+            'type': 'Uint16',
             'default': 1000,  # W
         },
         {
             'name': 'force_discharge_power',
-            'type': 'Uint16',  # FIXME: add range limit to [0..5000]
+            'type': 'Uint16',
             'default': 1000,  # W
         },
     ]),
