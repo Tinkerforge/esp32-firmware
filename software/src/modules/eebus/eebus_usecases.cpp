@@ -1984,7 +1984,7 @@ MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataType
                     LoadControlLimitDataType load_control_limit_data = data->loadcontrollimitlistdatatype->loadControlLimitData->at(0);
                     // TODO: Loop over the list and identify the correct ID
                     bool limit_enabled = load_control_limit_data.isLimitActive.get();
-                    int new_limit_w = load_control_limit_data.value->number.get() * pow(10, load_control_limit_data.value->scale.get());
+                    const int new_limit_w = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(*load_control_limit_data.value);
                     const seconds_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
                     logger.printfln("Received a Loadcontrol Limit. Attempting to apply limit. Limit is: %d W, duration: %d s, enabled: %d", new_limit_w, duration_s.as<int>(), limit_enabled);
                     if (!update_lpc(limit_enabled, new_limit_w, duration_s)) {
@@ -2031,7 +2031,7 @@ MessageReturn LpcUsecase::deviceConfiguration_feature(HeaderType &header, SpineD
                         seconds_t new_failsafe_duration = -1_s;
                         for (const auto &list_entry : new_config.deviceConfigurationKeyValueData.get()) {
                             if (list_entry.keyId == failsafe_consumption_key_id) {
-                                new_failsafe_power = list_entry.value->scaledNumber->number.get() * pow(10, list_entry.value->scaledNumber->scale.get());
+                                new_failsafe_power = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(*list_entry.value->scaledNumber);
                             } else if (list_entry.keyId == failsafe_duration_key_id) {
                                 auto value = list_entry.value->duration.get();
 
@@ -3448,5 +3448,19 @@ bool compare_spine_addresses(const FeatureAddressType &addr1, const FeatureAddre
         return false;
     }
     return true;
+}
+float scaled_numbertype_to_float(const ScaledNumberType &number)
+{
+    if (number.scale.has_value()) {
+        return static_cast<float>(number.number.get()) * std::pow(10.0f, static_cast<float>(number.scale.get()));
+    }
+    return static_cast<float>(number.number.get());
+}
+int scaled_numbertype_to_int(const ScaledNumberType &number)
+{
+    if (number.scale.has_value()) {
+        return static_cast<int>(static_cast<float>(number.number.get()) * std::pow(10.0f, static_cast<float>(number.scale.get())));
+    }
+    return static_cast<int>(number.number.get());
 }
 } // namespace EEBUS_USECASE_HELPERS

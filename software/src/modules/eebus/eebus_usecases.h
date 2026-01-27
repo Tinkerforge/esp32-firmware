@@ -122,6 +122,9 @@ String spine_address_to_string(const FeatureAddressType &address);
 
 bool compare_spine_addresses(const FeatureAddressType &addr1, const FeatureAddressType &addr2);
 
+float scaled_numbertype_to_float(const ScaledNumberType &number);
+int scaled_numbertype_to_int(const ScaledNumberType &number);
+
 } // namespace EEBUS_USECASE_HELPERS
 
 // These classes contain the data generator functions for all usecase entities.
