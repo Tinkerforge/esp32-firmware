@@ -19,6 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h, Fragment, createRef, RefObject } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -328,6 +329,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                     </FormRow>
                 </ConfigForm>
 
+                {(options.PRODUCT_ID_IS_WARP_ANY || options.PRODUCT_ID_IS_ENERGY_MANAGER || options.PRODUCT_ID_IS_ENERGY_MANAGER_V2) ?
                 <FormRow label={__("nfc.content.tap_to_unlock_add")} label_muted={phoneNfcId != null ? (__("nfc.content.tap_to_unlock_your_id") + phoneNfcId) : undefined}>
                 {!isNativeApp ?
                     <Alert variant="info">{__("nfc.content.tap_to_unlock_no_app")}</Alert>
@@ -343,6 +345,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                     </Button>
                 }
                 </FormRow>
+                : null}
             </SubPage>
         );
     }
