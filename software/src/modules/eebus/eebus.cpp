@@ -75,31 +75,35 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 
 static void update_evse_limit()
 {
+    if (eebus.usecases == nullptr) {
+        return;
+    }
 
-    uint32_t phases = evse_common.backend->get_phases();
+#if MODULE_EVSE_COMMON_AVAILABLE()
+    const uint32_t phases = evse_common.backend->get_phases();
     if (phases == 0) {
         return;
     }
+
+    int limit_mA = 32000;
+
 #ifdef EEBUS_ENABLE_LPC_USECASE
-    auto limit_mA = eebus.usecases->limitation_of_power_consumption.get_current_limit_w() * 1000 / 230 / evse_common.backend->get_phases();
+    limit_mA = eebus.usecases->limitation_of_power_consumption.get_current_limit_w() * 1000 / 230 / phases;
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     if (!eebus.usecases->limitation_of_power_consumption.limit_is_active() && eebus.usecases->overload_protection_by_ev_charging_current_curtailment.limit_is_active()) {
         auto limit_phases = eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_limit_milliamps();
-        if (limit_phases[0] != limit_phases[1] || limit_phases[1] != limit_phases[2] || limit_phases[0] != limit_phases[2]) {
+        if (limit_phases[0] != limit_phases[1] || limit_phases[0] != limit_phases[2]) {
             eebus.trace_fmtln("OPEV attempted to apply an asymmetric limit which is not supported. Ignoring OPEV limit.");
             return;
         }
-        limit_mA = limit_phases[0] * 1000 / 230 / evse_common.backend->get_phases();
+        limit_mA = limit_phases[0] * 1000 / 230 / phases;
     }
 #endif
 #endif
-    if (limit_mA > 32000)
-        limit_mA = 32000;
-    else if (limit_mA < 6000)
-        limit_mA = 0;
+    limit_mA = std::min(limit_mA, 32000);
+    limit_mA = std::max(limit_mA,  6000);
 
-#if MODULE_EVSE_COMMON_AVAILABLE()
-    evse_common.set_eebus_current(limit_mA);
+    evse_common.set_eebus_current(static_cast<uint16_t>(limit_mA));
 #endif
 }
 
