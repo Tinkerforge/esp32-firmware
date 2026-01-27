@@ -51,7 +51,7 @@ let x = {
             "tap_to_unlock_no_app": "Um dein Smartphone zur Ladefreigabe zu konfigurieren, öffne diese Seite in der WARP App auf einem Android-Gerät.",
             "tap_to_unlock_ios": "Ladefreigabe per Smartphone ist nur für Android-Geräte verfügbar. Apple erlaubt kein NFC-Host Card Emulation auf iOS.",
             "tap_to_unlock_not_supported": "Dein Smartphone unterstützt kein NFC-Host Card Emulation oder du musst deine WARP App aktualisieren.",
-            "tap_to_unlock_add": "Smartphone-Ladefregabe",
+            "tap_to_unlock_add": "Smartphone-Ladefreigabe",
             "tap_to_unlock_your_id": "Tag-ID deines Smartphones: ",
             "tap_to_unlock_add_btn": "Hinzufügen",
             "tap_to_unlock_activated": "Dieses Smartphone ist für Ladefreigabe registriert. Entsperre dein Smartphone und halte es anstelle eines NFC-Tags an die Wallbox.",
