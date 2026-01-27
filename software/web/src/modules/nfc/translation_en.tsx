@@ -47,7 +47,6 @@ let x = {
             "type_4": "NFC Forum Type 4",
             "type_5": "NFC Forum Type 5",
             "type_6": "Smartphone",
-            "tap_to_unlock": "Charge authorization via smartphone",
             "tap_to_unlock_no_app": "To configure your smartphone for charge authorization, open this page in the WARP App on an Android device.",
             "tap_to_unlock_ios": "Charge authorization via smartphone is only available for Android devices. Apple does not allow NFC Host Card Emulation on iOS.",
             "tap_to_unlock_not_supported": "Your smartphone does not support NFC Host Card Emulation or you need to update your WARP App.",
