@@ -31,7 +31,6 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { FormSeparator } from "../../ts/components/form_separator";
 
 export function NFCNavbar() {
     return (
