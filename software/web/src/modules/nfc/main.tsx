@@ -74,6 +74,20 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         util.addApiEventListener('users/config', () => {
             this.setState({userCfg: API.get('users/config')});
         });
+
+       /* util.addApiEventListener('nfc/seen_tags', () => {
+            console.log("nfc seen_tags");
+
+            let x = API.get('nfc/seen_tags');
+
+
+            for(let i = 0; i < x.length; ++i) {
+                console.log("nfc seen_tags " + i + " " + x[i].last_seen);
+            }
+
+
+            this.setState({seen_tags: x});
+        });*/
     }
 
     getPhoneNfcId = (): string | null => {
@@ -106,20 +120,6 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         if (this.tableRef.current) {
             (this.tableRef.current as any).setState({ showAddModal: true });
         }
-
-       /* util.addApiEventListener('nfc/seen_tags', () => {
-            console.log("nfc seen_tags");
-
-            let x = API.get('nfc/seen_tags');
-
-
-            for(let i = 0; i < x.length; ++i) {
-                console.log("nfc seen_tags " + i + " " + x[i].last_seen);
-            }
-
-
-            this.setState({seen_tags: x});
-        });*/
     }
 
     checkDoubleTags = (tag_id: string) => {
@@ -328,22 +328,21 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                     </FormRow>
                 </ConfigForm>
 
-                <FormSeparator heading={__("nfc.content.tap_to_unlock")}/>
+                <FormRow label={__("nfc.content.tap_to_unlock_add")} label_muted={phoneNfcId != null ? (__("nfc.content.tap_to_unlock_your_id") + phoneNfcId) : undefined}>
                 {!isNativeApp ?
-                    <Alert variant="warning">{__("nfc.content.tap_to_unlock_no_app")}</Alert>
+                    <Alert variant="info">{__("nfc.content.tap_to_unlock_no_app")}</Alert>
                 : isIOS ?
                     <Alert variant="info">{__("nfc.content.tap_to_unlock_ios")}</Alert>
                 : !phoneNfcId ?
-                    <Alert variant="warning">{__("nfc.content.tap_to_unlock_not_supported")}</Alert>
+                    <Alert variant="info">{__("nfc.content.tap_to_unlock_not_supported")}</Alert>
                 : phoneNfcAlreadyRegistered ?
-                    <Alert variant="success">{__("nfc.content.tap_to_unlock_activated")} ({phoneNfcId})</Alert>
+                    <Alert variant="success">{__("nfc.content.tap_to_unlock_activated")}</Alert>
                 :
-                    <FormRow label={__("nfc.content.tap_to_unlock_add")} label_muted={__("nfc.content.tap_to_unlock_your_id") + phoneNfcId}>
-                        <Button variant="primary" className="form-control" onClick={this.openAddModalWithPhoneId} disabled={state.authorized_tags.length >= MAX_AUTHORIZED_TAGS}>
-                            {__("nfc.content.tap_to_unlock_add_btn")}
-                        </Button>
-                    </FormRow>
+                    <Button variant="primary" onClick={this.openAddModalWithPhoneId} disabled={state.authorized_tags.length >= MAX_AUTHORIZED_TAGS}>
+                        {__("nfc.content.tap_to_unlock_add_btn")}
+                    </Button>
                 }
+                </FormRow>
             </SubPage>
         );
     }
