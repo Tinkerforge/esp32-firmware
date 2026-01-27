@@ -73,6 +73,8 @@ let x = {
             "type_2": "NFC Forum Type 2",
             "type_3": "NFC Forum Type 3",
             "type_4": "NFC Forum Type 4",
+            "type_5": "NFC Forum Type 5",
+            "type_6": "Smartphone",
             "last_seen": "",
             "last_seen_suffix": " ago",
             "last_seen_and_known_tags": "Last seen tags and known tags",

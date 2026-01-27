@@ -97,6 +97,8 @@ function get_nfc_inject_tag_edit_children(action: NfcAutomationAction, on_action
                     ["2",__("nfc.automation.type_2")],
                     ["3",__("nfc.automation.type_3")],
                     ["4",__("nfc.automation.type_4")],
+                    ["5",__("nfc.automation.type_5")],
+                    ["6",__("nfc.automation.type_6")],
                 ]}
                 value={action[1].tag_type.toString()}
                 onValue={(v) => {
