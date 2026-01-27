@@ -284,6 +284,15 @@ void EEBus::pre_setup()
              {"charged_wh", Config::Uint32(0)},
              {"charged_valuesource_measured", Config::Bool(false)},
          })},
+        {"coordinated_ev_charging",
+         Config::Object({
+             {"has_charging_plan", Config::Bool(false)},
+             {"charging_plan_start_time", Config::Uint32(0)},
+             {"target_power_w", Config::Int32(-1)},
+             {"has_incentives", Config::Bool(false)},
+             {"energy_broker_connected", Config::Bool(false)},
+             {"energy_broker_heartbeat_ok", Config::Bool(false)},
+         })},
     });
 
     ship.pre_setup();
