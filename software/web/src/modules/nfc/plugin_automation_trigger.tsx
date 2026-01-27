@@ -107,6 +107,8 @@ function get_nfc_edit_children(trigger: NfcAutomationTrigger, on_trigger: (trigg
                     ["2",__("nfc.automation.type_2")],
                     ["3",__("nfc.automation.type_3")],
                     ["4",__("nfc.automation.type_4")],
+                    ["5",__("nfc.automation.type_5")],
+                    ["6",__("nfc.automation.type_6")],
                 ]}
                 value={trigger[1].tag_type.toString()}
                 onValue={(v) => {
