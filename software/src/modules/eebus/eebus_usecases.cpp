@@ -667,6 +667,15 @@ void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interfa
     usecase_interface = new_usecase_interface;
 }
 
+// ==============================================================================
+// EVCS - EV Charging Summary Use Case
+// Spec: EEBus_UC_TS_EVChargingSummary_V1.0.1.pdf
+//
+// Scenario 1 (2.3.1, 3.4.1): Energy Broker sends charging session summary
+//
+// NOTE: Write support for billListData is NOT YET IMPLEMENTED (see line 751).
+//       This is REQUIRED by spec 3.2.1.2.1.3 for receiving billing data from Energy Broker.
+// ==============================================================================
 #ifdef EEBUS_ENABLE_EVCS_USECASE
 EvcsUsecase::EvcsUsecase()
 {
@@ -676,12 +685,12 @@ EvcsUsecase::EvcsUsecase()
 UseCaseInformationDataType EvcsUsecase::get_usecase_information()
 {
     UseCaseInformationDataType evcs_usecase;
-    evcs_usecase.actor = "EVSE"; // The actor can either be EVSE or Energy Broker but we support only EVSE
+    evcs_usecase.actor = "EVSE"; // Actor can be EVSE or Energy Broker; we implement EVSE role
 
     UseCaseSupportType evcs_usecase_support;
     evcs_usecase_support.useCaseName = "evChargingSummary";
     evcs_usecase_support.useCaseVersion = "1.0.1";
-    evcs_usecase_support.scenarioSupport->push_back(1); //We support only scenario 1 which is defined in Chapter 2.3.1
+    evcs_usecase_support.scenarioSupport->push_back(1); // Scenario 1 (2.3.1): Charging summary exchange
     evcs_usecase_support.useCaseDocumentSubRevision = "release";
     evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
 
@@ -696,16 +705,15 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == feature_addresses.at(FeatureTypeEnumType::Bill)) {
         switch (data->last_cmd) {
-            // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
+            // 3.2.1.2.1.1: Function "billDescriptionListData" - Bill metadata
             case SpineDataTypeHandler::Function::billDescriptionListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
-
                         BillDescriptionListDataType billDescriptionListData{};
                         billDescriptionListData.billDescriptionData.emplace();
                         for (BillEntry bill_entry : bill_entries) {
                             BillDescriptionDataType billDescriptionData{};
-                            billDescriptionData.billWriteable = false; // No bill is writeable for now
+                            billDescriptionData.billWriteable = false; // Bills are read-only (managed internally)
                             billDescriptionData.billId = bill_entry.id;
                             billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
                             billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
@@ -717,7 +725,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                         return {false};
                 }
             }
-            // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
+            // 3.2.1.2.1.2: Function "billConstraintsListData" - Bill position constraints
             case SpineDataTypeHandler::Function::billConstraintsListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
@@ -727,7 +735,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                             BillConstraintsDataType billConstraintsData{};
                             billConstraintsData.billId = bill_entry.id;
                             billConstraintsData.positionCountMin = "0";
-                            billConstraintsData.positionCountMax = std::to_string(2);
+                            billConstraintsData.positionCountMax = std::to_string(2); // gridElectricEnergy + selfProducedElectricEnergy
                             billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
                         }
                         response["billConstraintsListData"] = billConstraintsListData;
@@ -737,19 +745,19 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                         return {false};
                 }
             }
+            // 3.2.1.2.1.3: Function "billListData" - Actual billing data
             case SpineDataTypeHandler::Function::billListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
-                        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
                         BillListDataType billListData{};
                         get_bill_list_data(&billListData);
                         response["billListData"] = billListData;
                         return {true, true, CmdClassifierType::reply};
                     }
                     case CmdClassifierType::write: {
-                        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
-                        //TODO: Implement write for EV CHarging Summary BillListData
-                        // Need partial write as well as its mandatory
+                        // TODO: Implement write for billListData (CRITICAL for spec compliance)
+                        // Spec 3.2.1.2.1.3 requires write support for Energy Broker to send billing data
+                        // Must also implement partial write (update subset of bills)
                         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Writing billing data is not yet supported");
                         return {true, true, CmdClassifierType::result};
                     }
@@ -838,6 +846,11 @@ void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time
     update_api();
 }
 
+// Spec 3.2.1.2.1.3: Builds billListData with total energy/cost and position breakdowns
+// Bill structure (Table 6):
+//   - Total: energy (Wh), cost (EUR cents, scale=-2), time period
+//   - Position 1: gridElectricEnergy (percentage of total)
+//   - Position 2: selfProducedElectricEnergy (percentage of total)
 void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
 {
     if (data == nullptr)
@@ -849,20 +862,22 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
         billData.billId = entry.id;
         billData.billType = BillTypeEnumType::chargingSummary;
 
+        // Total energy and cost
         billData.total->timePeriod->startTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
         billData.total->timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
         BillValueType total_value;
         total_value.value->number = entry.energy_wh;
         total_value.unit = UnitOfMeasurementEnumType::Wh;
-        total_value.value->scale = 0; // The total value is calculated like numer * 10^(scale).
+        total_value.value->scale = 0; // Total value = number * 10^scale
         BillCostType total_cost;
         total_cost.costType = BillCostTypeEnumType::absolutePrice;
         total_cost.cost->number = entry.cost_eur_cent;
         total_cost.currency = CurrencyEnumType::EUR;
-        total_cost.cost->scale = -2; // We send the cost in cents, so
+        total_cost.cost->scale = -2; // Cost in cents: value * 10^-2 = EUR
         billData.total->value->push_back(total_value);
         billData.total->cost->push_back(total_cost);
 
+        // Position 1: Grid energy breakdown
         BillPositionType grid_position;
         grid_position.positionId = 1;
         grid_position.positionType = BillPositionTypeEnumType::gridElectricEnergy;
@@ -874,6 +889,7 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
         grid_position.cost->push_back(grid_cost);
         grid_position.value->push_back(grid_value);
 
+        // Position 2: Self-produced energy breakdown
         BillPositionType self_produced_position;
         self_produced_position.positionId = 2;
         self_produced_position.positionType = BillPositionTypeEnumType::selfProducedElectricEnergy;
@@ -916,35 +932,42 @@ void EvcsUsecase::update_api() const
 #endif
 
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
+// EV Charging Electricity Measurement Usecase as defined in EEBus_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf
+// This usecase implements scenarios 1-3 for measuring current, power, and energy during EV charging
 EvcemUsecase::EvcemUsecase() = default;
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
     switch (data->last_cmd) {
+        // EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf 3.2.1.2.1.1 Scenario 1: Measurement Description
         case SpineDataTypeHandler::Function::measurementDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
                 response["measurementDescriptionListData"] = EVEntity::get_measurement_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf 3.2.1.2.1.2 Scenario 1-3: Measurement Constraints
         case SpineDataTypeHandler::Function::measurementConstraintsListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
                 response["measurementConstraintsListData"] = EVEntity::get_measurement_constraints_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf 3.2.1.2.1.3 Scenario 1-3: Measurement Data (current, power, energy)
         case SpineDataTypeHandler::Function::measurementListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
                 response["measurementListData"] = EVEntity::get_measurement_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf 3.2.1.2.2.1 Electrical Connection Description
         case SpineDataTypeHandler::Function::electricalConnectionDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                 response["electricalConnectionDescriptionListData"] = EVEntity::get_electrical_connection_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // EEBUS_UC_TS_EVChargingElectricityMeasurement_V1.0.1.pdf 3.2.1.2.2.2 Electrical Connection Parameters
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                 response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
@@ -1268,6 +1291,20 @@ void EvcemUsecase::update_api() const
     api_entry->get("charged_valuesource_measured")->updateBool(power_charged_measured);
 }
 #endif
+// ==============================================================================
+// EVCC - EV Commissioning and Configuration Use Case
+// Spec: EEBus_UC_TS_EVCommissioningAndConfiguration_V1.0.1.pdf
+//
+// Scenarios:
+//   1 (2.3.1, 3.4.1): EV connected
+//   2 (2.3.2, 3.4.2): Communication standard
+//   3 (2.3.3, 3.4.3): Asymmetric charging
+//   4 (2.3.4, 3.4.4): EV identification
+//   5 (2.3.5, 3.4.5): Manufacturer information
+//   6 (2.3.6, 3.4.6): Charging power limits
+//   7 (2.3.7, 3.4.7): EV sleep mode
+//   8 (2.3.8, 3.4.8): EV disconnected
+// ==============================================================================
 #ifdef EEBUS_ENABLE_EVCC_USECASE
 EvccUsecase::EvccUsecase()
 {
@@ -1283,6 +1320,7 @@ UseCaseInformationDataType EvccUsecase::get_usecase_information()
     UseCaseSupportType evcc_usecase_support;
     evcc_usecase_support.useCaseName = "evCommissioningAndConfiguration";
     evcc_usecase_support.useCaseVersion = "1.0.1";
+    // All 8 scenarios supported (see spec chapter 2.3)
     evcc_usecase_support.scenarioSupport->insert(evcc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
 
     evcc_usecase_support.useCaseDocumentSubRevision = "release";
@@ -1300,42 +1338,49 @@ MessageReturn EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
     AddressFeatureType feature_address = header.addressDestination->feature.get();
     if (header.cmdClassifier == CmdClassifierType::read) {
         switch (data->last_cmd) {
+            // 3.2.1.2.1.1: Function "deviceConfigurationKeyValueDescriptionListData"
             case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
                     response["deviceConfigurationKeyValueDescriptionListData"] = EVEntity::get_device_configuration_value_description_list();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.1.2: Function "deviceConfigurationKeyValueListData"
             case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration)) {
                     response["deviceConfigurationKeyValueListData"] = EVEntity::get_device_configuration_value_list();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.2.1: Function "identificationListData"
             case SpineDataTypeHandler::Function::identificationListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::Identification)) {
                     response["identificationListData"] = EVEntity::get_identification_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.3.1: Function "deviceClassificationManufacturerData"
             case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceClassification)) {
                     response["deviceClassificationManufacturerData"] = EVEntity::get_device_classification_manufacturer_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.4.1: Function "electricalConnectionParameterDescriptionListData"
             case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                     response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.4.2: Function "electricalConnectionPermittedValueSetListData"
             case SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                     response["electricalConnectionPermittedValueSetListData"] = EVEntity::get_electrical_connection_permitted_list_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // 3.2.1.2.5.1: Function "deviceDiagnosisStateData"
             case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis)) {
                     response["deviceDiagnosisStateData"] = EVEntity::get_diagnosis_state_data();
@@ -1459,6 +1504,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvccUsecase::
     return features;
 }
 
+// Scenario 1 (2.3.1, 3.4.1) & Scenario 8 (2.3.8, 3.4.8): EV connected/disconnected state
 void EvccUsecase::ev_connected_state(bool connected)
 {
     logger.printfln("EV connected: %d, previous: %d", connected, ev_connected);
@@ -1470,11 +1516,13 @@ void EvccUsecase::ev_connected_state(bool connected)
     }
 }
 
+// Scenario 2 (2.3.2, 3.4.2): Communication standard
+// Scenario 3 (2.3.3, 3.4.3): Asymmetric charging support
 void EvccUsecase::update_device_config(const String &comm_standard, bool asym_supported)
 {
     communication_standard = comm_standard;
     asymmetric_supported = asym_supported;
-    // As defined in EEBUS_UC_TS_EVCommissioningAndConfiguration_v1.0.1.pdf 3.2.1.2.2.2.
+    // Spec 3.2.1.2.1.2: Valid values per Table 6: iso15118-2ed1, iso15118-2ed2, iec61851
     if (communication_standard != "iso15118-2ed1" && communication_standard != "iso15118-2ed2" && communication_standard != "iec61851") {
         eebus.trace_fmtln(R"(Usecase EVCC: Invalid communication standard for EV entity device configuration: %s, should be "iso15118-2ed1","iso15118-2ed1" or "iec61851".)", communication_standard.c_str());
         // We continue on regardless and let the peer deal with incorrect values
@@ -1489,6 +1537,8 @@ void EvccUsecase::update_device_config(const String &comm_standard, bool asym_su
     update_api();
 }
 
+// Scenario 4 (2.3.4, 3.4.4): EV identification
+// Spec 3.2.1.2.2.1: Supports EUI-48 (MAC) and EUI-64 identification types (Table 9)
 void EvccUsecase::update_identification(String mac, IdentificationTypeEnumType type)
 {
     mac_address = std::move(mac);
@@ -1500,6 +1550,8 @@ void EvccUsecase::update_identification(String mac, IdentificationTypeEnumType t
     update_api();
 }
 
+// Scenario 5 (2.3.5, 3.4.5): Manufacturer information
+// Spec 3.2.1.2.3.1: Manufacturer data fields per Table 12
 void EvccUsecase::update_manufacturer(String name, String code, String serial, String software_vers, String hardware_vers, String vendor_n, String vendor_c, String brand, String manufacturer, String manufacturer_description_text)
 {
     manufacturer_name = std::move(name);
@@ -1533,6 +1585,8 @@ void EvccUsecase::update_manufacturer(String name, String code, String serial, S
     update_api();
 }
 
+// Scenario 6 (2.3.6, 3.4.6): Charging power limits
+// Spec 3.2.1.2.4: Min/max/standby power values (Table 14, 15)
 void EvccUsecase::update_electrical_connection(int min_power, int max_power, int stby_power)
 {
     min_power_draw = min_power;
@@ -1550,6 +1604,8 @@ void EvccUsecase::update_electrical_connection(int min_power, int max_power, int
     update_api();
 }
 
+// Scenario 7 (2.3.7, 3.4.7): EV sleep mode
+// Spec 3.2.1.2.5.1: Operating state (standby or normalOperation)
 void EvccUsecase::update_operating_state(bool standby)
 {
     standby_mode = standby;
@@ -1686,7 +1742,8 @@ DeviceDiagnosisStateDataType EvccUsecase::get_device_diagnosis_state() const
 }
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
-
+// EVSE Commissioning and Configuration Usecase as defined in EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.1.pdf
+// This usecase implements scenarios 1-2 for EVSE identification and error reporting
 EvseccUsecase::EvseccUsecase() = default;
 
 MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -1694,12 +1751,14 @@ MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHan
     AddressFeatureType feature_address = header.addressDestination->feature.get();
     if (header.cmdClassifier == CmdClassifierType::read) {
         switch (data->last_cmd) {
+            // EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.1.pdf 3.2.1.2.1.1 Scenario 1: Manufacturer Data
             case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceClassification)) {
                     response["deviceClassificationManufacturerData"] = EVSEEntity::get_device_classification_manufacturer_data();
                     return {true, true, CmdClassifierType::reply};
                 }
                 break;
+            // EEBus_UC_TS_EVSECommissioningAndConfiguration_V1.0.1.pdf 3.2.1.2.2.1 Scenario 2: Operating State / Error Reporting
             case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
                 if (feature_address == feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis)) {
                     response["deviceDiagnosisStateData"] = EVSEEntity::get_state_data();
@@ -1819,20 +1878,21 @@ void EvseccUsecase::update_api() const
 #endif
 
 #ifdef EEBUS_ENABLE_LPC_USECASE
+// Limitation of Power Consumption Usecase as defined in EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf
+// This usecase implements all 4 scenarios:
+// Scenario 1 (2.6.1): Control active power consumption limit via LoadControl feature
+// Scenario 2 (2.6.2): Failsafe values via DeviceConfiguration feature
+// Scenario 3 (2.6.3): Heartbeat mechanism via DeviceDiagnosis feature
+// Scenario 4 (2.6.4): Constraints via ElectricalConnection feature
+// State machine implemented according to chapter 2.3 with all 13 state transitions
 LpcUsecase::LpcUsecase()
 {
     task_scheduler.scheduleOnce(
         [this]() {
-            // Initialize DeviceConfiguration feature
-            //update_failsafe(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0_s);
-
-            // Initialize ElectricalConnection feature
-            //update_constraints(EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION);
-            //update_lpc(false, EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION, 0);
-
+            // Register for heartbeat (Scenario 3)
             eebus.usecases->evse_heartbeat.register_usecase_for_heartbeat(this);
             eebus.usecases->evse_heartbeat.set_autosubscribe(true);
-            update_state();
+            update_state(); // Initialize state machine (LPC UC TS 2.3)
             update_api();
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
@@ -1954,9 +2014,13 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LpcUsecase::g
     return features;
 }
 
+// EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf Scenario 1 (2.6.1, 3.4.1): Control active power consumption
+// Implements LoadControl feature with read/write support for limit description and limit list
+// Enforces binding requirement (LPC-905) for write operations
 MessageReturn LpcUsecase::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.cmdClassifier == CmdClassifierType::read) {
+        // EEBUS_UC_TS_LimitationOfPowerConsumption_V1.0.0.pdf 3.2.2.2.1.1: LoadControl Limit Description
         if (data->last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
             response["loadControlLimitDescriptionListData"] = EVSEEntity::get_load_control_limit_description_list_data();
             return {true, true, CmdClassifierType::reply};
@@ -2410,6 +2474,31 @@ void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCh
 
 #endif
 
+// ==============================================================================
+// CEVC - Coordinated EV Charging Use Case
+// Spec: EEBus_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
+//
+// STATUS: SKELETON ONLY - NOT FUNCTIONAL
+// Estimated completion: 5% (only framework and declarations present)
+//
+// Scenarios (all TODO):
+//   1 (2.4.1, 3.4.1): EV sends charging energy demand
+//   2 (2.4.2, 3.4.2): Max power limitation
+//   3 (2.4.3, 3.4.3): Incentive table
+//   4 (2.4.4, 3.4.4): Charging plan curve
+//   5 (2.4.5, 3.4.5): Energy Guard heartbeat
+//   6 (2.4.6, 3.4.6): Energy Broker heartbeat
+//   7 (2.4.7, 3.4.7): Energy Guard error state
+//   8 (2.4.8, 3.4.8): Energy Broker error state
+//
+// Required work:
+//   - Implement time series data structures (charging plan)
+//   - Implement incentive table processing (tariff information)
+//   - Add validation for time series slots
+//   - Implement heartbeat handling for two actors
+//   - Add error state management
+//   - Integration with charging logic
+// ==============================================================================
 #ifdef EEBUS_ENABLE_CEVC_USECASE
 CevcUsecase::CevcUsecase() = default;
 
@@ -2417,59 +2506,73 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 {
     CmdClassifierType cmd = header.cmdClassifier.get();
     switch (data->last_cmd) {
+        // 3.2.1.2.1.1: Function "timeSeriesDescriptionListData" - Time series metadata
         case SpineDataTypeHandler::Function::timeSeriesDescriptionListData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    // response["timeSeriesDescriptionListData"] = EVEntity::get_time_series_description(); // TODO: implement cevc
+                    // TODO: Implement time series description (charging plan structure)
+                    // response["timeSeriesDescriptionListData"] = EVEntity::get_time_series_description();
                     return {true, true, CmdClassifierType::reply};
                 default:
                     break;
             }
             break;
+        // 3.2.1.2.1.2: Function "timeSeriesConstraintsListData" - Time series constraints
         case SpineDataTypeHandler::Function::timeSeriesConstraintsListData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    //response["timeSeriesConstraintsListData"] = read_time_series_constraints(); // TODO: implement cevc
+                    // TODO: Implement time series constraints (slot count, value ranges)
+                    // response["timeSeriesConstraintsListData"] = read_time_series_constraints();
                     return {true, true, CmdClassifierType::reply};
                 default:
                     break;
             }
             break;
+        // 3.2.1.2.1.3: Function "timeSeriesListData" - Actual charging plan data
         case SpineDataTypeHandler::Function::timeSeriesListData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    //response["timeSeriesListData"] = read_time_series_list(); // TODO: implement cevc
+                    // TODO: Implement time series read (return current charging plan)
+                    // response["timeSeriesListData"] = read_time_series_list();
                     return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::write:
+                    // TODO: Implement time series write (receive charging plan from Energy Broker)
                     return write_time_series_list(header, data->timeserieslistdatatype, response);
                 default:
                     break;
             }
             break;
+        // 3.2.1.2.2.1: Function "incentiveTableDescriptionData" - Tariff metadata
         case SpineDataTypeHandler::Function::incentiveTableDescriptionData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    //response["incentiveTableDescriptionData"] = read_incentive_table_description(); // TODO: implement cevc
+                    // TODO: Implement incentive table description (tariff structure)
+                    // response["incentiveTableDescriptionData"] = read_incentive_table_description();
                     return {true, true, CmdClassifierType::reply};
                 default:
                     break;
             }
             break;
+        // 3.2.1.2.2.2: Function "incentiveTableConstraintsData" - Tariff constraints
         case SpineDataTypeHandler::Function::incentiveTableConstraintsData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    //response["incentiveTableConstraintsData"] = read_incentive_table_constraints(); // TODO: implement cevc
+                    // TODO: Implement incentive table constraints
+                    // response["incentiveTableConstraintsData"] = read_incentive_table_constraints();
                     return {true, true, CmdClassifierType::reply};
                 default:
                     break;
             }
             break;
+        // 3.2.1.2.2.3: Function "incentiveTableData" - Actual tariff data
         case SpineDataTypeHandler::Function::incentiveTableData:
             switch (cmd) {
                 case CmdClassifierType::read:
-                    //response["incentiveTableData"] = read_incentive_table_data(); // TODO: implement cevc
+                    // TODO: Implement incentive table read (return current tariff)
+                    // response["incentiveTableData"] = read_incentive_table_data();
                     return {true, true, CmdClassifierType::reply};
                 case CmdClassifierType::write:
+                    // TODO: Implement incentive table write (receive tariff from Energy Broker)
                     return write_incentive_table_data(header, data->incentivetabledatatype, response);
                 default:
                     break;
@@ -2632,17 +2735,35 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
 }
 #endif
 
+// ==============================================================================
+// OPEV - Overload Protection by EV Charging Current Curtailment Use Case
+// Spec: EEBus_UC_TS_OverloadProtectionByEVChargingCurrentCurtailment_V1.0.1b.pdf
+//
+// STATUS: PARTIALLY IMPLEMENTED (~60% complete)
+//
+// Scenarios:
+//   1 (3.4.1): EVSE writes current limit - PARTIAL (write handler incomplete)
+//   2 (3.4.2): EV reports current measurements - COMPLETE (via EVCEM)
+//   3 (3.4.3): EV reports permitted values - COMPLETE
+//
+// Known issues:
+//   - Write handler incomplete (lines 2762-2763): Scale factor handling TODO
+//   - Limit validation missing: No check if limits can be applied
+//   - Interaction with LPC use case correctly handled (lines 2863-2869)
+// ==============================================================================
 #ifdef EEBUS_ENABLE_OPEV_USECASE
 MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
     switch (data->last_cmd) {
+        // 3.2.1.2.1.1: Function "loadControlLimitDescriptionListData" - Current limit metadata
         case SpineDataTypeHandler::Function::loadControlLimitDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::LoadControl)) {
                 response["loadControlLimitDescriptionListData"] = EVEntity::get_load_control_limit_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // 3.2.1.2.1.2: Function "loadControlLimitListData" - Per-phase current limits
         case SpineDataTypeHandler::Function::loadControlLimitListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::LoadControl)) {
                 if (header.cmdClassifier == CmdClassifierType::read) {
@@ -2650,21 +2771,26 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                     return {true, true, CmdClassifierType::reply};
                 }
                 if (header.cmdClassifier == CmdClassifierType::write) {
+                    // TODO: Implement write handler for current limits
+                    // Must handle scale factors, validate limits, and apply to charging system
                 }
             }
             break;
+        // 3.2.1.2.2: Function "measurementListData" - Current measurements (via EVCEM)
         case SpineDataTypeHandler::Function::measurementListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::Measurement)) {
                 response["measurementListData"] = EVEntity::get_measurement_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // 3.2.1.2.3.1: Function "electricalConnectionDescriptionListData"
         case SpineDataTypeHandler::Function::electricalConnectionDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                 response["electricalConnectionDescriptionListData"] = EVEntity::get_electrical_connection_description_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        // 3.2.1.2.3.2: Function "electricalConnectionParameterDescriptionListData"
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                 response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
@@ -2674,7 +2800,6 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
         default:;
     }
     return {false};
-    return {};
 }
 
 UseCaseInformationDataType OpevUsecase::get_usecase_information()
@@ -2685,8 +2810,11 @@ UseCaseInformationDataType OpevUsecase::get_usecase_information()
     UseCaseSupportType opev_usecase_support;
     opev_usecase_support.useCaseName = "overloadProtectionByEvChargingCurrentCurtailment";
     opev_usecase_support.useCaseVersion = "1.0.1";
+    // Scenario 1 (3.4.1): EVSE writes current limit (write handler TODO)
     opev_usecase_support.scenarioSupport->push_back(1);
+    // Scenario 2 (3.4.2): EV reports current measurements
     opev_usecase_support.scenarioSupport->push_back(2);
+    // Scenario 3 (3.4.3): EV reports permitted values
     opev_usecase_support.scenarioSupport->push_back(3);
     opev_usecase_support.useCaseDocumentSubRevision = "release";
     opev_usecase.useCaseSupport->push_back(opev_usecase_support);
@@ -2766,12 +2894,15 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::
     return features;
 }
 
+// Spec 3.2.1.2.1.1: Load control limit descriptions for per-phase current limits
+// Creates 3 limit IDs (id_x_1, id_x_2, id_x_3) for phases A, B, C
+// Limit type: maxValueLimit, Category: obligation, Scope: overloadProtection
 void OpevUsecase::get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data)
 {
     const std::array<std::pair<uint8_t, uint8_t>, 3> id_pairs{{
-        {id_x_1, id_z_1},
-        {id_x_2, id_z_2},
-        {id_x_3, id_z_3},
+        {id_x_1, id_z_1}, // Phase A: limit id -> measurement id
+        {id_x_2, id_z_2}, // Phase B
+        {id_x_3, id_z_3}, // Phase C
     }};
 
     for (const auto &p : id_pairs) {
@@ -2779,19 +2910,21 @@ void OpevUsecase::get_load_control_limit_description_list_data(LoadControlLimitD
         loadControlLimitDescriptionData.limitId = p.first;
         loadControlLimitDescriptionData.limitType = LoadControlLimitTypeEnumType::maxValueLimit;
         loadControlLimitDescriptionData.limitCategory = LoadControlCategoryEnumType::obligation;
-        loadControlLimitDescriptionData.measurementId = p.second;
+        loadControlLimitDescriptionData.measurementId = p.second; // Link to current measurement
         loadControlLimitDescriptionData.unit = UnitOfMeasurementEnumType::A;
         loadControlLimitDescriptionData.scopeType = ScopeTypeEnumType::overloadProtection;
         data->loadControlLimitDescriptionData->push_back(loadControlLimitDescriptionData);
     }
 }
 
+// Spec 3.2.1.2.1.2: Current limit values per phase (read)
+// Returns per-phase current limits in milliamps (scale=-3)
 void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType *data) const
 {
     constexpr std::array<uint8_t, 3> ids_used{{
-        id_x_1,
-        id_x_2,
-        id_x_3,
+        id_x_1, // Phase A
+        id_x_2, // Phase B
+        id_x_3, // Phase C
     }};
     for (size_t i = 0; i < ids_used.size(); ++i) {
         uint8_t p = ids_used[i];
@@ -2800,7 +2933,7 @@ void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType 
         loadControlLimitData.isLimitChangeable = limit_changeable();
         loadControlLimitData.isLimitActive = limit_active;
         loadControlLimitData.value->number = limit_per_phase_milliamps[i];
-        loadControlLimitData.value->scale = -3;
+        loadControlLimitData.value->scale = -3; // Milliamps: value * 10^-3 = A
         data->loadControlLimitData->push_back(loadControlLimitData);
     }
 }

@@ -52,7 +52,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
-//#define EEBUS_ENABLE_OPEV_USECASE
+#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
