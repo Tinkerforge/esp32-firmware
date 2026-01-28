@@ -52,3 +52,4 @@ api_info.json
 signature/config.ini
 signature/keys/
 .venv/
+.venv-*/
