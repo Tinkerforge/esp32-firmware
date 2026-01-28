@@ -339,7 +339,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                 : phoneNfcAlreadyRegistered ?
                     <Alert variant="success">{__("nfc.content.tap_to_unlock_activated")}</Alert>
                 :
-                    <Button variant="primary" onClick={this.openAddModalWithPhoneId} disabled={state.authorized_tags.length >= MAX_AUTHORIZED_TAGS}>
+                    <Button variant="primary" className="form-control" onClick={this.openAddModalWithPhoneId} disabled={state.authorized_tags.length >= MAX_AUTHORIZED_TAGS}>
                         {__("nfc.content.tap_to_unlock_add_btn")}
                     </Button>
                 }
