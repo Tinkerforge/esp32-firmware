@@ -1634,13 +1634,13 @@ void EvccUsecase::update_api() const
 void EvccUsecase::get_device_config_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const
 {
     DeviceConfigurationKeyValueDescriptionDataType comm_standard_description{};
-    comm_standard_description.keyId = 1; // TODO: move these IDs to be managed by entity
+    comm_standard_description.keyId = id_x_1;
     comm_standard_description.keyName = DeviceConfigurationKeyNameEnumType::communicationsStandard;
     comm_standard_description.valueType = DeviceConfigurationKeyValueTypeType::string;
     data->deviceConfigurationKeyValueDescriptionData->push_back(comm_standard_description);
 
     DeviceConfigurationKeyValueDescriptionDataType asymmetric_description{};
-    asymmetric_description.keyId = 2;
+    asymmetric_description.keyId = id_x_2;
     asymmetric_description.keyName = DeviceConfigurationKeyNameEnumType::asymmetricChargingSupported;
     asymmetric_description.valueType = DeviceConfigurationKeyValueTypeType::boolean;
     data->deviceConfigurationKeyValueDescriptionData->push_back(asymmetric_description);
@@ -1649,12 +1649,12 @@ void EvccUsecase::get_device_config_description(DeviceConfigurationKeyValueDescr
 void EvccUsecase::get_device_config_list(DeviceConfigurationKeyValueListDataType *data) const
 {
     DeviceConfigurationKeyValueDataType comm_standard_value{};
-    comm_standard_value.keyId = 1;
+    comm_standard_value.keyId = id_x_1;
     comm_standard_value.value->string = communication_standard.c_str();
     data->deviceConfigurationKeyValueData->push_back(comm_standard_value);
 
     DeviceConfigurationKeyValueDataType asymmetric_value{};
-    asymmetric_value.keyId = 2;
+    asymmetric_value.keyId = id_x_2;
     asymmetric_value.value->boolean = asymmetric_supported;
     data->deviceConfigurationKeyValueData->push_back(asymmetric_value);
 }
@@ -1697,8 +1697,8 @@ void EvccUsecase::get_electrical_connection_parameter_description(ElectricalConn
 {
 
     ElectricalConnectionParameterDescriptionDataType power_description{};
-    power_description.electricalConnectionId = electrical_connection_id;
-    power_description.parameterId = electrical_connection_parameter_id;
+    power_description.electricalConnectionId = id_y_1;
+    power_description.parameterId = id_z_1;
     power_description.acMeasuredPhases = ElectricalConnectionPhaseNameEnumType::abc; // Not sure but the spec has no value here, maybe its what we are capable of measuring?
     power_description.scopeType = ScopeTypeEnumType::acPowerTotal;
     data->electricalConnectionParameterDescriptionData->push_back(power_description);
@@ -1707,8 +1707,8 @@ void EvccUsecase::get_electrical_connection_parameter_description(ElectricalConn
 void EvccUsecase::get_electrical_connection_permitted_values(ElectricalConnectionPermittedValueSetListDataType *data) const
 {
     ElectricalConnectionPermittedValueSetDataType permitted_values{};
-    permitted_values.electricalConnectionId = electrical_connection_id;
-    permitted_values.parameterId = electrical_connection_parameter_id;
+    permitted_values.electricalConnectionId = id_y_1;
+    permitted_values.parameterId = id_z_1;
 
     ScaledNumberSetType minmax_power_value_set{};
     ScaledNumberRangeType power_value_range{};
@@ -2473,25 +2473,6 @@ void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCh
 
 #endif
 
-// ==============================================================================
-// CEVC - Coordinated EV Charging Use Case
-// Spec: EEBus_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
-//
-// STATUS: SKELETON ONLY - NOT FUNCTIONAL
-// Estimated completion: 5% (only framework and declarations present)
-//
-// Scenarios (all TODO):
-//   1 (2.4.1, 3.4.1): EV sends charging energy demand
-//   2 (2.4.2, 3.4.2): Max power limitation
-//   3 (2.4.3, 3.4.3): Incentive table
-//   4 (2.4.4, 3.4.4): Charging plan curve
-//   5 (2.4.5, 3.4.5): Energy Guard heartbeat
-//   6 (2.4.6, 3.4.6): Energy Broker heartbeat
-//   7 (2.4.7, 3.4.7): Energy Guard error state
-//   8 (2.4.8, 3.4.8): Energy Broker error state
-//
-// Required work:
-//   - Implement time series data structures (charging plan)
 // ==============================================================================
 // CEVC - Coordinated EV Charging Use Case
 // Spec: EEBus_UC_TS_CoordinatedEVCharging_V1.0.1.pdf
@@ -3337,14 +3318,15 @@ void CevcUsecase::invalidate_broker_data()
 // STATUS: PARTIALLY IMPLEMENTED (~60% complete)
 //
 // Scenarios:
-//   1 (3.4.1): EVSE writes current limit - PARTIAL (write handler incomplete)
-//   2 (3.4.2): EV reports current measurements - COMPLETE (via EVCEM)
-//   3 (3.4.3): EV reports permitted values - COMPLETE
+//   1 (3.4.1): EV reports limitations and writes current limit - COMPLETE
+//   2 (3.4.2): EG sends heartbeat - Not complete
+//   3 (3.4.3): EG sends error state - Not complete
 //
 // Known issues:
-//   - Write handler incomplete (lines 2762-2763): Scale factor handling TODO
 //   - Limit validation missing: No check if limits can be applied
-//   - Interaction with LPC use case correctly handled (lines 2863-2869)
+//   - Missing update_api
+//   - eebus-go reports that no current limits are received.
+//   - Does not check if EG is okay.
 // ==============================================================================
 #ifdef EEBUS_ENABLE_OPEV_USECASE
 MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -3358,6 +3340,12 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 return {true, true, CmdClassifierType::reply};
             }
             break;
+        case SpineDataTypeHandler::Function::loadControlLimitConstraintsListData:
+            if (feature_address == feature_addresses.at(FeatureTypeEnumType::LoadControl)) {
+                response["loadControlLimitConstraintsListData"] = EVEntity::get_load_control_limit_constraints_list_data();
+                return {true, true, CmdClassifierType::reply};
+            }
+            break;
         // 3.2.1.2.1.2: Function "loadControlLimitListData" - Per-phase current limits
         case SpineDataTypeHandler::Function::loadControlLimitListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::LoadControl)) {
@@ -3366,8 +3354,7 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                     return {true, true, CmdClassifierType::reply};
                 }
                 if (header.cmdClassifier == CmdClassifierType::write) {
-                    // TODO: Implement write handler for current limits
-                    // Must handle scale factors, validate limits, and apply to charging system
+                    return write_load_control_limit_list_data(header, data->loadcontrollimitlistdatatype, response);
                 }
             }
             break;
@@ -3378,17 +3365,17 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                 return {true, true, CmdClassifierType::reply};
             }
             break;
-        // 3.2.1.2.3.1: Function "electricalConnectionDescriptionListData"
-        case SpineDataTypeHandler::Function::electricalConnectionDescriptionListData:
-            if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
-                response["electricalConnectionDescriptionListData"] = EVEntity::get_electrical_connection_description_list_data();
-                return {true, true, CmdClassifierType::reply};
-            }
-            break;
-        // 3.2.1.2.3.2: Function "electricalConnectionParameterDescriptionListData"
+        // 3.2.1.2.3.1: Function "electricalConnectionParameterDescriptionListData"
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData:
             if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
                 response["electricalConnectionParameterDescriptionListData"] = EVEntity::get_electrical_connection_parameter_description_list_data();
+                return {true, true, CmdClassifierType::reply};
+            }
+            break;
+        // 3.2.1.2.3.2: Function "electricalConnectionPermittedValueSetListData" - Permitted current values
+        case SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData:
+            if (feature_address == feature_addresses.at(FeatureTypeEnumType::ElectricalConnection)) {
+                response["electricalConnectionPermittedValueSetListData"] = EVEntity::get_electrical_connection_permitted_list_data();
                 return {true, true, CmdClassifierType::reply};
             }
             break;
@@ -3405,11 +3392,11 @@ UseCaseInformationDataType OpevUsecase::get_usecase_information()
     UseCaseSupportType opev_usecase_support;
     opev_usecase_support.useCaseName = "overloadProtectionByEvChargingCurrentCurtailment";
     opev_usecase_support.useCaseVersion = "1.0.1";
-    // Scenario 1 (3.4.1): EVSE writes current limit (write handler TODO)
+    // Scenario 1 (3.4.1): EV provides limitations and writes current limit
     opev_usecase_support.scenarioSupport->push_back(1);
-    // Scenario 2 (3.4.2): EV reports current measurements
+    // Scenario 2 (3.4.2): EG sends heartbeat
     opev_usecase_support.scenarioSupport->push_back(2);
-    // Scenario 3 (3.4.3): EV reports permitted values
+    // Scenario 3 (3.4.3): EG sends error state
     opev_usecase_support.scenarioSupport->push_back(3);
     opev_usecase_support.useCaseDocumentSubRevision = "release";
     opev_usecase.useCaseSupport->push_back(opev_usecase_support);
@@ -3516,6 +3503,8 @@ void OpevUsecase::get_load_control_limit_description_list_data(LoadControlLimitD
 // Returns per-phase current limits in milliamps (scale=-3)
 void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType *data) const
 {
+    LoadControlLimitConstraintsListDataType loadControlLimitConstraintsListData{};
+
     constexpr std::array<uint8_t, 3> ids_used{{
         id_x_1, // Phase A
         id_x_2, // Phase B
@@ -3543,8 +3532,8 @@ void OpevUsecase::get_electrical_connection_parameter_description_list_data(Elec
 
     constexpr std::array<Entrydata, 3> entrydata{{
         {id_i_1, id_z_1, ElectricalConnectionPhaseNameEnumType::a},
-        {id_i_2, id_z_2, ElectricalConnectionPhaseNameEnumType::a},
-        {id_i_3, id_z_3, ElectricalConnectionPhaseNameEnumType::a},
+        {id_i_2, id_z_2, ElectricalConnectionPhaseNameEnumType::b},
+        {id_i_3, id_z_3, ElectricalConnectionPhaseNameEnumType::c},
     }};
     for (const auto &entry : entrydata) {
         ElectricalConnectionParameterDescriptionDataType parameter_description{};
@@ -3582,11 +3571,39 @@ void OpevUsecase::get_electrical_connection_permitted_list_data(ElectricalConnec
 }
 void OpevUsecase::update_limits(int limit_phase_1_milliamps, int limit_phase_2_milliamps, int limit_phase_3_milliamps, bool active)
 {
-    // TODO: check if limits can be applied
-    limit_per_phase_milliamps[0] = limit_phase_1_milliamps >= 0 ? limit_phase_1_milliamps : limit_per_phase_milliamps[0];
-    limit_per_phase_milliamps[1] = limit_phase_2_milliamps >= 0 ? limit_phase_2_milliamps : limit_per_phase_milliamps[1];
-    limit_per_phase_milliamps[2] = limit_phase_3_milliamps >= 0 ? limit_phase_3_milliamps : limit_per_phase_milliamps[2];
+    // TODO: check if limits can be applied and apply them to the evse
+    bool notify_subs = (limit_active != active);
+    // Phase A
+    if (limit_phase_1_milliamps >= 0) {
+        if (limit_per_phase_milliamps[0] != limit_phase_1_milliamps) {
+            notify_subs = true;
+        }
+        limit_per_phase_milliamps[0] = limit_phase_1_milliamps;
+    }
+    // Phase B
+    if (limit_phase_2_milliamps >= 0) {
+        if (limit_per_phase_milliamps[1] != limit_phase_2_milliamps) {
+            notify_subs = true;
+        }
+        limit_per_phase_milliamps[1] = limit_phase_2_milliamps;
+    }
+    // Phase C
+    if (limit_phase_3_milliamps >= 0) {
+        if (limit_per_phase_milliamps[2] != limit_phase_3_milliamps) {
+            notify_subs = true;
+        }
+        limit_per_phase_milliamps[2] = limit_phase_3_milliamps;
+    }
+
     limit_active = active;
+
+    if (notify_subs) {
+        auto limit_list_data = EVEntity::get_load_control_limit_list_data();
+        auto limit_permitted_data = EVEntity::get_electrical_connection_permitted_list_data();
+        logger.printfln("OPEV: New limits received: L1: %d mA, L2: %d mA, L3: %d mA, active: %s", limit_per_phase_milliamps[0], limit_per_phase_milliamps[1], limit_per_phase_milliamps[2], limit_active ? "true" : "false");
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), limit_list_data, "loadControlLimitListData");
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), limit_permitted_data, "electricalConnectionPermittedValueSetListData");
+    }
 }
 bool OpevUsecase::limit_changeable() const
 {
@@ -3609,25 +3626,23 @@ MessageReturn OpevUsecase::write_load_control_limit_list_data(HeaderType &header
 
     for (const auto &limit_data : data->loadControlLimitData.get()) {
         switch (limit_data.limitId.get()) {
-            case id_x_1: // TODO: Scalednumbertype berechnen
-                limit_phase_a = limit_data.value->number.get();
+            case id_x_1:
+                limit_phase_a = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             case id_x_2:
-                limit_phase_b = limit_data.value->number.get();
+                limit_phase_b = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             case id_x_3:
-                limit_phase_c = limit_data.value->number.get();
+                limit_phase_c = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             default:
                 break;
         }
     }
-    // TODO: check if limit can be applied
     update_limits(limit_phase_a, limit_phase_b, limit_phase_c, limit_enabled);
-    logger.printfln("OPEV: New limits received: L1: %d mA, L2: %d mA, L3: %d mA, active: %s", limit_per_phase_milliamps[0], limit_per_phase_milliamps[1], limit_per_phase_milliamps[2], limit_active ? "true" : "false");
     return {true, false, CmdClassifierType::reply};
 }
 #endif
@@ -3954,6 +3969,9 @@ ElectricalConnectionPermittedValueSetListDataType EVEntity::get_electrical_conne
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     eebus.usecases->ev_commissioning_and_configuration.get_electrical_connection_permitted_values(&electrical_connection_permitted_value_set_list_data);
 #endif
+#ifdef EEBUS_ENABLE_OPEV_USECASE
+    eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_electrical_connection_permitted_list_data(&electrical_connection_permitted_value_set_list_data);
+#endif
     return electrical_connection_permitted_value_set_list_data;
 }
 ElectricalConnectionDescriptionListDataType EVEntity::get_electrical_connection_description_list_data()
@@ -4013,6 +4031,14 @@ LoadControlLimitListDataType EVEntity::get_load_control_limit_list_data()
     eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_load_control_limit_list_data(&load_control_limit_list_data);
 #endif
     return load_control_limit_list_data;
+}
+LoadControlLimitConstraintsListDataType EVEntity::get_load_control_limit_constraints_list_data()
+{
+    LoadControlLimitConstraintsListDataType load_control_limit_constraints_list_data;
+#ifdef EEBUS_ENABLE_OPEV_USECASE
+    //eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_load_control_constraints_list_data(&load_control_limit_constraints_list_data);
+#endif
+    return load_control_limit_constraints_list_data;
 }
 
 namespace EEBUS_USECASE_HELPERS

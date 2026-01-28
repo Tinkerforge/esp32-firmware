@@ -49,10 +49,10 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_ENABLE_EVCC_USECASE
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
-#define EEBUS_ENABLE_CEVC_USECASE
+//#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
+//#define EEBUS_ENABLE_OPEV_USECASE
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -164,7 +164,8 @@ class EVEntity
 {
 public:
     inline static std::vector<int> entity_address = {1, 1};
-    // DeviceDiagnosis
+    // DeviceConfiguration
+    static constexpr uint16_t evccDeviceconfigurationIdOffset = 0;
     static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_value_description_list();
     static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list();
 
@@ -175,11 +176,10 @@ public:
     static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
 
     // ElectricalConnection
-    static constexpr int evcemElectricalConnectionIdOffset = 0;
-    static constexpr int evccElectricalConnectionIdOffset = 10;
-    static constexpr int opevElectricalConnectionIdOffset = 20;
-    static constexpr int evcemElectricalconnectionParameterIdOffset = 0;
-    static constexpr int opevElectricalconnectionParameterIdOffset = 10;
+    static constexpr uint16_t evccElectricalConnectionIdOffset = 0;
+    static constexpr uint16_t evcemElectricalconnectionParameterIdOffset = 0;
+    static constexpr uint16_t opevElectricalconnectionParameterIdOffset = 10;
+    static constexpr uint16_t evccElectricalconnectionParameterIdOffset = 20;
     static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
     static ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_list_data();
     static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
@@ -188,16 +188,17 @@ public:
     static DeviceDiagnosisStateDataType get_diagnosis_state_data();
 
     // Measurement
-    static constexpr int evcemMeasurementIdOffset = 0;
+    static constexpr uint16_t evcemMeasurementIdOffset = 0;
     static MeasurementDescriptionListDataType get_measurement_description_list_data();
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
 
     // LoadControl
-    static constexpr int opevLoadcontrolIdOffset = 0;
-    static constexpr int opevMeasurementIdOffset = 10;
+    static constexpr uint16_t opevLoadcontrolIdOffset = 0;
+    static constexpr uint16_t opevMeasurementIdOffset = 10;
     static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
     static LoadControlLimitListDataType get_load_control_limit_list_data();
+    static LoadControlLimitConstraintsListDataType get_load_control_limit_constraints_list_data();
 };
 /**
  * The basic Framework of a EEBUS Usecase.
@@ -480,106 +481,7 @@ private:
     void update_api() const;
 };
 #endif
-#ifdef EEBUS_ENABLE_EVCEM_USECASE
-/**
- * The EvcemUsecase Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
- * This should have the same entity address as other entities with the EV actor <br>
- * Actor: EV <br>
- * Features: Measurement (measurementDescriptionListData, measurementConstraintsListData, measurementListData), ElectricalConnection (electricalConnectionDescriptionListData, electricalConnectionParameterDescriptionListData) <br>
- */
-class EvcemUsecase final : public EebusUsecase
-{
-public:
-    EvcemUsecase();
 
-    [[nodiscard]] Usecases get_usecase_type() const override
-    {
-        return Usecases::EVCEM;
-    }
-
-    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
-    UseCaseInformationDataType get_usecase_information() override;
-    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
-
-    /**
-     * Update the measurements. This will inform all subscribers of the new measurements. Amps or power values at or below 0 are ignored and not send.
-     * @param amps_phase_1 Milliamps on phase a
-     * @param amps_phase_2 Milliamps on phase b
-     * @param amps_phase_3 Milliamps on phase c
-     * @param power_phase_1 Total power on phase 1 in watts
-     * @param power_phase_2 Total power on phase 2 in watts
-     * @param power_phase_3 Total power on phase 3 in watts
-     * @param charged_wh Total charged into the ev during the current session in wh
-     * @param charged_measured If the charged_wh value is measured. If false it is assumed its calculated. Default is false
-     */
-    void update_measurements(int amps_phase_1, int amps_phase_2, int amps_phase_3, int power_phase_1, int power_phase_2, int power_phase_3, int charged_wh, bool charged_measured = false);
-
-    /**
-     * Update the constraints of the system. This will inform all subscribers of the new constraints. Values set to negative values will be omitted from the eebus information
-     * @param amps_min Minimum amps in mA that can be measured
-     * @param amps_max Maximum amps in mA that can be measured
-     * @param amps_stepsize Stepsize of the amps in mA measurement
-     * @param power_min Minimum power in w that can be measured
-     * @param power_max Maximum power in w  that can be measured
-     * @param power_stepsize Stepsize of the power in w  measurement
-     * @param energy_min Minimum charged power in wh that can be measured
-     * @param energy_max Maximum charged power in wh that can be measured
-     * @param energy_stepsize Stepsize of the charged power in wh measurement
-     */
-    void update_constraints(int amps_min, int amps_max, int amps_stepsize, int power_min, int power_max, int power_stepsize, int energy_min, int energy_max, int energy_stepsize);
-
-    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
-    {
-        return {FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};
-    }
-
-    // Generators for data types
-    void get_measurement_description_list(MeasurementDescriptionListDataType *data) const;
-    void get_measurement_constraints(MeasurementConstraintsListDataType *data) const;
-    void get_measurement_list(MeasurementListDataType *data) const;
-
-    void get_electrical_connection_description(ElectricalConnectionDescriptionListDataType *data) const;
-    void get_electrical_connection_parameters(ElectricalConnectionParameterDescriptionListDataType *data) const;
-
-    // IDs as they are used in Overload Protection by EV Charging Current Curtailment V1.0.1b 3.2.1.2 in the definition of the features
-    static constexpr uint8_t id_x_1 = EVEntity::evcemMeasurementIdOffset + 1;
-    static constexpr uint8_t id_x_2 = EVEntity::evcemMeasurementIdOffset + 2;
-    static constexpr uint8_t id_x_3 = EVEntity::evcemMeasurementIdOffset + 3;
-    static constexpr uint8_t id_x_4 = EVEntity::evcemMeasurementIdOffset + 4;
-    static constexpr uint8_t id_x_5 = EVEntity::evcemMeasurementIdOffset + 5;
-    static constexpr uint8_t id_x_6 = EVEntity::evcemMeasurementIdOffset + 6;
-    static constexpr uint8_t id_x_7 = EVEntity::evcemMeasurementIdOffset + 7;
-    static constexpr uint8_t id_y_1 = EVEntity::evcemElectricalConnectionIdOffset + 1;
-    static constexpr uint8_t id_z_1 = EVEntity::evcemElectricalconnectionParameterIdOffset + 1;
-    static constexpr uint8_t id_z_2 = EVEntity::evcemElectricalconnectionParameterIdOffset + 2;
-    static constexpr uint8_t id_z_3 = EVEntity::evcemElectricalconnectionParameterIdOffset + 3;
-    static constexpr uint8_t id_z_4 = EVEntity::evcemElectricalconnectionParameterIdOffset + 4;
-    static constexpr uint8_t id_z_5 = EVEntity::evcemElectricalconnectionParameterIdOffset + 5;
-    static constexpr uint8_t id_z_6 = EVEntity::evcemElectricalconnectionParameterIdOffset + 6;
-    static constexpr uint8_t id_z_7 = EVEntity::evcemElectricalconnectionParameterIdOffset + 7;
-
-private:
-    // Data held about the current charge
-    int milliamps_draw_phase[3]{}; // Milliamp draw per phase
-    int power_draw_phase[3]{};     // Power per phase
-    int power_charged_wh = 0;      // Total charged into the ev during the current session in wh
-    bool power_charged_measured = false;
-
-    // Constraints
-    int measurement_limit_milliamps_min = 0;
-    int measurement_limit_milliamps_max = 32000;
-    int measurement_limit_milliamps_stepsize = 1;
-    int measurement_limit_power_min = 0;
-    int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    int measurement_limit_power_stepsize = 10;
-    int measurement_limit_energy_min = 0;
-    int measurement_limit_energy_max = 1000000;
-    int measurement_limit_energy_stepsize = 10;
-
-    void update_api() const;
-};
-#endif
 #ifdef EEBUS_ENABLE_EVCC_USECASE
 /**
  * The Evcc Entity as defined in EEBus UC TS - EV Commissioning and Configuration V1.0.1.
@@ -688,13 +590,15 @@ public:
 
     [[nodiscard]] DeviceDiagnosisStateDataType get_device_diagnosis_state() const;
 
+    // IDs as they are used in EV Commissioning and Configuration V1.0.1 3.2.1.2 in the definition of the features
+    static constexpr uint16_t id_x_1 = EVEntity::evccDeviceconfigurationIdOffset + 1;
+    static constexpr uint16_t id_x_2 = EVEntity::evccDeviceconfigurationIdOffset + 2;
+    static constexpr uint16_t id_y_1 = EVEntity::evccElectricalConnectionIdOffset + 1;
+    static constexpr uint16_t id_z_1 = EVEntity::evccElectricalconnectionParameterIdOffset + 1;
+
 private:
     void update_api() const;
     bool ev_connected = false;
-
-    // IDs
-    uint16_t electrical_connection_id = 10;
-    uint16_t electrical_connection_parameter_id = 10;
 
     // Server Data
     //DeviceDiagnosis
@@ -723,6 +627,108 @@ private:
     bool standby_mode = false;
 };
 #endif
+
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+/**
+ * The EvcemUsecase Entity as defined in EEBus UC TS - EV Charging Electricity Measurement V1.0.1.
+ * This should have the same entity address as other entities with the EV actor <br>
+ * Actor: EV <br>
+ * Features: Measurement (measurementDescriptionListData, measurementConstraintsListData, measurementListData), ElectricalConnection (electricalConnectionDescriptionListData, electricalConnectionParameterDescriptionListData) <br>
+ */
+class EvcemUsecase final : public EebusUsecase
+{
+public:
+    EvcemUsecase();
+
+    [[nodiscard]] Usecases get_usecase_type() const override
+    {
+        return Usecases::EVCEM;
+    }
+
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+    UseCaseInformationDataType get_usecase_information() override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    /**
+     * Update the measurements. This will inform all subscribers of the new measurements. Amps or power values at or below 0 are ignored and not send.
+     * @param amps_phase_1 Milliamps on phase a
+     * @param amps_phase_2 Milliamps on phase b
+     * @param amps_phase_3 Milliamps on phase c
+     * @param power_phase_1 Total power on phase 1 in watts
+     * @param power_phase_2 Total power on phase 2 in watts
+     * @param power_phase_3 Total power on phase 3 in watts
+     * @param charged_wh Total charged into the ev during the current session in wh
+     * @param charged_measured If the charged_wh value is measured. If false it is assumed its calculated. Default is false
+     */
+    void update_measurements(int amps_phase_1, int amps_phase_2, int amps_phase_3, int power_phase_1, int power_phase_2, int power_phase_3, int charged_wh, bool charged_measured = false);
+
+    /**
+     * Update the constraints of the system. This will inform all subscribers of the new constraints. Values set to negative values will be omitted from the eebus information
+     * @param amps_min Minimum amps in mA that can be measured
+     * @param amps_max Maximum amps in mA that can be measured
+     * @param amps_stepsize Stepsize of the amps in mA measurement
+     * @param power_min Minimum power in w that can be measured
+     * @param power_max Maximum power in w  that can be measured
+     * @param power_stepsize Stepsize of the power in w  measurement
+     * @param energy_min Minimum charged power in wh that can be measured
+     * @param energy_max Maximum charged power in wh that can be measured
+     * @param energy_stepsize Stepsize of the charged power in wh measurement
+     */
+    void update_constraints(int amps_min, int amps_max, int amps_stepsize, int power_min, int power_max, int power_stepsize, int energy_min, int energy_max, int energy_stepsize);
+
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};
+    }
+
+    // Generators for data types
+    void get_measurement_description_list(MeasurementDescriptionListDataType *data) const;
+    void get_measurement_constraints(MeasurementConstraintsListDataType *data) const;
+    void get_measurement_list(MeasurementListDataType *data) const;
+
+    void get_electrical_connection_description(ElectricalConnectionDescriptionListDataType *data) const;
+    void get_electrical_connection_parameters(ElectricalConnectionParameterDescriptionListDataType *data) const;
+
+    // IDs as they are used in Overload Protection by EV Charging Current Curtailment V1.0.1b 3.2.1.2 in the definition of the features
+    static constexpr uint8_t id_x_1 = EVEntity::evcemMeasurementIdOffset + 1;
+    static constexpr uint8_t id_x_2 = EVEntity::evcemMeasurementIdOffset + 2;
+    static constexpr uint8_t id_x_3 = EVEntity::evcemMeasurementIdOffset + 3;
+    static constexpr uint8_t id_x_4 = EVEntity::evcemMeasurementIdOffset + 4;
+    static constexpr uint8_t id_x_5 = EVEntity::evcemMeasurementIdOffset + 5;
+    static constexpr uint8_t id_x_6 = EVEntity::evcemMeasurementIdOffset + 6;
+    static constexpr uint8_t id_x_7 = EVEntity::evcemMeasurementIdOffset + 7;
+    static constexpr uint8_t id_y_1 = EvccUsecase::id_y_1;
+    static constexpr uint8_t id_z_1 = EVEntity::evcemElectricalconnectionParameterIdOffset + 1;
+    static constexpr uint8_t id_z_2 = EVEntity::evcemElectricalconnectionParameterIdOffset + 2;
+    static constexpr uint8_t id_z_3 = EVEntity::evcemElectricalconnectionParameterIdOffset + 3;
+    static constexpr uint8_t id_z_4 = EVEntity::evcemElectricalconnectionParameterIdOffset + 4;
+    static constexpr uint8_t id_z_5 = EVEntity::evcemElectricalconnectionParameterIdOffset + 5;
+    static constexpr uint8_t id_z_6 = EVEntity::evcemElectricalconnectionParameterIdOffset + 6;
+    static constexpr uint8_t id_z_7 = EVEntity::evcemElectricalconnectionParameterIdOffset + 7;
+
+private:
+    // Data held about the current charge
+    int milliamps_draw_phase[3] = {1, 1, 1}; // Milliamp draw per phase. Set to 1 to avoid zero values
+    int power_draw_phase[3] = {1, 1, 1};     // Power per phase. Set to 1 to avoid zero values
+    int power_charged_wh = 1;                // Total charged into the ev during the current session in wh
+    bool power_charged_measured = false;
+
+    // Constraints
+    int measurement_limit_milliamps_min = 1;
+    int measurement_limit_milliamps_max = 32000;
+    int measurement_limit_milliamps_stepsize = 1;
+    int measurement_limit_power_min = 1;
+    int measurement_limit_power_max = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int measurement_limit_power_stepsize = 10;
+    int measurement_limit_energy_min = 1;
+    int measurement_limit_energy_max = 1000000;
+    int measurement_limit_energy_stepsize = 10;
+
+    void update_api() const;
+};
+#endif
+
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
 /**
  * The EVSE Entity as defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.1.
@@ -1291,8 +1297,6 @@ public:
 #error "OPEV Usecase requires EVCEM Usecase to be enabled"
 #endif
 
-// TODO: the OPEV usecase could not yet be tested as EEBUS-GO implements an older version of it with different functions.
-// EEBUS-GO reads the limitations from loadControlConstraintsListData whereas in version v1.0.1b the limits are sent using the electricalConnection feature
 /**
  * The OpevUsecase as defined in EEBus UC TS - Overload Protection by EV Charging Current Curtailment V1.0.1b
  * This should have the same entity address as other entities with the EV <br>
@@ -1323,6 +1327,8 @@ public:
 
     void get_load_control_limit_description_list_data(LoadControlLimitDescriptionListDataType *data);
     void get_load_control_limit_list_data(LoadControlLimitListDataType *data) const;
+    // The load control constraints are not actually in the spec but some implementations use them so this is here for compatibility sake.
+    //void get_load_control_constraints_list_data(LoadControlLimitConstraintsListDataType *data) const;
 
     static void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data);
     void get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const;
@@ -1354,20 +1360,20 @@ public:
     static constexpr uint8_t id_x_1 = EVEntity::opevLoadcontrolIdOffset + 1;
     static constexpr uint8_t id_x_2 = EVEntity::opevLoadcontrolIdOffset + 2;
     static constexpr uint8_t id_x_3 = EVEntity::opevLoadcontrolIdOffset + 3;
-    static constexpr uint8_t id_z_1 = EvcemUsecase::id_x_1; // Should be the measurement entry on EVCEM
+    static constexpr uint8_t id_z_1 = EvcemUsecase::id_x_1; // Should be the measurement ID entry on EVCEM
     static constexpr uint8_t id_z_2 = EvcemUsecase::id_x_2;
     static constexpr uint8_t id_z_3 = EvcemUsecase::id_x_3;
     static constexpr uint8_t id_i_1 = EVEntity::opevElectricalconnectionParameterIdOffset + 1;
     static constexpr uint8_t id_i_2 = EVEntity::opevElectricalconnectionParameterIdOffset + 2;
     static constexpr uint8_t id_i_3 = EVEntity::opevElectricalconnectionParameterIdOffset + 3;
-    static constexpr uint8_t id_j_1 = EVEntity::opevElectricalConnectionIdOffset + 1;
+    static constexpr uint8_t id_j_1 = EvcemUsecase::id_y_1;
 
 private:
     // Values of the usecase
     int limit_per_phase_milliamps[3] = {32000, 32000, 32000};
     bool limit_active = false;
     bool limit_changeable_allowed = true;
-    int limit_milliamps_min = 0;
+    int limit_milliamps_min = 100;
     int limit_milliamps_max = 32000;
 
     //write functions
