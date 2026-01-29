@@ -425,23 +425,27 @@ static const char *reason2str(uint8_t reason)
 {
     switch (reason) {
         case WIFI_REASON_NO_AP_FOUND:
-            return "Access Point not found. Is the reception too poor or the SSID incorrect?";
+            return "Access point not found. Is the reception too poor or the SSID incorrect?";
         case WIFI_REASON_AUTH_FAIL:
             return "Authentication failed. Is the passphrase correct?";
         case WIFI_REASON_ASSOC_FAIL:
-            return "Assiociation failed.";
+            return "Assiociation failed";
         case WIFI_REASON_HANDSHAKE_TIMEOUT:
         case WIFI_REASON_BEACON_TIMEOUT:
             return "Reception too poor";
+
+        case WIFI_REASON_ASSOC_TOOMANY:
+            return "Too many stations: access point full";
+        case WIFI_REASON_NOT_AUTHED:
+            return "Remote disconnect";
+        case WIFI_REASON_ASSOC_LEAVE:
+            return "Local disconnect";
 
         DEFAULT_REASON_STRING(WIFI_REASON_UNSPECIFIED)
         DEFAULT_REASON_STRING(WIFI_REASON_AUTH_EXPIRE)
         DEFAULT_REASON_STRING(WIFI_REASON_AUTH_LEAVE)
         DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_EXPIRE)
-        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_TOOMANY)
-        DEFAULT_REASON_STRING(WIFI_REASON_NOT_AUTHED)
         DEFAULT_REASON_STRING(WIFI_REASON_NOT_ASSOCED)
-        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_LEAVE)
         DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_NOT_AUTHED)
         DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_PWRCAP_BAD)
         DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_SUPCHAN_BAD)
@@ -466,7 +470,7 @@ static const char *reason2str(uint8_t reason)
         DEFAULT_REASON_STRING(WIFI_REASON_ROAMING)
 
         default:
-            return "Unknown reason.";
+            return "Unknown reason";
     }
 }
 
