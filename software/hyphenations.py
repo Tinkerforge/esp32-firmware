@@ -745,7 +745,6 @@ de_hyph = [
     "Durch-schnitts-preis",
     "Er-trags-pro-gno-se",
     "Dis-play-ein-stel-lun-gen",
-    "Dus-play-ein-stel-lun-gen",
     "Netz-ent-gel-te",
     "Preis-auf-schlag",
     "be-reit-ge-stellt",
@@ -1011,7 +1010,9 @@ de_hyph = [
     "Strom-preis-plan",
     "Schnell-la-dung",
     "Be-nut-zer-ober-flä-che",
-
+    "exis-tie-ren",
+    "Re-gis-trie-run-gen",
+    "kurz-le-bi-ge",
 ]
 
 en_hyph = [
@@ -1284,6 +1285,9 @@ en_hyph = [
     "At-tempt-ing",
     "Pre-fer-ring",
     "Guar-an-teed",
+    "cor-re-spond-ing",
+    "in-di-cat-ing",
+    "Reg-is-tra-tions",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
