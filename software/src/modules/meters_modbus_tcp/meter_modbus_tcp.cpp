@@ -490,58 +490,14 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         device_address = ephemeral_table_config->get("device_address")->asUint8();
         carlo_gavazzi_em270.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM270VirtualMeter>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
-
-        switch (carlo_gavazzi_em270.virtual_meter) {
-        case CarloGavazziEM270VirtualMeter::None:
-            logger.printfln_meter("No Carlo Gavazzi EM270 Virtual Meter selected");
-            break;
-
-        case CarloGavazziEM270VirtualMeter::Meter:
-            table = &carlo_gavazzi_em270_and_em280_meter_table;
-            break;
-
-        case CarloGavazziEM270VirtualMeter::CurrentTransformer1:
-            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
-            break;
-
-        case CarloGavazziEM270VirtualMeter::CurrentTransformer2:
-            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Carlo Gavazzi EM270 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em270.virtual_meter));
-            break;
-        }
-
+        table = get_carlo_gavazzi_em270_table(slot, carlo_gavazzi_em270.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM280:
         device_address = ephemeral_table_config->get("device_address")->asUint8();
         carlo_gavazzi_em280.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<CarloGavazziEM280VirtualMeter>();
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 18));
-
-        switch (carlo_gavazzi_em280.virtual_meter) {
-        case CarloGavazziEM280VirtualMeter::None:
-            logger.printfln_meter("No Carlo Gavazzi EM280 Virtual Meter selected");
-            break;
-
-        case CarloGavazziEM280VirtualMeter::Meter:
-            table = &carlo_gavazzi_em270_and_em280_meter_table;
-            break;
-
-        case CarloGavazziEM280VirtualMeter::CurrentTransformer1:
-            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
-            break;
-
-        case CarloGavazziEM280VirtualMeter::CurrentTransformer2:
-            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown Carlo Gavazzi EM280 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em280.virtual_meter));
-            break;
-        }
-
+        table = get_carlo_gavazzi_em280_table(slot, carlo_gavazzi_em280.virtual_meter);
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM300:
@@ -596,8 +552,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         break;
 
     case MeterModbusTCPTableID::SolaredgeInverter:
-        solaredge_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaredgeInverterVirtualMeter>();
         device_address = ephemeral_table_config->get("device_address")->asUint8();
+        solaredge_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolaredgeInverterVirtualMeter>();
         table = get_solaredge_inverter_table(slot, solaredge_inverter.virtual_meter);
         break;
 
