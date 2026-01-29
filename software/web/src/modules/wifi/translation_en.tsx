@@ -32,7 +32,7 @@ let x = {
             "sta_bssid": "BSSID",
             "sta_bssid_invalid": "The BSSID must have six groups separated by a colon, each with a two-digit hexadecimal number. For example 01:23:45:67:89:AB",
             "sta_bssid_lock": "BSSID lock",
-            "sta_bssid_lock_desc": "Connects only to the network with the configured BSSID. Leave disabled if you use multiple access points or repeaters with with the same network name.",
+            "sta_bssid_lock_desc": "Connects only to the configured BSSID, even when other access points or repeaters are available on the same network. When disabled, usually the one with the best reception is chosen.",
             "sta_enable_11b": "Optimize reception",
             "sta_enable_11b_desc": <>Use deprecated slow 802.11b mode for slightly better WiFi range. <strong>This also slows down other devices connected to this network</strong> but may improve the reception quality and robustness of the WiFi connection somewhat.</>,
             "sta_passphrase": "Passphrase",
