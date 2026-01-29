@@ -139,8 +139,8 @@ export class EMDebug extends Component {
                                 <IndicatorGroup vertical key={j} class="mb-1 col px-1"
                                     value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                     items={[
-                                        ["primary",   __(j <= 1 ? "em_debug.content.high" : "em_debug.content.closed")],
-                                        ["secondary", __(j <= 1 ? "em_debug.content.low"  : "em_debug.content.open"  )]
+                                        ["primary",   j <= 1 ? __("em_debug.content.high") : __("em_debug.content.closed")],
+                                        ["secondary", j <= 1 ? __("em_debug.content.low")  : __("em_debug.content.open")]
                                     ]} />
                             ))}
                         </div>
