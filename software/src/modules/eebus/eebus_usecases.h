@@ -50,7 +50,7 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
-//#define EEBUS_ENABLE_MPC_USECASE
+#define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_LPP_USECASE
 //#define EEBUS_ENABLE_OPEV_USECASE
 
@@ -134,10 +134,12 @@ class EVSEEntity
 public:
     inline static std::vector<int> entity_address = {1};
     // LoadControl Feature
+    static constexpr uint8_t lpcLoadcontrolLimitIdOffset = 0;
     static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
     static LoadControlLimitListDataType get_load_control_limit_list_data();
 
     // DeviceConfiguration
+    static constexpr uint8_t lpcDeviceConfigurationKeyIdOffset = 10;
     static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_list_data();
     static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list_data();
 
@@ -145,14 +147,23 @@ public:
     static DeviceDiagnosisStateDataType get_state_data();
 
     // ElectricalConnection
+    static constexpr uint8_t lpcElectricalConnectionIdOffset = 0;
+    static constexpr uint8_t lpcElectricalConnectionCharacteristicIdOffset = 10;
+    static constexpr uint8_t lpcElectricalConnectionParameterIdOffset = 0;
+    static constexpr uint8_t mpcElectricalConnectionParameterIdOffset = 10; // next offset should be +20 atleast
     static ElectricalConnectionCharacteristicListDataType get_electrical_connection_characteristic_list_data();
+    static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
+    static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
 
     // DeviceClassification
     static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
 
     // Measurement
-    MeasurementDescriptionListDataType get_measurement_description_list_data();
-    MeasurementConstraintsListDataType get_measurement_constraints_list_data();
+    static constexpr uint8_t lpcMeasurementIdOffset = 0;
+    static constexpr uint8_t mpcMeasurementIdOffset = 10; // next offset should be +20
+    static MeasurementDescriptionListDataType get_measurement_description_list_data();
+    static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
+    static MeasurementListDataType get_measurement_list_data();
 
     // Bill
     BillDescriptionListDataType get_bill_description_list_data();
@@ -165,7 +176,7 @@ class EVEntity
 public:
     inline static std::vector<int> entity_address = {1, 1};
     // DeviceConfiguration
-    static constexpr uint16_t evccDeviceconfigurationIdOffset = 0;
+    static constexpr uint8_t evccDeviceconfigurationIdOffset = 0;
     static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_value_description_list();
     static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list();
 
@@ -176,10 +187,10 @@ public:
     static DeviceClassificationManufacturerDataType get_device_classification_manufacturer_data();
 
     // ElectricalConnection
-    static constexpr uint16_t evccElectricalConnectionIdOffset = 0;
-    static constexpr uint16_t evcemElectricalconnectionParameterIdOffset = 0;
-    static constexpr uint16_t opevElectricalconnectionParameterIdOffset = 10;
-    static constexpr uint16_t evccElectricalconnectionParameterIdOffset = 20;
+    static constexpr uint8_t evccElectricalConnectionIdOffset = 0;
+    static constexpr uint8_t evcemElectricalconnectionParameterIdOffset = 0;
+    static constexpr uint8_t opevElectricalconnectionParameterIdOffset = 10;
+    static constexpr uint8_t evccElectricalconnectionParameterIdOffset = 20;
     static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
     static ElectricalConnectionPermittedValueSetListDataType get_electrical_connection_permitted_list_data();
     static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
@@ -188,14 +199,14 @@ public:
     static DeviceDiagnosisStateDataType get_diagnosis_state_data();
 
     // Measurement
-    static constexpr uint16_t evcemMeasurementIdOffset = 0;
+    static constexpr uint8_t evcemMeasurementIdOffset = 0;
     static MeasurementDescriptionListDataType get_measurement_description_list_data();
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
 
     // LoadControl
-    static constexpr uint16_t opevLoadcontrolIdOffset = 0;
-    static constexpr uint16_t opevMeasurementIdOffset = 10;
+    static constexpr uint8_t opevLoadcontrolIdOffset = 0;
+    static constexpr uint8_t opevMeasurementIdOffset = 10;
     static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
     static LoadControlLimitListDataType get_load_control_limit_list_data();
     static LoadControlLimitConstraintsListDataType get_load_control_limit_constraints_list_data();
@@ -872,6 +883,16 @@ public:
 
     void inform_spineconnection_usecase_update(SpineConnection *conn) override;
 
+    // IDs as they are used in EV Limitation Of Power Consumption V1.0.0 3.2.2.2
+    static constexpr uint8_t id_l_1 = EVSEEntity::lpcLoadcontrolLimitIdOffset + 1;
+    static constexpr uint8_t id_m_1 = EVSEEntity::lpcMeasurementIdOffset + 1;
+    static constexpr uint16_t id_k_1 = EVSEEntity::lpcDeviceConfigurationKeyIdOffset + 1;
+    static constexpr uint16_t id_k_2 = EVSEEntity::lpcDeviceConfigurationKeyIdOffset + 2;
+    static constexpr uint16_t id_ec_1 = EVSEEntity::lpcElectricalConnectionIdOffset + 1;
+    static constexpr uint16_t id_cc_1 = EVSEEntity::lpcElectricalConnectionCharacteristicIdOffset + 1;
+    static constexpr uint16_t id_cc_2 = EVSEEntity::lpcElectricalConnectionCharacteristicIdOffset + 2;
+    static constexpr uint16_t id_p_1 = EVSEEntity::lpcElectricalConnectionParameterIdOffset + 1;
+
 private:
     /**
      * The Load Control feature as required for Scenario 1 - Control active power consumption.
@@ -964,8 +985,8 @@ private:
     // If the limit is changeable, this shall be set to false
     constexpr static bool limit_fixed = false;
     // The description ID of the limit so its consistent across description and limit list data
-    int limit_description_id = 1;
-    int limit_measurement_description_id = 1;
+    int limit_description_id = id_l_1;
+    int limit_measurement_description_id = id_m_1;
     // Time when the limit shall end
     time_t limit_endtime = 0;
     // If the limit is expired
@@ -978,8 +999,8 @@ private:
     seconds_t failsafe_duration = 2_h; // Default to 2 hours
     uint64_t failsafe_expiry_timer = 0;
     time_t failsafe_expiry_endtime = 0;
-    uint8_t failsafe_consumption_key_id = 1;
-    uint8_t failsafe_duration_key_id = 2;
+    uint8_t failsafe_consumption_key_id = id_k_1;
+    uint8_t failsafe_duration_key_id = id_k_2;
 
     // Electrical Connection Data as required for Scenario 4 - Constraints
     int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
@@ -1258,6 +1279,12 @@ private:
 #endif
 
 #ifdef EEBUS_ENABLE_MPC_USECASE
+/**
+ * The MPC usecase as defined in EEBus UC TS - Monitoring of Power Consumption V1.0.0
+ * This should have the same entity address as other entities with the EVSE <br>
+ * Actor: MonitoredUnit <br>
+ * Features (Functions): ElectricalConnection (electricalConnectionDescriptionListData, electricalConnectionParameterDescriptionLostData), Measurement (measurementDescriptionListData, measurementConstraintsListData, measurementListData)   <br>
+*/
 class MpcUsecase final : public EebusUsecase
 {
 public:
@@ -1286,6 +1313,50 @@ public:
     }
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    static void get_electricalConnection_description_list_data(ElectricalConnectionDescriptionListDataType *data);
+    void get_electricalConnection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const;
+    static void get_measurement_description_list_data(MeasurementDescriptionListDataType *data);
+    void get_measurement_constraints_list_data(MeasurementConstraintsListDataType *data) const;
+    void get_measurement_list_data(MeasurementListDataType *data) const;
+
+    // IDs as used in Monitoring of Power Consumption V1.0.0 3.2.2.2 in the definition of the features
+    // Linked IDs are described in the spec for the LPC usecase
+    static constexpr uint8_t id_ec_1 = LpcUsecase::id_ec_1; // Linked to LPC usecase electrical connection description
+    static constexpr uint8_t id_m_1 = LpcUsecase::id_m_1;   // Linked to LPC usecase measurement description
+    static constexpr uint8_t id_m_2_1 = EVSEEntity::mpcMeasurementIdOffset + 2;
+    static constexpr uint8_t id_m_2_2 = EVSEEntity::mpcMeasurementIdOffset + 3;
+    static constexpr uint8_t id_m_2_3 = EVSEEntity::mpcMeasurementIdOffset + 4;
+    static constexpr uint8_t id_m_3 = EVSEEntity::mpcMeasurementIdOffset + 5;
+    static constexpr uint8_t id_m_4 = EVSEEntity::mpcMeasurementIdOffset + 6;
+    static constexpr uint8_t id_m_5_1 = EVSEEntity::mpcMeasurementIdOffset + 7;
+    static constexpr uint8_t id_m_5_2 = EVSEEntity::mpcMeasurementIdOffset + 8;
+    static constexpr uint8_t id_m_5_3 = EVSEEntity::mpcMeasurementIdOffset + 9;
+    static constexpr uint8_t id_m_6_1 = EVSEEntity::mpcMeasurementIdOffset + 10;
+    static constexpr uint8_t id_m_6_2 = EVSEEntity::mpcMeasurementIdOffset + 11;
+    static constexpr uint8_t id_m_6_3 = EVSEEntity::mpcMeasurementIdOffset + 12;
+    static constexpr uint8_t id_m_6_4 = EVSEEntity::mpcMeasurementIdOffset + 13;
+    static constexpr uint8_t id_m_6_5 = EVSEEntity::mpcMeasurementIdOffset + 14;
+    static constexpr uint8_t id_m_6_6 = EVSEEntity::mpcMeasurementIdOffset + 15;
+    static constexpr uint8_t id_m_7 = EVSEEntity::mpcMeasurementIdOffset + 16;
+    static constexpr uint8_t id_p_1 = LpcUsecase::id_p_1; // Linked to LPC usecase electrical connection parameter description
+    static constexpr uint8_t id_p_2 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 2;
+    static constexpr uint8_t id_p_2_1 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 3;
+    static constexpr uint8_t id_p_2_2 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 4;
+    static constexpr uint8_t id_p_2_3 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 5;
+    static constexpr uint8_t id_p_3 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 6;
+    static constexpr uint8_t id_p_4 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 7;
+    static constexpr uint8_t id_p_5_1 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 8;
+    static constexpr uint8_t id_p_5_2 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 9;
+    static constexpr uint8_t id_p_5_3 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 10;
+    static constexpr uint8_t id_p_6_1 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 11;
+    static constexpr uint8_t id_p_6_2 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 12;
+    static constexpr uint8_t id_p_6_3 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 13;
+    static constexpr uint8_t id_p_6_4 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 14;
+    static constexpr uint8_t id_p_6_5 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 15;
+    static constexpr uint8_t id_p_6_6 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 16;
+    static constexpr uint8_t id_p_7 = EVSEEntity::mpcElectricalConnectionParameterIdOffset + 17;
+
 };
 #endif
 
@@ -1523,24 +1594,35 @@ public:
     NodeManagementEntity node_management{};
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     EvseccUsecase evse_commissioning_and_configuration{};
+    EvseccUsecase *evsecc = &evse_commissioning_and_configuration;
 #endif
 #ifdef EEBUS_ENABLE_EVCS_USECASE
     EvcsUsecase charging_summary{};
+    EvcsUsecase *evcs = &charging_summary;
 #endif
 #ifdef EEBUS_ENABLE_LPC_USECASE
     LpcUsecase limitation_of_power_consumption{};
+    LpcUsecase *lpc = &limitation_of_power_consumption;
+#endif
+#ifdef EEBUS_ENABLE_MPC_USECASE
+    MpcUsecase monitoring_of_power_consumption{};
+    MpcUsecase *mpc = &monitoring_of_power_consumption;
 #endif
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     EvccUsecase ev_commissioning_and_configuration{};
+    EvccUsecase *evcc = &ev_commissioning_and_configuration;
 #endif
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
     EvcemUsecase ev_charging_electricity_measurement{};
+    EvcemUsecase *evcem = &ev_charging_electricity_measurement;
 #endif
 #ifdef EEBUS_ENABLE_CEVC_USECASE
     CevcUsecase coordinate_ev_charging{};
+    CevcUsecase *cevc = &coordinate_ev_charging;
 #endif
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     OpevUsecase overload_protection_by_ev_charging_current_curtailment{};
+    OpevUsecase *opev = &overload_protection_by_ev_charging_current_curtailment;
 #endif
 
     std::vector<EebusUsecase *> usecase_list{};

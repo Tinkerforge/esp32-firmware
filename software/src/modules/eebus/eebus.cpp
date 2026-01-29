@@ -49,11 +49,11 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
     int max_power = (std::min(incoming, outgoing) / 1000) * (supports_3p ? 3 : 1) * 230;
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     //logger.printfln("Calling evcc.update_electrical_connection(min_power=%d, max_power=%d)", min_power, max_power);
-    eebus.usecases->ev_commissioning_and_configuration.update_electrical_connection(min_power, max_power);
+    eebus.usecases->evcc->update_electrical_connection(min_power, max_power);
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     //logger.printfln("Calling evcem.update_constraints(incoming=%d, outgoing=%d, min_power=%d, max_power=%d)", incoming, outgoing, min_power, max_power);
-    eebus.usecases->ev_charging_electricity_measurement.update_constraints(milliamps_min, std::min(incoming, outgoing), 100, min_power, max_power, 1000, 0, 1000000, 10);
+    eebus.usecases->evcem->update_constraints(milliamps_min, std::min(incoming, outgoing), 100, min_power, max_power, 1000, 0, 1000000, 10);
 #endif
 }
 
@@ -71,14 +71,14 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
        valid data.*/
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     //logger.printfln("Calling evcc.ev_connected_state(connected=%d)", charger_state != CHARGER_STATE_NOT_PLUGGED_IN);
-    eebus.usecases->ev_commissioning_and_configuration.ev_connected_state(charger_state != CHARGER_STATE_NOT_PLUGGED_IN);
+    eebus.usecases->evcc->ev_connected_state(charger_state != CHARGER_STATE_NOT_PLUGGED_IN);
 
     //logger.printfln("Calling evcc.update_device_config(communication_standard=\"%s\")", "iec61851");
-    eebus.usecases->ev_commissioning_and_configuration.update_device_config("iec61851");
+    eebus.usecases->evcc->update_device_config("iec61851");
 #endif
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     //logger.printfln("Calling evcc.update_operating_state(failure=%d)", charger_state == CHARGER_STATE_ERROR);
-    eebus.usecases->evse_commissioning_and_configuration.update_operating_state(charger_state == CHARGER_STATE_ERROR); // TODO: error message
+    eebus.usecases->evsecc->update_operating_state(charger_state == CHARGER_STATE_ERROR); // TODO: error message
 #endif
 }
 
@@ -97,7 +97,7 @@ static void update_evse_limit()
     int limit_mA = 32000;
 
 #ifdef EEBUS_ENABLE_LPC_USECASE
-    limit_mA = eebus.usecases->limitation_of_power_consumption.get_current_limit_w() * 1000 / 230 / phases;
+    limit_mA = eebus.usecases->lpc->get_current_limit_w() * 1000 / 230 / phases;
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     if (!eebus.usecases->limitation_of_power_consumption.limit_is_active() && eebus.usecases->overload_protection_by_ev_charging_current_curtailment.limit_is_active()) {
         auto limit_phases = eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_limit_milliamps();

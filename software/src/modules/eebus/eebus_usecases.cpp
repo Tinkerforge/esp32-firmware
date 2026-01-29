@@ -2449,8 +2449,9 @@ void LpcUsecase::get_device_configuration_description(DeviceConfigurationKeyValu
 void LpcUsecase::get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const
 {
     ElectricalConnectionCharacteristicDataType power_consumption_max{};
-    power_consumption_max.electricalConnectionId = 1;
-    power_consumption_max.characteristicId = 1;
+    power_consumption_max.electricalConnectionId = id_ec_1;
+    power_consumption_max.parameterId = id_p_1;
+    power_consumption_max.characteristicId = id_cc_1;
     power_consumption_max.characteristicContext = ElectricalConnectionCharacteristicContextEnumType::entity;
     power_consumption_max.characteristicType = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
     power_consumption_max.value->number = power_consumption_max_w;
