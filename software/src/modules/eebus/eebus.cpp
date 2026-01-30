@@ -45,7 +45,7 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
     auto outgoing = evse_common.get_slots().get(CHARGING_SLOT_OUTGOING_CABLE)->get("max_current")->asUint();
 
     int milliamps_min = 6000;
-    int min_power = milliamps_min/1000 * (supports_1p ? 1 : 3) * 230;
+    int min_power = milliamps_min / 1000 * (supports_1p ? 1 : 3) * 230;
     int max_power = (std::min(incoming, outgoing) / 1000) * (supports_3p ? 3 : 1) * 230;
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     //logger.printfln("Calling evcc.update_electrical_connection(min_power=%d, max_power=%d)", min_power, max_power);
@@ -162,10 +162,32 @@ void run_eebus_usecase_tests()
             eebus.usecases->limitation_of_power_consumption.update_constraints(22000);*/
 #endif
             break;
+        case 5:
+#ifdef EEBUS_ENABLE_MPC_USECASE
+            logger.printfln("EEBUS Usecase test: Updating MPC with test measurements");
+            // Update constraints for all measurement types
+            eebus.usecases->mpc->update_constraints(0, 22000, 100, 0, 16000, 10, 0, 1000000, 10, 0, 400, 1, 10, 100, 1);
+            // Update power measurements (total + 3 phases) - includes negative value for phase 2 to test feed-in
+            eebus.usecases->mpc->update_power(6500, 2200, -150, 4450);
+            // Update voltage measurements (3 phase-to-neutral + 3 phase-to-phase)
+            eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 401, 398);
+            // Update current measurements (3 phases in mA)
+            eebus.usecases->mpc->update_current(9570, 6520, 19350);
+            // Update frequency (50Hz = 50000 mHz)
+            eebus.usecases->mpc->update_frequency(51000);
+            // Initial energy values (will be updated in subsequent iterations)
+            eebus.usecases->mpc->update_energy(150000, 25000);
+#endif
+            break;
+        case 6:
         default:
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-            logger.printfln("EEBUS Usecase test enabled. Updating EvcemUsecase");
+            logger.printfln("EEBUS Usecase test enabled. Update Power consumed");
             eebus.usecases->ev_charging_electricity_measurement.update_measurements(1234, 5678, 9000, 1000, 2000, 3000, dev_test_iteration * 10);
+#endif
+#ifdef EEBUS_ENABLE_MPC_USECASE
+            // Update MPC energy values in subsequent iterations (increasing over time)
+            eebus.usecases->mpc->update_energy(150000 + (dev_test_iteration * 100), 25000 + (dev_test_iteration * 50));
 #endif
             break;
     }
@@ -292,6 +314,26 @@ void EEBus::pre_setup()
              {"power_phase_3", Config::Uint16(0)},
              {"charged_wh", Config::Uint32(0)},
              {"charged_valuesource_measured", Config::Bool(false)},
+         })},
+        {"monitoring_of_power_consumption",
+         Config::Object({
+             // Usecase Monitoring of power consumption
+             {"total_power_w", Config::Uint32(0)},
+             {"power_phase_1_w", Config::Uint32(0)},
+             {"power_phase_2_w", Config::Uint32(0)},
+             {"power_phase_3_w", Config::Uint32(0)},
+             {"energy_consumed_wh", Config::Uint32(0)},
+             {"energy_produced_wh", Config::Uint32(0)},
+             {"current_phase_1_ma", Config::Uint32(0)},
+             {"current_phase_2_ma", Config::Uint32(0)},
+             {"current_phase_3_ma", Config::Uint32(0)},
+             {"voltage_phase_1_v", Config::Uint32(0)},
+             {"voltage_phase_2_v", Config::Uint32(0)},
+             {"voltage_phase_3_v", Config::Uint32(0)},
+             {"voltage_phase_1_2_v", Config::Uint32(0)},
+             {"voltage_phase_2_3_v", Config::Uint32(0)},
+             {"voltage_phase_3_1_v", Config::Uint32(0)},
+             {"frequency_mhz", Config::Uint32(50000)}, // Default 50Hz in millihertz
          })},
         {"coordinated_ev_charging",
          Config::Object({

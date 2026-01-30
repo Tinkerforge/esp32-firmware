@@ -76,9 +76,6 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %s, Content:", convertToString(cmd_classifier).c_str());
     eebus.trace_jsonln(payload);
-    // so i spent 4 hours on this and for some reason the pointers to sender and receivers seem to be nullpointers in about 1/5 restarts but if i print them here its fine mostly.
-    //logger.printfln("SPINE Connection: This needs to be here otherwise it crashes sometimes. Pointer sender: %p, Pointer Receiver: %p", &sender, &receiver);
-
     if (require_ack) {
         ack_waiting[msg_counter] = millis();
     }
@@ -89,10 +86,6 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
     header.cmdClassifier = cmd_classifier;
     header.specificationVersion = SUPPORTED_SPINE_VERSION;
     header.addressSource = sender;
-    // See if this fixes the memory issue
-    //header.addressSource->device = sender.device.get().c_str();
-    //header.addressSource->entity = sender.entity.get();
-    //header.addressSource->feature = sender.feature.get();
 
     header.addressDestination = receiver;
     header.msgCounter = msg_counter++;
@@ -189,7 +182,7 @@ bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType
             return true;
         }
     }
-    return true;
+    return false;
 }
 std::vector<FeatureAddressType> SpineConnection::get_address_of_feature(FeatureTypeEnumType feature, RoleType role, const UseCaseNameType &use_case_name, const UseCaseActorType &use_case_actor)
 {
