@@ -666,6 +666,131 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     </table>
                                 </td>
                             </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MPC) > -1 && (
+                            <tr>
+                                <td>Monitoring of Power Consumption</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>Total Power</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.total_power_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Power Phase 1</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_1_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Power Phase 2</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_2_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Power Phase 3</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_3_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Energy Consumed</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.energy_consumed_wh} Wh</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Energy Produced</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.energy_produced_wh} Wh</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current Phase 1</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_1_ma} mA</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current Phase 2</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_2_ma} mA</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current Phase 3</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_3_ma} mA</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 1 (L-N)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_1_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 2 (L-N)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_2_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 3 (L-N)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_3_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 1-2 (L-L)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_1_2_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 2-3 (L-L)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_2_3_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Voltage Phase 3-1 (L-L)</td>
+                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_3_1_v} V</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Grid Frequency</td>
+                                            <td>{(state.usecases.monitoring_of_power_consumption.frequency_mhz / 1000).toFixed(2)} Hz</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.CEVC) > -1 && (
+                            <tr>
+                                <td>Coordinated EV Charging</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>Energy Broker Connected</td>
+                                            <td>
+                                                {state.usecases.coordinated_ev_charging.energy_broker_connected
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Energy Broker Heartbeat OK</td>
+                                            <td>
+                                                {state.usecases.coordinated_ev_charging.energy_broker_heartbeat_ok
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Has Charging Plan</td>
+                                            <td>
+                                                {state.usecases.coordinated_ev_charging.has_charging_plan
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                                {state.usecases.coordinated_ev_charging.has_charging_plan && state.usecases.coordinated_ev_charging.charging_plan_start_time > 0
+                                                    ? ` (from: ${new Date(state.usecases.coordinated_ev_charging.charging_plan_start_time * 1000).toLocaleString()})`
+                                                    : null}
+                                            </td>
+                                        </tr>
+                                        {state.usecases.coordinated_ev_charging.has_charging_plan && (
+                                            <tr>
+                                                <td>Current Target Power</td>
+                                                <td>{state.usecases.coordinated_ev_charging.target_power_w} W</td>
+                                            </tr>
+                                        )}
+                                        <tr>
+                                            <td>Has Incentives</td>
+                                            <td>
+                                                {state.usecases.coordinated_ev_charging.has_incentives
+                                                    ? __("eebus.content.yes")
+                                                    : __("eebus.content.no")}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
 
                         </tbody>
                     </table>

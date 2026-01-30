@@ -93,6 +93,32 @@ export interface usecases {
         charged_wh: number;
         charged_valuesource_measured: boolean;
     };
+    monitoring_of_power_consumption: {
+        total_power_w: number;
+        power_phase_1_w: number;
+        power_phase_2_w: number;
+        power_phase_3_w: number;
+        energy_consumed_wh: number;
+        energy_produced_wh: number;
+        current_phase_1_ma: number;
+        current_phase_2_ma: number;
+        current_phase_3_ma: number;
+        voltage_phase_1_v: number;
+        voltage_phase_2_v: number;
+        voltage_phase_3_v: number;
+        voltage_phase_1_2_v: number;
+        voltage_phase_2_3_v: number;
+        voltage_phase_3_1_v: number;
+        frequency_mhz: number;
+    };
+    coordinated_ev_charging: {
+        has_charging_plan: boolean;
+        charging_plan_start_time: number;
+        target_power_w: number;
+        has_incentives: boolean;
+        energy_broker_connected: boolean;
+        energy_broker_heartbeat_ok: boolean;
+    };
 
 }
 
