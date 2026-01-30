@@ -396,8 +396,35 @@ static size_t estimate_chars_per_int(int32_t v)
     return leading_zeros_to_char_count[__builtin_clz(static_cast<uint32_t>(v))] + sign;
 }
 
-static size_t estimate_chars_per_int64(  int64_t v) {return 21;}
-static size_t estimate_chars_per_uint64(uint64_t v) {return 20;}
+static const uint8_t leading_zeros_to_char_count_64[32] = {20,19,19,19,19,18,18,18,17,17,17,16,16,16,16,15,15,15,14,14,14,13,13,13,13,12,12,12,11,11,11,10};
+
+static size_t estimate_chars_per_uint64(uint64_t v)
+{
+    const uint32_t upper = static_cast<uint32_t>(v >> 32);
+
+    if (upper == 0) {
+        return estimate_chars_per_uint(static_cast<uint32_t>(v));
+    }
+
+    // __builtin_clz(upper) is always safe here because upper == 0 has already been handled.
+    return leading_zeros_to_char_count_64[__builtin_clz(upper)];
+}
+
+static size_t estimate_chars_per_int64(int64_t v)
+{
+    const  int32_t upper     = static_cast< int32_t>(v >> 32);
+    const uint32_t sign      = static_cast<uint32_t>(upper) >> 31;
+    const  int32_t sign_mask = upper >> 31;
+    const uint32_t upper_abs = static_cast<uint32_t>(upper ^ sign_mask); // Approximate abs(upper). Negative values are off by 1, which doesn't matter for the estimation.
+
+    if (upper_abs == 0) {
+        const uint32_t lower_abs = static_cast<uint32_t>(v ^ sign_mask); // Approximate abs(lower). Negative values are off by 1, which doesn't matter for the estimation.
+        return estimate_chars_per_uint(lower_abs) + sign; // Must use per_uint because the lower half doesn't contain the sign bit.
+    }
+
+    // __builtin_clz(upper_abs) is always safe here because upper_abs == 0 has already been handled.
+    return leading_zeros_to_char_count_64[__builtin_clz(upper_abs)] + sign;
+}
 
 struct max_string_length_visitor {
     size_t operator()(const Config::ConfString &x)
