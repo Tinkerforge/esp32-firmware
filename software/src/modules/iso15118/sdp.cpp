@@ -54,7 +54,7 @@ void SDP::setup_socket()
     struct sockaddr_in6 server_addr;
     server_addr.sin6_family = AF_INET6;
     server_addr.sin6_addr   = in6addr_any;
-    server_addr.sin6_port   = htons(15118);
+    server_addr.sin6_port   = htons(V2G_UDP_SDP_PORT);
 
     sdp_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (sdp_socket < 0) {
@@ -144,7 +144,7 @@ void SDP::state_machine_loop()
                 .payload_length = htonl(sizeof(SDP_DiscoveryResponse) - sizeof(V2GTP_Header))
             },
             .secc_ip_address = {ip6.addr[0], ip6.addr[1], ip6.addr[2], ip6.addr[3]},
-            .secc_port = htons(15118),
+            .secc_port = htons(V2G_TCP_DATA_PORT),
             .security = 0x10,
             .tranport_protocol = 0x00
         };

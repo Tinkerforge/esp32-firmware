@@ -20,6 +20,7 @@
 // Common functions that are shared between DIN-SPEC-70121, ISO-151118-2 and ISO-15118-20
 
 #include "common.h"
+#include "sdp.h"
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -75,7 +76,7 @@ void Common::setup_socket()
     struct sockaddr_in6 *dest_addr_ip6 = (struct sockaddr_in6 *)&dest_addr;
     bzero(&dest_addr_ip6->sin6_addr.un, sizeof(dest_addr_ip6->sin6_addr.un));
     dest_addr_ip6->sin6_family = AF_INET6;
-    dest_addr_ip6->sin6_port = htons(15118);
+    dest_addr_ip6->sin6_port = htons(V2G_TCP_DATA_PORT);
 
     int err = bind(listen_socket, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if(err < 0) {

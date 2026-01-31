@@ -22,6 +22,14 @@
 #include "module.h"
 #include "config.h"
 
+// ISO 15118-2:2014 port definitions
+// Table 15: V2G_UDP_SDP_SERVER - UDP port for SDP discovery
+#define V2G_UDP_SDP_PORT 15118
+
+// Table 8: V2G_DST_TCP_DATA - TCP port for V2G communication
+// Must be in the Dynamic Ports range (49152-65535) as defined in IETF RFC 6335
+#define V2G_TCP_DATA_PORT 49152
+
 
 struct [[gnu::packed]] V2GTP_Header {
     uint8_t protocol_version;
