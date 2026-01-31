@@ -85,15 +85,23 @@ private:
     void spi_write_header(const uint16_t length);
     void spi_write_footer();
     void spi_init();
+    void setup_l2tap();
 
     SPISettings spi_settings;
     SPIClass *vspi;
+
+    // SPI receive buffer for polling
+    uint8_t *spi_buffer = nullptr;
+    uint16_t spi_buffer_length = 0;
+
+    // Flag to track IPv6 packet reception (for SLAC state transition)
+    bool ipv6_packet_received = false;
 
 public:
     esp_qca700x_netif_driver_t driver;
     esp_eth_netif_glue_handle_t handle;
     esp_netif_t *netif;
-    int tap;
+    int tap = -1;
     uint8_t mac[QCA700X_MAC_SIZE];
 
     QCA700x(){}
@@ -109,4 +117,14 @@ public:
     void link_up();
     void link_down();
     void state_machine_loop();
+
+    // Check if l2tap is ready for use
+    bool is_l2tap_ready() const { return tap >= 0; }
+
+    // Check and clear IPv6 packet received flag (for SLAC WaitForSDP -> LinkDetected transition)
+    bool check_and_clear_ipv6_received() {
+        bool received = ipv6_packet_received;
+        ipv6_packet_received = false;
+        return received;
+    }
 };

@@ -27,9 +27,13 @@
 
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
+#include <errno.h>
 #include "esp_vfs_l2tap.h"
 #include "esp_netif.h"
 #include "esp_mac.h"
+
+#include "slac.h"
 
 #include "lwip/ip_addr.h"
 #include "bindings/hal_common.h"
@@ -215,6 +219,42 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length)
 }
 
 
+void QCA700x::setup_l2tap()
+{
+    esp_err_t err = esp_vfs_l2tap_intf_register(NULL);
+    if (err != ESP_OK) {
+        logger.printfln("Failed to register l2tap VFS: %s", esp_err_to_name(err));
+        return;
+    }
+
+    tap = open("/dev/net/tap", O_NONBLOCK);
+    if (tap < 0) {
+        logger.printfln("Failed to open /dev/net/tap: errno %d", errno);
+        return;
+    }
+
+    // Bind l2tap to our custom netif using IO driver handle
+    int ret = ioctl(tap, L2TAP_S_DEVICE_DRV_HNDL, &driver);
+    if (ret < 0) {
+        logger.printfln("Failed to bind l2tap to device driver handle: errno %d", errno);
+        close(tap);
+        tap = -1;
+        return;
+    }
+
+    // Filter only HomePlug frames (0x88E1)
+    uint16_t eth_type_filter_homeplug = SLAC_ETHERNET_TYPE_HOMEPLUG;
+    ret = ioctl(tap, L2TAP_S_RCV_FILTER, &eth_type_filter_homeplug);
+    if (ret < 0) {
+        logger.printfln("Failed to set l2tap receive filter: errno %d", errno);
+        close(tap);
+        tap = -1;
+        return;
+    }
+
+    logger.printfln("l2tap initialized successfully (fd=%d, filter=0x%04X)", tap, eth_type_filter_homeplug);
+}
+
 void QCA700x::setup_netif()
 {
     spi_init();
@@ -300,30 +340,8 @@ void QCA700x::setup_netif()
     driver.qca700x = this;
     ESP_ERROR_CHECK(esp_netif_attach(netif, &driver));
 
-
-
-/*
-    ESP_ERROR_CHECK(esp_vfs_l2tap_intf_register(NULL));
-
-    tap = open("/dev/net/tap", O_NONBLOCK);
-    if (tap < 0) {
-        logger.printfln("Failed to open /dev/net/tap");
-        return;
-    }
-
-    // Set Ethernet interface on which to get raw frames
-    int ret = ioctl(tap, L2TAP_S_INTF_DEVICE, "ETH_QCA");
-    if (ret < 0) {
-        logger.printfln("Failed to set interface device");
-        return;
-    }
-
-    uint16_t eth_type_filter_homeplug = 0x88E1;
-    ret = ioctl(tap, L2TAP_S_RCV_FILTER, &eth_type_filter_homeplug);
-    if (ret < 0) {
-        logger.printfln("Failed to set receive filter");
-        return;
-    }*/
+    // Set up l2tap for HomePlug frame access
+    setup_l2tap();
 }
 
 void QCA700x::link_up()
@@ -379,16 +397,80 @@ void QCA700x::get_ip6_linklocal(esp_ip6_addr_t *if_ip6)
 
 void QCA700x::state_machine_loop()
 {
-    /*
-    uint8_t buffer[QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE];
-
-    uint16_t length = qca700x.read_burst(buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
-    if (length > 0) {
-        logger.printfln("QCA700x: state_machine_loop length %d", length);
-        received_data_to_netif(buffer, length);
-        //write(tap, buffer, length);
+    // Allocate SPI buffer on first use
+    if (spi_buffer == nullptr) {
+        spi_buffer = (uint8_t *)calloc_psram_or_dram(QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE + 1, sizeof(uint8_t));
+        if (spi_buffer == nullptr) {
+            logger.printfln("QCA700x: Failed to allocate SPI buffer");
+            return;
+        }
     }
 
-    // TODO: read_burst -> write(tap) here and read(tap) in slac.cpp
-    */
+    // Poll SPI for data from QCA700x
+    spi_buffer_length += read_burst(&spi_buffer[spi_buffer_length], 
+                                    QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - spi_buffer_length);
+
+    // Process all complete frames in the buffer
+    while (spi_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
+        int16_t ethernet_frame_length = check_receive_frame(spi_buffer, spi_buffer_length);
+
+        // Error -4 means partial frame - need to read more data
+        if (ethernet_frame_length == -4) {
+            break;
+        }
+
+        if (ethernet_frame_length < 0) {
+            // Invalid frame, discard buffer
+            logger.printfln("QCA700x: Ethernet frame error: %d", ethernet_frame_length);
+            spi_buffer_length = 0;
+            break;
+        }
+
+        // Frame starts after QCA700x header
+        uint8_t *frame = spi_buffer + QCA700X_RECV_HEADER_SIZE;
+        
+        // Get EtherType (bytes 12-13 of Ethernet frame, big-endian)
+        uint16_t eth_type = (frame[12] << 8) | frame[13];
+
+        switch (eth_type) {
+            case SLAC_ETHERNET_TYPE_HOMEPLUG: {
+                // HomePlug frames go to l2tap for SLAC to read
+                if (tap >= 0) {
+                    size_t size = ethernet_frame_length;
+                    esp_vfs_l2tap_eth_filter_frame(&driver, frame, &size, nullptr);
+                }
+                break;
+            }
+
+            case SLAC_ETHERNET_TYPE_IPV6: {
+                // IPv6 frames go directly to netif/lwIP
+                // Set flag so SLAC can transition from WaitForSDP to LinkDetected
+                ipv6_packet_received = true;
+                received_data_to_netif(frame, ethernet_frame_length);
+                break;
+            }
+
+            case SLAC_ETHERNET_TYPE_IPV4: {
+                logger.printfln("QCA700x: Received IPv4 packet (len=%d), not supported in ISO15118", ethernet_frame_length);
+                break;
+            }
+
+            default: {
+                logger.printfln("QCA700x: Unknown EtherType: 0x%04X", eth_type);
+                break;
+            }
+        }
+
+        // Remove processed frame from buffer
+        const uint16_t total_frame_length = ethernet_frame_length + QCA700X_RECV_HEADER_SIZE + QCA700X_RECV_FOOTER_SIZE;
+        const int32_t remaining_length = spi_buffer_length - total_frame_length;
+
+        if (remaining_length > 0) {
+            // Move remaining data to start of buffer
+            memmove(spi_buffer, spi_buffer + total_frame_length, remaining_length);
+            spi_buffer_length = remaining_length;
+        } else {
+            spi_buffer_length = 0;
+        }
+    }
 }
