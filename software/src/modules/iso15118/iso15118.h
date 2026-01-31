@@ -62,4 +62,6 @@ public:
     DIN70121 din70121;
     ISO2 iso2;
     ISO20 iso20;
+
+    bool debug_mode = false;
 };

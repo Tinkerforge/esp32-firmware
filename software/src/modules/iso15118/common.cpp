@@ -56,9 +56,15 @@ void Common::pre_setup()
 
 void Common::setup_socket()
 {
+    // Close existing socket if any
+    if (listen_socket >= 0) {
+        close(listen_socket);
+        listen_socket = -1;
+    }
+
     listen_socket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if(listen_socket < 0) {
-        logger.printfln("Common: Failed to create socket: %d", listen_socket);
+        logger.printfln("Common: Failed to create socket: %d (errno %d)", listen_socket, errno);
         return;
     }
 
@@ -72,22 +78,31 @@ void Common::setup_socket()
     setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     setsockopt(listen_socket, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt));
 
-    struct sockaddr_storage dest_addr;
-    struct sockaddr_in6 *dest_addr_ip6 = (struct sockaddr_in6 *)&dest_addr;
-    bzero(&dest_addr_ip6->sin6_addr.un, sizeof(dest_addr_ip6->sin6_addr.un));
-    dest_addr_ip6->sin6_family = AF_INET6;
-    dest_addr_ip6->sin6_port = htons(V2G_TCP_DATA_PORT);
+    struct sockaddr_in6 dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin6_family = AF_INET6;
+    dest_addr.sin6_port = htons(V2G_TCP_DATA_PORT);
+    dest_addr.sin6_addr = in6addr_any;
 
     int err = bind(listen_socket, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if(err < 0) {
-        logger.printfln("Common: Failed to bind socket: %d", err);
+        logger.printfln("Common: Failed to bind socket: %d (errno %d)", err, errno);
         return;
     }
 
     err = listen(listen_socket, 1);
     if(err < 0) {
-        logger.printfln("Common: Failed to listen on socket: %d", err);
+        logger.printfln("Common: Failed to listen on socket: %d (errno %d)", err, errno);
         return;
+    }
+}
+
+void Common::close_socket()
+{
+    reset_active_socket();
+    if (listen_socket >= 0) {
+        close(listen_socket);
+        listen_socket = -1;
     }
 }
 

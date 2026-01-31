@@ -28,8 +28,14 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "lwip/ip_addr.h"
+#include "lwip/sockets.h"
+#include "lwip/inet.h"
 
 #include "qca700x.h"
+
+// IPv6 all-nodes multicast address (ff02::1) in network byte order
+// ff02::1 = ff02:0000:0000:0000:0000:0000:0000:0001
+#define IN6ADDR_ALLNODES_INIT {{{PP_HTONL(0xff020000UL), 0, 0, PP_HTONL(0x00000001UL)}}}
 
 void SDP::pre_setup()
 {
@@ -46,36 +52,77 @@ void SDP::pre_setup()
 
 void SDP::setup_socket()
 {
-    if (sdp_socket > 0) {
-        return;
+    // Close existing socket if any
+    if (sdp_socket >= 0) {
+        close(sdp_socket);
+        sdp_socket = -1;
     }
 
     // For SDP we need to accept incoming UDP connections from any address on port 15118.
     struct sockaddr_in6 server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin6_family = AF_INET6;
     server_addr.sin6_addr   = in6addr_any;
     server_addr.sin6_port   = htons(V2G_UDP_SDP_PORT);
 
     sdp_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (sdp_socket < 0) {
-        logger.printfln("Failed to create socket: (errno %i [%s])", errno, strerror(errno));
+        logger.printfln("SDP: Failed to create socket: (errno %i [%s])", errno, strerror(errno));
         return;
     }
 
+    int opt = 1;
+    setsockopt(sdp_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
     if (bind(sdp_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        logger.printfln("Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
+        logger.printfln("SDP: Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
+    }
+
+    // In debug mode, join the IPv6 all-nodes multicast group (ff02::1) on the Ethernet interface
+    // This is needed because in debug mode we don't have SLAC to set this up and
+    // the EV simulator sends SDP requests to the multicast address
+    if (iso15118.debug_mode) {
+#if LWIP_IPV6_MLD
+        esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+        if (eth_netif != NULL) {
+            int if_index = esp_netif_get_netif_impl_index(eth_netif);
+
+            struct ipv6_mreq mreq;
+            static const struct in6_addr in6addr_allnodes = IN6ADDR_ALLNODES_INIT;
+            memcpy(&mreq.ipv6mr_multiaddr, &in6addr_allnodes, sizeof(struct in6_addr));
+            mreq.ipv6mr_interface = if_index;
+
+            if (setsockopt(sdp_socket, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq)) < 0) {
+                logger.printfln("SDP: Failed to join IPv6 multicast group ff02::1: (errno %i [%s])", errno, strerror(errno));
+            } else {
+                logger.printfln("SDP: Joined IPv6 multicast group ff02::1 on interface %d", if_index);
+            }
+        } else {
+            logger.printfln("SDP: Could not get Ethernet interface for multicast join");
+        }
+#else
+        logger.printfln("SDP: LWIP_IPV6_MLD not enabled, cannot join multicast group");
+#endif
     }
 
     const int flags = fcntl(sdp_socket, F_GETFL, 0);
     int ret = fcntl(sdp_socket, F_SETFL, flags | O_NONBLOCK);
     if (ret < 0) {
-        logger.printfln("Failed to set non-blocking mode: (errno %i [%s])", errno, strerror(errno));
+        logger.printfln("SDP: Failed to set non-blocking mode: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
+    }
+}
+
+void SDP::close_socket()
+{
+    if (sdp_socket >= 0) {
+        close(sdp_socket);
+        sdp_socket = -1;
     }
 }
 

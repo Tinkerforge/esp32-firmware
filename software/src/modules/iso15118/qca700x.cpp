@@ -387,6 +387,17 @@ void QCA700x::received_data_to_netif(const uint8_t *data, const uint16_t length)
 
 void QCA700x::get_ip6_linklocal(esp_ip6_addr_t *if_ip6)
 {
+    // In debug mode, use the default Ethernet interface
+    if (iso15118.debug_mode) {
+        esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+        if (eth_netif != NULL) {
+            esp_netif_get_ip6_linklocal(eth_netif, if_ip6);
+            return;
+        }
+        logger.printfln("get_ip6_linklocal: Debug mode but ETH_DEF not found");
+        return;
+    }
+
     if (netif == NULL) {
         logger.printfln("get_ip6_linklocal: netif not setup");
         return;

@@ -389,6 +389,8 @@ public:
     void pre_setup();
     ConfigRoot api_state;
 
+    uint8_t evse_mac[SLAC_MAC_ADDRESS_LENGTH] = {0};
+
 private:
     void fill_header_v0(SLAC_HomeplugMessageHeaderV0 *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
     void fill_header(SLAC_HomeplugMessageHeader *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
@@ -424,7 +426,6 @@ private:
     uint8_t nmk[SLAC_NMK_LENGTH] = {0};
     uint8_t nid[SLAC_NID_LENGTH] = {0};
 
-    uint8_t evse_mac[SLAC_MAC_ADDRESS_LENGTH] = {0};
     uint8_t pev_mac[SLAC_MAC_ADDRESS_LENGTH]  = {0};
     uint8_t pev_run_id[SLAC_RUN_ID_LENGTH]    = {0};
 

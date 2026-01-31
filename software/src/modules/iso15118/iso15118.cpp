@@ -45,6 +45,8 @@
 #include "build.h"
 
 #include "qca700x.h"
+#include "esp_mac.h"
+#include "esp_netif.h"
 
 
 void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
@@ -167,6 +169,75 @@ void ISO15118::register_urls()
     api.addState("iso15118/state_din70121", &din70121.api_state);
     api.addState("iso15118/state_iso2",     &iso2.api_state);
     api.addState("iso15118/state_iso20",    &iso20.api_state);
+
+    // Command to enable debug mode (use default Ethernet interface instead of QCA/PLC)
+    api.addCommand("iso15118/debug_start", Config::Null(), {}, [this](Language /*language*/, String &error) {
+        logger.printfln("Debug: Enabling debug mode");
+
+        debug_mode = true;
+
+        // Create IPv6 link-local address on the Ethernet interface
+        esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
+        if (eth_netif != NULL) {
+            esp_err_t err = esp_netif_create_ip6_linklocal(eth_netif);
+            if (err == ESP_OK) {
+                logger.printfln("Debug: Created IPv6 link-local address on Ethernet");
+            } else if (err == ESP_ERR_INVALID_STATE) {
+                logger.printfln("Debug: IPv6 link-local address already exists on Ethernet");
+            } else {
+                logger.printfln("Debug: Failed to create IPv6 link-local address: %d", err);
+            }
+        } else {
+            error = "Ethernet interface not found";
+            debug_mode = false;
+            return;
+        }
+
+        // Setup sockets for SDP and V2G
+        sdp.setup_socket();
+        common.setup_socket();
+
+        // Initialize SLAC state minimally (use Ethernet MAC for EVSE)
+        uint8_t eth_mac[6];
+        esp_read_mac(eth_mac, ESP_MAC_ETH);
+        memcpy(slac.evse_mac, eth_mac, SLAC_MAC_ADDRESS_LENGTH);
+        for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
+            slac.api_state.get("evse_mac")->get(i)->updateUint(slac.evse_mac[i]);
+        }
+        slac.api_state.get("modem_found")->updateBool(true);
+
+        // Set SLAC state to wait for SDP (skip actual SLAC handshake)
+        slac.state = SLAC::State::WaitForSDP;
+        slac.api_state.get("state")->updateUint(static_cast<uint8_t>(SLAC::State::WaitForSDP));
+
+        // Make sure the state machine is running
+        if (state_machine_task == 0) {
+            state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
+                this->state_machines_loop();
+            }, 20_ms, 20_ms);
+        }
+
+        is_setup = true;
+        logger.printfln("Debug: Debug mode enabled, waiting for SDP on Ethernet interface");
+    }, true);
+
+    // Command to disable debug mode
+    // Close sockets and reset SLAC state, so we can start from scratch with a real PLC connection
+    api.addCommand("iso15118/debug_stop", Config::Null(), {}, [this](Language /*language*/, String &error) {
+        logger.printfln("Debug: Disabling debug mode");
+        debug_mode = false;
+
+        // Close sockets
+        sdp.close_socket();
+        common.close_socket();
+
+        // Reset SLAC state
+        slac.state = SLAC::State::ModemInitialization;
+        slac.api_state.get("state")->updateUint(static_cast<uint8_t>(SLAC::State::ModemInitialization));
+        slac.api_state.get("modem_found")->updateBool(false);
+
+        logger.printfln("Debug: Debug mode disabled");
+    }, true);
 
     // Enable ISO15118 on the EVSE Bricklet
     if (config.get("enable")->asBool()) {

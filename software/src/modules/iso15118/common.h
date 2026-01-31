@@ -36,6 +36,7 @@ class Common final
 public:
     Common(){}
     void setup_socket();
+    void close_socket();
     void state_machine_loop();
     void pre_setup();
 
