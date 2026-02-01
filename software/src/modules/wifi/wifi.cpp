@@ -803,7 +803,9 @@ void Wifi::setup()
             ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
         WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
+                char ip6_str[INET6_ADDRSTRLEN];
+                tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
+                logger.printfln("Got IPv6 address: %s", ip6_str);
             },
             ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
