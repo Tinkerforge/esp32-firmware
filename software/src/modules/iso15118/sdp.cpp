@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2024-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -164,7 +164,7 @@ void SDP::state_machine_loop()
             return;
         }
 
-        if (request->v2gtp.payload_type != htons(0x9000)) {
+        if (request->v2gtp.payload_type != htons(static_cast<uint16_t>(V2GTPPayloadType::SDPRequest))) {
             logger.printfln("Invalid V2GTP payload type: %04x", htons(request->v2gtp.payload_type));
             return;
         }
@@ -181,19 +181,34 @@ void SDP::state_machine_loop()
         api_state.get("ev_tranport_protocol")->updateInt(request->tranport_protocol);
 
         esp_ip6_addr_t ip6;
-        iso15118.qca700x.get_ip6_linklocal(&ip6);
+        if (!iso15118.qca700x.get_ip6_linklocal(&ip6)) {
+            logger.printfln("SDP: Failed to get link-local IPv6 address, cannot send response");
+            return;
+        }
+
+        // Determine security mode for response
+        // TLS is always supported. If the EV requests TLS (security=0x00), respond with TLS.
+        // Otherwise respond with no security.
+        uint8_t response_security = SDP_SECURITY_NO_TLS;
+        if (request->security == SDP_SECURITY_TLS) {
+            response_security = SDP_SECURITY_TLS;
+            iso15118.common.tls_requested_by_ev = true;
+            iso15118.trace("SDP: TLS negotiated - will use TLS for V2G connection");
+        } else {
+            iso15118.common.tls_requested_by_ev = false;
+        }
 
         SDP_DiscoveryResponse response = {
             .v2gtp = {
                 .protocol_version = 0x01,
                 .inverse_protocol_version = 0xFE,
-                .payload_type = htons(0x9001),
+                .payload_type = htons(static_cast<uint16_t>(V2GTPPayloadType::SDPResponse)),
                 .payload_length = htonl(sizeof(SDP_DiscoveryResponse) - sizeof(V2GTP_Header))
             },
             .secc_ip_address = {ip6.addr[0], ip6.addr[1], ip6.addr[2], ip6.addr[3]},
             .secc_port = htons(V2G_TCP_DATA_PORT),
-            .security = 0x10,
-            .tranport_protocol = 0x00
+            .security = response_security,
+            .tranport_protocol = SDP_TRANSPORT_TCP
         };
         iso15118.trace("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.tranport_protocol);
 

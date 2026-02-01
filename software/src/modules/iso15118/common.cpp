@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,8 @@ void Common::pre_setup()
     api_state = Config::Object({
         {"state", Config::Uint8(0)},
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
-        {"protocol", Config::Str("", 0, 32)}
+        {"protocol", Config::Str("", 0, 32)},
+        {"tls_active", Config::Bool(false)}
     });
 
     if (exi_data == nullptr) {
@@ -115,8 +116,15 @@ void Common::state_machine_loop()
         if ((active_socket > 0) && (new_socket > 0)) {
             logger.printfln("Common: Replacing socket %d with %d", active_socket, new_socket);
         }
+
+        // Save tls_requested_by_ev before reset (it was set by SDP)
+        bool tls_requested = tls_requested_by_ev;
+
         reset_active_socket();
         active_socket = new_socket;
+
+        // Restore tls_requested_by_ev after reset
+        tls_requested_by_ev = tls_requested;
         if(active_socket < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
                 // No connection available, non-blocking mode
@@ -138,12 +146,49 @@ void Common::state_machine_loop()
 
         // If a new socket is opened we expect a new handshake
         exi_in_use = ExiType::AppHand;
+
+        // Check if TLS should be used for this connection
+        if (tls_requested_by_ev) {
+            logger.printfln("Common: TLS requested, starting handshake");
+
+            // Setup TLS if not already done
+            if (!tls.is_initialized()) {
+                if (!tls.setup()) {
+                    logger.printfln("Common: TLS setup failed, closing connection");
+                    reset_active_socket();
+                    return;
+                }
+            }
+
+            // Start TLS session for this connection
+            if (!tls.start_session(active_socket)) {
+                logger.printfln("Common: Failed to start TLS session, closing connection");
+                reset_active_socket();
+                return;
+            }
+        }
     } else if (active_socket > 0) {
-        // TODO: We assume that we always read the whole packet in one go here.
-        //       This is of course not necessarily true with TCP.
-        //       Instead read the V2GTP header first, then determine the length of the payload,
-        //       then read the payload.
-        ssize_t length = recv(active_socket, exi_data, EXI_DATA_SIZE, 0);
+        // Handle TLS handshake in progress
+        if (tls.get_handshake_state() == TlsHandshakeState::IN_PROGRESS) {
+            if (tls.do_handshake()) {
+                // Handshake completed, can now receive data
+                api_state.get("tls_active")->updateBool(true);
+                logger.printfln("Common: TLS handshake completed, ready for V2G communication");
+            } else if (tls.get_handshake_state() == TlsHandshakeState::FAILED) {
+                logger.printfln("Common: TLS handshake failed, closing connection");
+                reset_active_socket();
+            }
+            // If still IN_PROGRESS, just return and try again next loop
+            return;
+        }
+
+        // Read data (either TLS or plain TCP)
+        ssize_t length;
+        if (tls.is_session_active()) {
+            length = tls.read(exi_data, EXI_DATA_SIZE);
+        } else {
+            length = recv(active_socket, exi_data, EXI_DATA_SIZE, 0);
+        }
 
         if(length < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
@@ -154,7 +199,7 @@ void Common::state_machine_loop()
                 reset_active_socket();
                 return;
             }
-            logger.printfln("Common: Failed to receive data: %d (errno %d [%s])", length, errno, strerror(errno));
+            logger.printfln("Common: Failed to receive data: %zd (errno %d [%s])", length, errno, strerror(errno));
             reset_active_socket();
         } else if(length == 0) {
             logger.printfln("Common: Connection closed");
@@ -167,6 +212,11 @@ void Common::state_machine_loop()
 
 void Common::reset_active_socket()
 {
+    // Close TLS session if active
+    tls.end_session();
+    tls_requested_by_ev = false;
+    api_state.get("tls_active")->updateBool(false);
+
     if (active_socket >= 0) {
         close(active_socket);
         active_socket = -1;
@@ -216,7 +266,14 @@ void Common::send_exi(ExiType type)
             ret = encode_iso2_exiDocument(&exi, iso15118.iso2.iso2DocEnc);
             break;
         case ExiType::Iso20:
-            // TBD
+            // Note: ISO 20 uses a flat structure, not V2G_Message.Header like ISO 2
+            // The header is prepared in the response handler (e.g., handle_session_setup_req)
+            ret = encode_iso20_exiDocument(&exi, iso15118.iso20.iso20DocEnc);
+            break;
+        case ExiType::Iso20Ac:
+            // ISO 20 AC-specific messages (AC_ChargeParameterDiscovery, AC_ChargeLoop, etc.)
+            // The header is prepared in the response handler
+            ret = encode_iso20_ac_exiDocument(&exi, iso15118.iso20.iso20AcDocEnc);
             break;
     }
 
@@ -230,13 +287,28 @@ void Common::send_exi(ExiType type)
     V2GTP_Header *header = (V2GTP_Header*)exi_data;
     header->protocol_version         = 0x01;
     header->inverse_protocol_version = 0xFE;
-    header->payload_type             = htons(0x8001), // 0x8001 = EXI data
+
+    // Select payload type based on EXI type
+    V2GTPPayloadType payload_type = V2GTPPayloadType::SAP;
+    if (type == ExiType::Iso20) {
+        payload_type = V2GTPPayloadType::ISO20Common;
+    } else if (type == ExiType::Iso20Ac) {
+        payload_type = V2GTPPayloadType::ISO20AC;
+    }
+    header->payload_type             = htons(static_cast<uint16_t>(payload_type));
     header->payload_length           = htonl(length);
 
-    ssize_t send_ret = send(active_socket, exi_data, length + sizeof(V2GTP_Header), 0);
-    logger.printfln("Common: Sent %u bytes", length + sizeof(V2GTP_Header));
+    const size_t total_length = length + sizeof(V2GTP_Header);
+    ssize_t send_ret;
+
+    if (tls.is_session_active()) {
+        send_ret = tls.write(exi_data, total_length);
+    } else {
+        send_ret = send(active_socket, exi_data, total_length, 0);
+    }
+
     if(send_ret < 0) {
-        logger.printfln("Common: Failed to send data: %d (errno %d)", send_ret, errno);
+        logger.printfln("Common: Failed to send data: %zd (errno %d)", send_ret, errno);
         reset_active_socket();
         return;
     }
@@ -253,8 +325,12 @@ void Common::decode(uint8_t *data, const size_t length)
         logger.printfln("Common: Invalid inverse protocol version: %d", header->inverse_protocol_version);
         return;
     }
-    if(ntohs(header->payload_type) != 0x8001) {
-        logger.printfln("Common: Invalid payload type: %d", ntohs(header->payload_type));
+
+    const V2GTPPayloadType payload_type = static_cast<V2GTPPayloadType>(ntohs(header->payload_type));
+    if (payload_type != V2GTPPayloadType::SAP &&
+        payload_type != V2GTPPayloadType::ISO20Common &&
+        payload_type != V2GTPPayloadType::ISO20AC) {
+        logger.printfln("Common: Invalid payload type: 0x%04x", static_cast<uint16_t>(payload_type));
         return;
     }
 
@@ -289,7 +365,7 @@ void Common::decode(uint8_t *data, const size_t length)
     } else if (exi_in_use == ExiType::Iso2) {
         iso15118.iso2.handle_bitstream(&exi);
     } else if (exi_in_use == ExiType::Iso20) {
-        iso15118.iso20.handle_bitstream(&exi);
+        iso15118.iso20.handle_bitstream(&exi, payload_type);
     }
 
     api_state.get("state")->updateUint(state);
@@ -320,7 +396,7 @@ void Common::handle_supported_app_protocol_req()
         } else if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:2:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
             iso2_schema_id = req->AppProtocol.array[i].SchemaID;
             iso2_index     = i;
-        } else if(strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:20:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
+        } else if(strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:-20:AC", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
             iso20_schema_id = req->AppProtocol.array[i].SchemaID;
             iso20_index     = i;
         }
@@ -330,12 +406,14 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
     }
 
-    if ((din70121_schema_id == -1) && (iso2_schema_id == -1)) {
-        logger.printfln("EV does not support DIN 70121 or ISO 15118-2");
+    if ((din70121_schema_id == -1) && (iso2_schema_id == -1) && (iso20_schema_id == -1)) {
+        logger.printfln("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
         api_state.get("protocol")->updateString("-");
         return;
     } else {
-        // Prefer ISO 15118-2 (if available) over DIN 70121
+        // Priority: ISO 15118-2 > DIN 70121 > ISO 15118-20
+        // ISO 15118-2 is preferred as it is more widely supported.
+        // ISO 15118-20 is currently for testing only and selected if neither ISO 2 nor DIN 70121 is available.
         uint8_t schema_id = 0;
         uint8_t index     = 0;
         if (iso2_schema_id != -1) {
@@ -343,11 +421,16 @@ void Common::handle_supported_app_protocol_req()
             index      = iso2_index;
             exi_in_use = ExiType::Iso2;
             logger.printfln("Using ISO 15118-2");
-        } else {
+        } else if (din70121_schema_id != -1) {
             schema_id  = din70121_schema_id;
             index      = din70121_index;
             exi_in_use = ExiType::Din;
             logger.printfln("Using DIN 70121");
+        } else {
+            schema_id  = iso20_schema_id;
+            index      = iso20_index;
+            exi_in_use = ExiType::Iso20;
+            logger.printfln("Using ISO 15118-20:AC");
         }
         api_state.get("protocol")->updateString(req->AppProtocol.array[index].ProtocolNamespace.characters);
 

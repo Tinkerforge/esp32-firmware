@@ -113,7 +113,7 @@ public:
 
     void setup_netif();
     void received_data_to_netif(const uint8_t *data, const uint16_t length);
-    void get_ip6_linklocal(esp_ip6_addr_t *if_ip6);
+    bool get_ip6_linklocal(esp_ip6_addr_t *if_ip6);
     void link_up();
     void link_down();
     void state_machine_loop();

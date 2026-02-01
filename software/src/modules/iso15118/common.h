@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,8 @@
 #include "cbv2g/app_handshake/appHand_Decoder.h"
 #include "cbv2g/app_handshake/appHand_Encoder.h"
 
+#include "isotls.h"
+
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
@@ -40,6 +42,8 @@ public:
     void state_machine_loop();
     void pre_setup();
 
+    // TLS handler
+    ISOTLS tls;
 
     ConfigRoot api_state;
     Config supported_protocols_prototype;
@@ -49,7 +53,8 @@ public:
         AppHand,
         Din,
         Iso2,
-        Iso20
+        Iso20,
+        Iso20Ac  // ISO 15118-20 AC-specific messages
     };
     ExiType exi_in_use = ExiType::AppHand;
 
@@ -57,6 +62,9 @@ public:
     void prepare_din_header(struct din_MessageHeaderType *header);
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
     void reset_active_socket();
+
+    // TLS state - set by SDP when EV requests TLS
+    bool tls_requested_by_ev = false;   // EV requested TLS in SDP
 
 private:
     void handle_session_setup_req();
@@ -75,5 +83,4 @@ private:
     uint8_t *exi_data = nullptr;
 
     uint8_t state = 0;
-
 };

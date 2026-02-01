@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2024-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,32 @@
 // Table 8: V2G_DST_TCP_DATA - TCP port for V2G communication
 // Must be in the Dynamic Ports range (49152-65535) as defined in IETF RFC 6335
 #define V2G_TCP_DATA_PORT 49152
+
+// SDP Security field values (ISO 15118-2:2014 Table 11)
+#define SDP_SECURITY_TLS     0x00
+#define SDP_SECURITY_NO_TLS  0x10
+
+// SDP Transport Protocol field values (ISO 15118-2:2014 Table 11)
+#define SDP_TRANSPORT_TCP    0x00
+#define SDP_TRANSPORT_UDP    0x10
+
+// V2GTP Payload Types (ISO 15118-2:2014 Table 10, ISO 15118-20:2022 Table 212)
+enum class V2GTPPayloadType : uint16_t {
+    // SDP payload types (UDP)
+    SDPRequest                  = 0x9000,  // SDP Request (SECC Discovery Request)
+    SDPResponse                 = 0x9001,  // SDP Response (SECC Discovery Response)
+
+    // EXI payload types (TCP)
+    SAP                         = 0x8001,  // Supported App Protocol / ISO 15118-2 / DIN 70121
+    ISO20Common                 = 0x8002,  // ISO 15118-20 Common Messages
+    ISO20AC                     = 0x8003,  // ISO 15118-20 AC Messages
+    ISO20DC                     = 0x8004,  // ISO 15118-20 DC Messages
+    ISO20ACDP                   = 0x8005,  // ISO 15118-20 ACDP Messages
+    ISO20WPT                    = 0x8006,  // ISO 15118-20 WPT Messages
+    ScheduleRenegotiation       = 0x8101,  // ISO 15118-20 Schedule Renegotiation
+    MeteringConfirmation        = 0x8102,  // ISO 15118-20 Metering Confirmation
+    ACDPSystemStatus            = 0x8103,  // ISO 15118-20 ACDP System Status
+};
 
 
 struct [[gnu::packed]] V2GTP_Header {
