@@ -33,6 +33,17 @@
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
+// Result of session ID check in SessionSetupReq handling
+enum class SessionIdResult {
+    NewSession,    // New session: received ID was all zeros or different from stored
+    ResumeSession  // Resume session: received ID matches stored session ID
+};
+
+// Check received session ID against stored session ID.
+// If new session is needed, generates a new random session ID.
+// Returns whether this is a new or resumed session.
+SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len);
+
 // Common message dispatch macros for all V2G protocols (DIN, ISO2, ISO20)
 // prefix: Protocol name for logging (e.g., "ISO2", "DIN70121")
 // doc_path: Path to the _isUsed flags (e.g., body, doc)

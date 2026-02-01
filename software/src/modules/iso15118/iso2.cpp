@@ -181,51 +181,32 @@ void ISO2::handle_session_setup_req()
     }
 
     // [V2G2-750] When receiving the SessionSetupReq with the parameter SessionID equal to zero (0), the
-    // SECC shall generate a new (not stored) SessionID value different from zero (0) and return this
-    // value in the SessionSetupRes message header.
-    bool all_zero = true;
-    for (size_t i = 0; i < iso2DocDec->V2G_Message.Header.SessionID.bytesLen; i++) {
-        if (iso2DocDec->V2G_Message.Header.SessionID.bytes[i] != 0x00) {
-            all_zero = false;
-            break;
-        }
-    }
-
+    //            SECC shall generate a new (not stored) SessionID value different from zero (0) and return this
+    //            value in the SessionSetupRes message header.
     // [V2G2-753] If an EVCC chooses to resume a charging session by sending a SesstionSetupReq with a
-    // message header including the SessionID value from the previously paused V2G
-    // Communication Session, the SECC shall compare this value to the value stored from the
-    // preceding V2G Communication Session.
-    bool different_to_known = false;
-    if (iso2DocDec->V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
-        for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
-            if (iso2DocDec->V2G_Message.Header.SessionID.bytes[i] != iso15118.common.session_id[i]) {
-                different_to_known = true;
-                break;
-            }
-        }
-    } else {
-        different_to_known = true;
-    }
+    //            message header including the SessionID value from the previously paused V2G
+    //            Communication Session, the SECC shall compare this value to the value stored from the
+    //            preceding V2G Communication Session.
+    SessionIdResult result = check_session_id(
+        iso2DocDec->V2G_Message.Header.SessionID.bytes,
+        iso2DocDec->V2G_Message.Header.SessionID.bytesLen,
+        iso15118.common.session_id,
+        SESSION_ID_LENGTH
+    );
 
-    // The SessionId is set up here it is used by the EV in future communication
-    if (all_zero || different_to_known) {
-        iso15118.common.session_id[0] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[1] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[2] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[3] = static_cast<uint8_t>(random(256));
-
+    if (result == SessionIdResult::NewSession) {
         // [V2G2-462] The message 'SessionSetupRes' shall contain the specific ResponseCode
-        // 'OK_NewSessionEstablished' if processing of the SessionSetupReq message was successful
-        // and a different SessionID is contained in the response message than the SessionID in the
-        // request message.
+        //            'OK_NewSessionEstablished' if processing of the SessionSetupReq message was successful
+        //            and a different SessionID is contained in the response message than the SessionID in the
+        //            request message.
         res->ResponseCode = iso2_responseCodeType_OK_NewSessionEstablished;
     } else {
-        // [V2G2-754]If the SessionID value received in the current SessionSetupReq is equal to the value stored
-        // from the preceding V2G Communication Session, the SECC shall confirm the continuation of
-        // the charging session by sending a SessionSetupRes message including the stored SessionID
-        // value and indicating the resumed V2G Communication Session with the ResponseCode set to
-        // "OK_OldSessionJoined" (refer also to [V2G2-463] for selecting the appropriate response
-        // code).
+        // [V2G2-754] If the SessionID value received in the current SessionSetupReq is equal to the value stored
+        //            from the preceding V2G Communication Session, the SECC shall confirm the continuation of
+        //            the charging session by sending a SessionSetupRes message including the stored SessionID
+        //            value and indicating the resumed V2G Communication Session with the ResponseCode set to
+        //            "OK_OldSessionJoined" (refer also to [V2G2-463] for selecting the appropriate response
+        //            code).
         res->ResponseCode = iso2_responseCodeType_OK_OldSessionJoined;
     }
 

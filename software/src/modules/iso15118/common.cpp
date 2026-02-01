@@ -20,6 +20,7 @@
 // Common functions that are shared between DIN-SPEC-70121, ISO-151118-2 and ISO-15118-20
 
 #include "common.h"
+#include <esp_random.h>
 #include "sdp.h"
 
 #include "event_log_prefix.h"
@@ -449,4 +450,39 @@ void Common::handle_supported_app_protocol_req()
         iso15118.trace("SupportedAppProtocolRes sent");
         iso15118.trace(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);
     }
+}
+
+SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len)
+{
+    // Check if received session ID is all zeros (new session requested)
+    bool all_zero = true;
+    for (size_t i = 0; i < received_len; i++) {
+        if (received_id[i] != 0x00) {
+            all_zero = false;
+            break;
+        }
+    }
+
+    // Check if received session ID matches stored session ID (resume session)
+    // First compare length, then compare bytes
+    bool matches_stored = false;
+    if (received_len == stored_len) {
+        matches_stored = true;
+        for (size_t i = 0; i < stored_len; i++) {
+            if (received_id[i] != stored_id[i]) {
+                matches_stored = false;
+                break;
+            }
+        }
+    }
+
+    // Generate new session ID if needed
+    if (all_zero || !matches_stored) {
+        for (size_t i = 0; i < stored_len; i++) {
+            stored_id[i] = static_cast<uint8_t>(esp_random());
+        }
+        return SessionIdResult::NewSession;
+    }
+
+    return SessionIdResult::ResumeSession;
 }

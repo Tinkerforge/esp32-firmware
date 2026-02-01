@@ -132,46 +132,27 @@ void DIN70121::handle_session_setup_req()
     }
 
     // [V2G-DC-993] When receiving the SessionSetupReq with the parameter SessionID equal to zero (0), the
-    // SECC shall generate a new (not stored) SessionID value different from zero (0) and return
-    // this value in the SessionSetupRes message header.
-    bool all_zero = true;
-    for (size_t i = 0; i < dinDocDec->V2G_Message.Header.SessionID.bytesLen; i++) {
-        if (dinDocDec->V2G_Message.Header.SessionID.bytes[i] != 0x00) {
-            all_zero = false;
-            break;
-        }
-    }
-
+    //              SECC shall generate a new (not stored) SessionID value different from zero (0) and return
+    //              this value in the SessionSetupRes message header.
     // [V2G-DC-872] If the SECC receives a SessionSetupReq including a SessionID value which is not equal
-    // to zero (0) and not equal to the SessionID value stored from the preceding V2G commu-
-    // nication session, it shall send a SessionID value in the SessionSetupRes message that is
-    // unequal to ʺ0ʺ and unequal to the SessionID value stored from the preceding V2G com-
-    // munication session and indicate the new V2G communication session with the Respon-
-    // seCode set to ʺOK_NewSessionEstablishedʺ (refer also to [V2G-DC-393] for applicability
-    // of this response code).
-    bool different_to_known = true;
+    //              to zero (0) and not equal to the SessionID value stored from the preceding V2G commu-
+    //              nication session, it shall send a SessionID value in the SessionSetupRes message that is
+    //              unequal to "0" and unequal to the SessionID value stored from the preceding V2G com-
+    //              munication session and indicate the new V2G communication session with the Respon-
+    //              seCode set to "OK_NewSessionEstablished" (refer also to [V2G-DC-393] for applicability
+    //              of this response code).
     // [V2G-DC-934] If the SessionID is checked during the V2G communication session, the EVCC shall first
-    // compare the length and then the actual value.
-    if (dinDocDec->V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
-        for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
-            if (dinDocDec->V2G_Message.Header.SessionID.bytes[i] == iso15118.common.session_id[i]) {
-                different_to_known = false;
-                break;
-            }
-        }
-    }
+    //              compare the length and then the actual value.
+    SessionIdResult result = check_session_id(
+        dinDocDec->V2G_Message.Header.SessionID.bytes,
+        dinDocDec->V2G_Message.Header.SessionID.bytesLen,
+        iso15118.common.session_id,
+        SESSION_ID_LENGTH
+    );
 
-    // The SessionId is set up here it is used by the EV in future communication
-    if (all_zero || different_to_known) {
-        iso15118.common.session_id[0] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[1] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[2] = static_cast<uint8_t>(random(256));
-        iso15118.common.session_id[3] = static_cast<uint8_t>(random(256));
+    if (result == SessionIdResult::NewSession) {
         res->ResponseCode = din_responseCodeType_OK_NewSessionEstablished;
     } else {
-        // keep saved session id, nothing to do here.
-        // TODO: Strangely i can't find "OK_OldSessionJoined" implemented anywhere else.
-        //       Should we always use "OK_NewSessionEstablished"?
         res->ResponseCode = din_responseCodeType_OK_OldSessionJoined;
     }
 
