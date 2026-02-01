@@ -25,6 +25,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools/hexdump.h"
 #include "tools/malloc.h"
 
 void ISO20::pre_setup()
@@ -237,10 +238,8 @@ void ISO20::handle_session_setup_req()
     }
 
     // Store session ID in API state as hex string
-    char session_id_hex[17] = {0};
-    snprintf(session_id_hex, sizeof(session_id_hex), "%02X%02X%02X%02X%02X%02X%02X%02X",
-             session_id[0], session_id[1], session_id[2], session_id[3],
-             session_id[4], session_id[5], session_id[6], session_id[7]);
+    char session_id_hex[17];
+    hexdump(session_id, ISO20_SESSION_ID_LENGTH, session_id_hex, sizeof(session_id_hex), HexdumpCase::Upper);
     api_state.get("session_id")->updateString(session_id_hex);
 
     iso20DocEnc->SessionSetupRes_isUsed = 1;

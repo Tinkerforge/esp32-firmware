@@ -24,12 +24,11 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools/net.h"
 #include "esp_netif.h"
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include "lwip/ip_addr.h"
 #include "lwip/sockets.h"
-#include "lwip/inet.h"
 
 #include "qca700x.h"
 
@@ -151,7 +150,7 @@ void SDP::state_machine_loop()
 
     if (length > 0) {
         char straddr[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET6, &recv_addr.sin6_addr, straddr, INET6_ADDRSTRLEN);
+        tf_ip6addr_ntoa(&recv_addr.sin6_addr, straddr, INET6_ADDRSTRLEN);
 
         if (length != sizeof(SDP_DiscoveryRequest)) {
             logger.printfln("Invalid SDP_DiscoveryRequest length: %d", length);
@@ -170,7 +169,7 @@ void SDP::state_machine_loop()
         }
 
         if (request->v2gtp.payload_length != htonl((sizeof(SDP_DiscoveryRequest) - sizeof(V2GTP_Header)))) {
-            logger.printfln("Invalid V2GTP payload length: %ld", htonl(request->v2gtp.payload_length));
+            logger.printfln("Invalid V2GTP payload length: %lu", htonl(request->v2gtp.payload_length));
             return;
         }
 

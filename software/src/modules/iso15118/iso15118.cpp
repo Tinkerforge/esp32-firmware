@@ -44,6 +44,9 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#include "tools/hexdump.h"
+#include "tools/printf.h"
+
 #include "qca700x.h"
 #include "esp_mac.h"
 #include "esp_netif.h"
@@ -53,24 +56,15 @@ void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
 {
 #if defined(BOARD_HAS_PSRAM)
     uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
-    char buffer[32] = {0};
-    sprintf(buffer, "%lu ", secs);
-    logger.trace_plain(trace_buffer_index_ll, buffer, strlen(buffer));
-    for (size_t i = 0; i < packet_size; i+=8) {
-        memset(buffer, 0, sizeof(buffer));
-        switch(std::min(static_cast<size_t>(8), packet_size - i)) {
-            case 1: sprintf(buffer, "%02x", packet[i]); break;
-            case 2: sprintf(buffer, "%02x%02x", packet[i], packet[i+1]); break;
-            case 3: sprintf(buffer, "%02x%02x%02x", packet[i], packet[i+1], packet[i+2]); break;
-            case 4: sprintf(buffer, "%02x%02x%02x%02x", packet[i], packet[i+1], packet[i+2], packet[i+3]); break;
-            case 5: sprintf(buffer, "%02x%02x%02x%02x%02x", packet[i], packet[i+1], packet[i+2], packet[i+3], packet[i+4]); break;
-            case 6: sprintf(buffer, "%02x%02x%02x%02x%02x%02x", packet[i], packet[i+1], packet[i+2], packet[i+3], packet[i+4], packet[i+5]); break;
-            case 7: sprintf(buffer, "%02x%02x%02x%02x%02x%02x%02x", packet[i], packet[i+1], packet[i+2], packet[i+3], packet[i+4], packet[i+5], packet[i+6]); break;
-            case 8: sprintf(buffer, "%02x%02x%02x%02x%02x%02x%02x%02x", packet[i], packet[i+1], packet[i+2], packet[i+3], packet[i+4], packet[i+5], packet[i+6], packet[i+7]); break;
-            default: case 0: break;
-        }
-        logger.trace_plain(trace_buffer_index_ll, buffer, strlen(buffer));
-    }
+    char timestamp[16];
+    size_t len = snprintf_u(timestamp, sizeof(timestamp), "%lu ", secs);
+    logger.trace_plain(trace_buffer_index_ll, timestamp, len);
+
+    // Hexdump the packet in one go (2 hex chars per byte + null terminator)
+    size_t hex_buf_size = packet_size * 2 + 1;
+    char hex_buf[hex_buf_size];
+    len = hexdump(packet, packet_size, hex_buf, hex_buf_size, HexdumpCase::Lower);
+    logger.trace_plain(trace_buffer_index_ll, hex_buf, len);
     logger.trace_plain(trace_buffer_index_ll, "\n", 1);
 #endif
 }
@@ -79,9 +73,9 @@ void ISO15118::trace(const char *fmt, ...)
 {
 #if defined(BOARD_HAS_PSRAM)
     uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
-    char buffer[32] = {0};
-    sprintf(buffer, "%04lu ", secs % 10000);
-    logger.trace_plain(trace_buffer_index, buffer, strlen(buffer));
+    char buffer[32];
+    size_t len = snprintf_u(buffer, sizeof(buffer), "%04lu ", secs % 10000);
+    logger.trace_plain(trace_buffer_index, buffer, len);
 
     va_list args;
     va_start(args, fmt);
