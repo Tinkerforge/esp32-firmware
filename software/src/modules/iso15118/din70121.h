@@ -39,10 +39,12 @@ public:
 
     ConfigRoot api_state;
 
-    struct din_exiDocument *dinDocDec;
-    struct din_exiDocument *dinDocEnc;
+    struct din_exiDocument *dinDocDec = nullptr;
+    struct din_exiDocument *dinDocEnc = nullptr;
 
 private:
+    void dispatch_messages();
+
     void handle_session_setup_req();
     void handle_supported_app_protocol_req();
     void handle_service_discovery_req();

@@ -99,57 +99,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
         next_timeout = 0;
     }
 
-    if (iso20DocDec->SessionSetupReq_isUsed) {
-        handle_session_setup_req();
-    }
-
-    if (iso20DocDec->AuthorizationSetupReq_isUsed) {
-        handle_authorization_setup_req();
-    }
-
-    if (iso20DocDec->AuthorizationReq_isUsed) {
-        handle_authorization_req();
-    }
-
-    if (iso20DocDec->ServiceDiscoveryReq_isUsed) {
-        handle_service_discovery_req();
-    }
-
-    if (iso20DocDec->ServiceDetailReq_isUsed) {
-        handle_service_detail_req();
-    }
-
-    if (iso20DocDec->ServiceSelectionReq_isUsed) {
-        handle_service_selection_req();
-    }
-
-    if (iso20DocDec->ScheduleExchangeReq_isUsed) {
-        handle_schedule_exchange_req();
-    }
-
-    if (iso20DocDec->PowerDeliveryReq_isUsed) {
-        handle_power_delivery_req();
-    }
-
-    if (iso20DocDec->MeteringConfirmationReq_isUsed) {
-        logger.printfln("ISO20: MeteringConfirmationReq received but not implemented");
-    }
-
-    if (iso20DocDec->SessionStopReq_isUsed) {
-        handle_session_stop_req();
-    }
-
-    if (iso20DocDec->CertificateInstallationReq_isUsed) {
-        logger.printfln("ISO20: CertificateInstallationReq received but not implemented");
-    }
-
-    if (iso20DocDec->VehicleCheckInReq_isUsed) {
-        logger.printfln("ISO20: VehicleCheckInReq received but not implemented");
-    }
-
-    if (iso20DocDec->VehicleCheckOutReq_isUsed) {
-        logger.printfln("ISO20: VehicleCheckOutReq received but not implemented");
-    }
+    dispatch_common_messages();
 
     trace_request_response();
 
@@ -166,6 +116,37 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
         logger.printfln("ISO20 Timeout: Link down, SLAC reset");
         next_timeout = 0;
     }, ISO20_SECC_SEQUENCE_TIMEOUT);
+}
+
+void ISO20::dispatch_common_messages()
+{
+    auto &doc = *iso20DocDec;
+
+    // Implemented message handlers
+    V2G_DISPATCH("ISO20", doc, SessionSetupReq,       handle_session_setup_req);
+    V2G_DISPATCH("ISO20", doc, AuthorizationSetupReq, handle_authorization_setup_req);
+    V2G_DISPATCH("ISO20", doc, AuthorizationReq,      handle_authorization_req);
+    V2G_DISPATCH("ISO20", doc, ServiceDiscoveryReq,   handle_service_discovery_req);
+    V2G_DISPATCH("ISO20", doc, ServiceDetailReq,      handle_service_detail_req);
+    V2G_DISPATCH("ISO20", doc, ServiceSelectionReq,   handle_service_selection_req);
+    V2G_DISPATCH("ISO20", doc, ScheduleExchangeReq,   handle_schedule_exchange_req);
+    V2G_DISPATCH("ISO20", doc, PowerDeliveryReq,      handle_power_delivery_req);
+    V2G_DISPATCH("ISO20", doc, SessionStopReq,        handle_session_stop_req);
+
+    // Not yet implemented
+
+    // This is for Plug&Charge certificate handling, currently not supported
+    V2G_NOT_IMPL("ISO20", doc, CertificateInstallationReq);
+
+    // This is to Plug&Charge signed meter data transfer, currently not supported
+    V2G_NOT_IMPL("ISO20", doc, MeteringConfirmationReq);
+
+    // These are used for automated/robotic charging system
+    // like pantograph chargers or robotic arm chargers.
+    // See Section 8.3.4.8.1.1 of ISO 15118-20:2022.
+    // We will not support these.
+    V2G_NOT_IMPL("ISO20", doc, VehicleCheckInReq);
+    V2G_NOT_IMPL("ISO20", doc, VehicleCheckOutReq);
 }
 
 void ISO20::prepare_header(struct iso20_MessageHeaderType *header)
@@ -710,13 +691,7 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
         next_timeout = 0;
     }
 
-    if (iso20AcDocDec->AC_ChargeParameterDiscoveryReq_isUsed) {
-        handle_ac_charge_parameter_discovery_req();
-    }
-
-    if (iso20AcDocDec->AC_ChargeLoopReq_isUsed) {
-        handle_ac_charge_loop_req();
-    }
+    dispatch_ac_messages();
 
     trace_ac_request_response();
 
@@ -729,6 +704,15 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
         logger.printfln("ISO20 AC Timeout: Link down, SLAC reset");
         next_timeout = 0;
     }, ISO20_SECC_SEQUENCE_TIMEOUT);
+}
+
+void ISO20::dispatch_ac_messages()
+{
+    auto &doc = *iso20AcDocDec;
+
+    // AC-specific message dispatch
+    V2G_DISPATCH("ISO20 AC", doc, AC_ChargeParameterDiscoveryReq, handle_ac_charge_parameter_discovery_req);
+    V2G_DISPATCH("ISO20 AC", doc, AC_ChargeLoopReq,               handle_ac_charge_loop_req);
 }
 
 void ISO20::prepare_ac_header(struct iso20_ac_MessageHeaderType *header)

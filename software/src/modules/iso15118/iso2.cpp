@@ -105,73 +105,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
         next_timeout = 0;
     }
 
-    if (iso2DocDec->V2G_Message.Body.SessionSetupReq_isUsed) {
-        handle_session_setup_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
-        handle_service_discovery_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.ServiceDetailReq_isUsed) {
-        logger.printfln("ISO2: ServiceDetailReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq_isUsed) {
-        handle_payment_service_selection_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.PaymentDetailsReq_isUsed) {
-        logger.printfln("ISO2: PaymentDetailsReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.CertificateInstallationReq_isUsed) {
-        logger.printfln("ISO2: CertificateInstallationReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.CertificateUpdateReq_isUsed) {
-        logger.printfln("ISO2: CertificateUpdateReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.AuthorizationReq_isUsed) {
-        handle_authorization_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
-        handle_charge_parameter_discovery_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
-        handle_power_delivery_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.ChargingStatusReq_isUsed) {
-        handle_charging_status_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.MeteringReceiptReq_isUsed) {
-        logger.printfln("ISO2: MeteringReceiptReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.SessionStopReq_isUsed) {
-        handle_session_stop_req();
-    }
-
-    if (iso2DocDec->V2G_Message.Body.CableCheckReq_isUsed) {
-        logger.printfln("ISO2: CableCheckReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.PreChargeReq_isUsed) {
-        logger.printfln("ISO2: PreChargeReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.CurrentDemandReq_isUsed) {
-        logger.printfln("ISO2: CurrentDemandReq received but not implemented");
-    }
-
-    if (iso2DocDec->V2G_Message.Body.WeldingDetectionReq_isUsed) {
-        logger.printfln("ISO2: WeldingDetectionReq received but not implemented");
-    }
+    dispatch_messages();
 
     trace_request_response();
 
@@ -199,6 +133,41 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
             next_timeout = 0;
         }
     }
+}
+
+void ISO2::dispatch_messages()
+{
+    auto &body = iso2DocDec->V2G_Message.Body;
+
+    // Implemented message handlers
+    V2G_DISPATCH("ISO2", body, SessionSetupReq,             handle_session_setup_req);
+    V2G_DISPATCH("ISO2", body, ServiceDiscoveryReq,         handle_service_discovery_req);
+    V2G_DISPATCH("ISO2", body, PaymentServiceSelectionReq,  handle_payment_service_selection_req);
+    V2G_DISPATCH("ISO2", body, AuthorizationReq,            handle_authorization_req);
+    V2G_DISPATCH("ISO2", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
+    V2G_DISPATCH("ISO2", body, PowerDeliveryReq,            handle_power_delivery_req);
+    V2G_DISPATCH("ISO2", body, ChargingStatusReq,           handle_charging_status_req);
+    V2G_DISPATCH("ISO2", body, SessionStopReq,              handle_session_stop_req);
+
+    // Not yet implemented
+
+    // This can return VAS (Value Added Services).
+    // As far as i can tell this is not used in practice.
+    V2G_NOT_IMPL("ISO2", body, ServiceDetailReq);
+
+    // These are for Plug&Charge. In practice PnC is mostly
+    // done via ISO 15118-20, we don't support PnC via ISO 15118-2.
+    V2G_NOT_IMPL("ISO2", body, PaymentDetailsReq);
+    V2G_NOT_IMPL("ISO2", body, CertificateInstallationReq);
+    V2G_NOT_IMPL("ISO2", body, CertificateUpdateReq);
+    V2G_NOT_IMPL("ISO2", body, MeteringReceiptReq);
+
+    // These are for DC charging only.
+    // We will not support them.
+    V2G_NOT_IMPL("ISO2", body, CableCheckReq);
+    V2G_NOT_IMPL("ISO2", body, PreChargeReq);
+    V2G_NOT_IMPL("ISO2", body, CurrentDemandReq);
+    V2G_NOT_IMPL("ISO2", body, WeldingDetectionReq);
 }
 
 void ISO2::handle_session_setup_req()

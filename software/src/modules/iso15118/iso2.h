@@ -36,10 +36,12 @@ public:
     void handle_bitstream(exi_bitstream *exi);
 
     ConfigRoot api_state;
-    struct iso2_exiDocument *iso2DocDec;
-    struct iso2_exiDocument *iso2DocEnc;
+    struct iso2_exiDocument *iso2DocDec = nullptr;
+    struct iso2_exiDocument *iso2DocEnc = nullptr;
 
 private:
+    void dispatch_messages();
+
     void handle_session_setup_req();
     void handle_supported_app_protocol_req();
     void handle_service_discovery_req();

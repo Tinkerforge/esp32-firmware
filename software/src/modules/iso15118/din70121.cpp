@@ -87,87 +87,38 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     int ret = decode_din_exiDocument(exi, dinDocDec);
     logger.printfln("DIN70121: decode_din_exiDocument: %d", ret);
 
-    if (dinDocDec->V2G_Message.Body.SessionSetupReq_isUsed) {
-        iso15118.trace("DIN70121: SessionSetupReq received");
-        handle_session_setup_req();
-        dinDocDec->V2G_Message.Body.SessionSetupReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
-        iso15118.trace("DIN70121: ServiceDiscoveryReq received");
-        handle_service_discovery_req();
-        dinDocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.ServiceDetailReq_isUsed) {
-        iso15118.trace("DIN70121: ServiceDetailReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.ServicePaymentSelectionReq_isUsed) {
-        iso15118.trace("DIN70121: ServicePaymentSelectionReq received");
-        handle_service_payment_selection_req();
-        dinDocDec->V2G_Message.Body.ServicePaymentSelectionReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.PaymentDetailsReq_isUsed) {
-        iso15118.trace("DIN70121: PaymentDetailsReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.ContractAuthenticationReq_isUsed) {
-        iso15118.trace("DIN70121: ContractAuthenticationReq received");
-        handle_contract_authentication_req();
-        dinDocDec->V2G_Message.Body.ContractAuthenticationReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
-        iso15118.trace("DIN70121: ChargeParameterDiscoveryReq received");
-        handle_charge_parameter_discovery_req();
-        dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
-        iso15118.trace("DIN70121: PowerDeliveryReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.ChargingStatusReq_isUsed) {
-        iso15118.trace("DIN70121: ChargingStatusReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.MeteringReceiptReq_isUsed) {
-        iso15118.trace("DIN70121: MeteringReceiptReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.SessionStopReq_isUsed) {
-        iso15118.trace("DIN70121: SessionStopReq received");
-        handle_session_stop_req();
-        dinDocDec->V2G_Message.Body.SessionStopReq_isUsed = 0;
-    }
-
-    if (dinDocDec->V2G_Message.Body.CertificateUpdateReq_isUsed) {
-        iso15118.trace("DIN70121: CertificateUpdateReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.CertificateInstallationReq_isUsed) {
-        iso15118.trace("DIN70121: CertificateInstallationReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.CableCheckReq_isUsed) {
-        iso15118.trace("DIN70121: CableCheckReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.PreChargeReq_isUsed) {
-        iso15118.trace("DIN70121: PreChargeReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.CurrentDemandReq_isUsed) {
-        iso15118.trace("DIN70121: CurrentDemandReq received (not implemented)");
-    }
-
-    if (dinDocDec->V2G_Message.Body.WeldingDetectionReq_isUsed) {
-        iso15118.trace("DIN70121: WeldingDetectionReq received (not implemented)");
-    }
+    dispatch_messages();
 
     api_state.get("state")->updateUint(state);
+}
+
+void DIN70121::dispatch_messages()
+{
+    auto &body = dinDocDec->V2G_Message.Body;
+
+    // Implemented message handlers
+    V2G_DISPATCH("DIN70121", body, SessionSetupReq,             handle_session_setup_req);
+    V2G_DISPATCH("DIN70121", body, ServiceDiscoveryReq,         handle_service_discovery_req);
+    V2G_DISPATCH("DIN70121", body, ServicePaymentSelectionReq,  handle_service_payment_selection_req);
+    V2G_DISPATCH("DIN70121", body, ContractAuthenticationReq,   handle_contract_authentication_req);
+    V2G_DISPATCH("DIN70121", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
+    V2G_DISPATCH("DIN70121", body, SessionStopReq,              handle_session_stop_req);
+
+    // Not yet implemented
+
+    // All of these can only be used in the context of DC charging (we only use DIN70121 to obtain the current SoC).
+    // We will not support them.
+    V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
+    V2G_NOT_IMPL("DIN70121", body, PaymentDetailsReq);
+    V2G_NOT_IMPL("DIN70121", body, PowerDeliveryReq);
+    V2G_NOT_IMPL("DIN70121", body, ChargingStatusReq);
+    V2G_NOT_IMPL("DIN70121", body, MeteringReceiptReq);
+    V2G_NOT_IMPL("DIN70121", body, CertificateUpdateReq);
+    V2G_NOT_IMPL("DIN70121", body, CertificateInstallationReq);
+    V2G_NOT_IMPL("DIN70121", body, CableCheckReq);
+    V2G_NOT_IMPL("DIN70121", body, PreChargeReq);
+    V2G_NOT_IMPL("DIN70121", body, CurrentDemandReq);
+    V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
 }
 
 void DIN70121::handle_session_setup_req()

@@ -56,6 +56,9 @@ public:
     uint8_t session_id[ISO20_SESSION_ID_LENGTH];
 
 private:
+    void dispatch_common_messages();
+    void dispatch_ac_messages();
+
     // Common message handlers
     void handle_session_setup_req();
     void handle_authorization_setup_req();
