@@ -6,7 +6,7 @@ Wrapper around the EcoG-io/iso15118 EVCC simulator for testing
 with WARP4 Charger ISO 15118 debug mode.
 
 Usage:
-    # Show help 
+    # Show help
     ./run_evsim.py
 
     # Specify charger IP for automatic debug mode control
@@ -17,6 +17,12 @@ Usage:
 
     # Specify protocol and mode
     ./run_evsim.py -c 192.168.0.33 -p din -m dc
+
+    # Multiple charging modes (AC + DC)
+    ./run_evsim.py -c 192.168.0.33 -m ac,dc
+
+    # Multiple energy transfer modes
+    ./run_evsim.py -c 192.168.0.33 -e ac_single,ac_three
 
     # Enable TLS with generated certificates
     ./run_evsim.py -c 192.168.0.33 -p iso2 --tls
@@ -93,6 +99,25 @@ ENERGY_TRANSFER_MODES = {
     "ac_three": "AC_three_phase_core",
 }
 
+# Shorthand combinations for energy transfer modes
+ENERGY_TRANSFER_SHORTCUTS = {
+    "ac": ["ac_single", "ac_three"],
+    "dc": ["dc_core", "dc_extended"],
+    "all": ["ac_single", "ac_three", "dc_core", "dc_extended"],
+}
+
+# Charging mode (energy service) mappings
+CHARGING_MODES = {
+    "ac": "AC",
+    "dc": "DC",
+}
+
+# Shorthand combinations for charging modes
+CHARGING_MODE_SHORTCUTS = {
+    "all": ["ac", "dc"],
+    "both": ["ac", "dc"],
+}
+
 # Global for cleanup
 _charger_ip: Optional[str] = None
 _debug_enabled = False
@@ -107,7 +132,7 @@ def parse_protocols(protocol_str: str) -> List[str]:
     """
     Parse protocol string into list of protocol names.
     Supports comma-separated values and shortcuts.
-    
+
     Examples:
         "din" -> ["DIN_SPEC_70121"]
         "din,iso2" -> ["DIN_SPEC_70121", "ISO_15118_2"]
@@ -116,7 +141,7 @@ def parse_protocols(protocol_str: str) -> List[str]:
     """
     protocols = []
     parts = [p.strip().lower() for p in protocol_str.split(",")]
-    
+
     for part in parts:
         if part in PROTOCOL_SHORTCUTS:
             # Expand shortcut
@@ -128,15 +153,74 @@ def parse_protocols(protocol_str: str) -> List[str]:
                 protocols.append(PROTOCOLS[part])
         else:
             raise ValueError(f"Unknown protocol: {part}")
-    
+
     return protocols
+
+
+def parse_charging_modes(mode_str: str) -> List[str]:
+    """
+    Parse charging mode string into list of energy service names.
+    Supports comma-separated values and shortcuts.
+
+    Examples:
+        "ac" -> ["AC"]
+        "dc" -> ["DC"]
+        "ac,dc" or "all" or "both" -> ["AC", "DC"]
+    """
+    modes = []
+    parts = [p.strip().lower() for p in mode_str.split(",")]
+
+    for part in parts:
+        if part in CHARGING_MODE_SHORTCUTS:
+            # Expand shortcut
+            for m in CHARGING_MODE_SHORTCUTS[part]:
+                if CHARGING_MODES[m] not in modes:
+                    modes.append(CHARGING_MODES[m])
+        elif part in CHARGING_MODES:
+            if CHARGING_MODES[part] not in modes:
+                modes.append(CHARGING_MODES[part])
+        else:
+            raise ValueError(f"Unknown charging mode: {part}")
+
+    return modes
+
+
+def parse_energy_transfer_modes(transfer_str: str) -> List[str]:
+    """
+    Parse energy transfer mode string into list of mode names.
+    Supports comma-separated values and shortcuts.
+
+    Examples:
+        "ac_single" -> ["AC_single_phase_core"]
+        "dc_extended" -> ["DC_extended"]
+        "ac_single,dc_extended" -> ["AC_single_phase_core", "DC_extended"]
+        "ac" -> ["AC_single_phase_core", "AC_three_phase_core"]
+        "dc" -> ["DC_core", "DC_extended"]
+        "all" -> all modes
+    """
+    modes = []
+    parts = [p.strip().lower() for p in transfer_str.split(",")]
+
+    for part in parts:
+        if part in ENERGY_TRANSFER_SHORTCUTS:
+            # Expand shortcut
+            for m in ENERGY_TRANSFER_SHORTCUTS[part]:
+                if ENERGY_TRANSFER_MODES[m] not in modes:
+                    modes.append(ENERGY_TRANSFER_MODES[m])
+        elif part in ENERGY_TRANSFER_MODES:
+            if ENERGY_TRANSFER_MODES[part] not in modes:
+                modes.append(ENERGY_TRANSFER_MODES[part])
+        else:
+            raise ValueError(f"Unknown energy transfer mode: {part}")
+
+    return modes
 
 
 def setup_pki_for_tls() -> Optional[Path]:
     """
     Set up the PKI directory structure expected by iso15118 library.
     Copies our generated V2G Root CA certificate to the expected location.
-    
+
     Returns:
         Path to the PKI directory if successful, None otherwise.
     """
@@ -146,19 +230,19 @@ def setup_pki_for_tls() -> Optional[Path]:
         print(f"  cd {CERTS_DIR.parent.parent}")
         print("  ./generate_certs.sh")
         return None
-    
+
     # Create PKI directory structure expected by iso15118 library
     # {PKI_PATH}/iso15118_2/certs/v2gRootCACert.pem
     pki_path = SCRIPT_DIR / "pki_tls"
     certs_path = pki_path / "iso15118_2" / "certs"
     certs_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Copy V2G Root CA
     target_v2g_root = certs_path / "v2gRootCACert.pem"
     if not target_v2g_root.exists() or target_v2g_root.read_text() != V2G_ROOT_CA.read_text():
         shutil.copy(V2G_ROOT_CA, target_v2g_root)
         print(f"  Copied V2G Root CA to {target_v2g_root}")
-    
+
     print(f"  PKI directory: {pki_path}")
     return pki_path
 
@@ -181,14 +265,14 @@ def get_network_interfaces() -> List[Tuple[str, str]]:
             # Fallback to IPv6 if no IPv4
             ip = addrs[netifaces.AF_INET6][0].get('addr', 'N/A').split('%')[0]
             interfaces.append((iface, f"IPv6: {ip}"))
-    
+
     # Filter out loopback and virtual interfaces for cleaner list
     filtered = []
     for iface, ip in interfaces:
         if iface.startswith(("lo", "veth", "br-", "docker")):
             continue
         filtered.append((iface, ip))
-    
+
     return filtered if filtered else interfaces
 
 
@@ -198,12 +282,12 @@ def enable_debug_mode(charger_ip: str) -> bool:
     Returns True if successful.
     """
     global _debug_enabled
-    
+
     if not HAS_REQUESTS:
         print("Warning: 'requests' module not installed, cannot control charger debug mode")
         print("  Install with: pip install requests")
         return False
-    
+
     url = f"http://{charger_ip}/iso15118/debug_start"
     try:
         print(f"Enabling debug mode on {charger_ip}...")
@@ -232,10 +316,10 @@ def disable_debug_mode(charger_ip: str) -> bool:
     Returns True if successful.
     """
     global _debug_enabled
-    
+
     if not HAS_REQUESTS:
         return False
-    
+
     url = f"http://{charger_ip}/iso15118/debug_stop"
     try:
         print(f"\nDisabling debug mode on {charger_ip}...")
@@ -262,7 +346,7 @@ def build_evcc_config(
 ) -> EVCCConfig:
     """
     Build an EVCCConfig object from parameters.
-    
+
     Args:
         protocols: List of protocol names to support
         energy_services: List of energy services (AC/DC)
@@ -283,7 +367,7 @@ def build_evcc_config(
         "maxContractCerts": 3,
         "maxSupportingPoints": 1024,
     }
-    
+
     config = EVCCConfig(**config_dict)
     config.load_raw_values()
     return config
@@ -300,14 +384,14 @@ async def run_evcc(config: EVCCConfig, interface: str):
         if not key.startswith("raw"):
             print(f"  {key:30}: {value}")
     print("=" * 60 + "\n")
-    
+
     # Set up environment for iso15118
     os.environ["NETWORK_INTERFACE"] = interface
     os.environ["LOG_LEVEL"] = os.environ.get("LOG_LEVEL", "INFO")
-    
+
     # Load shared settings (required for EXI codec and message logging)
     load_shared_settings()
-    
+
     # Create and start the EVCC handler
     handler = EVCCHandler(
         evcc_config=config,
@@ -315,7 +399,7 @@ async def run_evcc(config: EVCCConfig, interface: str):
         exi_codec=ExificientEXICodec(),
         ev_controller=SimEVController(config),
     )
-    
+
     await handler.start()
 
 
@@ -328,7 +412,7 @@ def select_from_list(prompt: str, options: List[str], default: int = 0) -> int:
     for i, option in enumerate(options, 1):
         marker = " [default]" if i - 1 == default else ""
         print(f"  {i}. {option}{marker}")
-    
+
     while True:
         try:
             choice = input(f"\nSelect [1-{len(options)}] (default: {default + 1}): ").strip()
@@ -340,6 +424,42 @@ def select_from_list(prompt: str, options: List[str], default: int = 0) -> int:
             print(f"Please enter a number between 1 and {len(options)}")
         except ValueError:
             print("Please enter a valid number")
+
+
+def select_multiple_from_list(prompt: str, options: List[str], defaults: Optional[List[int]] = None) -> List[int]:
+    """
+    Display a list of options and let user select multiple.
+    Returns the list of selected indices.
+    """
+    if defaults is None:
+        defaults = [0]
+
+    print(f"\n{prompt}")
+    for i, option in enumerate(options, 1):
+        marker = " [default]" if i - 1 in defaults else ""
+        print(f"  {i}. {option}{marker}")
+
+    default_str = ",".join(str(d + 1) for d in defaults)
+    while True:
+        try:
+            choice = input(f"\nSelect [1-{len(options)}] (comma-separated, default: {default_str}): ").strip()
+            if not choice:
+                return defaults
+            indices: List[int] = []
+            valid = True
+            for part in choice.split(","):
+                idx = int(part.strip()) - 1
+                if 0 <= idx < len(options):
+                    if idx not in indices:
+                        indices.append(idx)
+                else:
+                    print(f"Invalid selection: {part.strip()}. Please enter numbers between 1 and {len(options)}")
+                    valid = False
+                    break
+            if valid:
+                return indices
+        except ValueError:
+            print("Please enter valid numbers separated by commas")
 
 
 def input_with_default(prompt: str, default: str) -> str:
@@ -356,15 +476,15 @@ def interactive_mode() -> argparse.Namespace:
     print("\n" + "=" * 60)
     print("   WARP Charger EV Simulator - Interactive Setup")
     print("=" * 60)
-    
+
     # Charger IP
     print("\n--- Charger Connection ---")
     charger_ip = input("Charger IP (leave empty to skip auto debug mode): ").strip()
-    
+
     # Network interface
     print("\n--- Network Interface ---")
     interfaces = get_network_interfaces()
-    
+
     if interfaces:
         print("Available interfaces:")
         iface_options = [f"{iface} ({ip})" for iface, ip in interfaces]
@@ -372,7 +492,7 @@ def interactive_mode() -> argparse.Namespace:
         interface = interfaces[iface_idx][0]
     else:
         interface = input_with_default("Network interface", "eth0")
-    
+
     # Protocol
     print("\n--- Protocol Selection ---")
     protocol_options = [
@@ -387,24 +507,30 @@ def interactive_mode() -> argparse.Namespace:
     protocol_values = ["din", "iso2", "din,iso2", "iso20ac", "iso20dc", "iso20", "all"]
     protocol_idx = select_from_list("Select protocol:", protocol_options, default=2)
     protocol = protocol_values[protocol_idx]
-    
+
     # Charging mode
-    print("\n--- Charging Mode ---")
+    print("\n--- Charging Mode (Energy Services) ---")
     mode_options = ["AC charging", "DC charging"]
-    mode_idx = select_from_list("Select charging mode:", mode_options, default=0)
-    mode = ["ac", "dc"][mode_idx]
-    
-    # Energy transfer mode
+    mode_indices = select_multiple_from_list("Select charging mode(s):", mode_options, defaults=[0])
+    mode_values = ["ac", "dc"]
+    mode = ",".join(mode_values[i] for i in mode_indices)
+
+    # Energy transfer mode - show options based on selected charging modes
     print("\n--- Energy Transfer Mode ---")
-    if mode == "dc":
-        transfer_options = ["DC_core", "DC_extended"]
-        transfer_idx = select_from_list("Select energy transfer mode:", transfer_options, default=1)
-        energy_transfer = ["dc_core", "dc_extended"][transfer_idx]
-    else:
-        transfer_options = ["AC_single_phase_core", "AC_three_phase_core"]
-        transfer_idx = select_from_list("Select energy transfer mode:", transfer_options, default=1)
-        energy_transfer = ["ac_single", "ac_three"][transfer_idx]
-    
+    transfer_options = []
+    transfer_values = []
+    if 0 in mode_indices:  # AC selected
+        transfer_options.extend(["AC_single_phase_core", "AC_three_phase_core"])
+        transfer_values.extend(["ac_single", "ac_three"])
+    if 1 in mode_indices:  # DC selected
+        transfer_options.extend(["DC_core", "DC_extended"])
+        transfer_values.extend(["dc_core", "dc_extended"])
+
+    # Default to last option (typically "extended" or "three_phase")
+    default_transfer = [len(transfer_options) - 1] if transfer_options else [0]
+    transfer_indices = select_multiple_from_list("Select energy transfer mode(s):", transfer_options, defaults=default_transfer)
+    energy_transfer = ",".join(transfer_values[i] for i in transfer_indices)
+
     # Charge loop cycles
     print("\n--- Simulation Settings ---")
     loops_str = input_with_default("Charge loop cycles", "10")
@@ -412,13 +538,13 @@ def interactive_mode() -> argparse.Namespace:
         loops = int(loops_str)
     except ValueError:
         loops = 10
-    
+
     # TLS options
     print("\n--- TLS Security ---")
     tls_options = ["No TLS (plain TCP)", "TLS (encrypted)"]
     tls_idx = select_from_list("Select security mode:", tls_options, default=0)
     use_tls = tls_idx == 1
-    
+
     # Create namespace
     args = argparse.Namespace(
         interactive=False,  # Already processed
@@ -432,7 +558,7 @@ def interactive_mode() -> argparse.Namespace:
         no_debug=False,
         list_interfaces=False,
     )
-    
+
     # Summary
     print("\n" + "=" * 60)
     print("Configuration Summary:")
@@ -440,35 +566,35 @@ def interactive_mode() -> argparse.Namespace:
     print(f"  Charger IP:          {args.charger or '(not set)'}")
     print(f"  Network interface:   {args.interface}")
     print(f"  Protocol:            {args.protocol}")
-    print(f"  Mode:                {args.mode}")
+    print(f"  Charging modes:      {args.mode}")
     print(f"  Energy transfer:     {args.energy_transfer}")
     print(f"  Charge loop cycles:  {args.loops}")
     print(f"  TLS enabled:         {args.tls}")
     print("=" * 60)
-    
+
     confirm = input("\nStart simulator? [Y/n]: ").strip().lower()
     if confirm and confirm != 'y':
         print("Aborted.")
         sys.exit(0)
-    
+
     return args
 
 
 def cleanup_handler(signum, frame):
     """Signal handler for cleanup on exit."""
     global _charger_ip, _debug_enabled
-    
+
     print("\n\nReceived interrupt signal, cleaning up...")
-    
+
     if _charger_ip and _debug_enabled:
         disable_debug_mode(_charger_ip)
-    
+
     sys.exit(0)
 
 
 def main():
     global _charger_ip
-    
+
     parser = argparse.ArgumentParser(
         description="WARP Charger EV Simulator - Test ISO 15118 debug mode",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -481,31 +607,48 @@ Protocols:
   iso20    - ISO 15118-20 AC + DC (shortcut)
   all      - All protocols
 
+Charging modes (energy services):
+  ac       - AC charging
+  dc       - DC charging
+  all/both - AC + DC (let SECC choose)
+
+Energy transfer modes:
+  ac_single  - AC_single_phase_core
+  ac_three   - AC_three_phase_core
+  dc_core    - DC_core
+  dc_extended - DC_extended
+  ac         - All AC modes (shortcut)
+  dc         - All DC modes (shortcut)
+  all        - All modes
+
 Examples:
-  %(prog)s -c 192.168.0.33                  # Default: DIN + ISO2, AC
-  %(prog)s -c 192.168.0.33 -p din           # DIN only
-  %(prog)s -c 192.168.0.33 -p iso2,din      # ISO2 + DIN
-  %(prog)s -c 192.168.0.33 -p iso20dc -m dc # ISO 15118-20 DC
-  %(prog)s -c 192.168.0.33 -p all           # All protocols
-  %(prog)s -c 192.168.0.33 --tls            # With TLS encryption
-  %(prog)s -i                               # Interactive mode
-  %(prog)s --list-interfaces                # Show available interfaces
+  %(prog)s -c 192.168.0.33                       # Default: DIN + ISO2, AC three-phase
+  %(prog)s -c 192.168.0.33 -p din                # DIN only
+  %(prog)s -c 192.168.0.33 -p iso2,din           # ISO2 + DIN
+  %(prog)s -c 192.168.0.33 -p iso20dc -m dc      # ISO 15118-20 DC
+  %(prog)s -c 192.168.0.33 -m ac,dc              # Support both AC and DC
+  %(prog)s -c 192.168.0.33 -e dc_extended        # Request DC extended mode
+  %(prog)s -c 192.168.0.33 -e ac_single,ac_three # Support both AC modes
+  %(prog)s -c 192.168.0.33 -p all -m all -e all  # Support everything
+  %(prog)s -c 192.168.0.33 --tls                 # With TLS encryption
+  %(prog)s -i                                    # Interactive mode
+  %(prog)s --list-interfaces                     # Show available interfaces
         """,
     )
-    
+
     parser.add_argument(
         "-i", "--interactive",
         action="store_true",
         help="Interactive configuration mode",
     )
-    
+
     parser.add_argument(
         "-c", "--charger",
         type=str,
         metavar="IP",
         help="Charger IP address (enables automatic debug mode control)",
     )
-    
+
     parser.add_argument(
         "-p", "--protocol",
         type=str,
@@ -513,60 +656,62 @@ Examples:
         metavar="PROTO",
         help="Protocol(s): din, iso2, iso20ac, iso20dc, iso20, all (comma-separated, default: din,iso2)",
     )
-    
+
     parser.add_argument(
         "-m", "--mode",
-        choices=["ac", "dc"],
+        type=str,
         default="ac",
-        help="Charging mode (default: ac)",
+        metavar="MODE",
+        help="Charging mode(s): ac, dc, all/both (comma-separated, default: ac)",
     )
-    
+
     parser.add_argument(
         "-e", "--energy-transfer",
-        choices=list(ENERGY_TRANSFER_MODES.keys()),
+        type=str,
         default=None,
-        help="Energy transfer mode (default: based on --mode)",
+        metavar="TRANSFER",
+        help="Energy transfer mode(s): ac_single, ac_three, dc_core, dc_extended, ac, dc, all (comma-separated, default: based on --mode)",
     )
-    
+
     parser.add_argument(
         "-n", "--interface",
         type=str,
         metavar="IFACE",
         help="Network interface (auto-detected if not specified)",
     )
-    
+
     parser.add_argument(
         "--loops",
         type=int,
         default=10,
         help="Number of charge loop cycles (default: 10)",
     )
-    
+
     parser.add_argument(
         "--no-debug",
         action="store_true",
         help="Don't automatically control charger debug mode",
     )
-    
+
     parser.add_argument(
         "--tls",
         action="store_true",
         help="Enable TLS encryption (requires certificates from ../certs/output/)",
     )
-    
+
     parser.add_argument(
         "--list-interfaces",
         action="store_true",
         help="List available network interfaces and exit",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Show help if no arguments provided (require at least -c, -i, or --list-interfaces)
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(0)
-    
+
     # List interfaces mode
     if args.list_interfaces:
         interfaces = get_network_interfaces()
@@ -577,11 +722,11 @@ Examples:
         else:
             print("No network interfaces found")
         sys.exit(0)
-    
+
     # Interactive mode
     if args.interactive:
         args = interactive_mode()
-    
+
     # Auto-detect interface if not specified
     if not args.interface:
         interfaces = get_network_interfaces()
@@ -591,11 +736,11 @@ Examples:
         else:
             print("Error: No network interface found. Please specify with --interface")
             sys.exit(1)
-    
+
     # Default energy transfer mode based on charging mode
     if not args.energy_transfer:
         args.energy_transfer = "dc_extended" if args.mode == "dc" else "ac_three"
-    
+
     # Parse protocols
     try:
         protocols = parse_protocols(args.protocol)
@@ -603,11 +748,31 @@ Examples:
         print(f"Error: {e}")
         print("Valid protocols: din, iso2, iso20ac, iso20dc, iso20, all")
         sys.exit(1)
-    
+
+    # Parse charging modes
+    try:
+        energy_services = parse_charging_modes(args.mode)
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("Valid charging modes: ac, dc, all, both")
+        sys.exit(1)
+
+    # Parse energy transfer modes
+    try:
+        energy_transfer_modes = parse_energy_transfer_modes(args.energy_transfer)
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("Valid energy transfer modes: ac_single, ac_three, dc_core, dc_extended, ac, dc, all")
+        sys.exit(1)
+
+    # The first energy transfer mode is the one we'll request
+    # (EVCCConfig only supports a single energyTransferMode)
+    primary_energy_transfer_mode = energy_transfer_modes[0]
+
     # Setup signal handlers for cleanup
     signal.signal(signal.SIGINT, cleanup_handler)
     signal.signal(signal.SIGTERM, cleanup_handler)
-    
+
     # Setup TLS if requested
     # Note: TLS is always supported by the charger. When the EV requests TLS in SDP,
     # the charger will respond with TLS. No need to enable it on the charger side.
@@ -622,32 +787,37 @@ Examples:
         # Set PKI_PATH environment variable for iso15118 library
         os.environ["PKI_PATH"] = str(pki_path)
         print(f"  TLS enabled, PKI_PATH={pki_path}")
-    
+
     # Enable debug mode on charger if requested
     if args.charger and not args.no_debug:
         _charger_ip = args.charger
         if not enable_debug_mode(args.charger):
             print("\nWarning: Could not enable debug mode on charger")
             print("The simulator will still try to connect...")
-    
+
     # Build configuration
-    energy_services = ["DC"] if args.mode == "dc" else ["AC"]
-    energy_transfer_mode = ENERGY_TRANSFER_MODES[args.energy_transfer]
-    
+    # Note: EVCCConfig only supports a single energyTransferMode, so we use the first one
+    # The energy_services list is used to indicate what the EV supports (AC, DC, or both)
+
     config = build_evcc_config(
         protocols=protocols,
         energy_services=energy_services,
-        energy_transfer_mode=energy_transfer_mode,
+        energy_transfer_mode=primary_energy_transfer_mode,
         charge_loop_cycles=args.loops,
         use_tls=use_tls,
         enforce_tls=use_tls,  # If TLS requested, enforce it
     )
-    
+
+    # Print what we're offering
+    print(f"\nEnergy services: {', '.join(energy_services)}")
+    print(f"Energy transfer modes available: {', '.join(energy_transfer_modes)}")
+    print(f"Primary energy transfer mode: {primary_energy_transfer_mode}")
+
     # Run the simulator
     tls_info = " with TLS" if use_tls else ""
     print(f"\nStarting EV simulator on interface {args.interface}{tls_info}...")
     print("Press Ctrl+C to stop\n")
-    
+
     try:
         asyncio.run(run_evcc(config, args.interface))
     except KeyboardInterrupt:
