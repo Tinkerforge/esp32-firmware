@@ -22,6 +22,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/malloc.h"
 
 #include <sys/socket.h>
 #include <errno.h>
@@ -175,7 +176,7 @@ bool ISOTLS::load_certificates()
     // Load ISO 15118-2 certificates (secp256r1)
     if (load_iso2) {
         cert_chain_pem_len_iso2 = strlen(dev_cert_chain_pem_iso2) + 1;
-        cert_chain_pem_iso2 = (uint8_t*)heap_caps_calloc_prefer(cert_chain_pem_len_iso2, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
         if (cert_chain_pem_iso2 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
             return false;
@@ -183,7 +184,7 @@ bool ISOTLS::load_certificates()
         memcpy(cert_chain_pem_iso2, dev_cert_chain_pem_iso2, cert_chain_pem_len_iso2);
 
         private_key_pem_len_iso2 = strlen(dev_private_key_pem_iso2) + 1;
-        private_key_pem_iso2 = (uint8_t*)heap_caps_calloc_prefer(private_key_pem_len_iso2, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
         if (private_key_pem_iso2 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO2 private key");
             return false;
@@ -196,7 +197,7 @@ bool ISOTLS::load_certificates()
     // Load ISO 15118-20 certificates (secp521r1)
     if (load_iso20) {
         cert_chain_pem_len_iso20 = strlen(dev_cert_chain_pem_iso20) + 1;
-        cert_chain_pem_iso20 = (uint8_t*)heap_caps_calloc_prefer(cert_chain_pem_len_iso20, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
         if (cert_chain_pem_iso20 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
             return false;
@@ -204,7 +205,7 @@ bool ISOTLS::load_certificates()
         memcpy(cert_chain_pem_iso20, dev_cert_chain_pem_iso20, cert_chain_pem_len_iso20);
 
         private_key_pem_len_iso20 = strlen(dev_private_key_pem_iso20) + 1;
-        private_key_pem_iso20 = (uint8_t*)heap_caps_calloc_prefer(private_key_pem_len_iso20, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
         if (private_key_pem_iso20 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO20 private key");
             return false;
@@ -231,7 +232,7 @@ bool ISOTLS::load_certificates()
         }
 
         cert_chain_pem_len_iso2 = cert_file.size() + 1;
-        cert_chain_pem_iso2 = (uint8_t*)heap_caps_calloc_prefer(cert_chain_pem_len_iso2, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso2, 1));
         if (cert_chain_pem_iso2 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO2 certificate chain");
             cert_file.close();
@@ -254,7 +255,7 @@ bool ISOTLS::load_certificates()
         }
 
         private_key_pem_len_iso2 = key_file.size() + 1;
-        private_key_pem_iso2 = (uint8_t*)heap_caps_calloc_prefer(private_key_pem_len_iso2, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        private_key_pem_iso2 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso2, 1));
         if (private_key_pem_iso2 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO2 private key");
             key_file.close();
@@ -281,7 +282,7 @@ bool ISOTLS::load_certificates()
         }
 
         cert_chain_pem_len_iso20 = cert_file.size() + 1;
-        cert_chain_pem_iso20 = (uint8_t*)heap_caps_calloc_prefer(cert_chain_pem_len_iso20, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(cert_chain_pem_len_iso20, 1));
         if (cert_chain_pem_iso20 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO20 certificate chain");
             cert_file.close();
@@ -304,7 +305,7 @@ bool ISOTLS::load_certificates()
         }
 
         private_key_pem_len_iso20 = key_file.size() + 1;
-        private_key_pem_iso20 = (uint8_t*)heap_caps_calloc_prefer(private_key_pem_len_iso20, 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        private_key_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(private_key_pem_len_iso20, 1));
         if (private_key_pem_iso20 == nullptr) {
             logger.printfln("ISOTLS: Failed to allocate memory for ISO20 private key");
             key_file.close();
@@ -356,10 +357,10 @@ bool ISOTLS::setup(IsoTlsMode mode)
     }
 
     // Allocate mbedTLS contexts from PSRAM
-    ssl = (mbedtls_ssl_context*)heap_caps_calloc_prefer(sizeof(mbedtls_ssl_context), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-    ssl_conf = (mbedtls_ssl_config*)heap_caps_calloc_prefer(sizeof(mbedtls_ssl_config), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-    entropy = (mbedtls_entropy_context*)heap_caps_calloc_prefer(sizeof(mbedtls_entropy_context), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-    ctr_drbg = (mbedtls_ctr_drbg_context*)heap_caps_calloc_prefer(sizeof(mbedtls_ctr_drbg_context), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    ssl = static_cast<mbedtls_ssl_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_ssl_context)));
+    ssl_conf = static_cast<mbedtls_ssl_config*>(calloc_psram_or_dram(1, sizeof(mbedtls_ssl_config)));
+    entropy = static_cast<mbedtls_entropy_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_entropy_context)));
+    ctr_drbg = static_cast<mbedtls_ctr_drbg_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_ctr_drbg_context)));
 
     bool need_iso2 = (mode == IsoTlsMode::ISO15118_2 || mode == IsoTlsMode::AUTO);
 #if ISOTLS_TLS13_AVAILABLE
@@ -369,13 +370,13 @@ bool ISOTLS::setup(IsoTlsMode mode)
 #endif
 
     if (need_iso2) {
-        cert_chain_iso2 = (mbedtls_x509_crt*)heap_caps_calloc_prefer(sizeof(mbedtls_x509_crt), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-        private_key_iso2 = (mbedtls_pk_context*)heap_caps_calloc_prefer(sizeof(mbedtls_pk_context), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_iso2 = static_cast<mbedtls_x509_crt*>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
+        private_key_iso2 = static_cast<mbedtls_pk_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_pk_context)));
     }
 
     if (need_iso20) {
-        cert_chain_iso20 = (mbedtls_x509_crt*)heap_caps_calloc_prefer(sizeof(mbedtls_x509_crt), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-        private_key_iso20 = (mbedtls_pk_context*)heap_caps_calloc_prefer(sizeof(mbedtls_pk_context), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        cert_chain_iso20 = static_cast<mbedtls_x509_crt*>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
+        private_key_iso20 = static_cast<mbedtls_pk_context*>(calloc_psram_or_dram(1, sizeof(mbedtls_pk_context)));
     }
 
     if (ssl == nullptr || ssl_conf == nullptr || entropy == nullptr || ctr_drbg == nullptr) {
@@ -573,72 +574,72 @@ void ISOTLS::cleanup()
 
     if (ssl != nullptr) {
         mbedtls_ssl_free(ssl);
-        heap_caps_free(ssl);
+        free_any(ssl);
         ssl = nullptr;
     }
 
     if (ssl_conf != nullptr) {
         mbedtls_ssl_config_free(ssl_conf);
-        heap_caps_free(ssl_conf);
+        free_any(ssl_conf);
         ssl_conf = nullptr;
     }
 
     if (cert_chain_iso2 != nullptr) {
         mbedtls_x509_crt_free(cert_chain_iso2);
-        heap_caps_free(cert_chain_iso2);
+        free_any(cert_chain_iso2);
         cert_chain_iso2 = nullptr;
     }
 
     if (private_key_iso2 != nullptr) {
         mbedtls_pk_free(private_key_iso2);
-        heap_caps_free(private_key_iso2);
+        free_any(private_key_iso2);
         private_key_iso2 = nullptr;
     }
 
     if (cert_chain_iso20 != nullptr) {
         mbedtls_x509_crt_free(cert_chain_iso20);
-        heap_caps_free(cert_chain_iso20);
+        free_any(cert_chain_iso20);
         cert_chain_iso20 = nullptr;
     }
 
     if (private_key_iso20 != nullptr) {
         mbedtls_pk_free(private_key_iso20);
-        heap_caps_free(private_key_iso20);
+        free_any(private_key_iso20);
         private_key_iso20 = nullptr;
     }
 
     if (entropy != nullptr) {
         mbedtls_entropy_free(entropy);
-        heap_caps_free(entropy);
+        free_any(entropy);
         entropy = nullptr;
     }
 
     if (ctr_drbg != nullptr) {
         mbedtls_ctr_drbg_free(ctr_drbg);
-        heap_caps_free(ctr_drbg);
+        free_any(ctr_drbg);
         ctr_drbg = nullptr;
     }
 
     if (cert_chain_pem_iso2 != nullptr) {
-        heap_caps_free(cert_chain_pem_iso2);
+        free_any(cert_chain_pem_iso2);
         cert_chain_pem_iso2 = nullptr;
         cert_chain_pem_len_iso2 = 0;
     }
 
     if (private_key_pem_iso2 != nullptr) {
-        heap_caps_free(private_key_pem_iso2);
+        free_any(private_key_pem_iso2);
         private_key_pem_iso2 = nullptr;
         private_key_pem_len_iso2 = 0;
     }
 
     if (cert_chain_pem_iso20 != nullptr) {
-        heap_caps_free(cert_chain_pem_iso20);
+        free_any(cert_chain_pem_iso20);
         cert_chain_pem_iso20 = nullptr;
         cert_chain_pem_len_iso20 = 0;
     }
 
     if (private_key_pem_iso20 != nullptr) {
-        heap_caps_free(private_key_pem_iso20);
+        free_any(private_key_pem_iso20);
         private_key_pem_iso20 = nullptr;
         private_key_pem_len_iso20 = 0;
     }

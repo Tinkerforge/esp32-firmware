@@ -32,6 +32,7 @@
 #include "lwip/sockets.h"
 
 #include "tools/net.h"
+#include "tools/malloc.h"
 
 #include "cbv2g/exi_v2gtp.h"
 #include "cbv2g/app_handshake/appHand_Decoder.h"
@@ -51,7 +52,7 @@ void Common::pre_setup()
     });
 
     if (exi_data == nullptr) {
-        exi_data = (uint8_t*)heap_caps_calloc_prefer(EXI_DATA_SIZE, sizeof(uint8_t), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        exi_data = static_cast<uint8_t*>(calloc_psram_or_dram(EXI_DATA_SIZE, sizeof(uint8_t)));
     }
 }
 
@@ -342,10 +343,10 @@ void Common::decode(uint8_t *data, const size_t length)
         // This way it is not allocated if ISO15118 is not used.
         // If it is used once we can assume that it will be used all the time, so it stays allocated.
         if (appHandDec == nullptr) {
-            appHandDec = (struct appHand_exiDocument*)heap_caps_calloc_prefer(sizeof(struct appHand_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+            appHandDec = static_cast<struct appHand_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct appHand_exiDocument)));
         }
         if (appHandEnc == nullptr) {
-            appHandEnc = (struct appHand_exiDocument*)heap_caps_calloc_prefer(sizeof(struct appHand_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+            appHandEnc = static_cast<struct appHand_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct appHand_exiDocument)));
         }
         memset(appHandDec, 0, sizeof(struct appHand_exiDocument));
         memset(appHandEnc, 0, sizeof(struct appHand_exiDocument));

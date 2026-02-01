@@ -25,6 +25,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools/malloc.h"
 
 void ISO2::pre_setup()
 {
@@ -86,10 +87,10 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     // This way it is not allocated if ISO15118 is not used.
     // If it is used once we can assume that it will be used all the time, so it stays allocated.
     if (iso2DocDec == nullptr) {
-        iso2DocDec = (struct iso2_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso2_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso2DocDec = static_cast<struct iso2_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso2_exiDocument)));
     }
     if (iso2DocEnc == nullptr) {
-        iso2DocEnc = (struct iso2_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso2_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso2DocEnc = static_cast<struct iso2_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso2_exiDocument)));
     }
     memset(iso2DocDec, 0, sizeof(struct iso2_exiDocument));
     memset(iso2DocEnc, 0, sizeof(struct iso2_exiDocument));

@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools/malloc.h"
 
 #include "cbv2g/exi_v2gtp.h"
 #include "cbv2g/app_handshake/appHand_Decoder.h"
@@ -76,10 +77,10 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     // This way it is not allocated if ISO15118 is not used.
     // If it is used once we can assume that it will be used all the time, so it stays allocated.
     if (dinDocDec == nullptr) {
-        dinDocDec = (struct din_exiDocument*)heap_caps_calloc_prefer(sizeof(struct din_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        dinDocDec = static_cast<struct din_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct din_exiDocument)));
     }
     if (dinDocEnc == nullptr) {
-        dinDocEnc = (struct din_exiDocument*)heap_caps_calloc_prefer(sizeof(struct din_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        dinDocEnc = static_cast<struct din_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct din_exiDocument)));
     }
     memset(dinDocDec, 0, sizeof(struct din_exiDocument));
     memset(dinDocEnc, 0, sizeof(struct din_exiDocument));

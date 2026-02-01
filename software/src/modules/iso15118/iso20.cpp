@@ -25,6 +25,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "tools/malloc.h"
 
 void ISO20::pre_setup()
 {
@@ -78,10 +79,10 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
     // This way it is not allocated if ISO15118-20 is not used.
     // If it is used once we can assume that it will be used all the time, so it stays allocated.
     if (iso20DocDec == nullptr) {
-        iso20DocDec = (struct iso20_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso20_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso20DocDec = static_cast<struct iso20_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso20_exiDocument)));
     }
     if (iso20DocEnc == nullptr) {
-        iso20DocEnc = (struct iso20_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso20_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso20DocEnc = static_cast<struct iso20_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso20_exiDocument)));
     }
     memset(iso20DocDec, 0, sizeof(struct iso20_exiDocument));
     memset(iso20DocEnc, 0, sizeof(struct iso20_exiDocument));
@@ -691,10 +692,10 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
 {
     // Allocate AC document buffers on first use
     if (iso20AcDocDec == nullptr) {
-        iso20AcDocDec = (struct iso20_ac_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso20_ac_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso20AcDocDec = static_cast<struct iso20_ac_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso20_ac_exiDocument)));
     }
     if (iso20AcDocEnc == nullptr) {
-        iso20AcDocEnc = (struct iso20_ac_exiDocument*)heap_caps_calloc_prefer(sizeof(struct iso20_ac_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        iso20AcDocEnc = static_cast<struct iso20_ac_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso20_ac_exiDocument)));
     }
     memset(iso20AcDocDec, 0, sizeof(struct iso20_ac_exiDocument));
     memset(iso20AcDocEnc, 0, sizeof(struct iso20_ac_exiDocument));
