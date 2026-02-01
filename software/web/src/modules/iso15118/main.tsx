@@ -433,6 +433,79 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                     <FormRow label="State">
                         <InputNumber value={state_iso20.state}/>
                     </FormRow>
+                    <FormRow label="Session ID">
+                        <InputText value={state_iso20.session_id || "-"}/>
+                    </FormRow>
+                    <FormRow label="EVCC ID">
+                        <InputText value={state_iso20.evcc_id || "-"}/>
+                    </FormRow>
+
+                    <FormSeparator heading="ISO 15118-20 Display Parameters"/>
+                    <FormRow label="Present SOC">
+                        <InputText value={state_iso20.present_soc_is_used ? state_iso20.present_soc + "%" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Present SOC Is Used">
+                        <InputText value={state_iso20.present_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Minimum SOC">
+                        <InputText value={state_iso20.minimum_soc_is_used ? state_iso20.minimum_soc + "%" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Minimum SOC Is Used">
+                        <InputText value={state_iso20.minimum_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Target SOC">
+                        <InputText value={state_iso20.target_soc_is_used ? state_iso20.target_soc + "%" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Target SOC Is Used">
+                        <InputText value={state_iso20.target_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Maximum SOC">
+                        <InputText value={state_iso20.maximum_soc_is_used ? state_iso20.maximum_soc + "%" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Maximum SOC Is Used">
+                        <InputText value={state_iso20.maximum_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Min SOC">
+                        <InputText value={state_iso20.remaining_time_to_minimum_soc_is_used ? state_iso20.remaining_time_to_minimum_soc + " s" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Min SOC Is Used">
+                        <InputText value={state_iso20.remaining_time_to_minimum_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Target SOC">
+                        <InputText value={state_iso20.remaining_time_to_target_soc_is_used ? state_iso20.remaining_time_to_target_soc + " s" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Target SOC Is Used">
+                        <InputText value={state_iso20.remaining_time_to_target_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Max SOC">
+                        <InputText value={state_iso20.remaining_time_to_maximum_soc_is_used ? state_iso20.remaining_time_to_maximum_soc + " s" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Remaining Time To Max SOC Is Used">
+                        <InputText value={state_iso20.remaining_time_to_maximum_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Charging Complete">
+                        <InputText value={state_iso20.charging_complete_is_used ? (state_iso20.charging_complete ? "Yes" : "No") : "-"}/>
+                    </FormRow>
+                    <FormRow label="Charging Complete Is Used">
+                        <InputText value={state_iso20.charging_complete_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Battery Energy Capacity">
+                        <InputText value={state_iso20.battery_energy_capacity_is_used ? state_iso20.battery_energy_capacity_val + " * 10^" + state_iso20.battery_energy_capacity_exp + " Wh" : "-"}/>
+                    </FormRow>
+                    <FormRow label="Battery Energy Capacity Is Used">
+                        <InputText value={state_iso20.battery_energy_capacity_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="Inlet Hot">
+                        <InputText value={state_iso20.inlet_hot_is_used ? (state_iso20.inlet_hot ? "Yes" : "No") : "-"}/>
+                    </FormRow>
+                    <FormRow label="Inlet Hot Is Used">
+                        <InputText value={state_iso20.inlet_hot_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+
+                    <FormSeparator heading="ISO 15118-20 Power"/>
+                    <FormRow label="EV Present Active Power">
+                        <InputText value={state_iso20.ev_present_active_power_val + " * 10^" + state_iso20.ev_present_active_power_exp + " W"}/>
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );

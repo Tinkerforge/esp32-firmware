@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,8 @@
  */
 
 // IPv6/TCP/ISO-15118-2
+// This implementation follows the requirements from ISO 15118-2:2014.
+// Requirements are referenced using [V2G2-xxx] notation.
 
 #include "iso2.h"
 #include "event_log_prefix.h"

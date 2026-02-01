@@ -112,4 +112,31 @@ export interface state_iso2 {
 
 export interface state_iso20 {
     state: number;
+    session_id: string;
+    evcc_id: string;
+    // DisplayParameters from AC_ChargeLoopReq
+    present_soc: number;
+    present_soc_is_used: boolean;
+    minimum_soc: number;
+    minimum_soc_is_used: boolean;
+    target_soc: number;
+    target_soc_is_used: boolean;
+    maximum_soc: number;
+    maximum_soc_is_used: boolean;
+    remaining_time_to_minimum_soc: number;
+    remaining_time_to_minimum_soc_is_used: boolean;
+    remaining_time_to_target_soc: number;
+    remaining_time_to_target_soc_is_used: boolean;
+    remaining_time_to_maximum_soc: number;
+    remaining_time_to_maximum_soc_is_used: boolean;
+    charging_complete: boolean;
+    charging_complete_is_used: boolean;
+    battery_energy_capacity_val: number;
+    battery_energy_capacity_exp: number;
+    battery_energy_capacity_is_used: boolean;
+    inlet_hot: boolean;
+    inlet_hot_is_used: boolean;
+    // EV present active power from Scheduled control mode
+    ev_present_active_power_val: number;
+    ev_present_active_power_exp: number;
 }
