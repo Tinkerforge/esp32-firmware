@@ -251,7 +251,6 @@ void DIN70121::handle_session_setup_req()
 
 void DIN70121::handle_service_discovery_req()
 {
-    din_ServiceDiscoveryReqType *req = &dinDocDec->V2G_Message.Body.ServiceDiscoveryReq;
     din_ServiceDiscoveryResType *res = &dinDocEnc->V2G_Message.Body.ServiceDiscoveryRes;
 
     // TODO: Stop session if session ID does not match?
