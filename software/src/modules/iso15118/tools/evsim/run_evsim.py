@@ -97,9 +97,9 @@ ENERGY_TRANSFER_MODES = {
 _charger_ip: Optional[str] = None
 _debug_enabled = False
 
-# Certificate paths - relative to this script (certs are in ../certs/output/)
-CERTS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "certs"
-PRIVATE_KEYS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "private_keys"
+# Certificate paths - relative to this script (certs are in ../certs/output/iso2/)
+CERTS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "certs"
+PRIVATE_KEYS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "private_keys"
 V2G_ROOT_CA = CERTS_DIR / "v2gRootCACert.pem"
 
 
