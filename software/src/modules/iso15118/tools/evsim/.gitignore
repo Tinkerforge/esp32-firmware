@@ -1,0 +1,8 @@
+# Cloned from https://github.com/EcoG-io/iso15118.git
+iso15118/
+
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+*.log
