@@ -513,7 +513,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                                         </div>
                                                     </div>
                                                     {s.error == 0 ?
-                                                        <div class="col-auto d-flex align-items-center justify-content-center px-3 bg-primary align-self-stretch">
+                                                        <div class="col-auto d-flex align-items-center justify-content-center px-3 bg-primary align-self-stretch rounded-end">
                                                             <Plus size="24" color="white"/>
                                                         </div>
                                                         : null
