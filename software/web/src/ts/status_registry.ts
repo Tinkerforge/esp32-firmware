@@ -18,6 +18,7 @@
  */
 
 import { ComponentChildren } from "preact";
+import { STATUS_PROVIDER_ORDER } from "../options";
 
 export const enum ModuleStatus {
     Disabled = 0,
@@ -58,15 +59,19 @@ export function register_status_provider(module_id: string, config: StatusProvid
 export function get_all_statuses(): ModuleStatusEntry[] {
     const entries: ModuleStatusEntry[] = [];
 
-    let order = 0;
     for (const [id, config] of status_providers) {
         try {
             const result = config.get_status();
             if (result) {
+                // Use index in STATUS_PROVIDER_ORDER for sorting
+                // IDs not in list get a high number to appear at the end
+                const order_index = STATUS_PROVIDER_ORDER.indexOf(id);
+                const order = order_index >= 0 ? order_index : STATUS_PROVIDER_ORDER.length + 1000;
+
                 entries.push({
                     id: id,
                     name: config.name,
-                    order: order++,
+                    order: order,
                     href: config.href,
                     ...result
                 });
@@ -80,7 +85,7 @@ export function get_all_statuses(): ModuleStatusEntry[] {
     const enabled = entries.filter(e => e.status !== ModuleStatus.Disabled);
     const disabled = entries.filter(e => e.status === ModuleStatus.Disabled);
 
-    // Sort by registration order (lower = shown first)
+    // Sort by configured order (from custom_frontend_components in .ini)
     enabled.sort((a, b) => a.order - b.order);
     disabled.sort((a, b) => a.order - b.order);
 

@@ -425,7 +425,7 @@ export function pre_init() {
 }
 
 export function init() {
-    register_status_provider("power_manager", {
+    register_status_provider("pv_excess_settings", {
         name: () => __("power_manager.navbar.pv_excess_settings"),
         href: "#pv_excess_settings",
         get_status: () => {

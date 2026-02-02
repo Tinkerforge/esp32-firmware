@@ -718,7 +718,7 @@ export function pre_init() {
 }
 
 export function init() {
-    register_status_provider("charge_manager", {
+    register_status_provider("charge_manager_settings", {
         name: () => __("charge_manager.navbar.charge_manager_settings"),
         href: "#charge_manager_settings",
         get_status: () => {

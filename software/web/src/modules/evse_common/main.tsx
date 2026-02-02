@@ -29,7 +29,7 @@ export function pre_init() {
 }
 
 export function init() {
-    register_status_provider("evse", {
+    register_status_provider("evse_settings", {
         name: () => __("evse.navbar.evse"),
         href: "#evse",
         get_status: () => {

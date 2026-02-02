@@ -261,7 +261,7 @@ export function pre_init() {
 }
 
 export function init() {
-    register_status_provider("ntp", {
+    register_status_provider("time", {
         name: () => __("time.status.time"),
         href: "#time",
         get_status: () => {
