@@ -14,7 +14,6 @@
             "ethernet": "LAN-Verbindung",
             "mac": "MAC-Adresse",
             "mac_none": "LAN-Verbindung nicht aktiv",
-            "settings_separator": "Einstellungen",
             "enable": "LAN-Verbindung aktiviert",
             "enable_desc": "Verbindung wird automatisch beim Start oder wenn ein Kabel eingesteckt wird aufgebaut"
         },

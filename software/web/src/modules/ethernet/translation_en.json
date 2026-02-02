@@ -14,7 +14,6 @@
             "ethernet": "LAN Connection",
             "mac": "MAC address",
             "mac_none": "LAN connection not active",
-            "settings_separator": "Settings",
             "enable": "LAN connection enabled",
             "enable_desc": "Automatically connects to the configured network on start-up"
         },

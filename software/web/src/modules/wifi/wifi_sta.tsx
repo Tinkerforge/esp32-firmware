@@ -24,9 +24,7 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -350,15 +348,8 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         const wifi_state = API.get("wifi/state");
 
         return (
-            <SubPage name="wifi_sta">
-                <ConfigForm id="wifi_sta_config_form"
-                            title={__("wifi.content.sta_settings")}
-                            isModified={this.isModified()}
-                            isDirty={this.isDirty()}
-                            onSave={this.save}
-                            onReset={this.reset}
-                            onDirtyChange={this.setDirty}>
-
+            <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
+                <SubPage.Status>
                     <FormRow label={__("wifi.content.sta_mac")}>
                         <InputText
                             value={wifi_state.sta_mac}
@@ -372,8 +363,15 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             style={wifi_state.sta_bssid.length == 0 ? undefined : "font-family:monospace"}
                         />
                     </FormRow>
+                </SubPage.Status>
 
-                    <FormSeparator heading={__("wifi.content.settings_separator")} />
+                <SubPage.Config
+                    id="wifi_sta_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("wifi.content.sta_enable_sta")}>
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}
@@ -505,7 +503,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         />
                     </FormRow>
 
-                </ConfigForm>
+                </SubPage.Config>
 
                 <ItemModal
                     size="sm"

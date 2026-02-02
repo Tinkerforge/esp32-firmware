@@ -29,7 +29,6 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { UplotLoader } from "../../ts/components/uplot_loader";
@@ -39,7 +38,6 @@ import { MeterClassID } from "./meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
 import { MeterConfig, MeterConfigPlugin } from "./types";
 import { Table } from "../../ts/components/table";
-import { PageHeader } from "../../ts/components/page_header";
 import { plugins_pre_init, plugins_init } from "./plugins";
 import { InputDate } from "../../ts/components/input_date";
 import { InputTime } from "../../ts/components/input_time";
@@ -610,98 +608,105 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         let show_plot = API.hasFeature("meters");
 
         return (
-            <SubPage name="meters" colClasses="col-xl-10">
-                {show_plot ? <><PageHeader title={__("meters.content.meters")}/>
+            <SubPage name="meters" colClasses="col-xl-10" title={__("meters.content.meters")}>
+                {show_plot ?
+                <SubPage.Status>
+                    <FormSeparator heading={__("meters.status.power_history")} first={true} >
+                        <div class="mb-2 ms-auto col-auto">
+                            <InputSelect value={this.state.chart_selected} onValue={(v) => {
+                                let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
 
-                <FormSeparator heading={__("meters.status.power_history")} first={true} >
-                    <div class="mb-2 ms-auto col-auto">
-                        <InputSelect value={this.state.chart_selected} onValue={(v) => {
-                            let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
+                                this.setState({chart_selected: chart_selected}, () => {
+                                    if (chart_selected == 'live') {
+                                        this.uplot_loader_live_ref.current.set_show(true);
+                                        this.uplot_wrapper_live_ref.current.set_show(true);
+                                        this.uplot_loader_history_ref.current.set_show(false);
+                                        this.uplot_wrapper_history_ref.current.set_show(false);
 
-                            this.setState({chart_selected: chart_selected}, () => {
-                                if (chart_selected == 'live') {
-                                    this.uplot_loader_live_ref.current.set_show(true);
-                                    this.uplot_wrapper_live_ref.current.set_show(true);
-                                    this.uplot_loader_history_ref.current.set_show(false);
-                                    this.uplot_wrapper_history_ref.current.set_show(false);
+                                        this.update_live_uplot();
+                                    }
+                                    else {
+                                        this.uplot_loader_history_ref.current.set_show(true);
+                                        this.uplot_wrapper_history_ref.current.set_show(true);
+                                        this.uplot_loader_live_ref.current.set_show(false);
+                                        this.uplot_wrapper_live_ref.current.set_show(false);
 
-                                    this.update_live_uplot();
-                                }
-                                else {
-                                    this.uplot_loader_history_ref.current.set_show(true);
-                                    this.uplot_wrapper_history_ref.current.set_show(true);
-                                    this.uplot_loader_live_ref.current.set_show(false);
-                                    this.uplot_wrapper_live_ref.current.set_show(false);
+                                        this.update_history_uplot();
+                                    }
+                                });
+                            }}
+                                items={[
+                                    ["history_48", __("meters.content.history_48")],
+                                    ["history_24", __("meters.content.history_24")],
+                                    ["history_12", __("meters.content.history_12")],
+                                    ["history_6", __("meters.content.history_6")],
+                                    ["history_3", __("meters.content.history_3")],
+                                    ["live", __("meters.content.live")],
+                                ]}/>
+                        </div>
+                    </FormSeparator>
 
-                                    this.update_history_uplot();
-                                }
-                            });
-                        }}
-                            items={[
-                                ["history_48", __("meters.content.history_48")],
-                                ["history_24", __("meters.content.history_24")],
-                                ["history_12", __("meters.content.history_12")],
-                                ["history_6", __("meters.content.history_6")],
-                                ["history_3", __("meters.content.history_3")],
-                                ["live", __("meters.content.live")],
-                            ]}/>
+                    <div class="pb-3">
+                        <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                            <UplotLoader ref={this.uplot_loader_live_ref}
+                                            show={false}
+                                            marker_class={'h3'}
+                                            no_data={__("meters.content.no_data")}
+                                            loading={__("meters.content.loading")} >
+                                <UplotWrapperA ref={this.uplot_wrapper_live_ref}
+                                                class="meters-chart"
+                                                sub_page="meters"
+                                                color_cache_group="meters.default"
+                                                show={false}
+                                                on_mount={() => this.update_live_uplot()}
+                                                legend_time_label={__("meters.script.time")}
+                                                legend_time_with_seconds={true}
+                                                aspect_ratio={3}
+                                                x_format={{hour: '2-digit', minute: '2-digit'}}
+                                                x_padding_factor={0}
+                                                x_include_date={false}
+                                                y_diff_min={100}
+                                                y_unit="W"
+                                                y_label={__("meters.script.power") + " [W]"}
+                                                y_digits={0}
+                                                padding={[null, 15, null, null]} />
+                            </UplotLoader>
+                            <UplotLoader ref={this.uplot_loader_history_ref}
+                                            show={true}
+                                            marker_class={'h3'}
+                                            no_data={__("meters.content.no_data")}
+                                            loading={__("meters.content.loading")} >
+                                <UplotWrapperA ref={this.uplot_wrapper_history_ref}
+                                                class="meters-chart"
+                                                sub_page="meters"
+                                                color_cache_group="meters.default"
+                                                show={true}
+                                                on_mount={() => this.update_history_uplot()}
+                                                legend_time_label={__("meters.script.time")}
+                                                legend_time_with_seconds={false}
+                                                aspect_ratio={3}
+                                                x_format={{hour: '2-digit', minute: '2-digit'}}
+                                                x_padding_factor={0}
+                                                x_include_date={true}
+                                                y_min={0}
+                                                y_max={1500}
+                                                y_unit="W"
+                                                y_label={__("meters.script.power") + " [W]"}
+                                                y_digits={0}
+                                                padding={[null, 15, null, null]} />
+                            </UplotLoader>
+                        </div>
                     </div>
-                </FormSeparator></>
+                </SubPage.Status>
                 : undefined}
 
-                <div class="pb-3" hidden={!show_plot}>
-                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                        <UplotLoader ref={this.uplot_loader_live_ref}
-                                        show={false}
-                                        marker_class={'h3'}
-                                        no_data={__("meters.content.no_data")}
-                                        loading={__("meters.content.loading")} >
-                            <UplotWrapperA ref={this.uplot_wrapper_live_ref}
-                                            class="meters-chart"
-                                            sub_page="meters"
-                                            color_cache_group="meters.default"
-                                            show={false}
-                                            on_mount={() => this.update_live_uplot()}
-                                            legend_time_label={__("meters.script.time")}
-                                            legend_time_with_seconds={true}
-                                            aspect_ratio={3}
-                                            x_format={{hour: '2-digit', minute: '2-digit'}}
-                                            x_padding_factor={0}
-                                            x_include_date={false}
-                                            y_diff_min={100}
-                                            y_unit="W"
-                                            y_label={__("meters.script.power") + " [W]"}
-                                            y_digits={0}
-                                            padding={[null, 15, null, null]} />
-                        </UplotLoader>
-                        <UplotLoader ref={this.uplot_loader_history_ref}
-                                        show={true}
-                                        marker_class={'h3'}
-                                        no_data={__("meters.content.no_data")}
-                                        loading={__("meters.content.loading")} >
-                            <UplotWrapperA ref={this.uplot_wrapper_history_ref}
-                                            class="meters-chart"
-                                            sub_page="meters"
-                                            color_cache_group="meters.default"
-                                            show={true}
-                                            on_mount={() => this.update_history_uplot()}
-                                            legend_time_label={__("meters.script.time")}
-                                            legend_time_with_seconds={false}
-                                            aspect_ratio={3}
-                                            x_format={{hour: '2-digit', minute: '2-digit'}}
-                                            x_padding_factor={0}
-                                            x_include_date={true}
-                                            y_min={0}
-                                            y_max={1500}
-                                            y_unit="W"
-                                            y_label={__("meters.script.power") + " [W]"}
-                                            y_digits={0}
-                                            padding={[null, 15, null, null]} />
-                        </UplotLoader>
-                    </div>
-                </div>
-
-                <ConfigForm id="meters_config_form" title={show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={show_plot}>
+                <SubPage.Config
+                    id="meters_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
                     <div class="form-group">
                         <Table
                             tableTill="lg"
@@ -1190,7 +1195,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                             }}
                             />
                     </div>
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         );
     }

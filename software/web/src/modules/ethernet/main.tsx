@@ -22,9 +22,7 @@ import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component, RefObject } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm      } from "../../ts/components/config_form";
 import { FormRow         } from "../../ts/components/form_row";
-import { FormSeparator   } from "../../ts/components/form_separator";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText       } from "../../ts/components/input_text";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
@@ -68,23 +66,23 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
         const eth_state = API.get("ethernet/state");
 
         return (
-            <SubPage name="ethernet">
-                <ConfigForm id="ethernet_config_form"
-                            title={__("ethernet.content.ethernet")}
-                            isModified={this.isModified()}
-                            isDirty={this.isDirty()}
-                            onSave={this.save}
-                            onReset={this.reset}
-                            onDirtyChange={this.setDirty}>
-
+            <SubPage name="ethernet" title={__("ethernet.content.ethernet")}>
+                <SubPage.Status>
                     <FormRow label={__("ethernet.content.mac")}>
                         <InputText
                             value={eth_state.mac.length == 0 ? __("ethernet.content.mac_none") : eth_state.mac}
                             style={eth_state.mac.length == 0 ? undefined : "font-family:monospace"}
                         />
                     </FormRow>
+                </SubPage.Status>
 
-                    <FormSeparator heading={__("ethernet.content.settings_separator")} />
+                <SubPage.Config
+                    id="ethernet_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}
@@ -115,7 +113,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                         }
                         />
 
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         );
     }

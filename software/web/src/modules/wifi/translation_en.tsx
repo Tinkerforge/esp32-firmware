@@ -79,9 +79,7 @@ let x = {
             "eap_cert_muted": /*FFN*/ (is_key: boolean) => {
                 return <a href="#certs">Add {is_key ? "key" : "certificate"}</a>
             } /*NF*/,
-            "optional": "optional",
-
-            "settings_separator": "Settings"
+            "optional": "optional"
         },
         "script": {
             "scan_wifi_init_failed": "Search for networks failed. Failed to start scan.",

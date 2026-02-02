@@ -22,10 +22,8 @@ import * as util from "../../ts/util";
 import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { Table } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputIP } from "../../ts/components/input_ip";
@@ -63,35 +61,8 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
             return <SubPage name="proxy" />;
 
         return (
-            <SubPage name="proxy">
-                <ConfigForm id="proxy_config_form" title={__("proxy.content.proxy")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
-                        <InputPassword maxLength={64}
-                                       value={state.authentication_secret}
-                                       onValue={this.set("authentication_secret")}
-                                       clearPlaceholder={__("proxy.content.auth_disabled")}
-                                       clearSymbol={<Slash/>}
-                                       allowAPIClear
-                                       />
-                    </FormRow>
-
-                    <FormRow label={__("proxy.content.listen_address")} label_muted={__("proxy.content.listen_address_muted")}>
-                        <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
-                                 required
-                                 value={state.listen_address}
-                                 onValue={this.set("listen_address")}/>
-                    </FormRow>
-
-                    <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
-                        <InputNumber required
-                                     min={1}
-                                     max={65535}
-                                     value={state.listen_port}
-                                     onValue={this.set("listen_port")}/>
-                    </FormRow>
-
-                    <FormSeparator/>
-
+            <SubPage name="proxy" title={__("proxy.content.proxy")}>
+                <SubPage.Status>
                     <FormRow label={__("proxy.content.bricklet_table")}>
                         <Table hover borderless>
                             <thead>
@@ -134,7 +105,33 @@ export class Proxy extends ConfigComponent<'proxy/config', {}, ProxyState> {
                             </tbody>
                         </Table>
                     </FormRow>
-                </ConfigForm>
+                </SubPage.Status>
+                <SubPage.Config id="proxy_config_form" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormRow label={__("proxy.content.auth_secret")} label_muted={__("proxy.content.auth_secret_muted")}>
+                        <InputPassword maxLength={64}
+                                       value={state.authentication_secret}
+                                       onValue={this.set("authentication_secret")}
+                                       clearPlaceholder={__("proxy.content.auth_disabled")}
+                                       clearSymbol={<Slash/>}
+                                       allowAPIClear
+                                       />
+                    </FormRow>
+
+                    <FormRow label={__("proxy.content.listen_address")} label_muted={__("proxy.content.listen_address_muted")}>
+                        <InputIP invalidFeedback={__("component.ip_configuration.static_ip_invalid")}
+                                 required
+                                 value={state.listen_address}
+                                 onValue={this.set("listen_address")}/>
+                    </FormRow>
+
+                    <FormRow label={__("proxy.content.listen_port")} label_muted={__("proxy.content.listen_port_muted")}>
+                        <InputNumber required
+                                     min={1}
+                                     max={65535}
+                                     value={state.listen_port}
+                                     onValue={this.set("listen_port")}/>
+                    </FormRow>
+                </SubPage.Config>
             </SubPage>
         );
     }

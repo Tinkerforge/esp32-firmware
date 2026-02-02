@@ -22,6 +22,9 @@ let x = {
             "save": "Speichern",
             "reset": "Zurücksetzen"
         },
+        "sub_page": {
+            "settings": "Einstellungen"
+        },
         "input_password": {
             "to_be_cleared": "Wird beim Speichern geleert",
             "unchanged": "Unverändert",

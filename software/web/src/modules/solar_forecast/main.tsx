@@ -24,7 +24,6 @@ import { createRef, h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -399,10 +398,74 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
 
         return (
-            <SubPage name="solar_forecast">
-                <ConfigForm
+            <SubPage name="solar_forecast" title={__("solar_forecast.content.solar_forecast")}>
+                {state.config_enable &&
+                    <SubPage.Status>
+                        <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
+                            <InputText value={get_next_update_string()}/>
+                        </FormRow>
+                        <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
+                            <InputText
+                                value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today_remaining) / 1000, "kWh", 2)}
+                            />
+                        </FormRow>
+                        <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
+                            <div class="row mx-n1">
+                                <div class="col-md-6 px-1">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today) / 1000, "kWh", 2)}
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 px-1">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_tomorrow) / 1000, "kWh", 2)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </FormRow>
+                        <div class="pb-3">
+                            <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                                <UplotLoader
+                                    ref={this.uplot_loader_ref}
+                                    show={true}
+                                    marker_class={'h4'}
+                                    no_data={__("solar_forecast.content.no_data")}
+                                    loading={__("solar_forecast.content.loading")}
+                                    fullscreen_allow={true}
+                                    fullscreen_title={__("solar_forecast.content.solar_forecast")}>
+                                    <UplotWrapperB
+                                        ref={this.uplot_wrapper_ref}
+                                        class="solar-forecast-chart"
+                                        sub_page="solar_forecast"
+                                        color_cache_group="solar_forecast.default"
+                                        show={true}
+                                        on_mount={() => this.update_uplot()}
+                                        legend_time_label={__("solar_forecast.content.time")}
+                                        legend_time_with_minutes={true}
+                                        aspect_ratio={3}
+                                        x_format={{hour: '2-digit', minute: '2-digit'}}
+                                        x_padding_factor={0}
+                                        x_include_date={true}
+                                        y_min={0}
+                                        y_unit="W"
+                                        y_label={__("solar_forecast.script.power") + " [W]"}
+                                        y_digits={2}
+                                        only_show_visible={true}
+                                        padding={[null, 15, null, null]}
+                                    />
+                                </UplotLoader>
+                            </div>
+                        </div>
+                    </SubPage.Status>
+                }
+                <SubPage.Config
                     id="plane_configs_config_form"
-                    title={__("solar_forecast.content.solar_forecast")}
                     isModified={false}
                     isDirty={this.isDirty()}
                     onSave={this.save}
@@ -458,72 +521,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                         }}
                     />
                     </div>
-                </ConfigForm>
-
-                <div hidden={!state.config_enable}> {/* can only hide this div, as the enable state can change without reload and the contained uplot div has to stay stable */}
-                <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
-                <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
-                        <InputText value={get_next_update_string()}/>
-                    </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
-                    <InputText
-                        value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today_remaining) / 1000, "kWh", 2)}
-                    />
-                </FormRow>
-                <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
-                    <div class="row mx-n1">
-                        <div class="col-md-6 px-1">
-                            <div class="input-group">
-                                <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span>
-                                <InputText
-                                    value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today) / 1000, "kWh", 2)}
-                                />
-                            </div>
-                        </div>
-                        <div class="col-md-6 px-1">
-                            <div class="input-group">
-                                <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span>
-                                <InputText
-                                    value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_tomorrow) / 1000, "kWh", 2)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </FormRow>
-                <div class="pb-3">
-                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                        <UplotLoader
-                            ref={this.uplot_loader_ref}
-                            show={true}
-                            marker_class={'h4'}
-                            no_data={__("solar_forecast.content.no_data")}
-                            loading={__("solar_forecast.content.loading")}
-                            fullscreen_allow={true}
-                            fullscreen_title={__("solar_forecast.content.solar_forecast")}>
-                            <UplotWrapperB
-                                ref={this.uplot_wrapper_ref}
-                                class="solar-forecast-chart"
-                                sub_page="solar_forecast"
-                                color_cache_group="solar_forecast.default"
-                                show={true}
-                                on_mount={() => this.update_uplot()}
-                                legend_time_label={__("solar_forecast.content.time")}
-                                legend_time_with_minutes={true}
-                                aspect_ratio={3}
-                                x_format={{hour: '2-digit', minute: '2-digit'}}
-                                x_padding_factor={0}
-                                x_include_date={true}
-                                y_min={0}
-                                y_unit="W"
-                                y_label={__("solar_forecast.script.power") + " [W]"}
-                                y_digits={2}
-                                only_show_visible={true}
-                                padding={[null, 15, null, null]}
-                            />
-                        </UplotLoader>
-                    </div>
-                </div>
-                </div>
+                </SubPage.Config>
             </SubPage>
         );
     }

@@ -22,6 +22,9 @@ let x = {
             "save": "Save",
             "reset": "Reset"
         },
+        "sub_page": {
+            "settings": "Settings"
+        },
         "input_password": {
             "to_be_cleared": "Will be cleared on save.",
             "unchanged": "Unchanged",

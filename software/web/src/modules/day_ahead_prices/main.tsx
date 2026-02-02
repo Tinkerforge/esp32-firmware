@@ -24,13 +24,10 @@ import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { Collapse } from "react-bootstrap";
-import { Modal, Button } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
 import { UplotLoader } from "../../ts/components/uplot_loader";
@@ -318,14 +315,74 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         }
 
         return (
-            <SubPage name="day_ahead_prices">
-                <ConfigForm id="day_ahead_prices_config_form"
-                            title={__("day_ahead_prices.content.day_ahead_prices")}
-                            isModified={false}
-                            isDirty={this.isDirty()}
-                            onSave={this.save}
-                            onReset={this.reset}
-                            onDirtyChange={this.setDirty}>
+            <SubPage name="day_ahead_prices" title={__("day_ahead_prices.content.day_ahead_prices")}>
+                {dap.config_enable &&
+                    <SubPage.Status>
+                        <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
+                            <InputText value={get_current_price_string()}/>
+                        </FormRow>
+                        <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
+                            <div class="row mx-n1">
+                                <div class="col-md-6 px-1">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("today")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 px-1">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </FormRow>
+                        <div class="pb-3">
+                            <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                                <UplotLoader
+                                    ref={this.uplot_loader_ref}
+                                    show={true}
+                                    marker_class={'h4'}
+                                    no_data={__("day_ahead_prices.content.no_data")}
+                                    loading={__("day_ahead_prices.content.loading")}
+                                    fullscreen_allow={true}
+                                    fullscreen_title={__("day_ahead_prices.content.day_ahead_prices")}>
+                                    <UplotWrapperB
+                                        ref={this.uplot_wrapper_ref}
+                                        class="day-ahead-prices-chart"
+                                        sub_page="day_ahead_prices"
+                                        color_cache_group="day_ahead_prices.default"
+                                        show={true}
+                                        on_mount={() => this.update_uplot()}
+                                        legend_time_label={__("day_ahead_prices.content.time")}
+                                        legend_time_with_minutes={true}
+                                        aspect_ratio={3}
+                                        x_format={{hour: '2-digit', minute: '2-digit'}}
+                                        x_padding_factor={0}
+                                        x_include_date={true}
+                                        y_min={0}
+                                        y_unit="ct/kWh"
+                                        y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
+                                        y_digits={3}
+                                        only_show_visible={true}
+                                        padding={[30, 15, null, null]}
+                                    />
+                                </UplotLoader>
+                            </div>
+                        </div>
+                    </SubPage.Status>
+                }
+                <SubPage.Config
+                    id="day_ahead_prices_config_form"
+                    isModified={false}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
                     <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")(dap.api_url)}>
                         <Switch desc={__("day_ahead_prices.content.day_ahead_prices_desc")}
                                 checked={dap.enable}
@@ -366,67 +423,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     <FormRow label={__("day_ahead_prices.content.electricity_provider_base_fee")}>
                         <InputFloat value={dap.supplier_base_fee} onValue={this.set('supplier_base_fee')} digits={2} unit={__("day_ahead_prices.content.euro_divided_by_month")} max={99000} min={0}/>
                     </FormRow>
-                </ConfigForm>
-
-                <div hidden={!dap.config_enable}> {/* can only hide this div, as the enable state can change without reload and the contained uplot div has to stay stable */}
-                <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
-                <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
-                    <InputText value={get_current_price_string()}/>
-                </FormRow>
-                <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
-                    <div class="row mx-n1">
-                        <div class="col-md-6 px-1">
-                            <div class="input-group">
-                                <span class="heating-fixed-size input-group-text">{__("today")}</span>
-                                <InputText
-                                    value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
-                                />
-                            </div>
-                        </div>
-                        <div class="col-md-6 px-1">
-                            <div class="input-group">
-                                <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
-                                <InputText
-                                    value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </FormRow>
-                <div class="pb-3" hidden={!dap.config_enable}>
-                    <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                        <UplotLoader
-                            ref={this.uplot_loader_ref}
-                            show={true}
-                            marker_class={'h4'}
-                            no_data={__("day_ahead_prices.content.no_data")}
-                            loading={__("day_ahead_prices.content.loading")}
-                            fullscreen_allow={true}
-                            fullscreen_title={__("day_ahead_prices.content.day_ahead_prices")}>
-                            <UplotWrapperB
-                                ref={this.uplot_wrapper_ref}
-                                class="day-ahead-prices-chart"
-                                sub_page="day_ahead_prices"
-                                color_cache_group="day_ahead_prices.default"
-                                show={true}
-                                on_mount={() => this.update_uplot()}
-                                legend_time_label={__("day_ahead_prices.content.time")}
-                                legend_time_with_minutes={true}
-                                aspect_ratio={3}
-                                x_format={{hour: '2-digit', minute: '2-digit'}}
-                                x_padding_factor={0}
-                                x_include_date={true}
-                                y_min={0}
-                                y_unit="ct/kWh"
-                                y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
-                                y_digits={3}
-                                only_show_visible={true}
-                                padding={[30, 15, null, null]}
-                            />
-                        </UplotLoader>
-                    </div>
-                </div>
-                </div>
+                </SubPage.Config>
             </SubPage>
         );
     }

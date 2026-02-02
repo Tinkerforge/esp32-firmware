@@ -23,9 +23,7 @@ import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { InputFloat } from "../../ts/components/input_float";
@@ -80,9 +78,70 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
         const is_configured = state.lat !== 0 || state.lon !== 0;
 
         return (
-            <SubPage name="temperatures">
-                <ConfigForm id="temperatures_config_form"
-                            title={__("temperatures.content.temperatures")}
+            <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
+                {state.enable &&
+                    <SubPage.Status>
+                        {!is_configured ? (
+                            <FormRow label="">
+                                <InputText value={__("temperatures.content.not_configured")} />
+                            </FormRow>
+                        ) : (
+                            <>
+                                <FormRow label={__("temperatures.content.today")} label_muted={state.temperatures?.today_date ? new Date(state.temperatures.today_date * 1000).toLocaleDateString() : ""}>
+                                    <div class="row mx-n1">
+                                        <div class="col-md-6 px-1">
+                                            <div class="input-group">
+                                                <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
+                                                <InputText
+                                                    value={state.temperatures ? format_temperature(state.temperatures.today_min) : __("temperatures.content.no_data")}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 px-1">
+                                            <div class="input-group">
+                                                <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
+                                                <InputText
+                                                    value={state.temperatures ? format_temperature(state.temperatures.today_max) : __("temperatures.content.no_data")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </FormRow>
+                                <FormRow label={__("temperatures.content.tomorrow")} label_muted={state.temperatures?.tomorrow_date ? new Date(state.temperatures.tomorrow_date * 1000).toLocaleDateString() : ""}>
+                                    <div class="row mx-n1">
+                                        <div class="col-md-6 px-1">
+                                            <div class="input-group">
+                                                <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
+                                                <InputText
+                                                    value={state.temperatures ? format_temperature(state.temperatures.tomorrow_min) : __("temperatures.content.no_data")}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 px-1">
+                                            <div class="input-group">
+                                                <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
+                                                <InputText
+                                                    value={state.temperatures ? format_temperature(state.temperatures.tomorrow_max) : __("temperatures.content.no_data")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </FormRow>
+                                <FormRow label={__("temperatures.content.last_update")}>
+                                    <InputText
+                                        value={state.state?.last_sync ? new Date(state.state.last_sync * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
+                                    />
+                                </FormRow>
+                                <FormRow label={__("temperatures.content.next_update")}>
+                                    <InputText
+                                        value={state.state?.next_check ? new Date(state.state.next_check * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
+                                    />
+                                </FormRow>
+                            </>
+                        )}
+                    </SubPage.Status>
+                }
+                <SubPage.Config id="temperatures_config_form"
                             isModified={false}
                             isDirty={this.isDirty()}
                             onSave={this.save}
@@ -116,70 +175,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             max={1800000}
                         />
                     </FormRow>
-                </ConfigForm>
-
-                {state.enable && <>
-                    <FormSeparator heading={__("temperatures.content.status_section")} />
-
-                    {!is_configured ? (
-                        <FormRow label="">
-                            <InputText value={__("temperatures.content.not_configured")} />
-                        </FormRow>
-                    ) : (
-                        <>
-                            <FormRow label={__("temperatures.content.today")} label_muted={state.temperatures?.today_date ? new Date(state.temperatures.today_date * 1000).toLocaleDateString() : ""}>
-                                <div class="row mx-n1">
-                                    <div class="col-md-6 px-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
-                                            <InputText
-                                                value={state.temperatures ? format_temperature(state.temperatures.today_min) : __("temperatures.content.no_data")}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 px-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
-                                            <InputText
-                                                value={state.temperatures ? format_temperature(state.temperatures.today_max) : __("temperatures.content.no_data")}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </FormRow>
-                            <FormRow label={__("temperatures.content.tomorrow")} label_muted={state.temperatures?.tomorrow_date ? new Date(state.temperatures.tomorrow_date * 1000).toLocaleDateString() : ""}>
-                                <div class="row mx-n1">
-                                    <div class="col-md-6 px-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
-                                            <InputText
-                                                value={state.temperatures ? format_temperature(state.temperatures.tomorrow_min) : __("temperatures.content.no_data")}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 px-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
-                                            <InputText
-                                                value={state.temperatures ? format_temperature(state.temperatures.tomorrow_max) : __("temperatures.content.no_data")}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </FormRow>
-                            <FormRow label={__("temperatures.content.last_update")}>
-                                <InputText
-                                    value={state.state?.last_sync ? new Date(state.state.last_sync * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
-                                />
-                            </FormRow>
-                            <FormRow label={__("temperatures.content.next_update")}>
-                                <InputText
-                                    value={state.state?.next_check ? new Date(state.state.next_check * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
-                                />
-                            </FormRow>
-                        </>
-                    )}
-                </>}
+                </SubPage.Config>
             </SubPage>
         );
     }

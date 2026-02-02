@@ -25,7 +25,6 @@ import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { SwitchableInputNumber } from "../../ts/components/switchable_input_number";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { InputNumber } from "../../ts/components/input_number";
@@ -313,14 +312,109 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
         }
 
         return (
-            <SubPage name="heating">
-                <ConfigForm id="heating_config_form"
-                            title={__("heating.content.heating")}
-                            isModified={false}
-                            isDirty={this.isDirty()}
-                            onSave={this.save}
-                            onReset={this.reset}
-                            onDirtyChange={this.setDirty}>
+            <SubPage name="heating" title={__("heating.content.heating")}>
+                <SubPage.Status>
+                    <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")} help={__("heating.content.status_help")}>
+                    <div class="card">
+                        <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                            <UplotLoader
+                                ref={this.uplot_loader_ref}
+                                show={true}
+                                marker_class={'h4'}
+                                no_data={__("day_ahead_prices.content.no_data")}
+                                loading={__("day_ahead_prices.content.loading")}>
+                                <UplotWrapperB
+                                    ref={this.uplot_wrapper_ref}
+                                    class="heating-chart"
+                                    sub_page="heating"
+                                    color_cache_group="heating.default"
+                                    show={true}
+                                    on_mount={() => this.update_uplot()}
+                                    legend_time_label={__("day_ahead_prices.content.time")}
+                                    legend_time_with_minutes={true}
+                                    aspect_ratio={3}
+                                    x_format={{hour: '2-digit', minute: '2-digit'}}
+                                    x_padding_factor={0}
+                                    x_include_date={true}
+                                    y_unit="ct/kWh"
+                                    y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
+                                    y_digits={3}
+                                    only_show_visible={true}
+                                    padding={[30, 15, null, 5]}
+                                />
+                            </UplotLoader>
+                        </div>
+                    </div>
+                    </FormRow>
+                    <FormRow label={__("heating.content.average_price")}>
+                        <div class="row mx-n1">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+                    <FormRow label={__("heating.content.solar_forecast")}>
+                        <div class="row mx-n1">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
+                                    <InputText
+                                        value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+                    <FormRow label={__("heating.content.sg_ready")}>
+                        <div class="row mx-n1">
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span>
+                                    <InputText
+                                        value={state.heating_state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6 px-1">
+                                <div class="input-group">
+                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span>
+                                    <InputText
+                                        value={state.heating_state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </FormRow>
+                </SubPage.Status>
+
+                <SubPage.Config
+                    id="heating_config_form"
+                    isModified={false}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
 
                     {state.heating_state.automation_override && <Alert variant="warning">{__("heating.content.heating_disabled")}</Alert>}
 
@@ -482,99 +576,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormSeparator heading={__("heating.content.status")} help={__("heating.content.status_help")}/>
-                    <FormRow label={__("heating.content.price_based_heating_plan")} label_muted={__("heating.content.price_based_heating_plan_muted")}>
-                    <div class="card">
-                        <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
-                            <UplotLoader
-                                ref={this.uplot_loader_ref}
-                                show={true}
-                                marker_class={'h4'}
-                                no_data={__("day_ahead_prices.content.no_data")}
-                                loading={__("day_ahead_prices.content.loading")}>
-                                <UplotWrapperB
-                                    ref={this.uplot_wrapper_ref}
-                                    class="heating-chart"
-                                    sub_page="heating"
-                                    color_cache_group="heating.default"
-                                    show={true}
-                                    on_mount={() => this.update_uplot()}
-                                    legend_time_label={__("day_ahead_prices.content.time")}
-                                    legend_time_with_minutes={true}
-                                    aspect_ratio={3}
-                                    x_format={{hour: '2-digit', minute: '2-digit'}}
-                                    x_padding_factor={0}
-                                    x_include_date={true}
-                                    y_unit="ct/kWh"
-                                    y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
-                                    y_digits={3}
-                                    only_show_visible={true}
-                                    padding={[30, 15, null, 5]}
-                                />
-                            </UplotLoader>
-                        </div>
-                    </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.average_price")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.solar_forecast")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("today")}</span>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
-                                    <InputText
-                                        value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
-                    <FormRow label={__("heating.content.sg_ready")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span>
-                                    <InputText
-                                        value={state.heating_state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6 px-1">
-                                <div class="input-group">
-                                    <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span>
-                                    <InputText
-                                        value={state.heating_state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </FormRow>
 
                     <FormSeparator heading={__("heating.content.p14_enwg")} help={__("heating.content.p14_enwg_help")}/>
                     <FormRow label={__("heating.content.p14_enwg")}>
@@ -605,7 +606,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({p14enwg_type: parseInt(v)})}
                         />
                     </FormRow>
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         );
     }
