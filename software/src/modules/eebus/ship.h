@@ -49,6 +49,8 @@ struct ShipNode {
     String txt_brand = "";
     String txt_model = "";
     String txt_type = "";
+    // Persistence flag - if true, peer is stored in persistent config
+    bool persistent = false;
 
     // Can add more stuff here that might be relevant like last seen, features, etc.
 

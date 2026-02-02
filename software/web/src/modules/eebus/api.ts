@@ -13,6 +13,7 @@ interface Peer {
     model_model: string;
     model_type: string;
     state: number;
+    persistent: boolean;
 }
 
 interface Connection {
@@ -27,6 +28,7 @@ export interface add {
     port: number;
     dns_name: string;
     wss_path: string;
+    persistent: boolean;
 }
 
 export interface remove {
@@ -37,7 +39,6 @@ export interface config {
     enable: boolean;
     cert_id: number;
     key_id: number;
-    peers: Peer[];
 }
 
 export interface ChargeProcesses {
@@ -53,6 +54,7 @@ export interface ChargeProcesses {
 export interface state {
     ski: string;
     discovery_state: number;
+    peers: Peer[];
 }
 
 export interface usecases {

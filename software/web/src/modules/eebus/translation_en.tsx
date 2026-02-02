@@ -46,7 +46,7 @@ let x = {
             "searching_peers": "Searching....",
             "search_completed": "New Search",
             "search_failed": "Search failed",
-            "add_peers": "Add SKI",
+            "add_peers": "Add Device",
             "peer_info": {
                 "peers": "EEBUS-Peer",
                 "dns_name": "DNS Address",
@@ -65,8 +65,11 @@ let x = {
                 "state_eebus_connected": "EEBUS Active",
                 "state_disconnected": "Disconnected",
                 "state_discovered": "Discovered",
+                "state_loaded_from_config": "Loaded from Config",
                 "autoregister": "Autoregistration enabled",
-                "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected."
+                "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected.",
+                "persistent": "Stored in config",
+                "persistent_remove_error": "Can only remove peers stored in config. Discovered peers cannot be removed. They will be automatically discarded on reboot."
             },
             "show_usecase_details": "Show EEBUS Details",
             "yes": "Yes",

@@ -416,6 +416,25 @@ ShipDiscoveryState Ship::discover_ship_peers()
             results = results->next;
             continue;
         }
+
+        // Check if we already have a peer with this SKI
+        auto existing_ski_peer = peer_handler.get_peer_by_ski(txt_ski);
+
+        // Check if we have a peer with matching IP but different/empty SKI (from SHIP connection)
+        // If so, merge them by updating the existing peer's SKI instead of creating a duplicate
+        for (const String &ip : ip_addresses) {
+            auto ip_peer = peer_handler.get_peer_by_ip(ip);
+            if (ip_peer != nullptr && ip_peer->txt_ski != txt_ski) {
+                // Found a peer with matching IP but different SKI - merge them
+                eebus.trace_fmtln("Merging peer with IP %s: updating SKI from %s to %s", ip.c_str(), ip_peer->txt_ski.c_str(), txt_ski.c_str());
+                ip_peer->txt_ski = txt_ski;
+                // Mark as discovered (non-persistent) since it came from mDNS
+                ip_peer->persistent = false;
+                existing_ski_peer = ip_peer;
+                break;
+            }
+        }
+
         // This is pretty slow as we have to search for the peer again everytime, could be optimized by adding, getting and then setting the values
         peer_handler.update_vers_by_ski(txt_ski, txt_vers);
         peer_handler.update_id_by_ski(txt_ski, txt_id);
@@ -439,6 +458,8 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
+    eebus.update_peers_config();
+    eebus.update_peers_state();
     return discovery_state;
 }
 
@@ -852,6 +873,7 @@ void ShipPeerHandler::new_peer_from_ski(const String &ski)
 {
     const std::shared_ptr<ShipNode> node = std::make_shared<ShipNode>();
     node->txt_ski = ski;
+    node->persistent = false; // Discovered peers are non-persistent by default
     peers.push_back(node);
 }
 
@@ -859,6 +881,7 @@ void ShipPeerHandler::new_peer_from_ip(const String &ip)
 {
     const std::shared_ptr<ShipNode> node = std::make_shared<ShipNode>();
     node->ip_address.push_back(ip);
+    node->persistent = false; // Discovered peers are non-persistent by default
     peers.push_back(node);
 }
 void ShipPeerHandler::initialize_from_config()
@@ -874,9 +897,13 @@ void ShipPeerHandler::initialize_from_config()
             // Do not add empty SKIs
             continue;
         }
+        // Check for duplicate SKIs - skip if peer already exists
+        if (get_peer_by_ski(node->txt_ski) != nullptr) {
+            continue;
+        }
         node->trusted = peer->get("trusted")->asBool();
         node->port = static_cast<uint16_t>(peer->get("port")->asUint());
-        node->state = NodeState::Disconnected;
+        node->state = NodeState::LoadedFromConfig;
         node->dns_name = peer->get("dns_name")->asString();
         node->txt_id = peer->get("id")->asString();
         node->txt_wss_path = peer->get("wss_path")->asString();
@@ -886,6 +913,8 @@ void ShipPeerHandler::initialize_from_config()
         node->txt_model = peer->get("model_model")->asString();
         node->txt_type = peer->get("model_type")->asString();
 
+        // Mark peers loaded from config as persistent
+        node->persistent = true;
 
         String ip_list = peer->get("ip")->asString();
         size_t start = 0;
@@ -901,4 +930,6 @@ void ShipPeerHandler::initialize_from_config()
 
         peers.push_back(node);
     }
+    // Update state API with all peers after loading from config
+    eebus.update_peers_state();
 }

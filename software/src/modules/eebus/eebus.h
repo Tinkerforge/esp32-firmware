@@ -66,8 +66,8 @@ public:
      */
     String get_eebus_name();
 
-
     Config config_peers_prototype;
+    Config state_peers_prototype;
 
     ConfigRoot add_peer;
     ConfigRoot remove_peer;
@@ -78,7 +78,6 @@ public:
     ConfigRoot eebus_usecase_state;
     Config charges_prototype;
     Config usecase_list;
-
 
     Ship ship;
     unique_ptr_any<EEBusUseCases> usecases;
@@ -100,11 +99,24 @@ public:
     void trace_jsonln(JsonVariantConst data);
     void trace_fmtln(const char *fmt, ...);
 
-
     /**
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
+     * Only persistent peers are saved to config to reduce EEPROM wear.
      */
     void update_peers_config();
+
+    /**
+     * Update the peers state API with all peers (both persistent and discovered).
+     * This updates the runtime state, not the persistent config.
+     */
+    void update_peers_state();
+
+    /**
+     * Sync a single persistent peer to config (incremental update).
+     * Only updates config if the peer data has actually changed.
+     * @param node The peer node to sync
+     */
+    void sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node);
 
     void set_own_ski(const String &ski);
 

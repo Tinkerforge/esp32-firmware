@@ -201,6 +201,8 @@ void EEBus::pre_setup()
     this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 1 << 17);
 
     // TOOD: Rework API so this lot is a bit cleaner
+    // Config peers prototype - only persistent peers stored in flash
+    // Note: state is NOT stored in config, only in state API
     config_peers_prototype = Config::Object({
         {"ip", Config::Str("0.0.0.0", 7, 150)}, // Store a maximum of 3 ipv6 addresses
         {"port", Config::Uint16(0)},
@@ -216,7 +218,23 @@ void EEBus::pre_setup()
         // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
         {"model_model", Config::Str("", 0, 32)},
         {"model_type", Config::Str("", 0, 32)},
+    });
+
+    // State peers prototype - all peers (both persistent and discovered) in state API
+    state_peers_prototype = Config::Object({
+        {"ip", Config::Str("0.0.0.0", 7, 150)},
+        {"port", Config::Uint16(0)},
+        {"trusted", Config::Bool(false)},
+        {"dns_name", Config::Str("", 0, 63)},
+        {"id", Config::Str("", 0, 63)},
+        {"wss_path", Config::Str("", 0, 32)},
+        {"ski", Config::Str("", 0, 40)},
+        {"autoregister", Config::Bool(false)},
+        {"model_brand", Config::Str("", 0, 32)},
+        {"model_model", Config::Str("", 0, 32)},
+        {"model_type", Config::Str("", 0, 32)},
         {"state", Config::Enum(NodeState::Disconnected)},
+        {"persistent", Config::Bool(false)}, // Indicates if peer is stored in persistent config
     });
 
     config = ConfigRoot{Config::Object({
@@ -236,7 +254,7 @@ void EEBus::pre_setup()
 
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}}), [this](Config &add_peer, ConfigSource source) -> String {
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 150)}, {"port", Config::Uint16(0)}, {"trusted", Config::Bool(false)}, {"dns_name", Config::Str("", 0, 63)}, {"wss_path", Config::Str("", 0, 32)}, {"ski", Config::Str("", 0, 40)}, {"persistent", Config::Bool(true)}}), [this](Config &add_peer, ConfigSource source) -> String {
                               if (add_peer.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
                               }
@@ -259,6 +277,7 @@ void EEBus::pre_setup()
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
+        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, 32, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
     });
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy
@@ -401,13 +420,28 @@ void EEBus::register_urls()
                 return;
             }
             String ski = add_peer.get("ski")->asString();
-            ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
-            ship.peer_handler.update_port_by_ski(ski, add_peer.get("port")->asUint());
-            ship.peer_handler.update_trusted_by_ski(ski, add_peer.get("trusted")->asBool());
-            ship.peer_handler.update_dns_name_by_ski(ski, add_peer.get("dns_name")->asString());
-            ship.peer_handler.update_wss_path_by_ski(ski, add_peer.get("wss_path")->asString());
-            update_peers_config();
-            ship.connect_trusted_peers();
+
+            auto existing_peer = ship.peer_handler.get_peer_by_ski(ski);
+            if (existing_peer == nullptr) {
+                ship.peer_handler.new_peer_from_ski(ski);
+                existing_peer = ship.peer_handler.get_peer_by_ski(ski);
+            }
+
+            if (existing_peer != nullptr) {
+                existing_peer->persistent = add_peer.get("persistent")->asBool();
+
+                ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
+                ship.peer_handler.update_port_by_ski(ski, add_peer.get("port")->asUint());
+                ship.peer_handler.update_trusted_by_ski(ski, add_peer.get("trusted")->asBool());
+                ship.peer_handler.update_dns_name_by_ski(ski, add_peer.get("dns_name")->asString());
+                ship.peer_handler.update_wss_path_by_ski(ski, add_peer.get("wss_path")->asString());
+
+                sync_persistent_peer_to_config(existing_peer);
+
+                update_peers_state();
+
+                ship.connect_trusted_peers();
+            }
         },
         true);
 
@@ -425,8 +459,25 @@ void EEBus::register_urls()
                 eebus.trace_fmtln("Error removing peer: %s", errmsg.c_str());
                 return;
             }
-            ship.peer_handler.remove_peer_by_ski(remove_peer.get("ski")->asString());
-            update_peers_config();
+
+            String ski = remove_peer.get("ski")->asString();
+            auto peer = ship.peer_handler.get_peer_by_ski(ski);
+
+            if (peer == nullptr) {
+                eebus.trace_fmtln("Cannot remove peer: Peer with SKI %s not found", ski.c_str());
+                return;
+            }
+
+            // Check if peer was persistent before removing
+            bool was_persistent = peer->persistent;
+
+            ship.peer_handler.remove_peer_by_ski(ski);
+
+            // Only update config if the peer was persistent
+            if (was_persistent) {
+                update_peers_config(); // Remove from persistent storage
+            }
+            update_peers_state(); // Update state to reflect removal
         },
         true);
 
@@ -518,12 +569,6 @@ void EEBus::register_events()
 
 void EEBus::toggle_module()
 {
-    // All peers are unknown when its either toggled or at startup
-    for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        config.get("peers")->get(i)->get("state")->updateEnum(NodeState::Disconnected);
-    }
-    api.writeConfig("eebus/config", &config);
-
     if (config.get("enable")->asBool()) {
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
@@ -573,12 +618,13 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
     return -1;
 }
 
-void EEBus::update_peers_config()
+void EEBus::update_peers_state()
 {
-    config.get("peers")->removeAll();
+    // Update state API with all peers (both persistent and discovered)
+    state.get("peers")->removeAll();
     auto peers = ship.peer_handler.get_peers();
     for (const std::shared_ptr<ShipNode> &node : peers) {
-        auto peer = config.get("peers")->add();
+        auto peer = state.get("peers")->add();
         peer->get("ip")->updateString(node->ip_address_as_string());
         peer->get("port")->updateUint(node->port);
         peer->get("trusted")->updateBool(node->trusted);
@@ -591,8 +637,110 @@ void EEBus::update_peers_config()
         peer->get("model_model")->updateString(node->txt_model);
         peer->get("model_type")->updateString(node->txt_type);
         peer->get("state")->updateEnum(node->state);
+        peer->get("persistent")->updateBool(node->persistent);
     }
-    api.writeConfig("eebus/config", &config);
+}
+
+void EEBus::update_peers_config()
+{
+    // Only save persistent peers to config (to reduce EEPROM wear)
+    config.get("peers")->removeAll();
+    auto peers = ship.peer_handler.get_peers();
+    for (const std::shared_ptr<ShipNode> &node : peers) {
+        if (!node->persistent) {
+            continue; // Skip non-persistent peers
+        }
+        auto peer = config.get("peers")->add();
+        peer->get("ip")->updateString(node->ip_address_as_string());
+        peer->get("port")->updateUint(node->port);
+        peer->get("trusted")->updateBool(node->trusted);
+        peer->get("dns_name")->updateString(node->dns_name);
+        peer->get("id")->updateString(node->txt_id);
+        peer->get("wss_path")->updateString(node->txt_wss_path);
+        peer->get("ski")->updateString(node->txt_ski);
+        peer->get("autoregister")->updateBool(node->txt_autoregister);
+        peer->get("model_brand")->updateString(node->txt_brand);
+        peer->get("model_model")->updateString(node->txt_model);
+        peer->get("model_type")->updateString(node->txt_type);
+    }
+}
+
+void EEBus::sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node)
+{
+    // Sync a single persistent peer to config (for incremental updates)
+    if (!node->persistent) {
+        return; // Only sync persistent peers
+    }
+
+    // Find if peer already exists in config
+    bool found = false;
+    size_t peer_count = config.get("peers")->count();
+    for (size_t i = 0; i < peer_count; i++) {
+        auto config_peer = config.get("peers")->get(i);
+        if (config_peer->get("ski")->asString() == node->txt_ski) {
+            // Update existing peer
+            found = true;
+            bool needs_update = false;
+
+            // Check if any field needs updating
+            if (config_peer->get("ip")->asString() != node->ip_address_as_string())
+                needs_update = true;
+            if (config_peer->get("port")->asUint() != node->port)
+                needs_update = true;
+            if (config_peer->get("trusted")->asBool() != node->trusted)
+                needs_update = true;
+            if (config_peer->get("dns_name")->asString() != node->dns_name)
+                needs_update = true;
+            if (config_peer->get("id")->asString() != node->txt_id)
+                needs_update = true;
+            if (config_peer->get("wss_path")->asString() != node->txt_wss_path)
+                needs_update = true;
+            if (config_peer->get("autoregister")->asBool() != node->txt_autoregister)
+                needs_update = true;
+            if (config_peer->get("model_brand")->asString() != node->txt_brand)
+                needs_update = true;
+            if (config_peer->get("model_model")->asString() != node->txt_model)
+                needs_update = true;
+            if (config_peer->get("model_type")->asString() != node->txt_type)
+                needs_update = true;
+
+            if (needs_update) {
+                config_peer->get("ip")->updateString(node->ip_address_as_string());
+                config_peer->get("port")->updateUint(node->port);
+                config_peer->get("trusted")->updateBool(node->trusted);
+                config_peer->get("dns_name")->updateString(node->dns_name);
+                config_peer->get("id")->updateString(node->txt_id);
+                config_peer->get("wss_path")->updateString(node->txt_wss_path);
+                config_peer->get("autoregister")->updateBool(node->txt_autoregister);
+                config_peer->get("model_brand")->updateString(node->txt_brand);
+                config_peer->get("model_model")->updateString(node->txt_model);
+                config_peer->get("model_type")->updateString(node->txt_type);
+                api.writeConfig("eebus/config", &config);
+            }
+            break;
+        }
+    }
+
+    if (!found) {
+        // Add new peer to config
+        if (config.get("peers")->count() < MAX_PEER_REMEMBERED) {
+            auto new_peer = config.get("peers")->add();
+            new_peer->get("ip")->updateString(node->ip_address_as_string());
+            new_peer->get("port")->updateUint(node->port);
+            new_peer->get("trusted")->updateBool(node->trusted);
+            new_peer->get("dns_name")->updateString(node->dns_name);
+            new_peer->get("id")->updateString(node->txt_id);
+            new_peer->get("wss_path")->updateString(node->txt_wss_path);
+            new_peer->get("ski")->updateString(node->txt_ski);
+            new_peer->get("autoregister")->updateBool(node->txt_autoregister);
+            new_peer->get("model_brand")->updateString(node->txt_brand);
+            new_peer->get("model_model")->updateString(node->txt_model);
+            new_peer->get("model_type")->updateString(node->txt_type);
+            api.writeConfig("eebus/config", &config);
+        } else {
+            logger.printfln("EEBUS: Cannot add persistent peer %s to config - max peers (%d) reached", node->txt_ski.c_str(), MAX_PEER_REMEMBERED);
+        }
+    }
 }
 
 void EEBus::trace_strln(const char *str, const size_t length)

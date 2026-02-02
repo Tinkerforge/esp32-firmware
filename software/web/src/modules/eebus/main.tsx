@@ -142,7 +142,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 __("eebus.content.peer_info.dns_name"),
                                 __("eebus.content.peer_info.state")]}
                             rows={
-                                state.config.peers
+                                state.state.peers
                                     .filter(peer => (peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1))
                                     .map((peer) => {
                                         return {
@@ -150,7 +150,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 peer.model_model,
                                                 peer.model_brand,
                                                 <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
-                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : __("eebus.content.peer_info.state_eebus_connected")],
+                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") : __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model,
                                                 peer.model_brand,
@@ -165,7 +165,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                     ip: peer.ip,
                                                     port: peer.port,
                                                     dns_name: peer.dns_name,
-                                                    wss_path: peer.wss_path
+                                                    wss_path: peer.wss_path,
+                                                    persistent: peer.persistent
                                                 }
                                             }),
                                             onEditGetChildren: () => [
@@ -273,10 +274,25 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                             ["0", __("eebus.content.peer_info.state_disconnected")],
                                                             ["1", __("eebus.content.peer_info.state_discovered")],
                                                             ["2", __("eebus.content.peer_info.state_connected")],
-                                                            ["3", __("eebus.content.peer_info.state_eebus_connected")]
+                                                            ["3", __("eebus.content.peer_info.state_eebus_connected")],
+                                                            ["5", __("eebus.content.peer_info.state_loaded_from_config")]
                                                         ]}
                                                                      value={peer.state.toString()}
                                                                      disabled={true}
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.persistent")}>
+                                                        <InputSelect items={[
+                                                            ["0", __("eebus.content.peer_info.trusted_no")],
+                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
+                                                        ]}
+                                                                     value={state.add.persistent ? "1" : "0"}
+                                                                     onValue={(v) => this.setState({
+                                                                         add: {
+                                                                             ...state.add,
+                                                                             persistent: v == "1"
+                                                                         }
+                                                                     })}
                                                         />
                                                     </FormRow>
                                                     *{__("eebus.content.peer_info.overwrite_notice")}
@@ -292,7 +308,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         ip: "",
                                                         port: 4815,
                                                         dns_name: "",
-                                                        wss_path: "/ship/"
+                                                        wss_path: "/ship/",
+                                                        persistent: true
                                                     }
                                                 });
                                             },
@@ -315,7 +332,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ip: "",
                                         port: 4815,
                                         dns_name: "",
-                                        wss_path: "/ship/"
+                                        wss_path: "/ship/",
+                                        persistent: true
                                     }
                                 })
                             }}
@@ -376,7 +394,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ip: "",
                                         port: 4815,
                                         dns_name: "",
-                                        wss_path: "/ship/"
+                                        wss_path: "/ship/",
+                                        persistent: true
                                     }
                                 });
                             }}
