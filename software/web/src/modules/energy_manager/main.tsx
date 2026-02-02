@@ -88,7 +88,7 @@ export function pre_init() {
 }
 
 export function init() {
-    register_status_provider("energy_manager", {
+    register_status_provider("em_energy_analysis", {
         name: () => __("energy_manager.status.status"),
         href: "#status",
         get_status: () => {
