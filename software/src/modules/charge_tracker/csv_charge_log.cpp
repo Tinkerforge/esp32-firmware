@@ -347,8 +347,7 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
 
         String fields[9];
         size_t field_count = 7;
-        char display_name[33];
-        get_display_name(record->cs.user_id, display_name, display_name_cache, params.language);
+        String display_name = getUserDisplayName(record->cs.user_id, params.language);
         fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
         fields[1] = display_name;
         fields[2] = formatEnergy(energy_charged, params.language);
