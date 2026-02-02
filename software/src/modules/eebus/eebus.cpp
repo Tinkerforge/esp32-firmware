@@ -400,7 +400,7 @@ void EEBus::setup()
 void EEBus::register_urls()
 {
     api.addPersistentConfig("eebus/config", &config);
-    api.addState("eebus/state", &state, {}, {}, true);
+    api.addState("eebus/state", &state, {}, {});
 
     api.addState("eebus/usecases", &eebus_usecase_state, {}, {}, false);
 

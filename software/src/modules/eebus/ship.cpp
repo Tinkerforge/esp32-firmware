@@ -197,7 +197,7 @@ void Ship::setup_wss()
         task_scheduler.scheduleOnce(
             []() {
                 eebus.ship.discover_ship_peers();
-                eebus.update_peers_config();
+                eebus.update_peers_state();
             },
             2_s);
 
@@ -458,7 +458,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
-    eebus.update_peers_config();
     eebus.update_peers_state();
     return discovery_state;
 }

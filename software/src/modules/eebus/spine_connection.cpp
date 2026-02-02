@@ -153,7 +153,7 @@ void SpineConnection::initial_peer_discovery()
             if (!detailed_discovery_data_received || !use_case_data_received) {
                 eebus.trace_fmtln("SPINE: WARNING: Initial peer discovery not completed for peer %s", ship_connection->peer_node->node_name().c_str());
                 ship_connection->peer_node->state = NodeState::EEBUSDegraded;
-                eebus.update_peers_config();
+                eebus.update_peers_state();
                 initial_peer_discovery_started = false;
             } else {
                 eebus_active(true);
@@ -171,7 +171,7 @@ void SpineConnection::eebus_active(bool active) const
     } else {
         ship_connection->peer_node->state = NodeState::Connected;
     }
-    eebus.update_peers_config();
+    eebus.update_peers_state();
 }
 bool SpineConnection::is_subscribed(FeatureAddressType local, FeatureAddressType remote)
 {

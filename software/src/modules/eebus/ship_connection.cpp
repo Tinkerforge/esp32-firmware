@@ -172,7 +172,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
             }
             // remove this ShipConnection from vector of ShipConnections in Ship
             eebus.ship.remove(*this);
-            eebus.update_peers_config();
+            eebus.update_peers_state();
         },
         delay_ms);
 }
@@ -1031,7 +1031,7 @@ void ShipConnection::update_config_state(NodeState state) const
 {
     task_scheduler.scheduleOnce([this, state]() {
         peer_node->state = state;
-        eebus.update_peers_config();
+        eebus.update_peers_state();
     });
 }
 
