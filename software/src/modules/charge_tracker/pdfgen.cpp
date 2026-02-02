@@ -1107,7 +1107,7 @@ static int pdf_add_stream(struct pdf_doc *pdf, const char *buffer)
     return 0;
 }
 
-static int utf8_to_utf32(const char *utf8, int len, uint32_t *utf32)
+int pdf_utf8_to_utf32(const char *utf8, int len, uint32_t *utf32)
 {
     uint32_t ch;
     uint8_t mask;
@@ -1147,17 +1147,16 @@ static int utf8_to_utf32(const char *utf8, int len, uint32_t *utf32)
     return len;
 }
 
-static int utf8_to_pdfencoding(struct pdf_doc *pdf, const char *utf8, int len,
-                               uint8_t *res)
+int pdf_utf8_to_pdfencoding(const char *utf8, int len, uint8_t *res)
 {
     uint32_t code;
     int code_len;
 
     *res = 0;
 
-    code_len = utf8_to_utf32(utf8, len, &code);
+    code_len = pdf_utf8_to_utf32(utf8, len, &code);
     if (code_len < 0) {
-        return pdf_set_err(pdf, -EINVAL, "Invalid UTF-8 encoding");
+        return -EINVAL;
     }
 
     if (code > 255) {
@@ -1294,10 +1293,10 @@ static int pdf_add_text_spacing(struct pdf_doc *pdf, struct pdf_object *page,
     for (size_t i = 0; i < len;) {
         int code_len;
         uint8_t pdf_char;
-        code_len = utf8_to_pdfencoding(pdf, &text[i], len - i, &pdf_char);
+        code_len = pdf_utf8_to_pdfencoding(&text[i], len - i, &pdf_char);
         if (code_len < 0) {
             dstr_free(&str);
-            return code_len;
+            return pdf_set_err(pdf, code_len, "Invalid UTF-8 encoding");
         }
 
         if (strchr("()\\", pdf_char)) {
@@ -1387,10 +1386,10 @@ int pdf_add_multiple_text_spacing(struct pdf_doc *pdf, struct pdf_object *page,
             for (size_t i = 0; i < len;) {
                 int code_len;
                 uint8_t pdf_char;
-                code_len = utf8_to_pdfencoding(pdf, &text_head[i], len - i, &pdf_char);
+                code_len = pdf_utf8_to_pdfencoding(&text_head[i], len - i, &pdf_char);
                 if (code_len < 0) {
                     dstr_free(&inner);
-                    return code_len;
+                    return pdf_set_err(pdf, code_len, "Invalid UTF-8 encoding");
                 }
 
                 if (strchr("()\\", pdf_char)) {
@@ -1697,7 +1696,7 @@ static int pdf_text_point_width(struct pdf_doc *pdf, const char *text,
         uint8_t pdf_char = 0;
         int code_len;
         code_len =
-            utf8_to_pdfencoding(pdf, &text[i], text_len - i, &pdf_char);
+            pdf_utf8_to_pdfencoding(&text[i], text_len - i, &pdf_char);
         if (code_len < 0)
             return pdf_set_err(pdf, code_len,
                                "Invalid unicode string at position %d in %s",

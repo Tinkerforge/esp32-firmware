@@ -448,7 +448,12 @@ void pdf_notify_page(struct pdf_doc *pdf, uint32_t stream_count, uint32_t image_
                          struct pdf_object *image, float x, float y,
                          float width, float height);*/
 
+int pdf_utf8_to_utf32(const char *utf8, int len, uint32_t *utf32);
+int pdf_utf8_to_pdfencoding(const char *utf8, int len, uint8_t *res);
+
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#endif
 
 #define DEFAULT_FONT "Times-Roman"
 

@@ -19,6 +19,7 @@
 
 #include "csv_charge_log.h"
 #include "charge_tracker.h"
+#include "pdfgen.h" // for pdf_utf8_to_pdfencoding
 #include "module_dependencies.h"
 #include "tools/string_builder.h"
 #include "tools/malloc.h"
@@ -250,38 +251,19 @@ String CSVChargeLogGenerator::convertToWindows1252(const String& utf8_string) {
     String result;
     result.reserve(utf8_string.length());
 
-    for (size_t i = 0; i < utf8_string.length(); i++) {
-        uint8_t byte = utf8_string.charAt(i);
+    auto utf8_len = utf8_string.length();
 
-        // ASCII characters (0-127) are the same in both encodings
-        if (byte < 0x80) {
-            result += (char)byte;
-        } else if (byte == 0xC2 && i + 1 < utf8_string.length()) {
-            // UTF-8 sequence starting with 0xC2
-            uint8_t next_byte = utf8_string.charAt(i + 1);
-            if (next_byte >= 0x80 && next_byte <= 0x9F) {
-                // Characters 0x80-0x9F in Windows-1252
-                result += (char)next_byte;
-                i++; // Skip next byte as it's part of this sequence
-            } else {
-                result += '?'; // Unknown character
-                i++; // Skip next byte
-            }
-        } else if (byte == 0xC3 && i + 1 < utf8_string.length()) {
-            // UTF-8 sequence starting with 0xC3
-            uint8_t next_byte = utf8_string.charAt(i + 1);
-            if (next_byte >= 0x80 && next_byte <= 0xBF) {
-                // Map to Windows-1252 characters 0xC0-0xFF
-                result += (char)(next_byte + 0x40);
-                i++; // Skip next byte as it's part of this sequence
-            } else {
-                result += '?'; // Unknown character
-                i++; // Skip next byte
-            }
+    for (size_t i = 0; i < utf8_len; ) {
+        uint8_t csv_char;
+        auto code_len = pdf_utf8_to_pdfencoding(utf8_string.c_str() + i, utf8_len - i, &csv_char);
+
+        if (code_len < 0) {
+            result += '?';
         } else {
-            // Other multi-byte UTF-8 sequences or invalid bytes
-            result += '?'; // Replace with placeholder
+            result += (char)csv_char;
         }
+
+        i += code_len;
     }
     return result;
 }
