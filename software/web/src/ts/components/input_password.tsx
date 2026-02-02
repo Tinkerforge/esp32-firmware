@@ -117,7 +117,7 @@ export class InputPassword extends Component<InputPasswordProps, InputPasswordSt
                     { props.hideClear ? null :
                         <div class="input-group-text form-check form-switch rounded-end" style="padding-left: 2.75rem; padding-right: 0.5rem;">
                             <input id={id+"-clear"} type="checkbox" class="form-check-input" aria-label="Clear password" onClick={() => this.toggleClear()} checked={toBeCleared}/>
-                            <label class="form-check-label" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
+                            <label class="form-check-label ms-1" for={id+"-clear"} style="line-height: 20px;">{props.clearSymbol ?? <Trash2/>}</label>
                         </div>
                     }
                     {invalidFeedback}
