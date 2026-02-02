@@ -63,12 +63,12 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
         // Note: In native app, main has px-4 padding, so we use negative margins (ms-n4, me-n4) to extend to edges
         const status_button_header = (
             <div class={is_native_app ? "row mb-3 sticky-top-app ms-n4 me-n4" : "d-md-none row mb-3 sticky-under-top"}>
-                <div class={is_native_app ? "col ps-0 pe-4" : "col ps-0"}>
+                <div class={is_native_app ? "col ps-0 pe-0" : "col ps-0 pe-0"}>
                     <div class="d-flex align-items-stretch border-bottom">
-                        <MobileStatusButton />
-                        <div class="flex-grow-1 d-flex align-items-center py-2 ps-3">
+                        <div class="flex-grow-1 d-flex align-items-center py-2 ps-3 pe-3">
                             {make_device_name_form()}
                         </div>
+                        <MobileStatusButton />
                     </div>
                 </div>
             </div>

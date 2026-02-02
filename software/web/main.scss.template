@@ -271,7 +271,7 @@ body {
 
 .navbar .navbar-toggler {
   top: 0.25rem;
-  right: 1rem;
+  left: 1rem;
 }
 
 .navbar .form-control {
@@ -424,8 +424,8 @@ body {
 }
 
 @media (max-width: 370px) {
-    .navbar-toggler.me-3 {
-        margin-right: .5rem !important;
+    .navbar-toggler.ms-3 {
+        margin-left: .5rem !important;
     }
 }
 
