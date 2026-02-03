@@ -430,7 +430,7 @@ void QCA700x::state_machine_loop()
     }
 
     // Poll SPI for data from QCA700x
-    spi_buffer_length += read_burst(&spi_buffer[spi_buffer_length], 
+    spi_buffer_length += read_burst(&spi_buffer[spi_buffer_length],
                                     QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - spi_buffer_length);
 
     // Process all complete frames in the buffer
@@ -451,7 +451,7 @@ void QCA700x::state_machine_loop()
 
         // Frame starts after QCA700x header
         uint8_t *frame = spi_buffer + QCA700X_RECV_HEADER_SIZE;
-        
+
         // Get EtherType (bytes 12-13 of Ethernet frame, big-endian)
         uint16_t eth_type = (frame[12] << 8) | frame[13];
 
@@ -459,8 +459,15 @@ void QCA700x::state_machine_loop()
             case SLAC_ETHERNET_TYPE_HOMEPLUG: {
                 // HomePlug frames go to l2tap for SLAC to read
                 if (tap >= 0) {
-                    size_t size = ethernet_frame_length;
-                    esp_vfs_l2tap_eth_filter_frame(&driver, frame, &size, nullptr);
+                    // L2TAP expects a heap-allocated buffer that it will free after read()
+                    void *frame_copy = malloc(ethernet_frame_length);
+                    if (frame_copy != NULL) {
+                        memcpy(frame_copy, frame, ethernet_frame_length);
+                        size_t size = ethernet_frame_length;
+                        esp_vfs_l2tap_eth_filter_frame(&driver, frame_copy, &size, nullptr);
+                    } else {
+                        logger.printfln("QCA700x: Failed to allocate memory for HomePlug frame");
+                    }
                 }
                 break;
             }
