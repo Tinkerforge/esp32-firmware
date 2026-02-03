@@ -339,7 +339,10 @@ if __name__ == '__main__':
                         commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', commit_id]))
                         for (dirpath, dirnames, filenames) in os.walk('software/src'):
                             for filename in filenames:
-                                os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
+                                try:
+                                    os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
+                                except:
+                                    continue
 
                     run_gdb(d)
 
