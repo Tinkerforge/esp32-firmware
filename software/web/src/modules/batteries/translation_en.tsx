@@ -67,7 +67,7 @@ let x = {
             "table_rule_enabled": "Enabled",
             "table_rule_desc": "Description",
             "table_rule_time": "Time",
-            "table_rule_soc": "Battery SoC",
+            "table_rule_soc": "State of charge",
             "table_rule_price": "Energy price",
             "table_rule_forecast": "PV-forecast",
             "table_rule_schedule": "Tariff schedule",

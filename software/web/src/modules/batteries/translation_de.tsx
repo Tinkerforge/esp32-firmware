@@ -67,7 +67,7 @@ let x = {
             "table_rule_enabled": "Aktiv",
             "table_rule_desc": "Beschreibung",
             "table_rule_time": "Zeit",
-            "table_rule_soc": "Batterie",
+            "table_rule_soc": "Ladestand",
             "table_rule_price": "Strompreis",
             "table_rule_forecast": "PV-Ertrag",
             "table_rule_schedule": "Strompreisplan",
