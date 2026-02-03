@@ -6,30 +6,25 @@ let x = {
             "enable_eebus": "Enabled EEBUS",
             "enable_eebus_desc": "Enables communication with EEBUS devices",
             "enable_eebus_help": <>
-                <p>EEBUS is a communication standard that will be used in the future by energy network operators in Germany to reduce the
-                load on the power grid. EEBUS will be used to control consumption devices (e.g., wall boxes) that
-                fall under §14a EnWG. EEBUS is standardized, but many details regarding the exact implementation are still open.
-                We are currently waiting for more detailed information and testing opportunities from the network operators.</p>
-                <p>Have you already gotten a "Steuerbox" with EEBUS support installed? If so,
-                please contact us at <a href="mailto:info@tinkerforge.com">info@tinkerforge.com</a>.</p>
-                <p>EEBUS defines various use cases. For control by the network operator, the LPC (Limitation of Power Consumption)
-                use case is required. We will publish this use case as soon as the first control boxes with EEBUS support are
-                rolled out.</p>
-                <p>For control via a HEMS, other use cases are defined by EEBUS.
-                For the area of E-Mobility EEBUS defines the following use cases:
+                <p>EEBUS is a communication standard for smart energy management. It enables communication
+                between energy devices such as wallboxes, heat pumps, PV systems and energy management systems (HEMS).</p>
+                <p>The following use cases are supported:</p>
                 <ul>
-                    <li>Coordinated EV Charging</li>
-                    <li>Overload Protection by EV Charging Current Curtailment</li>
-                    <li>Optimization of Self-Consumption during EV Charging</li>
-                    <li>EV Charging Electricity Measurement</li>
-                    <li>EV Charging Summary</li>
-                    <li>EV Commissioning and Configuration</li>
-                    <li>EVSE Commissioning and Configuration</li>
+                    <li><b>LPC (Limitation of Power Consumption)</b>: Power consumption limitation. Used by control boxes
+                    (Steuerbox) for grid control according to §14a EnWG in Germany. Allows the grid operator to limit charging power.</li>
+                    <li><b>MPC (Monitoring of Power Consumption)</b>: Power consumption monitoring. Provides power and
+                    energy measurements to external systems.</li>
+                    <li><b>CEVC (Coordinated EV Charging)</b>: Coordinated charging. Allows an energy manager to
+                    control charging based on charging plans and incentives.</li>
+                    <li><b>EVCC (EV Commissioning and Configuration)</b>: Vehicle configuration. Reports information about
+                    the connected electric vehicle such as communication standard and power limits.</li>
+                    <li><b>EVCEM (EV Charging Electricity Measurement)</b>: Charging measurement. Provides measurements
+                    such as current, power and charged energy per phase.</li>
+                    <li><b>EVSECC (EVSE Commissioning and Configuration)</b>: Wallbox status. Reports the operating state
+                    of the charging station and any error conditions.</li>
+                    <li><b>EVCS (EV Charging Summary)</b>: Charging summary. Provides summaries of completed
+                    charging sessions with energy amount and costs.</li>
                 </ul>
-                In a second step, we will implement relevant use cases from the E-Mobility sector.</p>
-                <p>Currently, it is already possible to search for other EEBUS-enabled devices and establish a connection
-                between this device and other EEBUS-enabled devices. In addition, we log the communication in the debug log,
-                such that the communication can be evaluated by us.</p>
             </>,
             "cert": "certificate",
             "key": "key",
@@ -73,7 +68,24 @@ let x = {
             },
             "show_usecase_details": "Show EEBUS Details",
             "yes": "Yes",
-            "no": "No"
+            "no": "No",
+            "devices": "Peers",
+            "connected": "Connected",
+            "discovered": "Discovered",
+            "commands": "Commands",
+            "received": "Received",
+            "sent": "Sent",
+            "usecases": "Use Cases"
+        },
+        "navbar": {
+            "eebus": "EEBUS"
+        },
+        "status": {
+            "peer_degraded": "Peer Degraded",
+            "lpc_failsafe": "LPC Failsafe",
+            "evse_failure": "EVSE Failure",
+            "heartbeat_timeout": "Heartbeat Timeout",
+            "discovery_failed": "Discovery Failed"
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",

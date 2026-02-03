@@ -6,30 +6,25 @@ let x = {
             "enable_eebus": "EEBUS aktivieren",
             "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
             "enable_eebus_help": <>
-                <p>EEBUS ist ein Kommunikationsstandard der unter anderem zukünftig von Energienetzebereibern genutzt werden
-                soll, um die Last für das Stromnetz reduzieren zu können. EEBUS soll daher genutzt werden um
-                Verbrauchseinrichtungen (z.B. Wallboxen), die unter den §14a EnWG fallen zu steuern. EEBUS ist standardisiert,
-                allerdings stellen sich noch viele Detailfragen hinsichtlich der genauen Implentierung.
-                Wir warten aktuell noch auf genauere Informationen und Testmöglichkeiten seitens der Netzbetreiber.</p>
-                <p>Hast du bereits eine Steuerbox mit Unterstützung für EEBUS installiert bekommen? Dann
-                kontaktiere uns doch bitte unter <a href="mailto:info@tinkerforge.com">info@tinkerforge.com</a>.</p>
-                <p>EEBUS definiert verschiedene Use Cases. Für die Steuerung vom Netzbetreiber wird der LPC (Limitation of Power Consumption)
-                Use Case benötigt. Diesen Use Case werden wir veröffentlichen sobald die ersten Steuerboxen mit EEBUS-Support ausgerollt werden.</p>
-                <p>Für die Steuerung über ein HEMS werden andere Use Cases seitens EEBUS definiert.
-                Für den Bereich E-Mobility definiert EEBUS zum Beispiel die Use Cases:
+                <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die Kommunikation
+                zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen (HEMS).</p>
+                <p>Folgende Use Cases werden unterstützt:</p>
                 <ul>
-                    <li>Coordinated EV Charging</li>
-                    <li>Overload Protection by EV Charging Current Curtailment</li>
-                    <li>Optimization of Self-Consumption during EV Charging</li>
-                    <li>EV Charging Electricity Measurement</li>
-                    <li>EV Charging Summary</li>
-                    <li>EV Commissioning and Configuration</li>
-                    <li>EVSE Commissioning and Configuration</li>
+                    <li><b>LPC (Limitation of Power Consumption)</b>: Begrenzung der Leistungsaufnahme. Wird von Steuerboxen
+                    zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Ladeleistung zu begrenzen.</li>
+                    <li><b>MPC (Monitoring of Power Consumption)</b>: Überwachung des Stromverbrauchs. Stellt Leistungs- und
+                    Energiemesswerte für externe Systeme bereit.</li>
+                    <li><b>CEVC (Coordinated EV Charging)</b>: Koordiniertes Laden. Ermöglicht einem Energiemanager die
+                    Steuerung des Ladevorgangs basierend auf Ladeplänen und Anreizen.</li>
+                    <li><b>EVCC (EV Commissioning and Configuration)</b>: Fahrzeugkonfiguration. Meldet Informationen über
+                    das angeschlossene Elektrofahrzeug wie Kommunikationsstandard und Leistungsgrenzen.</li>
+                    <li><b>EVCEM (EV Charging Electricity Measurement)</b>: Lademessung. Stellt Messwerte wie Strom,
+                    Leistung und geladene Energie pro Phase bereit.</li>
+                    <li><b>EVSECC (EVSE Commissioning and Configuration)</b>: Wallbox-Status. Meldet den Betriebszustand
+                    der Ladestation und eventuelle Fehlerzustände.</li>
+                    <li><b>EVCS (EV Charging Summary)</b>: Ladeübersicht. Stellt Zusammenfassungen abgeschlossener
+                    Ladevorgänge mit Energiemenge und Kosten bereit.</li>
                 </ul>
-                In einem zweiten Schritt werden wir relevante Use Cases aus dem E-Mobility Bereich implementieren.</p>
-                <p>Aktuell kann bereits nach anderen EEBUS-fähigen Geräten gesucht werden und eine Verbindung zwischen diesem Gerät
-                und anderen EEBUS-fähigen Geräten hergestellt werden. Desweiteren zeichnen wir die Kommunikation im Debug-Log auf,
-                so dass diese von uns ausgewertet werden kann.</p>
             </>,
             "cert": "Zertifikat",
             "key": "Key",
@@ -73,7 +68,24 @@ let x = {
             },
             "show_usecase_details": "EEBUS Details anzeigen",
             "yes": "Ja",
-            "no": "Nein"
+            "no": "Nein",
+            "devices": "Partner",
+            "connected": "Verbunden",
+            "discovered": "Entdeckt",
+            "commands": "Befehle",
+            "received": "Empfangen",
+            "sent": "Gesendet",
+            "usecases": "Use Cases"
+        },
+        "navbar": {
+            "eebus": "EEBUS"
+        },
+        "status": {
+            "peer_degraded": "Peer Degradiert",
+            "lpc_failsafe": "LPC Failsafe",
+            "evse_failure": "EVSE Fehler",
+            "heartbeat_timeout": "Heartbeat Timeout",
+            "discovery_failed": "Suche Fehlgeschlagen"
         },
         "script": {
             "save_failed": "Speichern der EEBUS-Einstellungen fehlgeschlagen.",

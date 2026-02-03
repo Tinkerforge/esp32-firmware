@@ -17,31 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import {h, Fragment} from "preact";
+import {h, Fragment, ComponentChild} from "preact";
 import {__} from "../../ts/translation";
 import {ConfigComponent} from "../../ts/components/config_component";
-import {ConfigForm} from "../../ts/components/config_form";
 import {FormRow} from "../../ts/components/form_row";
 import {InputSelect} from "../../ts/components/input_select";
 import {InputText} from "../../ts/components/input_text";
 import {SubPage} from "../../ts/components/sub_page";
 import {NavbarItem} from "../../ts/components/navbar_item";
-import {Table} from "../../ts/components/table";
+import {CollapsedSection} from "../../ts/components/collapsed_section";
+import {Table, TableRow} from "../../ts/components/table";
 import {Button} from "react-bootstrap";
 import {Share2} from "react-feather";
 import {Switch} from "../../ts/components/switch";
 import {ShipDiscoveryState} from "./ship_discovery_state.enum";
-import {ShipConnectionState} from "./ship_connection_state.enum";
 import {NodeState} from "./node_state.enum";
-import {CollapsedSection} from "../../ts/components/collapsed_section";
-import {FormSeparator} from "../../ts/components/form_separator";
 import {LoadcontrolState} from "./loadcontrol_state.enum";
-import {usecases} from "./api";
 import {useState} from "preact/hooks";
 import {Usecases} from "./usecases.enum";
+import {OutputFloat} from "../../ts/components/output_float";
+import {OutputText} from "../../ts/components/output_text";
+import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
 
 function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -63,6 +61,24 @@ function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
             {expanded ? lines.join("\n") : topLine + "..."}
         </div>
     );
+}
+
+function PhaseRow(props: {label: string, label_muted: string, values: [number, number, number], unit: string, digits?: 0 | 1 | 2 | 3, scale?: number}) {
+    const digits = props.digits ?? 0;
+    const scale = props.scale ?? 0;
+    return <FormRow label={props.label} label_muted={props.label_muted} small>
+        <div class="row mx-n1">
+            <div class="col-sm-4 px-1">
+                <OutputFloat value={props.values[0]} digits={digits} scale={scale} unit={props.unit} small />
+            </div>
+            <div class="col-sm-4 px-1">
+                <OutputFloat value={props.values[1]} digits={digits} scale={scale} unit={props.unit} small />
+            </div>
+            <div class="col-sm-4 px-1">
+                <OutputFloat value={props.values[2]} digits={digits} scale={scale} unit={props.unit} small />
+            </div>
+        </div>
+    </FormRow>;
 }
 
 export function EEBusNavbar() {
@@ -125,9 +141,378 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         }
 
         return (
-            <SubPage name="eebus">
-                <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
-                            onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+            <SubPage name="eebus" title="EEBUS">
+                {state.enable &&
+                    <SubPage.Status>
+                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")} help={__("eebus.content.ski_help")}>
+                        <InputText value={ski}/>
+                    </FormRow>
+
+                    <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
+                    <Table
+                        columnNames={[""]}
+                        rows={(() => {
+                            let rows: TableRow[] = [];
+
+                            // Limitation of Power Consumption
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPC) > -1) {
+                                const lpc = state.usecases.power_consumption_limitation;
+                                const lpcStateMap: {[key: number]: string} = {
+                                    [LoadcontrolState.Startup]: "Startup",
+                                    [LoadcontrolState.Init]: "Init",
+                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
+                                    [LoadcontrolState.Limited]: "Limited",
+                                    [LoadcontrolState.Failsafe]: "Failsafe",
+                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                };
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["LPC (Limitation of Power Consumption)"],
+                                    extraValue: <>
+                                        <FormRow label="Usecase State" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={lpcStateMap[lpc.usecase_state] ?? lpc.usecase_state} />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Limit Active" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    (lpc.limit_active ? __("eebus.content.yes") : __("eebus.content.no")) +
+                                                    (lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null
+                                                        ? ` (${lpc.outstanding_duration_s} s)`
+                                                        : "")
+                                                } small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Current Limit" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpc.current_limit} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Failsafe Limit Power" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpc.failsafe_limit_power_w} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Failsafe Limit Duration" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    "" + lpc.failsafe_limit_duration_s +
+                                                    (lpc.usecase_state === LoadcontrolState.Failsafe && lpc.outstanding_duration_s != null
+                                                        ? ` (${lpc.outstanding_duration_s})`
+                                                        : undefined)
+                                                } suffix="s" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Constraints Power Maximum" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpc.constraints_power_maximum} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
+                            // Limitation of Power Production
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPP) > -1) {
+                                const lpp = state.usecases.power_production_limitation;
+                                const lppStateMap: {[key: number]: string} = {
+                                    [LoadcontrolState.Startup]: "Startup",
+                                    [LoadcontrolState.Init]: "Init",
+                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
+                                    [LoadcontrolState.Limited]: "Limited",
+                                    [LoadcontrolState.Failsafe]: "Failsafe",
+                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                };
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["LPC (Limitation of Power Consumption)"],
+                                    extraValue: <>
+                                        <FormRow label="Usecase State" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={lppStateMap[lpp.usecase_state] ?? lpp.usecase_state} />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Limit Active" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={
+                                                    (lpp.limit_active ? __("eebus.content.yes") : __("eebus.content.no")) +
+                                                    (lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null
+                                                        ? ` (${lpp.outstanding_duration_s} s)`
+                                                        : "")
+                                                } />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Current Limit" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpp.current_limit} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Failsafe Limit Power" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpp.failsafe_limit_power_w} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Failsafe Limit Duration" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    "" + lpp.failsafe_limit_duration_s +
+                                                    (lpp.usecase_state === LoadcontrolState.Failsafe && lpp.outstanding_duration_s != null
+                                                        ? ` (${lpp.outstanding_duration_s})`
+                                                        : undefined)
+                                                } suffix="s" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Constraints Power Maximum" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={lpp.constraints_power_maximum} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
+                            // EV Commissioning and Configuration
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCC) > -1) {
+                                const evcc = state.usecases.ev_commissioning_and_configuration;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["EVCC (EV Commissioning and Configuration)"],
+                                    extraValue: <>
+                                        <FormRow label="EV Connected" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={evcc.ev_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        {evcc.ev_connected && <>
+                                            <FormRow label="Communication Standard" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evcc.communication_standard} />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Asymmetric Charging Supported" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evcc.asymmetric_charging_supported ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Vehicle MAC Address" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evcc.mac_address} />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Minimum Power (reported by Vehicle)" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <OutputFloat value={evcc.minimum_power} digits={0} scale={0} unit="W" small />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Maximum Power (reported by Vehicle)" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <OutputFloat value={evcc.maximum_power} digits={0} scale={0} unit="W" small />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Standby Power (reported by Vehicle)" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <OutputFloat value={evcc.standby_power} digits={0} scale={0} unit="W" small />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Standby Mode Active" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evcc.standby_mode ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                                </div></div>
+                                            </FormRow>
+                                        </>}
+                                    </>
+                                });
+                            }
+
+                            // EV Charging Electricity Measurement
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCEM) > -1) {
+                                const evcc = state.usecases.ev_commissioning_and_configuration;
+                                const evcem = state.usecases.ev_charging_electricity_measurement;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["EVCEM (EV Charging Electricity Measurement)"],
+                                    extraValue: <>
+                                        <FormRow label="EV Connected" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={evcc.ev_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        {evcc.ev_connected && <>
+                                            <PhaseRow label="Amps" label_muted="L1, L2, L3" values={[
+                                                evcem.amps_phase_1,
+                                                evcem.amps_phase_2,
+                                                evcem.amps_phase_3
+                                            ]} unit="A" />
+                                            <PhaseRow label="Power" label_muted="L1, L2, L3" values={[
+                                                evcem.power_phase_1,
+                                                evcem.power_phase_2,
+                                                evcem.power_phase_3
+                                            ]} unit="W" />
+                                            <FormRow label="Charged" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <OutputFloat value={evcem.charged_wh} digits={0} scale={0} unit="Wh" small />
+                                                </div></div>
+                                            </FormRow>
+                                            <FormRow label="Method of Obtaining Charged Wh" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evcem.charged_valuesource_measured ? "Measured" : "Calculated"} />
+                                                </div></div>
+                                            </FormRow>
+                                        </>}
+                                    </>
+                                });
+                            }
+
+                            // EVSE Commissioning and Configuration
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVSECC) > -1) {
+                                const evsecc = state.usecases.evse_commissioning_and_configuration;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["EVSECC (EVSE Commissioning and Configuration)"],
+                                    extraValue: <>
+                                        <FormRow label="EVSE in Failure State" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={evsecc.evse_failure ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        {evsecc.evse_failure && <>
+                                            <FormRow label="Failure Message" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={evsecc.evse_failure_description} />
+                                                </div></div>
+                                            </FormRow>
+                                        </>}
+                                    </>
+                                });
+                            }
+
+                            // EV Charging Summary
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCS) > -1) {
+                                const summary = state.usecases.charging_summary;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["EVCS (EV Charging Summary)"],
+                                    extraValue: <>
+                                        <FormRow label="Number of Charge Processes" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={summary.length} digits={0} scale={0} unit="" small />
+                                            </div></div>
+                                        </FormRow>
+                                        {summary.map((item, idx) =>
+                                            <FormRow label={`Process ${item.id}`} key={idx} small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <InputText class="form-control-sm" value={`${item.charged_kwh} kWh, Cost: ${item.cost}, Self-produced: ${item.percent_self_produced_energy}%`} />
+                                                </div></div>
+                                            </FormRow>
+                                        )}
+                                    </>
+                                });
+                            }
+
+                            // Monitoring of Power Consumption
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MPC) > -1) {
+                                const mpc = state.usecases.monitoring_of_power_consumption;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["MPC (Monitoring of Power Consumption)"],
+                                    extraValue: <>
+                                        <FormRow label="Total Power" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mpc.total_power_w} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <PhaseRow label="Power" label_muted="L1, L2, L3" values={[
+                                            mpc.power_phase_1_w,
+                                            mpc.power_phase_2_w,
+                                            mpc.power_phase_3_w
+                                        ]} unit="W" />
+                                        <FormRow label="Energy Consumed" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mpc.energy_consumed_wh} digits={0} scale={0} unit="Wh" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Energy Produced" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mpc.energy_produced_wh} digits={0} scale={0} unit="Wh" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <PhaseRow label="Current" label_muted="L1, L2, L3" values={[
+                                            mpc.current_phase_1_ma,
+                                            mpc.current_phase_2_ma,
+                                            mpc.current_phase_3_ma
+                                        ]} unit="mA" />
+                                        <PhaseRow label="Voltage (L-N)" label_muted="L1-N, L2-N, L3-N" values={[
+                                            mpc.voltage_phase_1_v,
+                                            mpc.voltage_phase_2_v,
+                                            mpc.voltage_phase_3_v
+                                        ]} unit="V" />
+                                        <PhaseRow label="Voltage (L-L)" label_muted="L1-L2, L2-L3, L3-L1" values={[
+                                            mpc.voltage_phase_1_2_v,
+                                            mpc.voltage_phase_2_3_v,
+                                            mpc.voltage_phase_3_1_v
+                                        ]} unit="V" />
+                                        <FormRow label="Grid Frequency" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mpc.frequency_mhz} digits={2} scale={3} unit="Hz" small />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
+                            // Coordinated EV Charging
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.CEVC) > -1) {
+                                const cevc = state.usecases.coordinated_ev_charging;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["CEVC (Coordinated EV Charging)"],
+                                    extraValue: <>
+                                        <FormRow label="Energy Broker Connected" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={cevc.energy_broker_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Energy Broker Heartbeat OK" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={cevc.energy_broker_heartbeat_ok ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Has Charging Plan" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={
+                                                    (cevc.has_charging_plan ? __("eebus.content.yes") : __("eebus.content.no")) +
+                                                    (cevc.has_charging_plan && cevc.charging_plan_start_time > 0
+                                                        ? ` (from: ${new Date(cevc.charging_plan_start_time * 1000).toLocaleString()})`
+                                                        : "")
+                                                } />
+                                            </div></div>
+                                        </FormRow>
+                                        {cevc.has_charging_plan && <>
+                                            <FormRow label="Current Target Power" small>
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                    <OutputFloat value={cevc.target_power_w} digits={0} scale={0} unit="W" small />
+                                                </div></div>
+                                            </FormRow>
+                                        </>}
+                                        <FormRow label="Has Incentives" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={cevc.has_incentives ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
+                            return rows;
+                        })()}
+                    />
+                    </CollapsedSection>
+                    </SubPage.Status>
+                }
+
+                <SubPage.Config id="eebus_config_form" isModified={this.isModified()} isDirty={this.isDirty()}
+                                onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")} help={__("eebus.content.enable_eebus_help")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}
@@ -401,7 +786,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             }}
                         />
                         <Button
-                            className="form-control rounded-end"
+                            className="form-control rounded-end mt-1"
                             variant="primary"
                             onClick={async () => {
                                 await API.call('eebus/scan', {});
@@ -418,455 +803,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         : __("eebus.content.search_failed")}
                         </Button>
                     </FormRow>
-                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")}
-                             help={__("eebus.content.ski_help")}>
-                        <InputText value={ski}/>
-                    </FormRow>
-                </ConfigForm>
-
-                <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
-                    <p> This shows the current State of the EEBUS usecases as they are presented to other EEBUS Devices.
-                        For understanding the details of the usecases please refer to the EEBUS documentation.
-                        Some knowledge about the implemented usecases is recommended.</p>
-
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                        <tr>
-                            <th>Usecase</th>
-                            <th>Details</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>General EEBUS State</td>
-                            <td>
-                                <table class="table table-bordered table-sm mb-0">
-                                    <tbody>
-                                    <tr>
-                                        <td>Commands Received</td>
-                                        <td>
-                                            {state.usecases.commands_received}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Responses/Commands sent</td>
-                                        <td>
-                                            {state.usecases.commands_sent}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPC) > -1 && (
-                            <tr>
-                                <td>Limitation of Power Consumption</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>Usecase State</td>
-                                            <td>
-                                                {{
-                                                    [LoadcontrolState.Startup]: "Startup",
-                                                    [LoadcontrolState.Init]: "Init",
-                                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
-                                                    [LoadcontrolState.Limited]: "Limited",
-                                                    [LoadcontrolState.Failsafe]: "Failsafe",
-                                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                                }[state.usecases.power_consumption_limitation.usecase_state] ?? state.usecases.power_consumption_limitation.usecase_state}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Limit Active</td>
-                                            <td>
-                                                {state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
-                                                {state.usecases.power_consumption_limitation.usecase_state === LoadcontrolState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
-                                                    ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s} s)`
-                                                    : null}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current Limit</td>
-                                            <td>{state.usecases.power_consumption_limitation.current_limit} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Failsafe Limit Power</td>
-                                            <td>{state.usecases.power_consumption_limitation.failsafe_limit_power_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Failsafe Limit Duration</td>
-                                            <td>
-                                                {state.usecases.power_consumption_limitation.failsafe_limit_duration_s}
-                                                {state.usecases.power_consumption_limitation.usecase_state === LoadcontrolState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
-                                                    ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s})`
-                                                    : null} s
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Constraints Power Maximum</td>
-                                            <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPP) > -1 && (
-                            <tr>
-                                <td>Limitation of Power Production</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>Usecase State</td>
-                                            <td>
-                                                {{
-                                                    [LoadcontrolState.Startup]: "Startup",
-                                                    [LoadcontrolState.Init]: "Init",
-                                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
-                                                    [LoadcontrolState.Limited]: "Limited",
-                                                    [LoadcontrolState.Failsafe]: "Failsafe",
-                                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                                }[state.usecases.power_production_limitation.usecase_state] ?? state.usecases.power_production_limitation.usecase_state}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Limit Active</td>
-                                            <td>
-                                                {state.usecases.power_production_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
-                                                {state.usecases.power_production_limitation.usecase_state === LoadcontrolState.Limited && state.usecases.power_production_limitation.outstanding_duration_s != null
-                                                    ? ` (${state.usecases.power_production_limitation.outstanding_duration_s} s)`
-                                                    : null}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current Limit</td>
-                                            <td>{state.usecases.power_production_limitation.current_limit} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Failsafe Limit Power</td>
-                                            <td>{state.usecases.power_production_limitation.failsafe_limit_power_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Failsafe Limit Duration</td>
-                                            <td>
-                                                {state.usecases.power_production_limitation.failsafe_limit_duration_s}
-                                                {state.usecases.power_production_limitation.usecase_state === LoadcontrolState.Failsafe && state.usecases.power_production_limitation.outstanding_duration_s != null
-                                                    ? ` (${state.usecases.power_production_limitation.outstanding_duration_s})`
-                                                    : null} s
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Constraints Power Maximum</td>
-                                            <td>{state.usecases.power_production_limitation.constraints_power_maximum} W</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCC) > -1 && (
-                            <tr>
-                                <td>EV Commissioning and Configuration</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>EV Connected</td>
-                                            <td>
-                                                {state.usecases.ev_commissioning_and_configuration.ev_connected
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        {state.usecases.ev_commissioning_and_configuration.ev_connected && (
-                                            <>
-                                                <tr>
-                                                    <td>Communication Standard</td>
-                                                    <td>{state.usecases.ev_commissioning_and_configuration.communication_standard}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Asymmetric Charging supported</td>
-                                                    <td>
-                                                        {state.usecases.ev_commissioning_and_configuration.asymmetric_charging_supported
-                                                            ? __("eebus.content.yes")
-                                                            : __("eebus.content.no")}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Vehicle MAC Address</td>
-                                                    <td>{state.usecases.ev_commissioning_and_configuration.mac_address}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Minimum Power Consumption (reported by Vehicle)</td>
-                                                    <td>{state.usecases.ev_commissioning_and_configuration.minimum_power} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Maximum Power Consumption (reported by Vehicle)</td>
-                                                    <td>{state.usecases.ev_commissioning_and_configuration.maximum_power} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Standby Power Consumption (reported by Vehicle)</td>
-                                                    <td>{state.usecases.ev_commissioning_and_configuration.standby_power} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Standby Mode Active</td>
-                                                    <td>  {state.usecases.ev_commissioning_and_configuration.standby_mode
-                                                        ? __("eebus.content.yes")
-                                                        : __("eebus.content.no")}</td>
-                                                </tr>
-                                            </>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCEM) > -1 && (
-                            <tr>
-                                <td>EV Charging Electricity Measurement</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>EV Connected</td>
-                                            <td>
-                                                {state.usecases.ev_commissioning_and_configuration.ev_connected
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        {state.usecases.ev_commissioning_and_configuration.ev_connected && (
-                                            <>
-                                                <tr>
-                                                    <td>Amps Phase 1</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_1} A</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Amps Phase 2</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_2} A</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Amps Phase 3</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.amps_phase_3} A</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Power Phase 1</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_1} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Power Phase 2</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_2} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Power Phase 3</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.power_phase_3} W</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Charged Wh</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.charged_wh} Wh</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Method of obtaining charged Wh</td>
-                                                    <td>{state.usecases.ev_charging_electricity_measurement.charged_valuesource_measured ? "Measured" : "Calculated"}</td>
-                                                </tr>
-                                            </>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVSECC) > -1 && (
-                            <tr>
-                                <td>EVSE Commissioning and Configuration</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>EVSE in failure state</td>
-                                            <td>
-                                                {state.usecases.evse_commissioning_and_configuration.evse_failure
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        {state.usecases.evse_commissioning_and_configuration.evse_failure && (
-                                            <>
-                                                <tr>
-                                                    <td>Failure Message</td>
-                                                    <td>{state.usecases.evse_commissioning_and_configuration.evse_failure_description}</td>
-                                                </tr>
-                                            </>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        )}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.EVCS) > -1 && (
-                            <tr>
-                                <td>Charging Summary</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td colSpan={2}>
-                                                <CollapsedSection
-                                                    heading={"Number of Charge Processes: " + state.usecases.charging_summary.length}>
-                                                    <table class="table table-bordered table-sm mb-0">
-                                                        <thead>
-                                                        <tr>
-                                                            <th>ID</th>
-                                                            <th>Charged Kwh</th>
-                                                            <th>Cost</th>
-                                                            <th>Percentage Self Produced Energy</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        {state.usecases.charging_summary.map((item, idx) => (
-                                                            <tr key={idx}>
-                                                                <td>{item.id}</td>
-                                                                <td>{item.charged_kwh}</td>
-                                                                <td>{item.cost}</td>
-                                                                <td>{item.percent_self_produced_energy}</td>
-                                                            </tr>
-                                                        ))}
-                                                        </tbody>
-                                                    </table>
-                                                </CollapsedSection>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MPC) > -1 && (
-                            <tr>
-                                <td>Monitoring of Power Consumption</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>Total Power</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.total_power_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Power Phase 1</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_1_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Power Phase 2</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_2_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Power Phase 3</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.power_phase_3_w} W</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Energy Consumed</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.energy_consumed_wh} Wh</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Energy Produced</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.energy_produced_wh} Wh</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current Phase 1</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_1_ma} mA</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current Phase 2</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_2_ma} mA</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Current Phase 3</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.current_phase_3_ma} mA</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 1 (L-N)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_1_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 2 (L-N)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_2_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 3 (L-N)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_3_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 1-2 (L-L)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_1_2_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 2-3 (L-L)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_2_3_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Voltage Phase 3-1 (L-L)</td>
-                                            <td>{state.usecases.monitoring_of_power_consumption.voltage_phase_3_1_v} V</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Grid Frequency</td>
-                                            <td>{(state.usecases.monitoring_of_power_consumption.frequency_mhz / 1000).toFixed(2)} Hz</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.CEVC) > -1 && (
-                            <tr>
-                                <td>Coordinated EV Charging</td>
-                                <td>
-                                    <table class="table table-bordered table-sm mb-0">
-                                        <tbody>
-                                        <tr>
-                                            <td>Energy Broker Connected</td>
-                                            <td>
-                                                {state.usecases.coordinated_ev_charging.energy_broker_connected
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Energy Broker Heartbeat OK</td>
-                                            <td>
-                                                {state.usecases.coordinated_ev_charging.energy_broker_heartbeat_ok
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Has Charging Plan</td>
-                                            <td>
-                                                {state.usecases.coordinated_ev_charging.has_charging_plan
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                                {state.usecases.coordinated_ev_charging.has_charging_plan && state.usecases.coordinated_ev_charging.charging_plan_start_time > 0
-                                                    ? ` (from: ${new Date(state.usecases.coordinated_ev_charging.charging_plan_start_time * 1000).toLocaleString()})`
-                                                    : null}
-                                            </td>
-                                        </tr>
-                                        {state.usecases.coordinated_ev_charging.has_charging_plan && (
-                                            <tr>
-                                                <td>Current Target Power</td>
-                                                <td>{state.usecases.coordinated_ev_charging.target_power_w} W</td>
-                                            </tr>
-                                        )}
-                                        <tr>
-                                            <td>Has Incentives</td>
-                                            <td>
-                                                {state.usecases.coordinated_ev_charging.has_incentives
-                                                    ? __("eebus.content.yes")
-                                                    : __("eebus.content.no")}
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>)}
-
-                        </tbody>
-                    </table>
-                </CollapsedSection>
+                </SubPage.Config>
             </SubPage>
         );
     }
@@ -876,4 +813,61 @@ export function pre_init() {
 }
 
 export function init() {
+    register_status_provider("eebus", {
+        name: () => __("eebus.navbar.eebus"),
+        href: "#eebus",
+        get_status: () => {
+            const config = API.get("eebus/config");
+            const state = API.get("eebus/state");
+            const usecases = API.get("eebus/usecases");
+
+            if (!config?.enable) {
+                return {status: ModuleStatus.Disabled};
+            }
+
+            // Count connected and discovered peers
+            const connectedCount = state?.peers?.filter(p =>
+                p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
+            ).length ?? 0;
+            const discoveredCount = state?.peers?.filter(p =>
+                p.state === NodeState.Discovered
+            ).length ?? 0;
+
+            // Check for specific error conditions and return appropriate message
+            if (state?.peers?.some(p => p.state === NodeState.EEBUSDegraded)) {
+                return {
+                    status: ModuleStatus.Error,
+                    text: () => __("eebus.status.peer_degraded")
+                };
+            }
+
+            if (usecases?.usecases_supported?.indexOf(Usecases.LPC) > -1 &&
+                usecases?.power_consumption_limitation?.usecase_state === LoadcontrolState.Failsafe) {
+                return {
+                    status: ModuleStatus.Error,
+                    text: () => __("eebus.status.lpc_failsafe")
+                };
+            }
+
+            if (usecases?.evse_commissioning_and_configuration?.evse_failure) {
+                return {
+                    status: ModuleStatus.Error,
+                    text: () => __("eebus.status.evse_failure")
+                };
+            }
+
+            if (usecases?.coordinated_ev_charging?.energy_broker_connected &&
+                !usecases?.coordinated_ev_charging?.energy_broker_heartbeat_ok) {
+                return {
+                    status: ModuleStatus.Error,
+                    text: () => __("eebus.status.heartbeat_timeout")
+                };
+            }
+
+            return {
+                status: ModuleStatus.Ok,
+                text: () => `${connectedCount}/${discoveredCount}`
+            };
+        }
+    });
 }
