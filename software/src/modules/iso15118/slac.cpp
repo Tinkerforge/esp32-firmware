@@ -193,8 +193,8 @@ void SLAC::handle_cm_set_key_request(void)
     memcpy(cm_set_key_request.nmk, nmk, SLAC_NMK_LENGTH);
     memcpy(cm_set_key_request.nid, nid, SLAC_NID_LENGTH);
 
-    uint8_t *data = reinterpret_cast<uint8_t*>(&cm_set_key_request);
-    write(iso15118.qca700x.tap, data, sizeof(cm_set_key_request));
+    const uint8_t *data = reinterpret_cast<const uint8_t*>(&cm_set_key_request);
+    iso15118.qca700x.write_burst(data, sizeof(cm_set_key_request));
 
     log_cm_set_key_request(cm_set_key_request);
     next_timeout = now_us() + 100_ms; // This is internal communication with the modem, there is not timing defined in the spec. 100ms seems reasonable.
@@ -248,7 +248,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     memcpy(cm_slac_parm_confirmation.forwarding_sta, pev_mac, SLAC_MAC_ADDRESS_LENGTH);
     memcpy(cm_slac_parm_confirmation.run_id, pev_run_id, SLAC_RUN_ID_LENGTH);
 
-    write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_slac_parm_confirmation), sizeof(cm_slac_parm_confirmation));
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_slac_parm_confirmation), sizeof(cm_slac_parm_confirmation));
 
     // Wait for CM_START_ATTEN_CHAR.IND from the EV
     next_timeout = now_us() + SLAC_TT_MATCH_SEQUENCE;
@@ -348,7 +348,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
             api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
         }
 
-        write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
+        iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
         next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
         state = SLAC::State::WaitForAttenChar;
@@ -422,7 +422,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     memcpy(cm_slac_match_confirmation.nid, nid, SLAC_NID_LENGTH);
     memcpy(cm_slac_match_confirmation.nmk, nmk, SLAC_NMK_LENGTH);
 
-    write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
     // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
     next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
     state = SLAC::State::WaitForSDP;
@@ -440,7 +440,7 @@ void SLAC::handle_cm_qualcomm_get_sw_request()
 {
     CM_QualcommGetSwRequest cm_qualcomm_get_sw_request;
     fill_header_v0(&cm_qualcomm_get_sw_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_GET_SW | SLAC_MMTYPE_MODE_REQUEST);
-    write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_qualcomm_get_sw_request), sizeof(cm_qualcomm_get_sw_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_qualcomm_get_sw_request), sizeof(cm_qualcomm_get_sw_request));
 
     log_cm_qualcomm_get_sw_request(cm_qualcomm_get_sw_request);
     next_timeout = now_us() + 2500_ms;
@@ -451,7 +451,7 @@ void SLAC::handle_cm_qualcomm_link_status_request()
 {
     CM_QualcommLinkStatusRequest cm_qualcomm_link_status_request;
     fill_header_v0(&cm_qualcomm_link_status_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_LINK_STATUS | SLAC_MMTYPE_MODE_REQUEST);
-    write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_qualcomm_link_status_request), sizeof(cm_qualcomm_link_status_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_qualcomm_link_status_request), sizeof(cm_qualcomm_link_status_request));
 
     log_cm_qualcomm_link_status_request(cm_qualcomm_link_status_request);
     next_timeout = now_us() + 2500_ms;
@@ -462,7 +462,7 @@ void SLAC::handle_cm_qualcomm_op_attr_request()
 {
     CM_QualcommOpAttrRequest cm_qualcomm_op_attr_request;
     fill_header_v0(&cm_qualcomm_op_attr_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_OP_ATTR | SLAC_MMTYPE_MODE_REQUEST);
-    write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_qualcomm_op_attr_request), sizeof(cm_qualcomm_op_attr_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_qualcomm_op_attr_request), sizeof(cm_qualcomm_op_attr_request));
 
     log_cm_qualcomm_op_attr_request(cm_qualcomm_op_attr_request);
     next_timeout = now_us() + 2500_ms;
@@ -583,7 +583,7 @@ void SLAC::state_machine_loop()
                 api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
             }
 
-            write(iso15118.qca700x.tap, reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
+            iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
             next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
             state = SLAC::State::WaitForAttenChar;
