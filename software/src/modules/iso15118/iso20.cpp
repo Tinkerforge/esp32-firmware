@@ -114,8 +114,26 @@ void ISO20::dispatch_common_messages()
 {
     auto &doc = *iso20DocDec;
 
-    // Implemented message handlers
-    V2G_DISPATCH("ISO20", doc, SessionSetupReq,       handle_session_setup_req);
+    // SessionSetupReq - no session validation needed (session is established here)
+    V2G_DISPATCH("ISO20", doc, SessionSetupReq, handle_session_setup_req);
+    if (doc.SessionSetupReq_isUsed) return;
+
+    // [V2G20-753] All messages after SessionSetup require session ID validation.
+    // If the SessionID received does not match the previously communicated SessionID,
+    // the SECC shall respond with FAILED_UnknownSession.
+    // Note: All request types in the union have Header as their first member,
+    // so we can access it directly by casting to the header type.
+    auto *header = reinterpret_cast<const struct iso20_MessageHeaderType*>(&doc.AuthorizationSetupReq);
+    if (!validate_session_id(header->SessionID.bytes,
+                             ISO20_SESSION_ID_LENGTH,
+                             session_id,
+                             ISO20_SESSION_ID_LENGTH)) {
+        logger.printfln("ISO20: Session ID mismatch, sending FAILED_UnknownSession");
+        send_failed_unknown_session();
+        return;
+    }
+
+    // Implemented message handlers (session already validated)
     V2G_DISPATCH("ISO20", doc, AuthorizationSetupReq, handle_authorization_setup_req);
     V2G_DISPATCH("ISO20", doc, AuthorizationReq,      handle_authorization_req);
     V2G_DISPATCH("ISO20", doc, ServiceDiscoveryReq,   handle_service_discovery_req);
@@ -139,6 +157,28 @@ void ISO20::dispatch_common_messages()
     // We will not support these.
     V2G_NOT_IMPL("ISO20", doc, VehicleCheckInReq);
     V2G_NOT_IMPL("ISO20", doc, VehicleCheckOutReq);
+}
+
+void ISO20::send_failed_unknown_session()
+{
+    auto &doc = *iso20DocDec;
+
+    // Determine which message type was received and send the appropriate error response
+    if (false
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, AuthorizationSetup, iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, Authorization,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceDiscovery,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceDetail,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ServiceSelection,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, ScheduleExchange,   iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, PowerDelivery,      iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20DocEnc, SessionStop,        iso20_responseCodeType_FAILED_UnknownSession, prepare_header))
+    ) {
+        iso15118.common.send_exi(Common::ExiType::Iso20);
+        return;
+    }
+
+    logger.printfln("ISO20: Unknown message type for FAILED_UnknownSession");
 }
 
 void ISO20::prepare_header(struct iso20_MessageHeaderType *header)
@@ -694,9 +734,38 @@ void ISO20::dispatch_ac_messages()
 {
     auto &doc = *iso20AcDocDec;
 
-    // AC-specific message dispatch
+    // [V2G20-753] All AC messages require session ID validation.
+    // Note: All request types in the union have Header as their first member,
+    // so we can access it directly by casting to the header type.
+    auto *header = reinterpret_cast<const struct iso20_ac_MessageHeaderType*>(&doc.AC_ChargeParameterDiscoveryReq);
+    if (!validate_session_id(header->SessionID.bytes,
+                             ISO20_SESSION_ID_LENGTH,
+                             session_id,
+                             ISO20_SESSION_ID_LENGTH)) {
+        logger.printfln("ISO20 AC: Session ID mismatch, sending FAILED_UnknownSession");
+        send_ac_failed_unknown_session();
+        return;
+    }
+
+    // AC-specific message dispatch (session already validated)
     V2G_DISPATCH("ISO20 AC", doc, AC_ChargeParameterDiscoveryReq, handle_ac_charge_parameter_discovery_req);
     V2G_DISPATCH("ISO20 AC", doc, AC_ChargeLoopReq,               handle_ac_charge_loop_req);
+}
+
+void ISO20::send_ac_failed_unknown_session()
+{
+    auto &doc = *iso20AcDocDec;
+
+    // Determine which AC message type was received and send the appropriate error response
+    if (false
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20AcDocEnc, AC_ChargeParameterDiscovery, iso20_ac_responseCodeType_FAILED_UnknownSession, prepare_ac_header))
+        || (V2G20_SEND_FAILED_SESSION(doc, iso20AcDocEnc, AC_ChargeLoop,               iso20_ac_responseCodeType_FAILED_UnknownSession, prepare_ac_header))
+    ) {
+        iso15118.common.send_exi(Common::ExiType::Iso20Ac);
+        return;
+    }
+
+    logger.printfln("ISO20 AC: Unknown message type for FAILED_UnknownSession");
 }
 
 void ISO20::prepare_ac_header(struct iso20_ac_MessageHeaderType *header)

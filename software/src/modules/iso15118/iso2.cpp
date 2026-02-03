@@ -128,8 +128,23 @@ void ISO2::dispatch_messages()
 {
     auto &body = iso2DocDec->V2G_Message.Body;
 
-    // Implemented message handlers
-    V2G_DISPATCH("ISO2", body, SessionSetupReq,             handle_session_setup_req);
+    // SessionSetupReq - no session validation needed (session is established here)
+    V2G_DISPATCH("ISO2", body, SessionSetupReq, handle_session_setup_req);
+    if (body.SessionSetupReq_isUsed) return;
+
+    // [V2G2-741] All messages after SessionSetup require session ID validation.
+    // If the SessionID received does not match the previously communicated SessionID,
+    // the SECC shall respond with FAILED_UnknownSession.
+    if (!validate_session_id(iso2DocDec->V2G_Message.Header.SessionID.bytes,
+                             iso2DocDec->V2G_Message.Header.SessionID.bytesLen,
+                             iso15118.common.session_id,
+                             SESSION_ID_LENGTH)) {
+        logger.printfln("ISO2: Session ID mismatch, sending FAILED_UnknownSession");
+        send_failed_unknown_session();
+        return;
+    }
+
+    // Implemented message handlers (session already validated)
     V2G_DISPATCH("ISO2", body, ServiceDiscoveryReq,         handle_service_discovery_req);
     V2G_DISPATCH("ISO2", body, PaymentServiceSelectionReq,  handle_payment_service_selection_req);
     V2G_DISPATCH("ISO2", body, AuthorizationReq,            handle_authorization_req);
@@ -157,6 +172,28 @@ void ISO2::dispatch_messages()
     V2G_NOT_IMPL("ISO2", body, PreChargeReq);
     V2G_NOT_IMPL("ISO2", body, CurrentDemandReq);
     V2G_NOT_IMPL("ISO2", body, WeldingDetectionReq);
+}
+
+void ISO2::send_failed_unknown_session()
+{
+    auto &body_dec = iso2DocDec->V2G_Message.Body;
+    auto &body_enc = iso2DocEnc->V2G_Message.Body;
+
+    // Determine which message type was received and send the appropriate error response
+    if (false
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServiceDiscovery,         iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PaymentServiceSelection,  iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, Authorization,            iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargeParameterDiscovery, iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PowerDelivery,            iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargingStatus,           iso2_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, SessionStop,              iso2_responseCodeType_FAILED_UnknownSession))
+    ) {
+        iso15118.common.send_exi(Common::ExiType::Iso2);
+        return;
+    }
+
+    logger.printfln("ISO2: Unknown message type for FAILED_UnknownSession");
 }
 
 void ISO2::handle_session_setup_req()
@@ -238,15 +275,6 @@ void ISO2::handle_service_discovery_req()
 {
     iso2_ServiceDiscoveryReqType *req = &iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq;
     iso2_ServiceDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes;
-
-    // TODO: Stop session if session ID does not match?
-    //       Or just keep going? For now we log it and keep going.
-    if (iso2DocDec->V2G_Message.Header.SessionID.bytesLen != SESSION_ID_LENGTH) {
-        logger.printfln("ISO2: Session ID length mismatch");
-    }
-    if (memcmp(iso2DocDec->V2G_Message.Header.SessionID.bytes, iso15118.common.session_id, SESSION_ID_LENGTH) != 0) {
-        logger.printfln("ISO2: Session ID mismatch");
-    }
 
     if (req->ServiceCategory_isUsed) {
         switch (req->ServiceCategory) {

@@ -41,6 +41,7 @@ public:
 
 private:
     void dispatch_messages();
+    void send_failed_unknown_session();
 
     void handle_session_setup_req();
     void handle_supported_app_protocol_req();

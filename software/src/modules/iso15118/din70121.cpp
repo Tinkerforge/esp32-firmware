@@ -103,8 +103,23 @@ void DIN70121::dispatch_messages()
 {
     auto &body = dinDocDec->V2G_Message.Body;
 
-    // Implemented message handlers
-    V2G_DISPATCH("DIN70121", body, SessionSetupReq,             handle_session_setup_req);
+    // SessionSetupReq - no session validation needed (session is established here)
+    V2G_DISPATCH("DIN70121", body, SessionSetupReq, handle_session_setup_req);
+    if (body.SessionSetupReq_isUsed) return;
+
+    // [V2G-DC-xxx] All messages after SessionSetup require session ID validation.
+    // If the SessionID received does not match the previously communicated SessionID,
+    // the SECC shall respond with FAILED_UnknownSession.
+    if (!validate_session_id(dinDocDec->V2G_Message.Header.SessionID.bytes,
+                             dinDocDec->V2G_Message.Header.SessionID.bytesLen,
+                             iso15118.common.session_id,
+                             SESSION_ID_LENGTH)) {
+        logger.printfln("DIN70121: Session ID mismatch, sending FAILED_UnknownSession");
+        send_failed_unknown_session();
+        return;
+    }
+
+    // Implemented message handlers (session already validated)
     V2G_DISPATCH("DIN70121", body, ServiceDiscoveryReq,         handle_service_discovery_req);
     V2G_DISPATCH("DIN70121", body, ServicePaymentSelectionReq,  handle_service_payment_selection_req);
     V2G_DISPATCH("DIN70121", body, ContractAuthenticationReq,   handle_contract_authentication_req);
@@ -126,6 +141,27 @@ void DIN70121::dispatch_messages()
     V2G_NOT_IMPL("DIN70121", body, PreChargeReq);
     V2G_NOT_IMPL("DIN70121", body, CurrentDemandReq);
     V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
+}
+
+void DIN70121::send_failed_unknown_session()
+{
+    auto &body_dec = dinDocDec->V2G_Message.Body;
+    auto &body_enc = dinDocEnc->V2G_Message.Body;
+
+    // Determine which message type was received and send the appropriate error response
+    if (false
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServiceDiscovery,         din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServicePaymentSelection,  din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ContractAuthentication,   din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargeParameterDiscovery, din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, SessionStop,              din_responseCodeType_FAILED_UnknownSession))
+    ) {
+        iso15118.common.send_exi(Common::ExiType::Din);
+        return;
+    }
+
+    // Unknown message type - this shouldn't happen but log it
+    logger.printfln("DIN70121: Unknown message type for FAILED_UnknownSession");
 }
 
 void DIN70121::handle_session_setup_req()
@@ -191,15 +227,6 @@ void DIN70121::handle_session_setup_req()
 void DIN70121::handle_service_discovery_req()
 {
     din_ServiceDiscoveryResType *res = &dinDocEnc->V2G_Message.Body.ServiceDiscoveryRes;
-
-    // TODO: Stop session if session ID does not match?
-    //       Or just keep going? For now we log it and keep going.
-    if (dinDocDec->V2G_Message.Header.SessionID.bytesLen != SESSION_ID_LENGTH) {
-        logger.printfln("DIN70121: Session ID length mismatch");
-    }
-    if (memcmp(dinDocDec->V2G_Message.Header.SessionID.bytes, iso15118.common.session_id, SESSION_ID_LENGTH) != 0) {
-        logger.printfln("DIN70121: Session ID mismatch");
-    }
 
     dinDocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed = 1;
     res->ResponseCode = din_responseCodeType_OK;

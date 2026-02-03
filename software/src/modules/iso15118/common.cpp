@@ -504,3 +504,20 @@ SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len
 
     return SessionIdResult::ResumeSession;
 }
+
+bool validate_session_id(const uint8_t *received_id, size_t received_len, const uint8_t *stored_id, size_t stored_len)
+{
+    // Check if lengths match
+    if (received_len != stored_len) {
+        return false;
+    }
+
+    // Check if all bytes match
+    for (size_t i = 0; i < stored_len; i++) {
+        if (received_id[i] != stored_id[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}

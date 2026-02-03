@@ -58,6 +58,8 @@ public:
 private:
     void dispatch_common_messages();
     void dispatch_ac_messages();
+    void send_failed_unknown_session();
+    void send_ac_failed_unknown_session();
 
     // Common message handlers
     void handle_session_setup_req();

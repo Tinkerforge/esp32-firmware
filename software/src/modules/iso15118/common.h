@@ -44,6 +44,11 @@ enum class SessionIdResult {
 // Returns whether this is a new or resumed session.
 SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len);
 
+// Check received session ID matches stored session ID (for messages after SessionSetup).
+// Returns true if session ID matches, false if it's an unknown session.
+// This is used to validate that subsequent messages belong to the established session.
+bool validate_session_id(const uint8_t *received_id, size_t received_len, const uint8_t *stored_id, size_t stored_len);
+
 // Cancel an existing sequence timeout if active.
 // Sets next_timeout to 0 after cancellation.
 void cancel_sequence_timeout(uint64_t &next_timeout);
@@ -66,6 +71,32 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
     if (doc_path.msg##_isUsed) { \
         logger.printfln(prefix ": " #msg " received but not implemented"); \
     }
+
+// Macro to send FAILED_UnknownSession error response for DIN/ISO2
+// doc_dec: Decoded document path to check _isUsed flags (e.g., body_dec)
+// doc_enc: Encoded document path to set response (e.g., body_enc)
+// msg: Message name without Req/Res suffix (e.g., ServiceDiscovery)
+// response_code: The FAILED_UnknownSession response code type
+// Returns true if this message type matched, false otherwise
+#define V2G_SEND_FAILED_SESSION(doc_dec, doc_enc, msg, response_code) \
+    (doc_dec.msg##Req_isUsed && ( \
+        doc_enc.msg##Res_isUsed = 1, \
+        doc_enc.msg##Res.ResponseCode = response_code, \
+        true))
+
+// Macro to send FAILED_UnknownSession error response for ISO20
+// doc_dec: Decoded document to check _isUsed flags (e.g., *iso20DocDec)
+// doc_enc: Encoded document pointer to set response (e.g., iso20DocEnc)
+// msg: Message name without Req/Res suffix (e.g., ServiceDiscovery)
+// response_code: The FAILED_UnknownSession response code type
+// prepare_hdr: Function to prepare header (e.g., prepare_header)
+// Returns true if this message type matched, false otherwise
+#define V2G20_SEND_FAILED_SESSION(doc_dec, doc_enc, msg, response_code, prepare_hdr) \
+    (doc_dec.msg##Req_isUsed && ( \
+        doc_enc->msg##Res_isUsed = 1, \
+        prepare_hdr(&doc_enc->msg##Res.Header), \
+        doc_enc->msg##Res.ResponseCode = response_code, \
+        true))
 
 class Common final
 {
