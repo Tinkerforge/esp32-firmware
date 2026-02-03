@@ -42,6 +42,7 @@ export interface TableRow {
     onEditHide?: () => Promise<void>;
     editAdditionalFooterButtons?: ComponentChildren;
     onRemoveClick?: () => Promise<boolean>; // return true if row was actually removed, return false otherwise
+    hideRemoveButton?: boolean;
     onEditStart?: never;
     onEditCommit?: never;
     onEditAbort?: never;
@@ -176,7 +177,8 @@ export class Table extends Component<TableProps, TableState> {
                                                     this.setState({showRowExtra: showRowExtra});
                                                 }
                                             }}
-                                            disabled={!row.onRemoveClick}>
+                                            disabled={!row.onRemoveClick}
+                                            hidden={row.hideRemoveButton}>
                                         <Trash2/>
                                     </Button>
                                 </td>
@@ -262,7 +264,8 @@ export class Table extends Component<TableProps, TableState> {
                                                 this.setState({showRowExtra: showRowExtra});
                                             }
                                         }}
-                                        disabled={!row.onRemoveClick}>
+                                        disabled={!row.onRemoveClick}
+                                        hidden={row.hideRemoveButton}>
                                     <Trash2/>
                                 </Button>
                             </div>
