@@ -1013,6 +1013,29 @@ de_hyph = [
     "exis-tie-ren",
     "Re-gis-trie-run-gen",
     "kurz-le-bi-ge",
+    "ex-pe-ri-men-tell",
+    "vor-be-hal-ten",
+    "Zeit-fens-ter",
+    "Fol-ge-ta-ges",
+    "ein-zu-tra-gen",
+    "Vier-tel-stun-den",
+    "ein-ge-ge-ben",
+    "La-de-re-geln",
+    "Ent-la-de-re-geln",
+    "Be-din-gun-gen",
+    "Spei-cher-mo-dus",
+    "pro-gno-se-ba-sier-te",
+    "Bat-te-rie-steu-e-rung",
+    "bein-träch-ti-gen",
+    "si-cher-stel-len",
+    "Wie-der-ho-lungs",
+    "de-ak-ti-vert",
+    "Wie-der-ho-lung",
+    "Er-zwun-ge-ner",
+    "Ent-la-de-strom",
+    "Er-zwun-ge-ne",
+    "Ent-la-de-leis-tung",
+    "Emp-fangs-stär-ke",
 ]
 
 en_hyph = [
@@ -1288,6 +1311,11 @@ en_hyph = [
     "cor-re-spond-ing",
     "in-di-cat-ing",
     "Reg-is-tra-tions",
+    "ex-per-i-men-tal",
+    "Dis-charg-ing",
+    "Mod-er-ate-ly",
+    "con-di-tions",
+    "Bat-te-rie-la-den"
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -1403,4 +1431,5 @@ allowed_missing = set([
     "DMED341MID7ER",
     "EVSEUnreachable",
     "EVSENonreactive",
+    "8644254859"
 ])
