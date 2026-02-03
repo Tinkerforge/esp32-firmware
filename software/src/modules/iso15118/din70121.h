@@ -30,6 +30,9 @@
 #include "cbv2g/din/din_msgDefDecoder.h"
 #include "cbv2g/din/din_msgDefEncoder.h"
 
+// DIN TS 70121:2024-11 Table 76: V2G_SECC_Sequence_Timeout = 60s
+#define DIN70121_SECC_SEQUENCE_TIMEOUT 60_s
+
 class DIN70121 final
 {
 public:
@@ -54,4 +57,5 @@ private:
     void handle_session_stop_req();
 
     uint8_t state = 0;
+    uint64_t next_timeout = 0;
 };

@@ -100,10 +100,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
         return;
     }
 
-    if (next_timeout != 0) {
-        task_scheduler.cancel(next_timeout);
-        next_timeout = 0;
-    }
+    cancel_sequence_timeout(next_timeout);
 
     dispatch_messages();
 
@@ -116,22 +113,14 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     //            V2G_SECC_Sequence_Timeout and no request message was received. It shall then stop the
     //            V2G Communication Session.
     if (!pause_active) {
-        next_timeout = task_scheduler.scheduleOnce([this]() {
-            iso15118.qca700x.link_down();
-            iso15118.slac.state = SLAC::State::ModemReset;
-            logger.printfln("ISO2 Timeout: Link down, SLAC reset");
-            next_timeout = 0;
-        }, ISO2_SECC_SEQUENCE_TIMEOUT);
+        schedule_sequence_timeout(next_timeout, ISO2_SECC_SEQUENCE_TIMEOUT, "ISO2");
     // [V2G2-725] If the SECC received the message SessionStopReq with parameter ChargingSession equal to
     //            "Pause" it shall pause the Data-Link (D-LINK_PAUSE.request()) after sending the message
     //            SessionStopRes and continue with [V2G2-721].
     } else {
         // No timeout in case auf pausing by EVCC
         // We just wait for new SLAC or new SDP message
-        if (next_timeout != 0) {
-            task_scheduler.cancel(next_timeout);
-            next_timeout = 0;
-        }
+        cancel_sequence_timeout(next_timeout);
     }
 }
 

@@ -84,12 +84,19 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     }
     memset(dinDocDec, 0, sizeof(struct din_exiDocument));
     memset(dinDocEnc, 0, sizeof(struct din_exiDocument));
+
+    cancel_sequence_timeout(next_timeout);
+
     int ret = decode_din_exiDocument(exi, dinDocDec);
     logger.printfln("DIN70121: decode_din_exiDocument: %d", ret);
 
     dispatch_messages();
 
     api_state.get("state")->updateUint(state);
+
+    // DIN TS 70121:2024-11 [V2G-DC-443]: The SECC shall stop waiting for a request message
+    // when V2G_SECC_Sequence_Timer >= V2G_SECC_Sequence_Timeout and no request was received.
+    schedule_sequence_timeout(next_timeout, DIN70121_SECC_SEQUENCE_TIMEOUT, "DIN70121");
 }
 
 void DIN70121::dispatch_messages()

@@ -44,6 +44,16 @@ enum class SessionIdResult {
 // Returns whether this is a new or resumed session.
 SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len);
 
+// Cancel an existing sequence timeout if active.
+// Sets next_timeout to 0 after cancellation.
+void cancel_sequence_timeout(uint64_t &next_timeout);
+
+// Schedule a sequence timeout that resets the SLAC state machine on expiry.
+// protocol_name: Used for logging (e.g., "ISO2", "ISO20", "ISO20 AC")
+// timeout: The timeout duration (e.g., 60_s)
+// next_timeout: Reference to store the scheduled task ID (set to 0 on expiry)
+void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const char *protocol_name);
+
 // Common message dispatch macros for all V2G protocols (DIN, ISO2, ISO20)
 // prefix: Protocol name for logging (e.g., "ISO2", "DIN70121")
 // doc_path: Path to the _isUsed flags (e.g., body, doc)

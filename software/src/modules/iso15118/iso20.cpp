@@ -94,10 +94,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
         return;
     }
 
-    if (next_timeout != 0) {
-        task_scheduler.cancel(next_timeout);
-        next_timeout = 0;
-    }
+    cancel_sequence_timeout(next_timeout);
 
     dispatch_common_messages();
 
@@ -110,12 +107,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
     // [V2G20-441] The SECC shall set V2G_SECC_Sequence_Timeout and start monitoring when
     //             it sends a response message.
     // [V2G20-443] The SECC shall stop waiting for a request message when the timer expires.
-    next_timeout = task_scheduler.scheduleOnce([this]() {
-        iso15118.qca700x.link_down();
-        iso15118.slac.state = SLAC::State::ModemReset;
-        logger.printfln("ISO20 Timeout: Link down, SLAC reset");
-        next_timeout = 0;
-    }, ISO20_SECC_SEQUENCE_TIMEOUT);
+    schedule_sequence_timeout(next_timeout, ISO20_SECC_SEQUENCE_TIMEOUT, "ISO20");
 }
 
 void ISO20::dispatch_common_messages()
@@ -686,10 +678,7 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
         return;
     }
 
-    if (next_timeout != 0) {
-        task_scheduler.cancel(next_timeout);
-        next_timeout = 0;
-    }
+    cancel_sequence_timeout(next_timeout);
 
     dispatch_ac_messages();
 
@@ -698,12 +687,7 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
     api_state.get("state")->updateUint(state);
 
     // [V2G20-435] [V2G20-441] [V2G20-443] Sequence timer handling (see common messages above)
-    next_timeout = task_scheduler.scheduleOnce([this]() {
-        iso15118.qca700x.link_down();
-        iso15118.slac.state = SLAC::State::ModemReset;
-        logger.printfln("ISO20 AC Timeout: Link down, SLAC reset");
-        next_timeout = 0;
-    }, ISO20_SECC_SEQUENCE_TIMEOUT);
+    schedule_sequence_timeout(next_timeout, ISO20_SECC_SEQUENCE_TIMEOUT, "ISO20 AC");
 }
 
 void ISO20::dispatch_ac_messages()

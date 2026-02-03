@@ -452,6 +452,24 @@ void Common::handle_supported_app_protocol_req()
     }
 }
 
+void cancel_sequence_timeout(uint64_t &next_timeout)
+{
+    if (next_timeout != 0) {
+        task_scheduler.cancel(next_timeout);
+        next_timeout = 0;
+    }
+}
+
+void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const char *protocol_name)
+{
+    next_timeout = task_scheduler.scheduleOnce([&next_timeout, protocol_name]() {
+        iso15118.qca700x.link_down();
+        iso15118.slac.state = SLAC::State::ModemReset;
+        logger.printfln("%s Timeout: Link down, SLAC reset", protocol_name);
+        next_timeout = 0;
+    }, timeout);
+}
+
 SessionIdResult check_session_id(const uint8_t *received_id, size_t received_len, uint8_t *stored_id, size_t stored_len)
 {
     // Check if received session ID is all zeros (new session requested)
