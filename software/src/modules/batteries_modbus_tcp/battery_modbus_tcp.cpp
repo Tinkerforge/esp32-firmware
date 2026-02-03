@@ -541,9 +541,14 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         load_sungrow_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
-    case BatteryModbusTCPTableID::SMAHybridInverter:
+    case BatteryModbusTCPTableID::SMAHybridInverter40793:
         device_address = table_config->get("device_address")->asUint8();
-        load_sma_hybrid_inverter_tables(tables, &repeat_interval, table_config);
+        load_sma_hybrid_inverter_40793_tables(tables, &repeat_interval, table_config);
+        break;
+
+    case BatteryModbusTCPTableID::SMAHybridInverter41467:
+        device_address = table_config->get("device_address")->asUint8();
+        load_sma_hybrid_inverter_41467_tables(tables, &repeat_interval, table_config);
         break;
 
     default:

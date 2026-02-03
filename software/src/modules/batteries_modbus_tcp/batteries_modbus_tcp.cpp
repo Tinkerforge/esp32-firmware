@@ -264,16 +264,32 @@ void BatteriesModbusTCP::register_urls()
 
             break;
 
-        case BatteryModbusTCPTableID::SMAHybridInverter:
+        case BatteryModbusTCPTableID::SMAHybridInverter40793:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
 
-            load_sma_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
+            load_sma_hybrid_inverter_40793_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
             if (test->table == nullptr) {
                 test_printfln(test->language == Language::English
-                              ? "Unknown SMA Hybrid Inverter mode: %u"
-                              : "Unbekannter SMA Hybrid-Wechselrichter Modus: %u",
+                              ? "Unknown SMA Hybrid Inverter 40793 mode: %u"
+                              : "Unbekannter SMA Hybrid-Wechselrichter 40793 Modus: %u",
+                              static_cast<uint8_t>(test->mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::SMAHybridInverter41467:
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
+
+            load_sma_hybrid_inverter_41467_table(&test->table, &test->repeat_interval, test->mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln(test->language == Language::English
+                              ? "Unknown SMA Hybrid Inverter 41467 mode: %u"
+                              : "Unbekannter SMA Hybrid-Wechselrichter 41467 Modus: %u",
                               static_cast<uint8_t>(test->mode));
                 return;
             }
