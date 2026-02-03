@@ -205,11 +205,16 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (frame_type == HTTPD_WS_TYPE_TEXT) {
-        // If it was a TEXT message, terminate and print it
-        ws_pkt.payload[ws_pkt.len] = 0;
-        logger.printfln("Ignoring received packet with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
-        // FIXME: input handling
+        // If it was a TEXT message print it
+        if (ws_pkt.len == 0) {
+            logger.printfln("Ignoring zero-length text frame");
+        } else {
+            ws_pkt.payload[ws_pkt.len] = 0;
+            logger.printfln("Ignoring received packet with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
+            // FIXME: input handling
+        }
     } else if (frame_type == HTTPD_WS_TYPE_BINARY) {
+        // If it was a binary data frame, pass it to the binary data handler.
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         if (ws->on_binary_data_received_fn != nullptr) {
             ws->on_binary_data_received_fn(client, &ws_pkt);
