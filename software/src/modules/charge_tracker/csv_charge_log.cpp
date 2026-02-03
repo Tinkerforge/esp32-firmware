@@ -381,16 +381,16 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
                 price_euros = energy_charged * price_per_kwh;
             }
 
-        String fields[9];
-        size_t field_count = 7;
-        String display_name = getUserDisplayName(record->cs.user_id, params.language);
-        fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
-        fields[1] = display_name;
-        fields[2] = formatEnergy(energy_charged, params.language);
-        fields[3] = formatDuration(record->ce.charge_duration);
-        fields[5] = formatEnergy(record->cs.meter_start, params.language);
-        fields[6] = formatEnergy(record->ce.meter_end, params.language);
-        fields[7] = display_name;
+            String fields[9];
+            size_t field_count = 7;
+            String display_name = getUserDisplayName(record->cs.user_id, params.language);
+            fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
+            fields[1] = display_name;
+            fields[2] = formatEnergy(energy_charged, params.language);
+            fields[3] = formatDuration(record->ce.charge_duration);
+            fields[5] = formatEnergy(record->cs.meter_start, params.language);
+            fields[6] = formatEnergy(record->ce.meter_end, params.language);
+            fields[7] = display_name;
 
             if (params.electricity_price > 0) {
                 fields[8] = formatPrice(price_euros, params.language);
