@@ -32,7 +32,7 @@ let x = {
             "sta_bssid": "BSSID",
             "sta_bssid_lock": "BSSID-Sperre",
             "sta_bssid_invalid": "Die BSSID muss aus sechs Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
-            "sta_bssid_lock_desc": "Verbindet sich nur mit der eingestellten BSSID, auch wenn andere Accesspoints oder Repeater im Netzwerk verfügbar sind. Wenn diese Option deaktiviert ist, wird üblicherweise der mit der besten Empfangsstärke ausgewählt.",
+            "sta_bssid_lock_desc": "Verbindet sich nur mit der eingestellten BSSID, auch wenn andere Access Points oder Repeater im Netzwerk verfügbar sind. Wenn diese Option deaktiviert ist, wird üblicherweise der mit der besten Empfangsstärke ausgewählt.",
             "sta_enable_11b": "Empfangsoptimierung",
             "sta_enable_11b_desc": <>Verwendet den veralteten, langsamen 802.11b-Modus für etwas höhere Reichweite. <strong>Dieser verlangsamt auch andere Geräte, die zum WLAN verbunden sind</strong>, kann aber die Empfangsqualität und Robustheit der Verbindung leicht verbessern.</>,
             "sta_passphrase": "Passphrase",
