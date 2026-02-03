@@ -57,6 +57,9 @@ private:
     void handle_charge_parameter_discovery_req();
     void handle_session_stop_req();
 
+    void trace_header(const struct din_MessageHeaderType *header, const char *name);
+    void trace_request_response();
+
     uint8_t state = 0;
     uint64_t next_timeout = 0;
 };
