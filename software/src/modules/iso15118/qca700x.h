@@ -97,6 +97,9 @@ private:
     // Flag to track IPv6 packet reception (for SLAC state transition)
     bool ipv6_packet_received = false;
 
+    // Flag to track SPI initialization
+    bool spi_initialized = false;
+
 public:
     esp_qca700x_netif_driver_t driver;
     esp_eth_netif_glue_handle_t handle;

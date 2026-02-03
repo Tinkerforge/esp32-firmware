@@ -257,7 +257,6 @@ void QCA700x::setup_l2tap()
 
 void QCA700x::setup_netif()
 {
-    spi_init();
 
     // Base config is default eth base config, with different key and description
     esp_netif_inherent_config_t base_config = {
@@ -420,6 +419,12 @@ bool QCA700x::get_ip6_linklocal(esp_ip6_addr_t *if_ip6)
 
 void QCA700x::state_machine_loop()
 {
+    // Initialize SPI on first use
+    if (!spi_initialized) {
+        spi_init();
+        spi_initialized = true;
+    }
+
     // Allocate SPI buffer on first use
     if (spi_buffer == nullptr) {
         spi_buffer = (uint8_t *)calloc_psram_or_dram(QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE + 1, sizeof(uint8_t));
