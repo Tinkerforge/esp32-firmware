@@ -674,11 +674,20 @@ void ISO20::handle_session_stop_req()
     // For Terminate and Pause, reset the session after sending response
     if (req->ChargingSession == iso20_chargingSessionType_Terminate ||
         req->ChargingSession == iso20_chargingSessionType_Pause) {
-        // Cancel any pending timeout
-        if (next_timeout != 0) {
-            task_scheduler.cancel(next_timeout);
-            next_timeout = 0;
-        }
+        // Cancel any pending sequence timeout using the shared helper
+        cancel_sequence_timeout(next_timeout);
+
+        // [V2G20-1633] Wait at least 5s before closing TCP connection
+        // Schedule delayed socket reset to allow EV to close first
+        // Capture the current socket fd to avoid closing a new session's socket
+        // if a new connection arrives before the 5s delay expires
+        int socket_to_close = iso15118.common.get_active_socket();
+        task_scheduler.scheduleOnce([socket_to_close]() {
+            // Only close if this is still the same socket (no new session connected)
+            if (iso15118.common.get_active_socket() == socket_to_close) {
+                iso15118.common.reset_active_socket();
+            }
+        }, 5_s);
     }
 }
 

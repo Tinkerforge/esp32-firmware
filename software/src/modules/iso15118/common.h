@@ -127,6 +127,7 @@ public:
     void prepare_din_header(struct din_MessageHeaderType *header);
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
     void reset_active_socket();
+    int get_active_socket() const { return active_socket; }
 
     // TLS state - set by SDP when EV requests TLS
     bool tls_requested_by_ev = false;   // EV requested TLS in SDP
