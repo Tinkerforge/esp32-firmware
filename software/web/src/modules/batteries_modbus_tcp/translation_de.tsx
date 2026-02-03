@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "batteries_modbus_tcp": {
         "status": {
@@ -27,7 +28,7 @@ let x = {
             "table_hailei_hybrid_inverter": "Hailei Hybrid-Wechselrichter (TPH-Serie)",
             "table_sungrow_hybrid_inverter": "Sungrow Hybrid-Wechselrichter (SH-Serie)",
             "table_sma_hybrid_inverter": "SMA Hybrid-Wechselrichter",
-            "sma_forecast_based_charging_warning": <>Das SMA eigene <a href="https://manuals.sma.de/HM-20/de-DE/8644254859.html">prognosebasierte Batterieladen</a> kann die Batteriesteuerung beinträchtigen. Bitte sicherstellen, dass das prognosebasierte Batterieladen im SMA Sunny Portal deaktiviert ist.</>,
+            "sma_forecast_based_charging_warning": <>Das SMA eigene <a href={removeUnicodeHacks("https://manuals.sma.de/HM-20/de-DE/8644254859.html")}>prognosebasierte Batterieladen</a> kann die Batteriesteuerung beinträchtigen. Bitte sicherstellen, dass das prognosebasierte Batterieladen im SMA Sunny Portal deaktiviert ist.</>,
             "device_address": "Geräteadresse",
             "device_address_muted": /*SFN*/(device_address: number) => "typischerweise " + device_address/*NF*/,
             "repeat_interval": "Wiederholungs-Interval",
