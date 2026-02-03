@@ -5,12 +5,12 @@ let x = {
         "status": {
         },
         "navbar": {
-            "batteries": "Speichersteuerung"
+            "batteries": "Batteriesteuerung"
         },
         "content": {
-            "batteries": "Speichersteuerung",
+            "batteries": "Batteriesteuerung",
 
-            "experimental": "Die Speichersteuerung ist experimentell; Änderungen vorbehalten.",
+            "experimental": "Die Batteriesteuerung ist experimentell; Änderungen vorbehalten.",
 
             "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/,
 
@@ -41,7 +41,7 @@ let x = {
 
             "managed_batteries": "Kontrollierte Batteriespeicher",
 
-            "enable_battery_control": "Speichersteuerung aktiviert",
+            "enable_battery_control": "Batteriesteuerung aktiviert",
 
             "table_battery_display_name": "Anzeigename",
             "table_battery_class": "Klasse",
@@ -131,8 +131,8 @@ let x = {
             "invalid_feedback_all_ignored": "Es können nicht alle Bedingungen gleichzeitig ignoriert werden."
         },
         "script": {
-            "save_failed": "Speichern der Speichersteuerungs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Speichersteuerungs-Einstellungen",
+            "save_failed": "Speichern der Batteriesteuerungs-Einstellungen fehlgeschlagen.",
+            "reboot_content_changed": "Batteriesteuerungs-Einstellungen",
             "battery": /*SFN*/(slot: number|"?") => "Speicher #" + slot/*NF*/
         }
     }
