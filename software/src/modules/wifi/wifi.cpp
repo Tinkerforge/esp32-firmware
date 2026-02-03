@@ -429,7 +429,7 @@ static const char *reason2str(uint8_t reason)
         case WIFI_REASON_AUTH_FAIL:
             return "Authentication failed. Is the passphrase correct?";
         case WIFI_REASON_ASSOC_FAIL:
-            return "Assiociation failed";
+            return "Association failed";
         case WIFI_REASON_HANDSHAKE_TIMEOUT:
         case WIFI_REASON_BEACON_TIMEOUT:
             return "Reception too poor";
