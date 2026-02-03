@@ -556,9 +556,19 @@ void EEBus::register_events()
             float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
 
             int charged_wh = !charging ? -1 : ((values[6] - meter_start) * 1000.0f);
-
-            eebus.usecases->ev_charging_electricity_measurement.update_measurements((int)(values[0] * 1000.0f), (int)(values[1] * 1000.0f), (int)(values[2] * 1000.0f), (int)values[3], (int)values[4], (int)values[5], charged_wh);
-
+            int amps_p1 = (int)(values[0] * 1000.0f);
+            int amps_p2 = (int)(values[1] * 1000.0f);
+            int amps_p3 = (int)(values[2] * 1000.0f);
+            int power_p1 = (int)values[3];
+            int power_p2 = (int)values[4];
+            int power_p3 = (int)values[5];
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+            eebus.usecases->evcem->update_measurements(amps_p1, amps_p2, amps_p3, power_p1, power_p2, power_p3, charged_wh);
+#endif
+#ifdef EEBUS_ENABLE_MPC_USECASE
+            eebus.usecases->mpc->update_current(amps_p1, amps_p2, amps_p3);
+            eebus.usecases->mpc->update_power(power_p1 + power_p2 + power_p3, power_p1, power_p2, power_p3);
+#endif
             return EventResult::OK;
         });
 
