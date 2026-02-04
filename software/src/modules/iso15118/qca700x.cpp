@@ -415,8 +415,6 @@ void QCA700x::setup_netif()
             }
             mac_str[0] = ' '; // Replace leading colon.
 
-            logger.printfln("driver_set_mac_filter called with handle %p; add %d; mac:%s", handle, add, mac_str);
-
             return ESP_OK;
         }
     };
