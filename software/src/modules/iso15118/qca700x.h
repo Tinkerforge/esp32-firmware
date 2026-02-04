@@ -86,6 +86,8 @@ private:
     void spi_write_footer();
     void spi_init();
     void setup_l2tap();
+    void flush_receive_buffer();
+    int16_t find_sof_marker(const uint8_t *data, uint16_t length);
 
     SPISettings spi_settings;
     SPIClass *vspi;

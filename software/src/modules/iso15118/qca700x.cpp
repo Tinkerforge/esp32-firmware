@@ -163,6 +163,45 @@ uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
     return 0;
 }
 
+void QCA700x::flush_receive_buffer()
+{
+    uint16_t total_flushed = 0;
+    uint16_t available;
+    uint8_t discard[256];
+
+    while ((available = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA)) > 0) {
+        uint16_t to_read = std::min(available, (uint16_t)sizeof(discard));
+        write_register(QCA700X_SPI_REG_BFR_SIZE, to_read);
+        spi_select();
+        spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
+        spi_read(discard, to_read);
+        spi_deselect();
+        total_flushed += to_read;
+    }
+
+    if (total_flushed > 0) {
+        logger.printfln("QCA700x: Flushed %u bytes from hardware buffer", total_flushed);
+    }
+}
+
+int16_t QCA700x::find_sof_marker(const uint8_t *data, uint16_t length)
+{
+    // SOF marker is at offset 4 in the packet (after 4-byte length field)
+    // Need at least 8 bytes to check: 4 bytes length + 4 bytes SOF
+    if (length < 8) {
+        return -1;
+    }
+
+    // Start at offset 1 to skip current (corrupted) packet start
+    for (uint16_t i = 1; i <= length - 8; i++) {
+        if (data[i+4] == 0xAA && data[i+5] == 0xAA &&
+            data[i+6] == 0xAA && data[i+7] == 0xAA) {
+            return i;
+        }
+    }
+    return -1;  // Not found
+}
+
 void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
 {
     write_register(QCA700X_SPI_REG_BFR_SIZE, length + QCA700X_SEND_HEADER_SIZE + QCA700X_SEND_FOOTER_SIZE);
@@ -183,7 +222,13 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length)
     // Check packet length
     uint32_t packet_length = data[3] | (data[2] << 8) | (data[1] << 16) | (data[0] << 24);
     if (packet_length > QCA700X_BUFFER_SIZE) {
-        logger.printfln("QCA700x: Packet length too long: %lu > %u", packet_length, QCA700X_BUFFER_SIZE);
+        // Log diagnostic info for SPI corruption debugging
+        const uint16_t rdbuf_byte_ava = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA);
+        logger.printfln("QCA700x: Packet length too long: %lu > %u (RDBUF_BYTE_AVA=%u, buf_len=%u)",
+                        packet_length, QCA700X_BUFFER_SIZE, rdbuf_byte_ava, length);
+        logger.printfln("QCA700x: First 16 bytes: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                        data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+                        data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
         return -1;
     }
 
@@ -383,7 +428,7 @@ void QCA700x::received_data_to_netif(const uint8_t *data, const uint16_t length)
     if (netif == NULL) {
         // netif is only set up once modem is found.
         // The received_data_to_netif can be called before that.
-        // This is expected behavior.
+        // This is expected behavior, we just return in that case.
         return;
     }
 
@@ -457,16 +502,34 @@ void QCA700x::state_machine_loop()
     while (spi_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
         int16_t ethernet_frame_length = check_receive_frame(spi_buffer, spi_buffer_length);
 
-        // Error -4 means partial frame - need to read more data
+        // Error -4 means partial frame (EOF not found) - wait for more data
         if (ethernet_frame_length == -4) {
             break;
         }
 
         if (ethernet_frame_length < 0) {
-            // Invalid frame, discard buffer
-            logger.printfln("QCA700x: Ethernet frame error: %d", ethernet_frame_length);
-            spi_buffer_length = 0;
-            break;
+            // Log detailed diagnostics
+            logger.printfln("QCA700x: Frame error %d, buf_len=%u, attempting recovery...",
+                            ethernet_frame_length, spi_buffer_length);
+
+            // Try to find next SOF marker in buffer
+            int16_t sof_offset = find_sof_marker(spi_buffer, spi_buffer_length);
+
+            if (sof_offset > 0) {
+                // Found SOF - shift buffer and continue
+                logger.printfln("QCA700x: Found SOF at offset %d, skipping %d corrupted bytes",
+                                sof_offset, sof_offset);
+                memmove(spi_buffer, spi_buffer + sof_offset, spi_buffer_length - sof_offset);
+                spi_buffer_length -= sof_offset;
+                // Continue loop to try parsing from new position
+                continue;
+            } else {
+                // No SOF found - flush hardware buffer and discard local buffer
+                logger.printfln("QCA700x: No SOF found in %u bytes, flushing buffers", spi_buffer_length);
+                flush_receive_buffer();
+                spi_buffer_length = 0;
+                break;
+            }
         }
 
         // Frame starts after QCA700x header
