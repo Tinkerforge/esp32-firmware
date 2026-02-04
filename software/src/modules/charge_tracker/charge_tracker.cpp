@@ -628,33 +628,39 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
 size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language)
 {
     if (display_name_cache[user_id].length > DISPLAY_NAME_LENGTH) {
-        size_t length = 0;
-        uint32_t buf[9] = {}; // Make sure that short names are zero-padded.
-        task_scheduler.await([&length, user_id, &buf, language]() {length = users.get_display_name(user_id, reinterpret_cast<char *>(buf), language);});
-        if (length > sizeof(display_name_cache[user_id].name)) {
-            logger.printfln("Returned user name too long: [%.*s]", length, reinterpret_cast<char *>(buf));
+        struct {
+            size_t length = 0;
+            char buf[sizeof(display_name_cache[user_id].name)];
+        } name;
+
+        task_scheduler.await([&name, user_id, language]() {
+            name.length = users.get_display_name(user_id, name.buf, language);
+        });
+
+        if (name.length > sizeof(display_name_cache[user_id].name)) {
+            logger.printfln("Returned user name too long: [%.*s]", sizeof(name.buf), name.buf);
             display_name_cache[user_id].length = 0;
         } else {
-            // Ignore actual name length in order to copy zero-padding as well.
-            uint32_t *src = buf;
-            uint32_t *dst_start = display_name_cache[user_id].name;
-            uint32_t *dst_end = dst_start + ARRAY_SIZE(display_name_cache[user_id].name);
-            do {
-                *dst_start++ = *src++;
-            } while (dst_start < dst_end);
+            const size_t copy_length = (name.length + 3) & -4; // Round up to IRAM-compatible multiple of 32bit.
+            memcpy(display_name_cache[user_id].name, name.buf, copy_length); // The compiler is hell-bent on using memcpy here, so let it have its way.
 
-            display_name_cache[user_id].length = length;
+            display_name_cache[user_id].length = name.length;
         }
     }
 
-    uint32_t *src_start = display_name_cache[user_id].name;
-    uint32_t *src_end = src_start + (display_name_cache[user_id].length + 3) / 4; // Round up; copies some buffer slack that must be zero-filled. See padding above.
-    uint32_t *dst = reinterpret_cast<uint32_t *>(ret_buf);
-    while (src_start < src_end) {
-        *dst++ = *src_start++;
+    if (display_name_cache[user_id].length > 0) {
+        // Can't use memcpy because that uses illegal IRAM reads when ret_buf is not aligned.
+        uint32_t *src_start = display_name_cache[user_id].name;
+        uint32_t *src_end = src_start + (display_name_cache[user_id].length + 3) / 4; // Round up to IRAM-compatible multiple of 32bit; copies some buffer slack behind termination that the caller must ignore.
+        uint32_t *dst = reinterpret_cast<uint32_t *>(ret_buf);
+
+        while (src_start < src_end) {
+            *dst++ = *src_start++;
+        }
     }
 
     ret_buf[display_name_cache[user_id].length] = '\0';
+
     return display_name_cache[user_id].length;
 }
 
