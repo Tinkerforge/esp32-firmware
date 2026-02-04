@@ -95,7 +95,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
             }
             return result;
         },
-        [props.users, props.charge.user_id]
+        [props.users, props.charge.user_id, get_active_language_enum()]
     );
 
     let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
