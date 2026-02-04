@@ -172,6 +172,10 @@ void SLAC::handle_modem_initialization(void)
     // Set we can set up the netif for l2tap communication.
     iso15118.qca700x.setup_netif();
 
+    // Flush any garbage data that might be in the modem's buffer after initialization
+    // The QCA700X can have stale data from previous sessions or initialization
+    iso15118.qca700x.flush_all_buffers();
+
     // Initialize buffer for l2tap communication once we know that the modem is available
     // If the modem is never used, the buffer is not allocated
     // Buffer only needs to hold max Ethernet frame size since l2tap delivers complete frames

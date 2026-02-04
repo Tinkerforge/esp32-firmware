@@ -86,7 +86,7 @@ private:
     void spi_write_footer();
     void spi_init();
     void setup_l2tap();
-    void flush_receive_buffer();
+    void flush_receive_buffer();  // Flush hardware buffer only
     int16_t find_sof_marker(const uint8_t *data, uint16_t length);
 
     SPISettings spi_settings;
@@ -102,6 +102,15 @@ private:
     // Flag to track SPI initialization
     bool spi_initialized = false;
 
+    // Previous frame info for corruption debugging
+    uint16_t prev_frame_length = 0;
+    uint16_t prev_frame_eth_type = 0;
+    uint8_t prev_frame_header[32] = {0};
+    // Previous buffer state for debugging
+    uint16_t prev_total_frame_length = 0;
+    int32_t prev_remaining_length = 0;
+    uint16_t prev_buf_len_before = 0;
+
 public:
     esp_qca700x_netif_driver_t driver;
     esp_eth_netif_glue_handle_t handle;
@@ -114,7 +123,7 @@ public:
     void write_register(const uint16_t reg, const uint16_t value);
     uint16_t read_burst(uint8_t *data, const uint16_t length);
     void write_burst(const uint8_t *data, const uint16_t length);
-    int16_t check_receive_frame(const uint8_t *data, const uint16_t length);
+    int16_t check_receive_frame(const uint8_t *data, const uint16_t length, uint16_t *total_frame_length_out = nullptr);
 
     void setup_netif();
     void received_data_to_netif(const uint8_t *data, const uint16_t length);
@@ -122,6 +131,7 @@ public:
     void link_up();
     void link_down();
     void state_machine_loop();
+    void flush_all_buffers();  // Flush both hardware and local buffers
 
     // Check if l2tap is ready for use
     bool is_l2tap_ready() const { return tap >= 0; }

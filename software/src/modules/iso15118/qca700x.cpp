@@ -184,6 +184,26 @@ void QCA700x::flush_receive_buffer()
     }
 }
 
+void QCA700x::flush_all_buffers()
+{
+    // Flush hardware receive buffer (QCA700X)
+    flush_receive_buffer();
+
+    // Flush local SPI buffer
+    if (spi_buffer_length > 0) {
+        logger.printfln("QCA700x: Discarding %u bytes from local buffer", spi_buffer_length);
+        spi_buffer_length = 0;
+    }
+
+    // Reset previous frame tracking
+    prev_frame_length = 0;
+    prev_frame_eth_type = 0;
+    memset(prev_frame_header, 0, sizeof(prev_frame_header));
+    prev_total_frame_length = 0;
+    prev_remaining_length = 0;
+    prev_buf_len_before = 0;
+}
+
 int16_t QCA700x::find_sof_marker(const uint8_t *data, uint16_t length)
 {
     // SOF marker is at offset 4 in the packet (after 4-byte length field)
@@ -216,10 +236,17 @@ void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
     iso15118.trace_packet(data, length);
 }
 
-// Returns ethernet frame length if frame is valid, otherwise negative number
-int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length)
+// Checks frame validity and returns ethernet frame length if valid.
+// Also stores the total frame length (for removal from buffer) via out parameter.
+// Returns negative number on error.
+int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length, uint16_t *total_frame_length_out)
 {
-    // Check packet length
+    // Need at least 12 bytes to read packet_length, SOF, and ethernet_frame_length fields
+    if (length < QCA700X_RECV_HEADER_SIZE) {
+        return -4;  // Partial frame, we need more data
+    }
+
+    // Check packet length (this is the authoritative length from QCA700X hardware)
     uint32_t packet_length = data[3] | (data[2] << 8) | (data[1] << 16) | (data[0] << 24);
     if (packet_length > QCA700X_BUFFER_SIZE) {
         // Log diagnostic info for SPI corruption debugging
@@ -243,21 +270,49 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length)
         return -3;
     }
 
-    // Check EOF (end of frame)
-    if ((data[packet_length+QCA700X_HW_PKT_SIZE-2] != 0x55) || (data[packet_length+QCA700X_HW_PKT_SIZE-1] != 0x55)) {
-        logger.printfln("QCA700x: Footer mismatch");
+    // Total frame size for buffer removal:
+    // The QCA700X packet format has EOF at position (packet_length + 2) and (packet_length + 3)
+    // So total bytes = packet_length + 4 = packet_length + QCA700X_HW_PKT_SIZE
+    const uint16_t total_frame_length = packet_length + QCA700X_HW_PKT_SIZE;
+
+    // Check if we have enough data for the complete frame including EOF
+    if (length < total_frame_length) {
+        // Partial frame: Wait for more data
         return -4;
+    }
+
+    // We  have enough data: Check EOF (end of frame)
+    // EOF is at packet_length + 2 and packet_length + 3 (i.e., total_frame_length - 2 and - 1)
+    if ((data[total_frame_length - 2] != 0x55) || (data[total_frame_length - 1] != 0x55)) {
+        logger.printfln("QCA700x: Footer mismatch at offset %u (found 0x%02x 0x%02x)",
+                        total_frame_length - 2, data[total_frame_length - 2], data[total_frame_length - 1]);
+        return -5;
     }
 
     const uint32_t ethernet_frame_length = data[8] | (data[9] << 8);
     if (ethernet_frame_length < QCA700X_ETHERNET_FRAME_MIN_SIZE) {
         logger.printfln("QCA700x: Ethernet frame length too short: %lu < %u", ethernet_frame_length, QCA700X_ETHERNET_FRAME_MIN_SIZE);
-        return -5;
+        return -6;
     }
 
     if (ethernet_frame_length > QCA700X_BUFFER_SIZE) {
         logger.printfln("QCA700x: Ethernet frame length too long: %lu > %u", ethernet_frame_length, QCA700X_BUFFER_SIZE);
-        return -6;
+        return -7;
+    }
+
+    // Verify consistency: packet_length should equal ethernet_frame_length + 10
+    // (SOF:4 + eth_len:2 + reserved:2 + ethernet_frame_length + EOF:2 = eth_frame + 10)
+    const uint32_t expected_packet_length = ethernet_frame_length + 10;
+    if (packet_length != expected_packet_length) {
+        logger.printfln("QCA700x: Length mismatch! packet_length=%lu, expected=%lu (eth_frame_len=%lu)",
+                        packet_length, expected_packet_length, ethernet_frame_length);
+        // We use the packet length here (hardware value) as authoritative and accept it,
+        // but still log this for debugging for now.
+    }
+
+    // Return total frame length via out parameter
+    if (total_frame_length_out != nullptr) {
+        *total_frame_length_out = total_frame_length;
     }
 
     return ethernet_frame_length;
@@ -500,17 +555,34 @@ void QCA700x::state_machine_loop()
 
     // Process all complete frames in the buffer
     while (spi_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
-        int16_t ethernet_frame_length = check_receive_frame(spi_buffer, spi_buffer_length);
+        // Get both ethernet frame length and total frame length from check_receive_frame
+        // total_frame_length is calculated from packet_length
+        uint16_t total_frame_length = 0;
+        int16_t ethernet_frame_length = check_receive_frame(spi_buffer, spi_buffer_length, &total_frame_length);
 
-        // Error -4 means partial frame (EOF not found) - wait for more data
+        // Error -4 means partial frame: Wait for more data
         if (ethernet_frame_length == -4) {
             break;
         }
 
         if (ethernet_frame_length < 0) {
-            // Log detailed diagnostics
+            // Log detailed diagnostics including previous frame info
             logger.printfln("QCA700x: Frame error %d, buf_len=%u, attempting recovery...",
                             ethernet_frame_length, spi_buffer_length);
+            logger.printfln("QCA700x: Previous frame: len=%u, eth_type=0x%04X",
+                            prev_frame_length, prev_frame_eth_type);
+            logger.printfln("QCA700x: Previous buffer state: buf_before=%u, total_frame=%u, remaining=%ld",
+                            prev_buf_len_before, prev_total_frame_length, (long)prev_remaining_length);
+            logger.printfln("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                            prev_frame_header[0], prev_frame_header[1], prev_frame_header[2], prev_frame_header[3],
+                            prev_frame_header[4], prev_frame_header[5], prev_frame_header[6], prev_frame_header[7],
+                            prev_frame_header[8], prev_frame_header[9], prev_frame_header[10], prev_frame_header[11],
+                            prev_frame_header[12], prev_frame_header[13], prev_frame_header[14], prev_frame_header[15]);
+            logger.printfln("QCA700x: Previous frame header: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                            prev_frame_header[16], prev_frame_header[17], prev_frame_header[18], prev_frame_header[19],
+                            prev_frame_header[20], prev_frame_header[21], prev_frame_header[22], prev_frame_header[23],
+                            prev_frame_header[24], prev_frame_header[25], prev_frame_header[26], prev_frame_header[27],
+                            prev_frame_header[28], prev_frame_header[29], prev_frame_header[30], prev_frame_header[31]);
 
             // Try to find next SOF marker in buffer
             int16_t sof_offset = find_sof_marker(spi_buffer, spi_buffer_length);
@@ -574,9 +646,30 @@ void QCA700x::state_machine_loop()
             }
         }
 
-        // Remove processed frame from buffer
-        const uint16_t total_frame_length = ethernet_frame_length + QCA700X_RECV_HEADER_SIZE + QCA700X_RECV_FOOTER_SIZE;
+        // Save frame info for debugging (in case next frame is corrupted)
+        prev_frame_length = ethernet_frame_length;
+        prev_frame_eth_type = eth_type;
+        memcpy(prev_frame_header, frame, std::min((int)ethernet_frame_length, 32));
+
+        // Remove processed frame from buffer using total_frame_length from check_receive_frame
+        // (calculated from hardware packet_length, not derived from ethernet_frame_length)
         const int32_t remaining_length = spi_buffer_length - total_frame_length;
+
+        // Save buffer state for debugging (in case next frame is corrupted)
+        prev_buf_len_before = spi_buffer_length;
+        prev_total_frame_length = total_frame_length;
+        prev_remaining_length = remaining_length;
+
+        // This should never happen if check_receive_frame() works correctly
+        if (remaining_length < 0) {
+            logger.printfln("QCA700x: CRITICAL BUG - negative remaining! buf_len=%u, total_frame=%u, remaining=%ld",
+                            spi_buffer_length, total_frame_length, (long)remaining_length);
+            logger.printfln("QCA700x: This indicates check_receive_frame() approved a frame larger than buffer!");
+            // Recovery: discard everything and start fresh
+            flush_receive_buffer();
+            spi_buffer_length = 0;
+            break;
+        }
 
         if (remaining_length > 0) {
             // Move remaining data to start of buffer
