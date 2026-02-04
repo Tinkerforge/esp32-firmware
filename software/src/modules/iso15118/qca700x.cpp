@@ -381,7 +381,9 @@ void QCA700x::link_down()
 void QCA700x::received_data_to_netif(const uint8_t *data, const uint16_t length)
 {
     if (netif == NULL) {
-        logger.printfln("QCA700x: netif not setup");
+        // netif is only set up once modem is found.
+        // The received_data_to_netif can be called before that.
+        // This is expected behavior.
         return;
     }
 
