@@ -186,8 +186,12 @@ bool CSVChargeLogGenerator::isUserFiltered(uint8_t user_id, int user_filter) {
     }
 }
 
-String CSVChargeLogGenerator::getUserName(uint8_t user_id, Language language) {
-    if (user_id == 0) {
+String CSVChargeLogGenerator::getUserDisplayName(uint8_t user_id, Language language) {
+    char display_name_buf[33] = {0};
+
+    size_t name_len = users.get_display_name(user_id, display_name_buf);
+
+    if (name_len == 0 || (user_id == 0 && strcmp(display_name_buf, "Anonymous") == 0)) {
         return CSVTranslations::getUnknownUser(language);
     }
 
@@ -195,9 +199,7 @@ String CSVChargeLogGenerator::getUserName(uint8_t user_id, Language language) {
         return CSVTranslations::getDeletedUser(language);
     }
 
-    char username_buf[16];
-    snprintf(username_buf, sizeof(username_buf), "user_%d", user_id);
-    return String(username_buf);
+    return String(display_name_buf, name_len);
 }
 
 String CSVChargeLogGenerator::generateCSVHeader(const CSVGenerationParams& params) {
