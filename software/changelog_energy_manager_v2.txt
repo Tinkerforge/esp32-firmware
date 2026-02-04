@@ -251,7 +251,7 @@
 - Improve web server and web sockets robustness against dropped connections
 - Fix saving display config
 
-2026-02-04: 1.4.0 (<unknown>)
+2026-02-04: 1.4.0 (a37f9364)
 - Add battery control
 - Add translated SunSpec scan report
 - Fix Carlo Gavazzi EM270 and EM280 virtual meter config
