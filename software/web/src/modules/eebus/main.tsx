@@ -38,7 +38,7 @@ import {ShipConnectionState} from "./ship_connection_state.enum";
 import {NodeState} from "./node_state.enum";
 import {CollapsedSection} from "../../ts/components/collapsed_section";
 import {FormSeparator} from "../../ts/components/form_separator";
-import {LPCState} from "./lpc_state.enum";
+import {LoadcontrolState} from "./loadcontrol_state.enum";
 import {usecases} from "./api";
 import {useState} from "preact/hooks";
 import {Usecases} from "./usecases.enum";
@@ -468,12 +468,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             <td>Usecase State</td>
                                             <td>
                                                 {{
-                                                    [LPCState.Startup]: "Startup",
-                                                    [LPCState.Init]: "Init",
-                                                    [LPCState.UnlimitedControlled]: "UnlimitedControlled",
-                                                    [LPCState.Limited]: "Limited",
-                                                    [LPCState.Failsafe]: "Failsafe",
-                                                    [LPCState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                                    [LoadcontrolState.Startup]: "Startup",
+                                                    [LoadcontrolState.Init]: "Init",
+                                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
+                                                    [LoadcontrolState.Limited]: "Limited",
+                                                    [LoadcontrolState.Failsafe]: "Failsafe",
+                                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
                                                 }[state.usecases.power_consumption_limitation.usecase_state] ?? state.usecases.power_consumption_limitation.usecase_state}
                                             </td>
                                         </tr>
@@ -481,7 +481,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             <td>Limit Active</td>
                                             <td>
                                                 {state.usecases.power_consumption_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
-                                                {state.usecases.power_consumption_limitation.usecase_state === LPCState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                {state.usecases.power_consumption_limitation.usecase_state === LoadcontrolState.Limited && state.usecases.power_consumption_limitation.outstanding_duration_s != null
                                                     ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s} s)`
                                                     : null}
                                             </td>
@@ -498,7 +498,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             <td>Failsafe Limit Duration</td>
                                             <td>
                                                 {state.usecases.power_consumption_limitation.failsafe_limit_duration_s}
-                                                {state.usecases.power_consumption_limitation.usecase_state === LPCState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
+                                                {state.usecases.power_consumption_limitation.usecase_state === LoadcontrolState.Failsafe && state.usecases.power_consumption_limitation.outstanding_duration_s != null
                                                     ? ` (${state.usecases.power_consumption_limitation.outstanding_duration_s})`
                                                     : null} s
                                             </td>
@@ -506,6 +506,59 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         <tr>
                                             <td>Constraints Power Maximum</td>
                                             <td>{state.usecases.power_consumption_limitation.constraints_power_maximum} W</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>)}
+                        {state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPP) > -1 && (
+                            <tr>
+                                <td>Limitation of Power Production</td>
+                                <td>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <tbody>
+                                        <tr>
+                                            <td>Usecase State</td>
+                                            <td>
+                                                {{
+                                                    [LoadcontrolState.Startup]: "Startup",
+                                                    [LoadcontrolState.Init]: "Init",
+                                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
+                                                    [LoadcontrolState.Limited]: "Limited",
+                                                    [LoadcontrolState.Failsafe]: "Failsafe",
+                                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+                                                }[state.usecases.power_production_limitation.usecase_state] ?? state.usecases.power_production_limitation.usecase_state}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Limit Active</td>
+                                            <td>
+                                                {state.usecases.power_production_limitation.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}
+                                                {state.usecases.power_production_limitation.usecase_state === LoadcontrolState.Limited && state.usecases.power_production_limitation.outstanding_duration_s != null
+                                                    ? ` (${state.usecases.power_production_limitation.outstanding_duration_s} s)`
+                                                    : null}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Current Limit</td>
+                                            <td>{state.usecases.power_production_limitation.current_limit} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Failsafe Limit Power</td>
+                                            <td>{state.usecases.power_production_limitation.failsafe_limit_power_w} W</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Failsafe Limit Duration</td>
+                                            <td>
+                                                {state.usecases.power_production_limitation.failsafe_limit_duration_s}
+                                                {state.usecases.power_production_limitation.usecase_state === LoadcontrolState.Failsafe && state.usecases.power_production_limitation.outstanding_duration_s != null
+                                                    ? ` (${state.usecases.power_production_limitation.outstanding_duration_s})`
+                                                    : null} s
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Constraints Power Maximum</td>
+                                            <td>{state.usecases.power_production_limitation.constraints_power_maximum} W</td>
                                         </tr>
                                         </tbody>
                                     </table>
