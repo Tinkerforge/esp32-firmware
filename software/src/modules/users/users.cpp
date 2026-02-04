@@ -502,7 +502,11 @@ size_t Users::get_display_name(uint8_t user_id, char *ret_buf, Language language
     }
 
     // length should never be 0 except if we manually upload test data to the charger.
-    if (length == 0 || (user_id == 0 && strcmp(ret_buf, "Anonymous") == 0)) {
+    if (length == 0) {
+        const char *buf = CSVTranslations::getDeletedUser(language);
+        length = strlen(buf);
+        strncpy(ret_buf, buf, DISPLAY_NAME_LENGTH);
+    } else if (user_id == 0 && strcmp(ret_buf, "Anonymous") == 0) {
         const char *buf = CSVTranslations::getUnknownUser(language);
         length = strlen(buf);
         strncpy(ret_buf, buf, DISPLAY_NAME_LENGTH);
