@@ -245,6 +245,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
         api_state.get("pev_mac")->get(i)->updateUint(pev_mac[i]);
     }
+
     memcpy(pev_run_id, cm_slac_parm_request.run_id, SLAC_RUN_ID_LENGTH);
     for (size_t i = 0; i < SLAC_RUN_ID_LENGTH; i++) {
         api_state.get("pev_run_id")->get(i)->updateUint(pev_run_id[i]);
@@ -437,6 +438,9 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     log_cm_slac_match_request(cm_slac_match_request);
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
+
+    // Add PEV MAC to seen list once SLAC is done
+    iso15118.common.add_seen_mac_address(pev_mac);
 
     // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
     task_scheduler.scheduleOnce([] {

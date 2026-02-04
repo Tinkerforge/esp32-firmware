@@ -33,6 +33,9 @@
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
+#define COMMON_MAC_ADDRESS_LENGTH 6
+#define COMMON_SEEN_MAC_COUNT 8
+
 // Result of session ID check in SessionSetupReq handling
 enum class SessionIdResult {
     NewSession,    // New session: received ID was all zeros or different from stored
@@ -107,11 +110,15 @@ public:
     void state_machine_loop();
     void pre_setup();
 
+    void add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH]);
+    void set_soc(int8_t soc);
+
     // TLS handler
     ISOTLS tls;
 
     ConfigRoot api_state;
     Config supported_protocols_prototype;
+    Config seen_macs_prototype;
 
     uint8_t session_id[SESSION_ID_LENGTH];
     enum class ExiType : uint8_t {

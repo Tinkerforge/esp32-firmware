@@ -45,11 +45,22 @@
 void Common::pre_setup()
 {
     supported_protocols_prototype = Config::Str("", 0, 32);
+
+    // Prototype for seen_macs array entries
+    seen_macs_prototype = Config::Object({
+        {"mac", Config::Array({
+            Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
+            Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
+        }, new Config{Config::Uint8(0)}, COMMON_MAC_ADDRESS_LENGTH, COMMON_MAC_ADDRESS_LENGTH, Config::type_id<Config::ConfUint>())},
+        {"last_seen", Config::Uint32(0)}
+    });
+
     api_state = Config::Object({
         {"state", Config::Uint8(0)},
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
         {"protocol", Config::Str("", 0, 32)},
-        {"tls_active", Config::Bool(false)}
+        {"tls_active", Config::Bool(false)},
+        {"seen_macs", Config::Array({}, &seen_macs_prototype, 0, COMMON_SEEN_MAC_COUNT, Config::type_id<Config::ConfObject>())}
     });
 
     if (exi_data == nullptr) {
@@ -520,4 +531,57 @@ bool validate_session_id(const uint8_t *received_id, size_t received_len, const 
     }
 
     return true;
+}
+
+void Common::set_soc(int8_t soc)
+{
+    // TODO: Add SoC to slot0 meter.
+}
+
+void Common::add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH])
+{
+    const uint32_t now = time(nullptr);
+
+    // Check if MAC already exists in array
+    for (size_t i = 0; i < api_state.get("seen_macs")->count(); i++) {
+        bool matches = true;
+        for (size_t j = 0; j < COMMON_MAC_ADDRESS_LENGTH; j++) {
+            if (api_state.get("seen_macs")->get(i)->get("mac")->get(j)->asUint() != mac[j]) {
+                matches = false;
+                break;
+            }
+        }
+
+        if (matches) {
+            // MAC exists, update timestamp
+            api_state.get("seen_macs")->get(i)->get("last_seen")->updateUint(now);
+            return;
+        }
+    }
+
+    // MAC doesn't exist - find where to add it
+    size_t target_idx;
+    if (api_state.get("seen_macs")->count() < COMMON_SEEN_MAC_COUNT) {
+        // Array not full, add new entry
+        api_state.get("seen_macs")->add();
+        target_idx = api_state.get("seen_macs")->count() - 1;
+    } else {
+        // Array full, find oldest entry to replace
+        target_idx = 0;
+        uint32_t oldest_time = UINT32_MAX;
+
+        for (size_t i = 0; i < api_state.get("seen_macs")->count(); i++) {
+            uint32_t entry_time = api_state.get("seen_macs")->get(i)->get("last_seen")->asUint();
+            if (entry_time < oldest_time) {
+                oldest_time = entry_time;
+                target_idx = i;
+            }
+        }
+    }
+
+    // Update the target entry with new MAC and timestamp
+    for (size_t i = 0; i < COMMON_MAC_ADDRESS_LENGTH; i++) {
+        api_state.get("seen_macs")->get(target_idx)->get("mac")->get(i)->updateUint(mac[i]);
+    }
+    api_state.get("seen_macs")->get(target_idx)->get("last_seen")->updateUint(now);
 }
