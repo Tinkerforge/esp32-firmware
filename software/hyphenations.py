@@ -1026,6 +1026,7 @@ de_hyph = [
     "Spei-cher-mo-dus",
     "pro-gno-se-ba-sier-te",
     "Bat-te-rie-steu-e-rung",
+    "Bat-te-rie-steu-e-rungs",
     "bein-träch-ti-gen",
     "si-cher-stel-len",
     "Wie-der-ho-lungs",
