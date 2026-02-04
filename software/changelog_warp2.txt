@@ -994,3 +994,12 @@
 - Fix error messages being lost when updating firmware via remote access
 - Fix remote access not being deactivated when device is deleted server-side while offline
 - Improve web server and web sockets robustness against dropped connections
+
+2026-02-04: 2.9.0 (<unknown>)
+- Add battery control
+- Add translated SunSpec scan report
+- Add language selection to charge log download
+- Fix charge logs not showing the unknown user's default name correctly
+- Fix encoding of non-CP-1252 characters in CSV charge logs
+- Fix Carlo Gavazzi EM270 and EM280 virtual meter config
+- Improve translations
