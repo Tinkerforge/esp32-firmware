@@ -502,6 +502,14 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
     state = SLAC::State::WaitForSlacParamRequest;
 }
 
+void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &ind)
+{
+    iso15118.trace("VS_HOST_ACTION.IND: action=%u, version=%u.%u, from %02x:%02x:%02x:%02x:%02x:%02x",
+                   ind.maction, ind.major_version, ind.minor_version,
+                   ind.header.source_mac[0], ind.header.source_mac[1], ind.header.source_mac[2],
+                   ind.header.source_mac[3], ind.header.source_mac[4], ind.header.source_mac[5]);
+}
+
 
 void SLAC::poll_modem(void)
 {
@@ -532,6 +540,8 @@ void SLAC::poll_modem(void)
         case SLAC_MMTYPE_QUALCOMM_GET_SW      | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_get_sw_confirmation(*reinterpret_cast<const CM_QualcommGetSwConfirmation*>(buffer));           break;
         case SLAC_MMTYPE_QUALCOMM_LINK_STATUS | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_link_status_confirmation(*reinterpret_cast<const CM_QualcommLinkStatusConfirmation*>(buffer)); break;
         case SLAC_MMTYPE_QUALCOMM_OP_ATTR     | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_op_attr_confirmation(*reinterpret_cast<const CM_QualcommOpAttrConfirmation*>(buffer));         break;
+        case SLAC_MMTYPE_QUALCOMM_HOST_ACTION | SLAC_MMTYPE_MODE_INDICATION:   handle_cm_qualcomm_host_action_indication(*reinterpret_cast<const CM_QualcommHostActionIndication*>(buffer));     break;
+
         default: logger.printfln("Unhandled mm_type: %04x", mm_type); break;
     }
 }

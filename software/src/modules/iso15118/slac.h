@@ -63,6 +63,7 @@
 #define SLAC_MMTYPE_QUALCOMM_OP_ATTR         0xA068
 #define SLAC_MMTYPE_QUALCOMM_NW_INFO         0xA038
 #define SLAC_MMTYPE_QUALCOMM_GET_SW          0xA000
+#define SLAC_MMTYPE_QUALCOMM_HOST_ACTION     0xA060
 
 #define SLAC_ETHERNET_TYPE_HOMEPLUG 0x88E1
 #define SLAC_ETHERNET_TYPE_IPV6     0x86DD
@@ -357,6 +358,21 @@ struct [[gnu::packed]] CM_QualcommOpAttrConfirmation {
     uint8_t authorization_mode;
 };
 
+struct [[gnu::packed]] CM_QualcommHostActionIndication {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t vendor_mme[3];
+    // MACTION codes:
+    //   0x00 = Start Device (bootloader requests firmware + PIB download)
+    //   0x01 = Store Firmware (runtime wants to upload NVM to host)
+    //   0x02 = Store Parameters (runtime wants to upload PIB to host)
+    //   0x03 = Update Host (both firmware and parameters ready for upload)
+    //   0x04 = Config Memory (bootloader waiting for SDRAM configuration)
+    //   0x05 = Restore Defaults (factory defaults restored)
+    uint8_t maction;          // Action code (see above)
+    uint8_t major_version;    // Firmware major version
+    uint8_t minor_version;    // Firmware minor version
+};
+
 
 class SLAC final
 {
@@ -414,6 +430,7 @@ private:
     void handle_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirmation &cm_qualcomm_get_sw_confirmation);
     void handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation);
     void handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation);
+    void handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &cm_qualcomm_host_action_indication);
 
     void poll_modem(void);
 
