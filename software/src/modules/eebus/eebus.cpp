@@ -35,6 +35,7 @@ extern char local_uid_str[32];
 
 static void update_usecases_from_phases(const Config *_phases_cfg)
 {
+#if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
     if (eebus.usecases == nullptr)
         return;
 
@@ -55,10 +56,12 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
     //logger.printfln("Calling evcem.update_constraints(incoming=%d, outgoing=%d, min_power=%d, max_power=%d)", incoming, outgoing, min_power, max_power);
     eebus.usecases->evcem->update_constraints(milliamps_min, std::min(incoming, outgoing), 100, min_power, max_power, 1000, 0, 1000000, 10);
 #endif
+#endif
 }
 
 static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 {
+#if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
     if (eebus.usecases == nullptr)
         return;
 
@@ -79,6 +82,7 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
     //logger.printfln("Calling evcc.update_operating_state(failure=%d)", charger_state == CHARGER_STATE_ERROR);
     eebus.usecases->evsecc->update_operating_state(charger_state == CHARGER_STATE_ERROR); // TODO: error message
+#endif
 #endif
 }
 
@@ -309,6 +313,17 @@ void EEBus::pre_setup()
              {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
              {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
+        {"power_production_limitation",
+         Config::Object({
+             // Usecase Limitation of power production
+             {"usecase_state", Config::Enum(LPPState::Init)},
+             {"limit_active", Config::Bool(false)},
+             {"current_limit", Config::Uint16(0)},
+             {"failsafe_limit_power_w", Config::Uint16(0)},    // The limit which may have been set by the energy guard
+             {"failsafe_limit_duration_s", Config::Uint32(0)}, // If a failsafe state is entered, how long until this limit is applied before it goes back to default
+             {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power production the device is capable of
+             {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
+         })},
         {"ev_commissioning_and_configuration",
          Config::Object({{"ev_connected", Config::Bool(false)},
                          {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
@@ -536,8 +551,7 @@ static constexpr MeterValueID mvids[] = {
     MeterValueID::FrequencyLAvg,
 };
 
-template<typename T>
-struct MeterValues {
+template <typename T> struct MeterValues {
     T currents[3];
     T powers[3];
     T total_power;
@@ -549,7 +563,8 @@ struct MeterValues {
 };
 static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
 
-static int sanitized(float x, float scale) {
+static int sanitized(float x, float scale)
+{
     return isnan(x) ? INT32_MIN : (int)(x * scale);
 }
 
@@ -615,10 +630,10 @@ void EEBus::register_events()
             eebus.usecases->mpc->update_power(v.total_power, v.powers[0], v.powers[1], v.powers[2]);
             eebus.usecases->mpc->update_energy(v.energy_import, v.energy_export);
             eebus.usecases->mpc->update_current(v.currents[0], v.currents[1], v.currents[2]);
-            eebus.usecases->mpc->update_voltage(v.voltages[0], v.voltages[1], v.voltages[2],
-                                                v.phase_voltages[0], v.phase_voltages[1], v.phase_voltages[2]);
+            eebus.usecases->mpc->update_voltage(v.voltages[0], v.voltages[1], v.voltages[2], v.phase_voltages[0], v.phase_voltages[1], v.phase_voltages[2]);
             eebus.usecases->mpc->update_frequency(v.frequency);
 #endif
+            charged_wh++; // This is only here to shut up the compiler as it thinks charged_wh is unused if evcem is disabled
             return EventResult::OK;
         });
 
