@@ -481,19 +481,34 @@ void Users::search_next_free_user()
     config.get("next_user_id")->updateUint(user_id);
 }
 
-size_t Users::get_display_name(uint8_t user_id, char *ret_buf)
+size_t Users::get_display_name(uint8_t user_id, char *ret_buf, Language language)
 {
+    size_t length = 0;
+
     for (const auto &cfg : config.get("users")) {
         if (cfg.get("id")->asUint() == user_id) {
             const String &s = cfg.get("display_name")->asString();
             strncpy(ret_buf, s.c_str(), 32);
-            return min(s.length(), 32u);
+            length = min(s.length(), 32u);
+            break;
         }
     }
-    File f = LittleFS.open(USERNAME_FILE, "r");
-    f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
-    f.read((uint8_t *)ret_buf, DISPLAY_NAME_LENGTH);
-    return strnlen(ret_buf, 32);
+
+    if (length == 0) {
+        File f = LittleFS.open(USERNAME_FILE, "r");
+        f.seek(user_id * USERNAME_ENTRY_LENGTH + USERNAME_LENGTH, SeekMode::SeekSet);
+        f.read((uint8_t *)ret_buf, DISPLAY_NAME_LENGTH);
+        length = strnlen(ret_buf, 32);
+    }
+
+    // length should never be 0 except if we manually upload test data to the charger.
+    if (length == 0 || (user_id == 0 && strcmp(ret_buf, "Anonymous") == 0)) {
+        const char *buf = CSVTranslations::getUnknownUser(language);
+        length = strlen(buf);
+        strncpy(ret_buf, buf, DISPLAY_NAME_LENGTH);
+    }
+
+    return length;
 }
 
 bool Users::is_user_configured(uint8_t user_id)

@@ -186,22 +186,6 @@ bool CSVChargeLogGenerator::isUserFiltered(uint8_t user_id, int user_filter) {
     }
 }
 
-String CSVChargeLogGenerator::getUserDisplayName(uint8_t user_id, Language language) {
-    char display_name_buf[33] = {0};
-
-    size_t name_len = users.get_display_name(user_id, display_name_buf);
-
-    if (name_len == 0 || (user_id == 0 && strcmp(display_name_buf, "Anonymous") == 0)) {
-        return CSVTranslations::getUnknownUser(language);
-    }
-
-    if (!charge_tracker.is_user_tracked(user_id)) {
-        return CSVTranslations::getDeletedUser(language);
-    }
-
-    return String(display_name_buf, name_len);
-}
-
 String CSVChargeLogGenerator::getUserName(uint8_t user_id, Language language) {
     if (user_id == 0) {
         return CSVTranslations::getUnknownUser(language);
@@ -383,14 +367,15 @@ int CSVChargeLogGenerator::generateCSV(const CSVGenerationParams& params,
 
             String fields[9];
             size_t field_count = 7;
-            String display_name = getUserDisplayName(record->cs.user_id, params.language);
+            char display_name[33];
+            get_display_name(record->cs.user_id, display_name, display_name_cache, params.language);
             fields[0] = formatTimestamp(record->cs.timestamp_minutes, params.language);
             fields[1] = display_name;
             fields[2] = formatEnergy(energy_charged, params.language);
             fields[3] = formatDuration(record->ce.charge_duration);
             fields[5] = formatEnergy(record->cs.meter_start, params.language);
             fields[6] = formatEnergy(record->ce.meter_end, params.language);
-            fields[7] = display_name;
+            fields[7] = display_name; // TODO: a) this should be the username, not the display name and b) we can remove this column completely
 
             if (params.electricity_price > 0) {
                 fields[8] = formatPrice(price_euros, params.language);

@@ -625,12 +625,12 @@ static size_t timestamp_min_to_date_time_string(char buf[17], uint32_t timestamp
     return sprintf_u(buf, "%2.2i.%2.2i.%4.4i %2.2i:%2.2i", t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min);
 }
 
-size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache)
+size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language)
 {
     if (display_name_cache[user_id].length > DISPLAY_NAME_LENGTH) {
         size_t length = 0;
         uint32_t buf[9] = {}; // Make sure that short names are zero-padded.
-        task_scheduler.await([&length, user_id, &buf]() {length = users.get_display_name(user_id, reinterpret_cast<char *>(buf));});
+        task_scheduler.await([&length, user_id, &buf, language]() {length = users.get_display_name(user_id, reinterpret_cast<char *>(buf), language);});
         if (length > sizeof(display_name_cache[user_id].name)) {
             logger.printfln("Returned user name too long: [%.*s]", length, reinterpret_cast<char *>(buf));
             display_name_cache[user_id].length = 0;
@@ -662,7 +662,7 @@ static char *tracked_charge_to_string(char *buf, ChargeStart cs, ChargeEnd ce, L
 {
     buf += 1 + timestamp_min_to_date_time_string(buf, cs.timestamp_minutes, language);
 
-    size_t name_len = get_display_name(cs.user_id, buf, display_name_cache);
+    size_t name_len = get_display_name(cs.user_id, buf, display_name_cache, language);
     buf += 1 + name_len;
 
     if (charged_invalid(cs, ce)) {
@@ -1736,7 +1736,7 @@ search_done:
     else if (user_filter == -1)
         stats_head += sprintf_u(stats_head, "%s", (language == Language::English) ? "deleted users" : "Gelöschte Benutzer");
     else
-        stats_head += get_display_name(user_filter, stats_head, display_name_cache);
+        stats_head += get_display_name(user_filter, stats_head, display_name_cache, language);
     ++stats_head;
     stats_head += sprintf_u(stats_head, "%s: ", (language == Language::English) ? "Exported period" : "Exportierter Zeitraum");
     if (start_timestamp_min == 0)

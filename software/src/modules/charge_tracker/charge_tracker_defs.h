@@ -53,5 +53,5 @@ struct display_name_entry {
     uint32_t name[DISPLAY_NAME_LENGTH / sizeof(uint32_t)];
 };
 
-size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache);
+size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entry *display_name_cache, Language language);
 String chargeRecordFilename(uint32_t i);

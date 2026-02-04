@@ -74,7 +74,6 @@ private:
     String formatPrice(float price_euros, Language language);
 
     bool isUserFiltered(uint8_t user_id, int user_filter);
-    String getUserDisplayName(uint8_t user_id, Language language);
     String getUserName(uint8_t user_id, Language language);
 
     bool readChargeRecords(uint32_t first_record, uint32_t last_record,
