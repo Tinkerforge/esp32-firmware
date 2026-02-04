@@ -517,6 +517,42 @@ void EEBus::register_urls()
     toggle_module();
 }
 
+static constexpr MeterValueID mvids[] = {
+    MeterValueID::CurrentL1ImExDiff,
+    MeterValueID::CurrentL2ImExDiff,
+    MeterValueID::CurrentL3ImExDiff,
+    MeterValueID::PowerActiveL1ImExDiff,
+    MeterValueID::PowerActiveL2ImExDiff,
+    MeterValueID::PowerActiveL3ImExDiff,
+    MeterValueID::PowerActiveLSumImExDiff,
+    MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::EnergyActiveLSumExport,
+    MeterValueID::VoltageL1N,
+    MeterValueID::VoltageL2N,
+    MeterValueID::VoltageL3N,
+    MeterValueID::VoltageL1L2,
+    MeterValueID::VoltageL2L3,
+    MeterValueID::VoltageL3L1,
+    MeterValueID::FrequencyLAvg,
+};
+
+template<typename T>
+struct MeterValues {
+    T currents[3];
+    T powers[3];
+    T total_power;
+    T energy_import;
+    T energy_export;
+    T voltages[3];
+    T phase_voltages[3];
+    T frequency;
+};
+static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
+
+static int sanitized(float x, float scale) {
+    return isnan(x) ? INT32_MIN : (int)(x * scale);
+}
+
 void EEBus::register_events()
 {
     event.registerEvent("evse/phases_connected", {}, [](const Config *phases_cfg) {
@@ -538,7 +574,6 @@ void EEBus::register_events()
             return EventResult::OK;
         }
 
-        MeterValueID mvids[] = {MeterValueID::CurrentL1ImExDiff, MeterValueID::CurrentL2ImExDiff, MeterValueID::CurrentL3ImExDiff, MeterValueID::PowerActiveL1ImExDiff, MeterValueID::PowerActiveL2ImExDiff, MeterValueID::PowerActiveL3ImExDiff, MeterValueID::EnergyActiveLSumImport};
         constexpr size_t VALUE_COUNT = ARRAY_SIZE(mvids);
 
         uint32_t *index_cache = perm_new_array<uint32_t>(VALUE_COUNT, DRAM);
@@ -549,25 +584,40 @@ void EEBus::register_events()
             if (eebus.usecases == nullptr)
                 return EventResult::OK;
 
-            float values[VALUE_COUNT];
-            meters.get_values_with_cache(meter_slot, values, index_cache, VALUE_COUNT);
+            MeterValues<int> v;
+            int charged_wh;
+            {
+                MeterValues<float> floats;
+                meters.get_values_with_cache(meter_slot, reinterpret_cast<float *>(&floats), index_cache, VALUE_COUNT);
 
-            bool charging = charge_tracker.current_charge.get("user_id")->asInt16() != -1;
-            float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
+                for (int i = 0; i < 3; ++i) {
+                    v.currents[i] = sanitized(floats.currents[i], 1000.0f);
+                    v.powers[i] = sanitized(floats.powers[i], 1);
+                    v.voltages[i] = sanitized(floats.voltages[i], 1);
+                    v.phase_voltages[i] = sanitized(floats.phase_voltages[i], 1);
+                }
+                v.energy_import = sanitized(floats.energy_import, 1000.0f);
+                v.energy_export = sanitized(floats.energy_export, 1000.0f);
+                v.frequency = sanitized(floats.frequency, 1000.0f);
+                v.total_power = sanitized(floats.total_power, 1);
 
-            int charged_wh = !charging ? -1 : ((values[6] - meter_start) * 1000.0f);
-            int amps_p1 = (int)(values[0] * 1000.0f);
-            int amps_p2 = (int)(values[1] * 1000.0f);
-            int amps_p3 = (int)(values[2] * 1000.0f);
-            int power_p1 = (int)values[3];
-            int power_p2 = (int)values[4];
-            int power_p3 = (int)values[5];
+                bool charging = charge_tracker.current_charge.get("user_id")->asInt16() != -1;
+                float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
+
+                // NaN propagates, so this checks both energy_import and meter_start.
+                charged_wh = !charging ? INT32_MIN : sanitized(floats.energy_import - meter_start, 1000.0f);
+            }
+
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
-            eebus.usecases->evcem->update_measurements(amps_p1, amps_p2, amps_p3, power_p1, power_p2, power_p3, charged_wh);
+            eebus.usecases->evcem->update_measurements(v.currents[0], v.currents[1], v.currents[2], v.powers[0], v.powers[1], v.powers[2], charged_wh);
 #endif
 #ifdef EEBUS_ENABLE_MPC_USECASE
-            eebus.usecases->mpc->update_current(amps_p1, amps_p2, amps_p3);
-            eebus.usecases->mpc->update_power(power_p1 + power_p2 + power_p3, power_p1, power_p2, power_p3);
+            eebus.usecases->mpc->update_power(v.total_power, v.powers[0], v.powers[1], v.powers[2]);
+            eebus.usecases->mpc->update_energy(v.energy_import, v.energy_export);
+            eebus.usecases->mpc->update_current(v.currents[0], v.currents[1], v.currents[2]);
+            eebus.usecases->mpc->update_voltage(v.voltages[0], v.voltages[1], v.voltages[2],
+                                                v.phase_voltages[0], v.phase_voltages[1], v.phase_voltages[2]);
+            eebus.usecases->mpc->update_frequency(v.frequency);
 #endif
             return EventResult::OK;
         });
