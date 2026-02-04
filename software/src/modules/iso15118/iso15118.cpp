@@ -97,7 +97,6 @@ void ISO15118::pre_setup()
             if (update.get("enable")->asBool()) {
                 if (!is_setup) {
                     task_scheduler.scheduleOnce([this]() {
-                        qca700x.setup_netif();
                         sdp.setup_socket();
                         common.setup_socket();
                         is_setup = true;
@@ -145,7 +144,6 @@ void ISO15118::setup()
     initialized = true;
 
     if (config.get("enable")->asBool()) {
-        qca700x.setup_netif();
         sdp.setup_socket();
         common.setup_socket();
         is_setup = true;

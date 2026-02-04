@@ -257,6 +257,10 @@ void QCA700x::setup_l2tap()
 
 void QCA700x::setup_netif()
 {
+    // Check if netif already setup
+    if (netif != nullptr) {
+        return;
+    }
 
     // Base config is default eth base config, with different key and description
     esp_netif_inherent_config_t base_config = {
@@ -345,6 +349,11 @@ void QCA700x::setup_netif()
 
 void QCA700x::link_up()
 {
+    if (netif == nullptr) {
+        logger.printfln("QCA700x: link_up called but netif is not initialized");
+        return;
+    }
+
     if (!esp_netif_is_netif_up(netif)) {
         esp_netif_action_start(netif, 0, 0, nullptr);
         ESP_ERROR_CHECK(esp_netif_create_ip6_linklocal(netif));
@@ -359,10 +368,14 @@ void QCA700x::link_up()
 
 void QCA700x::link_down()
 {
+    if (netif == nullptr) {
+        logger.printfln("QCA700x: link_up called but netif is not initialized");
+        return;
+    }
+
     if (esp_netif_is_netif_up(netif)) {
         esp_netif_action_stop(netif, 0, 0, nullptr);
     }
-
 }
 
 void QCA700x::received_data_to_netif(const uint8_t *data, const uint16_t length)
