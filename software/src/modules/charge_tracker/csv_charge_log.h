@@ -75,7 +75,7 @@ private:
     String formatPrice(float price_euros, Language language);
 
     bool isUserFiltered(uint8_t user_id, int user_filter);
-    String getUserName(uint8_t user_id, Language language);
+    String getUserDisplayName(uint8_t user_id, Language language);
 
     bool readChargeRecords(uint32_t first_record, uint32_t last_record,
                           std::function<esp_err_t(const uint8_t* record_data, size_t record_size, bool last)> record_callback);
