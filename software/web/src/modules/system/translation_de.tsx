@@ -72,8 +72,7 @@ let x = {
             "detect_browser_language": "Browser-Sprache automatisch erkennen",
 
             "color_scheme": "Farbschema",
-            "color_scheme_desc": "Setzt das Farbschema für die Weboberfläche",
-            "color_scheme_browser": "Browsereinstellung verwenden",
+            "color_scheme_browser": "Browser-Farbschema verwenden",
             "color_scheme_light": "Hell",
             "color_scheme_dark": "Dunkel"
         },

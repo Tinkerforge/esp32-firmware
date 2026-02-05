@@ -72,8 +72,7 @@ let x = {
             "detect_browser_language": "Auto-detect browser language",
 
             "color_scheme": "Color scheme",
-            "color_scheme_desc": "Sets the color scheme for the web interface",
-            "color_scheme_browser": "Use browser setting",
+            "color_scheme_browser": "Use browser color scheme",
             "color_scheme_light": "Light",
             "color_scheme_dark": "Dark"
         },

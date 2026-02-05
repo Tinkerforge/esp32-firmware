@@ -179,7 +179,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                         </div>
                     </FormRow>
 
-                    <FormRow label={__("system.content.color_scheme")} label_muted={__("system.content.color_scheme_desc")}>
+                    <FormRow label={__("system.content.color_scheme")}>
                         <InputSelect
                             items={[
                                 [ColorScheme.Browser.toString(), __("system.content.color_scheme_browser")],
