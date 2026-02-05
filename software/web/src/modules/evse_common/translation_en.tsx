@@ -168,8 +168,6 @@ let x = {
             "user_calibration_description_muted": "",
             "user_calibration_download": "Download",
             "user_calibration_upload": "Upload",
-            "user_calibration_browse": "Browse",
-            "user_calibration_select_file": "Select calibration file...",
             "user_calibration_reset": "Reset",
 
             // EVSE V2 only

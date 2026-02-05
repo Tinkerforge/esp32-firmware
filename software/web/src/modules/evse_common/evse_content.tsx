@@ -479,8 +479,6 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                     </Button>
                                 </div>
                                 <InputFile
-                                        browse={__("evse.content.user_calibration_browse")}
-                                        select_file={__("evse.content.user_calibration_select_file")}
                                         upload={__("evse.content.user_calibration_upload")}
                                         url="/evse/user_calibration_update"
                                         timeout_ms={10 * 1000}

@@ -200,8 +200,6 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
 
                 <FormRow label={__("firmware_update.content.manual_update")} label_muted={__("firmware_update.content.manual_update_muted")}>
                     <InputFile
-                        browse={__("firmware_update.content.browse")}
-                        select_file={__("firmware_update.content.select_file")}
                         upload={__("firmware_update.content.install_update")}
                         uploading={__("firmware_update.content.installing_update")}
                         url="/flash_firmware"

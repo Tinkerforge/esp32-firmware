@@ -32,8 +32,6 @@ interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,
     onUploadStart?: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,
     onUploadError: (error: string | XMLHttpRequest) => void,
-    browse?: string  // Deprecated: no longer used in Bootstrap 5
-    select_file?: string  // Deprecated: no longer used in Bootstrap 5
     upload: string,
     uploading?: string,
     url: string,
