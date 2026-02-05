@@ -104,11 +104,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
         });
 
         util.addApiEventListener('system/theme_config', () => {
-            let theme_config = API.get("system/theme_config");
-            this.setState({theme_config: theme_config});
-            if (theme_config) {
-                applyTheme(theme_config.color_scheme);
-            }
+            this.setState({theme_config: API.get("system/theme_config")});
         });
 
         set_languages_getter(() => get_languages(API.get("system/i18n_config")));
@@ -186,7 +182,6 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                             onValue={(v) => {
                                 let color_scheme = parseInt(v);
                                 this.setState({theme_config: {color_scheme: color_scheme}});
-                                applyTheme(color_scheme);
                             }}
                         />
                     </FormRow>
