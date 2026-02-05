@@ -306,7 +306,7 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
     mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
-    mdns_service_txt_item_set("_ship", "_tcp", "model", api.getState("info/name")->get("type")->asEphemeralCStr());
+    mdns_service_txt_item_set("_ship", "_tcp", "model", OPTIONS_PRODUCT_NAME());
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
     eebus.trace_fmtln("setup_mdns() done");

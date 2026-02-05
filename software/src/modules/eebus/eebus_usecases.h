@@ -42,11 +42,11 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_connection.h"
 #include "spine_types.h"
 #include "usecases.enum.h"
+#include "eebus.h"
 
-#define EEBUS_IN_CEM_MODE // Switch for developing for energy manager
-
-#ifndef EEBUS_IN_CEM_MODE
-// Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
+// What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
+#ifdef EEBUS_MODE_EVSE
+// To disabled a usecase simply comment the respective line
 //#define EEBUS_ENABLE_EVCS_USECASE
 #define EEBUS_ENABLE_EVCEM_USECASE
 #define EEBUS_ENABLE_EVCC_USECASE
@@ -55,7 +55,8 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_CEVC_USECASE
 #define EEBUS_ENABLE_MPC_USECASE
 //#define EEBUS_ENABLE_OPEV_USECASE
-#else
+#endif
+#ifdef EEBUS_MODE_EM
 #define EEBUS_ENABLE_MPC_USECASE
 #define EEBUS_ENABLE_LPP_USECASE
 #endif

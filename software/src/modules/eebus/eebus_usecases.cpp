@@ -22,9 +22,7 @@
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "ocpp/Types.h"
 #include "ship_types.h"
-#include "tools.h"
 #include <chrono>
 #include <regex>
 #include <utility>
@@ -5420,8 +5418,9 @@ String unix_to_iso_timestamp(time_t unix_time)
 {
     tm t{};
     gmtime_r(&unix_time, &t);
-    char buf[OCPP_ISO_8601_MAX_LEN];
-    strftime(buf, OCPP_ISO_8601_MAX_LEN, "%FT%TZ", &t);
+    constexpr int ISO_8601_MAX_LEN = 36;
+    char buf[ISO_8601_MAX_LEN];
+    strftime(buf, ISO_8601_MAX_LEN, "%FT%TZ", &t);
     return buf;
 }
 String spine_address_to_string(const FeatureAddressType &address)

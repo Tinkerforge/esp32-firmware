@@ -570,6 +570,8 @@ static int sanitized(float x, float scale)
 
 void EEBus::register_events()
 {
+    // These are all the Events related to the device being an EVSE
+#ifdef EEBUS_MODE_EVSE
     event.registerEvent("evse/phases_connected", {}, [](const Config *phases_cfg) {
         update_usecases_from_phases(phases_cfg);
         return EventResult::OK;
@@ -640,6 +642,7 @@ void EEBus::register_events()
         // Value IDs should only change once
         return EventResult::Deregister;
     });
+#endif
 }
 
 void EEBus::toggle_module()
@@ -647,8 +650,10 @@ void EEBus::toggle_module()
     if (config.get("enable")->asBool()) {
         module_enabled = true;
         usecases = make_unique_psram<EEBusUseCases>();
+#ifdef EEBUS_IN_EVSE_MODE
         update_usecases_from_charger_state((const Config *)api.getState("evse/state")->get("charger_state"));
         update_usecases_from_phases((const Config *)api.getState("evse/phases_connected")->get("phases"));
+#endif
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.enable_ship();
         logger.printfln("EEBUS Module enabled");

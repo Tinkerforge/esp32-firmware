@@ -99,12 +99,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
     override async sendSave(topic: "eebus/config", cfg: EEBusConfig) {
         // TODO: why is this unchecked? Currently cargo-culted from OCPP and Modbus TCP. Maybe add those API definitions to ocpp/api.ts (or modbus_tcp or eebus) with //APIPath?
-        await API.save_unchecked('evse/eebus_enabled', {enabled: cfg.enable}, () => __("evse.script.save_failed"));
+        await API.save_unchecked('evse/eebus_enabled', {enabled: cfg.enable}, () => __("eebus.script.save_failed"));
         await super.sendSave(topic, cfg);
     }
 
     override async sendReset(topic: "eebus/config") {
-        await API.save_unchecked('evse/eebus_enabled', {enabled: false}, () => __("evse.script.save_failed"));
+        await API.save_unchecked('evse/eebus_enabled', {enabled: false}, () => __("eebus.script.save_failed"));
         await super.sendReset(topic);
     }
 

@@ -43,6 +43,12 @@
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
 //#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+#define EEBUS_MODE_EVSE
+#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() == 1
+#define EEBUS_MODE_EM
+#endif
+
 class EEBus final : public IModule
 {
 public:
