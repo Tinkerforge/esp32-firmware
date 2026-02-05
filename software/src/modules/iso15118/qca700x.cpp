@@ -339,6 +339,7 @@ void QCA700x::setup_l2tap()
         logger.printfln("Failed to bind l2tap to device driver handle: errno %d", errno);
         close(tap);
         tap = -1;
+        iso15118.set_poll_fd(FDS_TAP_INDEX, -1);
         return;
     }
 
@@ -349,8 +350,12 @@ void QCA700x::setup_l2tap()
         logger.printfln("Failed to set l2tap receive filter: errno %d", errno);
         close(tap);
         tap = -1;
+        iso15118.set_poll_fd(FDS_TAP_INDEX, -1);
         return;
     }
+
+    // Register tap in central poll array
+    iso15118.set_poll_fd(FDS_TAP_INDEX, tap);
 
     logger.printfln("l2tap initialized successfully (fd=%d, filter=0x%04X)", tap, eth_type_filter_homeplug);
 }

@@ -86,8 +86,10 @@ public:
     SDP(){}
     void setup_socket();
     void close_socket();
-    void state_machine_loop();
+    void handle_socket();  // Called by central poll when socket has data
     void pre_setup();
+
+    int get_socket() const { return sdp_socket; }
 
     ConfigRoot api_state;
 

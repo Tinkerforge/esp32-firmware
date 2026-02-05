@@ -107,7 +107,7 @@ public:
     Common(){}
     void setup_socket();
     void close_socket();
-    void state_machine_loop();
+    void handle_socket();  // Called by central poll when socket has data
     void pre_setup();
 
     void add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH]);
@@ -135,6 +135,7 @@ public:
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
     void reset_active_socket();
     int get_active_socket() const { return active_socket; }
+    int get_listen_socket() const { return listen_socket; }
 
     // TLS state - set by SDP when EV requests TLS
     bool tls_requested_by_ev = false;   // EV requested TLS in SDP

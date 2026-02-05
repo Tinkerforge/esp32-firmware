@@ -511,7 +511,7 @@ void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostAction
 }
 
 
-void SLAC::poll_modem(void)
+void SLAC::handle_tap(void)
 {
     // Check if l2tap is ready
     if (!iso15118.qca700x.is_l2tap_ready()) {
@@ -520,8 +520,13 @@ void SLAC::poll_modem(void)
 
     // Non-blocking read from l2tap - returns complete Ethernet frames (HomePlug only due to filter)
     ssize_t length = read(iso15118.qca700x.tap, buffer, SLAC_ETHERNET_FRAME_LENGTH_MAX);
-    if (length <= 0) {
-        // No data available or error (EAGAIN/EWOULDBLOCK for non-blocking)
+    if (length < 0) {
+        if (errno != EWOULDBLOCK && errno != EAGAIN) {
+            logger.printfln("SLAC: L2TAP read error: errno %d [%s]", errno, strerror(errno));
+        }
+        return;
+    }
+    if (length == 0) {
         return;
     }
 
@@ -548,10 +553,7 @@ void SLAC::poll_modem(void)
 
 void SLAC::state_machine_loop()
 {
-    // In LinkDetected state, QCA700x handles all SPI polling and IPv6 routing.
-    // SLAC still polls for any stray HomePlug messages but there shouldn't be any.
     if (state == SLAC::State::LinkDetected) {
-        poll_modem();
         api_state.get("state")->updateUint(static_cast<std::underlying_type<State>::type>(state));
         return;
     }
@@ -564,26 +566,25 @@ void SLAC::state_machine_loop()
             next_timeout = {};
             state = SLAC::State::LinkDetected;
         }
-        // Continue to poll_modem() for any remaining HomePlug messages
     }
 
     switch(state) {
-        // First handle states were we initiate a message
+        // Handle states where we initiate a message
         case SLAC::State::ModemReset:          handle_modem_reset();          break;
         case SLAC::State::ModemInitialization: handle_modem_initialization(); break;
         case SLAC::State::CMSetKeyRequest:     handle_cm_set_key_request();   break;
 
-        // Then handle some qualcomm QCA700x specific requests
+        // Handle some Qualcomm QCA700x specific requests
         // These will probably not be part of a final release firmware, but we can use them for testing stuff
         case SLAC::State::CMQualcommGetSwRequest:      handle_cm_qualcomm_get_sw_request();      break;
         case SLAC::State::CMQualcommLinkStatusRequest: handle_cm_qualcomm_link_status_request(); break;
         case SLAC::State::CMQualcommOpAttrRequest:     handle_cm_qualcomm_op_attr_request();     break;
 
-        // Then handle states were we expect a response by reading from l2tap
-        default: poll_modem(); break;
+        // All other states are handled by central poll
+        default: break;
     }
 
-    // Then handle timeouts of expected responses
+    // Handle timeouts of expected responses
     if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
         logger.printfln("SLAC: Timeout in state %s", state_to_string(state));
         // As long as we have received some sounds we will do the average attenuation profile calculation

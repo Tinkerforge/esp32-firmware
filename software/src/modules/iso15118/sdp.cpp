@@ -115,6 +115,9 @@ void SDP::setup_socket()
         sdp_socket = -1;
         return;
     }
+
+    // Register socket in central poll array
+    iso15118.set_poll_fd(FDS_SDP_INDEX, sdp_socket);
 }
 
 void SDP::close_socket()
@@ -123,9 +126,10 @@ void SDP::close_socket()
         close(sdp_socket);
         sdp_socket = -1;
     }
+    iso15118.set_poll_fd(FDS_SDP_INDEX, -1);
 }
 
-void SDP::state_machine_loop()
+void SDP::handle_socket()
 {
     if (sdp_socket < 0) {
         return;

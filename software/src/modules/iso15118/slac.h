@@ -401,6 +401,7 @@ public:
     SLAC(){}
     State state = State::ModemInitialization;
     void state_machine_loop();
+    void handle_tap();  // Called by central poll when L2TAP has data
 
     void pre_setup();
     ConfigRoot api_state;
@@ -431,8 +432,6 @@ private:
     void handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation);
     void handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation);
     void handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &cm_qualcomm_host_action_indication);
-
-    void poll_modem(void);
 
     Option<micros_t> next_timeout = {};
 

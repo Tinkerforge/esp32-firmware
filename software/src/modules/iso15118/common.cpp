@@ -109,6 +109,9 @@ void Common::setup_socket()
         logger.printfln("Common: Failed to listen on socket: %d (errno %d)", err, errno);
         return;
     }
+
+    // Register socket in central poll array
+    iso15118.set_poll_fd(FDS_LISTEN_INDEX, listen_socket);
 }
 
 void Common::close_socket()
@@ -118,9 +121,10 @@ void Common::close_socket()
         close(listen_socket);
         listen_socket = -1;
     }
+    iso15118.set_poll_fd(FDS_LISTEN_INDEX, -1);
 }
 
-void Common::state_machine_loop()
+void Common::handle_socket()
 {
     int new_socket = accept(listen_socket, (struct sockaddr *)&source_addr, &addr_len);
     if (new_socket > 0) {
@@ -135,6 +139,9 @@ void Common::state_machine_loop()
 
         reset_active_socket();
         active_socket = new_socket;
+
+        // Register active socket in central poll array
+        iso15118.set_poll_fd(FDS_ACTIVE_INDEX, active_socket);
 
         // Restore tls_requested_by_ev after reset
         tls_requested_by_ev = tls_requested;
@@ -234,6 +241,7 @@ void Common::reset_active_socket()
         close(active_socket);
         active_socket = -1;
     }
+    iso15118.set_poll_fd(FDS_ACTIVE_INDEX, -1);
     state = 0;
     exi_in_use = ExiType::AppHand;
 }

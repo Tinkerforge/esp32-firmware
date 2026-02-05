@@ -139,6 +139,13 @@ void ISO15118::pre_setup()
 
 void ISO15118::setup()
 {
+    // Initialize poll file descriptors array
+    for (int i = 0; i < FDS_COUNT; i++) {
+        fds[i].fd = -1;
+        fds[i].events = POLLIN;
+        fds[i].revents = 0;
+    }
+
     api.restorePersistentConfig("iso15118/config", &config);
 
     initialized = true;
@@ -242,11 +249,71 @@ void ISO15118::register_urls()
 
 void ISO15118::state_machines_loop()
 {
-    // We always run all state machines, since an EV can for example loose connection
-    // and start a new SLAC session while we are still processing a DIN or ISO messages.
+    // QCA700x SPI polling must always run (hardware communication)
     qca700x.state_machine_loop();
+
+    // SLAC state machine for timeouts and protocol handling
     slac.state_machine_loop();
-    sdp.state_machine_loop();
-    common.state_machine_loop();
-    // common calls din70121, iso2 and iso20 state machines
+
+    // Clear revents before polling
+    for (int i = 0; i < FDS_COUNT; i++) {
+        fds[i].revents = 0;
+    }
+
+    int ret = poll(fds, FDS_COUNT, 0);
+
+    if (ret < 0) {
+        if (errno != EINTR) {
+            logger.printfln("ISO15118: poll() failed: errno %d [%s]", errno, strerror(errno));
+        }
+        return;
+    }
+
+    if (ret == 0) {
+        // No events, nothing to do
+        return;
+    }
+
+    // Handle L2TAP (HomePlug/SLAC)
+    if (fds[FDS_TAP_INDEX].fd >= 0) {
+        if (fds[FDS_TAP_INDEX].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+            logger.printfln("ISO15118: L2TAP error (revents=0x%x)", fds[FDS_TAP_INDEX].revents);
+            // L2TAP error likely means modem issue, trigger SLAC reset
+            slac.state = SLAC::State::ModemReset;
+        } else if (fds[FDS_TAP_INDEX].revents & POLLIN) {
+            slac.handle_tap();
+        }
+    }
+
+    // Handle SDP UDP socket
+    if (fds[FDS_SDP_INDEX].fd >= 0) {
+        if (fds[FDS_SDP_INDEX].revents & (POLLERR | POLLNVAL)) {
+            logger.printfln("ISO15118: SDP socket error (revents=0x%x), reopening", fds[FDS_SDP_INDEX].revents);
+            sdp.close_socket();
+            sdp.setup_socket();
+        } else if (fds[FDS_SDP_INDEX].revents & POLLIN) {
+            sdp.handle_socket();
+        }
+    }
+
+    // Handle DIN/ISO2/ISO20 TCP listen socket
+    if (fds[FDS_LISTEN_INDEX].fd >= 0) {
+        if (fds[FDS_LISTEN_INDEX].revents & (POLLERR | POLLNVAL)) {
+            logger.printfln("ISO15118: TCP listen socket error (revents=0x%x), reopening", fds[FDS_LISTEN_INDEX].revents);
+            common.close_socket();
+            common.setup_socket();
+        } else if (fds[FDS_LISTEN_INDEX].revents & POLLIN) {
+            common.handle_socket();
+        }
+    }
+
+    // Handle active DIN/ISO2/ISO20 TCP connection
+    if (fds[FDS_ACTIVE_INDEX].fd >= 0) {
+        if (fds[FDS_ACTIVE_INDEX].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+            logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", fds[FDS_ACTIVE_INDEX].revents);
+            common.reset_active_socket();
+        } else if (fds[FDS_ACTIVE_INDEX].revents & POLLIN) {
+            common.handle_socket();
+        }
+    }
 }

@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "lwip/sockets.h"  // For struct pollfd
 #include "qca700x.h"
 #include "slac.h"
 #include "sdp.h"
@@ -29,6 +30,13 @@
 #include "iso2.h"
 #include "iso20.h"
 #include "charge_type.enum.h"
+
+// Poll file descriptor indices (fixed positions in fds array)
+static constexpr int FDS_TAP_INDEX    = 0;  // L2TAP for HomePlug/SLAC
+static constexpr int FDS_SDP_INDEX    = 1;  // SDP UDP socket
+static constexpr int FDS_LISTEN_INDEX = 2;  // DIN/ISO2/ISO20 TCP listen socket
+static constexpr int FDS_ACTIVE_INDEX = 3;  // DIN/ISO2/ISO20 TCP active socket
+static constexpr int FDS_COUNT        = 4;
 
 class ISO15118 final : public IModule
 {
@@ -46,6 +54,10 @@ private:
 
 public:
     ConfigRoot config;
+
+    // Poll file descriptors for central I/O polling
+    struct pollfd fds[FDS_COUNT];
+    void set_poll_fd(int index, int fd) { fds[index].fd = fd; }
 
     ISO15118(){}
     void pre_setup() override;
