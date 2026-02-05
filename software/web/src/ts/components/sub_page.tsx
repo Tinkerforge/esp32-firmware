@@ -74,7 +74,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
     let statusChildren: ComponentChildren = null;
     let configProps: SubPageConfigProps | null = null;
     let configChildren: ComponentChildren = null;
-    let otherChildren: ComponentChildren[] = [];
+    let otherChildren: Array<VNode | string | number> = [];
 
     for (const child of children) {
         if (child && typeof child === 'object' && 'type' in child) {
@@ -116,6 +116,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                 >
                     {configChildren}
                 </ConfigForm>
+                {otherChildren}
             </>
         );
     } else if (hasStatus && !hasConfig) {
