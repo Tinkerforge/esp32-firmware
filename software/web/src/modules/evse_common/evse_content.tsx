@@ -442,11 +442,11 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
                             <div class="input-group pb-2">
-                                <Button variant="primary" className="form-control rounded-end me-2" onClick={() => API.call('evse/reset', {}, () => "")}>{__("evse.content.reset_evse")}</Button>
-                                <Button variant="primary" className="form-control rounded-start" onClick={() => API.call('evse/reflash', {}, () => "")}>{__("evse.content.reflash_evse")}</Button>
+                                <Button variant="primary" className="flex-fill rounded-end me-2" onClick={() => API.call('evse/reset', {}, () => "")}>{__("evse.content.reset_evse")}</Button>
+                                <Button variant="primary" className="flex-fill rounded-start" onClick={() => API.call('evse/reflash', {}, () => "")}>{__("evse.content.reflash_evse")}</Button>
                             </div>
                             {!is_evse_v2 ? undefined :
-                                <Button variant="primary" className="form-control" onClick={() => API.call('evse/trigger_dc_fault_test', {}, () => "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
+                                <Button variant="primary" className="w-100" onClick={() => API.call('evse/trigger_dc_fault_test', {}, () => "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
                             }
                         </FormRow>
 
@@ -464,8 +464,8 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
                             <FormRow label={__("evse.content.user_calibration_description")} label_muted={__("evse.content.user_calibration_description_muted")}>
                                 <div class="input-group pb-2">
-                                    <Button as="a" variant="primary" className="form-control rounded-end me-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
-                                    <Button variant="primary" className="form-control rounded-start"
+                                    <Button as="a" variant="primary" className="flex-fill rounded-end me-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
+                                    <Button variant="primary" className="flex-fill rounded-start"
                                         onClick={async () =>  API.save("evse/user_calibration", {
                                                 "user_calibration_active": false,
                                                 "voltage_diff": 0,

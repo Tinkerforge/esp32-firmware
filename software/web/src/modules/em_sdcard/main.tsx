@@ -146,7 +146,7 @@ export class EMSDcard extends Component {
                 </FormRow>
 
                 <FormRow label={__("em_sdcard.content.format_sdcard")} label_muted={__("em_sdcard.content.format_sdcard_desc")}>
-                    <Button variant="danger" className="form-control" onClick={async () => {
+                    <Button variant="danger" className="w-100" onClick={async () => {
                         const modal = util.async_modal_ref.current;
                         if (!await modal.show({
                                 title: () => __("em_sdcard.content.format_sdcard"),

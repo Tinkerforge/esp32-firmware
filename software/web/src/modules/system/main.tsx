@@ -187,12 +187,12 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                     </FormRow>
 
                     <FormRow label={__("system.content.reboot")} label_muted={__("system.content.reboot_desc")}>
-                        <Button variant="primary" className="form-control" onClick={util.reboot}>{__("system.content.reboot")}</Button>
+                        <Button variant="primary" className="w-100" onClick={util.reboot}>{__("system.content.reboot")}</Button>
                     </FormRow>
 
                     {show_config_reset ?
                         <FormRow label={__("system.content.config_reset")} label_muted={__("system.content.config_reset_desc")}>
-                            <Button variant="danger" className="form-control" onClick={async () => {
+                            <Button variant="danger" className="w-100" onClick={async () => {
                                     const modal = util.async_modal_ref.current;
                                     if (!await modal.show({
                                             title: () => __("system.content.config_reset"),
@@ -216,7 +216,7 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                     }
 
                     <FormRow label={__("system.content.factory_reset")} label_muted={__("system.content.factory_reset_desc")}>
-                        <Button variant="danger" className="form-control" onClick={async () => {
+                        <Button variant="danger" className="w-100" onClick={async () => {
                             const modal = util.async_modal_ref.current;
                             if (!await modal.show({
                                     title: () => __("system.content.factory_reset"),

@@ -225,7 +225,7 @@ export class EventLog extends Component<{}, EventLogState> {
                         />
 
                 <div class="form-group">
-                    <Button variant="primary" className="form-control" onClick={() => this.download_debug_report()} style="height: unset;">
+                    <Button variant="primary" className="w-100" onClick={() => this.download_debug_report()} style="height: unset;">
                         <span class="text-nowrap">{__("event_log.content.debug_report")}</span>{" "}
                         <span class="text-nowrap">
                             <span class="ms-1 me-2">{__("event_log.content.debug_report_no_passwords")}</span>

@@ -917,7 +917,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                 {input_time}
                                             </div>
                                             <div class="col-sm-4">
-                                                <Button size="sm" className="form-control" variant="danger" style="height: calc(1.5em + .5rem + 2px);" onClick={async () => {
+                                                <Button size="sm" className="w-100" variant="danger" style="height: calc(1.5em + .5rem + 2px);" onClick={async () => {
                                                     const modal = util.async_modal_ref.current;
                                                     if (!await modal.show({
                                                             title: () => __("meters.content.reset_modal"),

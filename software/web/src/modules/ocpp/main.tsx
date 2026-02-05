@@ -138,7 +138,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                        }}/>
                     </FormRow>
                     <FormRow label={__("ocpp.content.reset")} label_muted={__("ocpp.content.reset_muted")}>
-                        <Button variant="danger" className="form-control" onClick={async () =>{
+                        <Button variant="danger" className="w-100" onClick={async () =>{
                             const modal = util.async_modal_ref.current;
                             if (!await modal.show({
                                     title: () => __("ocpp.content.reset_title"),

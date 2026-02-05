@@ -704,7 +704,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                 <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
                     <Row className="m-0">
-                        <Button variant="primary" className="form-control col text-nowrap" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
+                        <Button variant="primary" className="w-100 col text-nowrap" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 
                             let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
@@ -749,7 +749,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.remove")} label_muted={__("charge_tracker.content.remove_desc")}>
-                    <Button variant="danger" className="form-control" onClick={async () => {
+                    <Button variant="danger" className="w-100" onClick={async () => {
                         const modal = util.async_modal_ref.current;
                         if (!await modal.show({
                                 title: () => __("charge_tracker.content.remove"),

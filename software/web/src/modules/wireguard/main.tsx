@@ -142,7 +142,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                     </FormRow>
 
                     <FormRow label={__("wireguard.content.generate_keypair")}>
-                        <Button className="form-control" onClick={async () => {
+                        <Button className="w-100" onClick={async () => {
                             const keypair = (window as any).wireguard.generateKeypair();
                             this.setState({publicKey: keypair.publicKey, private_key: keypair.privateKey});
                             this.setDirty(true);

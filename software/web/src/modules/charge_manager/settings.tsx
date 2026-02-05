@@ -237,7 +237,7 @@ export class ChargeManagerSettings extends ConfigComponent<'charge_manager/confi
                     {minimum_current}
 
                     <FormRow label={__("charge_manager.content.configuration_mode")} label_muted={__("charge_manager.content.configuration_mode_muted")}>
-                        <Button className="form-control" onClick={() => this.setState({showExpert: !state.showExpert})}>
+                        <Button className="w-100" onClick={() => this.setState({showExpert: !state.showExpert})}>
                             {state.showExpert ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
                         </Button>
                     </FormRow>

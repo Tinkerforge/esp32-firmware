@@ -777,7 +777,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     unit="ms" />
             </FormRow>
             <FormRow label="">
-                <Button variant="primary" className="form-control" type="submit" disabled={this.state.waiting}>{__("modbus_tcp_debug.content.execute")}</Button>
+                <Button variant="primary" className="w-100" type="submit" disabled={this.state.waiting}>{__("modbus_tcp_debug.content.execute")}</Button>
             </FormRow>
 
             {this.state.waiting || this.state.result.length > 0 ?

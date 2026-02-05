@@ -182,7 +182,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                             }
                         </div>
                         <br/>
-                        <Button variant="primary" className="form-control" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
+                        <Button variant="primary" className="w-100" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
                     </FormRow>
 
                     <FormSeparator heading={__("time.content.ntp")}/>
