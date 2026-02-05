@@ -66,7 +66,7 @@ let x = {
                 "persistent": "In Konfiguration gespeichert",
                 "persistent_remove_error": "Nur gespeicherte Peers können entfernt werden. Entdeckte Peers können nicht entfernt werden."
             },
-            "show_usecase_details": "EEBUS Details anzeigen",
+            "usecase_details": "Details",
             "yes": "Ja",
             "no": "Nein",
             "devices": "Partner",

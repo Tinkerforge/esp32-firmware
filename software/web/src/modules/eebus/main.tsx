@@ -148,7 +148,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         <InputText value={ski}/>
                     </FormRow>
 
-                    <CollapsedSection heading={__("eebus.content.show_usecase_details")}>
+                    <CollapsedSection heading={__("eebus.content.usecase_details")}>
                     <Table
                         columnNames={[""]}
                         rows={(() => {

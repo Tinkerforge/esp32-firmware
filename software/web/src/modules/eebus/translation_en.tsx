@@ -66,7 +66,7 @@ let x = {
                 "persistent": "Stored in config",
                 "persistent_remove_error": "Can only remove peers stored in config. Discovered peers cannot be removed. They will be automatically discarded on reboot."
             },
-            "show_usecase_details": "Show EEBUS Details",
+            "usecase_details": "Details",
             "yes": "Yes",
             "no": "No",
             "devices": "Peers",
