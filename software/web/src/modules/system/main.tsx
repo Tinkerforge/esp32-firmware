@@ -157,24 +157,20 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                     <FormRow label={__("system.content.system_language")} help={__("system.content.system_language_help")} show_warning={browser_language != web_interface_language} warning={__("system.content.system_language_warning")(browser_locale, browser_language_name, web_interface_language, web_interface_language_name)}>
                         <div class="row">
                             <div class="col-md-4">
-                                <div class="input-group">
-                                    <InputSelect
-                                        items={[
-                                            [Language.German.toString(), __("system.content.german")],
-                                            [Language.English.toString(), __("system.content.english")]
-                                        ]}
-                                        value={state.language.toString()}
-                                        onValue={(v) => this.setState({language: parseInt(v)})}
-                                    />
-                                </div>
+                                <InputSelect
+                                    items={[
+                                        [Language.German.toString(), __("system.content.german")],
+                                        [Language.English.toString(), __("system.content.english")]
+                                    ]}
+                                    value={state.language.toString()}
+                                    onValue={(v) => this.setState({language: parseInt(v)})}
+                                />
                             </div>
                             <div class="col-md-8">
-                                <div class="input-group">
-                                    <Switch desc={__("system.content.detect_browser_language")}
-                                        checked={state.detect_browser_language}
-                                        onClick={this.toggle('detect_browser_language')}
-                                    />
-                                </div>
+                                <Switch desc={__("system.content.detect_browser_language")}
+                                    checked={state.detect_browser_language}
+                                    onClick={this.toggle('detect_browser_language')}
+                                />
                             </div>
                         </div>
                     </FormRow>
