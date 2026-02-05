@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, ComponentChildren } from "preact";
+import { h } from "preact";
 
 interface ProgressProps {
     class?: string;
@@ -26,7 +26,7 @@ interface ProgressProps {
 
 export function Progress(props: ProgressProps) {
     return (
-        <div class={"progress " + (props.class !== undefined ? props.class : "")} style="font-size: 1rem;">
+        <div class={"progress " + (props.class !== undefined ? props.class : "")} style="height: 38px; font-size: 1rem;">
             <div class="progress-bar progress-bar-no-transition"
                 role="progressbar" style={"min-width: 2rem; width: " + (props.progress * 100) + "%"} aria-valuenow={props.progress * 100} aria-valuemin={0}
                 aria-valuemax={100}>{Math.round(props.progress * 100) + "%"}</div>
