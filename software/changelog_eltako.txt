@@ -104,7 +104,7 @@
 - Fix remote access not being deactivated when device is deleted server-side while offline
 - Improve web server and web sockets robustness against dropped connections
 
-2026-02-05: 2.9.0 (<unknown>)
+2026-02-05: 2.9.0 (07158960)
 - Add translated SunSpec scan report
 - Add language selection to charge log download
 - Fix charge logs not showing the unknown user's default name correctly
