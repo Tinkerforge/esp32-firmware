@@ -97,11 +97,7 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
         eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");
         return;
     }
-#ifdef EEBUS_DEV_ENABLE_RESPONSE
     ship_connection->send_data_message(response_doc.as<JsonVariant>());
-#else
-    eebus.trace_fmtln("Sending SPINE messages is disabled. No message sent");
-#endif
 }
 
 void SpineConnection::check_message_counter()

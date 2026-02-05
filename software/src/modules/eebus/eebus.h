@@ -20,34 +20,35 @@
 #pragma once
 
 #include "config.h"
-#include "eebus_usecases.h"
+
 #include "module.h"
 #include "config.h"
+#include "options.h"
 #include "ship.h"
-#include "spine_connection.h"
 #include <TFJson.h>
 #include "tools/malloc.h"
+
+#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+#define EEBUS_MODE_EVSE
+#define EEBUS_DEVICE_TYPE  "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() == 1
+#define EEBUS_MODE_EM
+#define EEBUS_DEVICE_TYPE  "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#endif
+// We have to check what we are before we can include the usecases so they are defined correctly
+#include "eebus_usecases.h"
 
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define MAX_PEER_REMEMBERED 4           // How man ship peers configured to be remembered
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
-// EEBUS Device definitions
-// These can be freely defined and are not limited by the spec
-#define EEBUS_DEVICE_TYPE  "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
-
-
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
-#define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
+//#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
 //#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
-#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
-#define EEBUS_MODE_EVSE
-#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() == 1
-#define EEBUS_MODE_EM
-#endif
+
 
 class EEBus final : public IModule
 {

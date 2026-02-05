@@ -33,6 +33,7 @@
 
 extern char local_uid_str[32];
 
+#ifdef EEBUS_MODE_EVSE
 static void update_usecases_from_phases(const Config *_phases_cfg)
 {
 #if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
@@ -85,7 +86,12 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 #endif
 #endif
 }
+static int sanitized(float x, float scale)
+{
+    return isnan(x) ? INT32_MIN : (int)(x * scale);
+}
 
+#endif
 static void update_evse_limit()
 {
     if (eebus.usecases == nullptr) {
@@ -562,11 +568,6 @@ template <typename T> struct MeterValues {
     T frequency;
 };
 static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
-
-static int sanitized(float x, float scale)
-{
-    return isnan(x) ? INT32_MIN : (int)(x * scale);
-}
 
 void EEBus::register_events()
 {

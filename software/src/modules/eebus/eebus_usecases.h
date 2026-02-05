@@ -36,13 +36,10 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "build.h"
 
 #include "config.h"
-#include "eebus_usecases.h"
 #include "loadcontrol_state.enum.h"
-#include "options.h"
 #include "spine_connection.h"
 #include "spine_types.h"
 #include "usecases.enum.h"
-#include "eebus.h"
 
 // What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
 #ifdef EEBUS_MODE_EVSE

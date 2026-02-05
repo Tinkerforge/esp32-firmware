@@ -17,9 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "eebus_usecases.h"
-
 #include "eebus.h"
+#include "eebus_usecases.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "ship_types.h"
@@ -338,9 +337,10 @@ NodeManagementDetailedDiscoveryDataType NodeManagementEntity::get_detailed_disco
     node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
     // Only simple operation is supported. We dont act as a SPINE router or anything like that.
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-#if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
+#ifdef EEBUS_MODE_EVSE
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
-#elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() == 1
+#endif
+#ifdef EEBUS_MODE_EM
     node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::EnergyManagementSystem; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
 #endif
     for (EebusUsecase *uc : usecase_interface->usecase_list) {
