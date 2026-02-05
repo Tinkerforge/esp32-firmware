@@ -142,7 +142,7 @@ export class Table extends Component<TableProps, TableState> {
                     <tbody>
                         {props.rows.map((row, i) => <>
                             <tr key={row.key}>
-                                <td class="p-0" style={(row.indicator !== undefined ? `min-width: 5px; background-color: var(--${row.indicator});` : "") + (row.extraValue ? " border-bottom: none;" : "")}></td>
+                                <td class="p-0" style={(row.indicator !== undefined ? `min-width: 5px; background-color: var(--bs-${row.indicator});` : "") + (row.extraValue ? " border-bottom: none;" : "")}></td>
                                 {row.columnValues.map((value, k) => (
                                     <td class={row.extraValue ? "pb-0" : ""} style={"word-wrap: break-word; vertical-align: middle;" + (i == 0 ? " border-top: none;" : "") + (row.extraValue ? " border-bottom: none;" : "")}>
                                         {row.extraValue && k == 0 ?

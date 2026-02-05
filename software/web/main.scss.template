@@ -447,22 +447,22 @@ body {
     border-left-color: var(--bs-primary);
 }
 .input-indicator-secondary {
-    border-left-color: var(--secondary);
+    border-left-color: var(--bs-secondary);
 }
 .input-indicator-success {
-    border-left-color: var(--success);
+    border-left-color: var(--bs-success);
 }
 .input-indicator-warning {
-    border-left-color: var(--warning);
+    border-left-color: var(--bs-warning);
 }
 .input-indicator-danger {
-    border-left-color: var(--danger);
+    border-left-color: var(--bs-danger);
 }
 .input-indicator-light {
-    border-left-color: var(--light);
+    border-left-color: var(--bs-light);
 }
 .input-indicator-link {
-    border-left-color: var(--link);
+    border-left-color: var(--bs-link);
 }
 
 @keyframes shake {
