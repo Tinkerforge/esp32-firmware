@@ -109,6 +109,13 @@ body {
 }
 
 /*
+ * Bootstrap 5 uses the browser default, restore Bootstrap 4 behavior
+ */
+a:not(:hover) {
+    text-decoration: none;
+}
+
+/*
  * Bootstrap 5 removed .form-group class. Add it back for vertical spacing.
  */
 .form-group {
