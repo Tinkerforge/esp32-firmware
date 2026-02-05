@@ -693,11 +693,7 @@ table ul {
 
 .table-card-mode .card-body .form-group,
 .table-extra-value .card-body .form-group {
-    margin-bottom: 0.75rem;
-}
-
-.p-2d5 {
-    padding: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .list-group-item {

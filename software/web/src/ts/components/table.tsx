@@ -189,7 +189,7 @@ export class Table extends Component<TableProps, TableState> {
                                     <td colSpan={props.columnNames.length + 1} class="pt-0" style="border-top: none;">
                                         <Collapse in={state.showRowExtra[i]}>
                                             <div>
-                                                <Card style="margin-top: 0.75rem;"><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>
+                                                <Card style="margin-top: 0.5rem;"><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>
                                             </div>
                                         </Collapse>
                                     </td>
@@ -224,8 +224,8 @@ export class Table extends Component<TableProps, TableState> {
                         let card_fields = this.get_card_fields(row);
                         let needs_body = card_fields.length > 0 || (row.extraValue && state.showRowExtra[i]);
 
-                        return <><Card className="mb-3">
-                        <div class={"card-header d-flex justify-content-between align-items-center p-2d5" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
+                        return <><Card className="mb-2">
+                        <div class={"card-header d-flex justify-content-between align-items-center p-2" + (row.indicator !== undefined ? " input-indicator input-indicator-" + row.indicator : "")} style={needs_body ? "" : "border-bottom: 0;"}>
                             <h5 class="text-break" style="margin-bottom: 0;">
                                 {row.extraValue ?
                                     <span class="row mx-n1 align-items-center">
@@ -271,16 +271,16 @@ export class Table extends Component<TableProps, TableState> {
                             </div>
                         </div>
                         {needs_body ?
-                            <Card.Body className="p-2d5 pb-0">
+                            <Card.Body className="p-2 pb-0">
                                 {card_fields}
                                 {row.extraValue ?
                                     <Collapse in={state.showRowExtra[i]}>
                                         <div>
                                             {row.extraFieldName ?
                                                 <FormRow label={row.extraFieldName}>
-                                                    <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>
+                                                    <Card><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>
                                                 </FormRow>
-                                                : <Card><Card.Body className="p-2d5 pb-0">{row.extraValue}</Card.Body></Card>}
+                                                : <Card><Card.Body className="p-2 pb-0">{row.extraValue}</Card.Body></Card>}
                                         </div>
                                     </Collapse>
                                     : undefined}
@@ -290,7 +290,7 @@ export class Table extends Component<TableProps, TableState> {
                     })}
                     {props.onAddShow ?
                     <Card className={"mb-0" + (props.invalid ? " border-danger" : "")}>
-                        <div class="card-body d-flex justify-content-between align-items-center p-2d5">
+                        <div class="card-body d-flex justify-content-between align-items-center p-2">
                             <div class="text-break" style="font-size: 1rem;">{props.addMessage}</div>
                             <div style="white-space: nowrap; vertical-align: middle;">
                             <Button variant="primary"

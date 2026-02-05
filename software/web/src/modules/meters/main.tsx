@@ -909,14 +909,14 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
                                 let meter_reset_row: ComponentChild[] = !meter_is_resettable ? [] : [
                                     <FormRow label={__("meters.content.last_reset")} small>
-                                        <div class="row mx-n1 mx-xl-n3">
-                                            <div class="col-sm-4 px-1 px-xl-3">
+                                        <div class="row">
+                                            <div class="col-sm-4">
                                                 {input_date}
                                             </div>
-                                            <div class="col-sm-4 px-1 px-xl-3">
+                                            <div class="col-sm-4">
                                                 {input_time}
                                             </div>
-                                            <div class="col-sm-4 px-1 px-xl-3">
+                                            <div class="col-sm-4">
                                                 <Button size="sm" className="form-control" variant="danger" style="height: calc(1.5em + .5rem + 2px);" onClick={async () => {
                                                     const modal = util.async_modal_ref.current;
                                                     if (!await modal.show({
@@ -939,9 +939,9 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                 let allValues = METER_VALUE_ORDER.filter((order) => order.ids.filter((id) => util.hasValue(this.state.values_by_id[meter_slot][id])).length > 0)
                                     .map((order) => order.group ?
                                         <FormRow label={translate_unchecked(`meters.content.group_${order.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${order.group}_muted`), order.phases])} small={true}>
-                                            <div class="row mx-n1 mx-xl-n3">
+                                            <div class="row">
                                             {order.ids.map((id) =>
-                                                <div class="col-sm-4 px-1 px-xl-3">
+                                                <div class="col-sm-4">
                                                     <OutputFloat
                                                         value={util.hasValue(this.state.values_by_id[meter_slot][id]) ? this.state.values_by_id[meter_slot][id] : null}
                                                         digits={METER_VALUE_INFOS[id].digits}
@@ -954,8 +954,8 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                             </div>
                                         </FormRow>
                                         : <FormRow label={translate_unchecked(`meters.content.value_${order.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${order.ids[0]}_muted`)} small={true}>
-                                            <div class="row mx-n1 mx-xl-n3">
-                                                <div class="col-sm-4 px-1 px-xl-3">
+                                            <div class="row">
+                                                <div class="col-sm-4">
                                                     <OutputFloat
                                                         value={this.state.values_by_id[meter_slot][order.ids[0]]}
                                                         digits={METER_VALUE_INFOS[order.ids[0]].digits}
