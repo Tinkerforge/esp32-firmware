@@ -141,7 +141,14 @@ void QCA700x::write_register(const uint16_t reg, const uint16_t value)
 
 uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
 {
-    const uint16_t available = std::min(length, read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA));
+    const uint16_t rdbuf_byte_ava = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA);
+
+    // 0xFFFF typically indicates no modem connected (SPI returns all 1s when no device)
+    if (rdbuf_byte_ava == 0xFFFF) {
+        return 0;
+    }
+
+    const uint16_t available = std::min(length, rdbuf_byte_ava);
     if (available == 0) {
         return 0;
     }
@@ -555,6 +562,13 @@ void QCA700x::state_machine_loop()
     // Poll SPI for data from QCA700x
     spi_buffer_length += read_burst(&spi_buffer[spi_buffer_length],
                                     QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - spi_buffer_length);
+
+    // Only process frames if modem has been detected via signature check
+    // This prevents processing garbage data when no modem is connected
+    if (!modem_detected) {
+        spi_buffer_length = 0;
+        return;
+    }
 
     // Process all complete frames in the buffer
     while (spi_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {

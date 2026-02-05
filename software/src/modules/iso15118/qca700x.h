@@ -102,6 +102,9 @@ private:
     // Flag to track SPI initialization
     bool spi_initialized = false;
 
+    // Flag to track if modem has been detected via signature check
+    bool modem_detected = false;
+
     // Previous frame info for corruption debugging
     uint16_t prev_frame_length = 0;
     uint16_t prev_frame_eth_type = 0;
@@ -142,4 +145,7 @@ public:
         ipv6_packet_received = false;
         return received;
     }
+
+    void set_modem_detected(const bool detected) { modem_detected = detected; }
+    bool is_modem_detected() const { return modem_detected; }
 };

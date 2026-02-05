@@ -116,7 +116,9 @@ void SLAC::fill_header(SLAC_HomeplugMessageHeader *header, const uint8_t *destin
 // Modem reset is specific to the QCA700x modem, not part of the ISO 15118-3 standard
 void SLAC::handle_modem_reset(void)
 {
-    logger.printfln("Reset QCA700X Modem");
+    // Clear modem detected flag so frame processing is paused until re-verified
+    iso15118.qca700x.set_modem_detected(false);
+
     const uint16_t spi_config = iso15118.qca700x.read_register(QCA700X_SPI_REG_SPI_CONFIG) | QCA700X_SPI_INT_CPU_ON;
     iso15118.qca700x.write_register(QCA700X_SPI_REG_SPI_CONFIG, spi_config);
 
@@ -143,13 +145,15 @@ void SLAC::handle_modem_initialization(void)
     if (signature != QCA700X_SPI_GOOD_SIGNATURE) {
         const uint8_t modem_initialization_tries = api_state.get("modem_initialization_tries")->asUint() + 1;
         api_state.get("modem_initialization_tries")->updateUint(modem_initialization_tries);
-        if ((modem_initialization_tries % 50) == 0) {
-            logger.printfln("QCA700X modem not found for %u tries: Signature is %d (expected %d)", modem_initialization_tries, signature, QCA700X_SPI_GOOD_SIGNATURE);
 
+        // Trigger reset every 50 tries
+        if ((modem_initialization_tries % 50) == 0) {
             state = SLAC::State::ModemReset;
         }
+
+        // Log once at 200 tries and give up
         if (modem_initialization_tries == 200) {
-            logger.printfln("QCA700X modem not found after 200 tries, giving up");
+            logger.printfln("No PLC modem detected");
         }
         return;
     }
@@ -161,6 +165,9 @@ void SLAC::handle_modem_initialization(void)
         state = SLAC::State::ModemReset;
         return;
     }
+
+    // Modem verified. Enable frame processing in QCA700x state machine
+    iso15118.qca700x.set_modem_detected(true);
 
     // Use QCA700x MAC adress for EVSE (it is derived from ethernet MAC)
     memcpy(evse_mac, iso15118.qca700x.mac, SLAC_MAC_ADDRESS_LENGTH);
