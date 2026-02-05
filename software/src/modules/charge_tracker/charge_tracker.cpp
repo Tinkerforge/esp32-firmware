@@ -2593,7 +2593,7 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
                     logger.printfln("Directory '%s' has %lu files. Totalling to %u", dirname.c_str(), (last_record - first_record + 1), total_files);
                 }
             }
-            vTaskDelay(1);
+            vTaskDelay(1); // After every directory, give other tasks a chance to run and reset their watchdogs.
         }
     }
 
