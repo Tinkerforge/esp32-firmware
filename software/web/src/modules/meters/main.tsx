@@ -610,9 +610,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         return (
             <SubPage name="meters" colClasses="col-xl-10" title={__("meters.content.meters")}>
                 {show_plot ?
-                <SubPage.Status>
-                    <FormSeparator heading={__("meters.status.power_history")} first={true} >
-                        <div class="mb-2 ms-auto col-auto">
+                <SubPage.Status header={
                             <InputSelect value={this.state.chart_selected} onValue={(v) => {
                                 let chart_selected: "history_48"|"history_24"|"history_12"|"history_6"|"history_3"|"live" = v as any;
 
@@ -642,9 +640,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     ["history_6", __("meters.content.history_6")],
                                     ["history_3", __("meters.content.history_3")],
                                     ["live", __("meters.content.live")],
-                                ]}/>
-                        </div>
-                    </FormSeparator>
+                                ]}/>}>
 
                     <div class="pb-3">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
