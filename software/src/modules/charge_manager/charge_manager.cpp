@@ -29,6 +29,7 @@
 #include "module_dependencies.h"
 #include "current_allocator.h"
 #include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "cm_phase_rotation.enum.h"
 #include "zero_phase_decision.union.h"
