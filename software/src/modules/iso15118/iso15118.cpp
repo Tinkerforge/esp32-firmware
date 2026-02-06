@@ -50,6 +50,7 @@
 #include "qca700x.h"
 #include "esp_mac.h"
 #include "esp_netif.h"
+#include "bindings/bricklet_evse_v2.h"
 
 
 void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
@@ -120,7 +121,7 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
-                evse_v2.set_charging_protocol(1, 50);
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             } else {
                 // TODO: Close sockets and set is_setup = false
                 task_scheduler.cancel(state_machine_task);
@@ -130,7 +131,7 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
-                evse_v2.set_charging_protocol(0, 1000);
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
             }
         }
         return "";
@@ -247,7 +248,7 @@ void ISO15118::register_urls()
 
     // Enable ISO15118 on the EVSE Bricklet
     if (is_enabled()) {
-        evse_v2.set_charging_protocol(1, 50);
+        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
         }, 1000_ms, 20_ms);
@@ -323,4 +324,19 @@ void ISO15118::state_machines_loop()
             common.handle_socket();
         }
     }
+}
+
+void ISO15118::switch_to_iec_temporary()
+{
+    logger.printfln("Switching to IEC 61851 temporary mode");
+
+    // Switch EVSE to IEC 61851 temporary mode
+    // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect
+    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
+
+    // Bring down PLC link since we no longer need it
+    qca700x.link_down();
+
+    // Reset SLAC state to be ready for next connection
+    slac.state = SLAC::State::ModemReset;
 }

@@ -26,6 +26,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools/malloc.h"
+#include "bindings/bricklet_evse_v2.h"
 
 void ISO2::pre_setup()
 {
@@ -597,16 +598,16 @@ void ISO2::handle_power_delivery_req()
 
     switch (req->ChargeProgress) {
         case iso2_chargeProgressType_Start:
-            evse_v2.set_charging_protocol(1, 50);
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             break;
         case iso2_chargeProgressType_Stop:
             // Go to 100% PWM to signal to the ev that we accepted the stop,
             // but we need to go back to 5% PWM, so the ev can resume charging
             // if it wants to.
             // TODO: The timing here is unclear, are 5 seconds OK?
-            evse_v2.set_charging_protocol(1, 1000);
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
             task_scheduler.scheduleOnce([this]() {
-                evse_v2.set_charging_protocol(1, 50);
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             }, 5_s);
             break;
         case iso2_chargeProgressType_Renegotiate:

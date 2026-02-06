@@ -439,15 +439,26 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     memcpy(cm_slac_match_confirmation.nmk, nmk, SLAC_NMK_LENGTH);
 
     iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
-    // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
-    next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
-    state = SLAC::State::WaitForSDP;
 
     log_cm_slac_match_request(cm_slac_match_request);
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
 
     // Add PEV MAC to seen list once SLAC is done
     iso15118.common.add_seen_mac_address(pev_mac);
+
+    // Check if we're in autocharge-only mode
+    // In this case, we have all the data we need (PEV MAC) and can switch to IEC 61851 temporary mode
+    if (iso15118.is_autocharge_only()) {
+        logger.printfln("Autocharge-only mode: SLAC complete, switching to IEC 61851 temporary mode");
+        next_timeout = {};
+        state = SLAC::State::LinkDetected;  // Mark SLAC as done
+        iso15118.switch_to_iec_temporary();
+        return;
+    }
+
+    // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
+    next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
+    state = SLAC::State::WaitForSDP;
 
     // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
     task_scheduler.scheduleOnce([] {

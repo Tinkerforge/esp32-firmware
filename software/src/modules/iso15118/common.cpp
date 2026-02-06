@@ -23,6 +23,7 @@
 #include <esp_random.h>
 #include "sdp.h"
 
+#include "bindings/bricklet_evse_v2.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
@@ -34,6 +35,8 @@
 
 #include "tools/net.h"
 #include "tools/malloc.h"
+
+#include "bindings/bricklet_evse_v2.h"
 
 #include "cbv2g/exi_v2gtp.h"
 #include "cbv2g/app_handshake/appHand_Decoder.h"
@@ -467,7 +470,7 @@ void Common::handle_supported_app_protocol_req()
         send_exi(Common::ExiType::AppHand);
         state = 1;
 
-        evse_v2.set_charging_protocol(1, 50);
+        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
         iso15118.trace("SupportedAppProtocolRes sent");
         iso15118.trace(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);
