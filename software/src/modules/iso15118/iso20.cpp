@@ -803,7 +803,13 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
     iso20_ac_AC_ChargeParameterDiscoveryReqType *req = &iso20AcDocDec->AC_ChargeParameterDiscoveryReq;
     iso20_ac_AC_ChargeParameterDiscoveryResType *res = &iso20AcDocEnc->AC_ChargeParameterDiscoveryRes;
 
-    (void)req;  // Currently unused
+    // Extract EV minimum charge power if available
+    if (req->AC_CPDReqEnergyTransferMode_isUsed) {
+        EVData ev_data;
+        ev_data.min_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMinimumChargePower);
+        ev_data.max_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMaximumChargePower);
+        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
+    }
 
     iso20AcDocEnc->AC_ChargeParameterDiscoveryRes_isUsed = 1;
     prepare_ac_header(&res->Header);
@@ -917,6 +923,44 @@ void ISO20::handle_ac_charge_loop_req()
     if (req->Scheduled_AC_CLReqControlMode_isUsed) {
         api_state.get("ev_present_active_power_val")->updateInt(req->Scheduled_AC_CLReqControlMode.EVPresentActivePower.Value);
         api_state.get("ev_present_active_power_exp")->updateInt(req->Scheduled_AC_CLReqControlMode.EVPresentActivePower.Exponent);
+    }
+
+    // Update EV data for meters module
+    {
+        EVData ev_data;
+
+        if (req->DisplayParameters_isUsed) {
+            if (req->DisplayParameters.PresentSOC_isUsed) {
+                ev_data.soc_present = static_cast<float>(req->DisplayParameters.PresentSOC);
+            }
+            if (req->DisplayParameters.TargetSOC_isUsed) {
+                ev_data.soc_target = static_cast<float>(req->DisplayParameters.TargetSOC);
+            }
+            if (req->DisplayParameters.MinimumSOC_isUsed) {
+                ev_data.soc_min = static_cast<float>(req->DisplayParameters.MinimumSOC);
+            }
+            if (req->DisplayParameters.MaximumSOC_isUsed) {
+                ev_data.soc_max = static_cast<float>(req->DisplayParameters.MaximumSOC);
+            }
+            if (req->DisplayParameters.BatteryEnergyCapacity_isUsed) {
+                // Convert from rational number (value * 10^exponent) to kWh
+                // The original value is in Wh.
+                ev_data.capacity_kwh = physical_value_to_float(&req->DisplayParameters.BatteryEnergyCapacity) / 1000.0f;
+            }
+            if (req->DisplayParameters.RemainingTimeToTargetSOC_isUsed) {
+                ev_data.remaining_time_to_target_soc = static_cast<float>(req->DisplayParameters.RemainingTimeToTargetSOC);
+            }
+            if (req->DisplayParameters.ChargingComplete_isUsed) {
+                ev_data.charging_complete = req->DisplayParameters.ChargingComplete;
+            }
+        }
+
+        // Extract present power from Scheduled mode if available
+        if (req->Scheduled_AC_CLReqControlMode_isUsed) {
+            ev_data.present_power = physical_value_to_float(&req->Scheduled_AC_CLReqControlMode.EVPresentActivePower);
+        }
+
+        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
     }
 
     iso20AcDocEnc->AC_ChargeLoopRes_isUsed = 1;

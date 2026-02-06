@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,14 @@
 #include "cbv2g/iso_2/iso2_msgDefDecoder.h"
 #include "cbv2g/iso_2/iso2_msgDefEncoder.h"
 
+#include "common.h"
+
 #define ISO2_SECC_SEQUENCE_TIMEOUT 60_s
+
+inline float physical_value_to_float(const iso2_PhysicalValueType *value)
+{
+    return physical_value_to_float(value->Value, value->Multiplier);
+}
 
 class ISO2 final
 {
@@ -52,8 +59,6 @@ private:
     void handle_power_delivery_req();
     void handle_charging_status_req();
     void handle_session_stop_req();
-
-    float float_from_physical_value(iso2_PhysicalValueType *value);
 
     void trace_header(const struct iso2_MessageHeaderType *header, const char *name);
     void trace_request_response();

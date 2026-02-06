@@ -421,6 +421,22 @@ void ISO2::handle_charge_parameter_discovery_req()
         logger.printfln("ISO2: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
     }
 
+    // Update EV data for meters module
+    {
+        EVData ev_data;
+
+        if (req->DC_EVChargeParameter_isUsed) {
+            ev_data.soc_present = static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+        } else if (req->AC_EVChargeParameter_isUsed) {
+            ev_data.max_voltage = physical_value_to_float(&req->AC_EVChargeParameter.EVMaxVoltage);
+            ev_data.max_current = physical_value_to_float(&req->AC_EVChargeParameter.EVMaxCurrent);
+            ev_data.min_current = physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent);
+            ev_data.energy_request_kwh = physical_value_to_float(&req->AC_EVChargeParameter.EAmount) / 1000.0f;
+        }
+
+        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO2);
+    }
+
     iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
     const ChargeType charge_type = iso15118.config.get("charge_type")->asEnum<ChargeType>();
@@ -485,7 +501,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         }, 1_s);
     } else if (charge_type == ChargeType::ACCharging) {
         // Calculate minimum possible power
-        uint16_t minimum_power = static_cast<int16_t>(float_from_physical_value(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 100.0f);
+        uint16_t minimum_power = static_cast<int16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 100.0f);
         minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
 
         res->ResponseCode = iso2_responseCodeType_OK;
@@ -692,22 +708,6 @@ void ISO2::handle_session_stop_req()
     // If the ev wants to terminate we reset the active socket anyway.
     // Reset after data has been sent.
     iso15118.common.reset_active_socket();
-}
-
-float ISO2::float_from_physical_value(iso2_PhysicalValueType *value)
-{
-    switch (value->Multiplier) {
-        case -3: return value->Value / 1000.0f;
-        case -2: return value->Value / 100.0f;
-        case -1: return value->Value / 10.0f;
-        case  0: return value->Value;
-        case  1: return value->Value * 10.0f;
-        case  2: return value->Value * 100.0f;
-        case  3: return value->Value * 1000.0f;
-    }
-
-    logger.printfln("ISO2: Unallowed Multiplier %d", value->Multiplier);
-    return 0.0f;
 }
 
 void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char *name)

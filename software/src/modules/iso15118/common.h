@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "module.h"
 #include "config.h"
 
@@ -30,11 +32,45 @@
 
 #include "isotls.h"
 
+#include "modules/meters_ev/ev_data_protocol.enum.h"
+
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
 #define COMMON_MAC_ADDRESS_LENGTH 6
 #define COMMON_SEEN_MAC_COUNT 8
+
+// EV data structure for forwarding to meters (AC charging only)
+// All values use NAN to indicate "not available/not updated"
+struct EVData {
+    float soc_present;                  // Current SOC (%)              - DIN (only DC), ISO2 (only DC), ISO20
+    float soc_target;                   // Target SOC (%)               -                                ISO20
+    float soc_min;                      // Minimum SOC (%)              -                                ISO20
+    float soc_max;                      // Maximum SOC (%)              -                ISO2 (only DC), ISO20
+    float max_voltage;                  // EV max voltage limit (V)     -                ISO2
+    float max_current;                  // EV max current limit (A)     -                ISO2
+    float max_power;                    // EV max power limit (W)       -                                ISO20
+    float capacity_kwh;                 // EV battery capacity (kWh)    -                                ISO20
+    float present_power;                // EV present power (W)         -                                ISO20
+    float energy_request_kwh;           // EV requested energy (kWh)    -                ISO2
+    float remaining_time_to_target_soc; // Seconds until target SOC (s) -                                ISO20
+    float min_power;                    // EV min power limit (W)       -                                ISO20
+    float min_current;                  // EV min current limit (A)     -                ISO2
+
+    // Boolean field stored but not exposed as meter value
+    bool charging_complete;  // Charging complete flag - ISO20
+
+    // Initialize all to NAN
+    EVData() : soc_present(NAN), soc_target(NAN), soc_min(NAN), soc_max(NAN),
+               max_voltage(NAN), max_current(NAN), max_power(NAN),
+               capacity_kwh(NAN), present_power(NAN),
+               energy_request_kwh(NAN), remaining_time_to_target_soc(NAN),
+               min_power(NAN), min_current(NAN),
+               charging_complete(false) {}
+};
+
+// Convert value * 10^exponent to float
+float physical_value_to_float(int16_t value, int8_t exponent);
 
 // Result of session ID check in SessionSetupReq handling
 enum class SessionIdResult {
@@ -111,7 +147,8 @@ public:
     void pre_setup();
 
     void add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH]);
-    void set_soc(int8_t soc);
+    void update_ev_data(const EVData &data, EVDataProtocol protocol);
+    void clear_ev_data();
 
     // TLS handler
     ISOTLS tls;

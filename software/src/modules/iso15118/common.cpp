@@ -232,6 +232,9 @@ void Common::handle_socket()
 
 void Common::reset_active_socket()
 {
+    // Notify meters module that session ended
+    clear_ev_data();
+
     // Close TLS session if active
     tls.end_session();
     tls_requested_by_ev = false;
@@ -541,9 +544,43 @@ bool validate_session_id(const uint8_t *received_id, size_t received_len, const 
     return true;
 }
 
-void Common::set_soc(int8_t soc)
+// Converts a physical value with exponent to float: result = value * 10^exponent
+//
+// The exponent/multiplier range of -3 to +3 is defined in:
+//   - DIN 70121 Table 55: unitMultiplierType is "byte (range: -3 to +3)"
+//   - ISO 15118-2 Table 67: unitMultiplierType is "byte (range: -3..+3)"
+//   - ISO 15118-20 Table 102: ExponentType is "xs:byte" (no explicit range constraint...)
+//
+float physical_value_to_float(int16_t value, int8_t exponent)
 {
-    // TODO: Add SoC to slot0 meter.
+    switch (exponent) {
+        case -4: return static_cast<float>(value) / 10000.0f;
+        case -3: return static_cast<float>(value) / 1000.0f;
+        case -2: return static_cast<float>(value) / 100.0f;
+        case -1: return static_cast<float>(value) / 10.0f;
+        case  0: return static_cast<float>(value);
+        case  1: return static_cast<float>(value) * 10.0f;
+        case  2: return static_cast<float>(value) * 100.0f;
+        case  3: return static_cast<float>(value) * 1000.0f;
+        case  4: return static_cast<float>(value) * 10000.0f;
+    }
+
+    // Fallback
+    return static_cast<float>(value) * powf(10.0f, static_cast<float>(exponent));
+}
+
+void Common::update_ev_data(const EVData &data, EVDataProtocol protocol)
+{
+#if MODULE_METERS_EV_AVAILABLE()
+    meters_ev.update_from_ev_data(data, protocol);
+#endif
+}
+
+void Common::clear_ev_data()
+{
+#if MODULE_METERS_EV_AVAILABLE()
+    meters_ev.clear_values();
+#endif
 }
 
 void Common::add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH])

@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -317,6 +317,15 @@ void DIN70121::handle_charge_parameter_discovery_req()
     api_state.get("bulk_soc_is_used")->updateBool(req->DC_EVChargeParameter.BulkSOC_isUsed);
 
     logger.printfln("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+
+    // Update EV data for meters module
+    {
+        EVData ev_data;
+        ev_data.soc_present = static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+
+        // Only update the SoC, all other values would be for DC charging.
+        iso15118.common.update_ev_data(ev_data, EVDataProtocol::DIN);
+    }
 
     // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
     // to be able to continously read the SoC.

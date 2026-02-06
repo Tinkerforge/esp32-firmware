@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025-2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,15 @@
 #include "cbv2g/din/din_msgDefDecoder.h"
 #include "cbv2g/din/din_msgDefEncoder.h"
 
+#include "common.h"
+
 // DIN TS 70121:2024-11 Table 76: V2G_SECC_Sequence_Timeout = 60s
 #define DIN70121_SECC_SEQUENCE_TIMEOUT 60_s
+
+inline float physical_value_to_float(const din_PhysicalValueType *value)
+{
+    return physical_value_to_float(value->Value, value->Multiplier);
+}
 
 class DIN70121 final
 {

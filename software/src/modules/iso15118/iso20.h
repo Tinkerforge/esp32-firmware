@@ -30,10 +30,21 @@
 #include "cbv2g/iso_20/iso20_AC_Decoder.h"
 #include "cbv2g/iso_20/iso20_AC_Encoder.h"
 
+#include "common.h"
 #include "sdp.h"  // For V2GTPPayloadType
 
 #define ISO20_SECC_SEQUENCE_TIMEOUT 60_s
 #define ISO20_SESSION_ID_LENGTH 8
+
+inline float physical_value_to_float(const iso20_RationalNumberType *value)
+{
+    return physical_value_to_float(value->Value, value->Exponent);
+}
+
+inline float physical_value_to_float(const iso20_ac_RationalNumberType *value)
+{
+    return physical_value_to_float(value->Value, value->Exponent);
+}
 
 class ISO20 final
 {
