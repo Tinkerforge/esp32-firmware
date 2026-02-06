@@ -28,11 +28,15 @@
 #include <xtensa_context.h>
 #include "esp_cpu_utils.h"
 
+#include "header_logger.h"
+
 size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
 {
     size_t total_written = 0;
 
-    esp_backtrace_frame_t frame = {0};
+    esp_backtrace_frame_t frame;
+    frame.exc_frame = 0; // Unused
+
     esp_backtrace_get_start(&(frame.pc), &(frame.sp), &(frame.next_pc));
 
     bool corrupt = !esp_stack_ptr_is_sane(frame.sp) || !esp_ptr_executable((void *)esp_cpu_process_stack_pc(frame.pc));
@@ -88,4 +92,18 @@ size_t strn_backtrace(char *strn, size_t remaining, size_t skip_frames)
     }
 
     return total_written;
+}
+
+void console_backtrace()
+{
+    char backtrace_buf[384];
+    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
+    puts(backtrace_buf);
+}
+
+void event_log_backtrace()
+{
+    char backtrace_buf[224];
+    strn_backtrace(backtrace_buf, sizeof(backtrace_buf), 1);
+    header_printfln("[backtrace]", backtrace_buf);
 }

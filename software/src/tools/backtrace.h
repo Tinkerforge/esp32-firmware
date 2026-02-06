@@ -27,6 +27,9 @@ extern "C" {
 
 extern size_t strn_backtrace(char *strn, size_t len, size_t skip_frames);
 
+extern void console_backtrace();
+extern void event_log_backtrace();
+
 #ifdef __cplusplus
 }
 #endif

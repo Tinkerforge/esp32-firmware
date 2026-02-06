@@ -39,7 +39,7 @@ extern "C" {
 #include "event_log_prefix.h"
 #include "config/slot_allocator.h"
 #include "module_dependencies.h"
-#include "backtrace.h"
+#include "tools/backtrace.h"
 #include "tools/string_builder.h"
 #include "tools/memory.h"
 #include "tools/fs.h"
