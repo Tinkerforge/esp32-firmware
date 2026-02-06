@@ -70,8 +70,8 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     }
 
     resetButton = () => this.props.onReset ?
-        <div class="col">
-            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger w-100 mb-2 text-nowrap" disabled={!this.props.isModified}>
+        <div class="col mb-2">
+            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger w-100 text-nowrap" disabled={!this.props.isModified}>
                 {__("component.config_form.reset")}
                 <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
             </button>
@@ -80,11 +80,11 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     override render(props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
-                <PageHeader title={props.title} titleClass="text-center text-sm-start text-nowrap" titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm" small={props.small}>
-                    <div class="row gx-2">
+                <PageHeader title={props.title} titleClass="text-center text-sm-start text-nowrap" titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm mb-2" small={props.small}>
+                    <div class="row gx-2 mb-n2">
                         {this.resetButton()}
-                        <div class="col">
-                            <button key="save" type="submit" form={props.id} class="btn btn-primary w-100 mb-2 text-nowrap" disabled={state.saveInProgress || !props.isDirty}>
+                        <div class="col mb-2">
+                            <button key="save" type="submit" form={props.id} class="btn btn-primary w-100 text-nowrap" disabled={state.saveInProgress || !props.isDirty}>
                                 {__("component.config_form.save")}
                                 <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
                             </button>
