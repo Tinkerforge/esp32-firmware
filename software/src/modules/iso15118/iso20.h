@@ -36,6 +36,17 @@
 #define ISO20_SECC_SEQUENCE_TIMEOUT 60_s
 #define ISO20_SESSION_ID_LENGTH 8
 
+// ISO 15118-20 Table 205: ServiceDetail ParameterSet values
+static constexpr int ISO20_CONNECTOR_SINGLE_PHASE = 1;
+static constexpr int ISO20_CONNECTOR_THREE_PHASE  = 2;
+static constexpr int ISO20_CONTROL_MODE_DYNAMIC   = 2;
+static constexpr int ISO20_MOBILITY_NEEDS_PROVIDED_BY_EVCC = 1;
+static constexpr int ISO20_PRICING_NONE = 0;
+
+// Application-defined ParameterSetIDs (matching our ServiceDetail response)
+static constexpr uint16_t ISO20_PARAM_SET_THREE_PHASE  = 1;
+static constexpr uint16_t ISO20_PARAM_SET_SINGLE_PHASE = 2;
+
 inline float physical_value_to_float(const iso20_RationalNumberType *value)
 {
     return physical_value_to_float(value->Value, value->Exponent);
@@ -98,7 +109,14 @@ private:
     uint64_t next_timeout = 0;
     bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 
+    // [V2G20-1821] EV declares asymmetric capability by sending _L2/_L3 in AC_ChargeParameterDiscoveryReq.
+    // [V2G20-1822] SECC shall not send _L2/_L3 unless the EV declared this capability.
+    // When true, the SECC can use per-phase EVSETargetActivePower to switch between
+    // 1-phase and 3-phase without ServiceRenegotiation.
+    bool ev_supports_asymmetric = false;
+
     // Selected service from ServiceSelectionReq
     uint16_t selected_service_id = 0;
     uint16_t selected_parameter_set_id = 0;
+    bool is_selected_three_phase() const { return selected_parameter_set_id == ISO20_PARAM_SET_THREE_PHASE; }
 };

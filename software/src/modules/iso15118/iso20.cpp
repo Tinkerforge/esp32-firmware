@@ -56,7 +56,7 @@ void ISO20::pre_setup()
         {"battery_energy_capacity_is_used", Config::Bool(false)},
         {"inlet_hot", Config::Bool(false)},
         {"inlet_hot_is_used", Config::Bool(false)},
-        // EV present active power from Scheduled control mode
+        // EV present active power from Dynamic control mode
         {"ev_present_active_power_val", Config::Int16(0)},
         {"ev_present_active_power_exp", Config::Int8(0)},
     });
@@ -211,6 +211,7 @@ void ISO20::handle_session_setup_req()
 
     // Reset soc_read flag for new session
     soc_read = false;
+    ev_supports_asymmetric = false;
 
     // Store EVCCID in API state (up to 20 characters)
     char evcc_id_str[21] = {0};
@@ -337,12 +338,13 @@ void ISO20::handle_service_discovery_req()
 
     res->ResponseCode = iso20_responseCodeType_OK;
 
-    // We don't support service renegotiation
-    res->ServiceRenegotiationSupported = 0;
+    // [V2G20-1931] To indicate that SECC is capable of a ServiceRenegotiation, the SECC shall set
+    //              ServiceRenegotiationSupported to "True" in the first ServiceDiscoveryRes.
+    // [V2G20-1932] The value shall be identical throughout the session.
+    res->ServiceRenegotiationSupported = 1;
 
-    // Offer AC charging service (ServiceID = 1 for AC per ISO 15118-20)
-    // Service IDs: 1=AC, 2=DC, 3=AC_BPT, 4=DC_BPT, 5=WPT, 6=ACDP
-    res->EnergyTransferServiceList.Service.array[0].ServiceID = 1;  // AC charging
+    // Offer AC charging service (ISO 15118-20 Table 203)
+    res->EnergyTransferServiceList.Service.array[0].ServiceID = V2G_SERVICE_ID_CHARGING;
     res->EnergyTransferServiceList.Service.array[0].FreeService = 1;  // Free (no payment needed)
     res->EnergyTransferServiceList.Service.arrayLen = 1;
 
@@ -368,7 +370,7 @@ void ISO20::handle_service_detail_req()
     prepare_header(&res->Header);
 
     // Check if the requested service is valid (we only offer AC = ServiceID 1)
-    if (req->ServiceID != 1) {
+    if (req->ServiceID != V2G_SERVICE_ID_CHARGING) {
         res->ResponseCode = iso20_responseCodeType_FAILED_ServiceIDInvalid;
         res->ServiceID = req->ServiceID;
         res->ServiceParameterList.ParameterSet.arrayLen = 0;
@@ -379,62 +381,92 @@ void ISO20::handle_service_detail_req()
     res->ResponseCode = iso20_responseCodeType_OK;
     res->ServiceID = req->ServiceID;
 
-    // Define AC service parameters (ParameterSetID = 1)
-    // Per ISO 15118-20 Table 205, AC service needs parameters:
-    // - Connector: Type of connector (string value)
-    // - ControlMode: 1=Scheduled, 2=Dynamic (int value)
-    // - MobilityNeedsMode: 1=ProvidedByEvcc, 2=ProvidedBySecc (int value)
-    // - Pricing: 0=NoPricing, 1=AbsolutePricing, 2=PriceLevels (int value)
+    // Define AC service parameters per ISO 15118-20 Table 205:
+    // - Connector: 1=SinglePhase, 2=ThreePhase (usage of the connector)
+    // - ControlMode: 1=Scheduled, 2=Dynamic
+    // - EVSENominalVoltage: Line voltage in V (between one phase and neutral)
+    // - MobilityNeedsMode: 1=ProvidedByEvcc, 2=ProvidedBySecc
+    // - Pricing: 0=NoPricing, 1=AbsolutePricing, 2=PriceLevels
+    //
+    // We offer two ParameterSets to enable ServiceRenegotiation for phase switching:
+    //   ParameterSetID 1: ThreePhase, Dynamic, 230V, ProvidedByEvcc, NoPricing
+    //   ParameterSetID 2: SinglePhase, Dynamic, 230V, ProvidedByEvcc, NoPricing
+    // The EV selects one during ServiceSelection and can switch via ServiceRenegotiation.
 
-    res->ServiceParameterList.ParameterSet.array[0].ParameterSetID = 1;
+    // Helper to fill one ParameterSet with 5 parameters (only Connector differs)
+    auto fill_parameter_set = [](iso20_ParameterSetType *ps, uint16_t set_id, int connector_type) {
+        ps->ParameterSetID = set_id;
 
-    // Parameter 1: Connector - string value for connector type
-    // Per ISO 15118-20, connectorType can be: cCCS1, cCCS2, cGBT, cType1, cType2, cTesla, etc.
-    strcpy(res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].Name.characters, "Connector");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].Name.charactersLen = strlen("Connector");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].intValue = 2; // cType2 = 2 per ISO 15118-20 Table 204
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].intValue_isUsed = 1;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].boolValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].byteValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].shortValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].finiteString_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[0].rationalNumber_isUsed = 0;
+        // Parameter 1: Connector - 1=SinglePhase, 2=ThreePhase per ISO 15118-20 Table 205
+        // [V2G20-1815] SinglePhase: only base power elements (L1) shall be used.
+        // [V2G20-1816] ThreePhase: _L2 and _L3 suffixed elements shall be allowed.
+        auto &p0 = ps->Parameter.array[0];
+        strcpy(p0.Name.characters, "Connector");
+        p0.Name.charactersLen = strlen("Connector");
+        p0.intValue = connector_type;  // ISO20_CONNECTOR_SINGLE_PHASE or ISO20_CONNECTOR_THREE_PHASE
+        p0.intValue_isUsed = 1;
+        p0.boolValue_isUsed = 0;
+        p0.byteValue_isUsed = 0;
+        p0.shortValue_isUsed = 0;
+        p0.finiteString_isUsed = 0;
+        p0.rationalNumber_isUsed = 0;
 
-    // Parameter 2: ControlMode - 1=Scheduled, 2=Dynamic
-    strcpy(res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].Name.characters, "ControlMode");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].Name.charactersLen = strlen("ControlMode");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].intValue = 1; // Scheduled = 1
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].intValue_isUsed = 1;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].boolValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].byteValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].shortValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].finiteString_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[1].rationalNumber_isUsed = 0;
+        // Parameter 2: ControlMode - 1=Scheduled, 2=Dynamic
+        auto &p1 = ps->Parameter.array[1];
+        strcpy(p1.Name.characters, "ControlMode");
+        p1.Name.charactersLen = strlen("ControlMode");
+        p1.intValue = ISO20_CONTROL_MODE_DYNAMIC;
+        p1.intValue_isUsed = 1;
+        p1.boolValue_isUsed = 0;
+        p1.byteValue_isUsed = 0;
+        p1.shortValue_isUsed = 0;
+        p1.finiteString_isUsed = 0;
+        p1.rationalNumber_isUsed = 0;
 
-    // Parameter 3: MobilityNeedsMode - 1=ProvidedByEvcc, 2=ProvidedBySecc
-    strcpy(res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].Name.characters, "MobilityNeedsMode");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].Name.charactersLen = strlen("MobilityNeedsMode");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].intValue = 1; // ProvidedByEvcc = 1
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].intValue_isUsed = 1;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].boolValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].byteValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].shortValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].finiteString_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[2].rationalNumber_isUsed = 0;
+        // Parameter 3: EVSENominalVoltage - line voltage between one phase and neutral
+        auto &p2 = ps->Parameter.array[2];
+        strcpy(p2.Name.characters, "EVSENominalVoltage");
+        p2.Name.charactersLen = strlen("EVSENominalVoltage");
+        p2.intValue = V2G_NOMINAL_VOLTAGE_V;
+        p2.intValue_isUsed = 1;
+        p2.boolValue_isUsed = 0;
+        p2.byteValue_isUsed = 0;
+        p2.shortValue_isUsed = 0;
+        p2.finiteString_isUsed = 0;
+        p2.rationalNumber_isUsed = 0;
 
-    // Parameter 4: Pricing - 0=NoPricing, 1=AbsolutePricing, 2=PriceLevels
-    strcpy(res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].Name.characters, "Pricing");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].Name.charactersLen = strlen("Pricing");
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].intValue = 0; // NoPricing = 0
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].intValue_isUsed = 1;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].boolValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].byteValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].shortValue_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].finiteString_isUsed = 0;
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.array[3].rationalNumber_isUsed = 0;
+        // Parameter 4: MobilityNeedsMode - 1=ProvidedByEvcc, 2=ProvidedBySecc
+        auto &p3 = ps->Parameter.array[3];
+        strcpy(p3.Name.characters, "MobilityNeedsMode");
+        p3.Name.charactersLen = strlen("MobilityNeedsMode");
+        p3.intValue = ISO20_MOBILITY_NEEDS_PROVIDED_BY_EVCC;
+        p3.intValue_isUsed = 1;
+        p3.boolValue_isUsed = 0;
+        p3.byteValue_isUsed = 0;
+        p3.shortValue_isUsed = 0;
+        p3.finiteString_isUsed = 0;
+        p3.rationalNumber_isUsed = 0;
 
-    res->ServiceParameterList.ParameterSet.array[0].Parameter.arrayLen = 4;
-    res->ServiceParameterList.ParameterSet.arrayLen = 1;
+        // Parameter 5: Pricing - 0=NoPricing, 1=AbsolutePricing, 2=PriceLevels
+        auto &p4 = ps->Parameter.array[4];
+        strcpy(p4.Name.characters, "Pricing");
+        p4.Name.charactersLen = strlen("Pricing");
+        p4.intValue = ISO20_PRICING_NONE;
+        p4.intValue_isUsed = 1;
+        p4.boolValue_isUsed = 0;
+        p4.byteValue_isUsed = 0;
+        p4.shortValue_isUsed = 0;
+        p4.finiteString_isUsed = 0;
+        p4.rationalNumber_isUsed = 0;
+
+        ps->Parameter.arrayLen = 5;
+    };
+
+    // ParameterSetID 1: ThreePhase (Connector = 2)
+    fill_parameter_set(&res->ServiceParameterList.ParameterSet.array[0], ISO20_PARAM_SET_THREE_PHASE, ISO20_CONNECTOR_THREE_PHASE);
+    // ParameterSetID 2: SinglePhase (Connector = 1)
+    fill_parameter_set(&res->ServiceParameterList.ParameterSet.array[1], ISO20_PARAM_SET_SINGLE_PHASE, ISO20_CONNECTOR_SINGLE_PHASE);
+    res->ServiceParameterList.ParameterSet.arrayLen = 2;
 
     // Send response
     iso15118.common.send_exi(Common::ExiType::Iso20);
@@ -454,9 +486,11 @@ void ISO20::handle_service_selection_req()
     iso20DocEnc->ServiceSelectionRes_isUsed = 1;
     prepare_header(&res->Header);
 
-    // Validate the selected service (we only offer AC = ServiceID 1, ParameterSetID 1)
-    if (req->SelectedEnergyTransferService.ServiceID != 1 ||
-        req->SelectedEnergyTransferService.ParameterSetID != 1) {
+    // Validate the selected service
+    // We offer AC = ServiceID 1 with ParameterSetID 1 (ThreePhase) or 2 (SinglePhase)
+    if (req->SelectedEnergyTransferService.ServiceID != V2G_SERVICE_ID_CHARGING ||
+        (req->SelectedEnergyTransferService.ParameterSetID != ISO20_PARAM_SET_THREE_PHASE &&
+         req->SelectedEnergyTransferService.ParameterSetID != ISO20_PARAM_SET_SINGLE_PHASE)) {
         res->ResponseCode = iso20_responseCodeType_FAILED_ServiceSelectionInvalid;
         iso15118.common.send_exi(Common::ExiType::Iso20);
         return;
@@ -496,89 +530,18 @@ void ISO20::handle_schedule_exchange_req()
     res->EVSEProcessing = iso20_processingType_Finished;
     res->GoToPause_isUsed = 0;
 
-    // Use Scheduled control mode (not Dynamic)
-    res->Dynamic_SEResControlMode_isUsed = 0;
-    res->Scheduled_SEResControlMode_isUsed = 1;
+    // Use Dynamic control mode (not Scheduled)
+    // In Dynamic mode, the SECC controls charging power in real-time via EVSETargetActivePower
+    // in AC_ChargeLoopRes. No PowerSchedule or PriceSchedule is needed.
+    res->Scheduled_SEResControlMode_isUsed = 0;
+    res->Dynamic_SEResControlMode_isUsed = 1;
 
-    // Get current timestamp for TimeAnchor
-    timeval now;
-    if (!rtc.clock_synced(&now)) {
-        now.tv_sec = 0;
-    }
-
-    // Provide one schedule tuple (ScheduleTupleID = 1)
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ScheduleTupleID = 1;
-
-    // ChargingSchedule: PowerSchedule defines the available power over time
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.TimeAnchor = now.tv_sec;
-
-    // Optional: AvailableEnergy and PowerTolerance
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.AvailableEnergy_isUsed = 0;
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerTolerance_isUsed = 0;
-
-    // PowerScheduleEntries: Define one entry for constant power
-    // Power uses RationalNumber: Value * 10^Exponent
-    // For 11kW (11000W): Value=11, Exponent=3 (11 * 10^3 = 11000)
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[0].Duration = 86400; // 24 hours in seconds
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[0].Power.Exponent = 3;
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[0].Power.Value = 11; // 11kW
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[0].Power_L2_isUsed = 0;
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[0].Power_L3_isUsed = 0;
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.arrayLen = 1;
-
-    // Provide AbsolutePriceSchedule (required by ISO 15118-20 when using Scheduled mode)
-    // Even though we advertised NoPricing, the ChargingSchedule still needs a price schedule
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.AbsolutePriceSchedule_isUsed = 1;
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.PriceLevelSchedule_isUsed = 0;
-
-    // Configure AbsolutePriceSchedule with zero costs (free charging)
-    auto &priceSchedule = res->Scheduled_SEResControlMode.ScheduleTuple.array[0].ChargingSchedule.AbsolutePriceSchedule;
-    priceSchedule.Id_isUsed = 0;
-    priceSchedule.TimeAnchor = now.tv_sec;
-    priceSchedule.PriceScheduleID = 1;
-    priceSchedule.PriceScheduleDescription_isUsed = 0;
-
-    // Currency (3-letter code per ISO 4217)
-    const char *currency = "EUR";
-    memcpy(priceSchedule.Currency.characters, currency, 3);
-    priceSchedule.Currency.charactersLen = 3;
-
-    // Language (BCP 47 language tag)
-    const char *language = "en";
-    memcpy(priceSchedule.Language.characters, language, 2);
-    priceSchedule.Language.charactersLen = 2;
-
-    // PriceAlgorithm - use power-based pricing algorithm
-    const char *priceAlgo = "urn:iso:std:iso:15118:-20:PriceAlgorithm:1-Power";
-    size_t algoLen = strlen(priceAlgo);
-    memcpy(priceSchedule.PriceAlgorithm.characters, priceAlgo, algoLen);
-    priceSchedule.PriceAlgorithm.charactersLen = algoLen;
-
-    // Optional fields not used
-    priceSchedule.MinimumCost_isUsed = 0;
-    priceSchedule.MaximumCost_isUsed = 0;
-    priceSchedule.TaxRules_isUsed = 0;
-    priceSchedule.OverstayRules_isUsed = 0;
-    priceSchedule.AdditionalSelectedServices_isUsed = 0;
-
-    // PriceRuleStacks - one stack covering the entire charging period
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].Duration = 86400; // 24 hours
-    // One price rule: zero cost for all power levels
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].EnergyFee.Exponent = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].EnergyFee.Value = 0; // Free
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].PowerRangeStart.Exponent = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].PowerRangeStart.Value = 0; // From 0W
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].ParkingFee_isUsed = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].ParkingFeePeriod_isUsed = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].CarbonDioxideEmission_isUsed = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.array[0].RenewableGenerationPercentage_isUsed = 0;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.array[0].PriceRule.arrayLen = 1;
-    priceSchedule.PriceRuleStacks.PriceRuleStack.arrayLen = 1;
-
-    // No discharging schedule (not V2G/BPT)
-    res->Scheduled_SEResControlMode.ScheduleTuple.array[0].DischargingSchedule_isUsed = 0;
-
-    res->Scheduled_SEResControlMode.ScheduleTuple.arrayLen = 1;
+    // All fields in Dynamic_SEResControlMode are optional
+    res->Dynamic_SEResControlMode.DepartureTime_isUsed = 0;
+    res->Dynamic_SEResControlMode.MinimumSOC_isUsed = 0;
+    res->Dynamic_SEResControlMode.TargetSOC_isUsed = 0;
+    res->Dynamic_SEResControlMode.AbsolutePriceSchedule_isUsed = 0;
+    res->Dynamic_SEResControlMode.PriceLevelSchedule_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
     state = 8;
@@ -596,6 +559,11 @@ void ISO20::handle_power_delivery_req()
     //              set to "Start", "Stop", or "Renegotiate" by sending PowerDeliveryRes with
     //              ResponseCode="OK".
     // [V2G20-1262] The EVCC and the SECC shall implement the message elements as defined in Table 47.
+    //
+    // PWM note: Unlike ISO 15118-2 [V2G2-866] which requires PWM=100% after PowerDeliveryRes on Stop/error,
+    // ISO 15118-20 [V2G20-1408] requires the SECC to keep 5% duty cycle from start of data link setup
+    // until end of V2G communication session. The session ends at SessionStopReq(Terminate), not at
+    // PowerDeliveryReq(Stop). So we must NOT switch to 100% PWM on Stop in ISO20.
     iso20_PowerDeliveryReqType *req = &iso20DocDec->PowerDeliveryReq;
     iso20_PowerDeliveryResType *res = &iso20DocEnc->PowerDeliveryRes;
 
@@ -607,12 +575,18 @@ void ISO20::handle_power_delivery_req()
     // Handle different charge progress states
     switch (req->ChargeProgress) {
         case iso20_chargeProgressType_Start:
-            // EV wants to start charging
+            // Ensure EVSE bricklet is in ISO15118 mode with 5% PWM.
+            // [V2G20-1408] SECC shall apply CP duty cycle of 5% from start of data link setup
+            //              until end of V2G communication session.
+            // This is already set in common.cpp during SupportedAppProtocolRes, but we set it
+            // again here defensively in case the state was changed externally.
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             state = 9;
             break;
 
         case iso20_chargeProgressType_Stop:
-            // EV wants to stop charging
+            // EV wants to stop energy transfer. Session remains active.
+            // [V2G20-1408] Keep 5% PWM. Do NOT switch to 100% (unlike ISO2 [V2G2-866]).
             state = 10;
             break;
 
@@ -665,9 +639,15 @@ void ISO20::handle_session_stop_req()
             break;
 
         case iso20_chargingSessionType_ServiceRenegotiation:
-            // EV wants to renegotiate services
-            // We don't support service renegotiation (indicated in ServiceDiscoveryRes)
-            res->ResponseCode = iso20_responseCodeType_FAILED_NoServiceRenegotiationSupported;
+            // [V2G20-1476] EVCC sends SessionStopReq(ChargingSession=ServiceRenegotiation)
+            // [V2G20-1969] AC flow: PowerDeliveryReq(Stop) -> SessionStopReq(ServiceRenegotiation)
+            //              -> ServiceDiscoveryReq. Session ID is preserved.
+            // [V2G20-1931] We advertised ServiceRenegotiationSupported=true, so we accept this.
+            res->ResponseCode = iso20_responseCodeType_OK;
+            // Reset state to ServiceDiscovery (state 4) so the EV can re-select services.
+            // The session ID remains valid. This is not a new session.
+            state = 4;
+            logger.printfln("ISO20: ServiceRenegotiation requested, returning to ServiceDiscovery");
             break;
     }
 
@@ -818,6 +798,16 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
         ev_data.min_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMinimumChargePower);
         ev_data.max_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMaximumChargePower);
         iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
+
+        // [V2G20-1821] If the EV is capable of asymmetric energy transfer, it communicates
+        //              EVMaximumChargePower with phase-specific power values (_L2/_L3) in CPDReq.
+        // [V2G20-1820] If the EV only sends the base elements (sum), it is symmetric-only.
+        // [V2G20-1822] SECC shall not send _L2/_L3 unless the EV declared this capability.
+        ev_supports_asymmetric = req->AC_CPDReqEnergyTransferMode.EVMaximumChargePower_L2_isUsed
+                              || req->AC_CPDReqEnergyTransferMode.EVMaximumChargePower_L3_isUsed;
+        if (ev_supports_asymmetric) {
+            logger.printfln("ISO20 AC: EV supports asymmetric power (per-phase control available)");
+        }
     }
 
     iso20AcDocEnc->AC_ChargeParameterDiscoveryRes_isUsed = 1;
@@ -829,17 +819,66 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
     res->AC_CPDResEnergyTransferMode_isUsed = 1;
     res->BPT_AC_CPDResEnergyTransferMode_isUsed = 0;
 
-    // EVSEMaximumChargePower: 11kW = 11000W = 11 * 10^3
-    res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Exponent = 3;
-    res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Value = 11;
+    // EVSEMaximumChargePower and EVSEMinimumChargePower from current charging parameters
+    const ChargingInformation ci = iso15118.get_charging_information();
 
-    // EVSEMinimumChargePower: 0W (no minimum)
-    res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Exponent = 0;
-    res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Value = 0;
+    // Compute per-phase power in milliwatts, then find the smallest exponent fitting int16_t.
+    uint32_t per_phase_power_mw = static_cast<uint32_t>(ci.current_ma) * V2G_NOMINAL_VOLTAGE_V;
+
+    if (ev_supports_asymmetric && is_selected_three_phase()) {
+        // [V2G20-1818] When _L2/_L3 are present, the base element becomes L1-specific.
+        // [V2G20-1819] Same rules apply to _L2 and _L3 as to the base element.
+        // Report per-phase max power on each phase (same value = even distribution).
+        const ScaledPower sp = encode_milliwatts(per_phase_power_mw);
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Value = sp.value;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Exponent = sp.exponent;
+
+        // L2 and L3 get the same per-phase power (even distribution)
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L2_isUsed = 1;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L2.Value = sp.value;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L2.Exponent = sp.exponent;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L3_isUsed = 1;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L3.Value = sp.value;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L3.Exponent = sp.exponent;
+
+        // EVSEMinimumChargePower: 0W per phase (no minimum)
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Exponent = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Value = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L2_isUsed = 1;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L2.Exponent = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L2.Value = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L3_isUsed = 1;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L3.Exponent = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L3.Value = 0;
+    } else {
+        // Symmetric mode: base element = sum of all phases per [V2G20-1817].
+        // Phase multiplier is determined by the selected ParameterSet (1=ThreePhase, 2=SinglePhase),
+        // NOT by get_charging_information().three_phase — the ParameterSet is the contract with the EV.
+        // [V2G20-1817] For ThreePhase, when _L2/_L3 are not present, the base element represents the
+        //              sum of all three lines. An even distribution across all three phases shall be applied.
+        // [V2G20-1815] For SinglePhase, only the base element (L1) shall be used.
+        uint32_t total_power_mw = per_phase_power_mw * (is_selected_three_phase() ? 3 : 1);
+        const ScaledPower sp = encode_milliwatts(total_power_mw);
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Value = sp.value;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower.Exponent = sp.exponent;
+
+        // [V2G20-1822] SECC shall not send _L2, _L3 values unless the EV declared asymmetric capability.
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L2_isUsed = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMaximumChargePower_L3_isUsed = 0;
+
+        // EVSEMinimumChargePower: 0W (no minimum)
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Exponent = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower.Value = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L2_isUsed = 0;
+        res->AC_CPDResEnergyTransferMode.EVSEMinimumChargePower_L3_isUsed = 0;
+    }
+
+    // [V2G20-1828] MaximumPowerAsymmetry: if not present, no asymmetric limitation applies.
+    // We intentionally omit it so the SECC can set any per-phase power distribution.
 
     // EVSENominalFrequency: 50Hz (Europe) = 50 * 10^0
     res->AC_CPDResEnergyTransferMode.EVSENominalFrequency.Exponent = 0;
-    res->AC_CPDResEnergyTransferMode.EVSENominalFrequency.Value = 50;
+    res->AC_CPDResEnergyTransferMode.EVSENominalFrequency.Value = V2G_NOMINAL_FREQUENCY_HZ;
 
     // Optional fields not used
     res->AC_CPDResEnergyTransferMode.MaximumPowerAsymmetry_isUsed = 0;
@@ -918,7 +957,7 @@ void ISO20::handle_ac_charge_loop_req()
             api_state.get("battery_energy_capacity_exp")->updateInt(req->DisplayParameters.BatteryEnergyCapacity.Exponent);
         }
 
-        // InletHot - Safety alert
+        // InletHot is a safety alert
         api_state.get("inlet_hot_is_used")->updateBool(req->DisplayParameters.InletHot_isUsed);
         if (req->DisplayParameters.InletHot_isUsed) {
             api_state.get("inlet_hot")->updateBool(req->DisplayParameters.InletHot);
@@ -928,10 +967,10 @@ void ISO20::handle_ac_charge_loop_req()
         }
     }
 
-    // Extract EV present power if using Scheduled mode
-    if (req->Scheduled_AC_CLReqControlMode_isUsed) {
-        api_state.get("ev_present_active_power_val")->updateInt(req->Scheduled_AC_CLReqControlMode.EVPresentActivePower.Value);
-        api_state.get("ev_present_active_power_exp")->updateInt(req->Scheduled_AC_CLReqControlMode.EVPresentActivePower.Exponent);
+    // Extract EV present power if using Dynamic mode
+    if (req->Dynamic_AC_CLReqControlMode_isUsed) {
+        api_state.get("ev_present_active_power_val")->updateInt(req->Dynamic_AC_CLReqControlMode.EVPresentActivePower.Value);
+        api_state.get("ev_present_active_power_exp")->updateInt(req->Dynamic_AC_CLReqControlMode.EVPresentActivePower.Exponent);
     }
 
     // Update EV data for meters module
@@ -964,9 +1003,9 @@ void ISO20::handle_ac_charge_loop_req()
             }
         }
 
-        // Extract present power from Scheduled mode if available
-        if (req->Scheduled_AC_CLReqControlMode_isUsed) {
-            ev_data.present_power = physical_value_to_float(&req->Scheduled_AC_CLReqControlMode.EVPresentActivePower);
+        // Extract present power from Dynamic mode if available
+        if (req->Dynamic_AC_CLReqControlMode_isUsed) {
+            ev_data.present_power = physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower);
         }
 
         iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
@@ -985,6 +1024,17 @@ void ISO20::handle_ac_charge_loop_req()
         res->EVSEStatus_isUsed = 1;
         res->EVSEStatus.NotificationMaxDelay = 0;
         res->EVSEStatus.EVSENotification = iso20_ac_evseNotificationType_Terminate;
+    }
+    // Check if the charge manager wants a different phase mode than currently selected.
+    // If the EV supports asymmetric power, we handle this via per-phase EVSETargetActivePower
+    // below. No ServiceRenegotiation needed.
+    // If the EV does NOT support asymmetric, request ServiceRenegotiation so the EV can
+    // re-select the appropriate ParameterSet (ThreePhase vs SinglePhase).
+    // [V2G20-1964] EVCC shall initiate ServiceRenegotiation when EVSENotification=ServiceRenegotiation.
+    else if (!ev_supports_asymmetric && iso15118.get_charging_information().three_phase != is_selected_three_phase()) {
+        res->EVSEStatus_isUsed = 1;
+        res->EVSEStatus.NotificationMaxDelay = 10;  // EV must initiate renegotiation within 10 seconds
+        res->EVSEStatus.EVSENotification = iso20_ac_evseNotificationType_ServiceRenegotiation;
     } else {
         // EVSE status not provided
         res->EVSEStatus_isUsed = 0;
@@ -1004,28 +1054,71 @@ void ISO20::handle_ac_charge_loop_req()
     // Target frequency not provided
     res->EVSETargetFrequency_isUsed = 0;
 
-    // Control mode response - use Scheduled mode (matching what we offered in ServiceDetail)
-    res->Scheduled_AC_CLResControlMode_isUsed = 1;
-    res->Dynamic_AC_CLResControlMode_isUsed = 0;
+    // Control mode response: Use Dynamic mode.
+    // [V2G20-1825] The EV shall adjust its energy transfer behavior to the new setpoints
+    // as fast as technically feasible.
+    res->Scheduled_AC_CLResControlMode_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode_isUsed = 1;
     res->BPT_Scheduled_AC_CLResControlMode_isUsed = 0;
     res->BPT_Dynamic_AC_CLResControlMode_isUsed = 0;
     res->CLResControlMode_isUsed = 0;
 
-    // Provide EVSE present active power in the Scheduled control mode response
-    // EVSEPresentActivePower: 11kW = 11 * 10^3 W
-    res->Scheduled_AC_CLResControlMode.EVSEPresentActivePower_isUsed = 1;
-    res->Scheduled_AC_CLResControlMode.EVSEPresentActivePower.Exponent = 3;
-    res->Scheduled_AC_CLResControlMode.EVSEPresentActivePower.Value = 11; // 11kW
+    // EVSETargetActivePower is MANDATORY in dynamic mode. This is the primary power control mechanism.
+    // [V2G20-1823] EVSETargetActivePower shall always be based on EVSENominalVoltage.
+    const ChargingInformation ci = iso15118.get_charging_information();
 
-    // Optional target/L2/L3 power not used
-    res->Scheduled_AC_CLResControlMode.EVSETargetActivePower_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSETargetActivePower_L2_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSETargetActivePower_L3_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSETargetReactivePower_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSETargetReactivePower_L2_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSETargetReactivePower_L3_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSEPresentActivePower_L2_isUsed = 0;
-    res->Scheduled_AC_CLResControlMode.EVSEPresentActivePower_L3_isUsed = 0;
+    if (ev_supports_asymmetric && is_selected_three_phase()) {
+        // Asymmetric per-phase power control path.
+        // [V2G20-1818] When _L2/_L3 are present, the base element becomes L1-specific (not a sum).
+        // [V2G20-1825] The EV shall adjust to new setpoints as fast as technically feasible.
+        // This allows dynamic switching between 1-phase and 3-phase without ServiceRenegotiation.
+
+        // L1 always gets the per-phase power
+        uint32_t l1_power_mw = static_cast<uint32_t>(ci.current_ma) * V2G_NOMINAL_VOLTAGE_V;
+        const ScaledPower l1 = encode_milliwatts(l1_power_mw);
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Value = l1.value;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Exponent = l1.exponent;
+
+        // L2 and L3: same as L1 when charge manager wants 3-phase, zero when it wants 1-phase.
+        // [V2G20-1819] Same rules apply to _L2/_L3 as to the base element.
+        uint32_t l23_power_mw = ci.three_phase ? l1_power_mw : 0;
+        const ScaledPower l23 = encode_milliwatts(l23_power_mw);
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L2_isUsed = 1;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L2.Value = l23.value;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L2.Exponent = l23.exponent;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L3_isUsed = 1;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L3.Value = l23.value;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L3.Exponent = l23.exponent;
+    } else {
+        // Symmetric power control path.
+        // [V2G20-1817] For ThreePhase without _L2/_L3, base element = total power summed across
+        //              all three lines. The EV shall apply an even distribution across all phases.
+        // [V2G20-1815] For SinglePhase, base element = power on L1 only.
+        // [V2G20-1822] SECC shall not send _L2/_L3 unless the EV declared asymmetric capability.
+        uint32_t power_mw = static_cast<uint32_t>(ci.current_ma) * V2G_NOMINAL_VOLTAGE_V * (is_selected_three_phase() ? 3 : 1);
+        const ScaledPower sp = encode_milliwatts(power_mw);
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Value = sp.value;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower.Exponent = sp.exponent;
+
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L2_isUsed = 0;
+        res->Dynamic_AC_CLResControlMode.EVSETargetActivePower_L3_isUsed = 0;
+    }
+
+    // Reactive power control not used
+    res->Dynamic_AC_CLResControlMode.EVSETargetReactivePower_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.EVSETargetReactivePower_L2_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.EVSETargetReactivePower_L3_isUsed = 0;
+
+    // Present active power not provided (we don't have metering at this level)
+    res->Dynamic_AC_CLResControlMode.EVSEPresentActivePower_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.EVSEPresentActivePower_L2_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.EVSEPresentActivePower_L3_isUsed = 0;
+
+    // Inherited Dynamic_CLResControlMode fields (all optional)
+    res->Dynamic_AC_CLResControlMode.DepartureTime_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.MinimumSOC_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.TargetSOC_isUsed = 0;
+    res->Dynamic_AC_CLResControlMode.AckMaxDelay_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20Ac);
     state = 14;

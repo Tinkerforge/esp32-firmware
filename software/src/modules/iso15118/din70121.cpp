@@ -237,7 +237,7 @@ void DIN70121::handle_service_discovery_req()
     res->PaymentOptions.PaymentOption.arrayLen = 1;
 
     // One service available: EV charging
-    res->ChargeService.ServiceTag.ServiceID = 1;
+    res->ChargeService.ServiceTag.ServiceID = V2G_SERVICE_ID_CHARGING;
     res->ChargeService.ServiceTag.ServiceCategory = din_serviceCategoryType_EVCharging;
 
     // EV can use offered service without payment
@@ -334,7 +334,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     // In read_soc_only mode: read SoC on first request, then send FAILED on second request
     // to make the EVCC send SessionStopReq per [V2G-DC-982].
-    if (iso15118.is_read_soc_only() && soc_read) {
+    // Also applies when charge_via_iso15118 is set: DIN 70121 is DC-only, so we can't do
+    // AC charging via DIN. Read SoC if configured, then end session to fall back to IEC 61851.
+    if ((iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) && soc_read) {
         logger.printfln("DIN70121: SoC already read, sending FAILED to end session");
         res->ResponseCode = din_responseCodeType_FAILED;
         iso15118.common.send_exi(Common::ExiType::Din);
@@ -342,7 +344,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
         return;
     }
 
-    if (iso15118.is_read_soc_only()) {
+    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         soc_read = true;
     }
 
@@ -392,12 +394,12 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // Mandatory charge parameters
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 500; // 500A
+    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = DC_SOC_MAX_CURRENT_A; // 500A
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 800; // 400V
+    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = DC_SOC_MAX_VOLTAGE_V; // 800V
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
@@ -412,13 +414,13 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = din_unitSymbolType_A;
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 1; // 1A
+    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = DC_SOC_PEAK_RIPPLE_A; // 1A
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE; // 20000W * 10^1 = 200kW
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1; // Mandatory according to the list?
 
     res->DC_EVSEChargeParameter_isUsed = 1;
@@ -432,7 +434,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax = SHRT_MAX;
 
     // [V2G-DC-338] The value of the duration element shall be defined as period in seconds.
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = 86400;
+    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1; // Must be used in DIN
 
     // [V2G-DC-336] The value of the start element shall be defined in seconds from NOW.
@@ -440,7 +442,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
 
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0; // no content
-    res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = 1;
+    res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleID = 1;
 
@@ -472,9 +474,10 @@ void DIN70121::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 7;
 
-    // In read_soc_only mode, switch to IEC 61851 after the session ends.
+    // In read_soc_only mode or charge_via_iso15118 mode, switch to IEC 61851 after session ends.
+    // DIN 70121 is DC-only, so we can't do AC charging via DIN.
     // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
-    if (iso15118.is_read_soc_only()) {
+    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         iso15118.switch_to_iec_temporary();
     }
 }

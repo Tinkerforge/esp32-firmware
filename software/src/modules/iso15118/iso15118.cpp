@@ -339,4 +339,13 @@ void ISO15118::switch_to_iec_temporary()
 
     // Reset SLAC state to be ready for next connection
     slac.state = SLAC::State::ModemReset;
+
+    // Reset DC SoC session tracking for next EV connection
+    iso2.reset_dc_soc_done();
+}
+
+ChargingInformation ISO15118::get_charging_information() const
+{
+    // TODO
+    return {6000, true}; // 6A, 3-phase
 }

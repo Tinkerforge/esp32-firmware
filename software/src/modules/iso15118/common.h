@@ -195,3 +195,48 @@ private:
 
     uint8_t state = 0;
 };
+
+
+// Encode a milliwatt value into (Value, Exponent) form for EXI physical values.
+// Starts at exponent -3 (milliwatts) and divides by 10 until the value fits in int16_t,
+// maximizing resolution. Used for ISO2 PhysicalValueType and ISO20 RationalNumberType.
+struct ScaledPower {
+    int16_t value;
+    int8_t exponent;
+};
+static inline ScaledPower encode_milliwatts(uint32_t milliwatts)
+{
+    int8_t exponent = -3;
+    while (milliwatts > INT16_MAX) {
+        milliwatts /= 10;
+        exponent++;
+    }
+    return {static_cast<int16_t>(milliwatts), exponent};
+}
+
+
+// Some general constants that are used across all three protocols:
+
+// Nominal line-to-neutral voltage (V)
+static constexpr uint16_t V2G_NOMINAL_VOLTAGE_V    = 230;
+
+// Nominal grid frequency (Hz)
+static constexpr uint8_t  V2G_NOMINAL_FREQUENCY_HZ = 50;
+
+// Seconds in one day — used for schedule duration in DIN/ISO2
+static constexpr uint32_t SECONDS_PER_DAY = 86400;
+
+// ServiceID for EV Charging (DIN Table 105, ISO2 Table 105, ISO20 Table 203)
+static constexpr uint16_t V2G_SERVICE_ID_CHARGING = 1;
+
+// SAScheduleTupleID — we offer exactly one schedule tuple (DIN/ISO2)
+static constexpr uint16_t V2G_SA_SCHEDULE_TUPLE_ID = 1;
+
+
+// These values are advertised to the EV to initiate a DC session
+// purely for reading the EV's State of Charge.
+static constexpr int16_t DC_SOC_MAX_CURRENT_A   = 500;
+static constexpr int16_t DC_SOC_MAX_VOLTAGE_V   = 800;
+static constexpr int16_t DC_SOC_PEAK_RIPPLE_A   = 1;
+static constexpr int16_t DC_SOC_MAX_POWER_VALUE = 20000;
+static constexpr int8_t  DC_SOC_MAX_POWER_EXP   = 1;

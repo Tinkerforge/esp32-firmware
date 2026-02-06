@@ -322,17 +322,27 @@ void ISO2::handle_service_discovery_req()
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
-    if (!charge_via_iso15118 && read_soc) {
-        // DC mode for SoC reading
+    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done) {
+        // First session: DC mode to read SoC before AC charging
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_DC_extended;
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
-    } else {
-        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_AC_single_phase_core;
+    } else if (charge_via_iso15118) {
+        // AC charging mode (either read_soc=false, or dc_soc_done=true after SoC was read)
+        const ChargingInformation ci = iso15118.get_charging_information();
+        if (ci.three_phase) {
+            res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_AC_three_phase_core;
+        } else {
+            res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_AC_single_phase_core;
+        }
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
+    } else if (read_soc) {
+        // DC mode for SoC reading only (no ISO15118 charging)
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_DC_extended;
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
     }
 
     // Unique identifier of the service
-    res->ChargeService.ServiceID = 1;
+    res->ChargeService.ServiceID = V2G_SERVICE_ID_CHARGING;
 
     res->ChargeService.ServiceName_isUsed = 0;
     res->ChargeService.ServiceScope_isUsed = 0;
@@ -451,7 +461,13 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     // DC SoC reading mode: read SoC on first request, then send FAILED on second request
     // to make the EVCC send SessionStopReq per [V2G2-538]/[V2G2-539].
-    if (read_soc && !charge_via_iso15118) {
+    // This applies to both:
+    //   - read_soc_only mode (read_soc=true, charge_via_iso15118=false)
+    //   - charge_via_iso15118 + read_soc mode before DC SoC is done
+    const bool dc_soc_session = (read_soc && !charge_via_iso15118) ||
+                                (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done);
+
+    if (dc_soc_session) {
         if (soc_read) {
             logger.printfln("ISO2: SoC already read, sending FAILED to end session");
             res->ResponseCode = iso2_responseCodeType_FAILED;
@@ -479,43 +495,48 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Ready;
 
         res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 500; // 500A
+        res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = DC_SOC_MAX_CURRENT_A;
         res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
 
         res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = iso2_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 800; // 800V
+        res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = DC_SOC_MAX_VOLTAGE_V;
         res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
 
         res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0; // 0A
+        res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0;
         res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
 
         res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = iso2_unitSymbolType_V;
-        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0; // 0V
+        res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0;
         res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
 
         res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = iso2_unitSymbolType_A;
-        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 1; // 1A
+        res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = DC_SOC_PEAK_RIPPLE_A;
         res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
 
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = iso2_unitSymbolType_W;
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
-        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
+        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE;
+        res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
 
         // Optinal charge parameters
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
-        // Delay send_exi by 1s to slow down the Req/Res-Loop
-        task_scheduler.scheduleOnce([this]() {
-            iso15118.common.send_exi(Common::ExiType::Iso2);
-            state = 6;
-        }, 1_s);
+        iso15118.common.send_exi(Common::ExiType::Iso2);
+        state = 6;
     } else if (charge_via_iso15118) {
         // AC Charging mode
-        // Calculate minimum possible power
-        uint16_t minimum_power = static_cast<int16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 100.0f);
+        const ChargingInformation ci = iso15118.get_charging_information();
+
+        // Calculate minimum possible power from EV's minimum current
+        uint16_t minimum_power = static_cast<int16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*static_cast<float>(V2G_NOMINAL_VOLTAGE_V) + 100.0f);
         minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
+
+        // Calculate maximum power from our current limit
+        // current_ma is per-phase, total power depends on phases
+        // Compute in milliwatts and find optimal encoding for maximum resolution.
+        uint32_t max_power_mw = static_cast<uint32_t>(ci.current_ma) * V2G_NOMINAL_VOLTAGE_V * (ci.three_phase ? 3 : 1);
+        const ScaledPower pmax = encode_milliwatts(max_power_mw);
 
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
@@ -533,12 +554,12 @@ void ISO2::handle_charge_parameter_discovery_req()
         // V2G2-315] The PMax element shall define the maximum amount of power to be drawn from the EVSE
         //           power outlet when the element of type PMaxScheduleEntryType is active.
 
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = minimum_power;
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = 0;
+        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = pmax.value;
+        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = pmax.exponent;
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Unit = iso2_unitSymbolType_W;
 
         // [V2G2-330] The value of the duration element shall be defined as period of time in seconds.
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = 86400; // One day
+        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY; // One day
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
 
         // [V2G2-328] The value of the start element shall be defined in seconds from NOW.
@@ -553,7 +574,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         // [V2G2-300] The SAScheduleTupleID element shall be unique within all SAScheduleTuple elements in the
         //            SAScheduleListType and uniquely identifies a tuple of PMaxSchedule and SalesTariff elements
         //            during the entire charging session.
-        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = 1; // [V2G2-773] 1-255 OK, 0 not allowed
+        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID; // [V2G2-773] 1-255 OK, 0 not allowed
 
         // SalesTariff: Optional: Encapsulating element describing all relevant details for one SalesTariff from the secondary actor
         res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
@@ -569,14 +590,14 @@ void ISO2::handle_charge_parameter_discovery_req()
         // ratio is set to 5% ratio then this is the only line current restriction processed by
         // the EVCC. Otherwise the EVCC applies the smaller current constraint from the
         // EVSEMaxCurrent value and the PWM ratio information.
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = 6; // TODO: Use value from EVSE
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = 0;
+        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = ci.current_ma; // e.g. 6123mA -> 6123
+        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = -3;    // 6123 * 10^-3 = 6.123A (1mA resolution)
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 
         // Line voltage supported by the EVSE. This is the voltage measured between
         // one phases and neutral. If the EVSE supports multiple phase charging the EV
         // might easily calculate the voltage between phases.
-        res->AC_EVSEChargeParameter.EVSENominalVoltage.Value = 230;
+        res->AC_EVSEChargeParameter.EVSENominalVoltage.Value = V2G_NOMINAL_VOLTAGE_V;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier = 0;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit = iso2_unitSymbolType_V;
 
@@ -631,7 +652,7 @@ void ISO2::handle_power_delivery_req()
     // Unique identifier within a charging session for a SAScheduleTuple
     // element. An SAID remains a unique identifier for one schedule throughout
     // a charging session.
-    if (req->SAScheduleTupleID != 1) {
+    if (req->SAScheduleTupleID != V2G_SA_SCHEDULE_TUPLE_ID) {
         logger.printfln("ISO2: Unexpected SAScheduleTupleID %d", req->SAScheduleTupleID);
     }
 
@@ -675,11 +696,15 @@ void ISO2::handle_charging_status_req()
     strcpy(res->EVSEID.characters, "ZZ00000");
     res->EVSEID.charactersLen = strlen("ZZ00000");
 
-    res->SAScheduleTupleID = 1;
+    res->SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
 
+    // [V2G2-844] EVSEMaxCurrent is the real-time current limit per phase.
+    // With 5% CP duty (ISO15118 mode), this is the only current constraint the EV processes.
+    // Read on every ChargingStatus cycle to allow dynamic current control.
+    const ChargingInformation ci = iso15118.get_charging_information();
     res->EVSEMaxCurrent_isUsed = 1;
-    res->EVSEMaxCurrent.Value = 22;
-    res->EVSEMaxCurrent.Multiplier = -1;
+    res->EVSEMaxCurrent.Value = ci.current_ma; // e.g. 6123mA -> 6123
+    res->EVSEMaxCurrent.Multiplier = -3;       // 6123 * 10^-3 = 6.123A (1mA resolution)
     res->EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 
     res->MeterInfo_isUsed = 0;
@@ -717,9 +742,19 @@ void ISO2::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = 9;
 
-    // In read_soc_only mode, switch to IEC 61851 after the session ends.
-    // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
-    if (iso15118.is_read_soc_only()) {
+    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
+    const bool read_soc = iso15118.config.get("read_soc")->asBool();
+
+    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done) {
+        // DC SoC session is complete. Mark it done and prepare for the AC charging session.
+        // Keep PLC link alive — only close TCP so EV can reconnect for AC.
+        dc_soc_done = true;
+        soc_read = false;
+        state = 0; // Reset state machine for next session
+        logger.printfln("ISO2: DC SoC session complete, waiting for AC session");
+    } else if (iso15118.is_read_soc_only()) {
+        // In read_soc_only mode, switch to IEC 61851 after the session ends.
+        // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
         iso15118.switch_to_iec_temporary();
     }
 

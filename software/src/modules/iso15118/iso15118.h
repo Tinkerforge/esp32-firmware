@@ -37,6 +37,11 @@ static constexpr int FDS_LISTEN_INDEX = 2;  // DIN/ISO2/ISO20 TCP listen socket
 static constexpr int FDS_ACTIVE_INDEX = 3;  // DIN/ISO2/ISO20 TCP active socket
 static constexpr int FDS_COUNT        = 4;
 
+struct ChargingInformation {
+    uint16_t current_ma;
+    bool three_phase;
+};
+
 class ISO15118 final : public IModule
 {
 private:
@@ -90,6 +95,9 @@ public:
 
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
+
+    // Returns current limit and phase info
+    ChargingInformation get_charging_information() const;
 
     QCA700x qca700x;
     SLAC slac;
