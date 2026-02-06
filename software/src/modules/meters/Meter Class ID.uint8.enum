@@ -7,6 +7,7 @@ Sun Spec
 Modbus TCP
 SMA Speedwire
 RCT Power
+ISO15118
 
 # Unofficial meter classes
 Mqtt Mirror = 200

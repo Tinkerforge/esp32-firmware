@@ -474,3 +474,16 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 473,Energy,PV Sum,,Export,Resettable,kWh,3,DC energy (feed),Σ PV; since last reset,Energie (Einspeisung),Σ PV; DC; seit letztem Zurücksetzen,,,,,,
 474,Run Time,,,,,s,0,Run time,since manufacturing,Laufzeit,seit Herstellung,,,,,,
 475,Capacity,,,,,kWh,3,Capacity,,Kapazität,,,,,,,
+476,EV SOC,Target,,,,%,0,State of charge,target,Ladestand,Ziel,,,,,,ISO 15118-20 Target SOC from EV
+477,EV SOC,Min,,,,%,0,State of charge,minimum,Ladestand,Minimum,,,,,,ISO 15118-20 Minimum SOC from EV
+478,EV SOC,Max,,,,%,0,State of charge,maximum,Ladestand,Maximum,,,,,,ISO 15118-20 Maximum SOC from EV
+479,EV SOC,Present,,,,%,0,State of charge,current,Ladestand,aktuell,,,,,,ISO 15118 EV present state of charge
+480,EV Voltage,Max,,,,V,1,Voltage,maximum,Spannung,Maximum,,,,,,ISO 15118 EV maximum voltage limit
+481,EV Current,Max,,,,A,3,Current,maximum,Strom,Maximum,,,,,,ISO 15118 EV maximum current limit
+482,EV Power,Max,,,,W,0,Power,maximum,Leistung,Maximum,,,,,,ISO 15118 EV maximum power limit
+483,EV Power,Present,,,,W,0,Power,current,Leistung,aktuell,,,,,,ISO 15118-20 EV present active power
+484,EV Capacity,,,,,kWh,3,Battery capacity,,Batteriekapazität,,,,,,,ISO 15118 EV battery energy capacity
+485,EV Energy,Request,,,,kWh,3,Energy request,,Energieanforderung,,,,,,,ISO 15118 EV requested energy
+486,EV Time,To Target SOC,,,,s,0,Time to target,state of charge,Zeit bis Ziel,Ladestand,,,,,,ISO 15118-20 remaining time to target SOC
+487,EV Power,Min,,,,W,0,Power,minimum,Leistung,Minimum,,,,,,ISO 15118-20 EV minimum power limit
+488,EV Current,Min,,,,A,3,Current, minimum,Strom,Minimum,,,,,,ISO 15118-2 EV minimum current limit
