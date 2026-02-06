@@ -161,7 +161,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
             </Button>
             <Button variant="primary"
                     disabled={props.disabled || (props.value == props.max)}
-                    className={"px-1" + (!props.showMinMax ? " rounded-start-0 rounded-end" : " rounded-0")}
+                    className={"px-1 rounded-start-0 rounded-end"}
                     onClick={() => {
                         let v = props.value;
                         let target = (v - (v % pow10)) + pow10;
@@ -176,7 +176,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     {!('onValue' in props) || !props.showMinMax ? null :
         <ButtonGroup className="flex-wrap">
             <Button variant="primary"
-                    className="ms-2 rounded-0"
+                    className="ms-2 rounded-start rounded-end-0"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
                         setTarget(props.min);
