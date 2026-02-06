@@ -130,3 +130,59 @@ The EXI message encoding/decoding is based on [libcbv2g](https://github.com/Audr
 ### Phase Switching
 - Phase switching is negotiated between the EVSE and ISO 15118 module
 - ISO 15118 charging allows arbitrary phase switching during session
+
+
+## Charge mode handling between ESP and EVSE
+
+| State | Description | Who Controls Charging | After Disconnect |
+|-------|-------------|----------------------|------------------|
+| IEC61851 Permanent | Traditional mode, no ISO features | EVSE Bricklet | Stays IEC61851 Permanent |
+| IEC61851 Temporary | IEC charging after ISO data collection | EVSE Bricklet | ISO15118 |
+| ISO15118 | Full ISO control | ESP32 | Stays ISO15118 |
+
+### State Transitions
+
+```
+                                    ┌─────────────────────────────────────┐
+                                    │                                     │
+                                    ▼                                     │
+┌──────────────────────┐    ┌───────────────┐    ┌──────────────────────┐ │
+│ IEC61851 Permanent   │    │   ISO15118    │    │  IEC61851 Temporary  │ │
+│                      │    │               │    │                      │ │
+│ (no ISO features)    │    │ (ESP32 ctrl)  │───>│ (EVSE ctrl)          │─┘
+└──────────────────────┘    └───────────────┘    └──────────────────────┘
+                                    │                      │
+                                    │                      │ EV Disconnect
+                                    │                      ▼
+                                    │              Auto-transition
+                                    │              back to ISO15118
+                                    │
+                                    ▼
+                            charge via iso15118
+                            enabled? Stay here
+```
+
+### No ISO features enabled (is enabled() == false)
+
+- EVSE stays in IEC61851 Permanent
+- Behaves like WARP3
+
+### Autocharge only (autocharge=true, read soc=false, charge via iso15118=false)
+
+- Start in ISO15118
+- SLAC -> Get EVCCID for authentication
+- Switch to IEC61851 Temporary
+- EVSE handles charging via PWM
+- On disconnect -> Back to ISO15118
+
+### Read SoC (autocharge=x, read soc=true, charge via iso15118=false)
+
+- Start in ISO15118
+- SLAC -> SDP -> V2G handshake -> Get SoC
+- Switch to IEC61851 Temporary
+- EVSE handles charging via PWM
+- On disconnect -> Back to ISO15118
+
+### Charging via ISO (autocharge=x, read soc=x, charge via iso15118=true)
+
+- Start in ISO15118 and stay in ISO15118
