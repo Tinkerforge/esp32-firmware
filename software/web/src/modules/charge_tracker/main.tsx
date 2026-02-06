@@ -592,7 +592,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
             return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
-        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <div class="col"><Dropdown>
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <div class="col mb-2"><Dropdown>
             <Dropdown.Toggle className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready}>
                 <span class="me-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}

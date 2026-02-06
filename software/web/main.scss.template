@@ -931,6 +931,10 @@ $link-hover-color-dark: $link-hover-color;
 }
 
 @media (min-width: 768px) {
+    .ms-md-n1px {
+        margin-left: -1px;
+    }
+
     .rounded-end-md-0 {
         border-bottom-right-radius: 0 !important;
         border-top-right-radius: 0 !important;
