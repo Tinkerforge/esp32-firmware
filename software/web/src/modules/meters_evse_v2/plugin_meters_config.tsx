@@ -79,7 +79,7 @@ export function pre_init() {
                 let meter_type_string = meter_type == null ? __("meters.script.reboot_required") : translate_unchecked(`meters.script.meter_type_${meter_type}`)
 
                 return <FormRow label={__("meters.content.meter_type")} small>
-                    <div class="row"><div class="col-sm-4">
+                    <div class="row gx-2"><div class="col-sm-4">
                         <InputText class="form-control-sm"
                                 value={meter_type_string}/>
                     </div></div>
