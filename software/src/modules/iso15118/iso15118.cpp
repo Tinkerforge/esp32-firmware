@@ -344,8 +344,13 @@ void ISO15118::switch_to_iec_temporary()
     iso2.reset_dc_soc_done();
 }
 
+// We will want to upgrade the ChargingInformation struct in the future.
+// Depending on the protocol version we actually want to set power instead of current.
+// Also depending on the EV capabilities we are able to set arbitrary power **per phase**.
+// For now, we keep it backwards-compatible and just read the charging information from the EVSE.
 ChargingInformation ISO15118::get_charging_information() const
 {
-    // TODO
-    return {6000, true}; // 6A, 3-phase
+    uint16_t current_ma = evse_common.get_state().get("allowed_charging_current")->asUint();
+    bool three_phase = evse_common.get_low_level_state().get("phases_current")->asUint() == 3;
+    return {current_ma, three_phase};
 }
