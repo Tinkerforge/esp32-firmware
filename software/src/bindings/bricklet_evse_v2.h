@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2025-10-31.      *
+ * This file was automatically generated on 2026-02-06.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -296,77 +296,87 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_GENERAL_INFORMATION 48
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_GATEWAY_IDENTIFICATION 48
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_GENERAL_INFORMATION 49
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_GATEWAY_IDENTIFICATION 49
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT 50
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_GATEWAY_SERIAL 50
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT 51
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_GATEWAY_SERIAL 51
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_CHARGE_POINT 52
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_USER_ASSIGNMENT 52
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_CHARGE_POINT 53
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_USER_ASSIGNMENT 53
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_TRANSACTION 54
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_CHARGE_POINT 54
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION 55
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_CHARGE_POINT 55
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_PUBLIC_KEY 56
+#define TF_EVSE_V2_FUNCTION_SET_EICHRECHT_TRANSACTION 56
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_CONFIGURATION 59
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION 57
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_CONFIGURATION 60
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_PUBLIC_KEY 58
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_VALUE 61
+#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_CONFIGURATION 61
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_VALUE 62
+#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_CONFIGURATION 62
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME 63
+#define TF_EVSE_V2_FUNCTION_SET_ENUMERATE_VALUE 63
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_PHASE_SWITCH_WAIT_TIME 64
+#define TF_EVSE_V2_FUNCTION_GET_ENUMERATE_VALUE 64
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_PHASE_SWITCH_WAIT_TIME 65
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_PHASE_SWITCH_WAIT_TIME 66
 
 /**
  * \ingroup TF_EVSEV2
@@ -438,12 +448,12 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CALLBACK_EICHRECHT_DATASET_LOW_LEVEL 57
+#define TF_EVSE_V2_CALLBACK_EICHRECHT_DATASET_LOW_LEVEL 59
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CALLBACK_EICHRECHT_SIGNATURE_LOW_LEVEL 58
+#define TF_EVSE_V2_CALLBACK_EICHRECHT_SIGNATURE_LOW_LEVEL 60
 
 #endif
 
@@ -895,12 +905,17 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851 0
+#define TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT 0
 
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118 1
+#define TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118 2
 
 /**
  * \ingroup TF_EVSEV2
@@ -1992,14 +2007,28 @@ int tf_evse_v2_get_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t *ret_charging_p
  *
  * TODO
  */
-int tf_evse_v2_set_eichrecht_general_information(TF_EVSEV2 *evse_v2, const char gateway_identification[32], const char gateway_serial[32], uint8_t *ret_eichrecht_state);
+int tf_evse_v2_set_eichrecht_gateway_identification(TF_EVSEV2 *evse_v2, const char gateway_identification[41], uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
  *
  * TODO
  */
-int tf_evse_v2_get_eichrecht_general_information(TF_EVSEV2 *evse_v2, char ret_gateway_identification[32], char ret_gateway_serial[32]);
+int tf_evse_v2_get_eichrecht_gateway_identification(TF_EVSEV2 *evse_v2, char ret_gateway_identification[41]);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_eichrecht_gateway_serial(TF_EVSEV2 *evse_v2, const char gateway_serial[25], uint8_t *ret_eichrecht_state);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_eichrecht_gateway_serial(TF_EVSEV2 *evse_v2, char ret_gateway_serial[25]);
 
 /**
  * \ingroup TF_EVSEV2
