@@ -170,6 +170,7 @@ enum class WebServerSortOrder {
 
 struct WebServerExtraPortData {
     uint16_t port;
+    bool supports_user_authentication;
     TransportMode transport_mode;
     cert_load_info cert_info;
     WebServerExtraPortData *next;
@@ -203,6 +204,7 @@ public:
 private:
     struct listen_port_handlers_t {
         uint16_t port;
+        bool supports_user_authentication;
         bool supports_http_api;
         WebServerHandler *handlers;
         WebServerHandler *wildcard_handlers;

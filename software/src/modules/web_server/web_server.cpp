@@ -109,6 +109,7 @@ void WebServer::post_setup()
     listen_port_handlers_t *default_handlers = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
     *default_handlers = {
         .port = 0,
+        .supports_user_authentication = true,
         .supports_http_api = true,
         .handlers = nullptr,
         .wildcard_handlers = nullptr,
@@ -220,6 +221,7 @@ void WebServer::post_setup()
                 listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
                 *port_handler = {
                     .port = extra_port->port,
+                    .supports_user_authentication = extra_port->supports_user_authentication,
                     .supports_http_api = false,
                     .handlers = nullptr,
                     .wildcard_handlers = nullptr,
@@ -392,7 +394,22 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
     auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
     auto request = WebServerRequest{req};
 
-    if (server->auth_fn && !server->auth_fn(request)) {
+    const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
+    const size_t listen_port_index = aux->sd->listen_port_index;
+
+    if (listen_port_index >= std::size(server->listen_port_handlers)) {
+        logger.printfln("Received request with invalid listen port index %zu", listen_port_index);
+        return ESP_FAIL;
+    }
+
+    const listen_port_handlers_t *port_handlers = server->listen_port_handlers[listen_port_index];
+
+    if (port_handlers == nullptr) {
+        logger.printfln("Received request with unused listen port index %zu", listen_port_index);
+        return ESP_FAIL;
+    }
+
+    if (port_handlers->supports_user_authentication && server->auth_fn && !server->auth_fn(request)) {
         bool auth_by_remote_access = false;
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
@@ -412,21 +429,6 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
             const WebServerRequestReturnProtect ret = request.requestAuthentication();
             return ret.error;
         }
-    }
-
-    const struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
-    const size_t listen_port_index = aux->sd->listen_port_index;
-
-    if (listen_port_index >= std::size(server->listen_port_handlers)) {
-        logger.printfln("Received request with invalid listen port index %zu", listen_port_index);
-        return ESP_FAIL;
-    }
-
-    const listen_port_handlers_t *port_handlers = server->listen_port_handlers[listen_port_index];
-
-    if (port_handlers == nullptr) {
-        logger.printfln("Received request with unused listen port index %zu", listen_port_index);
-        return ESP_FAIL;
     }
 
     const char *uri = req->uri;

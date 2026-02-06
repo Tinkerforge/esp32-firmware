@@ -92,6 +92,7 @@ void Ship::setup()
     WebServerExtraPortData *extra_ship_port = static_cast<WebServerExtraPortData *>(malloc(sizeof(WebServerExtraPortData)));
     *extra_ship_port = {
         .port = SHIP_PORT,
+        .supports_user_authentication = false, // SHIP devices won't have local user credentials.
         .transport_mode = TransportMode::Secure,
         .cert_info =
             {
