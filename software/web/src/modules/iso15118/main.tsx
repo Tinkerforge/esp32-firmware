@@ -26,7 +26,6 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
-import { InputSelect } from "../../ts/components/input_select";
 import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -35,7 +34,6 @@ import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotLoader } from "../../ts/components/uplot_loader";
-import { ChargeType } from "./charge_type.enum";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;
@@ -141,22 +139,32 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
         return (
             <SubPage name="iso15118">
                 <ConfigForm id="iso15118_config_form" title="ISO 15118" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormSeparator heading="Configuration"/>
-                    <FormRow label="ISO 15118 enabled">
-                        <Switch desc="ISO 15118 allows to read the State of Charge and identify an EV for Plug and Charge"
-                                checked={state.enable}
-                                onClick={this.toggle('enable')}
+                    <FormSeparator heading={__("iso15118.content.configuration")}/>
+                    <FormRow label={__("iso15118.content.autocharge")}>
+                        <Switch desc={__("iso15118.content.autocharge_desc")}
+                                checked={state.autocharge}
+                                onClick={this.toggle('autocharge')}
                         />
                     </FormRow>
-                    <FormRow label="Charge Type" label_muted="This is for testing different possible modes, will probably be changed/removed in release version">
-                        <InputSelect
-                            items={[
-                                ["0", "DC Read SoC Once"],
-                                ["1", "DC Read SoC In Loop"],
-                                ["2", "AC Charging"]
-                            ]}
-                            value={state.charge_type}
-                            onValue={(v) => this.setState({charge_type: parseInt(v)})}
+                    <FormRow label={__("iso15118.content.read_soc")}>
+                        <Switch desc={__("iso15118.content.read_soc_desc")}
+                                checked={state.read_soc}
+                                onClick={this.toggle('read_soc')}
+                        />
+                    </FormRow>
+                    <FormRow label={__("iso15118.content.charge_via_iso15118")}>
+                        <Switch desc={__("iso15118.content.charge_via_iso15118_desc")}
+                                checked={state.charge_via_iso15118}
+                                onClick={this.toggle('charge_via_iso15118')}
+                        />
+                    </FormRow>
+                    <FormRow label={__("iso15118.content.min_charge_current")}>
+                        <InputNumber
+                            unit="mA"
+                            value={state.min_charge_current}
+                            onValue={this.set('min_charge_current')}
+                            min={1000}
+                            max={22000}
                         />
                     </FormRow>
                     <FormSeparator heading="Signal Level Attenuation Characterisation (SLAC)"/>

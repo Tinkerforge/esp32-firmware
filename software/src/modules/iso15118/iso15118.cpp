@@ -90,11 +90,18 @@ void ISO15118::pre_setup()
     this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 1 << 18);
 
     config = ConfigRoot{Config::Object({
-        {"enable", Config::Bool(false)},
-        {"charge_type", Config::Enum(ChargeType::DCReadSocOnce)},
+        {"autocharge", Config::Bool(false)},
+        {"read_soc", Config::Bool(true)},
+        {"charge_via_iso15118", Config::Bool(false)},
+        {"min_charge_current", Config::Uint16(1000)},
     }), [this](Config &update, ConfigSource source) -> String {
-        if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
-            if (update.get("enable")->asBool()) {
+        const bool was_enabled = is_enabled();
+        const bool will_be_enabled = update.get("autocharge")->asBool() ||
+                                     update.get("read_soc")->asBool() ||
+                                     update.get("charge_via_iso15118")->asBool();
+
+        if (will_be_enabled != was_enabled) {
+            if (will_be_enabled) {
                 if (!is_setup) {
                     task_scheduler.scheduleOnce([this]() {
                         sdp.setup_socket();
@@ -150,7 +157,7 @@ void ISO15118::setup()
 
     initialized = true;
 
-    if (config.get("enable")->asBool()) {
+    if (is_enabled()) {
         sdp.setup_socket();
         common.setup_socket();
         is_setup = true;
@@ -239,7 +246,7 @@ void ISO15118::register_urls()
     }, true);
 
     // Enable ISO15118 on the EVSE Bricklet
-    if (config.get("enable")->asBool()) {
+    if (is_enabled()) {
         evse_v2.set_charging_protocol(1, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();

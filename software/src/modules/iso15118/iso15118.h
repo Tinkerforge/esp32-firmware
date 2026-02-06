@@ -29,7 +29,6 @@
 #include "din70121.h"
 #include "iso2.h"
 #include "iso20.h"
-#include "charge_type.enum.h"
 
 // Poll file descriptor indices (fixed positions in fds array)
 static constexpr int FDS_TAP_INDEX    = 0;  // L2TAP for HomePlug/SLAC
@@ -66,6 +65,13 @@ public:
     void state_machines_loop();
     [[gnu::format(__printf__, 2, 3)]] void trace(const char *fmt, ...);
     void trace_packet(const uint8_t *packet, const size_t packet_size);
+
+    // Returns true if ISO 15118 is enabled (any of autocharge, read_soc, or charge_via_iso15118 is set)
+    bool is_enabled() const {
+        return config.get("autocharge")->asBool() ||
+               config.get("read_soc")->asBool() ||
+               config.get("charge_via_iso15118")->asBool();
+    }
 
     QCA700x qca700x;
     SLAC slac;

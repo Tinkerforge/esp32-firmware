@@ -315,8 +315,11 @@ void ISO2::handle_service_discovery_req()
     res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 3;
 #endif
 
-    const ChargeType charge_type = iso15118.config.get("charge_type")->asEnum<ChargeType>();
-    if ((charge_type == ChargeType::DCReadSocOnce) || (charge_type == ChargeType::DCReadSocInLoop)) {
+    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
+    const bool read_soc = iso15118.config.get("read_soc")->asBool();
+
+    if (!charge_via_iso15118 && read_soc) {
+        // DC mode for SoC reading
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_DC_extended;
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
     } else {
@@ -439,17 +442,11 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
-    const ChargeType charge_type = iso15118.config.get("charge_type")->asEnum<ChargeType>();
-    if (charge_type == ChargeType::DCReadSocOnce) {
-        // Try to stop DC charging session by forcing a timeout.
-        // As far as we can tell there is no way for the EVSE to tell the EV to stop the session.
+    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
+    const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
-        evse_v2.set_charging_protocol(0, 1000);
-        return;
-    }
-    // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
-    // so we are able to continously read the SoC.
-    else if (charge_type == ChargeType::DCReadSocInLoop) {
+    // DC SoC reading mode: keep the session in a loop to continuously read SoC
+    if (read_soc && !charge_via_iso15118) {
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
 
@@ -499,7 +496,8 @@ void ISO2::handle_charge_parameter_discovery_req()
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = 6;
         }, 1_s);
-    } else if (charge_type == ChargeType::ACCharging) {
+    } else if (charge_via_iso15118) {
+        // AC Charging mode
         // Calculate minimum possible power
         uint16_t minimum_power = static_cast<int16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 100.0f);
         minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
