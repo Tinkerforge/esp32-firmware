@@ -570,7 +570,7 @@ void MeterSunSpec::scan_next()
                         if (is_kostal(m->Mn)) {
                             bool acc32_is_int32 = true;
 
-                            if (is_kostal_smart_energy_meter(m->Md) == 0) {
+                            if (is_kostal_smart_energy_meter(m->Md)) {
                                 // create null-terminated string from non-terminated character sequence
                                 char version_str[17];
                                 memcpy(version_str, m->Vr, 16);
