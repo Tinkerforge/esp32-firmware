@@ -66,4 +66,5 @@ private:
     uint8_t state = 0;
     uint64_t next_timeout = 0;
     bool pause_active = false;
+    bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 };

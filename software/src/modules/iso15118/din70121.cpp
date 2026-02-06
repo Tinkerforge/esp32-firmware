@@ -171,6 +171,9 @@ void DIN70121::handle_session_setup_req()
     din_SessionSetupReqType *req = &dinDocDec->V2G_Message.Body.SessionSetupReq;
     din_SessionSetupResType *res = &dinDocEnc->V2G_Message.Body.SessionSetupRes;
 
+    // Reset soc_read flag for new session
+    soc_read = false;
+
     api_state.get("evcc_id")->removeAll();
     for (uint16_t i = 0; i < std::min(static_cast<uint16_t>(sizeof(req->EVCCID.bytes)), req->EVCCID.bytesLen); i++) {
         api_state.get("evcc_id")->add()->updateUint(req->EVCCID.bytes[i]);
@@ -327,6 +330,22 @@ void DIN70121::handle_charge_parameter_discovery_req()
         iso15118.common.update_ev_data(ev_data, EVDataProtocol::DIN);
     }
 
+    dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
+
+    // In read_soc_only mode: read SoC on first request, then send FAILED on second request
+    // to make the EVCC send SessionStopReq per [V2G-DC-982].
+    if (iso15118.is_read_soc_only() && soc_read) {
+        logger.printfln("DIN70121: SoC already read, sending FAILED to end session");
+        res->ResponseCode = din_responseCodeType_FAILED;
+        iso15118.common.send_exi(Common::ExiType::Din);
+        state = 6;
+        return;
+    }
+
+    if (iso15118.is_read_soc_only()) {
+        soc_read = true;
+    }
+
     // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
     // to be able to continously read the SoC.
 
@@ -452,6 +471,12 @@ void DIN70121::handle_session_stop_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 7;
+
+    // In read_soc_only mode, switch to IEC 61851 after the session ends.
+    // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
+    if (iso15118.is_read_soc_only()) {
+        iso15118.switch_to_iec_temporary();
+    }
 }
 
 void DIN70121::trace_header(const struct din_MessageHeaderType *header, const char *name)

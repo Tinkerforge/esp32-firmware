@@ -209,6 +209,9 @@ void ISO20::handle_session_setup_req()
     iso20_SessionSetupReqType *req = &iso20DocDec->SessionSetupReq;
     iso20_SessionSetupResType *res = &iso20DocEnc->SessionSetupRes;
 
+    // Reset soc_read flag for new session
+    soc_read = false;
+
     // Store EVCCID in API state (up to 20 characters)
     char evcc_id_str[21] = {0};
     size_t evcc_id_len = req->EVCCID.charactersLen;
@@ -671,6 +674,12 @@ void ISO20::handle_session_stop_req()
     // Send response
     iso15118.common.send_exi(Common::ExiType::Iso20);
 
+    // In read_soc_only mode, switch to IEC 61851 after the session ends.
+    // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
+    if (iso15118.is_read_soc_only()) {
+        iso15118.switch_to_iec_temporary();
+    }
+
     // For Terminate and Pause, reset the session after sending response
     if (req->ChargingSession == iso20_chargingSessionType_Terminate ||
         req->ChargingSession == iso20_chargingSessionType_Pause) {
@@ -968,8 +977,23 @@ void ISO20::handle_ac_charge_loop_req()
 
     res->ResponseCode = iso20_ac_responseCodeType_OK;
 
-    // EVSE status not provided
-    res->EVSEStatus_isUsed = 0;
+    // In read_soc_only mode, signal the EV to terminate after the first SoC reading.
+    // [V2G20-1414] SECC sets EVSENotification to "Terminate" to request session termination.
+    // [V2G20-1416] EVCC shall stop charging within NotificationMaxDelay seconds.
+    // [V2G20-2645] EVCC shall initiate shutdown and send SessionStopReq with Terminate.
+    if (iso15118.is_read_soc_only() && soc_read) {
+        res->EVSEStatus_isUsed = 1;
+        res->EVSEStatus.NotificationMaxDelay = 0;
+        res->EVSEStatus.EVSENotification = iso20_ac_evseNotificationType_Terminate;
+    } else {
+        // EVSE status not provided
+        res->EVSEStatus_isUsed = 0;
+
+        // Track first SoC reading in read_soc_only mode
+        if (iso15118.is_read_soc_only()) {
+            soc_read = true;
+        }
+    }
 
     // Metering info not provided (even if requested)
     res->MeterInfo_isUsed = 0;

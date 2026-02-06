@@ -81,6 +81,13 @@ public:
                !config.get("charge_via_iso15118")->asBool();
     }
 
+    // Returns true if read_soc is enabled but charge_via_iso15118 is not.
+    // In this mode, we read the SoC once via V2G and then switch to IEC 61851 temporary mode.
+    bool is_read_soc_only() const {
+        return config.get("read_soc")->asBool() &&
+               !config.get("charge_via_iso15118")->asBool();
+    }
+
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
 

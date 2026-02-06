@@ -202,6 +202,9 @@ void ISO2::handle_session_setup_req()
     iso2_SessionSetupReqType *req = &iso2DocDec->V2G_Message.Body.SessionSetupReq;
     iso2_SessionSetupResType *res = &iso2DocEnc->V2G_Message.Body.SessionSetupRes;
 
+    // Reset soc_read flag for new session
+    soc_read = false;
+
     api_state.get("evcc_id")->removeAll();
     for (uint16_t i = 0; i < std::min(static_cast<uint16_t>(sizeof(req->EVCCID.bytes)), req->EVCCID.bytesLen); i++) {
         api_state.get("evcc_id")->add()->updateUint(req->EVCCID.bytes[i]);
@@ -446,8 +449,19 @@ void ISO2::handle_charge_parameter_discovery_req()
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
-    // DC SoC reading mode: keep the session in a loop to continuously read SoC
+    // DC SoC reading mode: read SoC on first request, then send FAILED on second request
+    // to make the EVCC send SessionStopReq per [V2G2-538]/[V2G2-539].
     if (read_soc && !charge_via_iso15118) {
+        if (soc_read) {
+            logger.printfln("ISO2: SoC already read, sending FAILED to end session");
+            res->ResponseCode = iso2_responseCodeType_FAILED;
+            iso15118.common.send_exi(Common::ExiType::Iso2);
+            state = 6;
+            return;
+        }
+
+        soc_read = true;
+
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
 
@@ -702,6 +716,12 @@ void ISO2::handle_session_stop_req()
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = 9;
+
+    // In read_soc_only mode, switch to IEC 61851 after the session ends.
+    // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
+    if (iso15118.is_read_soc_only()) {
+        iso15118.switch_to_iec_temporary();
+    }
 
     // Reset the socket, so the ev can reconnect when it wants to resume from the pause
     // If the ev wants to terminate we reset the active socket anyway.
