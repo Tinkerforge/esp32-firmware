@@ -20,6 +20,7 @@
 import { h, Component, Fragment, ComponentChildren } from "preact";
 import { __ } from "../translation";
 import * as util from "../util";
+import { PageHeader } from "./page_header";
 
 interface ConfigFormState {
     saveInProgress: boolean;
@@ -69,33 +70,28 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     }
 
     resetButton = () => this.props.onReset ?
-            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger mb-2 ms-sm-2 col" disabled={!this.props.isModified}>
+        <div class="col">
+            <button key="reset" onClick={async () => {await this.props.onReset()}} class="btn btn-danger w-100 mb-2 text-nowrap" disabled={!this.props.isModified}>
                 {__("component.config_form.reset")}
                 <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!this.state.showSpinner}></span>
-            </button> : undefined
+            </button>
+        </div> : undefined;
 
     override render(props: ConfigFormProps, state: Readonly<ConfigFormState>) {
-        let common_classes = "col-12 col-sm text-center text-sm-start text-nowrap";
-
         return (
             <>
-                <div class={"row mb-3 " + (util.is_native_median_app() ? "sticky-top-app " : "sticky-under-top ") + (props.small ? "pt-4" : "pt-3")}>
-                    <div class={"col border-bottom tab-header-shadow" + (props.small ? "" : " pb-2")}>
-                        <div class="row g-0">
-                            {props.small ?
-                                <h3 class={common_classes}>{props.title}</h3>
-                                : <h1 class={"page-header " + common_classes}>{props.title}</h1>
-                            }
-                            <div class="col-12 col-sm row g-0">
-                                {this.resetButton()}
-                                <button key="save" type="submit" form={props.id} class="btn btn-primary col mb-2 ms-2 ms-md-3 me-0" disabled={state.saveInProgress || !props.isDirty}>
-                                    {__("component.config_form.save")}
-                                    <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
-                                </button>
-                            </div>
+                <PageHeader title={props.title} titleClass="text-center text-sm-start text-nowrap" titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm" small={props.small}>
+                    <div class="row gx-2">
+                        {this.resetButton()}
+                        <div class="col">
+                            <button key="save" type="submit" form={props.id} class="btn btn-primary w-100 mb-2 text-nowrap" disabled={state.saveInProgress || !props.isDirty}>
+                                {__("component.config_form.save")}
+                                <span class="ms-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={!state.showSpinner}></span>
+                            </button>
                         </div>
                     </div>
-                </div>
+                </PageHeader>
+
                 <form id={props.id}
                       class={"needs-validation" + (state.wasValidated ? " was-validated" : "")}
                       noValidate

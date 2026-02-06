@@ -76,7 +76,7 @@ export class DeviceNameStatus extends ConfigComponent<"info/display_name"> {
 
         const desktop_header = !is_native_app && (
             <div class="d-none d-md-block">
-                <PageHeader title={__("device_name.status.status")} titleClass="col-4" childrenClass="col-8">
+                <PageHeader title={__("device_name.status.status")} titleColClass="col-4" childrenColClass="col-8">
                     {make_device_name_form()}
                 </PageHeader>
             </div>

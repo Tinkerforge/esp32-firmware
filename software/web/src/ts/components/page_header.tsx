@@ -24,7 +24,9 @@ export interface PageHeaderProps {
     children?: ComponentChildren;
     title: ComponentChildren;
     titleClass?: string;
-    childrenClass?: string;
+    titleColClass?: string;
+    childrenColClass?: string;
+    small?: boolean;
 }
 
 export class PageHeader extends Component<PageHeaderProps, any> {
@@ -32,11 +34,16 @@ export class PageHeader extends Component<PageHeaderProps, any> {
         return (
             // this row/col combination is necessary here to create a div that is
             // full width to cover the page header shadow after the sm breakpoint
-            <div class={"row mb-3 pt-3 " + (util.is_native_median_app() ? "sticky-top-app" : "sticky-under-top")}>
-                <div class="col">
-                    <div class="row d-flex flex-wrap justify-content-between pb-2 border-bottom tab-header-shadow">
-                        <h1 class={"page-header " + (this.props.titleClass ? this.props.titleClass : "col")}>{this.props.title}</h1>
-                        <div class={this.props.childrenClass ? this.props.childrenClass : "col-auto"}>
+            <div class={"row mb-3" + (util.is_native_median_app() ? " sticky-top-app" : " sticky-under-top") + (this.props.small ? " pt-4" : " pt-3")}>
+                <div class={"col border-bottom tab-header-shadow" + (this.props.small ? "" : " pb-2")}>
+                    <div class="row">
+                        <div class={this.props.titleColClass ? this.props.titleColClass : "col"}>
+                            {this.props.small
+                                ? <h3 class={this.props.titleClass}>{this.props.title}</h3>
+                                : <h1 class={"page-header " + (this.props.titleClass ? this.props.titleClass : "")}>{this.props.title}</h1>
+                            }
+                        </div>
+                        <div class={this.props.childrenColClass ? this.props.childrenColClass : "col-auto"}>
                             {this.props.children}
                         </div>
                     </div>
