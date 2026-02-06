@@ -214,8 +214,8 @@ void ISO15118::register_urls()
         slac.api_state.get("modem_found")->updateBool(true);
 
         // Set SLAC state to wait for SDP (skip actual SLAC handshake)
-        slac.state = SLAC::State::WaitForSDP;
-        slac.api_state.get("state")->updateUint(static_cast<uint8_t>(SLAC::State::WaitForSDP));
+        slac.state = SLACState::WaitForSDP;
+        slac.api_state.get("state")->updateEnum(SLACState::WaitForSDP);
 
         // Make sure the state machine is running
         if (state_machine_task == 0) {
@@ -239,8 +239,8 @@ void ISO15118::register_urls()
         common.close_socket();
 
         // Reset SLAC state
-        slac.state = SLAC::State::ModemInitialization;
-        slac.api_state.get("state")->updateUint(static_cast<uint8_t>(SLAC::State::ModemInitialization));
+        slac.state = SLACState::ModemInitialization;
+        slac.api_state.get("state")->updateEnum(SLACState::ModemInitialization);
         slac.api_state.get("modem_found")->updateBool(false);
 
         logger.printfln("Debug: Debug mode disabled");
@@ -287,7 +287,7 @@ void ISO15118::state_machines_loop()
         if (fds[FDS_TAP_INDEX].revents & (POLLERR | POLLHUP | POLLNVAL)) {
             logger.printfln("ISO15118: L2TAP error (revents=0x%x)", fds[FDS_TAP_INDEX].revents);
             // L2TAP error likely means modem issue, trigger SLAC reset
-            slac.state = SLAC::State::ModemReset;
+            slac.state = SLACState::ModemReset;
         } else if (fds[FDS_TAP_INDEX].revents & POLLIN) {
             slac.handle_tap();
         }
@@ -338,7 +338,7 @@ void ISO15118::switch_to_iec_temporary()
     qca700x.link_down();
 
     // Reset SLAC state to be ready for next connection
-    slac.state = SLAC::State::ModemReset;
+    slac.state = SLACState::ModemReset;
 
     // Reset DC SoC session tracking for next EV connection
     iso2.reset_dc_soc_done();

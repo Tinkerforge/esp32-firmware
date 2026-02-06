@@ -28,6 +28,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "slac_state.enum.h"
 
 #define SLAC_ETHERNET_FRAME_LENGTH_MAX 1518
 
@@ -377,29 +378,8 @@ struct [[gnu::packed]] CM_QualcommHostActionIndication {
 class SLAC final
 {
 public:
-    enum class State : uint8_t {
-        ModemReset,
-        ModemInitialization,
-        CMSetKeyRequest,
-        WaitForCMSetKeyConfirmation,
-        CMQualcommGetSwRequest,
-        WaitForCMQualcommGetSwResponse,
-        CMQualcommLinkStatusRequest,
-        WaitForCMQualcommLinkStatusResponse,
-        CMQualcommOpAttrRequest,
-        WaitForCMQualcommOpAttrResponse,
-        WaitForSlacParamRequest,
-        WaitForStartAttenCharIndication,
-        WaitForMNBCSound,
-        WaitForAttenChar,
-        WaitForSlacMatch,
-        WaitForSDP,
-        LinkDetected,
-    };
-    static const char *state_to_string(const State state);
-
     SLAC(){}
-    State state = State::ModemInitialization;
+    SLACState state = SLACState::ModemInitialization;
     void state_machine_loop();
     void handle_tap();  // Called by central poll when L2TAP has data
 

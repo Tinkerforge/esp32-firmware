@@ -31,7 +31,7 @@
 void ISO2::pre_setup()
 {
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(ISO2State::Idle)},
         {"session_id", Config::Tuple(4, Config::Uint8(0))},
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
         {"max_entries_sa_schedule_tuple", Config::Uint16(0)},
@@ -80,8 +80,8 @@ void ISO2::pre_setup()
 void ISO2::handle_bitstream(exi_bitstream *exi)
 {
     // Increment state on first call
-    if (state == 0) {
-        state = 1;
+    if (state == ISO2State::Idle) {
+        state = ISO2State::BitstreamReceived;
     }
 
     // We alloc the iso2 buffers the very first time they are used.
@@ -107,7 +107,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
 
     trace_request_response();
 
-    api_state.get("state")->updateUint(state);
+    api_state.get("state")->updateEnum(state);
 
     // [V2G2-443] The SECC shall stop waiting for a request message and stop monitoring the
     //            V2G_SECC_Sequence_Timer when V2G_SECC_Sequence_Timer is equal or larger than
@@ -272,7 +272,7 @@ void ISO2::handle_session_setup_req()
     }
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 2;
+    state = ISO2State::SessionSetup;
 }
 
 void ISO2::handle_service_discovery_req()
@@ -351,7 +351,7 @@ void ISO2::handle_service_discovery_req()
     res->ChargeService.FreeService = 1;
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 3;
+    state = ISO2State::ServiceDiscovery;
 }
 
 void ISO2::handle_payment_service_selection_req()
@@ -364,7 +364,7 @@ void ISO2::handle_payment_service_selection_req()
         res->ResponseCode = iso2_responseCodeType_OK;
 
         iso15118.common.send_exi(Common::ExiType::Iso2);
-        state = 4;
+        state = ISO2State::PaymentServiceSelection;
     }
 }
 
@@ -380,7 +380,7 @@ void ISO2::handle_authorization_req()
     res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Iso2);
 
-    state = 5;
+    state = ISO2State::Authorization;
 }
 
 void ISO2::handle_charge_parameter_discovery_req()
@@ -472,7 +472,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             logger.printfln("ISO2: SoC already read, sending FAILED to end session");
             res->ResponseCode = iso2_responseCodeType_FAILED;
             iso15118.common.send_exi(Common::ExiType::Iso2);
-            state = 6;
+            state = ISO2State::ChargeParameterDiscovery;
             return;
         }
 
@@ -523,7 +523,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
         iso15118.common.send_exi(Common::ExiType::Iso2);
-        state = 6;
+        state = ISO2State::ChargeParameterDiscovery;
     } else if (charge_via_iso15118) {
         // AC Charging mode
         const ChargingInformation ci = iso15118.get_charging_information();
@@ -602,7 +602,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit = iso2_unitSymbolType_V;
 
         iso15118.common.send_exi(Common::ExiType::Iso2);
-        state = 6;
+        state = ISO2State::ChargeParameterDiscovery;
     }
 }
 
@@ -679,7 +679,7 @@ void ISO2::handle_power_delivery_req()
     res->DC_EVSEStatus_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 7;
+    state = ISO2State::PowerDelivery;
 }
 
 void ISO2::handle_charging_status_req()
@@ -718,7 +718,7 @@ void ISO2::handle_charging_status_req()
     res->ReceiptRequired_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 8;
+    state = ISO2State::ChargingStatus;
 }
 
 void ISO2::handle_session_stop_req()
@@ -740,7 +740,7 @@ void ISO2::handle_session_stop_req()
     res->ResponseCode = iso2_responseCodeType_OK;
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 9;
+    state = ISO2State::SessionStop;
 
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
@@ -750,7 +750,7 @@ void ISO2::handle_session_stop_req()
         // Keep PLC link alive — only close TCP so EV can reconnect for AC.
         dc_soc_done = true;
         soc_read = false;
-        state = 0; // Reset state machine for next session
+        state = ISO2State::Idle; // Reset state machine for next session
         logger.printfln("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
         // In read_soc_only mode, switch to IEC 61851 after the session ends.

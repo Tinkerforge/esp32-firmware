@@ -31,7 +31,7 @@
 void ISO20::pre_setup()
 {
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(ISO20State::Idle)},
         {"session_id", Config::Str("", 0, 16)},  // 8 bytes as hex string (16 chars)
         {"evcc_id", Config::Str("", 0, 20)},     // Up to 20 character string
         // DisplayParameters from AC_ChargeLoopReq (all optional)
@@ -65,8 +65,8 @@ void ISO20::pre_setup()
 void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
 {
     // Increment state on first call
-    if (state == 0) {
-        state = 1;
+    if (state == ISO20State::Idle) {
+        state = ISO20State::BitstreamReceived;
     }
 
     // Handle AC-specific messages
@@ -100,7 +100,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
 
     trace_request_response();
 
-    api_state.get("state")->updateUint(state);
+    api_state.get("state")->updateEnum(state);
 
     // [V2G20-435] The SECC shall implement the SECC specific timeouts and performance times
     //             defined in Table 214 and Table 215.
@@ -268,7 +268,7 @@ void ISO20::handle_session_setup_req()
     res->EVSEID.charactersLen = strlen("ZZ00000");
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 2;
+    state = ISO20State::SessionSetup;
 }
 
 void ISO20::handle_authorization_setup_req()
@@ -294,7 +294,7 @@ void ISO20::handle_authorization_setup_req()
     res->PnC_ASResAuthorizationMode_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 3;
+    state = ISO20State::AuthorizationSetup;
 }
 
 void ISO20::handle_authorization_req()
@@ -321,7 +321,7 @@ void ISO20::handle_authorization_req()
     res->EVSEProcessing = iso20_processingType_Finished;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 4;
+    state = ISO20State::Authorization;
 }
 
 void ISO20::handle_service_discovery_req()
@@ -352,7 +352,7 @@ void ISO20::handle_service_discovery_req()
     res->VASList_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 5;
+    state = ISO20State::ServiceDiscovery;
 }
 
 void ISO20::handle_service_detail_req()
@@ -470,7 +470,7 @@ void ISO20::handle_service_detail_req()
 
     // Send response
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 6;
+    state = ISO20State::ServiceDetail;
 }
 
 void ISO20::handle_service_selection_req()
@@ -503,7 +503,7 @@ void ISO20::handle_service_selection_req()
     res->ResponseCode = iso20_responseCodeType_OK;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 7;
+    state = ISO20State::ServiceSelection;
 }
 
 void ISO20::handle_schedule_exchange_req()
@@ -544,7 +544,7 @@ void ISO20::handle_schedule_exchange_req()
     res->Dynamic_SEResControlMode.PriceLevelSchedule_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
-    state = 8;
+    state = ISO20State::ScheduleExchange;
 }
 
 void ISO20::handle_power_delivery_req()
@@ -581,13 +581,13 @@ void ISO20::handle_power_delivery_req()
             // This is already set in common.cpp during SupportedAppProtocolRes, but we set it
             // again here defensively in case the state was changed externally.
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-            state = 9;
+            state = ISO20State::PowerDeliveryStart;
             break;
 
         case iso20_chargeProgressType_Stop:
             // EV wants to stop energy transfer. Session remains active.
             // [V2G20-1408] Keep 5% PWM. Do NOT switch to 100% (unlike ISO2 [V2G2-866]).
-            state = 10;
+            state = ISO20State::PowerDeliveryStop;
             break;
 
         case iso20_chargeProgressType_Standby:
@@ -629,13 +629,13 @@ void ISO20::handle_session_stop_req()
         case iso20_chargingSessionType_Terminate:
             // EV wants to terminate the session completely
             res->ResponseCode = iso20_responseCodeType_OK;
-            state = 11;
+            state = ISO20State::SessionStopTerminate;
             break;
 
         case iso20_chargingSessionType_Pause:
             // EV wants to pause the session (can resume later)
             res->ResponseCode = iso20_responseCodeType_OK;
-            state = 12;
+            state = ISO20State::SessionStopPause;
             break;
 
         case iso20_chargingSessionType_ServiceRenegotiation:
@@ -646,7 +646,7 @@ void ISO20::handle_session_stop_req()
             res->ResponseCode = iso20_responseCodeType_OK;
             // Reset state to ServiceDiscovery (state 4) so the EV can re-select services.
             // The session ID remains valid. This is not a new session.
-            state = 4;
+            state = ISO20State::Authorization;
             logger.printfln("ISO20: ServiceRenegotiation requested, returning to ServiceDiscovery");
             break;
     }
@@ -722,7 +722,7 @@ void ISO20::handle_ac_bitstream(exi_bitstream *exi)
 
     trace_ac_request_response();
 
-    api_state.get("state")->updateUint(state);
+    api_state.get("state")->updateEnum(state);
 
     // [V2G20-435] [V2G20-441] [V2G20-443] Sequence timer handling (see common messages above)
     schedule_sequence_timeout(next_timeout, ISO20_SECC_SEQUENCE_TIMEOUT, "ISO20 AC");
@@ -888,7 +888,7 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
     res->AC_CPDResEnergyTransferMode.EVSEPresentActivePower_L3_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20Ac);
-    state = 13;
+    state = ISO20State::ACChargeParameterDiscovery;
 }
 
 void ISO20::handle_ac_charge_loop_req()
@@ -1121,7 +1121,7 @@ void ISO20::handle_ac_charge_loop_req()
     res->Dynamic_AC_CLResControlMode.AckMaxDelay_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso20Ac);
-    state = 14;
+    state = ISO20State::ACChargeLoop;
 }
 
 // =============================

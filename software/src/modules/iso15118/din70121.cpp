@@ -36,7 +36,7 @@
 void DIN70121::pre_setup()
 {
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(DIN70121State::Idle)},
         {"session_id", Config::Tuple(4, Config::Uint8(0))},
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
         {"soc", Config::Int8(0)},
@@ -69,8 +69,8 @@ void DIN70121::pre_setup()
 void DIN70121::handle_bitstream(exi_bitstream *exi)
 {
     // Increment state on first call
-    if (state == 0) {
-        state = 1;
+    if (state == DIN70121State::Idle) {
+        state = DIN70121State::BitstreamReceived;
     }
 
     // We alloc the din buffers the very first time they are used.
@@ -94,7 +94,7 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
 
     trace_request_response();
 
-    api_state.get("state")->updateUint(state);
+    api_state.get("state")->updateEnum(state);
 
     // DIN TS 70121:2024-11 [V2G-DC-443]: The SECC shall stop waiting for a request message
     // when V2G_SECC_Sequence_Timer >= V2G_SECC_Sequence_Timeout and no request was received.
@@ -222,7 +222,7 @@ void DIN70121::handle_session_setup_req()
     res->DateTimeNow_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Din);
-    state = 2;
+    state = DIN70121State::SessionSetup;
 }
 
 void DIN70121::handle_service_discovery_req()
@@ -253,7 +253,7 @@ void DIN70121::handle_service_discovery_req()
     res->ServiceList_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Din);
-    state = 3;
+    state = DIN70121State::ServiceDiscovery;
 }
 
 void DIN70121::handle_service_payment_selection_req()
@@ -266,7 +266,7 @@ void DIN70121::handle_service_payment_selection_req()
         res->ResponseCode = din_responseCodeType_OK;
 
         iso15118.common.send_exi(Common::ExiType::Din);
-        state = 4;
+        state = DIN70121State::ServicePaymentSelection;
     }
 }
 
@@ -286,7 +286,7 @@ void DIN70121::handle_contract_authentication_req()
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Din);
 
-    state = 5;
+    state = DIN70121State::ContractAuthentication;
 }
 
 void DIN70121::handle_charge_parameter_discovery_req()
@@ -340,7 +340,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
         logger.printfln("DIN70121: SoC already read, sending FAILED to end session");
         res->ResponseCode = din_responseCodeType_FAILED;
         iso15118.common.send_exi(Common::ExiType::Din);
-        state = 6;
+        state = DIN70121State::ChargeParameterDiscovery;
         return;
     }
 
@@ -461,7 +461,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->AC_EVSEChargeParameter_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Din);
-    state = 6;
+    state = DIN70121State::ChargeParameterDiscovery;
 }
 
 void DIN70121::handle_session_stop_req()
@@ -472,7 +472,7 @@ void DIN70121::handle_session_stop_req()
     res->ResponseCode = din_responseCodeType_OK;
 
     iso15118.common.send_exi(Common::ExiType::Din);
-    state = 7;
+    state = DIN70121State::SessionStop;
 
     // In read_soc_only mode or charge_via_iso15118 mode, switch to IEC 61851 after session ends.
     // DIN 70121 is DC-only, so we can't do AC charging via DIN.

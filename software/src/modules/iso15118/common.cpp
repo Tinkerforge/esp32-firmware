@@ -59,7 +59,7 @@ void Common::pre_setup()
     });
 
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(CommonState::Idle)},
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
         {"protocol", Config::Str("", 0, 32)},
         {"tls_active", Config::Bool(false)},
@@ -248,7 +248,7 @@ void Common::reset_active_socket()
         active_socket = -1;
     }
     iso15118.set_poll_fd(FDS_ACTIVE_INDEX, -1);
-    state = 0;
+    state = CommonState::Idle;
     exi_in_use = ExiType::AppHand;
 }
 
@@ -395,7 +395,7 @@ void Common::decode(uint8_t *data, const size_t length)
         iso15118.iso20.handle_bitstream(&exi, payload_type);
     }
 
-    api_state.get("state")->updateUint(state);
+    api_state.get("state")->updateEnum(state);
 }
 
 void Common::handle_supported_app_protocol_req()
@@ -468,7 +468,7 @@ void Common::handle_supported_app_protocol_req()
         res->SchemaID_isUsed = 1;
 
         send_exi(Common::ExiType::AppHand);
-        state = 1;
+        state = CommonState::ProtocolNegotiated;
 
         evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
@@ -489,7 +489,7 @@ void schedule_sequence_timeout(uint64_t &next_timeout, millis_t timeout, const c
 {
     next_timeout = task_scheduler.scheduleOnce([&next_timeout, protocol_name]() {
         iso15118.qca700x.link_down();
-        iso15118.slac.state = SLAC::State::ModemReset;
+        iso15118.slac.state = SLACState::ModemReset;
         logger.printfln("%s Timeout: Link down, SLAC reset", protocol_name);
         next_timeout = 0;
     }, timeout);

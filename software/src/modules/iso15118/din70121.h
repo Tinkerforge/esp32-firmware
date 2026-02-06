@@ -25,6 +25,7 @@
 #include "lwip/sockets.h"
 
 #include "sdp.h"
+#include "din70121_state.enum.h"
 
 #include "cbv2g/common/exi_bitstream.h"
 #include "cbv2g/din/din_msgDefDecoder.h"
@@ -67,7 +68,7 @@ private:
     void trace_header(const struct din_MessageHeaderType *header, const char *name);
     void trace_request_response();
 
-    uint8_t state = 0;
+    DIN70121State state = DIN70121State::Idle;
     uint64_t next_timeout = 0;
     bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 };

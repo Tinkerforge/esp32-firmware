@@ -33,6 +33,7 @@
 #include "isotls.h"
 
 #include "modules/meters_ev/ev_data_protocol.enum.h"
+#include "common_state.enum.h"
 
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
@@ -193,7 +194,7 @@ private:
 
     uint8_t *exi_data = nullptr;
 
-    uint8_t state = 0;
+    CommonState state = CommonState::Idle;
 };
 
 

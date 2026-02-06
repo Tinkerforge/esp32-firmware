@@ -27,6 +27,7 @@
 #include "cbv2g/iso_2/iso2_msgDefEncoder.h"
 
 #include "common.h"
+#include "iso2_state.enum.h"
 
 #define ISO2_SECC_SEQUENCE_TIMEOUT 60_s
 
@@ -71,7 +72,7 @@ private:
     void trace_header(const struct iso2_MessageHeaderType *header, const char *name);
     void trace_request_response();
 
-    uint8_t state = 0;
+    ISO2State state = ISO2State::Idle;
     uint64_t next_timeout = 0;
     bool pause_active = false;
     bool soc_read = false;    // Set after first SoC reading in read_soc_only mode

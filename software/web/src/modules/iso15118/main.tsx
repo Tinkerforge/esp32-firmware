@@ -97,6 +97,73 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
         const state_iso2     = API.get('iso15118/state_iso2');
         const state_iso20    = API.get('iso15118/state_iso20');
 
+        const common_state_names: {[key: number]: string} = {
+            0: "Idle",
+            1: "Protocol Negotiated",
+        };
+
+        const slac_state_names: {[key: number]: string} = {
+            0: "Modem Reset",
+            1: "Modem Initialization",
+            2: "CM Set Key Request",
+            3: "Wait For CM Set Key Confirmation",
+            4: "CM Qualcomm Get Sw Request",
+            5: "Wait For CM Qualcomm Get Sw Response",
+            6: "CM Qualcomm Link Status Request",
+            7: "Wait For CM Qualcomm Link Status Response",
+            8: "CM Qualcomm Op Attr Request",
+            9: "Wait For CM Qualcomm Op Attr Response",
+            10: "Wait For Slac Param Request",
+            11: "Wait For Start Atten Char Indication",
+            12: "Wait For MNBC Sound",
+            13: "Wait For Atten Char",
+            14: "Wait For Slac Match",
+            15: "Wait For SDP",
+            16: "Link Detected",
+        };
+
+        const din70121_state_names: {[key: number]: string} = {
+            0: "Idle",
+            1: "Bitstream Received",
+            2: "Session Setup",
+            3: "Service Discovery",
+            4: "Service Payment Selection",
+            5: "Contract Authentication",
+            6: "Charge Parameter Discovery",
+            7: "Session Stop",
+        };
+
+        const iso2_state_names: {[key: number]: string} = {
+            0: "Idle",
+            1: "Bitstream Received",
+            2: "Session Setup",
+            3: "Service Discovery",
+            4: "Payment Service Selection",
+            5: "Authorization",
+            6: "Charge Parameter Discovery",
+            7: "Power Delivery",
+            8: "Charging Status",
+            9: "Session Stop",
+        };
+
+        const iso20_state_names: {[key: number]: string} = {
+            0: "Idle",
+            1: "Bitstream Received",
+            2: "Session Setup",
+            3: "Authorization Setup",
+            4: "Authorization",
+            5: "Service Discovery",
+            6: "Service Detail",
+            7: "Service Selection",
+            8: "Schedule Exchange",
+            9: "Power Delivery Start",
+            10: "Power Delivery Stop",
+            11: "Session Stop Terminate",
+            12: "Session Stop Pause",
+            13: "AC Charge Parameter Discovery",
+            14: "AC Charge Loop",
+        };
+
         const array8_to_hexstring = (array8: number[], separator: string) => {
             return array8.map(value => ('0' + value.toString(16).toUpperCase()).slice(-2)).join(separator);
         };
@@ -169,7 +236,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                     </FormRow>
                     <FormSeparator heading="Signal Level Attenuation Characterisation (SLAC)"/>
                     <FormRow label="State">
-                        <InputNumber value={state_slac.state}/>
+                        <InputText value={slac_state_names[state_slac.state] ?? state_slac.state.toString()}/>
                     </FormRow>
                     <FormRow label="Modem Found">
                         <InputText value={state_slac.modem_found ? "Yes" : "No" }/>
@@ -271,7 +338,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="Common"/>
                     <FormRow label="State">
-                        <InputNumber value={state_common.state}/>
+                        <InputText value={common_state_names[state_common.state] ?? state_common.state.toString()}/>
                     </FormRow>
                     <FormRow label="Supported Protocols">
                         <InputText value={state_common.supported_protocols.join(' and ')}/>
@@ -282,7 +349,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="DIN SPEC 70121"/>
                     <FormRow label="State">
-                        <InputNumber value={state_din70121.state}/>
+                        <InputText value={din70121_state_names[state_din70121.state] ?? state_din70121.state.toString()}/>
                     </FormRow>
                     <FormRow label="Session ID">
                         <InputText value={array8_to_hexstring(state_din70121.session_id, '')}/>
@@ -350,7 +417,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="ISO 15118-2"/>
                     <FormRow label="State">
-                        <InputNumber value={state_iso2.state}/>
+                        <InputText value={iso2_state_names[state_iso2.state] ?? state_iso2.state.toString()}/>
                     </FormRow>
                     <FormRow label="Session ID">
                         <InputText value={array8_to_hexstring(state_iso2.session_id, '')}/>
@@ -439,7 +506,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="ISO 15118-20"/>
                     <FormRow label="State">
-                        <InputNumber value={state_iso20.state}/>
+                        <InputText value={iso20_state_names[state_iso20.state] ?? state_iso20.state.toString()}/>
                     </FormRow>
                     <FormRow label="Session ID">
                         <InputText value={state_iso20.session_id || "-"}/>

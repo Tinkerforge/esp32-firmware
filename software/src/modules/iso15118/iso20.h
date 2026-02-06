@@ -32,6 +32,7 @@
 
 #include "common.h"
 #include "sdp.h"  // For V2GTPPayloadType
+#include "iso20_state.enum.h"
 
 #define ISO20_SECC_SEQUENCE_TIMEOUT 60_s
 #define ISO20_SESSION_ID_LENGTH 8
@@ -105,7 +106,7 @@ private:
     void trace_request_response();
     void trace_ac_request_response();
 
-    uint8_t state = 0;
+    ISO20State state = ISO20State::Idle;
     uint64_t next_timeout = 0;
     bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 

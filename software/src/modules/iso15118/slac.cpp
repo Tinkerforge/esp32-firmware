@@ -37,7 +37,7 @@ const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0
 void SLAC::pre_setup()
 {
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(SLACState::ModemReset)},
         {"modem_found", Config::Bool(false)},
         {"modem_initialization_tries", Config::Uint8(0)},
         {"atten_char_indication_tries", Config::Uint8(0)},
@@ -123,7 +123,7 @@ void SLAC::handle_modem_reset(void)
     iso15118.qca700x.write_register(QCA700X_SPI_REG_SPI_CONFIG, spi_config);
 
     next_timeout = {};
-    state = SLAC::State::ModemInitialization;
+    state = SLACState::ModemInitialization;
 }
 
 void SLAC::handle_modem_initialization(void)
@@ -148,7 +148,7 @@ void SLAC::handle_modem_initialization(void)
 
         // Trigger reset every 50 tries
         if ((modem_initialization_tries % 50) == 0) {
-            state = SLAC::State::ModemReset;
+            state = SLACState::ModemReset;
         }
 
         // Log once at 200 tries and give up
@@ -162,7 +162,7 @@ void SLAC::handle_modem_initialization(void)
     const uint16_t write_space = iso15118.qca700x.read_register(QCA700X_SPI_REG_WRBUF_SPC_AVA);
     if (write_space != QCA700X_BUFFER_SIZE) {
         logger.printfln("QCA700X modem not ready: Write space is %d (expected %d)", write_space, QCA700X_BUFFER_SIZE);
-        state = SLAC::State::ModemReset;
+        state = SLACState::ModemReset;
         return;
     }
 
@@ -192,7 +192,7 @@ void SLAC::handle_modem_initialization(void)
 
     logger.printfln("QCA700X modem found and initialized");
 
-    state = SLAC::State::CMSetKeyRequest;
+    state = SLACState::CMSetKeyRequest;
 }
 
 // ISO 15118-3 A.9.5.2 Table A.8
@@ -213,14 +213,14 @@ void SLAC::handle_cm_set_key_request(void)
 
     log_cm_set_key_request(cm_set_key_request);
     next_timeout = now_us() + 100_ms; // This is internal communication with the modem, there is not timing defined in the spec. 100ms seems reasonable.
-    state = SLAC::State::WaitForCMSetKeyConfirmation;
+    state = SLACState::WaitForCMSetKeyConfirmation;
 }
 
 void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_key_confirmation)
 {
     if (cm_set_key_confirmation.result != 0x01) {
         logger.printfln("CM_SET_KEY.CNF result unexpected: %02x", cm_set_key_confirmation.result);
-        state = SLAC::State::ModemReset;
+        state = SLACState::ModemReset;
         return;
     }
 
@@ -235,7 +235,7 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
     //         This is not implemented yet.
     next_timeout = {};
 
-    state = SLAC::State::WaitForSlacParamRequest;
+    state = SLACState::WaitForSlacParamRequest;
     log_cm_set_key_confirmation(cm_set_key_confirmation);
 }
 
@@ -268,7 +268,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
 
     // Wait for CM_START_ATTEN_CHAR.IND from the EV
     next_timeout = now_us() + SLAC_TT_MATCH_SEQUENCE;
-    state = SLAC::State::WaitForStartAttenCharIndication;
+    state = SLACState::WaitForStartAttenCharIndication;
 
     log_cm_slac_parm_request(cm_slac_parm_request);
     log_cm_slac_parm_confirmation(cm_slac_parm_confirmation);
@@ -307,10 +307,10 @@ void SLAC::handle_cm_start_atten_char_indication(const CM_StartAttenCharIndicati
 
     // Wait for CM_MNBC_SOUND.IND from the EV
     // The CM_START_ATTEN_CHAR.IND will be sent three times and we set the MATCH_MNBC timeout the first time
-    if (state == SLAC::State::WaitForStartAttenCharIndication) {
+    if (state == SLACState::WaitForStartAttenCharIndication) {
         next_timeout = now_us() + SLAC_TT_EVSE_MATCH_MNBC;
     }
-    state = SLAC::State::WaitForMNBCSound;
+    state = SLACState::WaitForMNBCSound;
 
     log_cm_start_atten_char_indication(cm_start_atten_char_indication);
 }
@@ -367,7 +367,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
         iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
         next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
-        state = SLAC::State::WaitForAttenChar;
+        state = SLACState::WaitForAttenChar;
         api_state.get("atten_char_indication_tries")->updateUint(api_state.get("atten_char_indication_tries")->asUint() + 1);
         log_cm_atten_char_indication(cm_atten_char_indication);
     }
@@ -408,7 +408,7 @@ void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_ch
 
     logger.printfln("SLAC process sucessful");
     next_timeout = now_us() + SLAC_TT_EVSE_MATCH_SESSION;
-    state = SLAC::State::WaitForSlacMatch;
+    state = SLACState::WaitForSlacMatch;
 
     log_cm_atten_char_response(cm_atten_char_response);
 }
@@ -451,14 +451,14 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     if (iso15118.is_autocharge_only()) {
         logger.printfln("Autocharge-only mode: SLAC complete, switching to IEC 61851 temporary mode");
         next_timeout = {};
-        state = SLAC::State::LinkDetected;  // Mark SLAC as done
+        state = SLACState::LinkDetected;  // Mark SLAC as done
         iso15118.switch_to_iec_temporary();
         return;
     }
 
     // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
     next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
-    state = SLAC::State::WaitForSDP;
+    state = SLACState::WaitForSDP;
 
     // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
     task_scheduler.scheduleOnce([] {
@@ -474,7 +474,7 @@ void SLAC::handle_cm_qualcomm_get_sw_request()
 
     log_cm_qualcomm_get_sw_request(cm_qualcomm_get_sw_request);
     next_timeout = now_us() + 2500_ms;
-    state = SLAC::State::WaitForCMQualcommGetSwResponse;
+    state = SLACState::WaitForCMQualcommGetSwResponse;
 }
 
 void SLAC::handle_cm_qualcomm_link_status_request()
@@ -485,7 +485,7 @@ void SLAC::handle_cm_qualcomm_link_status_request()
 
     log_cm_qualcomm_link_status_request(cm_qualcomm_link_status_request);
     next_timeout = now_us() + 2500_ms;
-    state = SLAC::State::WaitForCMQualcommLinkStatusResponse;
+    state = SLACState::WaitForCMQualcommLinkStatusResponse;
 }
 
 void SLAC::handle_cm_qualcomm_op_attr_request()
@@ -496,28 +496,28 @@ void SLAC::handle_cm_qualcomm_op_attr_request()
 
     log_cm_qualcomm_op_attr_request(cm_qualcomm_op_attr_request);
     next_timeout = now_us() + 2500_ms;
-    state = SLAC::State::WaitForCMQualcommOpAttrResponse;
+    state = SLACState::WaitForCMQualcommOpAttrResponse;
 }
 
 void SLAC::handle_cm_qualcomm_get_sw_confirmation(const CM_QualcommGetSwConfirmation &cm_qualcomm_get_sw_confirmation)
 {
     log_cm_qualcomm_get_sw_confirmation(cm_qualcomm_get_sw_confirmation);
     next_timeout = now_us() + 100_ms;
-    state = SLAC::State::CMQualcommLinkStatusRequest;
+    state = SLACState::CMQualcommLinkStatusRequest;
 }
 
 void SLAC::handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation)
 {
     log_cm_qualcomm_link_status_confirmation(cm_qualcomm_link_status_confirmation);
     next_timeout = now_us() + 100_ms;
-    state = SLAC::State::CMQualcommOpAttrRequest;
+    state = SLACState::CMQualcommOpAttrRequest;
 }
 
 void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation)
 {
     log_cm_qualcomm_op_attr_confirmation(cm_qualcomm_op_attr_confirmation);
     next_timeout = {};
-    state = SLAC::State::WaitForSlacParamRequest;
+    state = SLACState::WaitForSlacParamRequest;
 }
 
 void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &ind)
@@ -571,32 +571,32 @@ void SLAC::handle_tap(void)
 
 void SLAC::state_machine_loop()
 {
-    if (state == SLAC::State::LinkDetected) {
-        api_state.get("state")->updateUint(static_cast<std::underlying_type<State>::type>(state));
+    if (state == SLACState::LinkDetected) {
+        api_state.get("state")->updateEnum(state);
         return;
     }
 
     // Check for WaitForSDP → LinkDetected transition
     // When we receive an IPv6 packet (SDP), the link is established
-    if (state == SLAC::State::WaitForSDP) {
+    if (state == SLACState::WaitForSDP) {
         if (iso15118.qca700x.check_and_clear_ipv6_received()) {
             logger.printfln("IPv6/SDP packet received, link established");
             next_timeout = {};
-            state = SLAC::State::LinkDetected;
+            state = SLACState::LinkDetected;
         }
     }
 
     switch(state) {
         // Handle states where we initiate a message
-        case SLAC::State::ModemReset:          handle_modem_reset();          break;
-        case SLAC::State::ModemInitialization: handle_modem_initialization(); break;
-        case SLAC::State::CMSetKeyRequest:     handle_cm_set_key_request();   break;
+        case SLACState::ModemReset:          handle_modem_reset();          break;
+        case SLACState::ModemInitialization: handle_modem_initialization(); break;
+        case SLACState::CMSetKeyRequest:     handle_cm_set_key_request();   break;
 
         // Handle some Qualcomm QCA700x specific requests
         // These will probably not be part of a final release firmware, but we can use them for testing stuff
-        case SLAC::State::CMQualcommGetSwRequest:      handle_cm_qualcomm_get_sw_request();      break;
-        case SLAC::State::CMQualcommLinkStatusRequest: handle_cm_qualcomm_link_status_request(); break;
-        case SLAC::State::CMQualcommOpAttrRequest:     handle_cm_qualcomm_op_attr_request();     break;
+        case SLACState::CMQualcommGetSwRequest:      handle_cm_qualcomm_get_sw_request();      break;
+        case SLACState::CMQualcommLinkStatusRequest: handle_cm_qualcomm_link_status_request(); break;
+        case SLACState::CMQualcommOpAttrRequest:     handle_cm_qualcomm_op_attr_request();     break;
 
         // All other states are handled by central poll
         default: break;
@@ -604,14 +604,14 @@ void SLAC::state_machine_loop()
 
     // Handle timeouts of expected responses
     if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
-        logger.printfln("SLAC: Timeout in state %s", state_to_string(state));
+        logger.printfln("SLAC: Timeout in state %s", get_slac_state_name(state));
         // As long as we have received some sounds we will do the average attenuation profile calculation
         // and move on to the next state, even after timeout. ISO 15118-3 A.9.2.3.3 [V2G3-A09-43].
         const uint8_t received_aag_lists          = api_state.get("received_aag_lists")->asUint();
         const uint8_t atten_char_indication_tries = api_state.get("atten_char_indication_tries")->asUint();
-        if (((state == SLAC::State::WaitForMNBCSound) && (received_aag_lists > 0)) ||
+        if (((state == SLACState::WaitForMNBCSound) && (received_aag_lists > 0)) ||
              // This is also re-send up to SLAC_C_EV_MATCH_RETRY tries. ISO 15118-3 A.9.2.3.3 [V2G3-A09-46].
-            ((state == SLAC::State::WaitForAttenChar) && (atten_char_indication_tries < SLAC_C_EV_MATCH_RETRY))) {
+            ((state == SLACState::WaitForAttenChar) && (atten_char_indication_tries < SLAC_C_EV_MATCH_RETRY))) {
             CM_AttenCharIndication cm_atten_char_indication;
             fill_header(&cm_atten_char_indication.header, pev_mac, evse_mac, SLAC_MMTYPE_CM_ATTEN_CHAR | SLAC_MMTYPE_MODE_INDICATION);
             cm_atten_char_indication.num_sounds = received_aag_lists;
@@ -627,20 +627,20 @@ void SLAC::state_machine_loop()
             iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
             next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
-            state = SLAC::State::WaitForAttenChar;
+            state = SLACState::WaitForAttenChar;
             api_state.get("atten_char_indication_tries")->updateUint(atten_char_indication_tries + 1);
             log_cm_atten_char_indication(cm_atten_char_indication);
         // For the vendor specific requests we just go to the next state if there is no response.
         // We should not fail if they don't work.
-        } else if (state == SLAC::State::WaitForCMQualcommGetSwResponse) {
+        } else if (state == SLACState::WaitForCMQualcommGetSwResponse) {
             next_timeout = {};
-            state = SLAC::State::CMQualcommLinkStatusRequest;
-        } else if (state == SLAC::State::WaitForCMQualcommLinkStatusResponse) {
+            state = SLACState::CMQualcommLinkStatusRequest;
+        } else if (state == SLACState::WaitForCMQualcommLinkStatusResponse) {
             next_timeout = {};
-            state = SLAC::State::CMQualcommOpAttrRequest;
-        } else if (state == SLAC::State::WaitForCMQualcommOpAttrResponse) {
+            state = SLACState::CMQualcommOpAttrRequest;
+        } else if (state == SLACState::WaitForCMQualcommOpAttrResponse) {
             next_timeout = {};
-            state = SLAC::State::WaitForSlacParamRequest;
+            state = SLACState::WaitForSlacParamRequest;
         } else {
             // TODO: I think the EVSE should change to state E/F and then back to 5% in case of a timeout.
             //       Maybe we can just do the 5% -> E/F -> 5% thing in handle_mode_reset?
@@ -649,36 +649,11 @@ void SLAC::state_machine_loop()
         }
     }
 
-    api_state.get("state")->updateUint(static_cast<std::underlying_type<State>::type>(state));
+    api_state.get("state")->updateEnum(state);
 }
 
 
 // -- Logging functions --
-const char *SLAC::state_to_string(const SLAC::State state)
-{
-    switch(state) {
-        case SLAC::State::ModemReset:                          return "ModemReset";
-        case SLAC::State::ModemInitialization:                 return "ModemInitialization";
-        case SLAC::State::CMSetKeyRequest:                     return "CMSetKeyRequest";
-        case SLAC::State::WaitForCMSetKeyConfirmation:         return "WaitForCMSetKeyConfirmation";
-        case SLAC::State::CMQualcommGetSwRequest:              return "CMQualcommGetSwRequest";
-        case SLAC::State::WaitForCMQualcommGetSwResponse:      return "WaitForCMQualcommGetSwResponse";
-        case SLAC::State::CMQualcommLinkStatusRequest:         return "CMQualcommLinkStatusRequest";
-        case SLAC::State::WaitForCMQualcommLinkStatusResponse: return "WaitForCMQualcommLinkStatusResponse";
-        case SLAC::State::CMQualcommOpAttrRequest:             return "CMQualcommOpAttrRequest";
-        case SLAC::State::WaitForCMQualcommOpAttrResponse:     return "WaitForCMQualcommOpAttrResponse";
-        case SLAC::State::WaitForSlacParamRequest:             return "WaitForSlacParamRequest";
-        case SLAC::State::WaitForStartAttenCharIndication:     return "WaitForStartAttenCharIndication";
-        case SLAC::State::WaitForMNBCSound:                    return "WaitForMNBCSound";
-        case SLAC::State::WaitForAttenChar:                    return "WaitForAttenChar";
-        case SLAC::State::WaitForSlacMatch:                    return "WaitForSlacMatch";
-        case SLAC::State::WaitForSDP:                          return "WaitForSDP";
-        case SLAC::State::LinkDetected:                        return "LinkDetected";
-    }
-
-    return "Unknown";
-}
-
 void SLAC::uint8_to_printable_string(const uint8_t *data, const uint16_t length, char *buffer, const uint16_t buffer_length)
 {
     uint16_t i = 0;

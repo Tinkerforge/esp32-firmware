@@ -1,0 +1,17 @@
+Modem Reset
+Modem Initialization
+CM Set Key Request
+Wait For CM Set Key Confirmation
+CM Qualcomm Get Sw Request
+Wait For CM Qualcomm Get Sw Response
+CM Qualcomm Link Status Request
+Wait For CM Qualcomm Link Status Response
+CM Qualcomm Op Attr Request
+Wait For CM Qualcomm Op Attr Response
+Wait For Slac Param Request
+Wait For Start Atten Char Indication
+Wait For MNBC Sound
+Wait For Atten Char
+Wait For Slac Match
+Wait For SDP
+Link Detected
