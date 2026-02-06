@@ -337,10 +337,11 @@ if __name__ == '__main__':
                         commit_id = args.commit_id if args.commit_id else tf_coredump_data['firmware_commit_id']
                         os.system(f"git checkout --quiet {commit_id}")
                         commit_time = int(subprocess.check_output(['git', 'log', '-1', '--pretty=%at', commit_id]))
+                        follow_symlinks = not os.utime in os.supports_follow_symlinks # Checks if it can be False, so "not" is correct.
                         for (dirpath, dirnames, filenames) in os.walk('software/src'):
                             for filename in filenames:
                                 try:
-                                    os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time))
+                                    os.utime(os.sep.join([dirpath, filename]), (commit_time, commit_time), follow_symlinks=follow_symlinks)
                                 except:
                                     continue
 
