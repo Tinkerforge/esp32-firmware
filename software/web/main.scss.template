@@ -929,3 +929,15 @@ $link-hover-color-dark: $link-hover-color;
         }
     }
 }
+
+@media (min-width: 768px) {
+    .rounded-end-md-0 {
+        border-bottom-right-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+    }
+
+    .rounded-start-md-0 {
+        border-bottom-left-radius: 0 !important;
+        border-top-left-radius: 0 !important;
+    }
+}

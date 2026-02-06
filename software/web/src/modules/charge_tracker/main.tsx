@@ -592,8 +592,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
             return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
-        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <Dropdown className="col-12 col-sm pe-0 ps-sm-3 ps-0 mt-2 mt-sm-0">
-            <Dropdown.Toggle className="w-100 text-nowrap" disabled={state.generator_state !== GenerationState.Ready}>
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <div class="col"><Dropdown>
+            <Dropdown.Toggle className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready}>
                 <span class="me-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
                 </span>
@@ -603,8 +603,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             <Dropdown.Menu>
                 {sendEmailDropdownItems}
             </Dropdown.Menu>
-        </Dropdown>
-    : <></>;
+        </Dropdown></div>
+        : <></>;
 //#endif
 
         return (
@@ -629,23 +629,24 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
-                    <div class="row g-0">
-                        <div class="col-md-6">
+                    <div class="row gx-0 mb-n1">
+                        <div class="col-md-6 mb-1">
                             <div class="input-group">
                                 <span class="input-group-text">{__("charge_tracker.content.from")}</span>
-                                <InputDate className="charge-tracker-input-group-prepend"
-                                        date={state.start_date}
-                                        onDate={(d: Date) => this.setState({start_date: d})}
-                                    />
+                                <InputDate
+                                    className="rounded-end-md-0"
+                                    date={state.start_date}
+                                    onDate={(d: Date) => this.setState({start_date: d})}
+                                />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="input-group">
-                                <span class="charge-tracker-input-group-append input-group-text">{__("charge_tracker.content.to")}</span>
-                                <InputDate className="charge-tracker-input-group-prepend"
-                                        date={state.end_date}
-                                        onDate={(d: Date) => this.setState({end_date: d})}
-                                    />
+                                <span class="input-group-text rounded-start-md-0 ms-md-n1px">{__("charge_tracker.content.to")}</span>
+                                <InputDate
+                                    date={state.end_date}
+                                    onDate={(d: Date) => this.setState({end_date: d})}
+                                />
                             </div>
                         </div>
                     </div>
@@ -703,8 +704,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </Collapse>
 
                 <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
-                    <Row className="m-0">
-                        <Button variant="primary" className="w-100 col text-nowrap" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
+                    <div class="row gx-2 mb-n2">
+                        <div class="col mb-2">
+                        <Button variant="primary" className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 
                             let start_minutes = date_to_minutes(state.start_date, 'start_of_day');
@@ -735,8 +737,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             <Download/>
                             <Spinner animation="border" size="sm" as="span" className="ms-2" hidden={!state.show_spinner}/>
                         </Button>
+                        </div>
                         {sendEmailDropdown}
-                    </Row>
+                    </div>
                 </FormRow>
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
