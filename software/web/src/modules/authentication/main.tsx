@@ -92,7 +92,7 @@ export class Authentication extends ConfigComponent<'authentication/config', {},
                                        hideClear />
                     </FormRow>
 
-                    <FormRow label="">
+                    <FormRow>
                         <Button variant="danger" className="w-100" disabled={state.digest_hash == ""} onClick={async () => {
                             const modal = util.async_modal_ref.current;
                             if(!await modal.show({

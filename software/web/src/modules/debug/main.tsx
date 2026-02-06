@@ -206,7 +206,7 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.config_slots")} first={false} />
 
-                <FormRow label="">
+                <FormRow>
                     <div class="row">
                     <div class="mb-1 col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_used")}</p>
@@ -316,7 +316,7 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.memory_speed_header")} first={false} />
 
-                <FormRow label="">
+                <FormRow>
                     <div class="row">
                         <div class="mb-1 col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
@@ -344,7 +344,7 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
-                <FormRow label="">
+                <FormRow>
                     <div class="row">
                         <div class="mb-1 col-12 col-sm-6">
                             <p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>

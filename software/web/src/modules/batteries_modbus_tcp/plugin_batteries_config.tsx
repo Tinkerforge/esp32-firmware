@@ -647,7 +647,7 @@ class TestRunner extends Component<TestRunnerProps, TestRunnerState> {
             </FormRow>
 
             {this.props.table_id === this.state.table_id && this.state.show_log ?
-                <FormRow label="">
+                <FormRow>
                     <OutputTextarea rows={10} resize='vertical' value={this.state.log} />
                 </FormRow>
                 : undefined}
@@ -928,7 +928,7 @@ export function pre_init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter)) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(
-                            <FormRow label="">
+                            <FormRow>
                                 <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>
                             </FormRow>);
                     }

@@ -218,7 +218,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                             </UplotLoader>
                         </div>
                     </FormRow>
-                    <FormRow label="">
+                    <FormRow>
                         <InputText value={state_slac.attenuation_profile.slice(0,  16).toString()}/>
                         <InputText value={state_slac.attenuation_profile.slice(16, 32).toString()}/>
                         <InputText value={state_slac.attenuation_profile.slice(32, 48).toString()}/>

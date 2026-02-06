@@ -166,7 +166,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
     }
 */
     get_tile_config(tile_index: number, tile_items: [string, string][]) {
-        return <FormRow label="">
+        return <FormRow>
             <div class="row g-0">
                 <div class="col-md-12">
                     <div class="input-group">

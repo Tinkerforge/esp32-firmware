@@ -115,7 +115,7 @@ export class PowerManagerStatus extends Component {
         if (generate == 0)
             return <></>
 
-        return <FormRow label="">
+        return <FormRow>
             <IndicatorGroup
                 value={0}
                 items={[
@@ -298,7 +298,7 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
 
                     <Collapse in={s.phase_switching_mode == 3}>
                         <div>
-                            <FormRow label="">
+                            <FormRow>
                                 <div class="text-danger">
                                     {__("power_manager.content.external_control_notification")}
                                 </div>

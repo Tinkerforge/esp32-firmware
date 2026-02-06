@@ -66,7 +66,7 @@ function get_evse_shutdown_table_children(trigger: EvseGpInputAutomationTrigger)
 
 function get_evse_shutdown_edit_children(trigger: EvseGpInputAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
-        <FormRow label="">
+        <FormRow>
             <InputSelect
                 items={[
                     ["0", __("evse.automation.automation_trigger_input_opened")],
@@ -96,7 +96,7 @@ function get_evse_gp_input_table_children(trigger: EvseGpInputAutomationTrigger)
 
 function get_evse_gp_input_edit_children(trigger: EvseGpInputAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
-        <FormRow label="">
+        <FormRow>
             <InputSelect
                 items={[
                     ["0", __("evse.automation.automation_trigger_input_opened")],

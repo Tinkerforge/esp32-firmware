@@ -23,7 +23,7 @@ import { HelpCircle } from "react-feather";
 import { useMemo } from "preact/hooks";
 
 export interface FormRowProps {
-    label: ComponentChildren;
+    label?: ComponentChildren;
     label_muted?: ComponentChildren;
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
     children?: VNode | VNode[];
@@ -103,26 +103,33 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
                         : <></>}
         </div>;
 
-        let label_content = <div class="row mx-lg-0">
-                                <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
-                                    {props.label_prefix ? props.label_prefix : undefined}
-                                    {props.symbol ? <span class="col-auto px-1">{props.symbol}</span> : undefined}
-                                    {props.label ? <span class={"form-label" + (props.small ? " form-label-sm" : "") + (props.label_muted && !props.label_infix ? " pe-2" : "") + (props.symbol ? " col px-1" : "")}>{props.label}</span> : undefined}
-                                    {props.label_infix ? props.label_infix : undefined}
-                                    {props.label_muted ? <span class={"text-muted" + (props.small ? " text-muted-sm" : "")}>{props.label_muted}</span> : undefined}
-                                    {props.label_suffix ? props.label_suffix : undefined}
-                                </div>
-                            </div>
+        let label_content_children = [];
 
-        let label = null;
-        if (child_using_id_context != null) {
-            label = <label for={this.id} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
-                            {label_content}
-                    </label>
-        } else {
-            label = <div class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
-                            {label_content}
-                    </div>
+        if (props.label_prefix) label_content_children.push(props.label_prefix);
+        if (props.symbol) label_content_children.push(<span class="col-auto px-1">{props.symbol}</span>);
+        if (props.label) label_content_children.push(<span class={"form-label" + (props.small ? " form-label-sm" : "") + (props.label_muted && !props.label_infix ? " pe-2" : "") + (props.symbol ? " col px-1" : "")}>{props.label}</span>);
+        if (props.label_infix) label_content_children.push(props.label_infix);
+        if (props.label_muted) label_content_children.push(<span class={"text-muted" + (props.small ? " text-muted-sm" : "")}>{props.label_muted}</span>);
+        if (props.label_suffix) label_content_children.push(props.label_suffix);
+
+        let label = <div class="col" />;
+
+        if (label_content_children.length > 0) {
+            let label_content = <div class="row mx-lg-0">
+                                    <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
+                                        {label_content_children}
+                                    </div>
+                                </div>
+
+            if (child_using_id_context != null) {
+                label = <label for={this.id} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+                                {label_content}
+                        </label>
+            } else {
+                label = <div class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+                                {label_content}
+                        </div>
+            }
         }
 
         return (

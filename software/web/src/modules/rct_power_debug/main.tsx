@@ -243,7 +243,7 @@ export class RCTPowerDebugTool extends Component<{}, RCTPowerDebugToolState> {
                     onValue={(v) => this.setState({timeout: v})}
                     unit="ms" />
             </FormRow>
-            <FormRow label="">
+            <FormRow>
                 <Button variant="primary" className="w-100" type="submit" disabled={this.state.waiting}>{__("rct_power_debug.content.execute")}</Button>
             </FormRow>
 

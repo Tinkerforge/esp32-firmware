@@ -61,7 +61,7 @@ function get_set_current_edit_children(action: EvseAutomationAction, on_action: 
     ];
 
     return [
-        <FormRow label="">
+        <FormRow>
             <InputSelect
                 items={items}
                 value={action[1].current === 0 ? "0" : action[1].current === 32000 ? "32000" : "6000"}

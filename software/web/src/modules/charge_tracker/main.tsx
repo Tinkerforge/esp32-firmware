@@ -703,7 +703,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </div>
                 </Collapse>
 
-                <FormRow label="" label_muted={__("charge_tracker.content.download_desc")}>
+                <FormRow label_muted={__("charge_tracker.content.download_desc")}>
                     <div class="row gx-2 mb-n2">
                         <div class="col mb-2">
                         <Button variant="primary" className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {

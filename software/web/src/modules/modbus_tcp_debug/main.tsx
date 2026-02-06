@@ -776,7 +776,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     onValue={(v) => this.setState({timeout: v})}
                     unit="ms" />
             </FormRow>
-            <FormRow label="">
+            <FormRow>
                 <Button variant="primary" className="w-100" type="submit" disabled={this.state.waiting}>{__("modbus_tcp_debug.content.execute")}</Button>
             </FormRow>
 

@@ -376,23 +376,23 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             </FormRow>
 
             {this.state.running ?
-                <FormRow label="">
+                <FormRow>
                     <Progress progress={this.state.progress / 100} />
                 </FormRow>
                 : undefined}
 
             {this.state.show_log ?
-                <><FormRow label="">
+                <><FormRow>
                     <OutputTextarea rows={10} resize='vertical' value={this.state.log} />
                 </FormRow>
 
                 {this.state.error ?
-                    <FormRow label="">
+                    <FormRow>
                         <Alert variant="warning" className="mb-0">{__("meters_sun_spec.content.scan_error")()}</Alert>
                     </FormRow>
                     : undefined}
 
-                <FormRow label="">
+                <FormRow>
                     <Button variant="primary"
                             disabled={this.state.running || this.state.log.length == 0}
                             className="form-control"
@@ -526,7 +526,7 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                         this.props.on_config(util.get_updated_union(this.props.config, {display_name: v}));
                     }} />
             </FormRow>,
-            <FormRow label="">
+            <FormRow>
                 <Button variant="primary"
                         className="form-control"
                         disabled={this.state.manual_override}

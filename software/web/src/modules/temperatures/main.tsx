@@ -82,7 +82,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                 {state.enable &&
                     <SubPage.Status>
                         {!is_configured ? (
-                            <FormRow label="">
+                            <FormRow>
                                 <InputText value={__("temperatures.content.not_configured")} />
                             </FormRow>
                         ) : (
