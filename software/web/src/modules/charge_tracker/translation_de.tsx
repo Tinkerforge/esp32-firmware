@@ -14,9 +14,7 @@ let x = {
         "content": {
             "charge_tracker": "Ladetracker",
             "download": "Ladelog herunterladen",
-            "download_desc": "",
             "download_btn": "Ladelog herunterladen",
-            "download_btn_pdf": "Ladelog herunterladen",
 
             "pdf_letterhead": "PDF-Briefkopf",
             "pdf_letterhead_muted": "",

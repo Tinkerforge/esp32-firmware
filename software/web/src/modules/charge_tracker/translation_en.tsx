@@ -14,9 +14,7 @@ let x = {
         "content": {
             "charge_tracker": "Charge Tracker",
             "download": "Download charge-log",
-            "download_desc": "",
             "download_btn": "Download charge-log",
-            "download_btn_pdf": "Download charge-log",
 
             "pdf_letterhead": "PDF letterhead",
             "pdf_letterhead_muted": "",

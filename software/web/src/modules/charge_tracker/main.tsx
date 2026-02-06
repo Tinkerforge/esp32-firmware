@@ -703,7 +703,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     </div>
                 </Collapse>
 
-                <FormRow label_muted={__("charge_tracker.content.download_desc")}>
+                <FormRow>
                     <div class="row gx-2 mb-n2">
                         <div class="col mb-2">
                         <Button variant="primary" className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
@@ -731,9 +731,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 this.setState({show_spinner: false});
                             }
                         }}>
-                            <span class="me-2">
-                                {state.file_type === "0" ? __("charge_tracker.content.download_btn_pdf") : __("charge_tracker.content.download_btn")}
-                            </span>
+                            <span class="me-2">{__("charge_tracker.content.download_btn")}</span>
                             <Download/>
                             <Spinner animation="border" size="sm" as="span" className="ms-2" hidden={!state.show_spinner}/>
                         </Button>
