@@ -467,8 +467,8 @@ void ISO2::handle_charge_parameter_discovery_req()
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
-    // DC SoC reading mode: read SoC on first request, then send FAILED on second request
-    // to make the EVCC send SessionStopReq per [V2G2-538]/[V2G2-539].
+    // DC SoC reading mode: read SoC on first request, then send EVSE_Shutdown on second request
+    // to make the EVCC send SessionStopReq.
     // This applies to both:
     //   - read_soc_only mode (read_soc=true, charge_via_iso15118=false)
     //   - charge_via_iso15118 + read_soc mode before DC SoC is done
