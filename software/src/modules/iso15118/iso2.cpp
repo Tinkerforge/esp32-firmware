@@ -325,9 +325,15 @@ void ISO2::handle_service_discovery_req()
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
     if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done) {
-        // First session: DC mode to read SoC before AC charging
+        // Offer DC (for SoC reading) and AC (for charging).
+        // If the EV supports DC, it picks DC and we read SoC first.
+        // If the EV only supports AC, it picks AC and we charge directly.
         res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_DC_extended;
-        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 1;
+        const ChargingInformation ci = iso15118.get_charging_information();
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[1] = ci.three_phase
+            ? iso2_EnergyTransferModeType_AC_three_phase_core
+            : iso2_EnergyTransferModeType_AC_single_phase_core;
+        res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 2;
     } else if (charge_via_iso15118) {
         // AC charging mode (either read_soc=false, or dc_soc_done=true after SoC was read)
         const ChargingInformation ci = iso15118.get_charging_information();
@@ -466,8 +472,17 @@ void ISO2::handle_charge_parameter_discovery_req()
     // This applies to both:
     //   - read_soc_only mode (read_soc=true, charge_via_iso15118=false)
     //   - charge_via_iso15118 + read_soc mode before DC SoC is done
-    const bool dc_soc_session = (read_soc && !charge_via_iso15118) ||
-                                (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done);
+    // Only enter DC SoC mode if the EV actually requested a DC energy transfer mode.
+    // If we offered both DC and AC but the EV chose AC (e.g. because it doesn't support DC),
+    // we skip DC SoC reading and go straight to AC charging.
+    const bool ev_requested_dc = (req->RequestedEnergyTransferMode == iso2_EnergyTransferModeType_DC_extended
+                               || req->RequestedEnergyTransferMode == iso2_EnergyTransferModeType_DC_core
+                               || req->RequestedEnergyTransferMode == iso2_EnergyTransferModeType_DC_unique);
+    current_session_is_dc = ev_requested_dc;
+
+    const bool dc_soc_session = ev_requested_dc &&
+                                ((read_soc && !charge_via_iso15118) ||
+                                 (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done));
 
     if (dc_soc_session) {
         if (soc_read) {
@@ -749,7 +764,7 @@ void ISO2::handle_session_stop_req()
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
-    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done) {
+    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
         // DC SoC session is complete. Mark it done and prepare for the AC charging session.
         // Keep PLC link alive — only close TCP so EV can reconnect for AC.
         dc_soc_done = true;

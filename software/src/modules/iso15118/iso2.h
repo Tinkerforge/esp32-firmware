@@ -77,4 +77,5 @@ private:
     bool pause_active = false;
     bool soc_read = false;    // Set after first SoC reading in read_soc_only mode
     bool dc_soc_done = false; // Set after DC SoC session completes (for charge_via_iso15118 + read_soc)
+    bool current_session_is_dc = false; // Tracks whether the current session uses DC (set in ChargeParameterDiscovery)
 };
