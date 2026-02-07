@@ -155,6 +155,7 @@ void ISO2::dispatch_messages()
     V2G_DISPATCH("ISO2", body, PowerDeliveryReq,            handle_power_delivery_req);
     V2G_DISPATCH("ISO2", body, ChargingStatusReq,           handle_charging_status_req);
     V2G_DISPATCH("ISO2", body, SessionStopReq,              handle_session_stop_req);
+    V2G_DISPATCH("ISO2", body, CableCheckReq,               handle_cable_check_req);
 
     // Not yet implemented
 
@@ -171,7 +172,6 @@ void ISO2::dispatch_messages()
 
     // These are for DC charging only.
     // We will not support them.
-    V2G_NOT_IMPL("ISO2", body, CableCheckReq);
     V2G_NOT_IMPL("ISO2", body, PreChargeReq);
     V2G_NOT_IMPL("ISO2", body, CurrentDemandReq);
     V2G_NOT_IMPL("ISO2", body, WeldingDetectionReq);
@@ -486,8 +486,64 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     if (dc_soc_session) {
         if (soc_read) {
-            logger.printfln("ISO2: SoC already read, sending FAILED to end session");
-            res->ResponseCode = iso2_responseCodeType_FAILED;
+            // SoC already read. Send OK + Finished + EVSE_Shutdown to end the session.
+            // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Finished.
+            logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
+            res->ResponseCode = iso2_responseCodeType_OK;
+            res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+
+            // Mandatory: DC_EVSEChargeParameter with EVSE_Shutdown status
+            res->DC_EVSEChargeParameter_isUsed = 1;
+            res->AC_EVSEChargeParameter_isUsed = 0;
+
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
+            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = iso2_unitSymbolType_V;
+            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = iso2_unitSymbolType_A;
+            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = iso2_unitSymbolType_V;
+            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = iso2_unitSymbolType_A;
+            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = iso2_unitSymbolType_W;
+            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 0;
+            res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 0;
+
+            res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
+            res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
+
+            // SAScheduleList is required when EVSEProcessing=Finished
+            res->SAScheduleList_isUsed = 1;
+            res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = 0;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = 0;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Unit = iso2_unitSymbolType_W;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0;
+            res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
+            res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
+            res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
+
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
             return;
@@ -740,6 +796,45 @@ void ISO2::handle_charging_status_req()
     state = ISO2State::ChargingStatus;
 }
 
+void ISO2::handle_cable_check_req()
+{
+    iso2_CableCheckResType *res = &iso2DocEnc->V2G_Message.Body.CableCheckRes;
+
+    iso2DocEnc->V2G_Message.Body.CableCheckRes_isUsed = 1;
+
+    // We will reach CableCheck in the SoC-read-only flow when the EV doesn't check
+    // EVSEStatusCode in ChargeParameterDiscoveryRes.
+    // We respond with EVSE_Shutdown + Invalid isolation so the CableCheck handler
+    // in the EV has to stop the state machine
+    res->ResponseCode = iso2_responseCodeType_OK;
+    res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+
+    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
+    res->DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
+    res->DC_EVSEStatus.NotificationMaxDelay = 0;
+    res->DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+    logger.printfln("ISO2: CableCheckReq received in SoC-read flow, sending EVSE_Shutdown to terminate");
+
+    iso15118.common.send_exi(Common::ExiType::Iso2);
+    state = ISO2State::CableCheck;
+
+    const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
+    const bool read_soc = iso15118.config.get("read_soc")->asBool();
+
+    // Handle the dc_soc_done transition here since we may not get a SessionStopReq.
+    if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
+        dc_soc_done = true;
+        soc_read = false;
+        state = ISO2State::Idle;
+        logger.printfln("ISO2: DC SoC session complete (via CableCheck), waiting for AC session");
+    } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
+        // Trigger IEC fallback since we may not get a SessionStopReq.
+        iso15118.switch_to_iec_temporary();
+    }
+}
+
 void ISO2::handle_session_stop_req()
 {
     iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
@@ -978,6 +1073,16 @@ void ISO2::trace_request_response()
         iso15118.trace(" Body");
         iso15118.trace("  ChargingStatusReq");
 
+    } else if (iso2DocDec->V2G_Message.Body.CableCheckReq_isUsed) {
+        iso2_CableCheckReqType *req = &iso2DocDec->V2G_Message.Body.CableCheckReq;
+
+        trace_header(&iso2DocDec->V2G_Message.Header, "CableCheck Request");
+        iso15118.trace(" Body");
+        iso15118.trace("  CableCheckReq");
+        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+
     } else if (iso2DocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
 
@@ -1100,6 +1205,22 @@ void ISO2::trace_request_response()
             iso15118.trace("      NotificationMaxDelay: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay);
             iso15118.trace("      EVSEStatusCode: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode);
         }
+    } else if (iso2DocEnc->V2G_Message.Body.CableCheckRes_isUsed) {
+        iso2_CableCheckResType *res = &iso2DocEnc->V2G_Message.Body.CableCheckRes;
+
+        trace_header(&iso2DocEnc->V2G_Message.Header, "CableCheck Response");
+        iso15118.trace(" Body");
+        iso15118.trace("  CableCheckRes");
+        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        iso15118.trace("   EVSEProcessing: %d", res->EVSEProcessing);
+        iso15118.trace("   DC_EVSEStatus");
+        iso15118.trace("    EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+        if (res->DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
+            iso15118.trace("     EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+        }
+        iso15118.trace("    EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        iso15118.trace("    NotificationMaxDelay: %d", res->DC_EVSEStatus.NotificationMaxDelay);
+        iso15118.trace("    EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
     } else if (iso2DocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed) {
         iso2_PowerDeliveryResType *res = &iso2DocEnc->V2G_Message.Body.PowerDeliveryRes;
 

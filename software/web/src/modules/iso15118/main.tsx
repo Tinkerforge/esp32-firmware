@@ -145,6 +145,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
             7: "Power Delivery",
             8: "Charging Status",
             9: "Session Stop",
+            10: "Cable Check",
         };
 
         const iso20_state_names: {[key: number]: string} = {
