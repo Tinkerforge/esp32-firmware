@@ -28,6 +28,8 @@
 #include "esp_mac.h"
 #include "esp_netif.h"
 
+#include "gcc_warnings.h"
+
 void DebugMode::pre_setup()
 {
     api_state = Config::Object({
