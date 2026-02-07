@@ -403,6 +403,7 @@ private:
     void handle_cm_mnbc_sound_indication(const CM_MNBCSoundIndication &cm_mnbc_sound_indication);
     void handle_cm_atten_profile_indication(const CM_AttenProfileIndication &cm_atten_profile_indication);
     void handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_response);
+    void handle_cm_validate_request(const CM_ValidateRequest &cm_validate_request);
     void handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request);
 
     void handle_cm_qualcomm_get_sw_request();
@@ -437,6 +438,8 @@ private:
     void log_cm_atten_char_indication(const CM_AttenCharIndication &cm_atten_char_indication);
     void log_cm_atten_profile_indication(const CM_AttenProfileIndication &cm_atten_profile_indication);
     void log_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_response);
+    void log_cm_validate_request(const CM_ValidateRequest &cm_validate_request);
+    void log_cm_validate_confirmation(const CM_ValidateConfirmation &cm_validate_confirmation);
     void log_cm_slac_match_confirmation(const CM_SLACMatchConfirmation &cm_slac_match_confirmation);
     void log_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request);
     void log_cm_qualcomm_get_sw_request(const CM_QualcommGetSwRequest &cm_qualcomm_get_sw_request);

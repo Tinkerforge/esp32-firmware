@@ -415,6 +415,50 @@ void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_ch
     log_cm_atten_char_response(cm_atten_char_response);
 }
 
+// ISO 15118-3 A.9.3 - Validation of matching decision
+// Minimal implementation: Respond with "Not Required" (0x04) to indicate that
+// the EVSE does not require BCB-Toggle validation.
+// Per [V2G3-A09-72], the EVSE can set the result field to "not required".
+// The EV will then either skip validation and proceed with CM_SLAC_MATCH.REQ,
+// or insist on validation by sending a step 2 CM_VALIDATE.REQ.
+void SLAC::handle_cm_validate_request(const CM_ValidateRequest &cm_validate_request)
+{
+    if (state != SLACState::WaitForSlacMatch) {
+        logger.printfln("CM_VALIDATE.REQ received in unexpected state %s", get_slac_state_name(state));
+        return;
+    }
+
+    // ISO 15118-3 A.9.3.2 Table A.5 [V2G3-A09-56]: signal_type must be 0x00
+    if (cm_validate_request.signal_type != 0x00) {
+        logger.printfln("CM_VALIDATE.REQ signal_type invalid: %02x", cm_validate_request.signal_type);
+        // [V2G3-A09-77]: invalid content shall be ignored
+        return;
+    }
+
+    // ISO 15118-3 A.9.3.2 [V2G3-A09-85]: result field other than "ready" -> FAILED
+    if (cm_validate_request.result != 0x01) {
+        logger.printfln("CM_VALIDATE.REQ result invalid: %02x (expected 0x01 = ready)", cm_validate_request.result);
+        return;
+    }
+
+    log_cm_validate_request(cm_validate_request);
+
+    CM_ValidateConfirmation cm_validate_confirmation;
+    fill_header(&cm_validate_confirmation.header, pev_mac, evse_mac, SLAC_MMTYPE_CM_VALIDATE | SLAC_MMTYPE_MODE_CONFIRMATION);
+    cm_validate_confirmation.signal_type = 0x00;
+    cm_validate_confirmation.toggle_num  = 0x00;
+    // [V2G3-A09-72]: "Not Required" indicates validation is not needed.
+    // The EV may skip validation and continue with CM_SLAC_MATCH.REQ.
+    cm_validate_confirmation.result      = 0x04; // Not Required
+
+    iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_validate_confirmation), sizeof(cm_validate_confirmation));
+
+    log_cm_validate_confirmation(cm_validate_confirmation);
+
+    // Stay in WaitForSlacMatch: the EV should follow up with CM_SLAC_MATCH.REQ
+    // (or potentially retry with another CM_VALIDATE.REQ, which we handle the same way)
+}
+
 // ISO 15118-3 A.9.4.2 Table A.7
 void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request)
 {
@@ -561,6 +605,7 @@ void SLAC::handle_tap(void)
         case SLAC_MMTYPE_CM_MNBC_SOUND        | SLAC_MMTYPE_MODE_INDICATION:   handle_cm_mnbc_sound_indication(*reinterpret_cast<const CM_MNBCSoundIndication*>(buffer));                        break;
         case SLAC_MMTYPE_CM_ATTEN_PROFILE     | SLAC_MMTYPE_MODE_INDICATION:   handle_cm_atten_profile_indication(*reinterpret_cast<const CM_AttenProfileIndication*>(buffer));                  break;
         case SLAC_MMTYPE_CM_ATTEN_CHAR        | SLAC_MMTYPE_MODE_RESPONSE:     handle_cm_atten_char_response(*reinterpret_cast<const CM_AttenCharResponse*>(buffer));                            break;
+        case SLAC_MMTYPE_CM_VALIDATE          | SLAC_MMTYPE_MODE_REQUEST:      handle_cm_validate_request(*reinterpret_cast<const CM_ValidateRequest*>(buffer));                                break;
         case SLAC_MMTYPE_CM_SLAC_MATCH        | SLAC_MMTYPE_MODE_REQUEST:      handle_cm_slac_match_request(*reinterpret_cast<const CM_SLACMatchRequest*>(buffer));                              break;
         case SLAC_MMTYPE_QUALCOMM_GET_SW      | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_get_sw_confirmation(*reinterpret_cast<const CM_QualcommGetSwConfirmation*>(buffer));           break;
         case SLAC_MMTYPE_QUALCOMM_LINK_STATUS | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_link_status_confirmation(*reinterpret_cast<const CM_QualcommLinkStatusConfirmation*>(buffer)); break;
@@ -814,6 +859,24 @@ void SLAC::log_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_
     iso15118.trace("  run_id:           %02x %02x %02x %02x %02x %02x %02x %02x", cm_atten_char_response.run_id[0], cm_atten_char_response.run_id[1], cm_atten_char_response.run_id[2], cm_atten_char_response.run_id[3], cm_atten_char_response.run_id[4], cm_atten_char_response.run_id[5], cm_atten_char_response.run_id[6], cm_atten_char_response.run_id[7]);
     iso15118.trace("  source_id:        %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.source_id[0], cm_atten_char_response.source_id[1], cm_atten_char_response.source_id[2], cm_atten_char_response.source_id[3], cm_atten_char_response.source_id[4], cm_atten_char_response.source_id[5], cm_atten_char_response.source_id[6], cm_atten_char_response.source_id[7]);
     iso15118.trace("  resp_id:          %02x %02x %02x %02x %02x %02x %02x %02x...", cm_atten_char_response.resp_id[0], cm_atten_char_response.resp_id[1], cm_atten_char_response.resp_id[2], cm_atten_char_response.resp_id[3], cm_atten_char_response.resp_id[4], cm_atten_char_response.resp_id[5], cm_atten_char_response.resp_id[6], cm_atten_char_response.resp_id[7]);
+}
+
+void SLAC::log_cm_validate_request(const CM_ValidateRequest &cm_validate_request)
+{
+    iso15118.trace("CM_VALIDATE.REQ:");
+    log_homeplug_message_header(cm_validate_request.header);
+    iso15118.trace("  signal_type: %02x", cm_validate_request.signal_type);
+    iso15118.trace("  timer:       %02x", cm_validate_request.timer);
+    iso15118.trace("  result:      %02x", cm_validate_request.result);
+}
+
+void SLAC::log_cm_validate_confirmation(const CM_ValidateConfirmation &cm_validate_confirmation)
+{
+    iso15118.trace("CM_VALIDATE.CNF:");
+    log_homeplug_message_header(cm_validate_confirmation.header);
+    iso15118.trace("  signal_type: %02x", cm_validate_confirmation.signal_type);
+    iso15118.trace("  toggle_num:  %02x", cm_validate_confirmation.toggle_num);
+    iso15118.trace("  result:      %02x", cm_validate_confirmation.result);
 }
 
 void SLAC::log_cm_slac_match_confirmation(const CM_SLACMatchConfirmation &cm_slac_match_confirmation)
