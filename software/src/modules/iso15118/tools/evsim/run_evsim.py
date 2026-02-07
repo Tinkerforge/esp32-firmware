@@ -34,7 +34,6 @@ Usage:
 import argparse
 import asyncio
 import os
-import shutil
 import signal
 import socket
 import sys
@@ -122,9 +121,17 @@ CHARGING_MODE_SHORTCUTS = {
 _charger_ip: Optional[str] = None
 _debug_enabled = False
 
-# Certificate paths - relative to this script (certs are in ../certs/output/iso2/)
-CERTS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "certs"
-PRIVATE_KEYS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "private_keys"
+# Certificate paths - relative to this script
+# ISO 15118-2 certs (secp256r1, TLS 1.2)
+ISO2_CERTS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "certs"
+ISO2_PRIVATE_KEYS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso2" / "private_keys"
+# ISO 15118-20 certs (secp521r1, TLS 1.3)
+ISO20_CERTS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso20" / "certs"
+ISO20_PRIVATE_KEYS_DIR = SCRIPT_DIR.parent / "certs" / "output" / "iso20" / "private_keys"
+
+# Legacy aliases (default to ISO 15118-2)
+CERTS_DIR = ISO2_CERTS_DIR
+PRIVATE_KEYS_DIR = ISO2_PRIVATE_KEYS_DIR
 V2G_ROOT_CA = CERTS_DIR / "v2gRootCACert.pem"
 
 
@@ -216,33 +223,119 @@ def parse_energy_transfer_modes(transfer_str: str) -> List[str]:
     return modes
 
 
-def setup_pki_for_tls() -> Optional[Path]:
+def _symlink_to_pki(source: Path, target: Path) -> None:
+    """
+    Create a relative symlink from target to source.
+    Removes any existing file or symlink at the target path first.
+    """
+    if target.is_symlink() or target.exists():
+        target.unlink()
+    rel = os.path.relpath(source, target.parent)
+    target.symlink_to(rel)
+
+
+def setup_pki_for_tls(use_tls13: bool = False) -> Optional[Path]:
     """
     Set up the PKI directory structure expected by iso15118 library.
-    Copies our generated V2G Root CA certificate to the expected location.
+    Creates symlinks from the PKI directory to our generated certificates.
+
+    The iso15118 library expects certificates under {PKI_PATH}/iso15118_2/certs/
+    regardless of TLS version. We select the appropriate source certificates
+    based on whether TLS 1.3 (ISO 15118-20, secp521r1) or TLS 1.2
+    (ISO 15118-2, secp256r1) is being used.
+
+    Args:
+        use_tls13: If True, use ISO 15118-20 certificates (secp521r1/TLS 1.3).
+                   If False, use ISO 15118-2 certificates (secp256r1/TLS 1.2).
 
     Returns:
         Path to the PKI directory if successful, None otherwise.
     """
-    if not V2G_ROOT_CA.exists():
-        print(f"Error: V2G Root CA certificate not found at {V2G_ROOT_CA}")
+    if use_tls13:
+        source_certs_dir = ISO20_CERTS_DIR
+        source_keys_dir = ISO20_PRIVATE_KEYS_DIR
+        cert_label = "ISO 15118-20 (secp521r1, TLS 1.3)"
+    else:
+        source_certs_dir = ISO2_CERTS_DIR
+        source_keys_dir = ISO2_PRIVATE_KEYS_DIR
+        cert_label = "ISO 15118-2 (secp256r1, TLS 1.2)"
+
+    v2g_root_ca = source_certs_dir / "v2gRootCACert.pem"
+
+    if not v2g_root_ca.exists():
+        print(f"Error: V2G Root CA certificate not found at {v2g_root_ca}")
         print("Please run the certificate generation script first:")
-        print(f"  cd {CERTS_DIR.parent.parent}")
+        print(f"  cd {source_certs_dir.parent.parent}")
         print("  ./generate_certs.sh")
         return None
 
     # Create PKI directory structure expected by iso15118 library
-    # {PKI_PATH}/iso15118_2/certs/v2gRootCACert.pem
+    # {PKI_PATH}/iso15118_2/certs/...
+    # {PKI_PATH}/iso15118_2/private_keys/...
+    # Note: The library always uses "iso15118_2" as subdirectory name,
+    # even for ISO 15118-20 certificates.
     pki_path = SCRIPT_DIR / "pki_tls"
     certs_path = pki_path / "iso15118_2" / "certs"
+    keys_path = pki_path / "iso15118_2" / "private_keys"
     certs_path.mkdir(parents=True, exist_ok=True)
+    keys_path.mkdir(parents=True, exist_ok=True)
 
-    # Copy V2G Root CA
+    # Symlink V2G Root CA.
+    # Always force-replace the target to avoid stale symlinks pointing to a
+    # different TLS version (e.g. iso2 Root CA left over when switching
+    # to iso20, which would cause "unable to get local issuer certificate").
     target_v2g_root = certs_path / "v2gRootCACert.pem"
-    if not target_v2g_root.exists() or target_v2g_root.read_text() != V2G_ROOT_CA.read_text():
-        shutil.copy(V2G_ROOT_CA, target_v2g_root)
-        print(f"  Copied V2G Root CA to {target_v2g_root}")
+    _symlink_to_pki(v2g_root_ca, target_v2g_root)
+    print(f"  Linked V2G Root CA -> {v2g_root_ca}")
 
+    # For TLS 1.3, the iso15118 library requires OEM certificates for mutual TLS.
+    # The charger does NOT verify client certs (MBEDTLS_SSL_VERIFY_NONE), but the
+    # library's get_ssl_context() returns None if these files are missing, causing
+    # the connection to fail.
+    if use_tls13:
+        oem_cert_chain = source_certs_dir / "oemCertChain.pem"
+        oem_leaf_key = source_keys_dir / "oemLeaf.key"
+        oem_leaf_password = source_keys_dir / "oemLeafPassword.txt"
+        secc_leaf_password = source_keys_dir / "seccLeafPassword.txt"
+
+        missing = []
+        if not oem_cert_chain.exists():
+            missing.append(str(oem_cert_chain))
+        if not oem_leaf_key.exists():
+            missing.append(str(oem_leaf_key))
+        if not oem_leaf_password.exists():
+            missing.append(str(oem_leaf_password))
+
+        if missing:
+            print("Error: OEM certificates required for TLS 1.3 not found:")
+            for f in missing:
+                print(f"    {f}")
+            print("Please regenerate certificates:")
+            print(f"  cd {source_certs_dir.parent.parent}")
+            print("  ./generate_certs.sh")
+            return None
+
+        # Symlink OEM cert chain
+        target_oem_chain = certs_path / "oemCertChain.pem"
+        _symlink_to_pki(oem_cert_chain, target_oem_chain)
+        print(f"  Linked OEM cert chain -> {oem_cert_chain}")
+
+        # Symlink OEM leaf key
+        target_oem_key = keys_path / "oemLeaf.key"
+        _symlink_to_pki(oem_leaf_key, target_oem_key)
+        print(f"  Linked OEM leaf key -> {oem_leaf_key}")
+
+        # Symlink password files
+        target_oem_password = keys_path / "oemLeafPassword.txt"
+        _symlink_to_pki(oem_leaf_password, target_oem_password)
+        print(f"  Linked OEM leaf password -> {oem_leaf_password}")
+
+        if secc_leaf_password.exists():
+            target_secc_password = keys_path / "seccLeafPassword.txt"
+            _symlink_to_pki(secc_leaf_password, target_secc_password)
+            print(f"  Linked SECC leaf password -> {secc_leaf_password}")
+
+    print(f"  Using {cert_label} certificates")
     print(f"  PKI directory: {pki_path}")
     return pki_path
 
@@ -630,7 +723,7 @@ Examples:
   %(prog)s -c 192.168.0.33 -e dc_extended        # Request DC extended mode
   %(prog)s -c 192.168.0.33 -e ac_single,ac_three # Support both AC modes
   %(prog)s -c 192.168.0.33 -p all -m all -e all  # Support everything
-  %(prog)s -c 192.168.0.33 --tls                 # With TLS encryption
+  %(prog)s -c 192.168.0.33 --tls                 # With TLS encryption (TLS 1.2)
   %(prog)s -i                                    # Interactive mode
   %(prog)s --list-interfaces                     # Show available interfaces
         """,
@@ -696,7 +789,7 @@ Examples:
     parser.add_argument(
         "--tls",
         action="store_true",
-        help="Enable TLS encryption (requires certificates from ../certs/output/)",
+        help="Enable TLS encryption (TLS 1.3 auto-enabled for ISO 15118-20 protocols)",
     )
 
     parser.add_argument(
@@ -778,15 +871,30 @@ Examples:
     # the charger will respond with TLS. No need to enable it on the charger side.
     use_tls = getattr(args, 'tls', False)
     pki_path = None
+
+    # Detect if any ISO 15118-20 protocol is selected, which requires TLS 1.3
+    ISO20_PROTOCOLS = {"ISO_15118_20_AC", "ISO_15118_20_DC"}
+    has_iso20 = bool(ISO20_PROTOCOLS.intersection(protocols))
+
     if use_tls:
         print("\n--- TLS Setup ---")
-        pki_path = setup_pki_for_tls()
+
+        # Auto-enable TLS 1.3 when ISO 15118-20 protocols are selected
+        # ISO 15118-20 requires TLS 1.3 per [V2G20-2356]
+        if has_iso20:
+            os.environ["ENABLE_TLS_1_3"] = "true"
+            print("  TLS 1.3 enabled (required for ISO 15118-20)")
+
+        pki_path = setup_pki_for_tls(use_tls13=has_iso20)
         if not pki_path:
             print("Error: TLS setup failed. Cannot continue.")
             sys.exit(1)
         # Set PKI_PATH environment variable for iso15118 library
         os.environ["PKI_PATH"] = str(pki_path)
         print(f"  TLS enabled, PKI_PATH={pki_path}")
+    elif has_iso20:
+        print("\nWarning: ISO 15118-20 protocols selected without --tls.")
+        print("  ISO 15118-20 requires TLS 1.3. Consider adding --tls.")
 
     # Enable debug mode on charger if requested
     if args.charger and not args.no_debug:
@@ -814,7 +922,11 @@ Examples:
     print(f"Primary energy transfer mode: {primary_energy_transfer_mode}")
 
     # Run the simulator
-    tls_info = " with TLS" if use_tls else ""
+    if use_tls:
+        tls_version = "TLS 1.3" if has_iso20 else "TLS 1.2"
+        tls_info = f" with {tls_version}"
+    else:
+        tls_info = ""
     print(f"\nStarting EV simulator on interface {args.interface}{tls_info}...")
     print("Press Ctrl+C to stop\n")
 

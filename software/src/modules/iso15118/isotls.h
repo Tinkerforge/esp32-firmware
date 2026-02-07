@@ -81,28 +81,15 @@ enum class TlsHandshakeState : uint8_t {
     FAILED
 };
 
-// =============================================================================
-// TLS Mode for ISO 15118 version selection
-// =============================================================================
-// AUTO mode: Loads both certificate sets and allows TLS 1.2/1.3 negotiation
-//            After handshake, use is_tls13_active() to determine protocol
-//            Per [V2G20-2356]: If TLS 1.2 negotiated, don't select ISO 15118-20
-// =============================================================================
-enum class IsoTlsMode : uint8_t {
-    ISO15118_2,   // TLS 1.2 only, secp256r1 certificates
-    ISO15118_20,  // TLS 1.3 only, secp521r1 certificates
-    AUTO          // Both TLS 1.2 and 1.3 allowed, auto-negotiate
-};
-
 class ISOTLS final
 {
 public:
     ISOTLS() {}
 
     // Setup and teardown
-    // mode: Determines TLS version and certificate set to use
-    //       AUTO mode loads both certificate sets and allows negotiation
-    bool setup(IsoTlsMode mode = IsoTlsMode::AUTO);
+    // Loads both ISO 15118-2 (secp256r1) and ISO 15118-20 (secp521r1) certificate
+    // sets and configures TLS 1.2/1.3 negotiation with version-based cert selection.
+    bool setup();
     void cleanup();
 
     // Session management
@@ -121,11 +108,7 @@ public:
     bool is_session_active() const { return session_active; }
     TlsHandshakeState get_handshake_state() const { return handshake_state; }
 
-    // TLS mode and version queries
-    IsoTlsMode get_mode() const { return tls_mode; }
-
-    // Returns true if TLS 1.3 was negotiated (only valid after handshake)
-    // Per [V2G20-2356]: If false, SECC shall not select ISO 15118-20
+    // TLS version queries
     bool is_tls13_active() const;
 
     // Returns the negotiated TLS version string (e.g., "TLSv1.2", "TLSv1.3")
@@ -135,6 +118,11 @@ public:
     // Returns the negotiated cipher suite name
     const char *get_cipher_suite() const;
 
+    // Certificate selection callback (called from mbedtls cert_cb)
+    // Selects the appropriate certificate based on the negotiated TLS version.
+    // Returns 0 on success, non-zero on failure.
+    int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
+
 private:
     bool load_certificates();
 
@@ -142,7 +130,6 @@ private:
     bool initialized = false;
     bool session_active = false;
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
-    IsoTlsMode tls_mode = IsoTlsMode::AUTO;
 
     // Socket file descriptor for current session
     int socket_fd = -1;

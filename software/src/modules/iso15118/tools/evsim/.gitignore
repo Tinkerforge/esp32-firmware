@@ -1,6 +1,9 @@
 # Cloned from https://github.com/EcoG-io/iso15118.git
 iso15118/
 
+# Runtime PKI directory (populated by run_evsim.py from ../certs/output/)
+pki_tls/
+
 __pycache__/
 *.py[cod]
 *$py.class

@@ -38,9 +38,3 @@ extern const char dev_private_key_pem_iso2[];
 // -----------------------------------------------------------------------------
 extern const char dev_cert_chain_pem_iso20[];
 extern const char dev_private_key_pem_iso20[];
-
-// -----------------------------------------------------------------------------
-// Backwards compatibility aliases (default to ISO 15118-2)
-// -----------------------------------------------------------------------------
-#define dev_cert_chain_pem  dev_cert_chain_pem_iso2
-#define dev_private_key_pem dev_private_key_pem_iso2
