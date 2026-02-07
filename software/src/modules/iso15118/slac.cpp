@@ -31,6 +31,8 @@
 
 #include "qca700x.h"
 
+#include "gcc_warnings.h"
+
 const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH]  = {0x00, 0xB0, 0x52, 0x00, 0x00, 0x01};
 const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -84,7 +86,7 @@ void SLAC::generate_nid_from_nmk(void)
 void SLAC::generate_new_nmk_and_nid(void)
 {
     for (uint8_t i = 0; i < SLAC_NMK_LENGTH; i++) {
-        nmk[i] = random(256);
+        nmk[i] = static_cast<uint8_t>(random(256));
         api_state.get("nmk")->get(i)->updateUint(nmk[i]);
     }
 
@@ -143,7 +145,7 @@ void SLAC::handle_modem_initialization(void)
     // To check if QCA700x is ready we read the signature and check the write space
     const uint16_t signature = iso15118.qca700x.read_register(QCA700X_SPI_REG_SIGNATURE);
     if (signature != QCA700X_SPI_GOOD_SIGNATURE) {
-        const uint8_t modem_initialization_tries = api_state.get("modem_initialization_tries")->asUint() + 1;
+        const uint8_t modem_initialization_tries = static_cast<uint8_t>(api_state.get("modem_initialization_tries")->asUint8() + 1);
         api_state.get("modem_initialization_tries")->updateUint(modem_initialization_tries);
 
         // Trigger reset every 50 tries
@@ -187,7 +189,7 @@ void SLAC::handle_modem_initialization(void)
     // If the modem is never used, the buffer is not allocated
     // Buffer only needs to hold max Ethernet frame size since l2tap delivers complete frames
     if (buffer == nullptr) {
-        buffer = (uint8_t *)calloc_psram_or_dram(SLAC_ETHERNET_FRAME_LENGTH_MAX + 1, sizeof(uint8_t));
+        buffer = static_cast<uint8_t *>(calloc_psram_or_dram(SLAC_ETHERNET_FRAME_LENGTH_MAX + 1, sizeof(uint8_t)));
     }
 
     logger.printfln("QCA700X modem found and initialized");
@@ -346,7 +348,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
 
     log_cm_atten_profile_indication(cm_atten_profile_indication);
 
-    const uint8_t received_aag_lists = api_state.get("received_aag_lists")->asUint() + 1;
+    const uint8_t received_aag_lists = static_cast<uint8_t>(api_state.get("received_aag_lists")->asUint8() + 1);
     api_state.get("received_aag_lists")->updateUint(received_aag_lists);
     if (received_aag_lists == indication_num_sounds) {
         // We have received all 10 attenuation profiles
@@ -360,7 +362,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
 
         // ISO 15118-3 A.9.2.1 [V2G3-A09-20]
         for (uint8_t i = 0; i < SLAC_AAG_LIST_LENGTH; i++) {
-            cm_atten_char_indication.attenuation_profile.aag[i] = aag_list[i] / received_aag_lists;
+            cm_atten_char_indication.attenuation_profile.aag[i] = static_cast<uint8_t>(aag_list[i] / received_aag_lists);
             api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
         }
 
@@ -586,6 +588,8 @@ void SLAC::state_machine_loop()
         }
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch(state) {
         // Handle states where we initiate a message
         case SLACState::ModemReset:          handle_modem_reset();          break;
@@ -601,14 +605,15 @@ void SLAC::state_machine_loop()
         // All other states are handled by central poll
         default: break;
     }
+#pragma GCC diagnostic pop
 
     // Handle timeouts of expected responses
     if (next_timeout.is_some() && deadline_elapsed(next_timeout.unwrap())) {
         logger.printfln("SLAC: Timeout in state %s", get_slac_state_name(state));
         // As long as we have received some sounds we will do the average attenuation profile calculation
         // and move on to the next state, even after timeout. ISO 15118-3 A.9.2.3.3 [V2G3-A09-43].
-        const uint8_t received_aag_lists          = api_state.get("received_aag_lists")->asUint();
-        const uint8_t atten_char_indication_tries = api_state.get("atten_char_indication_tries")->asUint();
+        const uint8_t received_aag_lists          = api_state.get("received_aag_lists")->asUint8();
+        const uint8_t atten_char_indication_tries = api_state.get("atten_char_indication_tries")->asUint8();
         if (((state == SLACState::WaitForMNBCSound) && (received_aag_lists > 0)) ||
              // This is also re-send up to SLAC_C_EV_MATCH_RETRY tries. ISO 15118-3 A.9.2.3.3 [V2G3-A09-46].
             ((state == SLACState::WaitForAttenChar) && (atten_char_indication_tries < SLAC_C_EV_MATCH_RETRY))) {
@@ -620,7 +625,7 @@ void SLAC::state_machine_loop()
 
             // ISO 15118-3 A.9.2.1 [V2G3-A09-20]
             for (uint8_t i = 0; i < SLAC_AAG_LIST_LENGTH; i++) {
-                cm_atten_char_indication.attenuation_profile.aag[i] = aag_list[i] / received_aag_lists;
+                cm_atten_char_indication.attenuation_profile.aag[i] = static_cast<uint8_t>(aag_list[i] / received_aag_lists);
                 api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
             }
 
@@ -654,17 +659,17 @@ void SLAC::state_machine_loop()
 
 
 // -- Logging functions --
-void SLAC::uint8_to_printable_string(const uint8_t *data, const uint16_t length, char *buffer, const uint16_t buffer_length)
+void SLAC::uint8_to_printable_string(const uint8_t *data, const uint16_t length, char *out_buf, const uint16_t out_buf_length)
 {
     uint16_t i = 0;
-    for (i = 0; (i < length) && (i < (buffer_length - 1)); i++) {
+    for (i = 0; (i < length) && (i < (out_buf_length - 1)); i++) {
         if (data[i] >= 32 && data[i] <= 126) {
-            buffer[i] = data[i];
+            out_buf[i] = static_cast<char>(data[i]);
         } else {
-            buffer[i] = '.';
+            out_buf[i] = '.';
         }
     }
-    buffer[i] = '\0';
+    out_buf[i] = '\0';
 }
 
 void SLAC::log_homeplug_message_header_v0(const SLAC_HomeplugMessageHeaderV0 &header)

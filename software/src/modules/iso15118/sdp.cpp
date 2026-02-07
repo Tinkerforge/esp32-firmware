@@ -32,6 +32,8 @@
 
 #include "qca700x.h"
 
+#include "gcc_warnings.h"
+
 // IPv6 all-nodes multicast address (ff02::1) in network byte order
 // ff02::1 = ff02:0000:0000:0000:0000:0000:0000:0001
 #define IN6ADDR_ALLNODES_INIT {{{PP_HTONL(0xff020000UL), 0, 0, PP_HTONL(0x00000001UL)}}}
@@ -73,7 +75,7 @@ void SDP::setup_socket()
     int opt = 1;
     setsockopt(sdp_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    if (bind(sdp_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+    if (bind(sdp_socket, reinterpret_cast<struct sockaddr *>(&server_addr), sizeof(server_addr)) < 0) {
         logger.printfln("SDP: Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
@@ -90,9 +92,13 @@ void SDP::setup_socket()
             int if_index = esp_netif_get_netif_impl_index(eth_netif);
 
             struct ipv6_mreq mreq;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
             static const struct in6_addr in6addr_allnodes = IN6ADDR_ALLNODES_INIT;
+#pragma GCC diagnostic pop
             memcpy(&mreq.ipv6mr_multiaddr, &in6addr_allnodes, sizeof(struct in6_addr));
-            mreq.ipv6mr_interface = if_index;
+            mreq.ipv6mr_interface = static_cast<unsigned int>(if_index);
 
             if (setsockopt(sdp_socket, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq)) < 0) {
                 logger.printfln("SDP: Failed to join IPv6 multicast group ff02::1: (errno %i [%s])", errno, strerror(errno));
@@ -138,7 +144,7 @@ void SDP::handle_socket()
     uint8_t buffer[64];
     struct sockaddr_in6 recv_addr;
     socklen_t recv_addr_length = sizeof(recv_addr);
-    ssize_t length = recvfrom(sdp_socket, buffer, sizeof(buffer), 0, (struct sockaddr*)&recv_addr, &recv_addr_length);
+    ssize_t length = recvfrom(sdp_socket, buffer, sizeof(buffer), 0, reinterpret_cast<struct sockaddr*>(&recv_addr), &recv_addr_length);
     if (length < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
             // No data available, non-blocking mode
@@ -215,7 +221,7 @@ void SDP::handle_socket()
         };
         iso15118.trace("Sending SDP Discovery Response with security %02x, transport_protocol %02x", response.security, response.tranport_protocol);
 
-        int ret = sendto(sdp_socket, &response, sizeof(response), 0, (struct sockaddr*)&recv_addr, recv_addr_length);
+        int ret = sendto(sdp_socket, &response, sizeof(response), 0, reinterpret_cast<struct sockaddr*>(&recv_addr), recv_addr_length);
         if (ret < 0) {
             logger.printfln("SDP sendto failed: (%i)%s", errno, strerror(errno));
             close(sdp_socket);

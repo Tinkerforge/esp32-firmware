@@ -49,6 +49,8 @@
 #define ISO15118_20_PRIVATE_KEY_PATH "/iso15118/iso20/secc_key.pem"
 #endif
 
+#include "gcc_warnings.h"
+
 // =============================================================================
 // ISO 15118-2 cipher suites (TLS 1.2)
 // =============================================================================
@@ -121,6 +123,10 @@ static const uint16_t iso15118_auto_curves[] = {
 };
 #endif // ISOTLS_TLS13_AVAILABLE
 
+// EWOULDBLOCK and EAGAIN can be the same value depending on compiler version
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+
 // mbedTLS send callback for non-blocking socket I/O
 static int tls_net_send(void *ctx, const unsigned char *buf, size_t len)
 {
@@ -160,6 +166,8 @@ static int tls_net_recv(void *ctx, unsigned char *buf, size_t len)
     }
     return static_cast<int>(ret);
 }
+
+#pragma GCC diagnostic pop
 
 bool ISOTLS::load_certificates()
 {
@@ -418,7 +426,7 @@ bool ISOTLS::setup(IsoTlsMode mode)
     // Seed the random number generator
     const char *pers = "iso15118_secc";
     ret = mbedtls_ctr_drbg_seed(ctr_drbg, mbedtls_entropy_func, entropy,
-                                (const unsigned char *)pers, strlen(pers));
+                                reinterpret_cast<const unsigned char *>(pers), strlen(pers));
     if (ret != 0) {
         logger.printfln("ISOTLS: mbedtls_ctr_drbg_seed failed: -0x%04x", static_cast<unsigned>(-ret));
         cleanup();

@@ -33,6 +33,8 @@
 #include "cbv2g/din/din_msgDefEncoder.h"
 #include "cbv2g/common/exi_bitstream.h"
 
+#include "gcc_warnings.h"
+
 void DIN70121::pre_setup()
 {
     api_state = Config::Object({

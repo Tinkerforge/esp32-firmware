@@ -45,6 +45,8 @@
 #include "cbv2g/din/din_msgDefEncoder.h"
 #include "cbv2g/common/exi_bitstream.h"
 
+#include "gcc_warnings.h"
+
 void Common::pre_setup()
 {
     supported_protocols_prototype = Config::Str("", 0, 32);
@@ -101,7 +103,7 @@ void Common::setup_socket()
     dest_addr.sin6_port = htons(V2G_TCP_DATA_PORT);
     dest_addr.sin6_addr = in6addr_any;
 
-    int err = bind(listen_socket, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    int err = bind(listen_socket, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
     if(err < 0) {
         logger.printfln("Common: Failed to bind socket: %d (errno %d)", err, errno);
         return;
@@ -129,7 +131,7 @@ void Common::close_socket()
 
 void Common::handle_socket()
 {
-    int new_socket = accept(listen_socket, (struct sockaddr *)&source_addr, &addr_len);
+    int new_socket = accept(listen_socket, reinterpret_cast<struct sockaddr *>(&source_addr), &addr_len);
     if (new_socket > 0) {
         // We only support one socket connection at a time. If there is a new connection and one is currently open we close the old one.
         // Usually this means the EV has reconnected. There can't be multiple EVs connected at the same time.
@@ -228,7 +230,7 @@ void Common::handle_socket()
             logger.printfln("Common: Connection closed");
             reset_active_socket();
         } else {
-            decode(exi_data, length);
+            decode(exi_data, static_cast<size_t>(length));
         }
     }
 }
@@ -302,6 +304,8 @@ void Common::send_exi(ExiType type)
             // The header is prepared in the response handler
             ret = encode_iso20_ac_exiDocument(&exi, iso15118.iso20.iso20AcDocEnc);
             break;
+        default:
+            break;
     }
 
     if (ret != 0) {
@@ -311,7 +315,7 @@ void Common::send_exi(ExiType type)
 
     const size_t length = exi_bitstream_get_length(&exi);
 
-    V2GTP_Header *header = (V2GTP_Header*)exi_data;
+    V2GTP_Header *header = reinterpret_cast<V2GTP_Header*>(exi_data);
     header->protocol_version         = 0x01;
     header->inverse_protocol_version = 0xFE;
 
@@ -343,7 +347,7 @@ void Common::send_exi(ExiType type)
 
 void Common::decode(uint8_t *data, const size_t length)
 {
-    V2GTP_Header *header = (V2GTP_Header*)data;
+    V2GTP_Header *header = reinterpret_cast<V2GTP_Header*>(data);
     if(header->protocol_version != 0x01) {
         logger.printfln("Common: Invalid protocol version: %d", header->protocol_version);
         return;
@@ -407,16 +411,16 @@ void Common::handle_supported_app_protocol_req()
     logger.printfln("EV supports %u protocols", req->AppProtocol.arrayLen);
     api_state.get("supported_protocols")->removeAll();
 
-    int8_t  din70121_schema_id = -1;
-    uint8_t din70121_index     =  0;
-    int8_t  iso2_schema_id     = -1;
-    uint8_t iso2_index         =  0;
-    int8_t  iso20_schema_id    = -1;
-    uint8_t iso20_index        =  0;
+    uint8_t din70121_schema_id = UINT8_MAX;
+    uint8_t din70121_index     = 0;
+    uint8_t iso2_schema_id     = UINT8_MAX;
+    uint8_t iso2_index         = 0;
+    uint8_t iso20_schema_id    = UINT8_MAX;
+    uint8_t iso20_index        = 0;
 
     // TODO: Differentiate between iso:151118:2:2010 and iso:151118:2:2013
     //       iso:151118:2:2010 is the same as din:70121?
-    for(uint16_t i = 0; i < req->AppProtocol.arrayLen; i++) {
+    for(uint8_t i = 0; i < static_cast<uint8_t>(req->AppProtocol.arrayLen); i++) {
         if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, ":din:70121:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
             din70121_schema_id = req->AppProtocol.array[i].SchemaID;
             din70121_index     = i;
@@ -433,7 +437,7 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
     }
 
-    if ((din70121_schema_id == -1) && (iso2_schema_id == -1) && (iso20_schema_id == -1)) {
+    if ((din70121_schema_id == UINT8_MAX) && (iso2_schema_id == UINT8_MAX) && (iso20_schema_id == UINT8_MAX)) {
         logger.printfln("EV does not support DIN 70121, ISO 15118-2 or ISO 15118-20:AC");
         api_state.get("protocol")->updateString("-");
         return;
@@ -443,12 +447,12 @@ void Common::handle_supported_app_protocol_req()
         // ISO 15118-20 is currently for testing only and selected if neither ISO 2 nor DIN 70121 is available.
         uint8_t schema_id = 0;
         uint8_t index     = 0;
-        if (iso2_schema_id != -1) {
+        if (iso2_schema_id != UINT8_MAX) {
             schema_id  = iso2_schema_id;
             index      = iso2_index;
             exi_in_use = ExiType::Iso2;
             logger.printfln("Using ISO 15118-2");
-        } else if (din70121_schema_id != -1) {
+        } else if (din70121_schema_id != UINT8_MAX) {
             schema_id  = din70121_schema_id;
             index      = din70121_index;
             exi_in_use = ExiType::Din;
@@ -566,6 +570,7 @@ float physical_value_to_float(int16_t value, int8_t exponent)
         case  2: return static_cast<float>(value) * 100.0f;
         case  3: return static_cast<float>(value) * 1000.0f;
         case  4: return static_cast<float>(value) * 10000.0f;
+        default: break;
     }
 
     // Fallback
@@ -588,7 +593,8 @@ void Common::clear_ev_data()
 
 void Common::add_seen_mac_address(const uint8_t mac[COMMON_MAC_ADDRESS_LENGTH])
 {
-    const uint32_t now = time(nullptr);
+    struct timeval tv;
+    const uint32_t now = rtc.clock_synced(&tv) ? static_cast<uint32_t>(tv.tv_sec) : 0;
 
     // Check if MAC already exists in array
     for (size_t i = 0; i < api_state.get("seen_macs")->count(); i++) {

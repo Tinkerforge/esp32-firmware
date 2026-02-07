@@ -28,6 +28,8 @@
 #include "tools/hexdump.h"
 #include "tools/malloc.h"
 
+#include "gcc_warnings.h"
+
 void ISO20::pre_setup()
 {
     api_state = Config::Object({
@@ -194,7 +196,7 @@ void ISO20::prepare_header(struct iso20_MessageHeaderType *header)
     if (!rtc.clock_synced(&now)) {
         now.tv_sec = 0;
     }
-    header->TimeStamp = now.tv_sec;
+    header->TimeStamp = static_cast<uint64_t>(now.tv_sec);
 
     // Signature not used (no Plug&Charge)
     header->Signature_isUsed = 0;
@@ -597,6 +599,8 @@ void ISO20::handle_power_delivery_req()
         case iso20_chargeProgressType_ScheduleRenegotiation:
             // EV wants to renegotiate the schedule
             break;
+        default:
+            break;
     }
 
     // Optionally provide EVSE status
@@ -648,6 +652,8 @@ void ISO20::handle_session_stop_req()
             // The session ID remains valid. This is not a new session.
             state = ISO20State::Authorization;
             logger.printfln("ISO20: ServiceRenegotiation requested, returning to ServiceDiscovery");
+            break;
+        default:
             break;
     }
 
@@ -779,7 +785,7 @@ void ISO20::prepare_ac_header(struct iso20_ac_MessageHeaderType *header)
     if (!rtc.clock_synced(&now)) {
         now.tv_sec = 0;
     }
-    header->TimeStamp = now.tv_sec;
+    header->TimeStamp = static_cast<uint64_t>(now.tv_sec);
 
     // Signature not used (no Plug&Charge)
     header->Signature_isUsed = 0;
@@ -1214,7 +1220,7 @@ void ISO20::trace_request_response()
             iso15118.trace("    Scheduled_SEReqControlMode");
             iso15118.trace("     DepartureTime_isUsed: %d", req->Scheduled_SEReqControlMode.DepartureTime_isUsed);
             if (req->Scheduled_SEReqControlMode.DepartureTime_isUsed) {
-                iso15118.trace("     DepartureTime: %lu", (unsigned long)req->Scheduled_SEReqControlMode.DepartureTime);
+                iso15118.trace("     DepartureTime: %lu", static_cast<unsigned long>(req->Scheduled_SEReqControlMode.DepartureTime));
             }
             iso15118.trace("     EVTargetEnergyRequest_isUsed: %d", req->Scheduled_SEReqControlMode.EVTargetEnergyRequest_isUsed);
             if (req->Scheduled_SEReqControlMode.EVTargetEnergyRequest_isUsed) {
@@ -1246,7 +1252,7 @@ void ISO20::trace_request_response()
             iso15118.trace("     TimeAnchor: %llu", req->EVPowerProfile.TimeAnchor);
             for (int i = 0; i < req->EVPowerProfile.EVPowerProfileEntries.EVPowerProfileEntry.arrayLen; i++) {
                 iso15118.trace("     EVPowerProfileEntry[%d]", i);
-                iso15118.trace("      Duration: %lu", (unsigned long)req->EVPowerProfile.EVPowerProfileEntries.EVPowerProfileEntry.array[i].Duration);
+                iso15118.trace("      Duration: %lu", static_cast<unsigned long>(req->EVPowerProfile.EVPowerProfileEntries.EVPowerProfileEntry.array[i].Duration));
                 iso15118.trace("      Power: %d * 10^%d",
                                req->EVPowerProfile.EVPowerProfileEntries.EVPowerProfileEntry.array[i].Power.Value,
                                req->EVPowerProfile.EVPowerProfileEntries.EVPowerProfileEntry.array[i].Power.Exponent);
@@ -1254,7 +1260,7 @@ void ISO20::trace_request_response()
             iso15118.trace("     Dynamic_EVPPTControlMode_isUsed: %d", req->EVPowerProfile.Dynamic_EVPPTControlMode_isUsed);
             iso15118.trace("     Scheduled_EVPPTControlMode_isUsed: %d", req->EVPowerProfile.Scheduled_EVPPTControlMode_isUsed);
             if (req->EVPowerProfile.Scheduled_EVPPTControlMode_isUsed) {
-                iso15118.trace("      SelectedScheduleTupleID: %lu", (unsigned long)req->EVPowerProfile.Scheduled_EVPPTControlMode.SelectedScheduleTupleID);
+                iso15118.trace("      SelectedScheduleTupleID: %lu", static_cast<unsigned long>(req->EVPowerProfile.Scheduled_EVPPTControlMode.SelectedScheduleTupleID));
                 iso15118.trace("      PowerToleranceAcceptance_isUsed: %d", req->EVPowerProfile.Scheduled_EVPPTControlMode.PowerToleranceAcceptance_isUsed);
             }
         }
@@ -1354,7 +1360,7 @@ void ISO20::trace_request_response()
                                res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].Name.charactersLen,
                                res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].Name.characters);
                 if (res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].intValue_isUsed) {
-                    iso15118.trace("     Parameter[%d].intValue: %ld", j, (long)res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].intValue);
+                    iso15118.trace("     Parameter[%d].intValue: %ld", j, static_cast<long>(res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].intValue));
                 }
                 if (res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].boolValue_isUsed) {
                     iso15118.trace("     Parameter[%d].boolValue: %d", j, res->ServiceParameterList.ParameterSet.array[i].Parameter.array[j].boolValue);
@@ -1395,11 +1401,11 @@ void ISO20::trace_request_response()
             iso15118.trace("    Scheduled_SEResControlMode");
             for (int i = 0; i < res->Scheduled_SEResControlMode.ScheduleTuple.arrayLen; i++) {
                 iso15118.trace("     ScheduleTuple[%d]", i);
-                iso15118.trace("      ScheduleTupleID: %lu", (unsigned long)res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ScheduleTupleID);
+                iso15118.trace("      ScheduleTupleID: %lu", static_cast<unsigned long>(res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ScheduleTupleID));
                 iso15118.trace("      ChargingSchedule.PowerSchedule.TimeAnchor: %llu", res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.TimeAnchor);
                 for (int j = 0; j < res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.arrayLen; j++) {
                     iso15118.trace("       PowerScheduleEntry[%d].Duration: %lu", j,
-                                   (unsigned long)res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[j].Duration);
+                                   static_cast<unsigned long>(res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[j].Duration));
                     iso15118.trace("       PowerScheduleEntry[%d].Power: %d * 10^%d", j,
                                    res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[j].Power.Value,
                                    res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.PowerSchedule.PowerScheduleEntries.PowerScheduleEntry.array[j].Power.Exponent);
@@ -1407,7 +1413,7 @@ void ISO20::trace_request_response()
                 iso15118.trace("      AbsolutePriceSchedule_isUsed: %d", res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule_isUsed);
                 if (res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule_isUsed) {
                     iso15118.trace("      AbsolutePriceSchedule.TimeAnchor: %llu", res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule.TimeAnchor);
-                    iso15118.trace("      AbsolutePriceSchedule.PriceScheduleID: %lu", (unsigned long)res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule.PriceScheduleID);
+                    iso15118.trace("      AbsolutePriceSchedule.PriceScheduleID: %lu", static_cast<unsigned long>(res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule.PriceScheduleID));
                     iso15118.trace("      AbsolutePriceSchedule.Currency: %.*s",
                                    res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule.Currency.charactersLen,
                                    res->Scheduled_SEResControlMode.ScheduleTuple.array[i].ChargingSchedule.AbsolutePriceSchedule.Currency.characters);
@@ -1454,7 +1460,7 @@ void ISO20::trace_ac_request_response()
         iso20_ac_AC_ChargeParameterDiscoveryReqType *req = &iso20AcDocDec->AC_ChargeParameterDiscoveryReq;
 
         // Cast AC header to common header type for tracing (compatible layout)
-        trace_header((const struct iso20_MessageHeaderType *)&req->Header, "AC_ChargeParameterDiscoveryReq");
+        trace_header(reinterpret_cast<const struct iso20_MessageHeaderType *>(&req->Header), "AC_ChargeParameterDiscoveryReq");
         iso15118.trace(" Body");
         iso15118.trace("  AC_ChargeParameterDiscoveryReq");
         iso15118.trace("   AC_CPDReqEnergyTransferMode_isUsed: %d", req->AC_CPDReqEnergyTransferMode_isUsed);
@@ -1477,7 +1483,7 @@ void ISO20::trace_ac_request_response()
     if (iso20AcDocDec->AC_ChargeLoopReq_isUsed) {
         iso20_ac_AC_ChargeLoopReqType *req = &iso20AcDocDec->AC_ChargeLoopReq;
 
-        trace_header((const struct iso20_MessageHeaderType *)&req->Header, "AC_ChargeLoopReq");
+        trace_header(reinterpret_cast<const struct iso20_MessageHeaderType *>(&req->Header), "AC_ChargeLoopReq");
         iso15118.trace(" Body");
         iso15118.trace("  AC_ChargeLoopReq");
         iso15118.trace("   MeterInfoRequested: %d", req->MeterInfoRequested);
@@ -1502,15 +1508,15 @@ void ISO20::trace_ac_request_response()
             }
             iso15118.trace("     RemainingTimeToMinimumSOC_isUsed: %d", req->DisplayParameters.RemainingTimeToMinimumSOC_isUsed);
             if (req->DisplayParameters.RemainingTimeToMinimumSOC_isUsed) {
-                iso15118.trace("     RemainingTimeToMinimumSOC: %lu", (unsigned long)req->DisplayParameters.RemainingTimeToMinimumSOC);
+                iso15118.trace("     RemainingTimeToMinimumSOC: %lu", static_cast<unsigned long>(req->DisplayParameters.RemainingTimeToMinimumSOC));
             }
             iso15118.trace("     RemainingTimeToTargetSOC_isUsed: %d", req->DisplayParameters.RemainingTimeToTargetSOC_isUsed);
             if (req->DisplayParameters.RemainingTimeToTargetSOC_isUsed) {
-                iso15118.trace("     RemainingTimeToTargetSOC: %lu", (unsigned long)req->DisplayParameters.RemainingTimeToTargetSOC);
+                iso15118.trace("     RemainingTimeToTargetSOC: %lu", static_cast<unsigned long>(req->DisplayParameters.RemainingTimeToTargetSOC));
             }
             iso15118.trace("     RemainingTimeToMaximumSOC_isUsed: %d", req->DisplayParameters.RemainingTimeToMaximumSOC_isUsed);
             if (req->DisplayParameters.RemainingTimeToMaximumSOC_isUsed) {
-                iso15118.trace("     RemainingTimeToMaximumSOC: %lu", (unsigned long)req->DisplayParameters.RemainingTimeToMaximumSOC);
+                iso15118.trace("     RemainingTimeToMaximumSOC: %lu", static_cast<unsigned long>(req->DisplayParameters.RemainingTimeToMaximumSOC));
             }
             iso15118.trace("     ChargingComplete_isUsed: %d", req->DisplayParameters.ChargingComplete_isUsed);
             if (req->DisplayParameters.ChargingComplete_isUsed) {
@@ -1551,7 +1557,7 @@ void ISO20::trace_ac_request_response()
     if (iso20AcDocEnc->AC_ChargeParameterDiscoveryRes_isUsed) {
         iso20_ac_AC_ChargeParameterDiscoveryResType *res = &iso20AcDocEnc->AC_ChargeParameterDiscoveryRes;
 
-        trace_header((const struct iso20_MessageHeaderType *)&res->Header, "AC_ChargeParameterDiscoveryRes");
+        trace_header(reinterpret_cast<const struct iso20_MessageHeaderType *>(&res->Header), "AC_ChargeParameterDiscoveryRes");
         iso15118.trace(" Body");
         iso15118.trace("  AC_ChargeParameterDiscoveryRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
@@ -1581,7 +1587,7 @@ void ISO20::trace_ac_request_response()
     if (iso20AcDocEnc->AC_ChargeLoopRes_isUsed) {
         iso20_ac_AC_ChargeLoopResType *res = &iso20AcDocEnc->AC_ChargeLoopRes;
 
-        trace_header((const struct iso20_MessageHeaderType *)&res->Header, "AC_ChargeLoopRes");
+        trace_header(reinterpret_cast<const struct iso20_MessageHeaderType *>(&res->Header), "AC_ChargeLoopRes");
         iso15118.trace(" Body");
         iso15118.trace("  AC_ChargeLoopRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);

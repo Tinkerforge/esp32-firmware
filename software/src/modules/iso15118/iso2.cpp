@@ -28,6 +28,8 @@
 #include "tools/malloc.h"
 #include "bindings/bricklet_evse_v2.h"
 
+#include "gcc_warnings.h"
+
 void ISO2::pre_setup()
 {
     api_state = Config::Object({
@@ -529,7 +531,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         const ChargingInformation ci = iso15118.get_charging_information();
 
         // Calculate minimum possible power from EV's minimum current
-        uint16_t minimum_power = static_cast<int16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*static_cast<float>(V2G_NOMINAL_VOLTAGE_V) + 100.0f);
+        uint16_t minimum_power = static_cast<uint16_t>(physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent)*static_cast<float>(V2G_NOMINAL_VOLTAGE_V) + 100.0f);
         minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
 
         // Calculate maximum power from our current limit
@@ -590,7 +592,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         // ratio is set to 5% ratio then this is the only line current restriction processed by
         // the EVCC. Otherwise the EVCC applies the smaller current constraint from the
         // EVSEMaxCurrent value and the PWM ratio information.
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = ci.current_ma; // e.g. 6123mA -> 6123
+        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = static_cast<int16_t>(ci.current_ma); // e.g. 6123mA -> 6123
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = -3;    // 6123 * 10^-3 = 6.123A (1mA resolution)
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 
@@ -646,6 +648,8 @@ void ISO2::handle_power_delivery_req()
             }, 5_s);
             break;
         case iso2_chargeProgressType_Renegotiate:
+            break;
+        default:
             break;
     }
 
@@ -703,7 +707,7 @@ void ISO2::handle_charging_status_req()
     // Read on every ChargingStatus cycle to allow dynamic current control.
     const ChargingInformation ci = iso15118.get_charging_information();
     res->EVSEMaxCurrent_isUsed = 1;
-    res->EVSEMaxCurrent.Value = ci.current_ma; // e.g. 6123mA -> 6123
+    res->EVSEMaxCurrent.Value = static_cast<int16_t>(ci.current_ma); // e.g. 6123mA -> 6123
     res->EVSEMaxCurrent.Multiplier = -3;       // 6123 * 10^-3 = 6.123A (1mA resolution)
     res->EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 

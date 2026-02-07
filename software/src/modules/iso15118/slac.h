@@ -425,7 +425,7 @@ private:
     uint8_t pev_mac[SLAC_MAC_ADDRESS_LENGTH]  = {0};
     uint8_t pev_run_id[SLAC_RUN_ID_LENGTH]    = {0};
 
-    void uint8_to_printable_string(const uint8_t *data, const uint16_t length, char *buffer, const uint16_t buffer_length);
+    void uint8_to_printable_string(const uint8_t *data, const uint16_t length, char *out_buf, const uint16_t out_buf_length);
     void log_homeplug_message_header_v0(const SLAC_HomeplugMessageHeaderV0 &header);
     void log_homeplug_message_header(const SLAC_HomeplugMessageHeader &header);
     void log_cm_set_key_request(const CM_SetKeyRequest &cm_set_key_request);

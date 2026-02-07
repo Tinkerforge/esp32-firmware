@@ -52,6 +52,8 @@
 #include "esp_netif.h"
 #include "bindings/bricklet_evse_v2.h"
 
+#include "gcc_warnings.h"
+
 
 void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
 {
@@ -63,9 +65,13 @@ void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
 
     // Hexdump the packet in one go (2 hex chars per byte + null terminator)
     size_t hex_buf_size = packet_size * 2 + 1;
-    char hex_buf[hex_buf_size];
-    len = hexdump(packet, packet_size, hex_buf, hex_buf_size, HexdumpCase::Lower);
-    logger.trace_plain(trace_buffer_index_ll, hex_buf, len);
+    if (hex_buf_size <= 2048) {
+        char hex_buf[2048];
+        len = hexdump(packet, packet_size, hex_buf, hex_buf_size, HexdumpCase::Lower);
+        logger.trace_plain(trace_buffer_index_ll, hex_buf, len);
+    } else {
+        logger.printfln("trace_packet: packet too large for hexdump (%zu bytes)", packet_size);
+    }
     logger.trace_plain(trace_buffer_index_ll, "\n", 1);
 #endif
 }
@@ -284,43 +290,43 @@ void ISO15118::state_machines_loop()
 
     // Handle L2TAP (HomePlug/SLAC)
     if (fds[FDS_TAP_INDEX].fd >= 0) {
-        if (fds[FDS_TAP_INDEX].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-            logger.printfln("ISO15118: L2TAP error (revents=0x%x)", fds[FDS_TAP_INDEX].revents);
+        if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
+            logger.printfln("ISO15118: L2TAP error (revents=0x%x)", static_cast<unsigned>(fds[FDS_TAP_INDEX].revents));
             // L2TAP error likely means modem issue, trigger SLAC reset
             slac.state = SLACState::ModemReset;
-        } else if (fds[FDS_TAP_INDEX].revents & POLLIN) {
+        } else if (static_cast<unsigned short>(fds[FDS_TAP_INDEX].revents) & POLLIN) {
             slac.handle_tap();
         }
     }
 
     // Handle SDP UDP socket
     if (fds[FDS_SDP_INDEX].fd >= 0) {
-        if (fds[FDS_SDP_INDEX].revents & (POLLERR | POLLNVAL)) {
-            logger.printfln("ISO15118: SDP socket error (revents=0x%x), reopening", fds[FDS_SDP_INDEX].revents);
+        if (static_cast<unsigned short>(fds[FDS_SDP_INDEX].revents) & (POLLERR | POLLNVAL)) {
+            logger.printfln("ISO15118: SDP socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_SDP_INDEX].revents));
             sdp.close_socket();
             sdp.setup_socket();
-        } else if (fds[FDS_SDP_INDEX].revents & POLLIN) {
+        } else if (static_cast<unsigned short>(fds[FDS_SDP_INDEX].revents) & POLLIN) {
             sdp.handle_socket();
         }
     }
 
     // Handle DIN/ISO2/ISO20 TCP listen socket
     if (fds[FDS_LISTEN_INDEX].fd >= 0) {
-        if (fds[FDS_LISTEN_INDEX].revents & (POLLERR | POLLNVAL)) {
-            logger.printfln("ISO15118: TCP listen socket error (revents=0x%x), reopening", fds[FDS_LISTEN_INDEX].revents);
+        if (static_cast<unsigned short>(fds[FDS_LISTEN_INDEX].revents) & (POLLERR | POLLNVAL)) {
+            logger.printfln("ISO15118: TCP listen socket error (revents=0x%x), reopening", static_cast<unsigned>(fds[FDS_LISTEN_INDEX].revents));
             common.close_socket();
             common.setup_socket();
-        } else if (fds[FDS_LISTEN_INDEX].revents & POLLIN) {
+        } else if (static_cast<unsigned short>(fds[FDS_LISTEN_INDEX].revents) & POLLIN) {
             common.handle_socket();
         }
     }
 
     // Handle active DIN/ISO2/ISO20 TCP connection
     if (fds[FDS_ACTIVE_INDEX].fd >= 0) {
-        if (fds[FDS_ACTIVE_INDEX].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-            logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", fds[FDS_ACTIVE_INDEX].revents);
+        if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
+            logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
             common.reset_active_socket();
-        } else if (fds[FDS_ACTIVE_INDEX].revents & POLLIN) {
+        } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
             common.handle_socket();
         }
     }
@@ -350,7 +356,7 @@ void ISO15118::switch_to_iec_temporary()
 // For now, we keep it backwards-compatible and just read the charging information from the EVSE.
 ChargingInformation ISO15118::get_charging_information() const
 {
-    uint16_t current_ma = evse_common.get_state().get("allowed_charging_current")->asUint();
+    uint16_t current_ma = evse_common.get_state().get("allowed_charging_current")->asUint16();
     bool three_phase = evse_common.get_low_level_state().get("phases_current")->asUint() == 3;
     return {current_ma, three_phase};
 }
