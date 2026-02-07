@@ -34,6 +34,7 @@
 
 #include "modules/meters_ev/ev_data_protocol.enum.h"
 #include "common_state.enum.h"
+#include "encryption.enum.h"
 
 #define SESSION_ID_LENGTH 4
 #define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?

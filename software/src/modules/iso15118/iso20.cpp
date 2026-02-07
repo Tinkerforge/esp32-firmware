@@ -34,33 +34,11 @@ void ISO20::pre_setup()
 {
     api_state = Config::Object({
         {"state", Config::Enum(ISO20State::Idle)},
-        {"session_id", Config::Str("", 0, 16)},  // 8 bytes as hex string (16 chars)
-        {"evcc_id", Config::Str("", 0, 20)},     // Up to 20 character string
-        // DisplayParameters from AC_ChargeLoopReq (all optional)
-        {"present_soc", Config::Int8(-1)},
-        {"present_soc_is_used", Config::Bool(false)},
-        {"minimum_soc", Config::Int8(-1)},
-        {"minimum_soc_is_used", Config::Bool(false)},
-        {"target_soc", Config::Int8(-1)},
-        {"target_soc_is_used", Config::Bool(false)},
-        {"maximum_soc", Config::Int8(-1)},
-        {"maximum_soc_is_used", Config::Bool(false)},
-        {"remaining_time_to_minimum_soc", Config::Uint32(0)},
-        {"remaining_time_to_minimum_soc_is_used", Config::Bool(false)},
-        {"remaining_time_to_target_soc", Config::Uint32(0)},
-        {"remaining_time_to_target_soc_is_used", Config::Bool(false)},
-        {"remaining_time_to_maximum_soc", Config::Uint32(0)},
-        {"remaining_time_to_maximum_soc_is_used", Config::Bool(false)},
-        {"charging_complete", Config::Bool(false)},
-        {"charging_complete_is_used", Config::Bool(false)},
-        {"battery_energy_capacity_val", Config::Int16(0)},
-        {"battery_energy_capacity_exp", Config::Int8(0)},
-        {"battery_energy_capacity_is_used", Config::Bool(false)},
-        {"inlet_hot", Config::Bool(false)},
-        {"inlet_hot_is_used", Config::Bool(false)},
-        // EV present active power from Dynamic control mode
-        {"ev_present_active_power_val", Config::Int16(0)},
-        {"ev_present_active_power_exp", Config::Int8(0)},
+        {"session_id", Config::Str("", 0, 16)},   // 8 bytes as hex string (16 chars)
+        {"evcc_id", Config::Str("", 0, 20)},      // Up to 20 character string
+        {"soc", Config::Int8(-1)},                 // Present SOC in %, -1 = not available
+        {"active_power", Config::Int32(-1)},       // EV present active power in W, -1 = not available
+        {"energy_capacity", Config::Int32(-1)},    // Battery energy capacity in Wh, -1 = not available
     });
 }
 
@@ -908,75 +886,17 @@ void ISO20::handle_ac_charge_loop_req()
 
     // Extract DisplayParameters if provided (this is unique to ISO 20 AC)
     if (req->DisplayParameters_isUsed) {
-        // PresentSOC - Current battery state of charge
-        api_state.get("present_soc_is_used")->updateBool(req->DisplayParameters.PresentSOC_isUsed);
         if (req->DisplayParameters.PresentSOC_isUsed) {
-            api_state.get("present_soc")->updateInt(req->DisplayParameters.PresentSOC);
+            api_state.get("soc")->updateInt(req->DisplayParameters.PresentSOC);
         }
-
-        // MinimumSOC - Minimum acceptable SOC
-        api_state.get("minimum_soc_is_used")->updateBool(req->DisplayParameters.MinimumSOC_isUsed);
-        if (req->DisplayParameters.MinimumSOC_isUsed) {
-            api_state.get("minimum_soc")->updateInt(req->DisplayParameters.MinimumSOC);
-        }
-
-        // TargetSOC - Desired target SOC
-        api_state.get("target_soc_is_used")->updateBool(req->DisplayParameters.TargetSOC_isUsed);
-        if (req->DisplayParameters.TargetSOC_isUsed) {
-            api_state.get("target_soc")->updateInt(req->DisplayParameters.TargetSOC);
-        }
-
-        // MaximumSOC - Maximum SOC limit
-        api_state.get("maximum_soc_is_used")->updateBool(req->DisplayParameters.MaximumSOC_isUsed);
-        if (req->DisplayParameters.MaximumSOC_isUsed) {
-            api_state.get("maximum_soc")->updateInt(req->DisplayParameters.MaximumSOC);
-        }
-
-        // RemainingTimeToMinimumSOC
-        api_state.get("remaining_time_to_minimum_soc_is_used")->updateBool(req->DisplayParameters.RemainingTimeToMinimumSOC_isUsed);
-        if (req->DisplayParameters.RemainingTimeToMinimumSOC_isUsed) {
-            api_state.get("remaining_time_to_minimum_soc")->updateUint(req->DisplayParameters.RemainingTimeToMinimumSOC);
-        }
-
-        // RemainingTimeToTargetSOC
-        api_state.get("remaining_time_to_target_soc_is_used")->updateBool(req->DisplayParameters.RemainingTimeToTargetSOC_isUsed);
-        if (req->DisplayParameters.RemainingTimeToTargetSOC_isUsed) {
-            api_state.get("remaining_time_to_target_soc")->updateUint(req->DisplayParameters.RemainingTimeToTargetSOC);
-        }
-
-        // RemainingTimeToMaximumSOC
-        api_state.get("remaining_time_to_maximum_soc_is_used")->updateBool(req->DisplayParameters.RemainingTimeToMaximumSOC_isUsed);
-        if (req->DisplayParameters.RemainingTimeToMaximumSOC_isUsed) {
-            api_state.get("remaining_time_to_maximum_soc")->updateUint(req->DisplayParameters.RemainingTimeToMaximumSOC);
-        }
-
-        // ChargingComplete
-        api_state.get("charging_complete_is_used")->updateBool(req->DisplayParameters.ChargingComplete_isUsed);
-        if (req->DisplayParameters.ChargingComplete_isUsed) {
-            api_state.get("charging_complete")->updateBool(req->DisplayParameters.ChargingComplete);
-        }
-
-        // BatteryEnergyCapacity (RationalNumber)
-        api_state.get("battery_energy_capacity_is_used")->updateBool(req->DisplayParameters.BatteryEnergyCapacity_isUsed);
         if (req->DisplayParameters.BatteryEnergyCapacity_isUsed) {
-            api_state.get("battery_energy_capacity_val")->updateInt(req->DisplayParameters.BatteryEnergyCapacity.Value);
-            api_state.get("battery_energy_capacity_exp")->updateInt(req->DisplayParameters.BatteryEnergyCapacity.Exponent);
-        }
-
-        // InletHot is a safety alert
-        api_state.get("inlet_hot_is_used")->updateBool(req->DisplayParameters.InletHot_isUsed);
-        if (req->DisplayParameters.InletHot_isUsed) {
-            api_state.get("inlet_hot")->updateBool(req->DisplayParameters.InletHot);
-            if (req->DisplayParameters.InletHot) {
-                logger.printfln("ISO20 AC: WARNING: InletHot = true!");
-            }
+            api_state.get("energy_capacity")->updateInt(static_cast<int32_t>(physical_value_to_float(&req->DisplayParameters.BatteryEnergyCapacity)));
         }
     }
 
     // Extract EV present power if using Dynamic mode
     if (req->Dynamic_AC_CLReqControlMode_isUsed) {
-        api_state.get("ev_present_active_power_val")->updateInt(req->Dynamic_AC_CLReqControlMode.EVPresentActivePower.Value);
-        api_state.get("ev_present_active_power_exp")->updateInt(req->Dynamic_AC_CLReqControlMode.EVPresentActivePower.Exponent);
+        api_state.get("active_power")->updateInt(static_cast<int32_t>(physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower)));
     }
 
     // Update EV data for meters module

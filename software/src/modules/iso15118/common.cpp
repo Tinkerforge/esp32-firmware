@@ -64,7 +64,7 @@ void Common::pre_setup()
         {"state", Config::Enum(CommonState::Idle)},
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
         {"protocol", Config::Str("", 0, 32)},
-        {"tls_active", Config::Bool(false)},
+        {"encryption", Config::Enum(Encryption::Unencrypted)},
         {"seen_macs", Config::Array({}, &seen_macs_prototype, 0, COMMON_SEEN_MAC_COUNT, Config::type_id<Config::ConfObject>())}
     });
 
@@ -197,7 +197,11 @@ void Common::handle_socket()
         if (tls.get_handshake_state() == TlsHandshakeState::IN_PROGRESS) {
             if (tls.do_handshake()) {
                 // Handshake completed, can now receive data
-                api_state.get("tls_active")->updateBool(true);
+                if (tls.is_tls13_active()) {
+                    api_state.get("encryption")->updateEnum(Encryption::TLS13);
+                } else {
+                    api_state.get("encryption")->updateEnum(Encryption::TLS12);
+                }
                 logger.printfln("Common: TLS handshake completed, ready for V2G communication");
             } else if (tls.get_handshake_state() == TlsHandshakeState::FAILED) {
                 logger.printfln("Common: TLS handshake failed, closing connection");
@@ -243,7 +247,7 @@ void Common::reset_active_socket()
     // Close TLS session if active
     tls.end_session();
     tls_requested_by_ev = false;
-    api_state.get("tls_active")->updateBool(false);
+    api_state.get("encryption")->updateEnum(Encryption::Unencrypted);
 
     if (active_socket >= 0) {
         close(active_socket);

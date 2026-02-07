@@ -42,29 +42,6 @@ void DIN70121::pre_setup()
         {"session_id", Config::Tuple(4, Config::Uint8(0))},
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
         {"soc", Config::Int8(0)},
-        {"ev_ready", Config::Int32(0)},
-        {"ev_cabin_conditioning", Config::Int32(0)},
-        {"ev_cabin_conditioning_is_used", Config::Bool(false)},
-        {"ev_ress_conditioning", Config::Int32(0)},
-        {"ev_ress_conditioning_is_used", Config::Bool(false)},
-        {"ev_error_code", Config::Uint8(0)},
-        {"ev_max_current_limit_val", Config::Int16(0)},
-        {"ev_max_current_limit_mul", Config::Int8(0)},
-        {"ev_max_power_limit_val", Config::Int16(0)},
-        {"ev_max_power_limit_mul", Config::Int8(0)},
-        {"ev_max_power_limit_is_used", Config::Bool(false)},
-        {"ev_max_voltage_limit_val", Config::Int16(0)},
-        {"ev_max_voltage_limit_mul", Config::Int8(0)},
-        {"ev_energy_capacity_val", Config::Int16(0)},
-        {"ev_energy_capacity_mul", Config::Int8(0)},
-        {"ev_energy_capacity_is_used", Config::Bool(0)},
-        {"ev_energy_request_val", Config::Int16(0)},
-        {"ev_energy_request_mul", Config::Int8(0)},
-        {"ev_energy_request_is_used", Config::Bool(false)},
-        {"full_soc", Config::Int8(0)},
-        {"full_soc_is_used", Config::Bool(false)},
-        {"bulk_soc", Config::Int8(0)},
-        {"bulk_soc_is_used", Config::Bool(false)}
     });
 }
 
@@ -297,29 +274,6 @@ void DIN70121::handle_charge_parameter_discovery_req()
     din_ChargeParameterDiscoveryResType* res = &dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
     api_state.get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
-    api_state.get("ev_ready")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVReady);
-    api_state.get("ev_cabin_conditioning")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning);
-    api_state.get("ev_cabin_conditioning_is_used")->updateBool(req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning_isUsed);
-    api_state.get("ev_ress_conditioning")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning);
-    api_state.get("ev_ress_conditioning_is_used")->updateBool(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning_isUsed);
-    api_state.get("ev_error_code")->updateUint(req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
-    api_state.get("ev_max_current_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
-    api_state.get("ev_max_current_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
-    api_state.get("ev_max_power_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
-    api_state.get("ev_max_power_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
-    api_state.get("ev_max_power_limit_is_used")->updateBool(req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
-    api_state.get("ev_max_voltage_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
-    api_state.get("ev_max_voltage_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
-    api_state.get("ev_energy_capacity_val")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Value);
-    api_state.get("ev_energy_capacity_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
-    api_state.get("ev_energy_capacity_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
-    api_state.get("ev_energy_request_val")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Value);
-    api_state.get("ev_energy_request_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
-    api_state.get("ev_energy_request_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
-    api_state.get("full_soc")->updateInt(req->DC_EVChargeParameter.FullSOC);
-    api_state.get("full_soc_is_used")->updateBool(req->DC_EVChargeParameter.FullSOC_isUsed);
-    api_state.get("bulk_soc")->updateInt(req->DC_EVChargeParameter.BulkSOC);
-    api_state.get("bulk_soc_is_used")->updateBool(req->DC_EVChargeParameter.BulkSOC_isUsed);
 
     logger.printfln("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
 
