@@ -131,6 +131,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
             5: "Contract Authentication",
             6: "Charge Parameter Discovery",
             7: "Session Stop",
+            8: "Cable Check",
         };
 
         const iso2_state_names: {[key: number]: string} = {

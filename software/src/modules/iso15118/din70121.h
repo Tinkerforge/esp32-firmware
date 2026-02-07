@@ -63,6 +63,7 @@ private:
     void handle_service_payment_selection_req();
     void handle_contract_authentication_req();
     void handle_charge_parameter_discovery_req();
+    void handle_cable_check_req();
     void handle_session_stop_req();
 
     void trace_header(const struct din_MessageHeaderType *header, const char *name);
