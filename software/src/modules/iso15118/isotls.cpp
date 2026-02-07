@@ -40,6 +40,9 @@
 // Certificate paths for ISO 15118-20
 #define ISO15118_20_CERT_CHAIN_PATH "/iso15118/iso20/secc_cert_chain.pem"
 #define ISO15118_20_PRIVATE_KEY_PATH "/iso15118/iso20/secc_key.pem"
+// Trusted root CA paths for mutual TLS (ISO 15118-20)
+#define ISO15118_20_OEM_ROOT_CA_PATH "/iso15118/iso20/oem_root_ca.pem"
+#define ISO15118_20_V2G_ROOT_CA_PATH "/iso15118/iso20/v2g_root_ca.pem"
 #endif
 
 #include "gcc_warnings.h"
@@ -183,6 +186,28 @@ bool ISOTLS::load_certificates()
     logger.printfln("ISOTLS: Loaded ISO 15118-20 certs (secp521r1): chain=%zu bytes, key=%zu bytes",
                     cert_chain_pem_len_iso20 - 1, private_key_pem_len_iso20 - 1);
 
+    // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
+    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+    // [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
+    oem_root_ca_pem_len_iso20 = strlen(dev_oem_root_ca_pem_iso20) + 1;
+    oem_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(oem_root_ca_pem_len_iso20, 1));
+    if (oem_root_ca_pem_iso20 == nullptr) {
+        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 OEM Root CA");
+        return false;
+    }
+    memcpy(oem_root_ca_pem_iso20, dev_oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
+
+    v2g_root_ca_pem_len_iso20 = strlen(dev_v2g_root_ca_pem_iso20) + 1;
+    v2g_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(v2g_root_ca_pem_len_iso20, 1));
+    if (v2g_root_ca_pem_iso20 == nullptr) {
+        logger.printfln("ISOTLS: Failed to allocate memory for ISO20 V2G Root CA");
+        return false;
+    }
+    memcpy(v2g_root_ca_pem_iso20, dev_v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20);
+
+    logger.printfln("ISOTLS: Loaded trusted root CAs for ISO 15118-20 mutual TLS: OEM=%zu bytes, V2G=%zu bytes",
+                    oem_root_ca_pem_len_iso20 - 1, v2g_root_ca_pem_len_iso20 - 1);
+
     return true;
 
 #else // !USE_EMBEDDED_TLS_CERTS
@@ -284,6 +309,45 @@ bool ISOTLS::load_certificates()
 
     logger.printfln("ISOTLS: Loaded ISO 15118-20 certs from LittleFS");
 
+    // Load trusted root CA certificates for mutual TLS (ISO 15118-20)
+    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+    // These are optional - if not present, mutual auth will be disabled
+    if (LittleFS.exists(ISO15118_20_OEM_ROOT_CA_PATH)) {
+        File ca_file = LittleFS.open(ISO15118_20_OEM_ROOT_CA_PATH, "r");
+        if (ca_file) {
+            oem_root_ca_pem_len_iso20 = ca_file.size() + 1;
+            oem_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(oem_root_ca_pem_len_iso20, 1));
+            if (oem_root_ca_pem_iso20 != nullptr) {
+                bytes_read = ca_file.read(oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20 - 1);
+                oem_root_ca_pem_iso20[bytes_read] = 0;
+                logger.printfln("ISOTLS: Loaded OEM Root CA from LittleFS");
+            }
+            ca_file.close();
+        }
+    } else {
+        logger.printfln("ISOTLS: OEM Root CA not found at %s (mutual TLS will use V2G Root CA only)", ISO15118_20_OEM_ROOT_CA_PATH);
+    }
+
+    if (LittleFS.exists(ISO15118_20_V2G_ROOT_CA_PATH)) {
+        File ca_file = LittleFS.open(ISO15118_20_V2G_ROOT_CA_PATH, "r");
+        if (ca_file) {
+            v2g_root_ca_pem_len_iso20 = ca_file.size() + 1;
+            v2g_root_ca_pem_iso20 = static_cast<uint8_t*>(calloc_psram_or_dram(v2g_root_ca_pem_len_iso20, 1));
+            if (v2g_root_ca_pem_iso20 != nullptr) {
+                bytes_read = ca_file.read(v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20 - 1);
+                v2g_root_ca_pem_iso20[bytes_read] = 0;
+                logger.printfln("ISOTLS: Loaded V2G Root CA from LittleFS");
+            }
+            ca_file.close();
+        }
+    } else {
+        logger.printfln("ISOTLS: V2G Root CA not found at %s (mutual TLS will use OEM Root CA only)", ISO15118_20_V2G_ROOT_CA_PATH);
+    }
+
+    if (oem_root_ca_pem_iso20 == nullptr && v2g_root_ca_pem_iso20 == nullptr) {
+        logger.printfln("ISOTLS: WARNING: No trusted root CAs found for ISO 15118-20 mutual TLS");
+    }
+
     return true;
 #endif // USE_EMBEDDED_TLS_CERTS
 }
@@ -376,6 +440,47 @@ bool ISOTLS::setup()
     }
     logger.printfln("ISOTLS: ISO 15118-20 certificates parsed successfully (secp521r1)");
 
+    // Parse trusted root CA certificates for mutual TLS (ISO 15118-20)
+    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+    // [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
+    trusted_ca_iso20 = static_cast<mbedtls_x509_crt*>(calloc_psram_or_dram(1, sizeof(mbedtls_x509_crt)));
+    if (trusted_ca_iso20 == nullptr) {
+        logger.printfln("ISOTLS: Failed to allocate trusted CA context");
+        cleanup();
+        return false;
+    }
+    mbedtls_x509_crt_init(trusted_ca_iso20);
+
+    int trusted_ca_count = 0;
+    if (oem_root_ca_pem_iso20 != nullptr) {
+        ret = mbedtls_x509_crt_parse(trusted_ca_iso20, oem_root_ca_pem_iso20, oem_root_ca_pem_len_iso20);
+        if (ret != 0) {
+            logger.printfln("ISOTLS: OEM Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
+        } else {
+            trusted_ca_count++;
+            logger.printfln("ISOTLS: OEM Root CA parsed successfully");
+        }
+    }
+
+    if (v2g_root_ca_pem_iso20 != nullptr) {
+        ret = mbedtls_x509_crt_parse(trusted_ca_iso20, v2g_root_ca_pem_iso20, v2g_root_ca_pem_len_iso20);
+        if (ret != 0) {
+            logger.printfln("ISOTLS: V2G Root CA parse failed: -0x%04x", static_cast<unsigned>(-ret));
+        } else {
+            trusted_ca_count++;
+            logger.printfln("ISOTLS: V2G Root CA parsed successfully");
+        }
+    }
+
+    if (trusted_ca_count > 0) {
+        logger.printfln("ISOTLS: %d trusted root CA(s) loaded for ISO 15118-20 mutual TLS", trusted_ca_count);
+    } else {
+        logger.printfln("ISOTLS: WARNING: No trusted root CAs loaded - mutual TLS authentication disabled");
+        mbedtls_x509_crt_free(trusted_ca_iso20);
+        free_any(trusted_ca_iso20);
+        trusted_ca_iso20 = nullptr;
+    }
+
     // Configure SSL
     ret = mbedtls_ssl_config_defaults(ssl_conf,
                                       MBEDTLS_SSL_IS_SERVER,
@@ -400,9 +505,12 @@ bool ISOTLS::setup()
     // =========================================================================
     // Authentication Mode
     // =========================================================================
-    // ISO 15118-2: Unilateral authentication (EVCC authenticates SECC, Section 7.7.3.1)
-    // ISO 15118-20: Should use mutual authentication [V2G20-2400]
-    // TODO: Implement mutual authentication for ISO 15118-20 when needed
+    // Default: VERIFY_NONE (safe fallback for TLS 1.2 / ISO 15118-2)
+    // For TLS 1.3 / ISO 15118-20, mutual authentication is enabled
+    // per-handshake in the cert_cb callback using:
+    //   mbedtls_ssl_set_hs_authmode(MBEDTLS_SSL_VERIFY_REQUIRED)
+    //   mbedtls_ssl_set_hs_ca_chain(trusted_ca_iso20)
+    // This way TLS 1.2 stays unilateral and TLS 1.3 gets mutual auth.
     mbedtls_ssl_conf_authmode(ssl_conf, MBEDTLS_SSL_VERIFY_NONE);
 
     // Set random number generator
@@ -413,9 +521,9 @@ bool ISOTLS::setup()
     // =========================================================================
     // A certificate selection callback (f_cert_cb) fires after ClientHello
     // processing. At that point, the negotiated TLS version is known, so the
-    // callback selects:
-    //   - TLS 1.3 -> ISO 15118-20 cert (secp521r1)
-    //   - TLS 1.2 -> ISO 15118-2 cert  (secp256r1)
+    // callback:
+    //   - TLS 1.3 -> ISO 15118-20 cert (secp521r1) + mutual auth with trusted CAs
+    //   - TLS 1.2 -> ISO 15118-2 cert  (secp256r1) + unilateral auth (no client cert)
     // This is deterministic and independent of client signature_algorithms ordering.
     s_isotls_instance = this;
     mbedtls_ssl_conf_cert_cb(ssl_conf, tls_cert_selection_callback);
@@ -478,6 +586,12 @@ void ISOTLS::cleanup()
         private_key_iso20 = nullptr;
     }
 
+    if (trusted_ca_iso20 != nullptr) {
+        mbedtls_x509_crt_free(trusted_ca_iso20);
+        free_any(trusted_ca_iso20);
+        trusted_ca_iso20 = nullptr;
+    }
+
     if (entropy != nullptr) {
         mbedtls_entropy_free(entropy);
         free_any(entropy);
@@ -512,6 +626,18 @@ void ISOTLS::cleanup()
         free_any(private_key_pem_iso20);
         private_key_pem_iso20 = nullptr;
         private_key_pem_len_iso20 = 0;
+    }
+
+    if (oem_root_ca_pem_iso20 != nullptr) {
+        free_any(oem_root_ca_pem_iso20);
+        oem_root_ca_pem_iso20 = nullptr;
+        oem_root_ca_pem_len_iso20 = 0;
+    }
+
+    if (v2g_root_ca_pem_iso20 != nullptr) {
+        free_any(v2g_root_ca_pem_iso20);
+        v2g_root_ca_pem_iso20 = nullptr;
+        v2g_root_ca_pem_len_iso20 = 0;
     }
 
     initialized = false;
@@ -575,6 +701,33 @@ bool ISOTLS::do_handshake()
         // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
         if (is_tls13) {
             logger.printfln("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
+
+            // Log mutual authentication result
+            if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
+                uint32_t verify_flags = mbedtls_ssl_get_verify_result(ssl);
+                if (verify_flags == 0) {
+                    logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
+                } else {
+                    // This should not happen with VERIFY_REQUIRED (handshake would have failed),
+                    // but log it for completeness
+                    char vrfy_buf[256];
+                    mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", verify_flags);
+                    logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
+                }
+
+                // Log peer certificate subject for debugging
+                const mbedtls_x509_crt *peer_cert = mbedtls_ssl_get_peer_cert(ssl);
+                if (peer_cert != nullptr) {
+                    char subject_buf[256];
+                    mbedtls_x509_dn_gets(subject_buf, sizeof(subject_buf), &peer_cert->subject);
+                    logger.printfln("ISOTLS: EVCC certificate subject: %s", subject_buf);
+                    char issuer_buf[256];
+                    mbedtls_x509_dn_gets(issuer_buf, sizeof(issuer_buf), &peer_cert->issuer);
+                    logger.printfln("ISOTLS: EVCC certificate issuer: %s", issuer_buf);
+                } else {
+                    logger.printfln("ISOTLS: WARNING: No EVCC peer certificate available after handshake");
+                }
+            }
         } else {
             logger.printfln("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
         }
@@ -681,13 +834,45 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
     if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
         logger.printfln("ISOTLS: cert_cb: TLS 1.3 negotiated, selecting ISO 15118-20 cert (secp521r1)");
-        return mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso20, private_key_iso20);
+        int ret = mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso20, private_key_iso20);
+        if (ret != 0) {
+            logger.printfln("ISOTLS: cert_cb: Failed to set own cert: -0x%04x", static_cast<unsigned>(-ret));
+            return ret;
+        }
+
+        // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+        // Enable mutual authentication for TLS 1.3 (ISO 15118-20) if enabled
+        if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
+            mbedtls_ssl_set_hs_ca_chain(ssl_ctx, trusted_ca_iso20, nullptr);
+            mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_REQUIRED);
+            logger.printfln("ISOTLS: cert_cb: Mutual TLS enabled - EVCC certificate will be verified");
+        } else if (!mutual_auth_enabled) {
+            mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
+            logger.printfln("ISOTLS: cert_cb: Mutual TLS disabled by configuration");
+        } else {
+            logger.printfln("ISOTLS: cert_cb: WARNING: No trusted CAs loaded, mutual TLS disabled");
+        }
+
+        return 0;
     } else if (cert_chain_iso2 != nullptr && private_key_iso2 != nullptr) {
         logger.printfln("ISOTLS: cert_cb: TLS 1.2 negotiated, selecting ISO 15118-2 cert (secp256r1)");
+        // ISO 15118-2: Unilateral authentication only (no client cert)
+        mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
         return mbedtls_ssl_set_hs_own_cert(ssl_ctx, cert_chain_iso2, private_key_iso2);
     }
 
     logger.printfln("ISOTLS: cert_cb: No matching certificate available for TLS version 0x%04x",
                     static_cast<unsigned>(ver));
     return -1;
+}
+
+void ISOTLS::set_mutual_auth_enabled(bool enabled)
+{
+    mutual_auth_enabled = enabled;
+    logger.printfln("ISOTLS: Mutual TLS authentication %s", enabled ? "enabled" : "disabled");
+}
+
+bool ISOTLS::is_mutual_auth_enabled() const
+{
+    return mutual_auth_enabled;
 }

@@ -108,6 +108,14 @@ public:
     bool is_session_active() const { return session_active; }
     TlsHandshakeState get_handshake_state() const { return handshake_state; }
 
+    // Mutual TLS authentication control (ISO 15118-20)
+    // When enabled (default), TLS 1.3 handshakes request and verify the EVCC
+    // certificate per [V2G20-2400]. When disabled, TLS 1.3 uses unilateral
+    // authentication (like TLS 1.2), which avoids the ~5s secp521r1 handshake
+    // overhead on the ESP32 but is not standard-compliant.
+    void set_mutual_auth_enabled(bool enabled);
+    bool is_mutual_auth_enabled() const;
+
     // TLS version queries
     bool is_tls13_active() const;
 
@@ -129,6 +137,7 @@ private:
     // State
     bool initialized = false;
     bool session_active = false;
+    bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
 
     // Socket file descriptor for current session
@@ -155,4 +164,16 @@ private:
     size_t cert_chain_pem_len_iso20 = 0;
     uint8_t *private_key_pem_iso20 = nullptr;
     size_t private_key_pem_len_iso20 = 0;
+
+    // Trusted root CA certificates for mutual TLS authentication (ISO 15118-20)
+    // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+    // [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
+    // Both OEM Root CA and V2G Root CA are loaded into this trust store.
+    // During TLS 1.3 handshake, the EVCC's vehicle certificate chain is
+    // verified against these root CAs.
+    mbedtls_x509_crt *trusted_ca_iso20 = nullptr;
+    uint8_t *oem_root_ca_pem_iso20 = nullptr;
+    size_t oem_root_ca_pem_len_iso20 = 0;
+    uint8_t *v2g_root_ca_pem_iso20 = nullptr;
+    size_t v2g_root_ca_pem_len_iso20 = 0;
 };

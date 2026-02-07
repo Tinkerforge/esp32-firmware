@@ -129,3 +129,47 @@ const char dev_private_key_pem_iso20[] =
     "GqBJqo4nH0SHxIgImAG/mNsBkivgzbthQrX200+M+5y6GEo0QuqHhSikkgF6SdcS\n"
     "rFotK3XZ4XHCVtTqOJrUoZxY9JgDMTupqLfIk82m/w==\n"
     "-----END EC PRIVATE KEY-----\n";
+
+// =============================================================================
+// Trusted Root CA Certificates for Mutual TLS Authentication (ISO 15118-20)
+// =============================================================================
+// [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+// [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
+// These root CAs are used to verify the EVCC's vehicle certificate chain
+// during the TLS 1.3 handshake (mutual authentication).
+
+// OEM Root CA certificate (secp521r1): Trusts vehicle certificates
+const char dev_oem_root_ca_pem_iso20[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICRTCCAaagAwIBAgIDAKVpMAoGCCqGSM49BAMCMEUxEjAQBgNVBAMMCU9FTVJv\n"
+    "b3RDQTENMAsGA1UECgwEV0FSUDELMAkGA1UEBhMCREUxEzARBgoJkiaJk/IsZAEZ\n"
+    "FgNPRU0wHhcNMjYwMjA3MjAzMjI4WhcNMzYwMjA1MjAzMjI4WjBFMRIwEAYDVQQD\n"
+    "DAlPRU1Sb290Q0ExDTALBgNVBAoMBFdBUlAxCzAJBgNVBAYTAkRFMRMwEQYKCZIm\n"
+    "iZPyLGQBGRYDT0VNMIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQASi7fOmLIEDC+\n"
+    "GzLBXH81o4H6G+PWruWsUdYDdxhxBf5P2xLz1ITP9yKxnYHlUhJOr8oXpA5U7VYs\n"
+    "WZdcVqzHEooBecvI0dZm+OO2zn+4XFC1/TLyFFHGzQ17ImyRbmKXWAAZNW7S4Rd7\n"
+    "L3qbuoleMT527qfakaFx9bAIqFuPJgAmUu2jQjBAMA8GA1UdEwEB/wQFMAMBAf8w\n"
+    "DgYDVR0PAQH/BAQDAgEGMB0GA1UdDgQWBBSKQRYoDwOhDxOBBKFxXcpuSL6sVjAK\n"
+    "BggqhkjOPQQDAgOBjAAwgYgCQgDozvRCzxxns4uCu5QTNHLZENHgq3zhzA6VlZ3U\n"
+    "28rWaN83UxguNb54VdUQwERU92L0E+rQRY1u/kRuNIiWvOr6NQJCAe15EQqAri0c\n"
+    "Xg25X/0wiNaZQpiQjgDWjovNisPPbappzzIFM+/YXVnDOuXW8gdvF1u0tKerJVxb\n"
+    "mylfC7lufXE/\n"
+    "-----END CERTIFICATE-----\n";
+
+// V2G Root CA certificate (secp521r1): Trusts SECC and contract certificates
+const char dev_v2g_root_ca_pem_iso20[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICQzCCAaWgAwIBAgICV0kwCgYIKoZIzj0EAwIwRTESMBAGA1UEAwwJVjJHUm9v\n"
+    "dENBMQ0wCwYDVQQKDARXQVJQMQswCQYDVQQGEwJERTETMBEGCgmSJomT8ixkARkW\n"
+    "A1YyRzAeFw0yNjAyMDcyMDMyMjhaFw0zNjAyMDUyMDMyMjhaMEUxEjAQBgNVBAMM\n"
+    "CVYyR1Jvb3RDQTENMAsGA1UECgwEV0FSUDELMAkGA1UEBhMCREUxEzARBgoJkiaJ\n"
+    "k/IsZAEZFgNWMkcwgZswEAYHKoZIzj0CAQYFK4EEACMDgYYABADypYNEegFH3Fnd\n"
+    "Y3j90rFWucAToMqk6vzYt9klPIkZH3Daf7IKPJ2DOZgVPkp5fWVMxSX1TzNYVW1c\n"
+    "6aBSI0LigAGqyg8k5xIw1xXmVl8Rq94PWG3JKaWQsS3eEsVQheZDlupd79SXfHZd\n"
+    "Qs/LuPwa7VyhdfFBz5FUBIgbNQkmjo7VdaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAO\n"
+    "BgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFK4tYiFvdDukoEWUQFd7yVskbqXtMAoG\n"
+    "CCqGSM49BAMCA4GLADCBhwJBP273b/1xOZ2BxqReqQ7Mw1utuZHrJrtqCjtAYt9D\n"
+    "CHxCC3PDaNLoiMehxgnYnIEat+TDki27ZQuJ5mzYRctKjR4CQgH1znwQ62Bq5zpE\n"
+    "cxMZcsmIXovmTePyrRy9KY2us/NZ9w2cRZImeF3+pniOGXjEnO3u5DXa5EB8ylos\n"
+    "t73H5OAOMQ==\n"
+    "-----END CERTIFICATE-----\n";

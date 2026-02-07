@@ -59,6 +59,7 @@ try:
     from iso15118.evcc.controller.simulator import SimEVController
     from iso15118.evcc.evcc_config import EVCCConfig
     from iso15118.shared.exificient_exi_codec import ExificientEXICodec
+    from iso15118.shared.messages.timeouts import Timeouts as TimeoutsShared
     from iso15118.shared.settings import load_shared_settings
 except ImportError as e:
     print(f"Error importing iso15118: {e}")
@@ -289,9 +290,8 @@ def setup_pki_for_tls(use_tls13: bool = False) -> Optional[Path]:
     print(f"  Linked V2G Root CA -> {v2g_root_ca}")
 
     # For TLS 1.3, the iso15118 library requires OEM certificates for mutual TLS.
-    # The charger does NOT verify client certs (MBEDTLS_SSL_VERIFY_NONE), but the
-    # library's get_ssl_context() returns None if these files are missing, causing
-    # the connection to fail.
+    # The charger verifies the client certificate against its trusted OEM/V2G root CAs
+    # during the TLS 1.3 handshake (ISO 15118-20 mutual authentication [V2G20-2400]).
     if use_tls13:
         oem_cert_chain = source_certs_dir / "oemCertChain.pem"
         oem_leaf_key = source_keys_dir / "oemLeaf.key"
@@ -927,6 +927,27 @@ Examples:
         tls_info = f" with {tls_version}"
     else:
         tls_info = ""
+
+    # Monkey-patch the SUPPORTED_APP_PROTOCOL_REQ timeout for ISO 15118-20 / TLS 1.3.
+    # The ESP32's TLS 1.3 handshake with secp521r1 takes ~5 seconds. In TLS 1.3 the
+    # client finishes its side of the handshake before the server, so the SAP request is
+    # sent while the server is still processing. The library's default 2s timeout fires
+    # before the ESP32 can respond.  We override it here (rather than editing the
+    # external library) so the upstream source stays untouched.
+    if use_tls and has_iso20:
+        _SAP_TIMEOUT = 10.0
+        # float-Enum members are immutable floats; we must create a new float
+        # instance and replace the member in all internal lookup tables.
+        # Enum.__setattr__ blocks reassignment, so we use type.__setattr__.
+        new_member = float.__new__(TimeoutsShared, _SAP_TIMEOUT)
+        new_member._name_ = "SUPPORTED_APP_PROTOCOL_REQ"
+        new_member._value_ = _SAP_TIMEOUT
+        TimeoutsShared._member_map_["SUPPORTED_APP_PROTOCOL_REQ"] = new_member
+        TimeoutsShared._value2member_map_[_SAP_TIMEOUT] = new_member
+        type.__setattr__(TimeoutsShared, "SUPPORTED_APP_PROTOCOL_REQ", new_member)
+        print(f"  Patched SUPPORTED_APP_PROTOCOL_REQ timeout to {_SAP_TIMEOUT}s "
+              "(ESP32 TLS 1.3 handshake is slow)")
+
     print(f"\nStarting EV simulator on interface {args.interface}{tls_info}...")
     print("Press Ctrl+C to stop\n")
 

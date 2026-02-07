@@ -38,3 +38,12 @@ extern const char dev_private_key_pem_iso2[];
 // -----------------------------------------------------------------------------
 extern const char dev_cert_chain_pem_iso20[];
 extern const char dev_private_key_pem_iso20[];
+
+// -----------------------------------------------------------------------------
+// Trusted root CA certificates for mutual TLS authentication (ISO 15118-20)
+// [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
+// [V2G20-2338] SECC shall have at least one V2G or OEM root CA certificate
+// Used to verify the EVCC's vehicle certificate chain during TLS 1.3 handshake
+// -----------------------------------------------------------------------------
+extern const char dev_oem_root_ca_pem_iso20[];
+extern const char dev_v2g_root_ca_pem_iso20[];
