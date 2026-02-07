@@ -29,6 +29,7 @@
 #include "din70121.h"
 #include "iso2.h"
 #include "iso20.h"
+#include "debug_mode.h"
 
 // Poll file descriptor indices (fixed positions in fds array)
 static constexpr int FDS_TAP_INDEX    = 0;  // L2TAP for HomePlug/SLAC
@@ -96,6 +97,9 @@ public:
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
 
+    // Ensure the state machine task is running (schedules it if not already running)
+    void ensure_state_machine_running();
+
     // Returns current limit and phase info
     ChargingInformation get_charging_information() const;
 
@@ -106,6 +110,5 @@ public:
     DIN70121 din70121;
     ISO2 iso2;
     ISO20 iso20;
-
-    bool debug_mode = false;
+    DebugMode debug_mode;
 };

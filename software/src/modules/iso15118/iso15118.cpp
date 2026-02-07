@@ -149,6 +149,7 @@ void ISO15118::pre_setup()
     din70121.pre_setup();
     iso2.pre_setup();
     iso20.pre_setup();
+    debug_mode.pre_setup();
 }
 
 void ISO15118::setup()
@@ -182,74 +183,9 @@ void ISO15118::register_urls()
     api.addState("iso15118/state_din70121", &din70121.api_state);
     api.addState("iso15118/state_iso2",     &iso2.api_state);
     api.addState("iso15118/state_iso20",    &iso20.api_state);
-
-    // Command to enable debug mode (use default Ethernet interface instead of QCA/PLC)
-    api.addCommand("iso15118/debug_start", Config::Null(), {}, [this](Language /*language*/, String &error) {
-        logger.printfln("Debug: Enabling debug mode");
-
-        debug_mode = true;
-
-        // Create IPv6 link-local address on the Ethernet interface
-        esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
-        if (eth_netif != NULL) {
-            esp_err_t err = esp_netif_create_ip6_linklocal(eth_netif);
-            if (err == ESP_OK) {
-                logger.printfln("Debug: Created IPv6 link-local address on Ethernet");
-            } else if (err == ESP_ERR_INVALID_STATE) {
-                logger.printfln("Debug: IPv6 link-local address already exists on Ethernet");
-            } else {
-                logger.printfln("Debug: Failed to create IPv6 link-local address: %d", err);
-            }
-        } else {
-            error = "Ethernet interface not found";
-            debug_mode = false;
-            return;
-        }
-
-        // Setup sockets for SDP and V2G
-        sdp.setup_socket();
-        common.setup_socket();
-
-        // Initialize SLAC state minimally (use Ethernet MAC for EVSE)
-        uint8_t eth_mac[6];
-        esp_read_mac(eth_mac, ESP_MAC_ETH);
-        memcpy(slac.evse_mac, eth_mac, SLAC_MAC_ADDRESS_LENGTH);
-        for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
-            slac.api_state.get("evse_mac")->get(i)->updateUint(slac.evse_mac[i]);
-        }
-        slac.api_state.get("modem_found")->updateBool(true);
-
-        // Set SLAC state to wait for SDP (skip actual SLAC handshake)
-        slac.state = SLACState::WaitForSDP;
-        slac.api_state.get("state")->updateEnum(SLACState::WaitForSDP);
-
-        // Make sure the state machine is running
-        if (state_machine_task == 0) {
-            state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
-                this->state_machines_loop();
-            }, 20_ms, 20_ms);
-        }
-
-        is_setup = true;
-        logger.printfln("Debug: Debug mode enabled, waiting for SDP on Ethernet interface");
-    }, true);
-
-    // Command to disable debug mode
-    // Close sockets and reset SLAC state, so we can start from scratch with a real PLC connection
-    api.addCommand("iso15118/debug_stop", Config::Null(), {}, [this](Language /*language*/, String &error) {
-        logger.printfln("Debug: Disabling debug mode");
-        debug_mode = false;
-
-        // Close sockets
-        sdp.close_socket();
-        common.close_socket();
-
-        // Reset SLAC state
-        slac.state = SLACState::ModemInitialization;
-        slac.api_state.get("state")->updateEnum(SLACState::ModemInitialization);
-        slac.api_state.get("modem_found")->updateBool(false);
-
-        logger.printfln("Debug: Debug mode disabled");
+    api.addState("iso15118/debug",          &debug_mode.api_state);
+    api.addCommand("iso15118/debug_update", &debug_mode.api_state, {}, [this](Language language, String &errmsg) {
+        debug_mode.handle_update(language, errmsg);
     }, true);
 
     // Enable ISO15118 on the EVSE Bricklet
@@ -350,12 +286,28 @@ void ISO15118::switch_to_iec_temporary()
     iso2.reset_dc_soc_done();
 }
 
+void ISO15118::ensure_state_machine_running()
+{
+    if (state_machine_task == 0) {
+        state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->state_machines_loop();
+        }, 20_ms, 20_ms);
+    }
+    is_setup = true;
+}
+
 // We will want to upgrade the ChargingInformation struct in the future.
 // Depending on the protocol version we actually want to set power instead of current.
 // Also depending on the EV capabilities we are able to set arbitrary power **per phase**.
 // For now, we keep it backwards-compatible and just read the charging information from the EVSE.
 ChargingInformation ISO15118::get_charging_information() const
 {
+    // In debug mode there is no EVSE connected, so we return the values
+    // set by the user via the iso15118/debug API.
+    if (debug_mode.is_enabled()) {
+        return debug_mode.get_charging_information();
+    }
+
     uint16_t current_ma = evse_common.get_state().get("allowed_charging_current")->asUint16();
     bool three_phase = evse_common.get_low_level_state().get("phases_current")->asUint() == 3;
     return {current_ma, three_phase};

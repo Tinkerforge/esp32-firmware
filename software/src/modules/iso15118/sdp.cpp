@@ -85,7 +85,7 @@ void SDP::setup_socket()
     // In debug mode, join the IPv6 all-nodes multicast group (ff02::1) on the Ethernet interface
     // This is needed because in debug mode we don't have SLAC to set this up and
     // the EV simulator sends SDP requests to the multicast address
-    if (iso15118.debug_mode) {
+    if (iso15118.debug_mode.is_enabled()) {
 #if LWIP_IPV6_MLD
         esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
         if (eth_netif != NULL) {

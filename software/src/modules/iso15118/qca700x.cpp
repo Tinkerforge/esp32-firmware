@@ -526,7 +526,7 @@ bool QCA700x::get_ip6_linklocal(esp_ip6_addr_t *if_ip6)
     memset(if_ip6, 0, sizeof(esp_ip6_addr_t));
 
     // In debug mode, use the default Ethernet interface
-    if (iso15118.debug_mode) {
+    if (iso15118.debug_mode.is_enabled()) {
         esp_netif_t *eth_netif = esp_netif_get_handle_from_ifkey("ETH_DEF");
         if (eth_netif != NULL) {
             esp_err_t err = esp_netif_get_ip6_linklocal(eth_netif, if_ip6);

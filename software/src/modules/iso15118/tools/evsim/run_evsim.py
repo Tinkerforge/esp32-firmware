@@ -288,10 +288,10 @@ def enable_debug_mode(charger_ip: str) -> bool:
         print("  Install with: pip install requests")
         return False
 
-    url = f"http://{charger_ip}/iso15118/debug_start"
+    url = f"http://{charger_ip}/iso15118/debug_update"
     try:
         print(f"Enabling debug mode on {charger_ip}...")
-        response = requests.put(url, timeout=5)
+        response = requests.put(url, json={"enable": True, "current": 6000, "phases": 3}, timeout=5)
         if response.status_code == 200:
             print("  Debug mode enabled successfully")
             _debug_enabled = True
@@ -320,10 +320,10 @@ def disable_debug_mode(charger_ip: str) -> bool:
     if not HAS_REQUESTS:
         return False
 
-    url = f"http://{charger_ip}/iso15118/debug_stop"
+    url = f"http://{charger_ip}/iso15118/debug_update"
     try:
         print(f"\nDisabling debug mode on {charger_ip}...")
-        response = requests.put(url, timeout=5)
+        response = requests.put(url, json={"enable": False, "current": 6000, "phases": 3}, timeout=5)
         if response.status_code == 200:
             print("  Debug mode disabled successfully")
             _debug_enabled = False
