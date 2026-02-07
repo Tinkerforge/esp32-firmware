@@ -41,7 +41,7 @@
 void SDP::pre_setup()
 {
     api_state = Config::Object({
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(SDPState::Idle)},
         {"evse_ip_address", Config::Tuple(4, Config::Uint32(0))},// TODO: why is this not a Config::String("", 0, INET6_ADDRSTRLEN)?
         {"evse_port", Config::Uint16(0)},
         {"evse_security", Config::Int16(-1)},
@@ -124,6 +124,9 @@ void SDP::setup_socket()
 
     // Register socket in central poll array
     iso15118.set_poll_fd(FDS_SDP_INDEX, sdp_socket);
+
+    state = SDPState::Listening;
+    api_state.get("state")->updateEnum(state);
 }
 
 void SDP::close_socket()
@@ -133,6 +136,9 @@ void SDP::close_socket()
         sdp_socket = -1;
     }
     iso15118.set_poll_fd(FDS_SDP_INDEX, -1);
+
+    state = SDPState::Idle;
+    api_state.get("state")->updateEnum(state);
 }
 
 void SDP::handle_socket()
@@ -236,6 +242,9 @@ void SDP::handle_socket()
         api_state.get("evse_port")->updateUint(ntohs(response.secc_port));
         api_state.get("evse_security")->updateInt(response.security);
         api_state.get("evse_tranport_protocol")->updateInt(response.tranport_protocol);
+
+        state = SDPState::DiscoveryCompleted;
+        api_state.get("state")->updateEnum(state);
     }
 
 }

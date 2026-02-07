@@ -97,6 +97,12 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
         const state_iso2     = API.get('iso15118/state_iso2');
         const state_iso20    = API.get('iso15118/state_iso20');
 
+        const sdp_state_names: {[key: number]: string} = {
+            0: "Idle",
+            1: "Listening",
+            2: "Discovery Completed",
+        };
+
         const common_state_names: {[key: number]: string} = {
             0: "Idle",
             1: "Protocol Negotiated",
@@ -317,7 +323,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="SECC Discovery Protocol (SDP)"/>
                     <FormRow label="State">
-                        <InputNumber value={state_sdp.state}/>
+                        <InputText value={sdp_state_names[state_sdp.state] ?? state_sdp.state.toString()}/>
                     </FormRow>
                     <FormRow label="EVSE IP Address">
                         <InputText value={array32_to_ipv6string(state_sdp.evse_ip_address)}/>
