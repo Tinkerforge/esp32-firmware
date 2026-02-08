@@ -80,7 +80,7 @@ export class ConfigForm extends Component<ConfigFormProps, ConfigFormState> {
     override render(props: ConfigFormProps, state: Readonly<ConfigFormState>) {
         return (
             <>
-                <PageHeader title={props.title} titleClass={(props.small ? "mt-1 " : "") + "text-center text-sm-start text-nowrap"} titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm mb-2" small={props.small} rowClass={props.small ? "pt-1 pt-sm-4" : "pt-2 pt-sm-3"}>
+                <PageHeader title={props.title} titleColClass="col-12 col-sm" childrenColClass="col-12 col-sm" small={props.small}>
                     <div class="row gx-2 mb-n2">
                         {this.resetButton()}
                         <div class="col mb-2">

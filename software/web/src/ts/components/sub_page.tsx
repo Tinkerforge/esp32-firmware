@@ -29,6 +29,8 @@ import { ConfigForm } from "./config_form";
 // This marks content as the status section
 interface SubPageStatusProps {
     header?: ComponentChildren;
+    headerTitleColClass?: string;
+    headerChildrenColClass?: string;
     children?: ComponentChildren;
 }
 
@@ -103,7 +105,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
         // New pattern: Status at top, then ConfigForm with small
         content = (
             <>
-                <PageHeader title={props.title}>
+                <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
                     {statusProps.header}
                 </PageHeader>
                 {statusChildren}
@@ -126,7 +128,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
         // Status-only page
         content = (
             <>
-                <PageHeader title={props.title}>
+                <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
                     {statusProps.header}
                 </PageHeader>
                 {statusChildren}

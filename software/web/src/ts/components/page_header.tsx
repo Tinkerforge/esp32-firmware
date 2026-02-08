@@ -17,12 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, ComponentChildren } from "preact";
+import { h, Component, ComponentChildren, toChildArray } from "preact";
 import * as util from "../util";
 
 export interface PageHeaderProps {
     title: ComponentChildren;
-    titleClass?: string;
     titleColClass?: string;
     childrenColClass?: string;
     rowClass?: string;
@@ -32,21 +31,26 @@ export interface PageHeaderProps {
 
 export class PageHeader extends Component<PageHeaderProps, {}> {
     render() {
+        let has_children = toChildArray(this.props.children).length > 0;
+        let row_class = "mb-3 pt-2" + (this.props.small ? " pt-sm-4" : " pt-sm-3");
+        let title_class = "text-center text-sm-start" + (this.props.small ? " mt-1" : "");
+
         return (
             // this row/col combination is necessary here to create a div that is
             // full width to cover the page header shadow after the sm breakpoint
-            <div class={(this.props.rowClass ? this.props.rowClass : "pt-3") + " row mb-3 " + (util.is_native_median_app() ? "sticky-top-app" : "sticky-under-top")}>
-                <div class={"col border-bottom tab-header-shadow" + (this.props.small ? "" : " pb-2")}>
+            <div class={"row " + row_class + (util.is_native_median_app() ? " sticky-top-app" : " sticky-under-top")}>
+                <div class={"col border-bottom tab-header-shadow" + (this.props.small ? "" : " pb-0 pb-sm-2")}>
                     <div class="row">
                         <div class={this.props.titleColClass ? this.props.titleColClass : "col"}>
                             {this.props.small
-                                ? <h3 class={this.props.titleClass}>{this.props.title}</h3>
-                                : <h1 class={"page-header " + (this.props.titleClass ? this.props.titleClass : "")}>{this.props.title}</h1>
+                                ? <h3 class={title_class}>{this.props.title}</h3>
+                                : <h1 class={"page-header " + title_class}>{this.props.title}</h1>
                             }
                         </div>
-                        <div class={this.props.childrenColClass ? this.props.childrenColClass : "col-auto"}>
-                            {this.props.children}
-                        </div>
+                        {has_children ?
+                            <div class={(this.props.childrenColClass ? this.props.childrenColClass : "col-auto") + " mb-2"}>
+                                {this.props.children}
+                            </div> : undefined}
                     </div>
                 </div>
             </div>

@@ -640,7 +640,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     ["history_6", __("meters.content.history_6")],
                                     ["history_3", __("meters.content.history_3")],
                                     ["live", __("meters.content.live")],
-                                ]}/>}>
+                                ]}/>} headerTitleColClass="col-12 col-sm" headerChildrenColClass="col-12 col-sm-auto">
 
                     <div class="pb-3">
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
