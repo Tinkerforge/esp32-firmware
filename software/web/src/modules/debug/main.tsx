@@ -98,7 +98,7 @@ export class Debug extends Component {
 
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />
+                <FormSeparator heading={__("debug.content.heap_integrity_header")} />
 
                 <FormRow label={__("debug.content.heap_integrity_result")}>
                     <IndicatorGroup
@@ -121,7 +121,7 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.memory_header")} first={false} />
+                <FormSeparator heading={__("debug.content.memory_header")} />
 
                 <Row l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
@@ -162,7 +162,7 @@ export class Debug extends Component {
                      c={<OutputFloat value={131072} digits={0} scale={0} unit="B"/>}
                      r={<OutputFloat value={state_static.psram_size} digits={0} scale={0} unit="B"/>}/>
 
-                <FormSeparator heading={__("debug.content.config_buffers")} first={false} />
+                <FormSeparator heading={__("debug.content.config_buffers")} />
 
                 <Row l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
@@ -204,7 +204,7 @@ export class Debug extends Component {
                 <Row label={__("debug.content.conf_union_buf")}
                      l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
 
-                <FormSeparator heading={__("debug.content.config_slots")} first={false} />
+                <FormSeparator heading={__("debug.content.config_slots")} />
 
                 <FormRow>
                     <div class="row">
@@ -254,7 +254,7 @@ export class Debug extends Component {
                     </FormRow>
                 })}
 
-                <FormSeparator heading={__("debug.content.stack_hwm_header")} first={false} />
+                <FormSeparator heading={__("debug.content.stack_hwm_header")} />
 
                 <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.used_stack")}</p>}
@@ -268,7 +268,7 @@ export class Debug extends Component {
 
                 })}
 
-                <FormSeparator heading="API" first={false} />
+                <FormSeparator heading="API" />
 
                 <Row l={<p class="mb-0 mt-2 form-label text-center">State</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">Command</p>}
@@ -279,7 +279,7 @@ export class Debug extends Component {
                      c={<OutputFloat value={state_slow.api_commands } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
                      r={<OutputFloat value={state_slow.api_responses} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
 
-                <FormSeparator heading={__("debug.content.sockets_header")} first={false} />
+                <FormSeparator heading={__("debug.content.sockets_header")} />
 
                 <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_used")}</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_hwm")}</p>}
@@ -290,7 +290,7 @@ export class Debug extends Component {
                      c={<OutputFloat value={state_slow.ipsock_hwm  } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
                      r={<OutputFloat value={state_static.ipsock_max} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
 
-                <FormSeparator heading={__("debug.content.clocks_buses_header")} first={false} />
+                <FormSeparator heading={__("debug.content.clocks_buses_header")} />
 
                 <FormRow label={__("debug.content.cpu_apb")}>
                     <div class="row">
@@ -314,7 +314,7 @@ export class Debug extends Component {
                                 r={<InputText value={spi_bus.spi_mode}/>}/>
                 })}
 
-                <FormSeparator heading={__("debug.content.memory_speed_header")} first={false} />
+                <FormSeparator heading={__("debug.content.memory_speed_header")} />
 
                 <FormRow>
                     <div class="row">
@@ -366,7 +366,7 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("debug.content.websocket_header")} first={false} />
+                <FormSeparator heading={__("debug.content.websocket_header")} />
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
                     <div class="input-group pb-2">
