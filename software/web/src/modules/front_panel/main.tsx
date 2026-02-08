@@ -226,8 +226,8 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("front_panel.content.front_panel")} label_muted={__("front_panel.content.front_panel_muted")}>
-                        <Switch desc={__("front_panel.content.front_panel_desc")}
+                    <FormRow label={__("front_panel.content.enable")} label_muted={__("front_panel.content.enable_muted")}>
+                        <Switch desc={__("front_panel.content.enable_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />

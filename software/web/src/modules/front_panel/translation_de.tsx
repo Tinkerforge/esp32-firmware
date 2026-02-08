@@ -7,9 +7,10 @@ let x = {
             "front_panel": "Display"
         },
         "content": {
-            "front_panel": "Display aktiviert",
-            "front_panel_muted": "",
-            "front_panel_desc": "Zeigt Statusinformationen auf Display an",
+            "front_panel": "Display",
+            "enable": "Display aktiviert",
+            "enable_muted": "",
+            "enable_desc": "Zeigt Statusinformationen auf Display an",
             "tile": "Kachel",
             "empty": "Leer",
             "charger": "Wallbox",
