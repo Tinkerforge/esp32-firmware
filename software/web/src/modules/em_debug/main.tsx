@@ -62,7 +62,7 @@ export class EMDebug extends Component {
                     </div>
                 </FormRow>
 
-                <FormSeparator heading={__("em_debug.content.protocol")} first={true} />
+                <FormSeparator heading={__("em_debug.content.protocol")} />
                 <DebugLogger description={__("em_debug.content.debug_description")}
                              description_muted={__("em_debug.content.debug_description_muted")}
                              name={__("em_debug.script.debug_name")}
