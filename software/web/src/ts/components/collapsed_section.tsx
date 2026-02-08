@@ -18,8 +18,9 @@
  */
 
 import { h, Component, Fragment, ComponentChildren } from "preact";
-import { Button, Collapse } from "react-bootstrap";
 import { __ } from "../../ts/translation";
+import { Button, Collapse } from "react-bootstrap";
+import { FormSeparator } from "./form_separator";
 
 interface CollapsedSectionProps {
     heading?: string;
@@ -28,29 +29,21 @@ interface CollapsedSectionProps {
 }
 
 interface CollapsedSectionState {
-    show: boolean;
+    visible: boolean;
 }
 
 export class CollapsedSection extends Component<CollapsedSectionProps, CollapsedSectionState> {
-    render(props: CollapsedSectionProps, state: Readonly<CollapsedSectionState>) {
-        return (
-            <>
-            <div class={"row mb-3 pt-3" + (props.modal ? " mx-0" : "")}>
-                <div class={"col d-flex justify-content-between border-bottom" + (props.modal ? " px-0" : "")}>
-                    <div class={props.modal ? "pt-2" : ""}><span class={props.modal ? "form-label" : "h3"}>{props.heading || __("component.collapsed_section.heading")}</span></div>
-                    <Button variant="primary"
-                            className="mb-2"
-                            onClick={() => this.setState({show: !state.show})}>
-                                {state.show ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
-                    </Button>
+    render() {
+        return <>
+            <FormSeparator heading={this.props.heading || __("component.collapsed_section.heading")} headingClass={this.props.modal ? "mt-2 form-label" : "mt-1"} rowClass={this.props.modal ? "gx-0" : undefined}>
+                <Button variant="primary" className="mb-2" onClick={() => this.setState({visible: !this.state.visible})}>
+                    {this.state.visible ? __("component.collapsed_section.hide") : __("component.collapsed_section.show")}
+                </Button>
+            </FormSeparator>
+            <Collapse in={this.state.visible}>
+                <div> {/* Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse */}
+                    {this.props.children}
                 </div>
-            </div>
-            <Collapse in={state.show}>
-                <div>
-                    {props.children}
-                </div>
-            </Collapse>
-            </>
-        );
+            </Collapse></>;
     }
 }

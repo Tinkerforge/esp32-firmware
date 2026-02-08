@@ -17,44 +17,45 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Component, ComponentChildren } from "preact";
+import { h, Component, ComponentChildren, Fragment } from "preact";
 import { Collapse } from "react-bootstrap";
 import { HelpCircle } from "react-feather";
 
 interface FormSeparatorProps {
     heading?: string;
-    colClasses?: string;
-    first?: boolean;
-    extraClasses?: string;
-    children?: ComponentChildren;
+    headingClass?: string;
+    rowClass?: string;
     help?: ComponentChildren;
+    first?: boolean;
+    modal?: boolean;
+    children?: ComponentChildren;
 }
 
-export class FormSeparator extends Component<FormSeparatorProps, {}> {
-    render(props: FormSeparatorProps, state: {help_expanded: boolean}) {
-        return (
-            <div>
-            <div class={"row " + (state.help_expanded ? "mb-1 " : "mb-3 ") + (!props.first ? "pt-3" : "pt-0") + " " + (props.extraClasses === undefined ? "" : props.extraClasses)}>
-                <div class={((!state.help_expanded) ? "border-bottom " : "")  + (props.colClasses === undefined ? "col" : props.colClasses)}>
-                    <div class="row align-items-center">
-                        {props.heading && <span class="h3 col-auto">{props.heading}</span>}
-                        {props.help && <span class="col" style="margin-bottom: 0.5rem;" onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:"help-circle" + (state.help_expanded ? " help-circle-expanded" : ""), style:"cursor: pointer;"} as any}/></span>}
-                        {props.children}
-                    </div>
-                </div>
+interface FormSeparatorState {
+    help_visible: boolean;
+}
+
+export class FormSeparator extends Component<FormSeparatorProps, FormSeparatorState> {
+    render() {
+        return <>
+            <div class={"row mb-3 border-bottom" + (this.props.heading && !this.props.first ? " pt-3 " : " pt-0 ") + (this.props.rowClass ? this.props.rowClass : "")}>
+                {this.props.heading && <div class="col-auto"><h3 class={this.props.headingClass}>{this.props.heading}</h3></div>}
+                {this.props.help && <span class="col-auto" style="padding-top: 5px;" onClick={() => this.setState({help_visible: !this.state.help_visible})}><HelpCircle {...{class: "help-circle" + (this.state.help_visible ? " help-circle-expanded" : ""), style: "cursor: pointer;"} as any}/></span>}
+                <div class="col" />
+                {this.props.children && <div class="col-auto">
+                    {this.props.children}
+                </div>}
             </div>
-            <Collapse in={state.help_expanded}>
-                <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
-                    <div class="pb-3">
+            <Collapse in={this.state.help_visible}>
+                <div> {/* Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse */}
+                    <div class="mb-3">
                         <div class="card">
                             <div class="card-body p-3 form-row-help">
-                                {props.help}
+                                {this.props.help}
                             </div>
                         </div>
                     </div>
                 </div>
-            </Collapse>
-            </div>
-        );
+            </Collapse></>;
     }
 }
