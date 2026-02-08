@@ -56,7 +56,7 @@ export function MobileStatusButton() {
         <HeaderStatusDropdown
             entries={dropdown_entries}
             overall_variant={overall_variant}
-            mobile={true}
+            mobile
         />
     );
 }

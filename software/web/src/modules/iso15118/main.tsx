@@ -280,18 +280,18 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                             <div style="position: relative;">
                                 <UplotLoader
                                     ref={this.uplot_loader_ref}
-                                    show={true}
-                                    marker_class={'h4'}
-                                    no_data={"No Data"}
-                                    loading={"Loading"}>
+                                    show
+                                    marker_class="h4"
+                                    no_data="No Data"
+                                    loading="Loading">
                                     <UplotWrapperB
                                         ref={this.uplot_wrapper_ref}
                                         class="attenuation-profile-chart"
                                         sub_page="iso15118"
                                         color_cache_group="iso15118.default"
-                                        show={true}
+                                        show
                                         on_mount={() => this.update_uplot()}
-                                        legend_time_label={"Index"}
+                                        legend_time_label="Index"
                                         legend_time_with_minutes={false}
                                         legend_show={false}
                                         aspect_ratio={3}
@@ -299,10 +299,10 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                                         x_padding_factor={0}
                                         x_include_date={false}
                                         y_min={0}
-                                        y_label={"Attenuation (dB)"}
+                                        y_label="Attenuation (dB)"
                                         y_unit="dB"
                                         y_digits={2}
-                                        only_show_visible={true}
+                                        only_show_visible
                                         padding={[null, null, null, null]}
                                     />
                                 </UplotLoader>

@@ -202,7 +202,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
             energy_row = <FormRow label={__("charge_limits.content.override_energy")}>
                 <InputSelect items={energy_items}
                     placeholder={energy_placeholder}
-                    value={""}
+                    value=""
                     onValue={(v) => {
                         if (v == "custom") {
                             this.setState({show_custom_energy_modal: true});
@@ -223,7 +223,7 @@ export class ChargeLimitsStatus extends Component<{}, {last_custom_energy: numbe
                 <FormRow label={__("charge_limits.content.override_duration")}>
                     <InputSelect items={duration_items}
                         placeholder={duration_placeholder}
-                        value={""}
+                        value=""
                         onValue={(v) => {
                             API.call("charge_limits/override_duration", {duration: parseInt(v)}, () => __("charge_limits.script.override_failed"));
                     }}/>

@@ -433,30 +433,30 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
                                     ref={this.uplot_loader_ref}
-                                    show={true}
-                                    marker_class={'h4'}
+                                    show
+                                    marker_class="h4"
                                     no_data={__("solar_forecast.content.no_data")}
                                     loading={__("solar_forecast.content.loading")}
-                                    fullscreen_allow={true}
+                                    fullscreen_allow
                                     fullscreen_title={__("solar_forecast.content.solar_forecast")}>
                                     <UplotWrapperB
                                         ref={this.uplot_wrapper_ref}
                                         class="solar-forecast-chart"
                                         sub_page="solar_forecast"
                                         color_cache_group="solar_forecast.default"
-                                        show={true}
+                                        show
                                         on_mount={() => this.update_uplot()}
                                         legend_time_label={__("solar_forecast.content.time")}
-                                        legend_time_with_minutes={true}
+                                        legend_time_with_minutes
                                         aspect_ratio={3}
                                         x_format={{hour: '2-digit', minute: '2-digit'}}
                                         x_padding_factor={0}
-                                        x_include_date={true}
+                                        x_include_date
                                         y_min={0}
                                         y_unit="W"
                                         y_label={__("solar_forecast.script.power") + " [W]"}
                                         y_digits={2}
-                                        only_show_visible={true}
+                                        only_show_visible
                                         padding={[null, 15, null, null]}
                                     />
                                 </UplotLoader>

@@ -100,7 +100,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
     let content: ComponentChildren;
 
     if (hasStatus && hasConfig) {
-        // New pattern: Status at top, then ConfigForm with small={true}
+        // New pattern: Status at top, then ConfigForm with small
         content = (
             <>
                 <PageHeader title={props.title}>
@@ -115,7 +115,7 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                     onSave={configProps.onSave}
                     onReset={configProps.onReset}
                     onDirtyChange={configProps.onDirtyChange}
-                    small={true}
+                    small
                 >
                     {configChildren}
                 </ConfigForm>

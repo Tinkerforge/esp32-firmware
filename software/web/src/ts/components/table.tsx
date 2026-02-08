@@ -132,7 +132,7 @@ export class Table extends Component<TableProps, TableState> {
                                     <th scope="col" style="vertical-align: middle;">{columnName}</th>
                                 ))}
                                 <th scope="col">
-                                    <Button size="sm" disabled={true} style="visibility: hidden;">
+                                    <Button size="sm" disabled style="visibility: hidden;">
                                         <Trash2/>
                                     </Button>
                                 </th>

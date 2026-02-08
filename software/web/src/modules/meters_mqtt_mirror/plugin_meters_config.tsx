@@ -72,7 +72,7 @@ export function pre_init() {
                     <FormRow label={__("meters_mqtt_mirror.content.auto")}>
                         <Switch desc={__("meters_mqtt_mirror.content.auto_desc")}
                             checked={config[1].auto}
-                            disabled={true}
+                            disabled
                             onClick={() => {
                                 on_config(util.get_updated_union(config, {auto: !config[1].auto}));
                             }}
@@ -90,7 +90,7 @@ export function pre_init() {
                     </FormRow>,
                     <FormRow label={__("meters_mqtt_mirror.content.value_ids")}>
                         <InputText
-                            disabled={true}
+                            disabled
                             maxLength={64}
                             value={config[1].value_ids}
                             onValue={(v) => {

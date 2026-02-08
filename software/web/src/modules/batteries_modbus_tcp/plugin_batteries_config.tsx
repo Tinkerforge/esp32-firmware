@@ -1219,7 +1219,7 @@ export function pre_init() {
                         <FormRow label={__("batteries_modbus_tcp.content.repeat_interval")} label_muted={__("batteries_modbus_tcp.content.repeat_interval_muted")}>
                             <InputNumber
                                 required
-                                unit={"s"}
+                                unit="s"
                                 min={0}
                                 max={65535}
                                 value={config[1].table[1].repeat_interval}
@@ -1245,7 +1245,7 @@ export function pre_init() {
                         let mode = battery_mode_order[i];
 
                         edit_children.push(
-                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode])} modal={true}>
+                            <CollapsedSection heading={__("batteries_modbus_tcp.content.register_title")(battery_mode_names[mode])} modal>
                                 <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                     <RegisterEditor
                                         register_address_mode={config[1].table[1].register_address_mode}

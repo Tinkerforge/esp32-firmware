@@ -345,30 +345,30 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
                                     ref={this.uplot_loader_ref}
-                                    show={true}
-                                    marker_class={'h4'}
+                                    show
+                                    marker_class="h4"
                                     no_data={__("day_ahead_prices.content.no_data")}
                                     loading={__("day_ahead_prices.content.loading")}
-                                    fullscreen_allow={true}
+                                    fullscreen_allow
                                     fullscreen_title={__("day_ahead_prices.content.day_ahead_prices")}>
                                     <UplotWrapperB
                                         ref={this.uplot_wrapper_ref}
                                         class="day-ahead-prices-chart"
                                         sub_page="day_ahead_prices"
                                         color_cache_group="day_ahead_prices.default"
-                                        show={true}
+                                        show
                                         on_mount={() => this.update_uplot()}
                                         legend_time_label={__("day_ahead_prices.content.time")}
-                                        legend_time_with_minutes={true}
+                                        legend_time_with_minutes
                                         aspect_ratio={3}
                                         x_format={{hour: '2-digit', minute: '2-digit'}}
                                         x_padding_factor={0}
-                                        x_include_date={true}
+                                        x_include_date
                                         y_min={0}
                                         y_unit="ct/kWh"
                                         y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
                                         y_digits={3}
-                                        only_show_visible={true}
+                                        only_show_visible
                                         padding={[30, 15, null, null]}
                                     />
                                 </UplotLoader>

@@ -161,7 +161,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
             </Button>
             <Button variant="primary"
                     disabled={props.disabled || (props.value == props.max)}
-                    className={"px-1 rounded-start-0 rounded-end"}
+                    className="px-1 rounded-start-0 rounded-end"
                     onClick={() => {
                         let v = props.value;
                         let target = (v - (v % pow10)) + pow10;

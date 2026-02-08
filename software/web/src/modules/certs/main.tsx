@@ -69,7 +69,7 @@ export class Certs extends Component<{}, State> {
                                         <FormRow label={__("certs.content.cert_file")} label_muted={__("certs.content.cert_file_muted")}>
                                             <input type="file" id="certs-file-input"
                                                     class={"form-control" + (this.state.editCert.file_too_large ? " is-invalid" : "")}
-                                                    accept={"application/pem-certificate-chain"}
+                                                    accept="application/pem-certificate-chain"
                                                 onChange={(ev) => {
                                                     let file = (ev.target as HTMLInputElement).files[0];
                                                     this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > options.CERTS_MAX_CERT_SIZE}})

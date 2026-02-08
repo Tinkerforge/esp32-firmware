@@ -633,25 +633,25 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                             ["1", __("eebus.content.peer_info.trusted_yes")]
                                                         ]}
                                                                      value={peer.autoregister ? "1" : "0"}
-                                                                     disabled={true}
+                                                                     disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.model_type")}>
                                                         <InputText
                                                             value={peer.model_type}
-                                                            disabled={true}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.model_model")}>
                                                         <InputText
                                                             value={peer.model_model}
-                                                            disabled={true}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.model_brand")}>
                                                         <InputText
                                                             value={peer.model_brand}
-                                                            disabled={true}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.state")}>
@@ -663,7 +663,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                             ["5", __("eebus.content.peer_info.state_loaded_from_config")]
                                                         ]}
                                                                      value={peer.state.toString()}
-                                                                     disabled={true}
+                                                                     disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.persistent")}>

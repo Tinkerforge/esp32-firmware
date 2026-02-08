@@ -558,7 +558,7 @@ function CMStatusCharger(props: {
                     </div>
                 </div>
                 <div class={"card-body " + c_body_classes}>
-                    <h5 class={"card-title my-0"}><Button
+                    <h5 class="card-title my-0"><Button
                         className="me-2"
                         size="sm"
                         onClick={() => setShowDetails(!showDetails)}>
@@ -566,14 +566,14 @@ function CMStatusCharger(props: {
                     </Button>{c_state}</h5>
                     <Collapse in={!showDetails}>
                         <div>
-                            <div class={"card-text"} style={desc.length > 0 ? "margin-top: 0.75rem;" : ""}>
+                            <div class="card-text" style={desc.length > 0 ? "margin-top: 0.75rem;" : ""}>
                                 {desc}
                             </div>
                         </div>
                     </Collapse>
                     <Collapse in={showDetails}>
                         <div>
-                            <div class={"card-text"} style="margin-top: 0.75rem;">
+                            <div class="card-text" style="margin-top: 0.75rem;">
                                 {details}
                             </div>
                         </div>

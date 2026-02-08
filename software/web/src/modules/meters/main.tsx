@@ -646,7 +646,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                         <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                             <UplotLoader ref={this.uplot_loader_live_ref}
                                             show={false}
-                                            marker_class={'h3'}
+                                            marker_class="h3"
                                             no_data={__("meters.content.no_data")}
                                             loading={__("meters.content.loading")} >
                                 <UplotWrapperA ref={this.uplot_wrapper_live_ref}
@@ -656,7 +656,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                 show={false}
                                                 on_mount={() => this.update_live_uplot()}
                                                 legend_time_label={__("meters.script.time")}
-                                                legend_time_with_seconds={true}
+                                                legend_time_with_seconds
                                                 aspect_ratio={3}
                                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                                 x_padding_factor={0}
@@ -668,22 +668,22 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                 padding={[null, 15, null, null]} />
                             </UplotLoader>
                             <UplotLoader ref={this.uplot_loader_history_ref}
-                                            show={true}
-                                            marker_class={'h3'}
+                                            show
+                                            marker_class="h3"
                                             no_data={__("meters.content.no_data")}
                                             loading={__("meters.content.loading")} >
                                 <UplotWrapperA ref={this.uplot_wrapper_history_ref}
                                                 class="meters-chart"
                                                 sub_page="meters"
                                                 color_cache_group="meters.default"
-                                                show={true}
+                                                show
                                                 on_mount={() => this.update_history_uplot()}
                                                 legend_time_label={__("meters.script.time")}
                                                 legend_time_with_seconds={false}
                                                 aspect_ratio={3}
                                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                                 x_padding_factor={0}
-                                                x_include_date={true}
+                                                x_include_date
                                                 y_min={0}
                                                 y_max={1500}
                                                 y_unit="W"
@@ -899,8 +899,8 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     input_time = <InputText class="form-control-sm" value={__("meters.content.last_reset_counter")(last_reset.last_reset)}/>
                                     input_date = <InputText class="form-control-sm" value={__("meters.content.last_reset_unknown")}/>
                                 } else {
-                                    input_date = <InputDate className={"form-control-sm"} date={new Date(last_reset.last_reset * 1000)}/>
-                                    input_time = <InputTime className={"form-control-sm"} date={new Date(last_reset.last_reset * 1000)}/>
+                                    input_date = <InputDate className="form-control-sm" date={new Date(last_reset.last_reset * 1000)}/>
+                                    input_time = <InputTime className="form-control-sm" date={new Date(last_reset.last_reset * 1000)}/>
                                 }
 
                                 let meter_reset_row: ComponentChild[] = !meter_is_resettable ? [] : [
@@ -934,7 +934,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
                                 let allValues = METER_VALUE_ORDER.filter((order) => order.ids.filter((id) => util.hasValue(this.state.values_by_id[meter_slot][id])).length > 0)
                                     .map((order) => order.group ?
-                                        <FormRow label={translate_unchecked(`meters.content.group_${order.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${order.group}_muted`), order.phases])} small={true}>
+                                        <FormRow label={translate_unchecked(`meters.content.group_${order.group}`)} label_muted={util.joinNonEmpty("; ", [translate_unchecked(`meters.content.group_${order.group}_muted`), order.phases])} small>
                                             <div class="row gx-2">
                                             {order.ids.map((id) =>
                                                 <div class="col-sm-4">
@@ -943,13 +943,13 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                         digits={METER_VALUE_INFOS[id].digits}
                                                         scale={0}
                                                         unit={METER_VALUE_INFOS[id].unit}
-                                                        small={true}
+                                                        small
                                                         class={util.hasValue(this.state.values_by_id[meter_slot][id]) ? (highlighted_value_ids.indexOf(id) >= 0 ? "input-indicator input-indicator-primary" : undefined) : "input-indicator input-indicator-warning"}
                                                     />
                                                 </div>)}
                                             </div>
                                         </FormRow>
-                                        : <FormRow label={translate_unchecked(`meters.content.value_${order.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${order.ids[0]}_muted`)} small={true}>
+                                        : <FormRow label={translate_unchecked(`meters.content.value_${order.ids[0]}`)} label_muted={translate_unchecked(`meters.content.value_${order.ids[0]}_muted`)} small>
                                             <div class="row gx-2">
                                                 <div class="col-sm-4">
                                                     <OutputFloat
@@ -957,7 +957,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                         digits={METER_VALUE_INFOS[order.ids[0]].digits}
                                                         scale={0}
                                                         unit={METER_VALUE_INFOS[order.ids[0]].unit}
-                                                        small={true}
+                                                        small
                                                         class={util.hasValue(this.state.values_by_id[meter_slot][order.ids[0]]) ? (highlighted_value_ids.indexOf(order.ids[0]) >= 0 ? "input-indicator input-indicator-primary" : undefined) : "input-indicator input-indicator-warning"}
                                                     />
                                                 </div>
@@ -1379,7 +1379,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                         <div class="card">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader ref={this.uplot_loader_ref}
-                                            show={true}
+                                            show
                                             marker_class="h4"
                                             no_data={__("meters.content.no_data")}
                                             loading={__("meters.content.loading")} >
@@ -1387,7 +1387,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                 class="status-meters-chart"
                                                 sub_page="status"
                                                 color_cache_group="meters.default"
-                                                show={true}
+                                                show
                                                 on_mount={() => {
                                                     if (this.on_mount) {
                                                         this.on_mount();
@@ -1401,7 +1401,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                 aspect_ratio={3}
                                                 x_format={{hour: '2-digit', minute: '2-digit'}}
                                                 x_padding_factor={0}
-                                                x_include_date={true}
+                                                x_include_date
                                                 y_min={0}
                                                 y_max={1500}
                                                 y_unit="W"

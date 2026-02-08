@@ -71,7 +71,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 <input type="checkbox" class="form-check-input" id={label_desktop_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
                 <label class="form-check-label" for={label_desktop_id}>{props.checked ? props.switch_label_active : props.switch_label_inactive}</label>
             </div>
-            <div class="d-block d-sm-none input-group-text form-check form-switch" style={"padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;"}>
+            <div class="d-block d-sm-none input-group-text form-check form-switch" style="padding-left: 2.75rem; padding-right: 0; border-bottom-right-radius: 0; border-top-right-radius: 0;">
                 <input type="checkbox" class="form-check-input" id={label_mobile_id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
                 <label class="form-check-label" for={label_mobile_id}></label>
             </div>
