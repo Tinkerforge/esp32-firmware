@@ -236,7 +236,7 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                         <div>
                             {util.range(FRONT_PANEL_TILES).map((tile_index) => {
                                 return <div>
-                                    {tile_index != 0 && <FormSeparator first={true}/>}
+                                    <FormSeparator/>
                                     <FormRow symbol={get_tile_symbol(tile_index)} label={__("front_panel.content.tile") + " " + (tile_index+1)}>
                                         <InputSelect
                                             items={FrontPanel.options_tile()}
