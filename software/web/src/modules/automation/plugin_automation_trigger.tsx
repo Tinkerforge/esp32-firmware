@@ -108,7 +108,7 @@ function get_cron_edit_children(trigger: CronAutomationTrigger, on_trigger: (tri
                 }} />
         </FormRow>,
         <FormRow label={__("automation.automation.cron_time")}>
-            <div class="input-group mb-2">
+            <div class="input-group">
                 <InputSelect
                     items={hours}
                     value={trigger[1].hour.toString()}
