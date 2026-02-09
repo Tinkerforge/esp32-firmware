@@ -1260,12 +1260,20 @@ def main():
 
     p = re.compile(r'#\s*include\s+[<"](bindings/brick(?:let)?_.*)\.h[>"]')
 
+    deduplicated_modules = set()
+
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module '{}' not found.".format(backend_module.space))
             sys.exit(1)
+
+        if backend_module.space in deduplicated_modules:
+            print(f"Duplicate backend module '{backend_module.space}' in environment", file=sys.stderr)
+            sys.exit(1)
+        else:
+            deduplicated_modules.add(backend_module.space)
 
         for root, dirs, files in os.walk(mod_path, followlinks=True):
             for filename in files:
@@ -1283,6 +1291,8 @@ def main():
 
             with tfutil.ChangedDirectory(mod_path):
                 check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+
+    del deduplicated_modules
 
     for root, dirs, files in os.walk('src', followlinks=True):
         root_path = pathlib.PurePath(root)
@@ -1541,12 +1551,22 @@ def main():
 
         all_frontend_modules_upper.append(existing_frontend_module.upper())
 
+    deduplicated_modules = set()
+
     for frontend_module in frontend_modules:
+        if frontend_module.space in deduplicated_modules:
+            print(f"Duplicate frontend module '{frontend_module.space}' in environment", file=sys.stderr)
+            sys.exit(1)
+        else:
+            deduplicated_modules.add(frontend_module.space)
+
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
         file_path_prefix = os.path.join(mod_path, 'module_')
 
         generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper)
+
+    del deduplicated_modules
 
     # API
     api_imports = []
