@@ -134,6 +134,27 @@ int scaled_numbertype_to_int(const ScaledNumberType &number);
 
 } // namespace EEBUS_USECASE_HELPERS
 
+// Configuration struct for LoadPowerLimitUsecase parameterization
+// Used to differentiate between LPC (consumption) and LPP (production) usecases
+#if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
+struct LoadPowerLimitConfig {
+    Usecases usecase_type;                                              // LPC or LPP
+    const char *usecase_name;                                           // "limitationOfPowerConsumption" or "limitationOfPowerProduction"
+    const char *api_key;                                                // "power_consumption_limitation" or "power_production_limitation"
+    EnergyDirectionEnumType energy_direction;                           // consume or produce
+    ElectricalConnectionCharacteristicTypeEnumType characteristic_type; // powerConsumptionMax or powerProductionMax
+    DeviceConfigurationKeyNameEnumType failsafe_key_name;               // failsafeConsumptionActivePowerLimit or failsafeProductionActivePowerLimit
+    bool limit_is_positive;                                             // true for LPC (power > 0), false for LPP (power < 0)
+    // ID offsets from EVSEEntity
+    uint8_t loadcontrol_limit_id_offset;
+    uint8_t measurement_id_offset;
+    uint8_t device_config_key_id_offset;
+    uint8_t electrical_connection_id_offset;
+    uint8_t electrical_connection_characteristic_id_offset;
+    uint8_t electrical_connection_parameter_id_offset;
+};
+#endif
+
 // These classes contain the data generator functions for all usecase entities.
 // As some usecases share a function under the same entity and feature, and since we only support full reads or notify messages, the full data has to be generated.
 class EVSEEntity
@@ -802,86 +823,79 @@ private:
     void update_api() const;
 };
 #endif
-#ifdef EEBUS_ENABLE_LPC_USECASE
 
+#if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
 /**
- * The LpcUsecase as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
- * This should have the same entity address as other entities with the Controllable System actor <br>
- * Actor: Controllable System <br>
- * Features (Functions): LoadControl (loadControlLimitDescriptionListData, loadControlLimitListData), DeviceConfiguration (deviceConfigurationKeyValueDescriptionListData, deviceConfigurationKeyValueListData), DeviceDiagnosis (deviceDiagnosisHeartbeatData), ElectricalConnection (electricalConnectionCharacteristicListData)   <br>
-*/
-
-class LpcUsecase final : public EebusUsecase
+ * Base class for Load Power Limit usecases (LPC and LPP).
+ * Implements the common logic for Limitation of Power Consumption and Limitation of Power Production.
+ * Both usecases share nearly identical structure and differ only in:
+ * - Energy direction (consume vs produce)
+ * - Limit validation logic (positive vs negative power values)
+ * - API keys and usecase names
+ * - ID offsets for SPINE data types
+ *
+ * The base class is parameterized via LoadPowerLimitConfig to handle these differences.
+ */
+class LoadPowerLimitUsecase : public EebusUsecase
 {
 public:
-    LpcUsecase();
+    explicit LoadPowerLimitUsecase(const LoadPowerLimitConfig &config);
 
     /**
-    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
-    * @return
-    */
+     * Builds and returns the UseCaseInformationDataType.
+     * Uses config to determine usecase name.
+     */
     UseCaseInformationDataType get_usecase_information() override;
 
     /**
-     * \brief Handles a message for a usecase.
-     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+     * Handles a message for the usecase.
+     * @param header SPINE header of the message.
      * @param data The actual Function call and data of the message.
-     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @return The MessageReturn object which contains information about the returned message.
+     * @param response Where to write the response to.
+     * @return The MessageReturn object.
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
     [[nodiscard]] Usecases get_usecase_type() const override
     {
-        return Usecases::LPC;
+        return config_.usecase_type;
     }
 
-    /**
-     * The entity information as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.
-     * @return The entity information.
-     */
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    /**
-     * Returns the supported features. As defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.2.1.
-     * @return a list of the supported features.
-     */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     /**
-     * Update the limit the system is supposed to be consuming.
+     * Update the power limit.
      * @param limit If the limit is active or not.
      * @param current_limit_w The limit in W.
-     * @param duration For how long the limit shall be active from now
+     * @param duration For how long the limit shall be active from now.
      * @return true if the processing of the limit was successful.
      */
-    bool update_lpc(bool limit, int current_limit_w, seconds_t duration);
+    bool update_limit(bool limit, int current_limit_w, seconds_t duration);
 
     /**
-     * Update the maximum power the system is currently capable of consuming. This will inform all subscribers of the new power limit. Implemented according to LPC UC TS v1.0.0 3.2.2.2.3.1
-     * @param power_limit_w Power limit in watts. Below -1 the value is ignored
+     * Update the failsafe values.
+     * @param power_limit_w Power limit in watts. Below -1 the value is ignored.
      * @param duration Duration in seconds. Below or equal to -1 the value is ignored.
      */
     void update_failsafe(int power_limit_w = -1, seconds_t duration = -1_s);
 
     /**
-     * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPC UC TS v1.0.0 3.2.2.2.5.1
-     * @param power_consumption_max Maximum power consumption the system is capable of consuming. This is the physical limit of the device and should only be set if the device is not an energy manager. Set to 0 to omit it.
-     * @param power_consumption_contract_max Maximum power consumption the contract allows. This should only be set if the device is an energy manager.
+     * Update the constraints of the system.
+     * @param power_max Maximum power the system is capable of.
+     * @param power_contract_max Maximum power the contract allows.
      */
-    void update_constraints(int power_consumption_max = 0, int power_consumption_contract_max = 0);
+    void update_constraints(int power_max = 0, int power_contract_max = 0);
 
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
-        // The feature "DeviceDiagnosis" is handled by a separate heartbeat handler as it can be shared accross multiple usecases
         return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::ElectricalConnection};
     }
 
     void get_loadcontrol_limit_description(LoadControlLimitDescriptionListDataType *data) const;
     void get_loadcontrol_limit_list(LoadControlLimitListDataType *data) const;
-
     void get_device_configuration_value(DeviceConfigurationKeyValueListDataType *data) const;
     void get_device_configuration_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
-
     void get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const;
 
     [[nodiscard]] bool limit_is_active() const
@@ -890,14 +904,103 @@ public:
     }
     [[nodiscard]] int get_current_limit_w() const
     {
-        return current_active_consumption_limit_w;
+        return current_active_limit_w;
     }
+
     void receive_heartbeat() override;
     void receive_heartbeat_timeout() override;
-
     void inform_spineconnection_usecase_update(SpineConnection *conn) override;
 
-    // IDs as they are used in EV Limitation Of Power Consumption V1.0.0 3.2.2.2
+protected:
+    const LoadPowerLimitConfig &config_;
+
+    // IDs computed from config offsets
+    uint8_t id_l_1;   // LoadControl limit ID
+    uint8_t id_m_1;   // Measurement ID
+    uint16_t id_k_1;  // Device config key ID for failsafe power
+    uint16_t id_k_2;  // Device config key ID for failsafe duration
+    uint16_t id_ec_1; // Electrical connection ID
+    uint16_t id_cc_1; // Electrical connection characteristic ID
+    uint16_t id_cc_2; // Electrical connection characteristic ID 2
+    uint16_t id_p_1;  // Electrical connection parameter ID
+
+private:
+    MessageReturn load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
+    MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
+
+    // State handling
+    void update_state();
+    LoadcontrolState state_ = LoadcontrolState::Startup;
+    uint64_t state_change_timeout_task = 0;
+    bool heartbeat_received = false;
+
+    void init_state();
+    void unlimited_controlled_state();
+    void limited_state();
+    void failsafe_state();
+    void unlimited_autonomous_state();
+
+    void update_api() const;
+
+    // LoadControl configuration
+    bool limit_received = false;
+    bool limit_active = false;
+    int current_active_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    static constexpr bool limit_fixed = false;
+    int limit_description_id;
+    int limit_measurement_description_id;
+    time_t limit_endtime = 0;
+    bool limit_expired = false;
+    uint64_t limit_endtime_timer = 0;
+
+    // Device Configuration Data (Failsafe)
+    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    seconds_t failsafe_duration = 2_h;
+    uint64_t failsafe_expiry_timer = 0;
+    time_t failsafe_expiry_endtime = 0;
+    bool failsafe_expired = false;
+    uint8_t failsafe_power_key_id;
+    uint8_t failsafe_duration_key_id;
+
+    // Electrical Connection Data (Constraints)
+    int power_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+    int power_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
+};
+#endif
+
+#ifdef EEBUS_ENABLE_LPC_USECASE
+
+/**
+ * The LpcUsecase as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
+ * This is a thin wrapper around LoadPowerLimitUsecase with LPC-specific configuration.
+ * Actor: Controllable System
+ * Features: LoadControl, DeviceConfiguration, DeviceDiagnosis (via heartbeat), ElectricalConnection
+ */
+class LpcUsecase final : public LoadPowerLimitUsecase
+{
+public:
+    LpcUsecase();
+
+    /**
+     * Update the limit the system is supposed to be consuming.
+     * Wrapper for base class update_limit() with LPC-specific name.
+     */
+    bool update_lpc(bool limit, int current_limit_w, seconds_t duration)
+    {
+        return update_limit(limit, current_limit_w, duration);
+    }
+
+    /**
+     * Update the constraints. Wrapper for base class.
+     */
+    void update_constraints(int power_consumption_max = 0, int power_consumption_contract_max = 0)
+    {
+        LoadPowerLimitUsecase::update_constraints(power_consumption_max, power_consumption_contract_max);
+    }
+
+    // Static IDs for external reference (e.g., MpcUsecase)
     static constexpr uint8_t id_l_1 = EVSEEntity::lpcLoadcontrolLimitIdOffset + 1;
     static constexpr uint8_t id_m_1 = EVSEEntity::lpcMeasurementIdOffset + 1;
     static constexpr uint16_t id_k_1 = EVSEEntity::lpcDeviceConfigurationKeyIdOffset + 1;
@@ -908,215 +1011,40 @@ public:
     static constexpr uint16_t id_p_1 = EVSEEntity::lpcElectricalConnectionParameterIdOffset + 1;
 
 private:
-    /**
-     * The Load Control feature as required for Scenario 1 - Control active power consumption.
-     * It is the primary feature of the entity and major part of the LPC Usecases.
-     * Takes in a limit, if its enabled and a duration and attempts to apply it.
-     * Requires a binding to write.
-     * Supports subscriptions.
-     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.1 and 3.4.1
-     */
-    MessageReturn load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
-    /**
-     * The Device Configuration feature as required for Scenario 2 - Failsafe Values.
-     * Reports the current failsafe values and allows them to be updated.
-     * A failsafe value is the maximum power that can be consumed if no contact to the energy guard can be established and always comes with a duration for which the failsafe will be active.
-     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.2 and 3.4.2
-     */
-    MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
-    /**
-     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
-     * Implements a heartbeat mechanism to ensure that the energy guard is still online and reachable, if not it enters the failsafe state.
-     * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
-     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.3 and 3.4.3
-     */
-    // Handled in the common heartbeat handler
-
-    /**
-     * The Electrical Connection feature as required for Scenario 4 - Constraints.
-     * Reports the current constraints of the system and is read only.
-     * Constraints are the maximum power the system is capable of consuming.
-     * As described in EEBUS UC TS - EV Limitation Of Power Consumption V1.0.0. 2.6.4 and 3.4.4
-     */
-    static MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
-
-    // State handling
-    // State machine as described in LPC UC TS v1.0.0 2.3
-    void update_state();
-    LPCState lpc_state = LPCState::Startup;
-    uint64_t state_change_timeout_task = 0;
-    bool heartbeat_received = false;
-
-    /**
-     * Switch to or update the Init state. As described in LPC UC TS v1.0.0 2.3.2
-     * Triggered on startup.
-     * Disables the active consumption limit and applies the failsafe limit.
-     */
-    void init_state();
-
-    /**
-     * Switch to or update the Unlimited/controlled state. As described in LPC UC TS v1.0.0 2.3.2
-     * Entered when a heartbeat and limit is received but no limit is enabled.
-     * Disables the active consumption limit.
-     */
-    void unlimited_controlled_state();
-
-    /**
-     * Switch or update the Limited state. As described in LPC UC TS v1.0.0 2.3.2
-     * Entered when a heartbeat, limit and activation of the limit is received.
-     * Enables the active consumption limit and applies the value to the charging system.
-     */
-    void limited_state();
-
-    /**
-     * Switch or update the Failsafe state. As described in LPC UC TS v1.0.0 2.3.2
-     * Entered when no heartbeat is received.
-     * Applies the failsafe limit.
-     */
-    void failsafe_state();
-    bool failsafe_expired = false;
-
-    /**
-     * Switch or update the Unlimited/autonomous state. As described in LPC UC TS v1.0.0 2.3.2
-     * Entered when no heartbeat and write is received after startup or after expiry of the failsafe duration.
-     * Disables the active consumption limit.
-     */
-    void unlimited_autonomous_state();
-
-    void update_api() const;
-
-    // LoadControl configuration as required for scenario 1 - Control Active Power
-    // If a limit was received since startup
-    bool limit_received = false;
-    // While the limit is active, this shall be set to true
-    bool limit_active = false;
-    // The current limit in effect
-    int current_active_consumption_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    // The configured limit as received from the energy manager
-    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    // If the limit is changeable, this shall be set to false
-    constexpr static bool limit_fixed = false;
-    // The description ID of the limit so its consistent across description and limit list data
-    int limit_description_id = id_l_1;
-    int limit_measurement_description_id = id_m_1;
-    // Time when the limit shall end
-    time_t limit_endtime = 0;
-    // If the limit is expired
-    bool limit_expired = false;
-    // If in limited mode, this shall
-    uint64_t limit_endtime_timer = 0;
-
-    // Device Configuration Data as required for Scenario 2 - Failsafe values
-    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    seconds_t failsafe_duration = 2_h; // Default to 2 hours
-    uint64_t failsafe_expiry_timer = 0;
-    time_t failsafe_expiry_endtime = 0;
-    uint8_t failsafe_consumption_key_id = id_k_1;
-    uint8_t failsafe_duration_key_id = id_k_2;
-
-    // Electrical Connection Data as required for Scenario 4 - Constraints
-    int power_consumption_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a consumer
-    int power_consumption_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
+    static const LoadPowerLimitConfig lpc_config;
 };
 #endif
 
 #ifdef EEBUS_ENABLE_LPP_USECASE
 /**
  * The LppUsecase as defined in EEBus UC TS - EV Limitation Of Power Production V1.0.0.
- * This should have the same entity address as other entities with the Controllable System actor <br>
- * Actor: Controllable System <br>
- * Features (Functions): LoadControl (loadControlLimitDescriptionListData, loadControlLimitListData), DeviceConfiguration (deviceConfigurationKeyValueDescriptionListData, deviceConfigurationKeyValueListData), DeviceDiagnosis (deviceDiagnosisHeartbeatData), ElectricalConnection (electricalConnectionCharacteristicListData)   <br>
-*/
-
-class LppUsecase final : public EebusUsecase
+ * This is a thin wrapper around LoadPowerLimitUsecase with LPP-specific configuration.
+ * Actor: Controllable System
+ * Features: LoadControl, DeviceConfiguration, DeviceDiagnosis (via heartbeat), ElectricalConnection
+ */
+class LppUsecase final : public LoadPowerLimitUsecase
 {
 public:
     LppUsecase();
 
     /**
-    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Production V1.0.0. 3.1.2.
-    * @return
-    */
-    UseCaseInformationDataType get_usecase_information() override;
-
-    /**
-     * \brief Handles a message for a usecase.
-     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
-     * @param data The actual Function call and data of the message.
-     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
-     * @return The MessageReturn object which contains information about the returned message.
-     */
-    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
-
-    [[nodiscard]] Usecases get_usecase_type() const override
-    {
-        return Usecases::LPP;
-    }
-
-    /**
-     * The entity information as defined in EEBus UC TS - EV Limitation Of Power Production V1.0.0. 3.2.2.
-     * @return The entity information.
-     */
-    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    /**
-     * Returns the supported features. As defined in EEBus UC TS - EV Limitation Of Power Production V1.0.0. 3.2.2.2.1.
-     * @return a list of the supported features.
-     */
-    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
-
-    /**
      * Update the limit the system is supposed to be producing.
-     * @param limit If the limit is active or not.
-     * @param current_limit_w The limit in W.
-     * @param duration For how long the limit shall be active from now
-     * @return true if the processing of the limit was successful.
+     * Wrapper for base class update_limit() with LPP-specific name.
      */
-    bool update_lpp(bool limit, int current_limit_w, seconds_t duration);
+    bool update_lpp(bool limit, int current_limit_w, seconds_t duration)
+    {
+        return update_limit(limit, current_limit_w, duration);
+    }
 
     /**
-     * Update the maximum power the system is currently capable of producing. This will inform all subscribers of the new power limit. Implemented according to LPP UC TS v1.0.0 3.2.2.2.3.1
-     * @param power_limit_w Power limit in watts. Below -1 the value is ignored
-     * @param duration Duration in seconds. Below or equal to -1 the value is ignored.
+     * Update the constraints. Wrapper for base class.
      */
-    void update_failsafe(int power_limit_w = -1, seconds_t duration = -1_s);
-
-    /**
-     * Update the constraints of the system. This will inform all subscribers of the new constraints. Implemented according to LPP UC TS v1.0.0 3.2.2.2.5.1
-     * @param power_production_max Maximum power production the system is capable of producing. This is the physical limit of the device and should only be set if the device is not an energy manager. Set to 0 to omit it.
-     * @param power_production_contract_max Maximum power production the contract allows. This should only be set if the device is an energy manager.
-     */
-    void update_constraints(int power_production_max = 0, int power_production_contract_max = 0);
-
-    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    void update_constraints(int power_production_max = 0, int power_production_contract_max = 0)
     {
-        // The feature "DeviceDiagnosis" is handled by a separate heartbeat handler as it can be shared accross multiple usecases
-        return {FeatureTypeEnumType::LoadControl, FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::ElectricalConnection};
+        LoadPowerLimitUsecase::update_constraints(power_production_max, power_production_contract_max);
     }
 
-    void get_loadcontrol_limit_description(LoadControlLimitDescriptionListDataType *data) const;
-    void get_loadcontrol_limit_list(LoadControlLimitListDataType *data) const;
-
-    void get_device_configuration_value(DeviceConfigurationKeyValueListDataType *data) const;
-    void get_device_configuration_description(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
-
-    void get_electrical_connection_characteristic(ElectricalConnectionCharacteristicListDataType *data) const;
-
-    [[nodiscard]] bool limit_is_active() const
-    {
-        return limit_active;
-    }
-    [[nodiscard]] int get_current_limit_w() const
-    {
-        return current_active_production_limit_w;
-    }
-    void receive_heartbeat() override;
-    void receive_heartbeat_timeout() override;
-
-    void inform_spineconnection_usecase_update(SpineConnection *conn) override;
-
-    // IDs as they are used in EV Limitation Of Power Production V1.0.0 3.2.2.2
+    // Static IDs for external reference (e.g., MpcUsecase)
     static constexpr uint8_t id_l_1 = EVSEEntity::lppLoadcontrolLimitIdOffset + 1;
     static constexpr uint8_t id_m_1 = EVSEEntity::lppMeasurementIdOffset + 1;
     static constexpr uint16_t id_k_1 = EVSEEntity::lppDeviceConfigurationKeyIdOffset + 1;
@@ -1127,117 +1055,7 @@ public:
     static constexpr uint16_t id_p_1 = EVSEEntity::lppElectricalConnectionParameterIdOffset + 1;
 
 private:
-    /**
-     * The Load Control feature as required for Scenario 1 - Control active power production.
-     * It is the primary feature of the entity and major part of the LPP Usecases.
-     * Takes in a limit, if its enabled and a duration and attempts to apply it.
-     * Requires a binding to write.
-     * Supports subscriptions.
-     * As described in EEBUS UC TS - EV Limitation Of Power Production V1.0.0. 2.6.1 and 3.4.1
-     */
-    MessageReturn load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
-    /**
-     * The Device Configuration feature as required for Scenario 2 - Failsafe Values.
-     * Reports the current failsafe values and allows them to be updated.
-     * A failsafe value is the maximum power that can be produced if no contact to the energy guard can be established and always comes with a duration for which the failsafe will be active.
-     * As described in EEBUS UC TS - EV Limitation Of Power Production V1.0.0. 2.6.2 and 3.4.2
-     */
-    MessageReturn deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
-
-    /**
-     * The Device Diagnosis feature as required for Scenario 3 - Heartbeat.
-     * Implements a heartbeat mechanism to ensure that the energy guard is still online and reachable, if not it enters the failsafe state.
-     * If no heartbeat is received for a certain time, the system will switch to failsafe mode.
-     * As described in EEBUS UC TS - EV Limitation Of Power Production V1.0.0. 2.6.3 and 3.4.3
-     */
-    // Handled in the common heartbeat handler
-
-    /**
-     * The Electrical Connection feature as required for Scenario 4 - Constraints.
-     * Reports the current constraints of the system and is read only.
-     * Constraints are the maximum power the system is capable of producing.
-     * As described in EEBUS UC TS - EV Limitation Of Power Production V1.0.0. 2.6.4 and 3.4.4
-     */
-    MessageReturn electricalConnection_feature(const HeaderType &header, const SpineDataTypeHandler *data, JsonObject response);
-
-    // State handling
-    // State machine as described in LPP UC TS v1.0.0 2.3
-    void update_state();
-    LPPState lpp_state = LPPState::Startup;
-    uint64_t state_change_timeout_task = 0;
-    bool heartbeat_received = false;
-
-    /**
-     * Switch to or update the Init state. As described in LPP UC TS v1.0.0 2.3.2
-     * Triggered on startup.
-     * Disables the active production limit and applies the failsafe limit.
-     */
-    void init_state();
-
-    /**
-     * Switch to or update the Unlimited/controlled state. As described in LPP UC TS v1.0.0 2.3.2
-     * Entered when a heartbeat and limit is received but no limit is enabled.
-     * Disables the active production limit.
-     */
-    void unlimited_controlled_state();
-
-    /**
-     * Switch or update the Limited state. As described in LPP UC TS v1.0.0 2.3.2
-     * Entered when a heartbeat, limit and activation of the limit is received.
-     * Enables the active production limit and applies the value to the charging system.
-     */
-    void limited_state();
-
-    /**
-     * Switch or update the Failsafe state. As described in LPP UC TS v1.0.0 2.3.2
-     * Entered when no heartbeat is received.
-     * Applies the failsafe limit.
-     */
-    void failsafe_state();
-    bool failsafe_expired = false;
-
-    /**
-     * Switch or update the Unlimited/autonomous state. As described in LPP UC TS v1.0.0 2.3.2
-     * Entered when no heartbeat and write is received after startup or after expiry of the failsafe duration.
-     * Disables the active production limit.
-     */
-    void unlimited_autonomous_state();
-
-    void update_api() const;
-
-    // LoadControl configuration as required for scenario 1 - Control Active Power
-    // If a limit was received since startup
-    bool limit_received = false;
-    // While the limit is active, this shall be set to true
-    bool limit_active = false;
-    // The current limit in effect
-    int current_active_production_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    // The configured limit as received from the energy manager
-    int configured_limit = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    // If the limit is changeable, this shall be set to false
-    constexpr static bool limit_fixed = false;
-    // The description ID of the limit so its consistent across description and limit list data
-    int limit_description_id = id_l_1;
-    int limit_measurement_description_id = id_m_1;
-    // Time when the limit shall end
-    time_t limit_endtime = 0;
-    // If the limit is expired
-    bool limit_expired = false;
-    // If in limited mode, this shall
-    uint64_t limit_endtime_timer = 0;
-
-    // Device Configuration Data as required for Scenario 2 - Failsafe values
-    int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;
-    seconds_t failsafe_duration = 2_h; // Default to 2 hours
-    uint64_t failsafe_expiry_timer = 0;
-    time_t failsafe_expiry_endtime = 0;
-    uint8_t failsafe_production_key_id = id_k_1;
-    uint8_t failsafe_duration_key_id = id_k_2;
-
-    // Electrical Connection Data as required for Scenario 4 - Constraints
-    int power_production_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION;          // This device shall only be used if the device is a producer
-    int power_production_contract_max_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; // This value shall only be used if the device is an enery manager
+    static const LoadPowerLimitConfig lpp_config;
 };
 #endif
 
@@ -1627,11 +1445,11 @@ public:
 #ifdef EEBUS_ENABLE_LPC_USECASE
     static constexpr uint8_t id_ec_1 = LpcUsecase::id_ec_1; // Linked to LPC usecase electrical connection description
     static constexpr uint8_t id_m_1 = LpcUsecase::id_m_1;   // Linked to LPC usecase measurement description
-    static constexpr uint8_t id_p_1 = LpcUsecase::id_p_1; // Linked to LPC usecase electrical connection parameter description
+    static constexpr uint8_t id_p_1 = LpcUsecase::id_p_1;   // Linked to LPC usecase electrical connection parameter description
 #elifdef EEBUS_ENABLE_LPP_USECASE
     static constexpr uint8_t id_ec_1 = LppUsecase::id_ec_1; // Linked to LPC usecase electrical connection description
     static constexpr uint8_t id_m_1 = LppUsecase::id_m_1;   // Linked to LPC usecase measurement description
-    static constexpr uint8_t id_p_1 = LppUsecase::id_p_1; // Linked to LPC usecase electrical connection parameter description
+    static constexpr uint8_t id_p_1 = LppUsecase::id_p_1;   // Linked to LPC usecase electrical connection parameter description
 #endif
 
     static constexpr uint8_t id_m_2_1 = EVSEEntity::mpcMeasurementIdOffset + 2;
