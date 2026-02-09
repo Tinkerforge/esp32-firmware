@@ -166,25 +166,18 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
     }
 */
     get_tile_config(tile_index: number, tile_items: [string, string][]) {
-        return <FormRow>
-            <div class="row g-0">
-                <div class="col-md-12">
-                    <div class="input-group">
-                        <span class="input-group-text">{__("front_panel.content.setting")}</span>
-                        <InputSelect
-                            className="front-panel-input-group-prepend"
-                            items={tile_items}
-                            value={this.state.tiles[tile_index][1]}
-                            onValue={(v) => {
-                                let tiles = this.state.tiles;
-                                tiles[tile_index][1] = parseInt(v);
-                                this.setState({tiles: tiles})
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-        </FormRow>
+        return <div class="input-group mt-3">
+                <span class="input-group-text">{__("front_panel.content.setting")}</span>
+                <InputSelect
+                    items={tile_items}
+                    value={this.state.tiles[tile_index][1]}
+                    onValue={(v) => {
+                        let tiles = this.state.tiles;
+                        tiles[tile_index][1] = parseInt(v);
+                        this.setState({tiles: tiles})
+                    }}
+                />
+            </div>;
     }
 
     get_default_value(tile_type: TileType) {
@@ -248,17 +241,17 @@ export class FrontPanel extends ConfigComponent<"front_panel/config", {}> {
                                                 this.setState({tiles: tiles})}
                                             }
                                         />
-                                    </FormRow>
                                     {state.tiles[tile_index][0] === TileType.Charger        && (this.get_tile_config(tile_index, FrontPanel.options_charger()))}
                                     {state.tiles[tile_index][0] === TileType.Meter          && (this.get_tile_config(tile_index, FrontPanel.options_meter()))}
                                     {state.tiles[tile_index][0] === TileType.DayAheadPrices && (this.get_tile_config(tile_index, FrontPanel.options_day_ahead_prices()))}
                                     {state.tiles[tile_index][0] === TileType.SolarForecast  && (this.get_tile_config(tile_index, FrontPanel.options_solar_forecast()))}
+                                    </FormRow>
                                 </div>
                             })}
                         </div>
                     </Collapse>
                 </ConfigForm>
-        	</SubPage>
+            </SubPage>
         );
     }
 }

@@ -41,7 +41,7 @@ function Charger (props: {i: number,
     return <>
         <Card>
             <Card.Header as="h5">{`${props.i} - ${props.state.n} (${props.state.u})`}</Card.Header>
-            <Card.Body>
+            <Card.Body className="pb-0">
                 <FormRow label="State">
                     <CMDCardOutFloat value={props.state.s} digits={0} scale={0} unit=""/>
                 </FormRow>
@@ -115,7 +115,7 @@ function Charger (props: {i: number,
                         </div>
                     </div>
                 </FormRow>
-           </Card.Body>
+            </Card.Body>
 
             <Card.Footer>
                 Last update {util.format_timespan_ms(Math.max(0, uptime - props.state.lu))}
@@ -171,50 +171,50 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
                 <InputText value={(ll_state.last_hyst_reset == 0 ? 0 : util.format_timespan_ms(uptime - ll_state.last_hyst_reset)) + " / " + util.format_timespan(ll_cfg.global_hysteresis)}/>
             </CMDFormRow>
 
-            <CMDFormRow>
-                <div class="row d-none d-lg-flex gx-2 mb-n1">
-                    <div class="col mb-1">
+            <CMDFormRow class="d-none d-lg-flex">
+                <div class="row gx-2 gy-1">
+                    <div class="col">
                         <p class="form-label text-center mb-0">PV</p>
                     </div>
-                    <div class="col mb-1">
+                    <div class="col">
                         <p class="form-label text-center mb-0">L1</p>
                     </div>
-                    <div class="col mb-1">
+                    <div class="col">
                         <p class="form-label text-center mb-0">L2</p>
                     </div>
-                    <div class="col mb-1">
+                    <div class="col">
                         <p class="form-label text-center mb-0">L3</p>
                     </div>
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Raw">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={state.l_raw[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Min">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={state.l_min[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Spread">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={state.l_spread[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Max PV">
-                <div class="row gx-2 mb-n1">
-                    <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    <div class="col-12 col-lg-3">
                         <CMDOutFloat value={state.l_max_pv} digits={3} scale={3} unit="A"/>
                     </div>
                 </div>
@@ -223,24 +223,24 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
             <FormSeparator heading="Window" />
 
             <CMDFormRow label="Max">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={ll_state.wnd_max[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Allocated">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={state.alloc[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
             </CMDFormRow>
 
             <CMDFormRow label="Min">
-                <div class="row gx-2 mb-n1">
-                    {util.range(4).map(i => <div class="col-12 col-lg-3 mb-1">
+                <div class="row gx-2 gy-1">
+                    {util.range(4).map(i => <div class="col-12 col-lg-3">
                         <CMDOutFloat value={ll_state.wnd_min[i]} digits={3} scale={3} unit="A"/>
                     </div>)}
                 </div>
@@ -251,42 +251,42 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
                     <FormSeparator heading="Power Manager" />
 
                     <CMDFormRow label="Meter">
-                        <div class="row gx-2 mb-n1">
-                            <div class="col-12 col-lg-3 mb-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.power_at_meter} digits={3} scale={3} unit="kW"/>
                             </div>
-                            {util.range(3).map(i => <div class="col-12 col-lg-3 mb-1">
+                            {util.range(3).map(i => <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.i_meter[i]} digits={3} scale={3} unit="A"/>
                             </div>)}
                         </div>
                     </CMDFormRow>
 
                     <CMDFormRow label="I_pp_max">
-                        <div class="row gx-2 mb-n1">
-                            <div class="col-12 col-lg-3 mb-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-lg-3">
                             </div>
-                            {util.range(3).map(i => <div class="col-12 col-lg-3 mb-1">
+                            {util.range(3).map(i => <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.i_pp_max[i]} digits={3} scale={3} unit="A"/>
                             </div>)}
                         </div>
                     </CMDFormRow>
 
                     <CMDFormRow label="I_pp_mavg">
-                        <div class="row gx-2 mb-n1">
-                            <div class="col-12 col-lg-3 mb-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-lg-3">
                             </div>
-                            {util.range(3).map(i => <div class="col-12 col-lg-3 mb-1">
+                            {util.range(3).map(i => <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.i_pp_mavg[i]} digits={3} scale={3} unit="A"/>
                             </div>)}
                         </div>
                     </CMDFormRow>
 
                     <CMDFormRow label="P_avl / I_pp">
-                        <div class="row gx-2 mb-n1">
-                            <div class="col-12 col-lg-3 mb-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.power_available} digits={3} scale={3} unit="kW"/>
                             </div>
-                            {util.range(3).map(i => <div class="col-12 col-lg-3 mb-1">
+                            {util.range(3).map(i => <div class="col-12 col-lg-3">
                                 <CMDOutFloat value={pm_ll_state.i_pp[i]} digits={3} scale={3} unit="A"/>
                             </div>)}
                         </div>
@@ -296,8 +296,8 @@ export function ChargeManagerDebug(props: {dynamicLoadConfig: API.getType['power
 
             <FormSeparator heading="Chargers" />
 
-            <div class="row">
-                {util.range(state.chargers.length).map(i => <div class="mb-3 col-12 col-sm-6">
+            <div class="row g-3 mb-3">
+                {util.range(state.chargers.length).map(i => <div class="col-12 col-sm-6">
                     <Charger i={i} state={state.chargers[i]} ll_state={ll_state.chargers[i]}/>
                 </div>)}
             </div>

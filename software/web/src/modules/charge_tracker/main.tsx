@@ -592,7 +592,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const sendEmailDropdownItems = remoteAccessConfig.users.map((user) => {
             return <Dropdown.Item onClick={() => onDropdownClick(user.uuid)}>{user.email}</Dropdown.Item>
         });
-        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <div class="col mb-2"><Dropdown>
+        sendEmailDropdown = remoteAccessConfig.users.length > 0 ? <div class="col"><Dropdown>
             <Dropdown.Toggle className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready}>
                 <span class="me-2">
                     {__("charge_tracker.content.charge_log_email_send_to_user")}
@@ -600,7 +600,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     <Mail />
                 <Spinner animation="border" size="sm" className="ms-2" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu align="end">
                 {sendEmailDropdownItems}
             </Dropdown.Menu>
         </Dropdown></div>
@@ -629,8 +629,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </FormRow>
 
                 <FormRow label={__("charge_tracker.content.date_filter")} label_muted={__("charge_tracker.content.date_filter_muted")}>
-                    <div class="row gx-0 mb-n1">
-                        <div class="col-md-6 mb-1">
+                    <div class="row gx-0 gy-1">
+                        <div class="col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">{__("charge_tracker.content.from")}</span>
                                 <InputDate
@@ -704,8 +704,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 </Collapse>
 
                 <FormRow>
-                    <div class="row gx-2 mb-n2">
-                        <div class="col mb-2">
+                    <div class="row g-2">
+                        <div class="col">
                         <Button variant="primary" className="text-nowrap w-100" disabled={state.generator_state !== GenerationState.Ready} onClick={async () => {
                             this.setState({show_spinner: true});
 

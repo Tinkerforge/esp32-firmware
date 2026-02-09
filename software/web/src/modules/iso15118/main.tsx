@@ -239,12 +239,12 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     {state_common.seen_macs.length > 0 &&
                         <FormRow label="Seen MACs">
-                            <div class="row mx-n1">
+                            <div class="row gx-2 gy-1">
                                 {state_common.seen_macs
                                     .slice()
                                     .sort((a, b) => b.last_seen - a.last_seen)
                                     .map((entry, i) =>
-                                        <div key={i} class="mb-1 col-12 px-1">
+                                        <div key={i} class="col-12">
                                             <InputText value={
                                                 array8_to_hexstring(entry.mac, ':') + " — " +
                                                 util.timestamp_sec_to_date(entry.last_seen, "Unknown")
@@ -309,10 +309,12 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                             </div>
                         </FormRow>
                         <FormRow>
-                            <InputText value={state_slac.attenuation_profile.slice(0,  16).toString()}/>
-                            <InputText value={state_slac.attenuation_profile.slice(16, 32).toString()}/>
-                            <InputText value={state_slac.attenuation_profile.slice(32, 48).toString()}/>
-                            <InputText value={state_slac.attenuation_profile.slice(48, 58).toString()}/>
+                            <div class="row gx-2 gy-1">
+                                <div class="col-12"><InputText value={state_slac.attenuation_profile.slice(0,  16).toString()}/></div>
+                                <div class="col-12"><InputText value={state_slac.attenuation_profile.slice(16, 32).toString()}/></div>
+                                <div class="col-12"><InputText value={state_slac.attenuation_profile.slice(32, 48).toString()}/></div>
+                                <div class="col-12"><InputText value={state_slac.attenuation_profile.slice(48, 58).toString()}/></div>
+                            </div>
                         </FormRow>
                         <FormRow label="NMK">
                             <InputText value={array8_to_hexstring(state_slac.nmk, '')}/>

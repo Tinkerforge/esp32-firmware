@@ -101,23 +101,23 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     </FormRow>
 
                     <FormRow label={__("evse.content.contactor_state")} label_muted={__("evse.content.contactor_names")(is_evse_v3)}>
-                        <div class="row mx-n1">
+                        <div class="row g-2">
                             <IndicatorGroup
-                                class="mb-1 col px-1"
+                                class="col"
                                 value={(state.contactor_state & 1) == 1 ? 1 : 0}
                                 items={[
                                     ["secondary", __("evse.content.contactor_not_live")(is_evse_v3)],
                                     ["primary", __("evse.content.contactor_live")(is_evse_v3)]
                                 ]}/>
                             <IndicatorGroup
-                                class="mb-1 col px-1"
+                                class="col"
                                 value={(state.contactor_state & 2) == 2 ? 1 : 0}
                                 items={[
                                     ["secondary", __("evse.content.contactor_not_live")(is_evse_v3)],
                                     ["primary", __("evse.content.contactor_live")(is_evse_v3)]
                                 ]}/>
                             <IndicatorGroup
-                                class="mb-1 col-auto px-1"
+                                class="col-auto"
                                 value={state.contactor_error > (is_evse_v3 ? 1 : 0) ? 1 : 0}
                                 items={[
                                     ["success", __("evse.content.contactor_ok")],
@@ -128,9 +128,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
                     {!is_evse_v2 ? undefined :
                         <FormRow label={__("evse.content.dc_fault_current_state")} label_muted={__("evse.content.dc_fault_current_state_desc")}>
-                            <div class="row mx-n1">
+                            <div class="row g-2">
                                 <IndicatorGroup
-                                    class="mb-1 col px-1 flex-wrap"
+                                    class="col flex-wrap"
                                     value={state.dc_fault_current_state}
                                     items={[
                                         ["success", __("evse.content.dc_fault_current_ok")],
@@ -143,10 +143,10 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                         ["danger", __("evse.content.dc_fault_current_6_ma_20_ma")],
                                     ] : [])) as any
                                     }/>
-                                <Button
+                                <div class="col-auto"><Button
                                     disabled={state.dc_fault_current_state == 0}
                                     variant="danger"
-                                    className="col-auto mx-1 mb-1"
+                                    className="h-100"
                                     onClick={async () => {
                                         const modal = util.async_modal_ref.current;
                                         if(!await modal.show({
@@ -164,7 +164,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                                     () => __("evse.script.reset_dc_fault_current_failed"));
                                     }}>
                                         {__("evse.content.dc_fault_current_reset")}
-                                    </Button>
+                                    </Button></div>
                             </div>
                         </FormRow>
                     }
@@ -191,7 +191,6 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                     <FormRow label={__("evse.content.uptime")}>
                         <InputText value={util.format_timespan_ms(ll_state.uptime)}/>
                     </FormRow>
-
 
                     <FormSeparator heading={__("evse.content.charging_current")}/>
 
@@ -338,9 +337,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         </FormRow>
 
                         <FormRow label={__("evse.content.adc_values")} label_muted={__("evse.content.adc_names")(is_evse_v2)}>
-                            <div class="row mx-n1">
+                            <div class="row gx-2 gy-1">
                                 {ll_state.adc_values.map((x, i) => (
-                                    <div key={i} class="mb-1 col-6 px-1">
+                                    <div key={i} class="col-6">
                                         <InputText value={x}/>
                                     </div>
                                 ))}
@@ -348,9 +347,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         </FormRow>
 
                         <FormRow label={__("evse.content.voltages")} label_muted={__("evse.content.voltage_names")(is_evse_v2)}>
-                            <div class="row mx-n1">
+                            <div class="row gx-2 gy-1">
                                 {ll_state.voltages.map((x, i) => (
-                                    <div key={i} class="mb-1 col-6 px-1">
+                                    <div key={i} class="col-6">
                                         <InputText value={util.toLocaleFixed(x / 1000.0, 3) + " V"}/>
                                     </div>
                                 ))}
@@ -358,9 +357,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         </FormRow>
 
                         <FormRow label={__("evse.content.resistances")} label_muted={__("evse.content.resistance_names")}>
-                            <div class="row mx-n1">
+                            <div class="row gx-2 gy-1">
                                 {ll_state.resistances.map((x, i) => (
-                                    <div key={i} class="mb-1 col-6 px-1">
+                                    <div key={i} class="col-6">
                                         <InputText value={x + " Ω"}/>
                                     </div>
                                 ))}
@@ -369,9 +368,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
                         {!is_evse_v2 ?
                             (<FormRow label={__("evse.content.gpios")} label_muted={__("evse.content.gpio_names")}>
-                                <div class="row mx-n1">
+                                <div class="row g-2">
                                     {ll_state.gpio.map((x, j) => (
-                                        <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                        <IndicatorGroup vertical key={j} class="col"
                                             value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                             items={[
                                                 ["primary", __("evse.content.gpio_high")],
@@ -382,9 +381,9 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             </FormRow>)
                          : (util.range(ll_state.gpio.length / 4).map(i =>
                                 <FormRow key={i} label={i == 0 ? __("evse.content.gpios") : ""} label_muted={translate_unchecked(`evse.content.evse_v${is_evse_v3 ? 3 : 2}_gpio_names_${i}`)}>
-                                    <div class="row mx-n1">
+                                    <div class="row g-2">
                                         {ll_state.gpio.slice(i*4, i*4+4).map((x, j) => (
-                                            <IndicatorGroup vertical key={j} class="mb-1 col-3 px-1"
+                                            <IndicatorGroup vertical key={j} class="col"
                                                 value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                                 items={[
                                                     ["primary", __("evse.content.gpio_high")],
@@ -441,12 +440,16 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         }
 
                         <FormRow label={__("evse.content.reset_description")} label_muted={__("evse.content.reset_description_muted")}>
-                            <div class="input-group pb-2">
-                                <Button variant="primary" className="flex-fill rounded-end me-2" onClick={() => API.call('evse/reset', {}, () => "")}>{__("evse.content.reset_evse")}</Button>
-                                <Button variant="primary" className="flex-fill rounded-start" onClick={() => API.call('evse/reflash', {}, () => "")}>{__("evse.content.reflash_evse")}</Button>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <Button variant="primary" className="w-100" onClick={() => API.call('evse/reset', {}, () => "")}>{__("evse.content.reset_evse")}</Button>
+                                </div>
+                                <div class="col">
+                                    <Button variant="primary" className="w-100" onClick={() => API.call('evse/reflash', {}, () => "")}>{__("evse.content.reflash_evse")}</Button>
+                                </div>
                             </div>
                             {!is_evse_v2 ? undefined :
-                                <Button variant="primary" className="w-100" onClick={() => API.call('evse/trigger_dc_fault_test', {}, () => "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
+                                <Button variant="primary" className="w-100 mt-2" onClick={() => API.call('evse/trigger_dc_fault_test', {}, () => "")}>{__("evse.content.trigger_dc_fault_test")}</Button>
                             }
                         </FormRow>
 
@@ -463,9 +466,12 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             </FormRow>
 
                             <FormRow label={__("evse.content.user_calibration_description")} label_muted={__("evse.content.user_calibration_description_muted")}>
-                                <div class="input-group pb-2">
-                                    <Button as="a" variant="primary" className="flex-fill rounded-end me-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
-                                    <Button variant="primary" className="flex-fill rounded-start"
+                                <div class="row g-2">
+                                    <div class="col">
+                                        <Button as="a" variant="primary" className="w-100" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
+                                    </div>
+                                    <div class="col">
+                                    <Button variant="primary" className="w-100"
                                         onClick={async () =>  API.save("evse/user_calibration", {
                                                 "user_calibration_active": false,
                                                 "voltage_diff": 0,
@@ -477,8 +483,10 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                         }>
                                         {__("evse.content.user_calibration_reset")}
                                     </Button>
+                                    </div>
                                 </div>
                                 <InputFile
+                                        class="mt-2"
                                         upload={__("evse.content.user_calibration_upload")}
                                         url="/evse/user_calibration_update"
                                         timeout_ms={10 * 1000}
@@ -489,14 +497,14 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             </FormRow>
 
                             <FormRow label={__("evse.content.voltage_calibration")} label_muted={__("evse.content.voltage_calibration_names")}>
-                                <div class="row mx-n1">
-                                    <div class="mb-1 col-4 px-1">
+                                <div class="row g-2">
+                                    <div class="col">
                                         <InputText value={user_calibration.voltage_diff}/>
                                     </div>
-                                    <div class="mb-1 col-4 px-1">
+                                    <div class="col">
                                         <InputText value={user_calibration.voltage_div}/>
                                     </div>
-                                    <div class="mb-1 col-4 px-1">
+                                    <div class="col">
                                         <InputText value={user_calibration.voltage_mul}/>
                                     </div>
                                 </div>
@@ -512,10 +520,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                             </>
                             : undefined
                         }
-
-
                     </CollapsedSection>
-
         </SubPage>
     }
 }

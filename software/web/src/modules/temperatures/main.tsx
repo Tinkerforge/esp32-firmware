@@ -88,8 +88,8 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                         ) : (
                             <>
                                 <FormRow label={__("temperatures.content.today")} label_muted={state.temperatures?.today_date ? new Date(state.temperatures.today_date * 1000).toLocaleDateString() : ""}>
-                                    <div class="row mx-n1">
-                                        <div class="col-md-6 px-1">
+                                    <div class="row gx-2 gy-1">
+                                        <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
                                                 <InputText
@@ -97,7 +97,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                                 />
                                             </div>
                                         </div>
-                                        <div class="col-md-6 px-1">
+                                        <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
                                                 <InputText
@@ -108,8 +108,8 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                     </div>
                                 </FormRow>
                                 <FormRow label={__("temperatures.content.tomorrow")} label_muted={state.temperatures?.tomorrow_date ? new Date(state.temperatures.tomorrow_date * 1000).toLocaleDateString() : ""}>
-                                    <div class="row mx-n1">
-                                        <div class="col-md-6 px-1">
+                                    <div class="row gx-2 gy-1">
+                                        <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.min_temp")}</span>
                                                 <InputText
@@ -117,7 +117,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                                 />
                                             </div>
                                         </div>
-                                        <div class="col-md-6 px-1">
+                                        <div class="col-md-6">
                                             <div class="input-group">
                                                 <span class="input-group-text" style="min-width: 60px;">{__("temperatures.content.max_temp")}</span>
                                                 <InputText

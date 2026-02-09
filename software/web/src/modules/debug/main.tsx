@@ -40,10 +40,10 @@ export function FormRow(props: FormRowProps) { return <VanillaFormRow {...props}
 
 function Row(props:{label?: string, label_muted?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
     return <FormRow label={props.label} label_muted={props.label_muted}>
-        <div class="row">
-            <div class="mb-1 col-12 col-sm-4">{props.l}</div>
-            <div class="mb-1 col-12 col-sm-4">{props.c}</div>
-            <div class="mb-1 col-12 col-sm-4">{props.r}</div>
+        <div class="row gx-2 gy-1">
+            <div class="col-12 col-sm-4">{props.l}</div>
+            <div class="col-12 col-sm-4">{props.c}</div>
+            <div class="col-12 col-sm-4">{props.r}</div>
         </div>
     </FormRow>
 }
@@ -87,11 +87,11 @@ export class Debug extends Component {
                 </FormRow>
 
                 <FormRow label={__("debug.content.main_loop_max")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_slow.loop_max_us} digits={3} scale={3} unit="ms"/>
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="col-12 col-sm-6">
                             <InputText value={state_slow.loop_max_fn_file + ":" + state_slow.loop_max_fn_line}/>
                         </div>
                     </div>
@@ -111,11 +111,11 @@ export class Debug extends Component {
                 </FormRow>
 
                 <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms"/>
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"/>
                         </div>
                     </div>
@@ -207,23 +207,23 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.config_slots")} />
 
                 <FormRow>
-                    <div class="row">
-                    <div class="mb-1 col-12 col-sm-2">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_used")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-2">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_hwm")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-2">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_allocated")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-2">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_first_free")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-2">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_last_used")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-2">
+                        <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_holes")}</p>
                         </div>
                     </div>
@@ -231,23 +231,23 @@ export class Debug extends Component {
 
                 {state_slots.map((slot, idx) => {
                     return <FormRow label={config_type_names[idx]}>
-                        <div class="row">
-                            <div class="mb-1 col-12 col-sm-2">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
-                            <div class="mb-1 col-12 col-sm-2">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[1] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
-                            <div class="mb-1 col-12 col-sm-2">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[2]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
-                            <div class="mb-1 col-12 col-sm-2">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[3] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
-                            <div class="mb-1 col-12 col-sm-2">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[4] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
-                            <div class="mb-1 col-12 col-sm-2">
+                            <div class="col-12 col-sm-2">
                                 <OutputFloat value={slot[4] + 1 - slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
                             </div>
                         </div>
@@ -293,11 +293,11 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.clocks_buses_header")} />
 
                 <FormRow label={__("debug.content.cpu_apb")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_static.cpu_clk} digits={0} scale={6} unit="MHz"/>
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_static.apb_clk} digits={0} scale={6} unit="MHz"/>
                         </div>
                     </div>
@@ -317,50 +317,50 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.memory_speed_header")} />
 
                 <FormRow>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-4">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-4">
+                        <div class="col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-4">
+                        <div class="col-12 col-sm-4">
                             <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
                         </div>
                     </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.ram_benchmark")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-4">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-4">
                             <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-4">
+                        <div class="col-12 col-sm-4">
                             <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-4">
+                        <div class="col-12 col-sm-4">
                             <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
                     </div>
                 </FormRow>
 
                 <FormRow>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-6">
                             <p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="col-12 col-sm-6">
                             <p class="mb-0 form-label text-center">{__("debug.content.flash_text")}</p>
                         </div>
                     </div>
                 </FormRow>
 
                 <FormRow label={__("debug.content.flash_benchmark")}>
-                    <div class="row">
-                        <div class="mb-1 col-12 col-sm-6">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
-                        <div class="mb-1 col-12 col-sm-6">
+                        <div class="col-12 col-sm-6">
                             <OutputFloat value={state_static.text_benchmark} digits={1} scale={0} unit="MiB/s" />
                         </div>
                     </div>
@@ -369,9 +369,13 @@ export class Debug extends Component {
                 <FormSeparator heading={__("debug.content.websocket_header")} />
 
                 <FormRow label={__("debug.content.websocket_connection")} label_muted={__("debug.content.websocket_connection_muted")}>
-                    <div class="input-group pb-2">
-                        <Button variant="primary" className="flex-fill rounded-end me-2" onClick={util.pauseWebSockets}>{__("debug.content.websocket_pause")}</Button>
-                        <Button variant="primary" className="flex-fill rounded-start" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
+                    <div class="row g-2">
+                        <div class="col">
+                            <Button variant="primary" className="w-100" onClick={util.pauseWebSockets}>{__("debug.content.websocket_pause")}</Button>
+                        </div>
+                        <div class="col">
+                            <Button variant="primary" className="w-100" onClick={util.resumeWebSockets}>{__("debug.content.websocket_resume")}</Button>
+                        </div>
                     </div>
                 </FormRow>
             </SubPage>

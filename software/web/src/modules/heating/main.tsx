@@ -347,8 +347,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </div>
                     </FormRow>
                     <FormRow label={__("heating.content.average_price")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                     <InputText
@@ -356,7 +356,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     />
                                 </div>
                             </div>
-                            <div class="col-md-6 px-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                     <InputText
@@ -367,8 +367,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </FormRow>
                     <FormRow label={__("heating.content.solar_forecast")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                     <InputText
@@ -376,7 +376,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     />
                                 </div>
                             </div>
-                            <div class="col-md-6 px-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                     <InputText
@@ -387,8 +387,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready")}>
-                        <div class="row mx-n1">
-                            <div class="col-md-6 px-1">
+                        <div class="row gx-2 gy-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 1"}</span>
                                     <InputText
@@ -396,7 +396,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     />
                                 </div>
                             </div>
-                            <div class="col-md-6 px-1">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="heating-fixed-size input-group-text">{__("heating.content.output") + " 2"}</span>
                                     <InputText
@@ -447,8 +447,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </InputText>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")} help={__("heating.content.sg_ready_output1_help")}>
-                        <div class="row mx-n1">
-                            <div class="col px-1">
+                        <div class="row g-2">
+                            <div class="col">
                                 <InputSelect
                                     items={[
                                         ["0", __("heating.content.output_active_closed")],
@@ -459,7 +459,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 />
                             </div>
                             {state.active_sgr_blocking_type !== undefined ?
-                                <div class="col-auto px-1">
+                                <div class="col-auto">
                                     <Button variant="primary"
                                             onClick={() => API.call("heating/toggle_sgr_blocking", {}, () => __("heating.content.toogle_now_failed")(1))}>
                                         {state.heating_state.sgr_blocking === (state.active_sgr_blocking_type === 0) ? __("heating.content.open_now") : __("heating.content.close_now")}
@@ -468,8 +468,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </div>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")} help={__("heating.content.sg_ready_output2_help")}>
-                        <div class="row mx-n1">
-                            <div class="col px-1">
+                        <div class="row g-2">
+                            <div class="col">
                                 <InputSelect
                                     items={[
                                         ["0", __("heating.content.output_active_closed")],
@@ -480,7 +480,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                 />
                             </div>
                             {state.active_sgr_extended_type !== undefined ?
-                                <div class="col-auto px-1">
+                                <div class="col-auto">
                                     <Button variant="primary"
                                             onClick={() => API.call("heating/toggle_sgr_extended", {}, () => __("heating.content.toogle_now_failed")(2))}>
                                         {state.heating_state.sgr_extended === (state.active_sgr_extended_type === 0) ? __("heating.content.open_now") : __("heating.content.close_now")}
@@ -690,8 +690,8 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
 
                     this.setState({override_until: override_until, override_remaining: override_remaining});
                 }}>
-                    <div className="row mx-n1">
-                        <div className="col px-1">
+                    <div class="row gx-2 gy-1">
+                        <div class="col">
                             {this.state.override_until != 0 ?
                                 <InputNumber
                                     unit={__("heating.content.minutes")}
@@ -707,7 +707,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                                     max={60}
                                 />}
                         </div>
-                        <div className="col-auto px-1">
+                        <div className="col-auto">
                             <Button
                                 disabled={!this.state.sgr_blocking && this.state.override_until == 0}
                                 variant={this.state.override_until != 0 ? "warning" : "primary"}
@@ -722,8 +722,8 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                 </form>
             </FormRow>
             <FormRow label={__("heating.content.sg_ready")} label_muted={__("heating.content.sg_ready_muted")}>
-                <div class="row mx-n1">
-                    <div class="col-md-6 px-1">
+                <div class="row gx-2 gy-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span>
                             <InputText
@@ -731,7 +731,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                             />
                         </div>
                     </div>
-                    <div class="col-md-6 px-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span>
                             <InputText

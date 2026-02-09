@@ -2386,7 +2386,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     if (has_import || has_export) {
                         rows.push(
                             <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
-                                <div class="row">
+                                <div class="row gx-2 gy-1">
                                     <div class="col-md-6">
                                         {has_import ?
                                             <OutputFloat value={energy_total.import[meter_slot][timestamp_slot]} digits={2} scale={0} unit="kWh"/>
@@ -2412,7 +2412,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (util.hasValue(energy_total)) {
                     rows.push(
                         <FormRow label={charger.name}>
-                            <div class="row">
+                            <div class="row gx-2 gy-1">
                                 <div class="col-md-6">
                                     <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
                                 </div>
@@ -2440,7 +2440,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     if (has_import || has_export) {
                         rows.push(
                             <FormRow label={`${get_meter_name(this.state.meter_configs, meter_slot)} (${__("em_energy_analysis.content.import")} / ${__("em_energy_analysis.content.export")})`}>
-                                <div class="row">
+                                <div class="row gx-2 gy-1">
                                     <div class="col-md-6">
                                         {has_import ?
                                             <OutputFloat value={energy_total.import[meter_slot]} digits={2} scale={0} unit="kWh"/>
@@ -2466,7 +2466,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 if (util.hasValue(energy_total)) {
                     rows.push(
                         <FormRow label={charger.name}>
-                            <div class="row">
+                            <div class="row gx-2 gy-1">
                                 <div class="col-md-6">
                                     <OutputFloat value={energy_total} digits={2} scale={0} unit="kWh"/>
                                 </div>

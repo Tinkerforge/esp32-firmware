@@ -322,8 +322,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             <InputText value={get_current_price_string()}/>
                         </FormRow>
                         <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
-                            <div class="row mx-n1">
-                                <div class="col-md-6 px-1">
+                            <div class="row gx-2 gy-1">
+                                <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="heating-fixed-size input-group-text">{__("today")}</span>
                                         <InputText
@@ -331,7 +331,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                         />
                                     </div>
                                 </div>
-                                <div class="col-md-6 px-1">
+                                <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                                         <InputText
@@ -441,8 +441,8 @@ export class DayAheadPricesStatus extends Component
                 <InputText value={get_current_price_string()}/>
             </FormRow>
             <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((config.vat != 0) || (config.grid_costs_and_taxes) != 0 || (config.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
-                <div class="row mx-n1">
-                    <div class="col-md-6 px-1">
+                <div class="row gx-2 gy-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("today")}</span>
                             <InputText
@@ -450,7 +450,7 @@ export class DayAheadPricesStatus extends Component
                             />
                         </div>
                     </div>
-                    <div class="col-md-6 px-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
                             <InputText

@@ -27,7 +27,7 @@ import { Progress } from "./progress";
 import { __ } from "../../ts/translation";
 import { register_id_context_component_type } from "./form_row";
 
-interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
+interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "id" | "type" | "onInput" | "accept"> {
     idContext?: Context<string>
     onUploadStart?: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,
@@ -70,7 +70,7 @@ export function InputFile(props: InputFileProps) {
     }
 
     return (<>
-        <div class="input-group" hidden={uploading || util.hasValue(props.progress_override)}>
+        <div class={"input-group " + (props.class ? props.class : "")} hidden={uploading || util.hasValue(props.progress_override)}>
             <input type="file" class="form-control" accept={props.accept}
                 onChange={(ev) => setFile((ev.target as HTMLInputElement).files[0])}
                 id={id}/>

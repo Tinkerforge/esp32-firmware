@@ -410,8 +410,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             />
                         </FormRow>
                         <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
-                            <div class="row mx-n1">
-                                <div class="col-md-6 px-1">
+                            <div class="row gx-2 gy-1">
+                                <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span>
                                         <InputText
@@ -419,7 +419,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                         />
                                     </div>
                                 </div>
-                                <div class="col-md-6 px-1">
+                                <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span>
                                         <InputText
@@ -543,8 +543,8 @@ export class SolarForecastStatus extends Component
                 />
             </FormRow>
             <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
-                <div class="row mx-n1">
-                    <div class="col-md-6 px-1">
+                <div class="row gx-2 gy-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span>
                             <InputText
@@ -552,7 +552,7 @@ export class SolarForecastStatus extends Component
                             />
                         </div>
                     </div>
-                    <div class="col-md-6 px-1">
+                    <div class="col-md-6">
                         <div class="input-group">
                             <span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span>
                             <InputText

@@ -844,13 +844,17 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                         onValue={v => this.setState({mtu: v})} />
                         </FormRow>
                         <FormRow label={__("remote_access.content.ping")}>
-                            <div class="input-group">
-                                <Button className="flex-fill me-2 rounded-end" onClick={() => {
-                                    API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"));
-                                }}>{__("remote_access.content.start_ping")}</Button>
-                                <Button className="flex-fill rounded-start" onClick={() => {
-                                    API.call("remote_access/stop_ping", {}, () => __("remote_access.content.stop_ping_failed"));
-                                }}>{__("remote_access.content.stop_ping")}</Button>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <Button className="w-100" onClick={() => {
+                                        API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"));
+                                    }}>{__("remote_access.content.start_ping")}</Button>
+                                </div>
+                                <div class="col">
+                                    <Button className="w-100" onClick={() => {
+                                        API.call("remote_access/stop_ping", {}, () => __("remote_access.content.stop_ping_failed"));
+                                    }}>{__("remote_access.content.stop_ping")}</Button>
+                                </div>
                             </div>
                         </FormRow>
                         <FormRow label={__("remote_access.content.packets_sent")}>

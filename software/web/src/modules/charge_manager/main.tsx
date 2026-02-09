@@ -543,11 +543,11 @@ function CMStatusCharger(props: {
     let mode = props.charge_mode
     let mode_found = supported_charge_modes.indexOf(mode) >= 0;
 
-    return  <div class={"card h-100" + (props.charger_index + 1 == props.charger_count ? " mb-0" : "")}>
+    return  <div class="card h-100">
                 <div class="card-header">
-                    <div class="row align-items-center mx-n1">
-                        <div class="col px-1"><h5 class="m-0">{name_link}</h5></div>
-                        <div class="col-auto px-1">
+                    <div class="row gx-2 align-items-center">
+                        <div class="col"><h5 class="mb-0">{name_link}</h5></div>
+                        <div class="col-auto">
                             <InputSelect
                                 items={modes}
                                 value={mode.toString()}
@@ -558,7 +558,7 @@ function CMStatusCharger(props: {
                     </div>
                 </div>
                 <div class={"card-body " + c_body_classes}>
-                    <h5 class="card-title my-0"><Button
+                    <h5 class="card-title mb-0"><Button
                         className="me-2"
                         size="sm"
                         onClick={() => setShowDetails(!showDetails)}>

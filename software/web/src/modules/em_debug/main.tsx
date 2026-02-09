@@ -56,9 +56,13 @@ export class EMDebug extends Component {
             <SubPage name="em_debug">
                 <PageHeader title={__("em_debug.content.em_debug")}/>
                 <FormRow label={__("em_debug.content.reset_description")} label_muted={__("em_debug.content.reset_description_muted")}>
-                    <div class="input-group pb-2">
-                        <Button variant="primary" className="flex-fill rounded-end me-2" onClick={() => API.call('energy_manager/reset', {}, () => "")}>{__("em_debug.content.reset_em")}</Button>
-                        <Button variant="primary" className="flex-fill rounded-start" onClick={() => API.call('energy_manager/reflash', {}, () => "")}>{__("em_debug.content.reflash_em")}</Button>
+                    <div class="row g-2">
+                        <div class="col">
+                            <Button variant="primary" className="w-100" onClick={() => API.call('energy_manager/reset', {}, () => "")}>{__("em_debug.content.reset_em")}</Button>
+                        </div>
+                        <div class="col">
+                            <Button variant="primary" className="w-100" onClick={() => API.call('energy_manager/reflash', {}, () => "")}>{__("em_debug.content.reflash_em")}</Button>
+                        </div>
                     </div>
                 </FormRow>
 
@@ -121,9 +125,9 @@ export class EMDebug extends Component {
                         </FormRow>
 
                         <FormRow label={__("em_debug.content.state_led")} label_muted={__("em_debug.content.state_led_names")}>
-                            <div class="row mx-n1">
+                            <div class="row gx-2 gy-1">
                                 {ll_state_v1.led_rgb.map((x, i) => (
-                                    <div key={i} class="mb-1 col-4 px-1">
+                                    <div key={i} class="col-4">
                                         <InputText value={x} />
                                     </div>
                                 ))}
@@ -134,9 +138,9 @@ export class EMDebug extends Component {
 
                 {state_v1 ?
                     <FormRow label={__("em_debug.content.gpios")} label_muted={__("em_debug.content.gpio_names_v1")}>
-                        <div class="row mx-n1">
+                        <div class="row g-2">
                             {[state_v1.input3_state, state_v1.input4_state, state_v1.relay_state].map((x, j) => (
-                                <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                <IndicatorGroup vertical key={j} class="col"
                                     value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                     items={[
                                         ["primary",   j <= 1 ? __("em_debug.content.high") : __("em_debug.content.closed")],
@@ -150,9 +154,9 @@ export class EMDebug extends Component {
                 {state_v2 ?
                     <>
                         <FormRow label={__("em_debug.content.gpio_inputs")} label_muted={__("em_debug.content.gpio_input_names_v2")}>
-                            <div class="row mx-n1">
+                            <div class="row g-2">
                                 {state_v2.inputs.map((x, j) => (
-                                    <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                    <IndicatorGroup vertical key={j} class="col"
                                         value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                         items={[
                                             ["primary", __("em_debug.content.high")],
@@ -163,9 +167,9 @@ export class EMDebug extends Component {
                         </FormRow>
 
                         <FormRow label={__("em_debug.content.gpio_outputs")} label_muted={__("em_debug.content.gpio_output_names_v2")}>
-                            <div class="row mx-n1">
+                            <div class="row g-2">
                                 {[...state_v2.relays, ...state_v2.sg_ready_outputs].map((x, j) => (
-                                    <IndicatorGroup vertical key={j} class="mb-1 col px-1"
+                                    <IndicatorGroup vertical key={j} class="col"
                                         value={x ? 0 : 1} //intentionally inverted: the high button is the first
                                         items={[
                                             ["primary", __("em_debug.content.closed")],
