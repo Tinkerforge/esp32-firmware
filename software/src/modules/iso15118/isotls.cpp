@@ -65,10 +65,16 @@ static const int iso15118_ciphersuites[] = {
 // =============================================================================
 // ISO 15118 named groups (ISO 15118-2 + ISO 15118-20)
 // =============================================================================
-// [V2G20-2674] secp521r1 (ISO 15118-20 primary)
+// [V2G20-2674] secp521r1 (ISO 15118-20 primary signature curve)
 // [V2G20-2319] x448 (ISO 15118-20 alternative)
 // [V2G2-006]   secp256r1 (ISO 15118-2)
+// X25519 is listed first for ECDHE key exchange by OpenSSL.
+// Offer X25519 key_share by default in their initial
+// ClientHello. Without it, the server must send a HelloRetryRequest (HRR)
+// adding an extra network round-trip. X25519 is only used for
+// ephemeral key exchange. Certificate signatures remain secp521r1.
 static const uint16_t iso15118_curves[] = {
+    MBEDTLS_SSL_IANA_TLS_GROUP_X25519,     // Fast ECDHE, avoids HRR with most clients
     MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,  // ISO 15118-20 primary
     MBEDTLS_SSL_IANA_TLS_GROUP_X448,       // ISO 15118-20 alternative
     MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1,  // ISO 15118-2
