@@ -91,7 +91,7 @@ class EEBusUseCases; // Forward declaration of EEBusUseCases
 
 namespace EEBUS_USECASE_HELPERS
 {
-const char *get_spine_device_name();
+std::string get_spine_device_name();
 
 /**
 * The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19

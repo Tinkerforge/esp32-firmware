@@ -134,4 +134,5 @@ public:
 
 private:
     bool module_enabled = false;
+    String eebus_name{};
 };

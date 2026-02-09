@@ -5293,10 +5293,11 @@ LoadControlLimitConstraintsListDataType EVEntity::get_load_control_limit_constra
 
 namespace EEBUS_USECASE_HELPERS
 {
-const char *get_spine_device_name()
+std::string get_spine_device_name()
 {
     // This returns the device name as defined in EEBUS SPINE TS ProtocolSpecification
-    return ("d:_n:" + eebus.get_eebus_name()).c_str();
+    std::string name = ("d:_n:" + eebus.get_eebus_name()).c_str();
+    return name;
 }
 
 String get_result_error_number_string(const int error_number)

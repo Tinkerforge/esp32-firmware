@@ -397,6 +397,7 @@ void EEBus::setup()
     update_peers_config();
 
     initialized = true;
+    eebus_name = device_name.name.get("name")->asEphemeralCStr();
     eebus.trace_fmtln("EEBUS initialized");
 
 #ifdef EEBUS_DEV_TEST_ENABLE
@@ -673,20 +674,7 @@ void EEBus::toggle_module()
 // ManufacturerName-Model-UniqueID
 String EEBus::get_eebus_name()
 {
-    const char *manufacturer = OPTIONS_MANUFACTURER_USER_AGENT();
-    const char *model = OPTIONS_HOSTNAME_PREFIX();
-    const char *uid = local_uid_str;
-
-    char buffer[64];
-    StringWriter sw(buffer, std::size(buffer));
-
-    sw.puts(manufacturer);
-    sw.putc('-');
-    sw.puts(model);
-    sw.putc('-');
-    sw.puts(uid);
-
-    return {buffer, sw.getLength()};
+    return eebus_name;
 }
 
 int EEBus::get_state_connection_id_by_ski(const String &ski)
