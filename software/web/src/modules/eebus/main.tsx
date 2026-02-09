@@ -38,7 +38,17 @@ import {LoadcontrolState} from "./loadcontrol_state.enum";
 import {useState} from "preact/hooks";
 import {Usecases} from "./usecases.enum";
 import {OutputFloat} from "../../ts/components/output_float";
+import {OutputText} from "../../ts/components/output_text";
 import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
+
+const loadcontrolStateMap: {[key: number]: string} = {
+    [LoadcontrolState.Startup]: "Startup",
+    [LoadcontrolState.Init]: "Init",
+    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
+    [LoadcontrolState.Limited]: "Limited",
+    [LoadcontrolState.Failsafe]: "Failsafe",
+    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
+};
 
 function ExpandableAddress({dns, ip}: { dns: string; ip: string }) {
     const [expanded, setExpanded] = useState(false);
@@ -66,14 +76,14 @@ function PhaseRow(props: {label: string, label_muted: string, values: [number, n
     const digits = props.digits ?? 0;
     const scale = props.scale ?? 0;
     return <FormRow label={props.label} label_muted={props.label_muted} small>
-        <div class="row gx-2 gy-1">
-            <div class="col-sm-4">
+        <div class="row mx-n1">
+            <div class="col-sm-4 px-1">
                 <OutputFloat value={props.values[0]} digits={digits} scale={scale} unit={props.unit} small />
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 px-1">
                 <OutputFloat value={props.values[1]} digits={digits} scale={scale} unit={props.unit} small />
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 px-1">
                 <OutputFloat value={props.values[2]} digits={digits} scale={scale} unit={props.unit} small />
             </div>
         </div>
@@ -156,57 +166,47 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             // Limitation of Power Consumption
                             if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPC) > -1) {
                                 const lpc = state.usecases.power_consumption_limitation;
-                                const lpcStateMap: {[key: number]: string} = {
-                                    [LoadcontrolState.Startup]: "Startup",
-                                    [LoadcontrolState.Init]: "Init",
-                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
-                                    [LoadcontrolState.Limited]: "Limited",
-                                    [LoadcontrolState.Failsafe]: "Failsafe",
-                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                };
                                 rows.push({
                                     hideRemoveButton: true,
                                     columnValues: ["LPC (Limitation of Power Consumption)"],
                                     extraValue: <>
                                         <FormRow label="Usecase State" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
-                                                <InputText class="form-control-sm" value={lpcStateMap[lpc.usecase_state] ?? lpc.usecase_state} />
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={loadcontrolStateMap[lpc.usecase_state] ?? lpc.usecase_state} />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Limit Active" small>
-                                            <div class="row gx-2 gy-1">
-                                                <div class="col-sm-4">
-                                                    <InputText class="form-control-sm" value={lpc.limit_active ? __("eebus.content.yes") : __("eebus.content.no")} />
-                                                </div>
-                                                {lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null ?
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpc.outstanding_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div> : undefined}
-                                            </div>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    (lpc.limit_active ? __("eebus.content.yes") : __("eebus.content.no")) +
+                                                    (lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null
+                                                        ? ` (${lpc.outstanding_duration_s} s)`
+                                                        : "")
+                                                } small />
+                                            </div></div>
                                         </FormRow>
                                         <FormRow label="Current Limit" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpc.current_limit} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Power" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpc.failsafe_limit_power_w} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Duration" small>
-                                            <div class="row gx-2 gy-1">
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpc.failsafe_limit_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div>
-                                                {lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null ?
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpc.outstanding_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div> : undefined}
-                                            </div>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    "" + lpc.failsafe_limit_duration_s +
+                                                    (lpc.usecase_state === LoadcontrolState.Failsafe && lpc.outstanding_duration_s != null
+                                                        ? ` (${lpc.outstanding_duration_s})`
+                                                        : "")
+                                                } suffix="s" small />
+                                            </div></div>
                                         </FormRow>
                                         <FormRow label="Constraints Power Maximum" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpc.constraints_power_maximum} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
@@ -217,57 +217,47 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             // Limitation of Power Production
                             if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.LPP) > -1) {
                                 const lpp = state.usecases.power_production_limitation;
-                                const lppStateMap: {[key: number]: string} = {
-                                    [LoadcontrolState.Startup]: "Startup",
-                                    [LoadcontrolState.Init]: "Init",
-                                    [LoadcontrolState.UnlimitedControlled]: "UnlimitedControlled",
-                                    [LoadcontrolState.Limited]: "Limited",
-                                    [LoadcontrolState.Failsafe]: "Failsafe",
-                                    [LoadcontrolState.UnlimitedAutonomous]: "UnlimitedAutonomous"
-                                };
                                 rows.push({
                                     hideRemoveButton: true,
-                                    columnValues: ["LPC (Limitation of Power Consumption)"],
+                                    columnValues: ["LPP (Limitation of Power Production)"],
                                     extraValue: <>
                                         <FormRow label="Usecase State" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
-                                                <InputText class="form-control-sm" value={lppStateMap[lpp.usecase_state] ?? lpp.usecase_state} />
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <InputText class="form-control-sm" value={loadcontrolStateMap[lpp.usecase_state] ?? lpp.usecase_state} />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Limit Active" small>
-                                            <div class="row gx-2 gy-1">
-                                                <div class="col-sm-4">
-                                                    <InputText class="form-control-sm" value={lpp.limit_active ? __("eebus.content.yes") : __("eebus.content.no")} />
-                                                </div>
-                                                {lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null ?
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpp.outstanding_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div> : undefined}
-                                            </div>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    (lpp.limit_active ? __("eebus.content.yes") : __("eebus.content.no")) +
+                                                    (lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null
+                                                        ? ` (${lpp.outstanding_duration_s} s)`
+                                                        : "")
+                                                } small />
+                                            </div></div>
                                         </FormRow>
                                         <FormRow label="Current Limit" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpp.current_limit} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Power" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpp.failsafe_limit_power_w} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Duration" small>
-                                            <div class="row gx-2 gy-1">
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpp.failsafe_limit_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div>
-                                                {lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null ?
-                                                <div class="col-sm-4">
-                                                    <OutputFloat value={lpp.outstanding_duration_s} digits={0} scale={0} unit="s" small />
-                                                </div> : undefined}
-                                            </div>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputText value={
+                                                    "" + lpp.failsafe_limit_duration_s +
+                                                    (lpp.usecase_state === LoadcontrolState.Failsafe && lpp.outstanding_duration_s != null
+                                                        ? ` (${lpp.outstanding_duration_s})`
+                                                        : "")
+                                                } suffix="s" small />
+                                            </div></div>
                                         </FormRow>
                                         <FormRow label="Constraints Power Maximum" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={lpp.constraints_power_maximum} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
@@ -283,43 +273,43 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["EVCC (EV Commissioning and Configuration)"],
                                     extraValue: <>
                                         <FormRow label="EV Connected" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={evcc.ev_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
                                         {evcc.ev_connected && <>
                                             <FormRow label="Communication Standard" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evcc.communication_standard} />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Asymmetric Charging Supported" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evcc.asymmetric_charging_supported ? __("eebus.content.yes") : __("eebus.content.no")} />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Vehicle MAC Address" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evcc.mac_address} />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Minimum Power (reported by Vehicle)" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <OutputFloat value={evcc.minimum_power} digits={0} scale={0} unit="W" small />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Maximum Power (reported by Vehicle)" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <OutputFloat value={evcc.maximum_power} digits={0} scale={0} unit="W" small />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Standby Power (reported by Vehicle)" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <OutputFloat value={evcc.standby_power} digits={0} scale={0} unit="W" small />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Standby Mode Active" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evcc.standby_mode ? __("eebus.content.yes") : __("eebus.content.no")} />
                                                 </div></div>
                                             </FormRow>
@@ -337,7 +327,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["EVCEM (EV Charging Electricity Measurement)"],
                                     extraValue: <>
                                         <FormRow label="EV Connected" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={evcc.ev_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
@@ -353,12 +343,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 evcem.power_phase_3
                                             ]} unit="W" />
                                             <FormRow label="Charged" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <OutputFloat value={evcem.charged_wh} digits={0} scale={0} unit="Wh" small />
                                                 </div></div>
                                             </FormRow>
                                             <FormRow label="Method of Obtaining Charged Wh" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evcem.charged_valuesource_measured ? "Measured" : "Calculated"} />
                                                 </div></div>
                                             </FormRow>
@@ -375,13 +365,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["EVSECC (EVSE Commissioning and Configuration)"],
                                     extraValue: <>
                                         <FormRow label="EVSE in Failure State" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={evsecc.evse_failure ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
                                         {evsecc.evse_failure && <>
                                             <FormRow label="Failure Message" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={evsecc.evse_failure_description} />
                                                 </div></div>
                                             </FormRow>
@@ -398,13 +388,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["EVCS (EV Charging Summary)"],
                                     extraValue: <>
                                         <FormRow label="Number of Charge Processes" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={summary.length} digits={0} scale={0} unit="" small />
                                             </div></div>
                                         </FormRow>
                                         {summary.map((item, idx) =>
                                             <FormRow label={`Process ${item.id}`} key={idx} small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <InputText class="form-control-sm" value={`${item.charged_kwh} kWh, Cost: ${item.cost}, Self-produced: ${item.percent_self_produced_energy}%`} />
                                                 </div></div>
                                             </FormRow>
@@ -421,7 +411,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["MPC (Monitoring of Power Consumption)"],
                                     extraValue: <>
                                         <FormRow label="Total Power" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={mpc.total_power_w} digits={0} scale={0} unit="W" small />
                                             </div></div>
                                         </FormRow>
@@ -431,12 +421,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             mpc.power_phase_3_w
                                         ]} unit="W" />
                                         <FormRow label="Energy Consumed" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={mpc.energy_consumed_wh} digits={0} scale={0} unit="Wh" small />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Energy Produced" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={mpc.energy_produced_wh} digits={0} scale={0} unit="Wh" small />
                                             </div></div>
                                         </FormRow>
@@ -456,7 +446,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             mpc.voltage_phase_3_1_v
                                         ]} unit="V" />
                                         <FormRow label="Grid Frequency" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <OutputFloat value={mpc.frequency_mhz} digits={2} scale={3} unit="Hz" small />
                                             </div></div>
                                         </FormRow>
@@ -472,17 +462,17 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     columnValues: ["CEVC (Coordinated EV Charging)"],
                                     extraValue: <>
                                         <FormRow label="Energy Broker Connected" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={cevc.energy_broker_connected ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Energy Broker Heartbeat OK" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={cevc.energy_broker_heartbeat_ok ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Has Charging Plan" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={
                                                     (cevc.has_charging_plan ? __("eebus.content.yes") : __("eebus.content.no")) +
                                                     (cevc.has_charging_plan && cevc.charging_plan_start_time > 0
@@ -493,13 +483,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         </FormRow>
                                         {cevc.has_charging_plan && <>
                                             <FormRow label="Current Target Power" small>
-                                                <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                     <OutputFloat value={cevc.target_power_w} digits={0} scale={0} unit="W" small />
                                                 </div></div>
                                             </FormRow>
                                         </>}
                                         <FormRow label="Has Incentives" small>
-                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
                                                 <InputText class="form-control-sm" value={cevc.has_incentives ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
@@ -788,10 +778,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 });
                             }}
                         />
-                    </FormRow>
-                    <FormRow>
                         <Button
-                            className="form-control"
+                            className="form-control rounded-end mt-1"
                             variant="primary"
                             onClick={async () => {
                                 await API.call('eebus/scan', {});
