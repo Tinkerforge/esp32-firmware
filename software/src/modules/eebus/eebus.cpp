@@ -392,12 +392,13 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
+    eebus_name = device_name.name.get("name")->asEphemeralCStr();
 
     ship.setup();
     update_peers_config();
 
     initialized = true;
-    eebus_name = device_name.name.get("name")->asEphemeralCStr();
+
     eebus.trace_fmtln("EEBUS initialized");
 
 #ifdef EEBUS_DEV_TEST_ENABLE
@@ -674,6 +675,9 @@ void EEBus::toggle_module()
 // ManufacturerName-Model-UniqueID
 String EEBus::get_eebus_name()
 {
+    if (eebus_name.isEmpty()) {
+        eebus_name = device_name.name.get("name")->asEphemeralCStr();
+    }
     return eebus_name;
 }
 

@@ -219,7 +219,7 @@ void Ship::setup_wss()
     });
 
     // Websocket data received handler
-    web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt ) {
+    web_sockets.onBinaryDataReceived_HTTPThread([this](WebSocketsClient *client, httpd_ws_frame_t *ws_pkt) {
         if (!eebus.is_enabled()) {
             eebus.trace_fmtln("Error while receiving Websocket packet: EEBUS not enabled");
             return;
@@ -231,7 +231,6 @@ void Ship::setup_wss()
             return;
         }
         ship_connection->frame_received(ws_pkt);
-
     });
 
     // Start websocket on the HTTPS server
@@ -290,21 +289,50 @@ void Ship::setup_mdns()
         eebus.trace_fmtln("setup_mdns() failed; mDNS not started");
         return;
     }
+    int ret = 0;
 
     // SHIP 7.2 Service Name
-    mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
-
+    ret = mdns_service_add(NULL, "_ship", "_tcp", SHIP_PORT, NULL, 0);
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to add mDNS service. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_add returned %d", ret);
+        return;
+    }
     // SHIP 7.3.2 TXT Record
     // Mandatory Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
-
-    mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str());
+    ret = mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set txtvers TXT record. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for txtvers returned %d", ret);
+        return;
+    }
+    ret = mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str());
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set id TXT record. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for id returned %d", ret);
+        return;
+    }
     // ManufaturerName-Model-UniqueID (max 63 bytes)
-    mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
-    mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr());
+    ret = mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set path TXT record. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for path returned %d", ret);
+        return;
+    }
+    ret = mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr());
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set ski TXT record. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for ski returned %d", ret);
+        return;
+    }
     // 40 byte hexadecimal digits representing the 160 bit SKI value
 
-    mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
+    ret = mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
+    if (ret != ESP_OK) {
+        logger.printfln("EEBUS Ship mDNS setup failed: Failed to set register TXT record. Error %d", ret);
+        eebus.trace_fmtln("setup_mdns() failed; mdns_service_txt_item_set for register returned %d", ret);
+        return;
+    }
     // Optional Fields
     mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
     mdns_service_txt_item_set("_ship", "_tcp", "model", OPTIONS_PRODUCT_NAME());
