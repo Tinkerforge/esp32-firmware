@@ -25,9 +25,9 @@ let x = {
 
             "add_user_title": "Benutzer hinzufügen",
             "add_user_username": "Benutzername",
-            "add_user_username_desc": "Zur Anmeldung beim Webinterface",
+            "add_user_username_desc": "zur Anmeldung beim Webinterface",
             "add_user_display_name": "Anzeigename",
-            "add_user_display_name_desc": "Zur Anzeige im Ladeprotokoll und Webinterface",
+            "add_user_display_name_desc": "zur Anzeige im Ladelog und Webinterface",
             "add_user_current": "Maximaler Ladestrom",
             "add_user_password": "Passwort",
             "add_user_password_desc": "Anmeldung deaktiviert",
@@ -36,7 +36,9 @@ let x = {
 
             "edit_user_title": "Benutzer bearbeiten",
             "edit_user_username": "Benutzername",
+            "edit_user_username_desc": "zur Anmeldung beim Webinterface",
             "edit_user_display_name": "Anzeigename",
+            "edit_user_display_name_desc": "zur Anzeige im Ladelog und Webinterface",
             "edit_user_current": "Maximaler Ladestrom",
             "edit_user_password": "Passwort",
 

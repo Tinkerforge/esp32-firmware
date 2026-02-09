@@ -25,9 +25,9 @@ let x = {
 
             "add_user_title": "Add user",
             "add_user_username": "Username",
-            "add_user_username_desc": "To log in to the web interface",
+            "add_user_username_desc": "to log in to the web interface",
             "add_user_display_name": "Display name",
-            "add_user_display_name_desc": "Shown in web interface and charge log",
+            "add_user_display_name_desc": "shown in web interface and charge log",
             "add_user_current": "Maximum charge current",
             "add_user_password": "Password",
             "add_user_password_desc": "Login disabled",
@@ -36,7 +36,9 @@ let x = {
 
             "edit_user_title": "Edit user",
             "edit_user_username": "Username",
+            "edit_user_username_desc": "to log in to the web interface",
             "edit_user_display_name": "Display name",
+            "edit_user_display_name_desc": "shown in web interface and charge log",
             "edit_user_current": "Maximum charge current",
             "edit_user_password": "Password",
 

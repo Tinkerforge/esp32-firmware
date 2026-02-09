@@ -394,7 +394,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     editTitle: __("users.content.edit_user_title"),
                                     onEditShow: async () => this.setState({editUser: {id: user.id, roles: user.roles, username: user.username, display_name: user.display_name, current: user.current, digest_hash: user.digest_hash, password: user.password, is_invalid: user.is_invalid}}),
                                     onEditGetChildren: () => [<>
-                                        <FormRow label={__("users.content.edit_user_username")}>
+                                        <FormRow label={__("users.content.edit_user_username")} label_muted={__("users.content.edit_user_username_desc")}>
                                             <InputText
                                                 value={state.editUser.username}
                                                 onValue={(v) => this.setState({editUser: {...state.editUser, username: v}})}
@@ -404,7 +404,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                                 class={state.editUser.is_invalid != undefined && state.editUser.is_invalid != 0 ? "is-invalid" : ""}
                                                 invalidFeedback={this.errorMessage(state.editUser)} />
                                         </FormRow>
-                                        <FormRow label={__("users.content.edit_user_display_name")}>
+                                        <FormRow label={__("users.content.edit_user_display_name")} label_muted={__("users.content.edit_user_display_name_desc")}>
                                             <InputText
                                                 value={state.editUser.display_name}
                                                 onValue={(v) => this.setState({editUser: {...state.editUser, display_name: v}})}
@@ -455,25 +455,23 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                             addMessage={API.get('users/config').next_user_id == 0 ? __("users.content.add_user_user_ids_exhausted") : __("users.content.add_user_message")(state.users.length - 1, MAX_ACTIVE_USERS - 1)}
                             onAddShow={async () => this.setState({addUser: {id: -1, roles: 0xFFFF, username: "", display_name: "", current: 32000, digest_hash: "", password: "", is_invalid: 0}})}
                             onAddGetChildren={() => [<>
-                                <FormRow label={__("users.content.add_user_username")}>
+                                <FormRow label={__("users.content.add_user_username")} label_muted={__("users.content.add_user_username_desc")}>
                                     <InputText
                                         value={state.addUser.username}
                                         onValue={(v) => this.setState({addUser: {...state.addUser, username: v}})}
                                         required
                                         minLength={1}
                                         maxLength={32}
-                                        placeholder={__("users.content.add_user_username_desc")}
                                         class={state.addUser.is_invalid != undefined && state.addUser.is_invalid != 0 ? "is-invalid" : ""}
                                         invalidFeedback={this.errorMessage(state.addUser)} />
                                 </FormRow>
-                                <FormRow label={__("users.content.add_user_display_name")}>
+                                <FormRow label={__("users.content.add_user_display_name")} label_muted={__("users.content.add_user_display_name_desc")}>
                                     <InputText
                                         value={state.addUser.display_name}
                                         onValue={(v) => this.setState({addUser: {...state.addUser, display_name: v}})}
                                         required
                                         minLength={1}
-                                        maxLength={32}
-                                        placeholder={__("users.content.add_user_display_name_desc")} />
+                                        maxLength={32} />
                                 </FormRow>
                                 <FormRow label={__("users.content.add_user_current")}>
                                     <InputFloat
