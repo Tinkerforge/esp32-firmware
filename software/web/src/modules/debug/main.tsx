@@ -20,9 +20,9 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __, translate_unchecked } from "../../ts/translation";
-import { h, Fragment, Component, ComponentChild } from "preact";
+import { h, Context, Fragment, Component, ComponentChild } from "preact";
 import { Button         } from "react-bootstrap";
-import { FormRow as VanillaFormRow, FormRowProps } from "../../ts/components/form_row";
+import { FormRow as VanillaFormRow, FormRowProps, register_id_context_component_type } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
@@ -31,6 +31,28 @@ import { OutputFloat    } from "../../ts/components/output_float";
 import { PageHeader     } from "../../ts/components/page_header";
 import { SubPage        } from "../../ts/components/sub_page";
 import { Terminal } from "react-feather";
+
+interface OutputPlainIntProps {
+    idContext?: Context<string>;
+    value: number;
+}
+
+export function OutputPlainInt(props: OutputPlainIntProps) {
+    return <OutputFloat {...props}  digits={0} scale={0} unit="" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={0} />
+}
+
+register_id_context_component_type(OutputPlainInt);
+
+interface OutputBytesProps {
+    idContext?: Context<string>;
+    value: number;
+}
+
+export function OutputBytes(props: OutputBytesProps) {
+    return <OutputFloat {...props}  digits={0} scale={0} unit="B" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1} />
+}
+
+register_id_context_component_type(OutputBytes);
 
 export function DebugNavbar() {
     return <NavbarItem name="debug" module="debug" title={__("debug.navbar.debug")} symbol={<Terminal />} />;
@@ -83,13 +105,13 @@ export class Debug extends Component {
                 </FormRow>
 
                 <FormRow label={__("debug.content.cpu_usage")} label_muted={__("debug.content.cpu_usage_muted")}>
-                    <OutputFloat value={state_fast.cpu_usage} digits={0} scale={0} unit="%"/>
+                    <OutputFloat value={state_fast.cpu_usage} digits={0} scale={0} unit="%" maxFractionalDigitsOnPage={0} maxUnitLengthOnPage={1} />
                 </FormRow>
 
                 <FormRow label={__("debug.content.main_loop_max")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_slow.loop_max_us} digits={3} scale={3} unit="ms"/>
+                            <OutputFloat value={state_slow.loop_max_us} digits={3} scale={3} unit="ms" maxUnitLengthOnPage={2} />
                         </div>
                         <div class="col-12 col-sm-6">
                             <InputText value={state_slow.loop_max_fn_file + ":" + state_slow.loop_max_fn_line}/>
@@ -113,10 +135,10 @@ export class Debug extends Component {
                 <FormRow label={__("debug.content.heap_integrity_runtime")} label_muted={__("debug.content.heap_integrity_runtime_muted")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms"/>
+                            <OutputFloat value={state_fast.heap_check_time_avg} digits={3} scale={3} unit="ms" maxUnitLengthOnPage={2} />
                         </div>
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"/>
+                            <OutputFloat value={state_fast.heap_check_time_max} digits={3} scale={3} unit="ms"  maxUnitLengthOnPage={2} />
                         </div>
                     </div>
                 </FormRow>
@@ -128,39 +150,39 @@ export class Debug extends Component {
                      r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
 
                 <Row label={__("debug.content.heap_used")}
-                     l={<OutputFloat value={state_static.heap_dram - state_fast.free_dram} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={state_static.heap_iram - state_fast.free_iram} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_static.heap_psram - state_fast.free_psram} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_static.heap_dram - state_fast.free_dram} />}
+                     c={<OutputBytes value={state_static.heap_iram - state_fast.free_iram} />}
+                     r={<OutputBytes value={state_static.heap_psram - state_fast.free_psram} />}/>
 
                 <Row label={__("debug.content.heap_free")}
-                     l={<OutputFloat value={state_fast.free_dram} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={state_fast.free_iram} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_fast.free_psram} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_fast.free_dram} />}
+                     c={<OutputBytes value={state_fast.free_iram} />}
+                     r={<OutputBytes value={state_fast.free_psram} />}/>
 
                 <Row label={__("debug.content.heap_block")}
-                     l={<OutputFloat value={state_slow.largest_free_dram_block} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={state_slow.largest_free_iram_block} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_slow.largest_free_psram_block} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.largest_free_dram_block} />}
+                     c={<OutputBytes value={state_slow.largest_free_iram_block} />}
+                     r={<OutputBytes value={state_slow.largest_free_psram_block} />}/>
 
                 <Row label={__("debug.content.heap_min_free")}
-                     l={<OutputFloat value={state_slow.min_free_dram} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={state_slow.min_free_iram} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_slow.min_free_psram} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.min_free_dram} />}
+                     c={<OutputBytes value={state_slow.min_free_iram} />}
+                     r={<OutputBytes value={state_slow.min_free_psram} />}/>
 
                 <Row label={__("debug.content.heap_size")}
-                     l={<OutputFloat value={state_static.heap_dram} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={state_static.heap_iram} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_static.heap_psram} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_static.heap_dram} />}
+                     c={<OutputBytes value={state_static.heap_iram} />}
+                     r={<OutputBytes value={state_static.heap_psram} />}/>
 
                 <Row label={__("debug.content.static")}
-                     l={<OutputFloat value={335872 - state_static.heap_dram} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={131072 - state_static.heap_iram} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_static.psram_size - state_static.heap_psram} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={335872 - state_static.heap_dram} />}
+                     c={<OutputBytes value={131072 - state_static.heap_iram} />}
+                     r={<OutputBytes value={state_static.psram_size - state_static.heap_psram} />}/>
 
                 <Row label={__("debug.content.total_size")}
-                     l={<OutputFloat value={335872} digits={0} scale={0} unit="B"/>}
-                     c={<OutputFloat value={131072} digits={0} scale={0} unit="B"/>}
-                     r={<OutputFloat value={state_static.psram_size} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={335872} />}
+                     c={<OutputBytes value={131072} />}
+                     r={<OutputBytes value={state_static.psram_size} />}/>
 
                 <FormSeparator heading={__("debug.content.config_buffers")} />
 
@@ -169,40 +191,40 @@ export class Debug extends Component {
                      r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
 
                 <Row label={__("debug.content.conf_uint_buf")}
-                     c={<OutputFloat value={state_slow.conf_uint_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_uint_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_int_buf")}
-                     c={<OutputFloat value={state_slow.conf_int_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_int_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_uint32_buf")}
-                     c={<OutputFloat value={state_slow.conf_uint32_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_uint32_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_int32_buf")}
-                     c={<OutputFloat value={state_slow.conf_int32_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_int32_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_uint53_buf")}
-                     c={<OutputFloat value={state_slow.conf_uint53_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_uint53_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_int52_buf")}
-                     c={<OutputFloat value={state_slow.conf_int52_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_int52_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_float_buf")}
-                     c={<OutputFloat value={state_slow.conf_float_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_float_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_string_buf")}
-                     l={<OutputFloat value={state_slow.conf_string_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.conf_string_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_array_buf")}
-                     l={<OutputFloat value={state_slow.conf_array_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.conf_array_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_tuple_buf")}
-                     l={<OutputFloat value={state_slow.conf_tuple_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.conf_tuple_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_object_buf")}
-                     c={<OutputFloat value={state_slow.conf_object_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     c={<OutputBytes value={state_slow.conf_object_buf_size} />}/>
 
                 <Row label={__("debug.content.conf_union_buf")}
-                     l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
+                     l={<OutputBytes value={state_slow.conf_union_buf_size} />}/>
 
                 <FormSeparator heading={__("debug.content.config_slots")} />
 
@@ -233,22 +255,22 @@ export class Debug extends Component {
                     return <FormRow label={config_type_names[idx]}>
                         <div class="row gx-2 gy-1">
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[0]} />
                             </div>
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[1] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[1] + 1} />
                             </div>
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[2]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[2]} />
                             </div>
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[3] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[3] + 1} />
                             </div>
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[4] + 1} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[4] + 1} />
                             </div>
                             <div class="col-12 col-sm-2">
-                                <OutputFloat value={slot[4] + 1 - slot[0]} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>
+                                <OutputPlainInt value={slot[4] + 1 - slot[0]} />
                             </div>
                         </div>
                     </FormRow>
@@ -262,9 +284,9 @@ export class Debug extends Component {
 
                 {state_hwm.map((task_hwm) => {
                     return <Row label={task_hwm.task_name}
-                                l={<OutputFloat value={task_hwm.hwm} digits={0} scale={0} unit="B"/>}
-                                c={task_hwm.stack_size == 0 ? undefined : <OutputFloat value={task_hwm.stack_size - task_hwm.hwm} digits={0} scale={0} unit="B"/>}
-                                r={task_hwm.stack_size == 0 ? undefined : <OutputFloat value={task_hwm.stack_size} digits={0} scale={0} unit="B"/>}/>
+                                l={<OutputBytes value={task_hwm.hwm} />}
+                                c={task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size - task_hwm.hwm} />}
+                                r={task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size} />}/>
 
                 })}
 
@@ -275,9 +297,9 @@ export class Debug extends Component {
                      r={<p class="mb-0 mt-2 form-label text-center">Response</p>}/>
 
                 <Row label={__("debug.content.api_registrations")}
-                     l={<OutputFloat value={state_slow.api_states   } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
-                     c={<OutputFloat value={state_slow.api_commands } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
-                     r={<OutputFloat value={state_slow.api_responses} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
+                     l={<OutputPlainInt value={state_slow.api_states   } />}
+                     c={<OutputPlainInt value={state_slow.api_commands } />}
+                     r={<OutputPlainInt value={state_slow.api_responses} />} />
 
                 <FormSeparator heading={__("debug.content.sockets_header")} />
 
@@ -286,19 +308,19 @@ export class Debug extends Component {
                      r={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_max")}</p>}/>
 
                 <Row label={__("debug.content.lwip_socket_counts")} label_muted={__("debug.content.lwip_socket_counts_muted")}
-                     l={<OutputFloat value={state_slow.ipsock_cur  } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
-                     c={<OutputFloat value={state_slow.ipsock_hwm  } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
-                     r={<OutputFloat value={state_static.ipsock_max} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
+                     l={<OutputPlainInt value={state_slow.ipsock_cur  } />}
+                     c={<OutputPlainInt value={state_slow.ipsock_hwm  } />}
+                     r={<OutputPlainInt value={state_static.ipsock_max} />} />
 
                 <FormSeparator heading={__("debug.content.clocks_buses_header")} />
 
                 <FormRow label={__("debug.content.cpu_apb")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.cpu_clk} digits={0} scale={6} unit="MHz"/>
+                            <OutputFloat value={state_static.cpu_clk} digits={0} scale={6} unit="MHz" />
                         </div>
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.apb_clk} digits={0} scale={6} unit="MHz"/>
+                            <OutputFloat value={state_static.apb_clk} digits={0} scale={6} unit="MHz" />
                         </div>
                     </div>
                 </FormRow>
@@ -309,8 +331,8 @@ export class Debug extends Component {
 
                 {state_static.spi_buses.map((spi_bus, i) => {
                     return <Row label={translate_unchecked("debug.content.spi" + i)}
-                                l={<OutputFloat value={spi_bus.clk} digits={2} scale={6} unit="MHz"/>}
-                                c={<OutputFloat value={spi_bus.dummy_cycles} digits={0} scale={0} unit=""/>}
+                                l={<OutputFloat value={spi_bus.clk} digits={2} scale={6} unit="MHz" />}
+                                c={<OutputPlainInt value={spi_bus.dummy_cycles}/>}
                                 r={<InputText value={spi_bus.spi_mode}/>}/>
                 })}
 
@@ -333,13 +355,13 @@ export class Debug extends Component {
                 <FormRow label={__("debug.content.ram_benchmark")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" />
+                            <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
                         </div>
                         <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" />
+                            <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
                         </div>
                         <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" />
+                            <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
                         </div>
                     </div>
                 </FormRow>
@@ -358,10 +380,10 @@ export class Debug extends Component {
                 <FormRow label={__("debug.content.flash_benchmark")}>
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" />
+                            <OutputFloat value={state_static.rodata_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
                         </div>
                         <div class="col-12 col-sm-6">
-                            <OutputFloat value={state_static.text_benchmark} digits={1} scale={0} unit="MiB/s" />
+                            <OutputFloat value={state_static.text_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
                         </div>
                     </div>
                 </FormRow>
