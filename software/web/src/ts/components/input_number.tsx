@@ -27,12 +27,17 @@ import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../util";
 
-interface InputNumberProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "class" | "id" | "type" | "onInput"> {
+interface InputNumberProps {
     idContext?: Context<string>;
+    class?: string;
     value: number;
     onValue?: (value: number) => void;
+    min?: number;
+    max?: number;
+    step?: number;
     unit?: string;
     invalidFeedback?: string;
+    required?: boolean;
     disabled?: boolean;
     readonly?: boolean;
     children?: ComponentChildren;
@@ -63,7 +68,7 @@ export function InputNumber(props: InputNumberProps) {
         }
     }
 
-    return <div class="input-group">
+    return <div class={"input-group " + (props.class ? props.class : "")}>
         {toChildArray(props.children).length > 0 ? props.children : undefined}
         <input class="form-control no-spin"
                 ref={input}
@@ -77,8 +82,8 @@ export function InputNumber(props: InputNumberProps) {
                         props.onValue(value);
                     }}
                 inputMode="numeric"
-                {...props}
                 value={util.hasValue(props.value) ? props.value : ""}
+                disabled={props.disabled}
                 readonly={props.onValue === undefined || props.readonly}
         />
         {props.unit ? <span class="input-group-text">{props.unit}</span> : undefined}

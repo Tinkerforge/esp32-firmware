@@ -426,18 +426,16 @@ export class EcoStatus extends Component<{}, EcoStatusState> {
                         />
                     </div>
 
-                <div class="input-group flex-nowrap mt-2">
-                        <span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span>
-                        {/*TODO: fix rounded corners*/}
-                        <InputNumber
-                            disabled={state.charge_plan.enable}
-                            unit="h"
-                            value={state.charge_plan.amount}
-                            onValue={(v) => this.setState({charge_plan: {...state.charge_plan, amount: v}}, () => this.update_charge_plan({...state.charge_plan, amount: v}))}
-                            min={1}
-                            max={48}
-                        />
-                </div>
+                <InputNumber
+                    class="mt-2"
+                    disabled={state.charge_plan.enable}
+                    unit="h"
+                    value={state.charge_plan.amount}
+                    onValue={(v) => this.setState({charge_plan: {...state.charge_plan, amount: v}}, () => this.update_charge_plan({...state.charge_plan, amount: v}))}
+                    min={1}
+                    max={48}>
+                    <span class="eco-fixed-size input-group-text">{__("eco.status.amount")}</span>
+                </InputNumber>
 
                 <div class="card mt-2">
                 <EcoChart visible={visible} charger_id={-1} ref={this.eco_chart_ref} departure={this.state.charge_plan.departure} time={this.state.charge_plan.time} amount={this.state.charge_plan.amount} enable={this.state.charge_plan.enable}/>
