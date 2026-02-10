@@ -33,7 +33,7 @@ export class PageHeader extends Component<PageHeaderProps, {}> {
     render() {
         let has_children = toChildArray(this.props.children).length > 0;
         let row_class = "mb-3 pt-2" + (this.props.small ? " pt-sm-4" : " pt-sm-3");
-        let title_class = "text-center text-sm-start" + (this.props.small ? " mt-1" : "");
+        let title_class = this.props.small ? "mt-1" : "";
 
         return (
             // this row/col combination is necessary here to create a div that is
