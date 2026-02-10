@@ -60,9 +60,9 @@ export function DebugNavbar() {
 
 export function FormRow(props: FormRowProps) { return <VanillaFormRow {...props} labelColClasses="col-lg-3" contentColClasses="col-lg-9" />; }
 
-function Row(props:{label?: string, label_muted?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
-    return <FormRow label={props.label} label_muted={props.label_muted}>
-        <div class="row gx-2 gy-1">
+function Row(props: {className?: string, label?: string, label_muted?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
+    return <FormRow class={props.className} label={props.label} label_muted={props.label_muted}>
+        <div class={"row gx-2 gy-1"}>
             <div class="col-12 col-sm-4">{props.l}</div>
             <div class="col-12 col-sm-4">{props.c}</div>
             <div class="col-12 col-sm-4">{props.r}</div>
@@ -145,7 +145,8 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.memory_header")} />
 
-                <Row l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
                      r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
 
@@ -186,7 +187,8 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.config_buffers")} />
 
-                <Row l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
                      r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
 
@@ -228,7 +230,7 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.config_slots")} />
 
-                <FormRow>
+                <FormRow class="d-none d-sm-flex">
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-2">
                             <p class="mb-0 form-label text-center">{__("debug.content.slots_used")}</p>
@@ -278,7 +280,8 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.stack_hwm_header")} />
 
-                <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.used_stack")}</p>}
                      r={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.stack_size")}</p>}/>
 
@@ -292,7 +295,8 @@ export class Debug extends Component {
 
                 <FormSeparator heading="API" />
 
-                <Row l={<p class="mb-0 mt-2 form-label text-center">State</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 mt-2 form-label text-center">State</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">Command</p>}
                      r={<p class="mb-0 mt-2 form-label text-center">Response</p>}/>
 
@@ -303,7 +307,8 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.sockets_header")} />
 
-                <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_used")}</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_used")}</p>}
                      c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_hwm")}</p>}
                      r={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_max")}</p>}/>
 
@@ -325,7 +330,8 @@ export class Debug extends Component {
                     </div>
                 </FormRow>
 
-                <Row l={<p class="mb-0 form-label text-center">{__("debug.content.spi_clock")}</p>}
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 form-label text-center">{__("debug.content.spi_clock")}</p>}
                      c={<p class="mb-0 form-label text-center">{__("debug.content.dummy_cycles")}</p>}
                      r={<p class="mb-0 form-label text-center">{__("debug.content.spi_mode")}</p>}/>
 
@@ -338,35 +344,17 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.memory_speed_header")} />
 
-                <FormRow>
-                    <div class="row gx-2 gy-1">
-                        <div class="col-12 col-sm-4">
-                            <p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>
-                        </div>
-                    </div>
-                </FormRow>
+                <Row className="d-none d-sm-flex"
+                     l={<p class="mb-0 form-label text-center">{__("debug.content.dram")}</p>}
+                     c={<p class="mb-0 form-label text-center">{__("debug.content.iram")}</p>}
+                     r={<p class="mb-0 form-label text-center">{__("debug.content.psram")}</p>}/>
 
-                <FormRow label={__("debug.content.ram_benchmark")}>
-                    <div class="row gx-2 gy-1">
-                        <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />
-                        </div>
-                    </div>
-                </FormRow>
+                <Row label={__("debug.content.ram_benchmark")}
+                     l={<OutputFloat value={state_static.dram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
+                     c={<OutputFloat value={state_static.iram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />}
+                     r={<OutputFloat value={state_static.psram_benchmark} digits={1} scale={0} unit="MiB/s" maxUnitLengthOnPage={3} />} />
 
-                <FormRow>
+                <FormRow class="d-none d-sm-flex">
                     <div class="row gx-2 gy-1">
                         <div class="col-12 col-sm-6">
                             <p class="mb-0 form-label text-center">{__("debug.content.flash_rodata")}</p>
