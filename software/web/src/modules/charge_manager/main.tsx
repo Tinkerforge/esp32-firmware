@@ -588,7 +588,7 @@ function CMStatusCharger(props: {
                                 <Dropdown.Toggle variant="primary" size="sm" id={useId()}>
                                     {__("charge_manager.script.authorize_charger")}
                                 </Dropdown.Toggle>
-                                <Dropdown.Menu alignRight>
+                                <Dropdown.Menu>
                                     <Dropdown.Header class="text-wrap">
                                         {props.users.filter(u => u.id > 0).length > 0 ? __("charge_manager.script.authorize_charger_for_user") : __("charge_manager.script.authorize_charger_no_users")}
                                     </Dropdown.Header>
