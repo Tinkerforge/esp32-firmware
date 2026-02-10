@@ -318,29 +318,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             <SubPage name="day_ahead_prices" title={__("day_ahead_prices.content.day_ahead_prices")}>
                 {dap.config_enable &&
                     <SubPage.Status>
-                        <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
-                            <InputText value={get_current_price_string()}/>
-                        </FormRow>
-                        <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
-                            <div class="row gx-2 gy-1">
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <span class="heating-fixed-size input-group-text">{__("today")}</span>
-                                        <InputText
-                                            value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
-                                        />
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
-                                        <InputText
-                                            value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </FormRow>
                         <div class="pb-3">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
@@ -374,6 +351,29 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 </UplotLoader>
                             </div>
                         </div>
+                        <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
+                            <InputText value={get_current_price_string()}/>
+                        </FormRow>
+                        <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
+                            <div class="row gx-2 gy-1">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("today")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(get_average_price_today(), "ct/kWh", 2, 1000)}
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="heating-fixed-size input-group-text">{__("tomorrow")}</span>
+                                        <InputText
+                                            value={util.get_value_with_unit(get_average_price_tomorrow(), "ct/kWh", 2, 1000)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </FormRow>
                     </SubPage.Status>
                 }
                 <SubPage.Config
