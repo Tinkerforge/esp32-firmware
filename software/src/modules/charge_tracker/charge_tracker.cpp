@@ -354,17 +354,6 @@ void ChargeTracker::endCharge(uint32_t charge_duration_seconds, float meter_end,
         last_record = this->last_charge_record;
     }
 
-    uint32_t first_record = 0;
-    uint32_t last_record = 0;
-    if (directory != nullptr) {
-        if (!getChargerChargeRecords(directory, &first_record, &last_record)) {
-            logger.printfln("Can't track end of charge: Directory %s doesn't exist", directory);
-            return;
-        }
-    } else {
-        last_record = this->last_charge_record;
-    }
-
     {
         File file = LittleFS.open(chargeRecordFilename(last_record, directory), "a");
         if ((file.size() % CHARGE_RECORD_SIZE) != sizeof(ChargeStart)) {
@@ -2196,50 +2185,6 @@ int ChargeTracker::generate_pdf(
         }
         return -1;
     }
-
-#if OPTIONS_PRODUCT_ID_IS_WARP()
-    // WARP1 has limited memory (no PSRAM), use file-by-file reading
-    int first_file = -1;
-    int first_charge = -1;
-    int last_file = -1;
-    int last_charge = -1;
-    std::lock_guard<std::mutex> lock{records_mutex};
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-    auto await_result_users = task_scheduler.await([configured_users]() mutable {
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
-    });
-    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
-        if (request != nullptr) {
-            request->send_plain(500, "Failed to generate PDF: Task timed out");
-        } else {
-            logger.printfln("Failed to generate PDF: Task timed out");
-        }
-        return -1;
-    }
-
-#if OPTIONS_PRODUCT_ID_IS_WARP()
-    // WARP1 has limited memory (no PSRAM), use file-by-file reading
-    int first_file = -1;
-    int first_charge = -1;
-    int last_file = -1;
-    int last_charge = -1;
-    std::lock_guard<std::mutex> lock{records_mutex};
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-    auto await_result_users = task_scheduler.await([configured_users]() mutable {
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
-    });
-    if (await_result_users == TaskScheduler::AwaitResult::Timeout) {
-        if (request != nullptr) {
-            request->send_plain(500, "Failed to generate PDF: Task timed out");
-        } else {
-            logger.printfln("Failed to generate PDF: Task timed out");
-        }
-        return -1;
-    }
     {
         char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
         ChargeStart cs;
@@ -2777,55 +2722,6 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
 
     *out_count = charge_count;
     return charges;
-}
-
-void ChargeTracker::updateLastCharges(const char *directory)
-{
-    std::vector<ChargeWithLocation> all_charges;
-    all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
-
-    auto get_charges_from_directory = [this, &all_charges](const char *dir) {
-        std::vector<ChargeWithLocation> dir_charges = readLastChargesFromDirectory(dir);
-        merge_charge_vectors(all_charges, dir_charges);
-    };
-
-    get_charges_from_directory(nullptr);
-
-    File root_folder = LittleFS.open(CHARGE_RECORD_FOLDER);
-    if (root_folder && root_folder.isDirectory()) {
-        while (File subdir = root_folder.openNextFile()) {
-            if (subdir.isDirectory()) {
-                String dirname{subdir.name()};
-                int last_slash = dirname.lastIndexOf('/');
-                if (last_slash >= 0) {
-                    dirname = dirname.substring(last_slash + 1);
-                }
-                get_charges_from_directory(dirname.c_str());
-            }
-        }
-    }
-
-    while (last_charges.count() > 0) {
-        last_charges.remove(0);
-    }
-
-    size_t charges_to_add = std::min(all_charges.size(), static_cast<size_t>(CHARGE_RECORD_LAST_CHARGES_SIZE));
-    for (int i = static_cast<int>(charges_to_add) - 1; i >= 0; --i) {
-        const auto &charge_with_loc = all_charges[i];
-
-        auto last_charge = last_charges.add();
-        last_charge->get("timestamp_minutes")->updateUint(charge_with_loc.charge.cs.timestamp_minutes);
-        last_charge->get("charge_duration")->updateUint(charge_with_loc.charge.ce.charge_duration);
-        last_charge->get("user_id")->updateUint(charge_with_loc.charge.cs.user_id);
-
-        float energy_charged = charged_invalid(charge_with_loc.charge.cs, charge_with_loc.charge.ce)
-            ? NAN
-            : charge_with_loc.charge.ce.meter_end - charge_with_loc.charge.cs.meter_start;
-        last_charge->get("energy_charged")->updateFloat(energy_charged);
-
-        String charger_display_name = get_charger_display_name_from_host(charge_with_loc.directory.c_str());
-        last_charge->get("charger_name")->updateString(charger_display_name);
-    }
 }
 
 std::unique_ptr<ChargeLogGenerationLockHelper> ChargeLogGenerationLockHelper::try_lock(GenerationState kind) {
