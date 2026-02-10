@@ -52,6 +52,7 @@
             "free_stack": "Free stack",
             "used_stack": "Used stack",
             "stack_size": "Stack size",
+            "priority": "Priority",
 
             "heap_integrity_header": "Heap integrity",
             "heap_integrity_result": "Check result",

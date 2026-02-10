@@ -280,17 +280,24 @@ export class Debug extends Component {
 
                 <FormSeparator heading={__("debug.content.stack_hwm_header")} />
 
-                <Row className="d-none d-sm-flex"
-                     l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p>}
-                     c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.used_stack")}</p>}
-                     r={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.stack_size")}</p>}/>
+                <FormRow class="d-none d-sm-flex">
+                    <div class="row gx-2 gy-1">
+                        <div class="col-12 col-sm-3"><p class="mb-0 mt-2 form-label text-center">{__("debug.content.free_stack")}</p></div>
+                        <div class="col-12 col-sm-3"><p class="mb-0 mt-2 form-label text-center">{__("debug.content.used_stack")}</p></div>
+                        <div class="col-12 col-sm-3"><p class="mb-0 mt-2 form-label text-center">{__("debug.content.stack_size")}</p></div>
+                        <div class="col-12 col-sm-3"><p class="mb-0 mt-2 form-label text-center">{__("debug.content.priority"  )}</p></div>
+                    </div>
+                </FormRow>
 
                 {state_hwm.map((task_hwm) => {
-                    return <Row label={task_hwm.task_name}
-                                l={<OutputBytes value={task_hwm.hwm} />}
-                                c={task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size - task_hwm.hwm} />}
-                                r={task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size} />}/>
-
+                    return <FormRow label={task_hwm.task_name}>
+                        <div class="row gx-2 gy-1">
+                            <div class="col-12 col-sm-3"><OutputBytes value={task_hwm.hwm} /></div>
+                            <div class="col-12 col-sm-3">{task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size - task_hwm.hwm} />}</div>
+                            <div class="col-12 col-sm-3">{task_hwm.stack_size == 0 ? undefined : <OutputBytes value={task_hwm.stack_size} />}</div>
+                            <div class="col-12 col-sm-3"><OutputPlainInt value={task_hwm.prio} /></div>
+                        </div>
+                    </FormRow>
                 })}
 
                 <FormSeparator heading="API" />

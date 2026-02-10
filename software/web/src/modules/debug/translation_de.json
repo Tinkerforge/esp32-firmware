@@ -30,6 +30,7 @@
             "free_stack": "Freier Stack",
             "used_stack": "Genutzter Stack",
             "stack_size": "Stackgröße",
+            "priority": "Priorität",
 
             "config_buffers": "Config-Buffer",
             "conf_uint_buf": "ConfUint",

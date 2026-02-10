@@ -68,6 +68,7 @@ interface task_hwm {
     task_name: string;
     hwm: number;
     stack_size: number;
+    prio: number;
 }
 
 export type state_hwm = task_hwm[];
