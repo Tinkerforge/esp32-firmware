@@ -21,6 +21,7 @@
 
 #include <ctime>
 
+#define EVENT_LOG_PREFIX "esp32_eth_v2_co"
 #include "event_log_prefix.h"
 #include "bindings/errors.h"
 #include "build.h"
