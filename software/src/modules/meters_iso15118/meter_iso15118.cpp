@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meter_ev.h"
+#include "meter_iso15118.h"
 #include "ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
@@ -25,7 +25,7 @@
 
 #include "gcc_warnings.h"
 
-static const MeterValueID meter_ev_value_ids[METER_EV_VALUE_COUNT] = {
+static const MeterValueID meter_iso15118_value_ids[METER_ISO15118_VALUE_COUNT] = {
     MeterValueID::EVSOCPresent,
     MeterValueID::EVSOCTarget,
     MeterValueID::EVSOCMin,
@@ -41,7 +41,7 @@ static const MeterValueID meter_ev_value_ids[METER_EV_VALUE_COUNT] = {
     MeterValueID::EVCurrentMin,
 };
 
-MeterEV::MeterEV(uint32_t slot_, Config *state_, Config *errors_)
+MeterISO15118::MeterISO15118(uint32_t slot_, Config *state_, Config *errors_)
     : slot(slot_)
     , state(state_)
     , errors(errors_)
@@ -49,23 +49,23 @@ MeterEV::MeterEV(uint32_t slot_, Config *state_, Config *errors_)
 }
 
 [[gnu::const]]
-MeterClassID MeterEV::get_class() const
+MeterClassID MeterISO15118::get_class() const
 {
     return MeterClassID::ISO15118;
 }
 
-void MeterEV::setup(Config * /*config*/)
+void MeterISO15118::setup(Config * /*config*/)
 {
-    meters.declare_value_ids(slot, meter_ev_value_ids, METER_EV_VALUE_COUNT);
+    meters.declare_value_ids(slot, meter_iso15118_value_ids, METER_ISO15118_VALUE_COUNT);
 }
 
-void MeterEV::update_all_values(float soc, float target_soc, float min_soc, float max_soc,
+void MeterISO15118::update_all_values(float soc, float target_soc, float min_soc, float max_soc,
                                 float ev_max_voltage, float ev_max_current, float ev_max_power,
                                 float ev_capacity, float ev_present_power,
                                 float ev_energy_request, float ev_time_to_target_soc,
                                 float ev_min_power, float ev_min_current)
 {
-    float values[METER_EV_VALUE_COUNT] = {
+    float values[METER_ISO15118_VALUE_COUNT] = {
         soc,
         target_soc,
         min_soc,
@@ -84,10 +84,10 @@ void MeterEV::update_all_values(float soc, float target_soc, float min_soc, floa
     meters.update_all_values(slot, values);
 }
 
-void MeterEV::clear_all_values()
+void MeterISO15118::clear_all_values()
 {
-    float values[METER_EV_VALUE_COUNT];
-    for (size_t i = 0; i < METER_EV_VALUE_COUNT; i++) {
+    float values[METER_ISO15118_VALUE_COUNT];
+    for (size_t i = 0; i < METER_ISO15118_VALUE_COUNT; i++) {
         values[i] = NAN;
     }
 
@@ -95,7 +95,7 @@ void MeterEV::clear_all_values()
     state->get("protocol")->updateEnum(EVDataProtocol::None);
 }
 
-void MeterEV::set_protocol(EVDataProtocol protocol)
+void MeterISO15118::set_protocol(EVDataProtocol protocol)
 {
     state->get("protocol")->updateEnum(protocol);
 }

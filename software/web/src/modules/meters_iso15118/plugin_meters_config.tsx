@@ -28,7 +28,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { EVDataProtocol } from "./ev_data_protocol.enum";
 import * as API from "../../ts/api";
 
-export type EVMetersConfig = [
+export type ISO15118MetersConfig = [
     MeterClassID.ISO15118,
     {
         display_name: string;
@@ -39,12 +39,12 @@ export type EVMetersConfig = [
 export function pre_init() {
     return {
         [MeterClassID.ISO15118]: {
-            name: () => __("meters_ev.content.meter_class"),
+            name: () => __("meters_iso15118.content.meter_class"),
             new_config: () => [MeterClassID.ISO15118, {display_name: "", location: MeterLocation.EV}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
-            get_edit_children: (config: EVMetersConfig, on_config: (config: EVMetersConfig) => void): ComponentChildren => {
+            get_edit_children: (config: ISO15118MetersConfig, on_config: (config: ISO15118MetersConfig) => void): ComponentChildren => {
                 return [
-                    <FormRow label={__("meters_ev.content.config_display_name")}>
+                    <FormRow label={__("meters_iso15118.content.config_display_name")}>
                         <InputText
                             required
                             maxLength={32}
@@ -58,9 +58,9 @@ export function pre_init() {
             },
             get_extra_rows: (meter_slot: number) => {
                 let protocol = API.get_unchecked(`meters/${meter_slot}/state`)?.protocol;
-                let protocol_string = protocol == null ? __("meters.script.reboot_required") : translate_unchecked(`meters_ev.script.protocol_${protocol}`)
+                let protocol_string = protocol == null ? __("meters.script.reboot_required") : translate_unchecked(`meters_iso15118.script.protocol_${protocol}`)
 
-                return <FormRow label={__("meters_ev.content.protocol")} small>
+                return <FormRow label={__("meters_iso15118.content.protocol")} small>
                     <div class="row"><div class="col-sm-4">
                         <InputText class="form-control-sm" value={protocol_string}/>
                     </div></div>

@@ -583,15 +583,15 @@ float physical_value_to_float(int16_t value, int8_t exponent)
 
 void Common::update_ev_data(const EVData &data, EVDataProtocol protocol)
 {
-#if MODULE_METERS_EV_AVAILABLE()
-    meters_ev.update_from_ev_data(data, protocol);
+#if MODULE_METERS_ISO15118_AVAILABLE()
+    meters_iso15118.update_from_ev_data(data, protocol);
 #endif
 }
 
 void Common::clear_ev_data()
 {
-#if MODULE_METERS_EV_AVAILABLE()
-    meters_ev.clear_values();
+#if MODULE_METERS_ISO15118_AVAILABLE()
+    meters_iso15118.clear_values();
 #endif
 }
 

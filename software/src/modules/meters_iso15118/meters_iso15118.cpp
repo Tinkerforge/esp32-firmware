@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "meters_ev.h"
-#include "meter_ev.h"
+#include "meters_iso15118.h"
+#include "meter_iso15118.h"
 #include "ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
@@ -28,7 +28,7 @@
 
 #include "gcc_warnings.h"
 
-void MetersEV::pre_setup()
+void MetersISO15118::pre_setup()
 {
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
@@ -47,40 +47,40 @@ void MetersEV::pre_setup()
 }
 
 [[gnu::const]]
-MeterClassID MetersEV::get_class() const
+MeterClassID MetersISO15118::get_class() const
 {
     return MeterClassID::ISO15118;
 }
 
-IMeter *MetersEV::new_meter(uint32_t slot, Config *state, Config *errors)
+IMeter *MetersISO15118::new_meter(uint32_t slot, Config *state, Config *errors)
 {
     if (meter_instance) {
         logger.printfln("Meter %lu: Cannot create more than one meter of class ISO15118", slot);
         return nullptr;
     }
-    meter_instance = new MeterEV(slot, state, errors);
+    meter_instance = new MeterISO15118(slot, state, errors);
     return meter_instance;
 }
 
 [[gnu::const]]
-const Config *MetersEV::get_config_prototype()
+const Config *MetersISO15118::get_config_prototype()
 {
     return &config_prototype;
 }
 
 [[gnu::const]]
-const Config *MetersEV::get_state_prototype()
+const Config *MetersISO15118::get_state_prototype()
 {
     return &state_prototype;
 }
 
 [[gnu::const]]
-const Config *MetersEV::get_errors_prototype()
+const Config *MetersISO15118::get_errors_prototype()
 {
     return &errors_prototype;
 }
 
-void MetersEV::update_from_ev_data(const EVData &data, EVDataProtocol protocol)
+void MetersISO15118::update_from_ev_data(const EVData &data, EVDataProtocol protocol)
 {
     if (!meter_instance) {
         return;
@@ -108,7 +108,7 @@ void MetersEV::update_from_ev_data(const EVData &data, EVDataProtocol protocol)
     }
 }
 
-void MetersEV::clear_values()
+void MetersISO15118::clear_values()
 {
     if (meter_instance) {
         meter_instance->clear_all_values();

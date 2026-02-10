@@ -19,38 +19,37 @@
 
 #pragma once
 
-#include <stdint.h>
-
+#include "module.h"
 #include "config.h"
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
-#include "ev_data_protocol.enum.h"
+#include "modules/meters/imeter_generator.h"
 
-#define METER_EV_VALUE_COUNT 13
+class MeterISO15118;
+struct EVData;
+enum class EVDataProtocol : uint8_t;
 
-class MeterEV final : public IMeter
+class MetersISO15118 final : public IModule, public IMeterGenerator
 {
 public:
-    MeterEV(uint32_t slot, Config *state, Config *errors);
+    MetersISO15118(){}
+    void pre_setup() override;
 
     [[gnu::const]] MeterClassID get_class() const override;
-    void setup(Config *config) override;
+    IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
+    [[gnu::const]] const Config *get_config_prototype() override;
+    [[gnu::const]] const Config *get_state_prototype() override;
+    [[gnu::const]] const Config *get_errors_prototype() override;
 
-    // Update all values at once (NAN values are handled by the meters module)
-    void update_all_values(float soc, float target_soc, float min_soc, float max_soc,
-                           float ev_max_voltage, float ev_max_current, float ev_max_power,
-                           float ev_capacity, float ev_present_power,
-                           float ev_energy_request, float ev_time_to_target_soc,
-                           float ev_min_power, float ev_min_current);
+    // Update meter values from EV data (called by iso15118.common)
+    void update_from_ev_data(const EVData &data, EVDataProtocol protocol);
 
-    // Clear all values (set to NAN)
-    void clear_all_values();
-
-    // Set the active protocol
-    void set_protocol(EVDataProtocol protocol);
+    // Clear all meter values (called when session ends)
+    void clear_values();
 
 private:
-    uint32_t slot;
-    Config *state;
-    Config *errors;
+    Config config_prototype;
+    Config state_prototype;
+    Config errors_prototype;
+
+    MeterISO15118 *meter_instance = nullptr;
 };

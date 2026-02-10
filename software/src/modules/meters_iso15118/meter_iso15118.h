@@ -19,37 +19,38 @@
 
 #pragma once
 
-#include "module.h"
+#include <stdint.h>
+
 #include "config.h"
 #include "modules/meters/imeter.h"
-#include "modules/meters/imeter_generator.h"
+#include "modules/meters/meter_value_id.h"
+#include "ev_data_protocol.enum.h"
 
-class MeterEV;
-struct EVData;
-enum class EVDataProtocol : uint8_t;
+#define METER_ISO15118_VALUE_COUNT 13
 
-class MetersEV final : public IModule, public IMeterGenerator
+class MeterISO15118 final : public IMeter
 {
 public:
-    MetersEV(){}
-    void pre_setup() override;
+    MeterISO15118(uint32_t slot, Config *state, Config *errors);
 
     [[gnu::const]] MeterClassID get_class() const override;
-    IMeter *new_meter(uint32_t slot, Config *state, Config *errors) override;
-    [[gnu::const]] const Config *get_config_prototype() override;
-    [[gnu::const]] const Config *get_state_prototype() override;
-    [[gnu::const]] const Config *get_errors_prototype() override;
+    void setup(Config *config) override;
 
-    // Update meter values from EV data (called by iso15118.common)
-    void update_from_ev_data(const EVData &data, EVDataProtocol protocol);
+    // Update all values at once (NAN values are handled by the meters module)
+    void update_all_values(float soc, float target_soc, float min_soc, float max_soc,
+                           float ev_max_voltage, float ev_max_current, float ev_max_power,
+                           float ev_capacity, float ev_present_power,
+                           float ev_energy_request, float ev_time_to_target_soc,
+                           float ev_min_power, float ev_min_current);
 
-    // Clear all meter values (called when session ends)
-    void clear_values();
+    // Clear all values (set to NAN)
+    void clear_all_values();
+
+    // Set the active protocol
+    void set_protocol(EVDataProtocol protocol);
 
 private:
-    Config config_prototype;
-    Config state_prototype;
-    Config errors_prototype;
-
-    MeterEV *meter_instance = nullptr;
+    uint32_t slot;
+    Config *state;
+    Config *errors;
 };

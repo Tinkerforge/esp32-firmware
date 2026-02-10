@@ -32,7 +32,7 @@
 
 #include "isotls.h"
 
-#include "modules/meters_ev/ev_data_protocol.enum.h"
+#include "modules/meters_iso15118/ev_data_protocol.enum.h"
 #include "common_state.enum.h"
 #include "encryption.enum.h"
 
