@@ -771,7 +771,7 @@ def build_web(js_source_map, css_source_map, no_minify):
             'npx',
             'sass',
             '--silence-deprecation',
-            'color-functions,import,global-builtin,abs-percent,mixed-decls'  # still used by bootstrap 4
+            'color-functions,import,global-builtin,if-function'  # still used by bootstrap 5
         ]
 
         if not css_source_map:

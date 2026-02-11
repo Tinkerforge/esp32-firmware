@@ -6,28 +6,28 @@
   "scripts": {},
   "author": "Erik Fleckstein",
   "dependencies": {
-    "@preact/signals": "^2.0.1",
+    "@preact/signals": "^2.7.1",
     "@types/argon2-browser": "^1.18.4",
     "argon2-browser": "^1.18.0",
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "deepsignal": "^1.6.0",
-    "preact": "^10.26.4",
-    "react": "npm:@preact/compat",
-    "react-bootstrap": "^2.10.7",
-    "react-dom": "npm:@preact/compat",
+    "preact": "^10.28.3",
+    "react": "npm:@preact/compat@^18.3.1",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "npm:@preact/compat@^18.3.1",
     "react-feather": "^2.0.10",
     "uplot": "1.6.30",
-    "yamd5.js": "1.0.0"
+    "yamd5.js": "^1.0.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.21",
-    "cssnano": "^7.0.6",
-    "cssnano-preset-advanced": "^7.0.6",
-    "esbuild": "^0.25.1",
+    "autoprefixer": "^10.4.24",
+    "cssnano": "^7.1.2",
+    "cssnano-preset-advanced": "^7.0.10",
+    "esbuild": "^0.27.3",
     "html-minifier-terser": "^7.2.0",
-    "median-js-bridge": "^2.6.0",
+    "median-js-bridge": "^2.13.4",
     "postcss-cli": "^11.0.1",
-    "sass": "1.86.0",
-    "typescript": "^5.8.2"
+    "sass": "^1.97.3",
+    "typescript": "^5.9.3"
   }
 }
