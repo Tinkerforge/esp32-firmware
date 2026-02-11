@@ -600,7 +600,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     <Mail />
                 <Spinner animation="border" size="sm" className="ms-2" hidden={state.generator_state !== GenerationState.ManualRemoteSend}/>
             </Dropdown.Toggle>
-            <Dropdown.Menu align="end">
+            <Dropdown.Menu renderOnMount align="end">
                 {sendEmailDropdownItems}
             </Dropdown.Menu>
         </Dropdown></div>
