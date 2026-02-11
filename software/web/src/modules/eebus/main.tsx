@@ -497,6 +497,52 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 });
                             }
 
+                            // Monitoring of Grid Connection Point (MGCP)
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.MGCP) > -1) {
+                                const mgcp = state.usecases.monitoring_of_grid_connection_point;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["MGCP (Monitoring of Grid Connection Point)"],
+                                    extraValue: <>
+                                        <FormRow label="PV Curtailment Factor" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mgcp.pv_curtailment_limit_factor_percent} digits={1} scale={0} unit="%" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Total Power" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mgcp.total_power_w} digits={0} scale={0} unit="W" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Energy Feed-In" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mgcp.energy_feed_in_wh} digits={0} scale={0} unit="Wh" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Energy Consumed" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mgcp.energy_consumed_wh} digits={0} scale={0} unit="Wh" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <PhaseRow label="Current" label_muted="L1, L2, L3" values={[
+                                            mgcp.current_phase_1_ma,
+                                            mgcp.current_phase_2_ma,
+                                            mgcp.current_phase_3_ma
+                                        ]} unit="mA" />
+                                        <PhaseRow label="Voltage" label_muted="L1, L2, L3" values={[
+                                            mgcp.voltage_phase_1_v,
+                                            mgcp.voltage_phase_2_v,
+                                            mgcp.voltage_phase_3_v
+                                        ]} unit="V" />
+                                        <FormRow label="Grid Frequency" small>
+                                            <div class="row mx-n1"><div class="col-sm-4 px-1">
+                                                <OutputFloat value={mgcp.frequency_mhz} digits={2} scale={3} unit="Hz" small />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
                             return rows;
                         })()}
                     />

@@ -130,6 +130,19 @@ export interface usecases {
         energy_broker_connected: boolean;
         energy_broker_heartbeat_ok: boolean;
     };
+    monitoring_of_grid_connection_point: {
+        pv_curtailment_limit_factor_percent: number;
+        total_power_w: number;
+        energy_feed_in_wh: number;
+        energy_consumed_wh: number;
+        current_phase_1_ma: number;
+        current_phase_2_ma: number;
+        current_phase_3_ma: number;
+        voltage_phase_1_v: number;
+        voltage_phase_2_v: number;
+        voltage_phase_3_v: number;
+        frequency_mhz: number;
+    };
 
 }
 
