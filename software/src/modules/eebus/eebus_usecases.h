@@ -32,9 +32,6 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 */
 
 #pragma once
-
-#include "build.h"
-
 #include "config.h"
 #include "loadcontrol_state.enum.h"
 #include "spine_connection.h"
@@ -54,23 +51,23 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_OPEV_USECASE
 #endif
 #ifdef EEBUS_MODE_EM
-#define EEBUS_ENABLE_MPC_USECASE
 #define EEBUS_ENABLE_LPP_USECASE
-//#define EEBUS_ENABLE_LPC_USECASE
+#define EEBUS_ENABLE_LPC_USECASE
+#define EEBUS_ENABLE_MGCP_USECASE
 #endif
 
 #ifdef EEBUS_DEV_TEST_ENABLE
-#define EEBUS_ENABLE_EVCEM_USECASE
-#define EEBUS_ENABLE_EVCC_USECASE
-#define EEBUS_ENABLE_EVSECC_USECASE
+//#define EEBUS_ENABLE_EVCEM_USECASE
+//#define EEBUS_ENABLE_EVCC_USECASE
+//#define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
-#define EEBUS_ENABLE_MPC_USECASE
+//#define EEBUS_ENABLE_MPC_USECASE
 #define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_EVCS_USECASE
+//#define EEBUS_ENABLE_EVCS_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
+//#define EEBUS_ENABLE_OPEV_USECASE
+#define EEBUS_ENABLE_MGCP_USECASE
 #endif
-
 
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
@@ -185,6 +182,7 @@ public:
     // DeviceConfiguration
     static constexpr uint8_t lpcDeviceConfigurationKeyIdOffset = 10;
     static constexpr uint8_t lppDeviceConfigurationKeyIdOffset = 20;
+    static constexpr uint8_t mgcpDeviceConfigurationKeyIdOffset = 30;
     static DeviceConfigurationKeyValueDescriptionListDataType get_device_configuration_list_data();
     static DeviceConfigurationKeyValueListDataType get_device_configuration_value_list_data();
 
@@ -199,6 +197,8 @@ public:
     static constexpr uint8_t lpcElectricalConnectionParameterIdOffset = 0;
     static constexpr uint8_t lppElectricalConnectionParameterIdOffset = 0;
     static constexpr uint8_t mpcElectricalConnectionParameterIdOffset = 10; // next offset should be +20 atleast
+    static constexpr uint8_t mgcpElectricalConnectionIdOffset = 20;
+    static constexpr uint8_t mgcpElectricalConnectionParameterIdOffset = 30;
     static ElectricalConnectionCharacteristicListDataType get_electrical_connection_characteristic_list_data();
     static ElectricalConnectionDescriptionListDataType get_electrical_connection_description_list_data();
     static ElectricalConnectionParameterDescriptionListDataType get_electrical_connection_parameter_description_list_data();
@@ -209,10 +209,13 @@ public:
     // Measurement
     static constexpr uint8_t lpcMeasurementIdOffset = 0;
     static constexpr uint8_t lppMeasurementIdOffset = 40;
-    static constexpr uint8_t mpcMeasurementIdOffset = 10; // next offset should be +20
+    static constexpr uint8_t mpcMeasurementIdOffset = 10;  // next offset should be +20
+    static constexpr uint8_t mgcpMeasurementIdOffset = 40; // MGCP uses high offsets to avoid conflicts
     static MeasurementDescriptionListDataType get_measurement_description_list_data();
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
+
+    // MGCP-specific offsets (Monitoring of Grid Connection Point)
 
     // Bill
     BillDescriptionListDataType get_bill_description_list_data();
@@ -260,6 +263,7 @@ public:
     static LoadControlLimitListDataType get_load_control_limit_list_data();
     static LoadControlLimitConstraintsListDataType get_load_control_limit_constraints_list_data();
 };
+
 /**
  * The basic Framework of a EEBUS Usecase.
  * Each usecase has one or multiple features and belongs to an entity
@@ -1570,6 +1574,252 @@ private:
 };
 #endif
 
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+/**
+ * The MGCP usecase as defined in EEBus UC TS - Monitoring of Grid Connection Point V1.0.0
+ * Entity Type: GridConnectionPoint
+ * Actor: GridConnectionPoint
+ *
+ * Represents the point where the public electricity grid connects to the building's internal grid.
+ * Uses load/passive sign convention: positive = consumption, negative = production/feed-in.
+ *
+ * Scenarios:
+ *   1 (3.4.1): Monitor PV feed-in power limitation factor (Optional) - DeviceConfiguration
+ *   2 (3.4.2): Monitor momentary power consumption/production (Mandatory)
+ *   3 (3.4.3): Monitor total feed-in energy (Mandatory)
+ *   4 (3.4.4): Monitor total consumed energy (Mandatory)
+ *   5 (3.4.5): Monitor momentary current phase details (Recommended)
+ *   6 (3.4.6): Monitor voltage phase details (Optional)
+ *   7 (3.4.7): Monitor frequency (Optional)
+ *
+ * Features:
+ *   - DeviceConfiguration: For PV curtailment limit factor (Scenario 1)
+ *   - Measurement: For power, energy, current, voltage, frequency (Scenarios 2-7)
+ *   - ElectricalConnection: For electrical connection descriptions
+ */
+class MgcpUsecase final : public EebusUsecase
+{
+public:
+    MgcpUsecase();
+
+    [[nodiscard]] Usecases get_usecase_type() const override
+    {
+        return Usecases::MGCP;
+    }
+
+    /**
+     * Handles a message for the MGCP usecase.
+     * @param header SPINE header of the message.
+     * @param data The actual Function call and data of the message.
+     * @param response Where to write the response to.
+     * @return The MessageReturn object.
+     */
+    MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
+
+    /**
+     * Builds and returns the UseCaseInformationDataType as defined in MGCP spec 3.1.2.
+     */
+    UseCaseInformationDataType get_usecase_information() override;
+
+    [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
+    {
+        return {FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};
+    }
+
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+    // =====================================================================
+    // Data generator methods for SPINE features
+    // =====================================================================
+    void get_measurement_description_list_data(MeasurementDescriptionListDataType *data) const;
+    void get_measurement_constraints_list_data(MeasurementConstraintsListDataType *data) const;
+    void get_measurement_list_data(MeasurementListDataType *data) const;
+    void get_electrical_connection_description_list_data(ElectricalConnectionDescriptionListDataType *data) const;
+    void get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const;
+    void get_device_configuration_description_list_data(DeviceConfigurationKeyValueDescriptionListDataType *data) const;
+    void get_device_configuration_value_list_data(DeviceConfigurationKeyValueListDataType *data) const;
+
+    // =====================================================================
+    // Scenario 1: PV feed-in power limitation factor (Optional)
+    // =====================================================================
+    /**
+     * Update the PV curtailment limit factor (Scenario 1).
+     * This represents the percentage of nominal power that a PV system is allowed to feed-in.
+     * @param limit_factor_percent PV curtailment limit factor as percentage (0-100, typically 70% in Germany).
+     *                             A value of 100 means no curtailment.
+     */
+    void update_pv_curtailment_limit_factor(float limit_factor_percent);
+
+    // =====================================================================
+    // Scenario 2: Monitor momentary power (Mandatory)
+    // =====================================================================
+    /**
+     * Update the total power measurement (Scenario 2).
+     * Uses load/passive sign convention: positive = consumption, negative = production.
+     * @param total_power_w Total active power in watts. Negative values indicate power feed-in.
+     */
+    void update_power(int total_power_w);
+
+    // =====================================================================
+    // Scenario 3: Monitor total feed-in energy (Mandatory)
+    // =====================================================================
+    /**
+     * Update the total energy fed into the grid (Scenario 3).
+     * @param energy_feed_in_wh Total energy fed into the grid in watt-hours.
+     */
+    void update_energy_feed_in(uint32_t energy_feed_in_wh);
+
+    // =====================================================================
+    // Scenario 4: Monitor total consumed energy (Mandatory)
+    // =====================================================================
+    /**
+     * Update the total energy consumed from the grid (Scenario 4).
+     * @param energy_consumed_wh Total energy consumed from the grid in watt-hours.
+     */
+    void update_energy_consumed(uint32_t energy_consumed_wh);
+
+    // =====================================================================
+    // Scenario 5: Monitor momentary current (Recommended)
+    // =====================================================================
+    /**
+     * Update the per-phase current measurements (Scenario 5).
+     * Uses load/passive sign convention: positive = consumption, negative = production.
+     * @param current_phase_1_ma Current on phase 1 in milliamps.
+     * @param current_phase_2_ma Current on phase 2 in milliamps.
+     * @param current_phase_3_ma Current on phase 3 in milliamps.
+     */
+    void update_current(int current_phase_1_ma, int current_phase_2_ma, int current_phase_3_ma);
+
+    // =====================================================================
+    // Scenario 6: Monitor voltage (Optional)
+    // =====================================================================
+    /**
+     * Update the per-phase voltage measurements (Scenario 6).
+     * @param voltage_phase_1_v Voltage on phase 1 (phase-to-neutral) in volts.
+     * @param voltage_phase_2_v Voltage on phase 2 (phase-to-neutral) in volts.
+     * @param voltage_phase_3_v Voltage on phase 3 (phase-to-neutral) in volts.
+     */
+    void update_voltage(int voltage_phase_1_v, int voltage_phase_2_v, int voltage_phase_3_v);
+
+    // =====================================================================
+    // Scenario 7: Monitor frequency (Optional)
+    // =====================================================================
+    /**
+     * Update the grid frequency measurement (Scenario 7).
+     * @param frequency_mhz Grid frequency in millihertz (e.g., 50000 for 50Hz).
+     */
+    void update_frequency(int frequency_mhz);
+
+    // =====================================================================
+    // Constraint update
+    // =====================================================================
+    /**
+     * Update all measurement constraints.
+     * @param power_min Minimum power that can be measured in watts.
+     * @param power_max Maximum power that can be measured in watts.
+     * @param current_min_ma Minimum current in milliamps.
+     * @param current_max_ma Maximum current in milliamps.
+     * @param energy_max_wh Maximum energy in watt-hours.
+     * @param voltage_min_v Minimum voltage in volts.
+     * @param voltage_max_v Maximum voltage in volts.
+     * @param frequency_min_mhz Minimum frequency in millihertz.
+     * @param frequency_max_mhz Maximum frequency in millihertz.
+     */
+    void update_constraints(int power_min, int power_max, int current_min_ma, int current_max_ma, uint32_t energy_max_wh, int voltage_min_v, int voltage_max_v, int frequency_min_mhz, int frequency_max_mhz);
+
+    // =====================================================================
+    // ID Constants (for consistent IDs across the use case)
+    // Based on MGCP spec 3.2.2.2
+    // =====================================================================
+    // Measurement IDs
+    static constexpr uint8_t id_m_1 = EVSEEntity::mgcpMeasurementIdOffset + 1;   ///< Total power
+    static constexpr uint8_t id_m_2 = EVSEEntity::mgcpMeasurementIdOffset + 2;   ///< Energy feed-in
+    static constexpr uint8_t id_m_3 = EVSEEntity::mgcpMeasurementIdOffset + 3;   ///< Energy consumed
+    static constexpr uint8_t id_m_4_1 = EVSEEntity::mgcpMeasurementIdOffset + 4; ///< Current phase A
+    static constexpr uint8_t id_m_4_2 = EVSEEntity::mgcpMeasurementIdOffset + 5; ///< Current phase B
+    static constexpr uint8_t id_m_4_3 = EVSEEntity::mgcpMeasurementIdOffset + 6; ///< Current phase C
+    static constexpr uint8_t id_m_5_1 = EVSEEntity::mgcpMeasurementIdOffset + 7; ///< Voltage phase A
+    static constexpr uint8_t id_m_5_2 = EVSEEntity::mgcpMeasurementIdOffset + 8; ///< Voltage phase B
+    static constexpr uint8_t id_m_5_3 = EVSEEntity::mgcpMeasurementIdOffset + 9; ///< Voltage phase C
+    static constexpr uint8_t id_m_6 = EVSEEntity::mgcpMeasurementIdOffset + 10;  ///< Frequency
+
+    // ElectricalConnection IDs
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    static constexpr uint8_t id_ec_1 = LpcUsecase::id_ec_1;
+#elifdef EEBUS_ENABLE_LPP_USECASE
+    static constexpr uint8_t id_ec_1 = LppUsecase::id_ec_1;
+#else
+    static constexpr uint8_t id_ec_1 = EVSEEntity::mgcpElectricalConnectionIdOffset + 1; ///< Electrical connection description (linked to LPC/LPP if available)
+#endif
+
+    // ElectricalConnection Parameter IDs
+    static constexpr uint8_t id_p_1 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 1;   ///< Total power param
+    static constexpr uint8_t id_p_2 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 2;   ///< Energy feed-in param
+    static constexpr uint8_t id_p_3 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 3;   ///< Energy consumed param
+    static constexpr uint8_t id_p_4_1 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 4; ///< Current phase A param
+    static constexpr uint8_t id_p_4_2 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 5; ///< Current phase B param
+    static constexpr uint8_t id_p_4_3 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 6; ///< Current phase C param
+    static constexpr uint8_t id_p_5_1 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 7; ///< Voltage phase A param
+    static constexpr uint8_t id_p_5_2 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 8; ///< Voltage phase B param
+    static constexpr uint8_t id_p_5_3 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 9; ///< Voltage phase C param
+    static constexpr uint8_t id_p_6 = EVSEEntity::mgcpElectricalConnectionParameterIdOffset + 10;  ///< Frequency param
+
+    // DeviceConfiguration Key IDs
+    static constexpr uint8_t id_k_1 = EVSEEntity::mgcpDeviceConfigurationKeyIdOffset + 1; ///< PV curtailment limit factor
+
+private:
+    // =====================================================================
+    // Scenario 1: PV curtailment limit factor
+    // =====================================================================
+    float pv_curtailment_limit_factor_percent = 100.0f; ///< PV curtailment limit (100% = no curtailment)
+
+    // =====================================================================
+    // Scenario 2: Power measurement
+    // =====================================================================
+    int total_power_w = 0; ///< Total power (positive = consumption, negative = feed-in)
+
+    // =====================================================================
+    // Scenario 3 & 4: Energy measurements
+    // =====================================================================
+    uint32_t energy_feed_in_wh = 0;  ///< Total energy fed into grid
+    uint32_t energy_consumed_wh = 0; ///< Total energy consumed from grid
+
+    // =====================================================================
+    // Scenario 5: Current measurements
+    // =====================================================================
+    int current_phase_ma[3] = {0, 0, 0}; ///< Per-phase current in mA
+
+    // =====================================================================
+    // Scenario 6: Voltage measurements
+    // =====================================================================
+    int voltage_phase_v[3] = {230, 230, 230}; ///< Per-phase voltage in V (default 230V)
+
+    // =====================================================================
+    // Scenario 7: Frequency measurement
+    // =====================================================================
+    int frequency_mhz = 50000; ///< Grid frequency in mHz (default 50Hz)
+
+    // =====================================================================
+    // Constraints
+    // =====================================================================
+    int power_limit_min_w = -1000000;          ///< Min power (negative for production)
+    int power_limit_max_w = 1000000;           ///< Max power
+    int current_limit_min_ma = -100000;        ///< Min current (negative for reverse flow)
+    int current_limit_max_ma = 100000;         ///< Max current
+    uint32_t energy_limit_max_wh = 1000000000; ///< Max energy (1 TWh)
+    int voltage_limit_min_v = 0;               ///< Min voltage
+    int voltage_limit_max_v = 500;             ///< Max voltage
+    int frequency_limit_min_mhz = 45000;       ///< Min frequency (45 Hz)
+    int frequency_limit_max_mhz = 65000;       ///< Max frequency (65 Hz)
+
+    // =====================================================================
+    // Helper methods
+    // =====================================================================
+    void update_api() const;
+};
+#endif
+
 #ifdef EEBUS_ENABLE_OPEV_USECASE
 #ifndef EEBUS_ENABLE_EVCC_USECASE
 #error "OPEV Usecase requires EVCC Usecase to be enabled"
@@ -1837,6 +2087,10 @@ public:
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     OpevUsecase overload_protection_by_ev_charging_current_curtailment{};
     OpevUsecase *opev = &overload_protection_by_ev_charging_current_curtailment;
+#endif
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+    MgcpUsecase monitoring_of_grid_connection_point{};
+    MgcpUsecase *mgcp = &monitoring_of_grid_connection_point;
 #endif
 
     std::vector<EebusUsecase *> usecase_list{};

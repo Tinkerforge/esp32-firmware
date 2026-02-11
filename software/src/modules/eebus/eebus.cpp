@@ -190,6 +190,26 @@ void run_eebus_usecase_tests()
 #endif
             break;
         case 6:
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+            logger.printfln("EEBUS Usecase test: Updating MGCP with test measurements");
+            // Update constraints for grid connection point measurements
+            eebus.usecases->monitoring_of_grid_connection_point.update_constraints(-22000, 22000, 0, 32000, 1000000, 180, 260, 45000, 55000);
+            // Update PV curtailment limit factor (100% = no curtailment)
+            eebus.usecases->monitoring_of_grid_connection_point.update_pv_curtailment_limit_factor(85.5f);
+            // Update power (negative = feed-in to grid)
+            eebus.usecases->monitoring_of_grid_connection_point.update_power(-5200);
+            // Update energy values
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(123456);
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(654321);
+            // Update current measurements (3 phases in mA)
+            eebus.usecases->monitoring_of_grid_connection_point.update_current(-7500, -8200, -6800);
+            // Update voltage measurements (3 phases)
+            eebus.usecases->monitoring_of_grid_connection_point.update_voltage(231, 229, 230);
+            // Update frequency (50Hz = 50000 mHz)
+            eebus.usecases->monitoring_of_grid_connection_point.update_frequency(50020);
+#endif
+            break;
+        case 7:
         default:
 #ifdef EEBUS_ENABLE_EVCEM_USECASE
             logger.printfln("EEBUS Usecase test enabled. Update Power consumed");
@@ -198,6 +218,11 @@ void run_eebus_usecase_tests()
 #ifdef EEBUS_ENABLE_MPC_USECASE
             // Update MPC energy values in subsequent iterations (increasing over time)
             eebus.usecases->mpc->update_energy(150000 + (dev_test_iteration * 100), 25000 + (dev_test_iteration * 50));
+#endif
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+            // Update MGCP energy values in subsequent iterations (increasing over time)
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(123456 + (dev_test_iteration * 150));
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(654321 + (dev_test_iteration * 75));
 #endif
             break;
     }
@@ -298,7 +323,7 @@ void EEBus::pre_setup()
         {"commands_received", Config::Uint16(0)},
         {"commands_sent", Config::Uint16(0)},
         //      {"usecases_supported", Config::Str("", 0, 128)}, // Comma separated list of supported usecases
-        {"usecases_supported", Config::Array({usecase_list}, &usecase_list, 0, 12, Config::type_id<Config::ConfObject>())},
+        {"usecases_supported", Config::Array({usecase_list}, &usecase_list, 0, 20, Config::type_id<Config::ConfObject>())},
         {"charging_summary",
          Config::Array(
              {// Read/Write
@@ -384,6 +409,27 @@ void EEBus::pre_setup()
              {"has_incentives", Config::Bool(false)},
              {"energy_broker_connected", Config::Bool(false)},
              {"energy_broker_heartbeat_ok", Config::Bool(false)},
+         })},
+        {"monitoring_of_grid_connection_point",
+         Config::Object({
+             // Scenario 1: PV curtailment limit factor
+             {"pv_curtailment_limit_factor_percent", Config::Float(100.0f)},
+             // Scenario 2: Momentary power
+             {"total_power_w", Config::Int32(0)},
+             // Scenario 3: Energy feed-in
+             {"energy_feed_in_wh", Config::Uint32(0)},
+             // Scenario 4: Energy consumed
+             {"energy_consumed_wh", Config::Uint32(0)},
+             // Scenario 5: Per-phase current
+             {"current_phase_1_ma", Config::Int32(0)},
+             {"current_phase_2_ma", Config::Int32(0)},
+             {"current_phase_3_ma", Config::Int32(0)},
+             // Scenario 6: Per-phase voltage
+             {"voltage_phase_1_v", Config::Int32(230)},
+             {"voltage_phase_2_v", Config::Int32(230)},
+             {"voltage_phase_3_v", Config::Int32(230)},
+             // Scenario 7: Frequency
+             {"frequency_mhz", Config::Int32(50000)}, // Default 50Hz in millihertz
          })},
     });
 

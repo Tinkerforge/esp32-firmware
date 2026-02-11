@@ -19,23 +19,24 @@
 
 #pragma once
 
-#include "config.h"
-
-#include "module.h"
-#include "config.h"
+// IMPORTANT: options.h and EEBUS_MODE_* must be defined BEFORE any other includes
+// because eebus_usecases.h may be transitively included (e.g., via ship.h -> ship_connection.h -> spine_connection.h)
+// and it checks EEBUS_MODE_* to determine which use cases to enable.
 #include "options.h"
-#include "ship.h"
-#include <TFJson.h>
-#include "tools/malloc.h"
 
 #if OPTIONS_PRODUCT_ID_IS_WARP_ANY() == 1
 #define EEBUS_MODE_EVSE
-#define EEBUS_DEVICE_TYPE  "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() == 1
 #define EEBUS_MODE_EM
-#define EEBUS_DEVICE_TYPE  "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 #endif
 
+#include "config.h"
+#include "module.h"
+#include "ship.h"
+#include "tools/malloc.h"
+#include <TFJson.h>
 
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define MAX_PEER_REMEMBERED 4           // How man ship peers configured to be remembered
@@ -45,7 +46,7 @@
 
 //#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
-//#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
+#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
 // The EEBUS Module needs to be configured before the usecases are included as their configuration depends on the module configuration (e.g. device type).
 #include "eebus_usecases.h"
