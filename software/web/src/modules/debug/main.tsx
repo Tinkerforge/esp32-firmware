@@ -62,7 +62,7 @@ export function FormRow(props: FormRowProps) { return <VanillaFormRow {...props}
 
 function Row(props: {className?: string, label?: string, label_muted?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
     return <FormRow class={props.className} label={props.label} label_muted={props.label_muted}>
-        <div class={"row gx-2 gy-1"}>
+        <div class="row gx-2 gy-1">
             <div class="col-12 col-sm-4">{props.l}</div>
             <div class="col-12 col-sm-4">{props.c}</div>
             <div class="col-12 col-sm-4">{props.r}</div>
