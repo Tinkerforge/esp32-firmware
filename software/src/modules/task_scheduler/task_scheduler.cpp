@@ -372,6 +372,11 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
 
 TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
+#ifdef DEBUG_FS_ENABLE
+    if (strcmp(pcTaskGetName(nullptr), "tiT") == 0) {
+        esp_system_abort("Calling TaskScheduler::await is not allowed in the TCP/IP thread!");
+    }
+#endif
     return await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait);
 }
 
