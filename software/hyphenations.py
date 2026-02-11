@@ -1037,6 +1037,10 @@ de_hyph = [
     "Er-zwun-ge-ne",
     "Ent-la-de-leis-tung",
     "Emp-fangs-stär-ke",
+    "De-ak-ti-vier-te",
+    "Bat-te-rie-ka-pa-zi-tät",
+    "Ener-gie-an-for-de-rung",
+    "Fa-rb-sche-ma",
 ]
 
 en_hyph = [
