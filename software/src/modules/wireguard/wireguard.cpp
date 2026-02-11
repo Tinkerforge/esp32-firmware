@@ -162,6 +162,16 @@ void Wireguard::connect_wireguard()
          psk.isEmpty() ? nullptr : psk.c_str(),
          nullptr,
          nullptr,
+         [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
+            // Currently only one peer is supported.
+            if (peer_index != 0)
+                return;
+
+            task_scheduler.scheduleOnce([peer_index, up, addr_cpy=*addr, port]() {
+                wireguard.update_peer_info(peer_index, up, &addr_cpy, port);
+            });
+         },
+         nullptr,
          config.get("mtu"                   )->asUint16()
     );
 
@@ -175,26 +185,24 @@ void Wireguard::connect_wireguard()
         return;
     }
 
-    task_scheduler.scheduleUncancelable([this]() {
-        bool up = this->wg_data->wg.is_peer_up(nullptr, nullptr);
-
-        if(state.get("state")->updateUint(up ? 3 : 2))
-        {
-            if (up) {
-                logger.printfln("Wireguard connection established");
-                this->wg_data->last_connected = now_us();
-                state.get("connection_start")->updateUptime(this->wg_data->last_connected);
-            } else {
-                auto now = now_us();
-                state.get("connection_end")->updateUptime(now);
-
-                auto connected_for = now - this->wg_data->last_connected;
-                logger.printfln("Wireguard connection lost. Was connected for %llu seconds.", connected_for.to<millis_t>().as<uint64_t>());
-            }
-        }
-    }, 1_s, 1_s);
-
     state.get("state")->updateUint(2);
+}
+
+void Wireguard::update_peer_info(uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port) {
+    if(state.get("state")->updateUint(up ? 3 : 2))
+    {
+        if (up) {
+            logger.printfln("Wireguard connection established");
+            this->wg_data->last_connected = now_us();
+            state.get("connection_start")->updateUptime(this->wg_data->last_connected);
+        } else {
+            auto now = now_us();
+            state.get("connection_end")->updateUptime(now);
+
+            auto connected_for = now - this->wg_data->last_connected;
+            logger.printfln("Wireguard connection lost. Was connected for %llu seconds.", connected_for.to<millis_t>().as<uint64_t>());
+        }
+    }
 }
 
 void Wireguard::setup()

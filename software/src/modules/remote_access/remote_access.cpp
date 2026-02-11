@@ -1049,76 +1049,6 @@ void RemoteAccess::register_urls()
         return;
     }
 
-    task_scheduler.scheduleUncancelable(
-        [this]() {
-            struct timeval now;
-            if (!rtc.clock_synced(&now)) {
-                now.tv_sec = 0;
-            }
-            for (size_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
-                uint32_t state = 1;
-                if (this->remote_connections[i].conn != nullptr) {
-                    state = this->remote_connections[i].conn->is_peer_up(nullptr, nullptr) ? 2 : 1;
-                }
-
-                auto conn_state = this->connection_state.get(i + 1); // 0 is the management connection
-                if (conn_state->get("state")->updateUint(state)) {
-                    uint32_t conn = conn_state->get("connection")->asUint();
-                    uint32_t user = conn_state->get("user")->asUint();
-                    conn_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
-                    if (state == 2) {
-                        logger.printfln("Connection %lu for user %lu connected", conn, user);
-                    } else if (state == 1 && conn != 255 && user != 255) {
-                        logger.printfln("Connection %lu for user %lu disconnected", conn, user);
-                    }
-                }
-            }
-        },
-        1_s,
-        1_s);
-
-    task_scheduler.scheduleUncancelable(
-        [this]() {
-            struct timeval now;
-            if (!rtc.clock_synced(&now)) {
-                return;
-            }
-
-            uint32_t state = 1;
-            if (management != nullptr) {
-                state = management->is_peer_up(nullptr, nullptr) ? 2 : 1;
-            }
-            if (state == 2) {
-                this->last_mgmt_alive = now_us();
-            }
-
-            // Check if we got unlucky timing and management request ran
-            // without the management connection getting connected afterwards
-            if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
-                logger.printfln("Management connection timed out");
-
-                // Reset the timeout to prevent log and reconnect spamming
-                this->last_mgmt_alive = now_us();
-                this->management_request_done = false;
-            }
-
-            auto mgmt_state = this->connection_state.get(0);
-            if (mgmt_state->get("state")->updateUint(state)) {
-                mgmt_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
-                if (state == 2) {
-                    logger.printfln("Management connection connected");
-                } else {
-                    in_seq_number = 0;
-                    this->management_request_done = false;
-                    logger.printfln("Management connection disconnected");
-                    // Close all remote access connections when management connection is lost
-                    this->close_all_remote_connections();
-                }
-            }
-        },
-        1_s,
-        1_s);
-
     // Check if NTP sync is disabled and log a warning
     const Config *ntp_config = api.getState("ntp/config", false);
     if (ntp_config != nullptr && !ntp_config->get("enable")->asBool()) {
@@ -1875,6 +1805,17 @@ void RemoteAccess::connect_management()
                       psk,
                       &management_filter_in,
                       &management_filter_out,
+                      [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
+                        logger.printfln("management update peer info peer_idx=%u up=%d addr=%s, port=%u", peer_index, up, ipaddr_ntoa(addr), port);
+                        // Currently only one peer is supported.
+                        if (peer_index != 0)
+                            return;
+
+                        task_scheduler.scheduleOnce([peer_index, up, addr_cpy=*addr, port]() {
+                            remote_access.update_peer_info(255, peer_index, up, &addr_cpy, port);
+                        });
+                      },
+                      nullptr,
                       config.get("mtu")->asUint16());
 
     task_scheduler.scheduleUncancelable(
@@ -1939,9 +1880,86 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    psk,
                    nullptr,
                    nullptr,
+                   [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
+                    logger.printfln("remote connection update peer info peer_idx=%u up=%d addr=%s, port=%u", peer_index, up, ipaddr_ntoa(addr), port);
+                    // Currently only one peer is supported.
+                    if (peer_index != 0)
+                        return;
+                    uint8_t connection_idx = static_cast<uint8_t>(reinterpret_cast<uintptr_t>(user_data));
+
+                    task_scheduler.scheduleOnce([connection_idx, peer_index, up, addr_cpy=*addr, port]() {
+                        remote_access.update_peer_info(connection_idx, peer_index, up, &addr_cpy, port);
+                    });
+                   },
+                   reinterpret_cast<void *>(conn_idx),
                    config.get("mtu")->asUint16());
 
     update_connection_state(conn_idx, user_id, conn_id, 1);
+}
+
+void RemoteAccess::update_peer_info(uint8_t conn_idx, uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port) {
+    if (conn_idx == 255) { // Management connection
+        struct timeval now;
+        if (!rtc.clock_synced(&now)) {
+            // This should never happen
+            logger.printfln("Management connection established but no RTC sync?");
+        }
+
+        uint32_t state = 1;
+        // This check was necessary before, but can probably removed now?
+        // Can management be reset to nullptr while this task is in flight?
+        if (management != nullptr) {
+            state = up ? 2 : 1;
+        }
+        if (state == 2) {
+            this->last_mgmt_alive = now_us();
+        }
+
+        // Check if we got unlucky timing and management request ran
+        // without the management connection getting connected afterwards
+        if (deadline_elapsed(this->last_mgmt_alive + 60_s) && this->management_request_done) {
+            logger.printfln("Management connection timed out");
+
+            // Reset the timeout to prevent log and reconnect spamming
+            this->last_mgmt_alive = now_us();
+            this->management_request_done = false;
+        }
+
+        auto mgmt_state = this->connection_state.get(0);
+        if (mgmt_state->get("state")->updateUint(state)) {
+            mgmt_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
+            if (state == 2) {
+                logger.printfln("Management connection connected");
+            } else {
+                in_seq_number = 0;
+                this->management_request_done = false;
+                logger.printfln("Management connection disconnected");
+                // Close all remote access connections when management connection is lost
+                this->close_all_remote_connections();
+            }
+        }
+    } else {
+        struct timeval now;
+        if (!rtc.clock_synced(&now)) {
+            now.tv_sec = 0;
+        }
+        uint32_t state = 1;
+        if (this->remote_connections[conn_idx].conn != nullptr) {
+            state = up ? 2 : 1;
+        }
+
+        auto conn_state = this->connection_state.get(conn_idx + 1); // 0 is the management connection
+        if (conn_state->get("state")->updateUint(state)) {
+            uint32_t conn = conn_state->get("connection")->asUint();
+            uint32_t user = conn_state->get("user")->asUint();
+            conn_state->get("last_state_change")->updateUint53(static_cast<uint64_t>(now.tv_sec));
+            if (state == 2) {
+                logger.printfln("Connection %lu for user %lu connected", conn, user);
+            } else if (state == 1 && conn != 255 && user != 255) {
+                logger.printfln("Connection %lu for user %lu disconnected", conn, user);
+            }
+        }
+    }
 }
 
 void RemoteAccess::setup_inner_socket()
@@ -2043,7 +2061,7 @@ void RemoteAccess::run_management()
         case management_command_id::Connect: {
             remote_connections[conn_idx].id = static_cast<uint8_t>(command->connection_no);
             // Check if connection is already established or currently being set up
-            if ((conn != nullptr && conn->is_peer_up(nullptr, nullptr)) || remote_connections[conn_idx].in_progress) {
+            if (conn != nullptr || remote_connections[conn_idx].in_progress) {
                 return;
             }
 

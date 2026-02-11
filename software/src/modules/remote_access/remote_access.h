@@ -65,6 +65,8 @@ public:
     Config &get_ping_state();
     micros_t get_ping_start();
 
+    void update_peer_info(uint8_t connection_idx, uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port);
+
 private:
     void resolve_management();
     void connect_management();

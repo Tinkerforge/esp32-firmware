@@ -35,6 +35,8 @@ public:
 
     bool port_used(uint32_t port);
 
+    void update_peer_info(uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port);
+
 private:
     void start_wireguard();
     void connect_wireguard();
