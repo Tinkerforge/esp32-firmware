@@ -114,10 +114,6 @@ let x = {
             "auto_start_description_help": <><p>If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.</p></>,
             "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",
 
-            "external_description": "External control",
-            "external_description_muted": <>{options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/smart_home/evcc/`)}>see setup tutorial for details</a> : undefined}</>,
-            "external_enable": <>Enables an external control system (for example <a href="https://evcc.io/">EVCC</a>) to control this charger</>,
-
             "boost_mode_desc": "Boost Mode",
             "boost_mode_desc_help": <><p>Some vehicles' charging electronics may interpret the prescribed current __("from_the_device") as too low. Boost mode compensates for this by communicating a slightly higher charging current.</p></>,
             "boost_mode": "Allows the vehicle's charge controller a slightly higher charge current (+ 0.24 A) to compensate measurement errors of the vehicle. Use only if your vehicle charges with less than the allowed charge current!",

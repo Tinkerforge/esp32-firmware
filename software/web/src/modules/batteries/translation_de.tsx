@@ -39,8 +39,6 @@ let x = {
             "schedule_graph": "Zeitplan",
             "schedule_graph_muted": "jeweils von 20:00 bis 20:00",
 
-            "managed_batteries": "Kontrollierte Batteriespeicher",
-
             "enable_battery_control": "Batteriesteuerung aktiviert",
 
             "table_battery_display_name": "Anzeigename",

@@ -60,11 +60,6 @@ let x = {
             "csv_flavor_excel": "Excel-kompatibel (; als Feldtrenner, Windows-1252-kodiert)",
             "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)",
 
-            "send_file_type": "Dateityp zum Senden",
-            "enable_send": "Remote-Senden aktivieren",
-            "send_user": "Benutzer zum Senden",
-            "send_user_placeholder": "Fernzugriffsbenutzer",
-
             "user_filter_label": "Benutzerfilter",
             "file_type_label": "Dateityp",
             "language_label": "Sprache",
@@ -79,7 +74,6 @@ let x = {
             "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/,
             "next_send": "Nächster Versand",
             "never": "Nie",
-            "upload_last_month": "Letzten Monat hochladen",
             "test_send": "Test-Versand",
             "sending": "Sende...",
             "charge_log_email_send_config_help": "Der E-Mail-Versand bietet die Möglichkeit, die Ladelogs jeweils am 1. des Monats an Fernzugriffsbenutzer zu senden. Die Ladelogs sind aufgrund Technischer Einschränkungen nicht Ende-zu-Ende verschlüsselt."
@@ -90,14 +84,6 @@ let x = {
         },
         "script": {
             "tracked_charge_count": /*SFN*/ (tracked: number, max_: number) => `${tracked} von maximal ${max_} (${toLocaleFixed(100 * tracked / max_)} %)` /*NF*/,
-            "csv_header_start": "Startzeit",
-            "csv_header_display_name": "Anzeigename",
-            "csv_header_username": "Benutzername",
-            "csv_header_energy": "Geladene Energie in kWh",
-            "csv_header_duration": "Ladedauer in s",
-            "csv_header_meter_start": "Zählerstand Start",
-            "csv_header_meter_end": "Zählerstand Ende",
-            "csv_header_price": "Ladekosten in €; Arbeitspreis ",
 
             "unknown_user": "Unbekannter Benutzer",
             "unknown_users": "Unbekannte Benutzer",
@@ -109,8 +95,6 @@ let x = {
             "remove_failed": "Löschen der aufgezeichneten Ladevorgänge fehlgeschlagen",
             "remove_init": "Lösche aufgezeichnete Ladevorgänge und starte neu...",
             "download_charge_log_failed": "Herunterladen der aufgezeichneten Ladevorgänge fehlgeschlagen",
-            "download_usernames_failed": "Herunterladen der verwendeten Benutzernamen in aufgezeichneten Ladevorgängen fehlgeschlagen",
-            "upload_start_failed": "Email-Versand der aufgezeichneten Ladevorgänge konnte nicht gestartet werden",
             "upload_charge_log_success": "Ladelog versenden erfolgreich",
             "upload_charge_log_failed": "Ladelog versenden fehlgeschlagen",
             "test_charge_log_upload_started": "Test-Ladelog-Upload gestartet",

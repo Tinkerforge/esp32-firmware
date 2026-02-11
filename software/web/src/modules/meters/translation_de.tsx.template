@@ -70,8 +70,6 @@ let x = {
             "unknown_slot": /*SFN*/ (slot: number) => `Unbekannte Stromzählernummer ${slot}`/*NF*/,
             "edit_meter_class": "Klasse",
 
-            "settings": "Einstellungen",
-
             "last_reset": "Stromzähler zuletzt zurückgesetzt",
             "last_reset_unknown": "Unbekannt",
             "last_reset_counter": /*SFN*/ (n: number) => `${n} mal zurückgesetzt`/*NF*/,

@@ -60,11 +60,6 @@ let x = {
             "csv_flavor_excel": "Compatible to Excel (; as field separator, Windows-1252 encoded)",
             "csv_flavor_rfc4180": "According to RFC4180 (, as field separator, UTF-8 encoded)",
 
-            "send_file_type": "File type for sending",
-            "enable_send": "Enable remote sending",
-            "send_user": "User for sending",
-            "send_user_placeholder": "Remote access user",
-
             "user_filter_label": "User filter",
             "file_type_label": "File type",
             "language_label": "Language",
@@ -79,7 +74,6 @@ let x = {
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "next_send": "Next send",
             "never": "Never",
-            "upload_last_month": "Upload last month",
             "test_send": "Test Send",
             "sending": "Sending...",
             "charge_log_email_send_config_help": "Email sending provides the ability to send the charge-logs on the 1st of each month to remote access users. Due to technical limitations, the charge-logs are not end-to-end encrypted."
@@ -90,14 +84,6 @@ let x = {
         },
         "script": {
             "tracked_charge_count": /*SFN*/ (tracked: number, max_: number) => `${tracked} of maximum ${max_} (${toLocaleFixed(100 * tracked / max_)} %)` /*NF*/,
-            "csv_header_start": "Start time",
-            "csv_header_display_name": "Display name",
-            "csv_header_username": "Username",
-            "csv_header_energy": "Charged energy in kWh",
-            "csv_header_duration": "Charge duration in s",
-            "csv_header_meter_start": "Meter reading start",
-            "csv_header_meter_end": "Meter reading end",
-            "csv_header_price": "Charging costs in € Working price ",
 
             "unknown_user": "Unknown user",
             "unknown_users": "Unknown users",
@@ -109,8 +95,6 @@ let x = {
             "remove_failed": "Failed to remove tracked charges",
             "remove_init": "Removing tracked charges and rebooting...",
             "download_charge_log_failed": "Failed to download tracked charges",
-            "download_usernames_failed": "Failed to download the usernames used in tracked charges",
-            "upload_start_failed": "Failed to start email sending of charge-log",
             "upload_charge_log_success": "Charge-log sending was successful",
             "upload_charge_log_failed": "Failed to send charge-log",
             "test_charge_log_upload_started": "Test charge log upload started",

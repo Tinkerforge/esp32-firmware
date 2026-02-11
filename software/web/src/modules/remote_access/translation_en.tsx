@@ -10,7 +10,6 @@ let x = {
             "connected": "Connected to server",
             "connected_to_clients": /*SFN*/ (clients: number) => `${clients} client${clients == 1 ? '' : 's'} connected` /*NF*/,
             "disconnected": "Disconnected",
-            "disabled": "Disabled",
             "ntp_not_synced": "Time synchronization disabled",
             "ntp_not_synced_text": "Remote access requires time synchronization to work properly. Enable time synchronization in the System Time settings."
         },
@@ -45,7 +44,6 @@ let x = {
             "user_exists": "This account already exists",
             "token_corrupted": "Authorization token corrupted. Please remove and re-add.",
             "auth_token": "Authorization token",
-            "auth_token_invalid": "Invalid authorization token",
             "auth_method": "Authorization method",
             "ping": "Ping",
             "start_ping": "Start ping",

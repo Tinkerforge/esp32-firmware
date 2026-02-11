@@ -135,12 +135,6 @@ let x = {
 
             "managed_disabled": <>Damit {__("this_device")} als Lastmanager genutzt werden kann, muss die <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> auf „{__("charge_manager.content.mode_manager")}“ konfiguriert sein.</>,
 
-            "charge_manager_debug": "Debug",
-            "debug_description": "Protokoll erstellen",
-            "debug_description_muted": "zur Diagnose bei Problemen",
-            "debug_start": "Start",
-            "debug_stop": "Stop + Download",
-
             "internal_state": "Interner Zustand",
 
             "peak_current": "Kurzzeitig erlaubter Spitzenstrom",

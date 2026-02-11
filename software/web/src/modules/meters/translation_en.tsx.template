@@ -70,8 +70,6 @@ let x = {
             "unknown_slot": /*SFN*/ (slot: number) => `Unknown meter number ${slot}`/*NF*/,
             "edit_meter_class": "Class",
 
-            "settings": "Settings",
-
             "last_reset": "Last energy meter reset",
             "last_reset_unknown": "Unknown",
             "last_reset_counter": /*SFN*/ (n: number) => `${n} times resetted`/*NF*/,

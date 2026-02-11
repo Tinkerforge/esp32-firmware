@@ -10,7 +10,6 @@ let x = {
             "connected": "Verbunden zum Server",
             "connected_to_clients": /*SFN*/ (clients: number) => `${clients} Client${clients == 1 ? "" : "s"} verbunden` /*NF*/,
             "disconnected": "Getrennt",
-            "disabled": "Deaktiviert",
             "ntp_not_synced": "Zeitsynchronisation deaktiviert",
             "ntp_not_synced_text": "Der Fernzugriff benötigt die Zeitsynchronisation für die ordnungsgemäße Funktion. Aktivieren Sie die Zeitsynchronisation in den Systemzeit-Einstellungen."
         },
@@ -45,7 +44,6 @@ let x = {
             "user_exists": "Account wurde bereits hinzugefügt",
             "token_corrupted": "Autorisierungstoken beschädigt. Bitte entfernen und neu hinzufügen.",
             "auth_token": "Autorisierungstoken",
-            "auth_token_invalid": "Ungültiges Autorisierungstoken",
             "auth_method": "Autorisierungsmethode",
             "ping": "Ping",
             "start_ping": "Ping starten",

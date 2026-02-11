@@ -31,7 +31,6 @@ let x = {
             "grid_fees_and_taxes": "Grid fees and taxes",
             "electricity_provider_surcharge": "Electric utility surcharge",
             "electricity_provider_base_fee": "Electric utility basic fee",
-            "day_ahead_market_prices_heading": "Status",
             "price_ct_per_kwh": "Price [ct/kWh]",
             "current_price": "Current market price",
             "average_price": "Average price",

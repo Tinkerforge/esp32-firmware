@@ -31,7 +31,6 @@ let x = {
             "grid_fees_and_taxes": "Netzentgelte und Steuern",
             "electricity_provider_surcharge": "Preisaufschlag des Stromtarifs",
             "electricity_provider_base_fee": "Grundgebühr des Stromtarifs",
-            "day_ahead_market_prices_heading": "Status",
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Börsenpreis",
             "average_price": "Durchschnittspreis",

@@ -5,7 +5,6 @@ import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum"
 let x = {
     "cm_networking": {
         "status": {
-            "mode": "Lademodus",
             "mode_fast": "Schnell",
             "mode_off": "Aus",
             "mode_pv": "PV",

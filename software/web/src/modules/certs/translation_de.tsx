@@ -16,10 +16,7 @@ let x = {
             "cert_file": "Zertifikatsdatei",
             "cert_file_muted": "im PEM-Format",
 
-            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Zertifikaten konfiguriert`/*NF*/,
-
-            "browse": "Durchsuchen",
-            "select_file": "Datei auswählen..."
+            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Zertifikaten konfiguriert`/*NF*/
         },
         "script": {
             "add_cert_failed": "Hinzufügen des Zertifikats fehlgeschlagen",
