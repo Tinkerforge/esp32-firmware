@@ -465,7 +465,7 @@ class Stage3:
     def is_front_panel_led_red(self):
         color = self.try_action('20D', lambda device: device.get_color())
 
-        return color[0] / color[3] > 0.85 and color[3] > 10000
+        return color[0] / color[3] > 0.85 and color[3] > 7000
 
     def is_front_panel_led_green(self):
         color = self.try_action('20D', lambda device: device.get_color())
