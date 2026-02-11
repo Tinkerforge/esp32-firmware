@@ -159,7 +159,7 @@ export class EVSEStatus extends Component<{}, EVSEStatusState> {
                                  disabled={!(state.state.iec61851_state == 1 && (state.slots[4].max_current == 0 || state.slots[6].max_current == 0))}>
                     {__("evse.status.start_charging")}
                 </Dropdown.Toggle>
-                <Dropdown.Menu renderOnMountalign="end">
+                <Dropdown.Menu renderOnMount align="end">
                     <Dropdown.Header class="text-wrap">{nfc_tag_list.length > 0 ? __("evse.status.start_charge_for_user") : __("evse.status.start_charge_no_tags")}</Dropdown.Header>
                     {nfc_tag_list}
                 </Dropdown.Menu>
