@@ -1806,7 +1806,6 @@ void RemoteAccess::connect_management()
                       &management_filter_in,
                       &management_filter_out,
                       [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
-                        logger.printfln("management update peer info peer_idx=%u up=%d addr=%s, port=%u", peer_index, up, ipaddr_ntoa(addr), port);
                         // Currently only one peer is supported.
                         if (peer_index != 0)
                             return;
@@ -1881,7 +1880,6 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
                    nullptr,
                    nullptr,
                    [](uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port, void *user_data) {
-                    logger.printfln("remote connection update peer info peer_idx=%u up=%d addr=%s, port=%u", peer_index, up, ipaddr_ntoa(addr), port);
                     // Currently only one peer is supported.
                     if (peer_index != 0)
                         return;
