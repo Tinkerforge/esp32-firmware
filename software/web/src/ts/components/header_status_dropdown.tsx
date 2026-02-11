@@ -136,7 +136,7 @@ export function HeaderStatusDropdown(props: HeaderStatusDropdownProps) {
                 )}
             </Dropdown.Toggle>
 
-            <Dropdown.Menu style={{minWidth: "180px", zIndex: 1030}}>
+            <Dropdown.Menu renderOnMount style={{minWidth: "180px", zIndex: 1030}}>
                 {enabled_entries.map((entry, i) => (
                     <StatusEntryItem key={i} entry={entry} />
                 ))}
