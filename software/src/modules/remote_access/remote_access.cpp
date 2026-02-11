@@ -2084,6 +2084,7 @@ void RemoteAccess::run_management()
             const String &remote_host = config.get("relay_host")->asString();
             if (conn != nullptr) {
                 conn->end();
+                conn = nullptr;
             }
             local_port = find_next_free_port(local_port);
             if (local_port == 0) {
