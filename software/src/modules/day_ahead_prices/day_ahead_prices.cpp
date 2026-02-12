@@ -51,7 +51,7 @@ void DayAheadPrices::pre_setup()
         {"enable", Config::Bool(false)},
         {"api_url", Config::Str(OPTIONS_DAY_AHEAD_PRICE_API_URL(), 0, 64)},
         {"region", Config::Enum(Region::DE)},
-        {"resolution", Config::Enum(Resolution::Min60)},
+        {"resolution", Config::Enum(Resolution::Min15)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"vat", Config::Uint(0, 0, 10000)}, // in %/100
         {"grid_costs_and_taxes", Config::Uint(0, 0, 99000)}, // in ct/1000 per kWh
