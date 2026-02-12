@@ -938,7 +938,35 @@ static const ConfigMigration migrations[] = {
                 }
             }
         }
-    }
+    },
+#endif
+
+#if OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+    {
+        #if OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+        2, 9, 1,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
+        2, 5, 1,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+        1, 4, 1,
+        #endif
+        // Changes
+        // - Migrate day ahead prices resolution from 60min to 15min for DE, AT and LU
+        [](){
+            DynamicJsonDocument cfg{4096};
+            if (read_config_file("day_ahead_prices/config", cfg)) {
+                // Region: 0=DE, 1=AT, 2=LU; Resolution: 0=Min15, 1=Min60
+                if (cfg.containsKey("region") && cfg.containsKey("resolution")) {
+                    uint8_t region = cfg["region"];
+                    uint8_t resolution = cfg["resolution"];
+                    if ((region == 0 || region == 1 || region == 2) && resolution == 1) {
+                        cfg["resolution"] = 0;
+                        write_config_file("day_ahead_prices/config", cfg);
+                    }
+                }
+            }
+        }
+    },
 #endif
 
 };
