@@ -2395,7 +2395,7 @@ int RemoteAccess::begin_charge_log_send(
 
     logger.printfln("Sent RequestChargeLogSend packet");
 
-    // Step 2: Wait for potential Nack (2 seconds)
+    // Wait for potential Nack (2 seconds)
     uint8_t nack_reason = 0;
     int poll_ret = poll_for_mgmt_response(2000, &nack_reason);
     if (poll_ret < 0) {
@@ -2414,13 +2414,13 @@ int RemoteAccess::begin_charge_log_send(
     // poll_ret == 0 means timeout (expected - server accepted silently)
     // poll_ret > 0 means unexpected Ack (shouldn't happen but is OK)
 
-    // Step 3: Small delay to ensure server has set up the channel
+    // Small delay to ensure server has set up the channel
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
     vTaskDelay(200 / portTICK_PERIOD_MS);
 #pragma GCC diagnostic pop
 
-    // Step 4: Send MetadataForChargeLog
+    // Send MetadataForChargeLog
     const char *lang_str = nullptr;
     switch (language) {
         case Language::German:  lang_str = "de"; break;
@@ -2471,7 +2471,7 @@ int RemoteAccess::begin_charge_log_send(
 
     logger.printfln("Sent MetadataForChargeLog packet (%zu bytes)", written);
 
-    // Step 5: Wait for Ack from server (up to 2 seconds)
+    // Wait for Ack from server (up to 2 seconds)
     nack_reason = 0;
     poll_ret = poll_for_mgmt_response(2000, &nack_reason);
     if (poll_ret < 0) {
@@ -2487,7 +2487,7 @@ int RemoteAccess::begin_charge_log_send(
 
     logger.printfln("Received Ack, opening TCP connection to 10.123.123.3:8080...");
 
-    // Step 6: Open TCP connection to management server
+    // Open TCP connection to management server
     int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_sock < 0) {
         logger.printfln("Failed to create TCP socket: %s (%i)", strerror(errno), errno);
@@ -2593,41 +2593,7 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -7;
     }
 
-    // Parse and validate UUID v4 string to binary conversion
-    // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    // where y is one of 8, 9, a, b (variant bits)
-    auto parse_uuid = [](const String &uuid_str, uint8_t *out) -> bool {
-        if (uuid_str.length() != 36) return false;
-
-        const char *p = uuid_str.c_str();
-
-        // Check dashes are at the correct positions
-        if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
-
-        // Check version field (position 14 must be '4' for UUID v4)
-        if (p[14] != '4') return false;
-
-        // Check variant bits (position 19 must be 8, 9, a, b, A, or B)
-        char variant = p[19];
-        if (variant != '8' && variant != '9' &&
-            variant != 'a' && variant != 'b' &&
-            variant != 'A' && variant != 'B') return false;
-
-        logger.printfln("Parsing UUID: %s", p);
-        size_t out_idx = 0;
-        for (size_t i = 0; i < 35 && out_idx < 16; i++) {
-            if (p[i] == '-') continue;
-            logger.printfln("i: %zu", i);
-            char hex[3] = {p[i], p[i + 1], '\0'};
-            logger.printfln("Hex: %s", hex);
-            if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
-            out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
-            i++; // Skip the second hex digit
-        }
-        return out_idx == 16;
-    };
-
-    if (!parse_uuid(user_uuid_str, user_uuid)) {
+    if (!parse_uuid_string(user_uuid_str, user_uuid)) {
         logger.printfln("Cannot send charge log metadata: failed to parse user UUID");
         return -9;
     }
