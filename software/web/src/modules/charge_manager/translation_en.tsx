@@ -135,8 +135,6 @@ let x = {
 
             "managed_disabled": <>To use {__("this_device")} as charge manager, the <a href="#charge_manager_chargers">{__("charge_manager.content.enable_charge_manager")}</a> must be set to “{__("charge_manager.content.mode_manager")}”.</>,
 
-            "internal_state": "Internal state",
-
             "peak_current": "Short-term allowed peak current",
             "peak_current_muted": "Overload that is compensated by the load management within 30 seconds. 140 % of the Grid current limit.",
 

@@ -155,6 +155,18 @@ def main():
             '.firmware_update.script.install_state_26',
             '.firmware_update.script.install_state_27',
             '.firmware_update.script.install_state_28',
+            '.charge_manager.script.mode_explainer_0',
+            '.charge_manager.script.mode_explainer_0_em',
+            '.charge_manager.script.mode_explainer_0_em_with_ps',
+            '.charge_manager.script.mode_explainer_1',
+            '.charge_manager.script.mode_explainer_1_em_with_ps',
+            '.charge_manager.script.mode_explainer_2',
+            '.charge_manager.script.mode_explainer_2_em',
+            '.charge_manager.script.mode_explainer_2_em_with_ps',
+            '.charge_manager.content.mode_manager',
+            '.charge_manager.content.mode_manager_em_with_ps',
+            '.charge_manager.content.mode_managed',
+            '.charge_manager.content.mode_managed_em_with_ps',
         ]
 
         for x in sorted(unused):
