@@ -850,6 +850,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 });
                             }}
                         />
+                    </FormRow>
+                    <FormRow>
                         <Button
                             className="form-control"
                             variant="primary"
