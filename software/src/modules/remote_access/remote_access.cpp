@@ -1668,20 +1668,16 @@ static int management_filter_in(struct pbuf *packet)
     // When this function is called it is already ensured that the payload contains a valid ip packet.
     uint8_t *payload = static_cast<uint8_t *>(packet->payload);
 
-    if (payload[9] != 0x11) {
+    if (payload[9] != 0x1 && payload[9] != 0x6 && payload[9] != 0x11) {
         logger.printfln("Management blocked invalid incoming packet with protocol: 0x%X", payload[9]);
         return ERR_VAL;
     }
 
-    int header_len = (payload[0] & 0xF) * 4;
-    if (packet->len - (header_len + 8) != sizeof(management_command_packet)) {
-        logger.printfln("Management blocked invalid incoming packet of size: %i", (packet->len - (header_len + 8)));
-        return ERR_VAL;
-    }
+    int ip_header_len = (payload[0] & 0xF) * 4;
 
-    int dest_port = payload[header_len] << 8;
-    dest_port |= payload[header_len + 1];
-    if (dest_port != 12345) {
+    uint16_t dest_port = payload[ip_header_len + 2] << 8;
+    dest_port |= payload[ip_header_len + 3];
+    if (dest_port == 0 || (dest_port != 12345 && dest_port != remote_access.send_port)) {
         logger.printfln("Management blocked invalid incoming packet with destination port: %i.", dest_port);
         return ERR_VAL;
     }
@@ -1692,7 +1688,8 @@ static int management_filter_out(struct pbuf *packet)
 {
     uint8_t *payload = static_cast<uint8_t *>(packet->payload);
 
-    if (payload[9] == 0x1) {
+    // Allow ICMP (0x1), TCP (0x6) packets, and UDP (0x11)
+    if (payload[9] == 0x1 || payload[9] == 0x6 || payload[9] == 0x11) {
         return ERR_OK;
     } else {
         logger.printfln("Management blocked outgoing packet");
