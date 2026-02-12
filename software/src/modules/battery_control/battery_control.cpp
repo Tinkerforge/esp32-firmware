@@ -399,6 +399,7 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         rule->time_end_s    = rule_config->get("time_end"     )->asUint16() * 60UL;
         rule->fast_chg_cond = rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
         rule->action        = rule_config->get("action"       )->asEnum<RuleAction>();
+        rule->index         = static_cast<uint8_t>(i);
 
         if (rule->soc_cond      != RuleCondition::Ignore        ) data->have_soc_rule             = true;
         if (rule->price_cond    != RuleCondition::Ignore        ) data->have_price_rule           = true;
@@ -688,7 +689,7 @@ RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rule
 
         // Complete rule matches.
         logger.tracefln(this->trace_buffer_idx, "%s %zu match", rules_type_name, i);
-        *active_rule_out = static_cast<uint8_t>(i);
+        *active_rule_out = rule->index;
         return rule->action;
     }
 

@@ -64,6 +64,7 @@ private:
         RuleCondition time_cond;
         RuleCondition fast_chg_cond;
         RuleAction    action;
+        uint8_t       index;
     };
 
     void preprocess_rules(const Config *rules_config, control_rule *rules);
