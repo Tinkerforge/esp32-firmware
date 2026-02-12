@@ -35,6 +35,7 @@ import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_w
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
+import { Region } from "./region.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function get_timestamp_today_00_00_in_seconds() {
@@ -50,6 +51,10 @@ function day_ahead_price_time_between(index: number, start: number, end: number)
 
 export function is_day_ahead_prices_enabled() {
     return API.get("day_ahead_prices/config").enable;
+}
+
+function region_only_supports_15min(region: number) {
+    return region == Region.DE || region == Region.AT || region == Region.LU;
 }
 
 export function get_price_from_index_as_15min(index: number, incl_vat: boolean = true) {
@@ -397,15 +402,28 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 ["2", __("day_ahead_prices.content.luxembourg")],
                             ]}
                             value={dap.region}
-                            onValue={(v) => this.setState({region: parseInt(v)})}
+                            onValue={(v) => {
+                                let region = parseInt(v);
+                                let update: Partial<DayAheadPricesConfig> = {region: region};
+                                if (region_only_supports_15min(region)) {
+                                    update.resolution = Resolution.Min15;
+                                }
+                                this.setState(update);
+                            }}
                         />
                     </FormRow>
                     <FormRow label={__("day_ahead_prices.content.resolution")} label_muted={__("day_ahead_prices.content.resolution_muted")}>
                         <InputSelect
-                            items={[
-                                ["0", __("day_ahead_prices.content.minutes15")],
-                                ["1", __("day_ahead_prices.content.minutes60")],
-                            ]}
+                            items={
+                                region_only_supports_15min(dap.region)
+                                ? [
+                                    ["0", __("day_ahead_prices.content.minutes15")],
+                                  ]
+                                : [
+                                    ["0", __("day_ahead_prices.content.minutes15")],
+                                    ["1", __("day_ahead_prices.content.minutes60")],
+                                  ]
+                            }
                             value={dap.resolution}
                             onValue={(v) => this.setState({resolution: parseInt(v)})}
                         />
