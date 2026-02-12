@@ -175,13 +175,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Limit Active" small>
-                                            <div className="row gx-2 gy-1">
-                                                <div className="col-sm-4">
+                                            <div class="row gx-2 gy-1">
+                                                <div class="col-sm-4">
                                                     <InputText class="form-control-sm"
                                                                value={lpc.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}/>
                                                 </div>
                                                 {lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null ?
-                                                    <div className="col-sm-4">
+                                                    <div class="col-sm-4">
                                                         <OutputFloat value={lpc.outstanding_duration_s} digits={0}
                                                                      scale={0} unit="s" small/>
                                                     </div> : undefined}
@@ -204,12 +204,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Duration" small>
-                                            <div className="row gx-2 gy-1"><div className="col-sm-4">
+                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
                                                     <OutputFloat value={lpc.failsafe_limit_duration_s} digits={0}
                                                                  scale={0} unit="s" small/>
                                             </div>
                                             {lpc.usecase_state === LoadcontrolState.Limited && lpc.outstanding_duration_s != null ?
-                                                <div className="col-sm-4">
+                                                <div class="col-sm-4">
                                                         <OutputFloat value={lpc.outstanding_duration_s} digits={0}
                                                                      scale={0} unit="s" small/>
                                                 </div> : undefined}
@@ -238,13 +238,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </div></div>
                                         </FormRow>
                                         <FormRow label="Limit Active" small>
-                                            <div className="row gx-2 gy-1">
-                                                <div className="col-sm-4">
+                                            <div class="row gx-2 gy-1">
+                                                <div class="col-sm-4">
                                                     <InputText class="form-control-sm"
                                                                value={lpp.limit_active ? __("eebus.content.yes") : __("eebus.content.no")}/>
                                                 </div>
                                                 {lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null ?
-                                                    <div className="col-sm-4">
+                                                    <div class="col-sm-4">
                                                         <OutputFloat value={lpp.outstanding_duration_s} digits={0}
                                                                      scale={0} unit="s" small/>
                                                     </div> : undefined}
@@ -267,13 +267,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </div>
                                         </FormRow>
                                         <FormRow label="Failsafe Limit Duration" small>
-                                            <div className="row gx-2 gy-1">
-                                                <div className="col-sm-4">
+                                            <div class="row gx-2 gy-1">
+                                                <div class="col-sm-4">
                                                     <OutputFloat value={lpp.failsafe_limit_duration_s} digits={0}
                                                                  scale={0} unit="s" small/>
                                                 </div>
                                                 {lpp.usecase_state === LoadcontrolState.Limited && lpp.outstanding_duration_s != null ?
-                                                    <div className="col-sm-4">
+                                                    <div class="col-sm-4">
                                                         <OutputFloat value={lpp.outstanding_duration_s} digits={0}
                                                                      scale={0} unit="s" small/>
                                                     </div> : undefined}
