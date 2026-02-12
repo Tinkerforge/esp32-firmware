@@ -36,6 +36,7 @@ import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
 import { Region } from "./region.enum";
+import { Mode } from "./mode.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function get_timestamp_today_00_00_in_seconds() {
@@ -177,11 +178,11 @@ function get_current_price_string() {
 }
 
 function get_price_timeframe() {
-    const dap_config = API.get("day_ahead_prices/config");
+    const dap_prices = API.get("day_ahead_prices/prices");
 
     let time = new Date(util.get_date_now_1m_update_rate());
     let s = ""
-    if(dap_config.resolution == Resolution.Min15) {
+    if(dap_prices.resolution == Resolution.Min15) {
         time.setMilliseconds(Math.floor(time.getMilliseconds() / 1000) * 1000);
         time.setSeconds(Math.floor(time.getSeconds() / 60) * 60);
         time.setMinutes(Math.floor(time.getMinutes() / 15) * 15);
@@ -388,12 +389,23 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
-                    <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")} label_muted={__("day_ahead_prices.content.day_ahead_prices_muted")(dap.api_url)}>
+                    <FormRow label={__("day_ahead_prices.content.enable_day_ahead_prices")}>
                         <Switch desc={__("day_ahead_prices.content.day_ahead_prices_desc")}
                                 checked={dap.enable}
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
+                    <FormRow label={__("day_ahead_prices.content.mode")} label_muted={dap.mode == Mode.Automatic ? __("day_ahead_prices.content.mode_automatic_desc")(dap.api_url) : __("day_ahead_prices.content.mode_push_desc")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("day_ahead_prices.content.mode_automatic")],
+                                ["1", __("day_ahead_prices.content.mode_push")],
+                            ]}
+                            value={dap.mode}
+                            onValue={(v) => this.setState({mode: parseInt(v)})}
+                        />
+                    </FormRow>
+                    {dap.mode == Mode.Automatic &&
                     <FormRow label={__("day_ahead_prices.content.region")}>
                         <InputSelect
                             items={[
@@ -411,7 +423,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 this.setState(update);
                             }}
                         />
-                    </FormRow>
+                    </FormRow>}
+                    {dap.mode == Mode.Automatic &&
                     <FormRow label={__("day_ahead_prices.content.resolution")} label_muted={__("day_ahead_prices.content.resolution_muted")}>
                         <InputSelect
                             items={
@@ -427,7 +440,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             value={dap.resolution}
                             onValue={(v) => this.setState({resolution: parseInt(v)})}
                         />
-                    </FormRow>
+                    </FormRow>}
                     <FormSeparator heading={__("day_ahead_prices.content.extra_costs")} help={__("day_ahead_prices.content.extra_costs_help")}/>
                     <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.vat_muted")}>
                         <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, () => this.update_uplot())}} digits={2} unit="%" max={10000} min={0}/>

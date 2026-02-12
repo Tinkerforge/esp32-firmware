@@ -92,6 +92,7 @@ private:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot prices;
+    ConfigRoot prices_update;
 
 #ifdef DEBUG_FS_ENABLE
     ConfigRoot debug_price_update;
