@@ -41,6 +41,7 @@
 #include "esp_tls.h"
 #include "esp_tls_errors.h"
 #include "event_log_prefix.h"
+#include "language.h"
 #include "tools.h"
 #include "tools/dns.h"
 
@@ -2011,6 +2012,12 @@ void RemoteAccess::run_management()
         return;
     }
 
+    // When a charge log send is in progress, the inner socket is used
+    // by the sending task. Don't read from it here.
+    if (charge_log_sending) {
+        return;
+    }
+
     uint8_t buf[sizeof(management_command_packet)];
     struct sockaddr from;
     socklen_t from_len = sizeof(sockaddr);
@@ -2247,6 +2254,449 @@ int RemoteAccess::stop_ping() {
         ping = nullptr;
     }
 
+    return 0;
+}
+
+static bool parse_uuid_string(const char *uuid_str, uint8_t *out)
+{
+    if (strlen(uuid_str) != 36) return false;
+
+    const char *p = uuid_str;
+    if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
+
+    size_t out_idx = 0;
+    for (size_t i = 0; i < 36 && out_idx < 16; i++) {
+        if (p[i] == '-') continue;
+        if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
+        char hex[3] = {p[i], p[i + 1], '\0'};
+        out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
+        i++; // Skip the second hex digit
+    }
+    return out_idx == 16;
+}
+
+int RemoteAccess::poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason)
+{
+    TickType_t start_tick = xTaskGetTickCount();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+    TickType_t timeout_ticks = timeout_ms / portTICK_PERIOD_MS;
+#pragma GCC diagnostic pop
+
+    while ((xTaskGetTickCount() - start_tick) < timeout_ticks) {
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(inner_socket, &readfds);
+
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 100000; // 100ms increments
+
+        int sel_ret = select(inner_socket + 1, &readfds, NULL, NULL, &tv);
+        if (sel_ret <= 0) {
+            continue;
+        }
+
+        uint8_t buf[32];
+        struct sockaddr_in from;
+        socklen_t from_len = sizeof(from);
+        int received = recvfrom(inner_socket, buf, sizeof(buf), 0,
+                                reinterpret_cast<struct sockaddr *>(&from), &from_len);
+
+        if (received < static_cast<int>(sizeof(management_packet_header))) {
+            continue;
+        }
+
+        management_packet_header *header = reinterpret_cast<management_packet_header *>(buf);
+        if (header->magic != 0x1234) {
+            continue;
+        }
+
+        if (header->type == PacketType::Ack) {
+            return 1;
+        }
+
+        if (header->type == PacketType::Nack && received >= static_cast<int>(sizeof(management_packet_header) + 1)) {
+            if (nack_reason) {
+                *nack_reason = buf[sizeof(management_packet_header)];
+            }
+            return -1;
+        }
+
+        // Ignore other packet types that might arrive
+    }
+
+    return 0; // timeout
+}
+
+void RemoteAccess::release_inner_socket()
+{
+    task_scheduler.await([this]() {
+        this->charge_log_sending = false;
+    });
+}
+
+int RemoteAccess::begin_charge_log_send(
+    const char *filename, size_t filename_len,
+    const char *display_name, size_t display_name_len,
+    const char *user_uuid_str,
+    Language language)
+{
+    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+        logger.printfln("Cannot send charge log: management connection not established");
+        return -1;
+    }
+
+    if (inner_socket < 0) {
+        logger.printfln("Cannot send charge log: inner socket not available");
+        return -2;
+    }
+
+    // Parse user UUID
+    uint8_t user_uuid[16];
+    if (!parse_uuid_string(user_uuid_str, user_uuid)) {
+        logger.printfln("Cannot send charge log: invalid user UUID '%s'", user_uuid_str);
+        return -3;
+    }
+
+    // Take over inner socket from run_management
+    auto await_ret = task_scheduler.await([this]() {
+        this->charge_log_sending = true;
+        // Flush any pending data
+        uint8_t dummy[128];
+        while (recvfrom(inner_socket, dummy, sizeof(dummy), 0, nullptr, nullptr) > 0) {}
+    });
+    if (await_ret != TaskScheduler::AwaitResult::Done) {
+        logger.printfln("Cannot send charge log: task scheduler timeout");
+        return -4;
+    }
+
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(12345);
+    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
+
+    // Step 1: Send RequestChargeLogSend
+    management_packet_header request_header;
+    request_header.magic = 0x1234;
+    request_header.length = 0;
+    request_header.seq_num = 0;
+    request_header.version = 1;
+    request_header.type = PacketType::RequestChargeLogSend;
+
+    int ret = sendto(inner_socket, &request_header, sizeof(request_header), 0,
+                     reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+    if (ret < 0) {
+        logger.printfln("Failed to send charge log request: %s (%i)", strerror(errno), errno);
+        release_inner_socket();
+        return -5;
+    }
+
+    logger.printfln("Sent RequestChargeLogSend packet");
+
+    // Step 2: Wait for potential Nack (2 seconds)
+    uint8_t nack_reason = 0;
+    int poll_ret = poll_for_mgmt_response(2000, &nack_reason);
+    if (poll_ret < 0) {
+        const char *reason_str = "unknown";
+        switch (static_cast<NackReason>(nack_reason)) {
+            case NackReason::Busy: reason_str = "server busy"; break;
+            case NackReason::TooManyRequests: reason_str = "too many requests"; break;
+            case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
+            case NackReason::Timeout: reason_str = "timeout"; break;
+            default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+        }
+        logger.printfln("Charge log request was rejected: %s", reason_str);
+        release_inner_socket();
+        return -6;
+    }
+    // poll_ret == 0 means timeout (expected - server accepted silently)
+    // poll_ret > 0 means unexpected Ack (shouldn't happen but is OK)
+
+    // Step 3: Small delay to ensure server has set up the channel
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+#pragma GCC diagnostic pop
+
+    // Step 4: Send MetadataForChargeLog
+    const char *lang_str = nullptr;
+    switch (language) {
+        case Language::German:  lang_str = "de"; break;
+        case Language::English: lang_str = "en"; break;
+        case Language::Default: esp_system_abort("BUG: this function should not be called with Language::Default");
+        default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+    }
+    uint8_t lang[2] = {static_cast<uint8_t>(lang_str[0]), static_cast<uint8_t>(lang_str[1])};
+
+    size_t meta_total = sizeof(management_packet_header) + 16 + sizeof(uint16_t) + sizeof(uint16_t) + 2 + 1 + filename_len + display_name_len;
+    auto meta_buf = heap_alloc_array<uint8_t>(meta_total);
+    if (!meta_buf) {
+        logger.printfln("Cannot send charge log: out of memory for metadata");
+        release_inner_socket();
+        return -7;
+    }
+
+    management_packet_header meta_header;
+    meta_header.magic = 0x1234;
+    meta_header.length = static_cast<uint16_t>(meta_total - sizeof(management_packet_header));
+    meta_header.seq_num = 0;
+    meta_header.version = 1;
+    meta_header.type = PacketType::MetadataForChargeLog;
+
+    size_t written = charge_log_send_metadata_packet::write_to_buffer(
+        meta_buf.get(), meta_total,
+        meta_header,
+        user_uuid,
+        lang,
+        false,
+        filename, static_cast<uint16_t>(filename_len),
+        display_name, static_cast<uint16_t>(display_name_len)
+    );
+
+    if (written == 0) {
+        logger.printfln("Cannot send charge log: metadata buffer too small");
+        release_inner_socket();
+        return -8;
+    }
+
+    ret = sendto(inner_socket, meta_buf.get(), written, 0,
+                 reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+    if (ret < 0) {
+        logger.printfln("Failed to send charge log metadata: %s (%i)", strerror(errno), errno);
+        release_inner_socket();
+        return -9;
+    }
+
+    logger.printfln("Sent MetadataForChargeLog packet (%zu bytes)", written);
+
+    // Step 5: Wait for Ack from server (up to 2 seconds)
+    nack_reason = 0;
+    poll_ret = poll_for_mgmt_response(2000, &nack_reason);
+    if (poll_ret < 0) {
+        logger.printfln("Charge log metadata was rejected (reason: %u)", nack_reason);
+        release_inner_socket();
+        return -10;
+    }
+    if (poll_ret == 0) {
+        logger.printfln("Timed out waiting for Ack after metadata");
+        release_inner_socket();
+        return -11;
+    }
+
+    logger.printfln("Received Ack, opening TCP connection to 10.123.123.3:8080...");
+
+    // Step 6: Open TCP connection to management server
+    int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tcp_sock < 0) {
+        logger.printfln("Failed to create TCP socket: %s (%i)", strerror(errno), errno);
+        release_inner_socket();
+        return -12;
+    }
+
+    struct sockaddr_in local_addr;
+    memset(&local_addr, 0, sizeof(local_addr));
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = 0; // Let OS assign a port
+    local_addr.sin_addr.s_addr = inet_addr("10.123.123.2");
+
+    ret = bind(tcp_sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
+    if (ret < 0) {
+        logger.printfln("Failed to bind TCP socket: %s (%i)", strerror(errno), errno);
+        close(tcp_sock);
+        release_inner_socket();
+        return -13;
+    }
+
+    struct sockaddr_in src_addr;
+    socklen_t addr_len = sizeof(src_addr);
+    getsockname(tcp_sock, reinterpret_cast<struct sockaddr *>(&src_addr), &addr_len);
+    logger.printfln("Connected from %u", ntohs(src_addr.sin_port));
+
+    send_port = ntohs(src_addr.sin_port);
+
+    struct sockaddr_in tcp_dest;
+    memset(&tcp_dest, 0, sizeof(tcp_dest));
+    tcp_dest.sin_family = AF_INET;
+    tcp_dest.sin_port = htons(8080);
+    tcp_dest.sin_addr.s_addr = inet_addr("10.123.123.3");
+
+    ret = connect(tcp_sock, reinterpret_cast<struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
+    if (ret < 0) {
+        logger.printfln("Failed to connect TCP socket: %s (%i)", strerror(errno), errno);
+        close(tcp_sock);
+        release_inner_socket();
+        return -14;
+    }
+
+    logger.printfln("TCP connection established");
+    return tcp_sock;
+}
+
+int RemoteAccess::end_charge_log_send(int tcp_sock)
+{
+    // Send FIN to signal end of data
+    shutdown(tcp_sock, SHUT_WR);
+    close(tcp_sock);
+
+    logger.printfln("TCP connection closed, waiting for final Ack...");
+
+    // Wait for final Ack (up to 60 seconds - server processes and emails the file)
+    uint8_t nack_reason = 0;
+    int poll_ret = poll_for_mgmt_response(60000, &nack_reason);
+
+    // Release the inner socket back to run_management
+    release_inner_socket();
+
+    if (poll_ret < 0) {
+        logger.printfln("Charge log send completed but server reported error (reason: %u)", nack_reason);
+        return -1;
+    }
+    if (poll_ret == 0) {
+        logger.printfln("Timed out waiting for final Ack (data may still have been processed)");
+        return -2;
+    }
+
+    logger.printfln("Charge log send completed successfully");
+    return 0;
+}
+
+int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language)
+{
+    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+        logger.printfln("Cannot send charge log metadata: management connection not established");
+        return -1;
+    }
+
+    if (inner_socket < 0) {
+        logger.printfln("Cannot send charge log metadata: inner socket not available");
+        return -2;
+    }
+
+    String user_uuid_str;
+    for (const auto &user : config.get("users")) {
+        if (user.get("id")->asUint8() == static_cast<uint8_t>(user_id)) {
+            user_uuid_str = user.get("uuid")->asString();
+            break;
+        }
+    }
+    if (user_uuid_str.length() == 0) {
+        logger.printfln("Cannot send charge log metadata: user %i not found", user_id);
+        return -3;
+    }
+
+    uint8_t user_uuid[16];
+
+    if (user_uuid_str.length() != 36) {
+        logger.printfln("Cannot send charge log metadata: invalid user UUID format");
+        return -7;
+    }
+
+    // Parse and validate UUID v4 string to binary conversion
+    // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // where y is one of 8, 9, a, b (variant bits)
+    auto parse_uuid = [](const String &uuid_str, uint8_t *out) -> bool {
+        if (uuid_str.length() != 36) return false;
+
+        const char *p = uuid_str.c_str();
+
+        // Check dashes are at the correct positions
+        if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
+
+        // Check version field (position 14 must be '4' for UUID v4)
+        if (p[14] != '4') return false;
+
+        // Check variant bits (position 19 must be 8, 9, a, b, A, or B)
+        char variant = p[19];
+        if (variant != '8' && variant != '9' &&
+            variant != 'a' && variant != 'b' &&
+            variant != 'A' && variant != 'B') return false;
+
+        logger.printfln("Parsing UUID: %s", p);
+        size_t out_idx = 0;
+        for (size_t i = 0; i < 35 && out_idx < 16; i++) {
+            if (p[i] == '-') continue;
+            logger.printfln("i: %zu", i);
+            char hex[3] = {p[i], p[i + 1], '\0'};
+            logger.printfln("Hex: %s", hex);
+            if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
+            out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
+            i++; // Skip the second hex digit
+        }
+        return out_idx == 16;
+    };
+
+    if (!parse_uuid(user_uuid_str, user_uuid)) {
+        logger.printfln("Cannot send charge log metadata: failed to parse user UUID");
+        return -9;
+    }
+
+    // Calculate buffer size needed the fixed size is at least 31 bytes
+    size_t total_size = 31 + filename_len + display_name_len;
+    std::unique_ptr<uint8_t[]> buf = heap_alloc_array<uint8_t>(total_size);
+    if (buf == nullptr) {
+        logger.printfln("Cannot send charge log metadata: out of memory");
+        return -10;
+    }
+
+    // Convert language enum to ISO 639-1 language code (2 characters)
+    const char *lang_str;
+    switch (language) {
+        case Language::German:
+            lang_str = "de";
+            break;
+        case Language::English:
+            lang_str = "en";
+            break;
+        case Language::Default:
+             esp_system_abort("BUG: this function should not be called with Language::Default");
+        default:
+            esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
+    }
+
+    uint8_t lang[2];
+    lang[0] = static_cast<uint8_t>(lang_str[0]);
+    lang[1] = static_cast<uint8_t>(lang_str[1]);
+
+    // Build the header
+    management_packet_header header;
+    header.magic = 0x1234;
+    header.length = static_cast<uint16_t>(total_size - sizeof(management_packet_header));
+    header.seq_num = 0; // Server doesn't check sequence number for incoming packets
+    header.version = 1;
+    header.type = PacketType::MetadataForChargeLog; // Charge log metadata packet type
+
+    size_t written = charge_log_send_metadata_packet::write_to_buffer(
+        buf.get(), total_size,
+        header,
+        user_uuid,
+        lang,
+        false,
+        filename, static_cast<uint16_t>(filename_len),
+        display_name, static_cast<uint16_t>(display_name_len)
+    );
+
+    if (written == 0) {
+        logger.printfln("Cannot send charge log metadata: buffer too small");
+        return -11;
+    }
+
+    // Send the packet through the inner socket to the management server
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(12345);
+    // Management server is at 10.123.123.3
+    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
+
+    int ret = sendto(inner_socket, buf.get(), written, 0, reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+    if (ret < 0) {
+        logger.printfln("Failed to send charge log metadata: %s (%i)", strerror(errno), errno);
+        return -12;
+    }
+
+    logger.printfln("Sent charge log metadata packet (%zu bytes)", written);
     return 0;
 }
 

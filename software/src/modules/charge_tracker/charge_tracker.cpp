@@ -25,6 +25,7 @@
 #include <LittleFS.h>
 #include <stdlib_noniso.h>
 #include <algorithm>
+#include <lwip/sockets.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -1989,6 +1990,170 @@ void ChargeTracker::send_file(std::unique_ptr<RemoteUploadRequest> upload_args) 
     }
 }
 
+// Sends a charge log via a TCP connection over the management WireGuard tunnel.
+// The protocol is:
+//   1. Send RequestChargeLogSend (UDP) -> wait for potential Nack
+//   2. Send MetadataForChargeLog (UDP) -> wait for Ack
+//   3. Open TCP to server, stream file data, close TCP -> wait for final Ack
+void ChargeTracker::send_file_via_mgmt(std::unique_ptr<RemoteUploadRequest> upload_args)
+{
+    logger.printfln("Starting charge-log generation and upload via management tunnel...");
+
+    String filename;
+    String display_name;
+    Language language;
+
+    auto ret = task_scheduler.await([this, &filename, &display_name, &language, &upload_args]() {
+        if (!upload_args->use_format_overrides) {
+            Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args->config_index));
+
+            upload_args->language = charge_log_send->get("language")->asEnum<Language>();
+            upload_args->file_type = charge_log_send->get("file_type")->asEnum<FileType>();
+            upload_args->csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
+            upload_args->user_filter = charge_log_send->get("user_filter")->asInt();
+            upload_args->device_filter = charge_log_send->get("device_filter")->asInt();
+
+            if (upload_args->file_type == FileType::PDF) {
+                const String &lh = charge_log_send->get("letterhead")->asString();
+                const size_t lh_len = lh.length() + 1;
+                upload_args->letterhead = heap_alloc_array<char>(lh_len);
+                strncpy(upload_args->letterhead.get(), lh.c_str(), lh_len);
+            }
+        }
+
+        language = upload_args->language;
+        filename = build_filename(
+            static_cast<time_t>(upload_args->start_timestamp_min) * 60,
+            static_cast<time_t>(upload_args->end_timestamp_min) * 60,
+            upload_args->file_type,
+            upload_args->language
+        );
+
+        display_name = device_name.display_name.get("display_name")->asString();
+        if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
+            display_name += " (" + device_name.name.get("name")->asString() + ")";
+    });
+
+    if (ret != TaskScheduler::AwaitResult::Done) {
+        logger.printfln("Failed to prepare charge log upload via management tunnel");
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to prepare upload (task scheduler timeout)");
+        }
+        return;
+    }
+
+    if (upload_args->remote_access_user_uuid.isEmpty()) {
+        logger.printfln("Missing remote access user UUID");
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Missing remote access user UUID");
+        }
+        return;
+    }
+
+    // Step 1: Begin the charge log send protocol (request, metadata, ack exchange, TCP connect)
+    int tcp_sock = remote_access.begin_charge_log_send(
+        filename.c_str(), filename.length(),
+        display_name.c_str(), display_name.length(),
+        upload_args->remote_access_user_uuid.c_str(),
+        language
+    );
+
+    if (tcp_sock < 0) {
+        logger.printfln("Failed to begin charge log send via management tunnel: %d", tcp_sock);
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            char err_msg[64];
+            snprintf(err_msg, sizeof(err_msg), "Management tunnel send failed: %d", tcp_sock);
+            push_upload_result_error(upload_args->cookie, err_msg);
+        }
+        return;
+    }
+
+    // Step 2: Generate and stream the charge log data directly to the TCP socket
+    bool send_error = false;
+
+    auto tcp_send_fn = [tcp_sock, &send_error](const void *buf, size_t len) -> int {
+        if (send_error) return -1;
+
+        const uint8_t *data = static_cast<const uint8_t *>(buf);
+        size_t total_sent = 0;
+        while (total_sent < len) {
+            int sent = send(tcp_sock, data + total_sent, len - total_sent, 0);
+            if (sent <= 0) {
+                logger.printfln("TCP send error: %s (%i)", strerror(errno), errno);
+                send_error = true;
+                return -1;
+            }
+            total_sent += sent;
+        }
+        return 0;
+    };
+
+    if (upload_args->file_type == FileType::PDF) {
+        const int letterhead_lines = read_letterhead_lines(upload_args->letterhead.get());
+
+        this->generate_pdf(
+            [&tcp_send_fn](const void *buffer, size_t len) -> int {
+                return tcp_send_fn(buffer, len);
+            },
+            upload_args->user_filter,
+            upload_args->device_filter,
+            upload_args->start_timestamp_min,
+            upload_args->end_timestamp_min,
+            rtc.timestamp_minutes(),
+            upload_args->language,
+            upload_args->letterhead.get(),
+            letterhead_lines,
+            nullptr
+        );
+    } else {
+        CSVGenerationParams csv_params;
+        csv_params.user_filter = upload_args->user_filter;
+        csv_params.device_filter = upload_args->device_filter;
+        csv_params.start_timestamp_min = upload_args->start_timestamp_min;
+        csv_params.end_timestamp_min = upload_args->end_timestamp_min;
+        csv_params.language = upload_args->language;
+        csv_params.flavor = upload_args->csv_delimiter;
+        task_scheduler.await([this, &csv_params]() {
+            csv_params.electricity_price = this->config.get("electricity_price")->asUint();
+        });
+
+        CSVChargeLogGenerator csv_generator;
+        csv_generator.generateCSV(csv_params, [&tcp_send_fn](const char *buffer, size_t len) -> int {
+            return tcp_send_fn(buffer, len);
+        });
+    }
+
+    if (send_error) {
+        logger.printfln("Error occurred while sending charge log data via TCP");
+        close(tcp_sock);
+        remote_access.release_inner_socket();
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "TCP send error during data transfer");
+        }
+        return;
+    }
+
+    // Step 3: Finalize the send (close TCP, wait for final Ack)
+    int end_ret = remote_access.end_charge_log_send(tcp_sock);
+    if (end_ret < 0) {
+        logger.printfln("Charge log send finalization failed: %d", end_ret);
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Send finalization failed");
+        }
+        return;
+    }
+
+    logger.printfln("Charge log uploaded successfully via management tunnel");
+    if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+        push_upload_result_success(upload_args->cookie);
+    } else {
+        task_scheduler.await([&upload_args]() {
+            charge_tracker.config.get("remote_upload_configs")->get(static_cast<uint8_t>(upload_args->config_index))->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+            API::writeConfig("charge_tracker/config", &charge_tracker.config);
+        });
+    }
+}
+
 static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
 
 static void upload_charge_logs_task(void *arg)
@@ -2053,17 +2218,14 @@ static void upload_charge_logs_task(void *arg)
             upload_request->end_timestamp_min = static_cast<uint32_t>(mktime(&last_month_end)) / 60;
             upload_request->user_filter = upload_args->user_filter;
             upload_request->remote_access_user_uuid = user_uuid;
-            upload_request->remote_client = std::make_unique<AsyncHTTPSClient>();
 
-            charge_tracker.send_file(std::move(upload_request));
+            charge_tracker.send_file_via_mgmt(std::move(upload_request));
 #if MODULE_WATCHDOG_AVAILABLE()
             watchdog.reset(wd_handle);
 #endif
         }
     } else {
-        upload_args->remote_client = std::make_unique<AsyncHTTPSClient>();
-
-        charge_tracker.send_file(std::move(upload_args));
+        charge_tracker.send_file_via_mgmt(std::move(upload_args));
 #if MODULE_WATCHDOG_AVAILABLE()
         watchdog.reset(wd_handle);
 #endif
