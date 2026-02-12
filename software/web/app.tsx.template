@@ -197,20 +197,21 @@ export class App extends Component<AppProps, AppState> {
         useLayoutEffect(() => window.scrollTo(0, 0), [this.state.sub_page]);
         const chargerHref = util.remoteAccessMode ? new URLSearchParams(window.location.search).get("charger") : null;
         const navbarHref = chargerHref && chargerHref.length > 0 ? `/devices/${chargerHref}` : "#status";
+        const menu_button_width = 68; // px
 
         return <>
             <nav class={util.is_native_median_app() ? "": "navbar navbar-expand-md navbar-dark sticky-top flex-md-nowrap p-0"} hidden={util.is_native_median_app()}>
                 <div class="w-100 h-100">
                     <div class="d-flex justify-content-between align-items-center h-100">
-                        <div class="d-md-none py-2 " style="width: 68px; flex: 0 0 auto">
+                        <div class="d-md-none py-2" style={`width: ${menu_button_width}px; flex: 0 0 auto`}>
                             <button class="navbar-toggler collapsed pt-2" style="margin-left: 0.75rem;" type="button" onClick={() => {this.setState({sidebar_open: !this.state.sidebar_open})}}>
                                 <Menu {...{class: "navbar-toggler-icon", style: "vertical-align: baseline;"} as any} />
                             </button>
                         </div>
                         <div class="py-2" style="flex: 0 1 auto;">
-                            <a href={navbarHref}><img id="navbar-logo" class="px-3 py-2" src="data:image/png;base64,{{{logo_base64}}}" style="max-width: calc(100vw - 68px);" alt="logo"/></a>
+                            <a href={navbarHref}><img id="navbar-logo" class="px-3 py-2" src="data:image/png;base64,{{{logo_base64}}}" style={`max-width: calc(100vw - ${menu_button_width}px);`} alt="logo"/></a>
                         </div>
-                        <div class="d-md-none" style="width: 68px; flex: 0 1 auto">
+                        <div class="d-md-none" style={`width: ${menu_button_width}px; flex: 0 1 auto`}>
                         </div>
                         <div class="d-none d-md-block" style="flex: 0 0 auto">
                             <HeaderStatus />
