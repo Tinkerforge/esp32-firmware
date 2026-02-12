@@ -23,12 +23,12 @@ export function pre_init() {
 }
 
 export function init() {
-    let parent = document.querySelector('nav.navbar > a');
+    let parent = document.querySelector("nav.navbar");
     if (parent == null)
         return;
 
     let target = document.createElement("img");
-    (target.style as any) = "position: fixed; top:10px; left:0px; z-index: 10000; pointer-events: none;";
+    (target.style as any) = "position: fixed; top: 10px; left: 5px; z-index: 10000; pointer-events: none;";
     target.src = underconstruction_gif;
 
     parent.after(target);
