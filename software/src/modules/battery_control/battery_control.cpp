@@ -629,6 +629,24 @@ static bool rule_condition_failed(const RuleCondition cond, const int32_t th, co
     return !(value > th); // intentionally negated
 }
 
+static bool tristate_rule_condition_failed(const RuleCondition cond, const TristateBool value)
+{
+    if (cond == RuleCondition::Ignore) {
+        return false;
+    }
+
+    if (value == TristateBool::Undefined) {
+        return true; // Input value is uninitialized, rule cannot be true.
+    }
+
+    if (cond == RuleCondition::BelowOrNo) {
+        return value != TristateBool::False; // intentionally negated
+    }
+
+    // RuleCondition::AboveOrYes
+    return value != TristateBool::True; // intentionally negated
+}
+
 static bool schedule_rule_condition_failed(const ScheduleRuleCondition cond, const uint8_t value)
 {
     if (cond == ScheduleRuleCondition::Ignore) {
@@ -683,7 +701,7 @@ RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rule
         if (rule_condition_failed(rule->soc_cond,      rule->soc_th,      data->soc_cache_avg )) continue;
         if (rule_condition_failed(rule->price_cond,    rule->price_th,    data->price_cache   )) continue;
         if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, data->forecast_cache)) continue;
-        if (rule_condition_failed(rule->fast_chg_cond, 0, data->fast_charger_in_c_cache * 2 - 1)) continue;
+        if (tristate_rule_condition_failed(rule->fast_chg_cond, data->fast_charger_in_c_cache)) continue;
         if (schedule_rule_condition_failed(rule->schedule_cond, data->tariff_schedule_cache)) continue;
         if (time_rule_condition_failed(rule->time_cond, rule->time_start_s, rule->time_end_s, time_since_midnight_s)) continue;
 
@@ -784,10 +802,10 @@ void BatteryControl::set_mode(BatteryMode new_mode)
 
 void BatteryControl::fast_charge_update()
 {
-    const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
+    const TristateBool fast_charger_in_c_cm = static_cast<TristateBool>(charge_manager.fast_charger_in_c);
 
     if (fast_charger_in_c_cm != data->fast_charger_in_c_cache) {
-        logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", fast_charger_in_c_cm);
+        logger.tracefln(trace_buffer_idx, "fast_charger_in_c=%i", static_cast<int>(fast_charger_in_c_cm));
         data->fast_charger_in_c_cache = fast_charger_in_c_cm;
 
         data->evaluation_must_check_rules = true;

@@ -111,7 +111,7 @@ private:
         int32_t price_cache    = UNAVAILABLE_CONDITION_CACHE;
         int32_t forecast_cache = UNAVAILABLE_CONDITION_CACHE;
         uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
-        bool fast_charger_in_c_cache = false;
+        TristateBool fast_charger_in_c_cache = TristateBool::Undefined;
 
         int32_t tariff_schedule_start_min = 0;
         uint8_t tariff_schedule[24 * 4] = {0};
