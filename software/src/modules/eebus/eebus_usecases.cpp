@@ -2122,6 +2122,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LoadPowerLimi
     loadControlLimitListData.function = FunctionEnumType::loadControlLimitListData;
     loadControlLimitListData.possibleOperations->read = PossibleOperationsReadType{};
     loadControlLimitListData.possibleOperations->write = PossibleOperationsWriteType{};
+    loadControlLimitListData.possibleOperations->write->partial = ElementTagType{};
     loadControlFeature.description->supportedFunction->push_back(loadControlLimitListData);
     features.push_back(loadControlFeature);
 
@@ -2193,17 +2194,18 @@ MessageReturn LoadPowerLimitUsecase::load_control_feature(HeaderType &header, Sp
                             bool limit_enabled = load_control_limit_data.isLimitActive.get();
                             const int new_limit_w = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(*load_control_limit_data.value);
                             const seconds_t duration_s = EEBUS_USECASE_HELPERS::iso_duration_to_seconds(load_control_limit_data.timePeriod->endTime.get());
-                            logger.printfln("Received a Loadcontrol Limit. Attempting to apply limit. Limit is: %d W, duration: %d s, enabled: %d", new_limit_w, duration_s.as<int>(), limit_enabled);
+                            logger.printfln("Received a Loadcontrol Limit for a %s usecase. Attempting to apply limit. Limit is: %d W, duration: %d s, enabled: %d", get_usecases_name(config_.usecase_type), new_limit_w, duration_s.as<int>(), limit_enabled);
                             if (!update_limit(limit_enabled, new_limit_w, duration_s)) {
                                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted");
                                 logger.printfln("Limit not accepted");
-                            } else {
-                                logger.printfln("Limit accepted");
-                                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
+                                return {true, true, CmdClassifierType::result};
                             }
+                            logger.printfln("Limit accepted");
+                            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
                             return {true, true, CmdClassifierType::result};
                         }
                     }
+                    return {false};
                 }
                 EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit not accepted or invalid data");
                 break;
@@ -5019,9 +5021,6 @@ EEBusUseCases::EEBusUseCases()
     usecase_list.push_back(&monitoring_of_grid_connection_point);
     monitoring_of_grid_connection_point.set_entity_address(EVSEEntity::entity_address);
     supported_usecases.push_back(monitoring_of_grid_connection_point.get_usecase_type());
-#endif
-#ifndef EEBUS_ENABLE_MGCP_USECASE
-#alert "MGCP not enabled"
 #endif
 
     // EV actors
