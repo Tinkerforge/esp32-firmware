@@ -168,6 +168,16 @@ void DayAheadPrices::register_urls()
             return;
         }
 
+        if (prices_update.get("first_date")->asUint() == 0) {
+            errmsg = "first_date must not be 0";
+            return;
+        }
+
+        if (prices_update.get("prices")->count() == 0) {
+            errmsg = "prices array must not be empty";
+            return;
+        }
+
         auto p = prices.get("prices");
         auto pu = prices_update.get("prices");
         const size_t old_count = p->count();
