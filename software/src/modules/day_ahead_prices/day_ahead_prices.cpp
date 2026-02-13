@@ -64,6 +64,7 @@ void DayAheadPrices::pre_setup()
         {"grid_costs_and_taxes", Config::Uint(0, 0, 99000)}, // in ct/1000 per kWh
         {"supplier_markup", Config::Uint(0, 0, 99000)},      // in ct/1000 per kWh
         {"supplier_base_fee", Config::Uint(0, 0, 99000)},    // in ct per month
+        {"enable_calendar", Config::Bool(false)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &api_url = update.get("api_url")->asString();
 
@@ -71,19 +72,24 @@ void DayAheadPrices::pre_setup()
             return "HTTPS required for Day Ahead Price API URL";
         }
 
-        if (!update.get("enable")->asBool() && (prices_sorted != nullptr)) {
+        if (!update.get("enable")->asBool() && !update.get("enable_calendar")->asBool() && (prices_sorted != nullptr)) {
             delete_array_psram_or_dram(prices_sorted);
             prices_sorted = nullptr;
         }
 
         // If region, resolution or source changes we discard the current state
         // and trigger a new update (with the new config).
-        if ((update.get("source")->asEnum<PriceSource>()    != config.get("source")->asEnum<PriceSource>()) ||
+        const bool enable_calendar_changed = (update.get("enable_calendar")->asBool() != config.get("enable_calendar")->asBool());
+        const bool source_params_changed =
+            (update.get("source")->asEnum<PriceSource>()    != config.get("source")->asEnum<PriceSource>()) ||
             (update.get("region")->asEnum<Region>()         != config.get("region")->asEnum<Region>()) ||
             (update.get("resolution")->asEnum<Resolution>() != config.get("resolution")->asEnum<Resolution>()) ||
             (update.get("enable")->asBool()                 != config.get("enable")->asBool()) ||
             (update.get("api_url")->asString()              != config.get("api_url")->asString()) ||
-            (update.get("cert_id")->asInt()                 != config.get("cert_id")->asInt()) ) {
+            (update.get("cert_id")->asInt()                 != config.get("cert_id")->asInt());
+
+        if (source_params_changed) {
+            // Source parameters changed: discard everything and re-download
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
@@ -92,11 +98,50 @@ void DayAheadPrices::pre_setup()
             prices.get("prices")->removeAll();
             prices.get("resolution")->updateEnum(update.get("resolution")->asEnum<Resolution>());
             current_price_available = false;
+            calendar_last_generated_wday = -1;
+            raw_prices_count = 0;
 
             if (boot_stage == BootStage::LOOP) {
                 task_scheduler.scheduleOnce([this]() {
                     this->update();
                 });
+            }
+        } else if (enable_calendar_changed) {
+            // Only calendar toggle changed: rebuild prices from raw data without full re-download
+            calendar_last_generated_wday = -1;
+
+            if (boot_stage == BootStage::LOOP) {
+                if (update.get("enable_calendar")->asBool()) {
+                    // Calendar enabled: apply calendar overlay
+                    task_scheduler.scheduleOnce([this]() {
+                        this->update_calendar();
+                    });
+                } else if (raw_prices_count > 0) {
+                    // Calendar disabled but DAP data exists: restore raw prices
+                    task_scheduler.scheduleOnce([this]() {
+                        auto p = prices.get("prices");
+                        const size_t old_count = p->count();
+                        for (size_t i = 0; i < raw_prices_count; i++) {
+                            auto elem = i < old_count ? p->get(i) : p->add();
+                            elem->updateInt(raw_prices[i]);
+                        }
+                        for (size_t i = old_count; i > raw_prices_count; i--) {
+                            p->removeLast();
+                        }
+                        update_current_price();
+                        update_minmaxavg_price();
+                        update_prices_sorted();
+                    });
+                } else {
+                    // Calendar disabled and no DAP data: clear everything
+                    state.get("last_sync")->updateUint(0);
+                    state.get("last_check")->updateUint(0);
+                    state.get("next_check")->updateUint(0);
+                    state.get("current_price")->updateInt(INT32_MAX);
+                    prices.get("first_date")->updateUint(0);
+                    prices.get("prices")->removeAll();
+                    current_price_available = false;
+                }
             }
         }
 
@@ -122,6 +167,22 @@ void DayAheadPrices::pre_setup()
         {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT)}
     });
 
+    // Calendar: 7 days (Mon-Sun) x 96 quarter-hours = 672 price slots
+    calendar = ConfigRoot{Config::Object({
+        {"prices", Config::Array({}, Config::get_prototype_int32_0(), DAY_AHEAD_PRICE_CALENDAR_SLOTS, DAY_AHEAD_PRICE_CALENDAR_SLOTS)}
+    }), [this](Config &update, ConfigSource source) -> String {
+        // Reset cached weekday so update_calendar() regenerates prices
+        calendar_last_generated_wday = -1;
+
+        if (boot_stage == BootStage::LOOP && config.get("enable_calendar")->asBool()) {
+            task_scheduler.scheduleOnce([this]() {
+                this->update_calendar();
+            });
+        }
+
+        return "";
+    }};
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::DayAheadPriceNow,
@@ -141,7 +202,8 @@ void DayAheadPrices::pre_setup()
 
 void DayAheadPrices::setup()
 {
-    api.restorePersistentConfig("day_ahead_prices/config", &config);
+    api.restorePersistentConfig("day_ahead_prices/config",   &config);
+    api.restorePersistentConfig("day_ahead_prices/calendar", &calendar);
     prices.get("resolution")->updateEnum(config.get("resolution")->asEnum<Resolution>());
 
     // Allocate DP result cache on PSRAM (never freed).
@@ -158,9 +220,10 @@ void DayAheadPrices::setup()
 
 void DayAheadPrices::register_urls()
 {
-    api.addPersistentConfig("day_ahead_prices/config", &config);
-    api.addState("day_ahead_prices/state",             &state);
-    api.addState("day_ahead_prices/prices",            &prices);
+    api.addPersistentConfig("day_ahead_prices/config",   &config);
+    api.addPersistentConfig("day_ahead_prices/calendar", &calendar);
+    api.addState("day_ahead_prices/state",               &state);
+    api.addState("day_ahead_prices/prices",              &prices);
 
     task_scheduler.scheduleWhenClockSynced([this]() {
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
@@ -207,6 +270,12 @@ void DayAheadPrices::register_urls()
             p->removeLast();
         }
 
+        // Save raw DAP prices before calendar is applied
+        raw_prices_count = new_count;
+        for (size_t i = 0; i < new_count; i++) {
+            raw_prices[i] = p->get(i)->asInt();
+        }
+
         prices.get("first_date")->updateUint(prices_update.get("first_date")->asUint());
         prices.get("resolution")->updateEnum(prices_update.get("resolution")->asEnum<Resolution>());
 
@@ -217,6 +286,11 @@ void DayAheadPrices::register_urls()
         update_current_price();
         update_minmaxavg_price();
         update_prices_sorted();
+
+        if (config.get("enable_calendar")->asBool()) {
+            calendar_last_generated_wday = -1;
+            update_calendar();
+        }
     }, true);
 
 #ifdef DEBUG_FS_ENABLE
@@ -331,11 +405,18 @@ void DayAheadPrices::retry_update(millis_t delay)
 
 void DayAheadPrices::update()
 {
-    if (!config.get("enable")->asBool()) {
+    if (!is_enabled()) {
         return;
     }
 
-    if (config.get("source")->asEnum<PriceSource>() != PriceSource::SpotMarket) {
+    const bool enable = config.get("enable")->asBool();
+    const bool enable_calendar = config.get("enable_calendar")->asBool();
+
+    // If DAP source is not enabled or source is not SpotMarket, we only need to run update_calendar periodically
+    if (!enable || config.get("source")->asEnum<PriceSource>() != PriceSource::SpotMarket) {
+        if (enable_calendar) {
+            update_calendar();
+        }
         return;
     }
 
@@ -534,6 +615,12 @@ void DayAheadPrices::handle_new_data()
             p->removeLast();
         }
 
+        // Save raw DAP prices before calendar is applied
+        raw_prices_count = count;
+        for (size_t i = 0; i < count; i++) {
+            raw_prices[i] = p->get(i)->asInt();
+        }
+
         const uint32_t current_minutes = rtc.timestamp_minutes();
         state.get("last_sync")->updateUint(current_minutes);
         state.get("last_check")->updateUint(current_minutes);
@@ -543,6 +630,11 @@ void DayAheadPrices::handle_new_data()
         update_current_price();
         update_minmaxavg_price();
         update_prices_sorted();
+
+        if (config.get("enable_calendar")->asBool()) {
+            calendar_last_generated_wday = -1;
+            update_calendar();
+        }
     }
 }
 
@@ -1249,6 +1341,87 @@ bool DayAheadPrices::get_cheap_1h_blocked(const int32_t start_time, const uint8_
 bool DayAheadPrices::get_expensive_1h_blocked(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, const uint8_t min_block_15m, bool *expensive_hours)
 {
     return get_cheap_and_expensive_15m_blocked(start_time, duration_1h * 4, amount_1h * 4, min_block_15m, nullptr, expensive_hours);
+}
+
+void DayAheadPrices::update_calendar()
+{
+    // Need clock to determine day-of-week
+    struct timeval tv_now;
+    if (!rtc.clock_synced(&tv_now)) {
+        return;
+    }
+
+    struct tm tm_now;
+    localtime_r(&tv_now.tv_sec, &tm_now);
+
+    // tm_wday: 0=Sunday, we need 0=Monday
+    int8_t wday = (tm_now.tm_wday + 6) % 7; // Mon=0, Tue=1, ..., Sun=6
+
+    // Only regenerate when day-of-week changes
+    if (wday == calendar_last_generated_wday) {
+        return;
+    }
+    calendar_last_generated_wday = wday;
+
+    auto cal_prices = calendar.get("prices");
+
+    // Build 2-day (192 slot) calendar price array: today + tomorrow
+    int8_t tomorrow_wday = (wday + 1) % 7;
+    int32_t cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY * 2];
+    for (size_t slot = 0; slot < DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY; slot++) {
+        cal_today_tomorrow[slot] = cal_prices->get(wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt();
+        cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot] = cal_prices->get(tomorrow_wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt();
+    }
+
+    auto p = prices.get("prices");
+
+    if (raw_prices_count > 0) {
+        // Calendar prices are 15-min. 60-min DAP prices are not supported with calendar.
+        if (prices.get("resolution")->asEnum<Resolution>() == Resolution::Min60) {
+            logger.printfln("Calendar prices are not compatible with 60-minute day-ahead prices");
+            return;
+        }
+
+        // Rebuild prices from raw DAP prices + calendar (idempotent)
+        const size_t combined_count = std::min(raw_prices_count, static_cast<size_t>(DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY * 2));
+        const size_t old_count = p->count();
+        for (size_t i = 0; i < combined_count; i++) {
+            auto elem = i < old_count ? p->get(i) : p->add();
+            elem->updateInt(raw_prices[i] + cal_today_tomorrow[i]);
+        }
+        for (size_t i = old_count; i > combined_count; i--) {
+            p->removeLast();
+        }
+    } else {
+        // No DAP prices: use calendar values directly
+        // Set first_date to today midnight (local time) in UTC minutes
+        time_t midnight;
+        if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
+            return;
+        }
+        const uint32_t first_date_minutes = static_cast<uint32_t>(midnight / 60);
+
+        prices.get("first_date")->updateUint(first_date_minutes);
+        prices.get("resolution")->updateEnum(Resolution::Min15);
+
+        const size_t slot_count = DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY * 2;
+        const size_t old_count = p->count();
+        for (size_t i = 0; i < slot_count; i++) {
+            auto elem = i < old_count ? p->get(i) : p->add();
+            elem->updateInt(cal_today_tomorrow[i]);
+        }
+        for (size_t i = old_count; i > slot_count; i--) {
+            p->removeLast();
+        }
+
+        const uint32_t current_minutes = rtc.timestamp_minutes();
+        state.get("last_sync")->updateUint(current_minutes);
+        state.get("last_check")->updateUint(current_minutes);
+    }
+
+    update_current_price();
+    update_minmaxavg_price();
+    update_prices_sorted();
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

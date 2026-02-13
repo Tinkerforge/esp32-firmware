@@ -1,5 +1,6 @@
 export interface config {
     enable: boolean;
+    enable_calendar: boolean;
     source: number;
     api_url: string;
     region: number;
@@ -21,5 +22,9 @@ export interface state {
 export interface prices {
     first_date: number;
     resolution: number;
+    prices: number[];
+}
+
+export interface calendar {
     prices: number[];
 }

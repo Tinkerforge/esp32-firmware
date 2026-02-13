@@ -34,6 +34,8 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
+import { Button, Modal } from "react-bootstrap";
+import { CalendarGrid } from "../../ts/components/calendar_grid";
 import { Resolution } from "./resolution.enum";
 import { Region } from "./region.enum";
 import { PriceSource } from "./price_source.enum";
@@ -51,7 +53,8 @@ function day_ahead_price_time_between(index: number, start: number, end: number)
 }
 
 export function is_day_ahead_prices_enabled() {
-    return API.get("day_ahead_prices/config").enable;
+    const config = API.get("day_ahead_prices/config");
+    return config.enable || config.enable_calendar;
 }
 
 function region_only_supports_15min(region: number) {
@@ -201,6 +204,7 @@ function get_price_timeframe() {
     return s
 }
 
+
 export function DayAheadPricesNavbar() {
     return (
         <NavbarItem
@@ -222,11 +226,15 @@ interface DayAheadPricesState {
     dap_state: API.getType["day_ahead_prices/state"];
     dap_prices: API.getType["day_ahead_prices/prices"];
     config_enable: boolean;
+    calendar_prices: number[];
+    show_calendar_modal: boolean;
+    calendar_prices_draft: number[] | null;
 }
 
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {status_ref?: RefObject<DayAheadPricesStatus>}, DayAheadPricesState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
+    uplot_effect_dispose:   (() => void) | null = null;
 
     constructor() {
         super('day_ahead_prices/config',
@@ -245,15 +253,29 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         util.addApiEventListener("day_ahead_prices/config", () => {
             let config = API.get("day_ahead_prices/config");
 
-            this.setState({config_enable: config.enable});
+            this.setState({config_enable: config.enable || config.enable_calendar});
+        });
+
+        util.addApiEventListener("day_ahead_prices/calendar", () => {
+            let cal = API.get("day_ahead_prices/calendar");
+            if (cal.prices.length === 672) {
+                this.setState({calendar_prices: cal.prices.slice()});
+            }
         });
 
         // Update vertical "now" line on time change
-        effect(() => this.update_uplot());
+        this.uplot_effect_dispose = effect(() => this.update_uplot());
+    }
+
+    override componentWillUnmount() {
+        if (this.uplot_effect_dispose) {
+            this.uplot_effect_dispose();
+            this.uplot_effect_dispose = null;
+        }
     }
 
     override async sendSave(topic: "day_ahead_prices/config", config: DayAheadPricesConfig) {
-        this.setState({config_enable: config.enable}); // avoid round trip time
+        this.setState({config_enable: config.enable || config.enable_calendar}); // avoid round trip time
 
         await super.sendSave(topic, config);
     }
@@ -270,7 +292,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
         let data: UplotData;
 
         // If we have not got any prices yet, use empty data
-        if (this.state.dap_prices.prices.length == 0) {
+        if (!this.state.dap_prices || this.state.dap_prices.prices.length == 0) {
             data = {
                 keys: [null],
                 names: [null],
@@ -441,6 +463,77 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             onValue={(v) => this.setState({resolution: parseInt(v)})}
                         />
                     </FormRow>}
+                    <FormRow label={__("day_ahead_prices.content.enable_calendar")} help={__("day_ahead_prices.content.enable_calendar_help")}>
+                        <Switch desc={dap.enable ? __("day_ahead_prices.content.enable_calendar_desc") : __("day_ahead_prices.content.enable_calendar_desc_standalone")}
+                                checked={dap.enable_calendar}
+                                onClick={this.toggle('enable_calendar')}
+                        />
+                    </FormRow>
+                    {dap.enable_calendar &&
+                        <CalendarGrid
+                            prices={dap.calendar_prices || new Array(672).fill(0)}
+                            day_names={[
+                                __("day_ahead_prices.content.calendar_mon") as string,
+                                __("day_ahead_prices.content.calendar_tue") as string,
+                                __("day_ahead_prices.content.calendar_wed") as string,
+                                __("day_ahead_prices.content.calendar_thu") as string,
+                                __("day_ahead_prices.content.calendar_fri") as string,
+                                __("day_ahead_prices.content.calendar_sat") as string,
+                                __("day_ahead_prices.content.calendar_sun") as string,
+                            ]}
+                            unit={__("day_ahead_prices.content.calendar_ct_kwh")}
+                            readonly
+                            onEditClick={() => {
+                                this.setState({
+                                    show_calendar_modal: true,
+                                    calendar_prices_draft: (dap.calendar_prices || new Array(672).fill(0)).slice(),
+                                });
+                            }}
+                            edit_label={__("day_ahead_prices.content.calendar_edit")}
+                        />
+                    }
+                    <Modal size="xl" fullscreen="lg-down" show={dap.show_calendar_modal} onHide={() => {}} backdrop="static" centered>
+                        <Modal.Header>
+                            <span class="modal-title form-label">{__("day_ahead_prices.content.enable_calendar")}</span>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <CalendarGrid
+                                prices={dap.calendar_prices_draft || new Array(672).fill(0)}
+                                onPricesChanged={(prices) => {
+                                    this.setState({calendar_prices_draft: prices});
+                                }}
+                                split_below={992}
+                                day_names={[
+                                    __("day_ahead_prices.content.calendar_mon") as string,
+                                    __("day_ahead_prices.content.calendar_tue") as string,
+                                    __("day_ahead_prices.content.calendar_wed") as string,
+                                    __("day_ahead_prices.content.calendar_thu") as string,
+                                    __("day_ahead_prices.content.calendar_fri") as string,
+                                    __("day_ahead_prices.content.calendar_sat") as string,
+                                    __("day_ahead_prices.content.calendar_sun") as string,
+                                ]}
+                                label={__("day_ahead_prices.content.calendar_prices")}
+                                label_muted={__("day_ahead_prices.content.calendar_prices_muted")}
+                                unit={__("day_ahead_prices.content.calendar_ct_kwh")}
+                                apply_label={__("day_ahead_prices.content.calendar_apply")}
+                                selection_label={__("day_ahead_prices.content.calendar_selection")}
+                            />
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => {
+                                this.setState({show_calendar_modal: false, calendar_prices_draft: null});
+                            }}>
+                                {__("main.abort")}
+                            </Button>
+                            <Button variant="primary" onClick={() => {
+                                const prices = this.state.calendar_prices_draft;
+                                this.setState({calendar_prices: prices, show_calendar_modal: false, calendar_prices_draft: null});
+                                API.save("day_ahead_prices/calendar", {prices: prices}, () => __("day_ahead_prices.script.save_failed"));
+                            }}>
+                                {__("component.config_form.save")}
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                     <FormSeparator heading={__("day_ahead_prices.content.extra_costs")} help={__("day_ahead_prices.content.extra_costs_help")}/>
                     <FormRow label={__("day_ahead_prices.content.vat")} label_muted={__("day_ahead_prices.content.vat_muted")}>
                         <InputFloat value={dap.vat} onValue={(v) => {this.setState({vat: v}, () => this.update_uplot())}} digits={2} unit="%" max={10000} min={0}/>
@@ -464,7 +557,7 @@ export class DayAheadPricesStatus extends Component
 {
     render() {
         const config = API.get('day_ahead_prices/config')
-        if (!util.render_allowed() || !config.enable)
+        if (!util.render_allowed() || !(config.enable || config.enable_calendar))
             return <StatusSection name="day_ahead_prices" />
 
         return <StatusSection name="day_ahead_prices">
@@ -506,7 +599,7 @@ export function init() {
             const config = API.get("day_ahead_prices/config");
             const state = API.get("day_ahead_prices/state");
 
-            if (!config.enable) {
+            if (!config.enable && !config.enable_calendar) {
                 return {status: ModuleStatus.Disabled};
             }
 

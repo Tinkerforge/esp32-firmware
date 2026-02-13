@@ -52,7 +52,29 @@ let x = {
                 </ul>
             </>,
             "incl_all_costs": "incl. all costs",
-            "extra_costs": "Extra costs"
+            "extra_costs": "Extra costs",
+            "enable_calendar": "Price calendar",
+            "enable_calendar_help": <>
+                <p>The price calendar can be used to implement <strong>Module 3 according to § 14a EnWG</strong> (German Energy Industry Act). Module 3 requires time-variable grid fees, where reduced grid fees apply during off-peak hours and higher fees during peak hours.</p>
+                <p>To configure this, enter the grid fee differences as price offsets in the calendar. For example, set a negative value during off-peak hours (when reduced grid fees apply) and a positive value during peak hours. These offsets are added to the day-ahead spot market prices, so that the eco charging optimization automatically prefers the cheaper time slots.</p>
+                <p>If the dynamic tariff is disabled, the calendar prices are used as-is without any day-ahead prices.</p>
+            </>,
+            "enable_calendar_desc": "Add fixed price offsets per weekday and time of day to the day-ahead prices.",
+            "enable_calendar_desc_standalone": "Define a fixed price per weekday and time of day.",
+            "calendar_mon": "Mon",
+            "calendar_tue": "Tue",
+            "calendar_wed": "Wed",
+            "calendar_thu": "Thu",
+            "calendar_fri": "Fri",
+            "calendar_sat": "Sat",
+            "calendar_sun": "Sun",
+            "calendar_prices": "Calendar prices",
+            "calendar_prices_muted": "Select cells and enter a price to apply",
+
+            "calendar_edit": "Edit calendar",
+            "calendar_apply": "Apply",
+            "calendar_ct_kwh": "ct/kWh",
+            "calendar_selection": "Selection"
         },
         "automation": {
             "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {

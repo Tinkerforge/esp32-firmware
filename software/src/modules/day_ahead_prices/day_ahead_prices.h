@@ -39,6 +39,8 @@
 #define DAY_AHEAD_PRICE_MAX_ARDUINO_JSON_BUFFER_SIZE 8192
 
 #define DAY_AHEAD_PRICE_MAX_AMOUNT (25*4*2) // Two days with 15min resolution and one additional hour for daylight savings time switch
+#define DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY 96  // 24h * 4 (15min resolution)
+#define DAY_AHEAD_PRICE_CALENDAR_SLOTS (7 * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY) // 7 days * 96 = 672
 
 enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_OK,
@@ -82,12 +84,18 @@ private:
     void update_current_price();
     void update_prices_sorted();
     bool dp_select_slots(const int32_t *slot_prices, const uint8_t N, const uint8_t K, const uint8_t B, bool *result, const bool find_expensive);
+    void update_calendar();
 
     micros_t last_update_begin;
     char *json_buffer = nullptr;
     uint32_t json_buffer_position = 0;
     bool current_price_available = false;
+    int8_t calendar_last_generated_wday = -1; // day-of-week for which calendar prices were last generated
     AsyncHTTPSClient https_client;
+
+    // Raw DAP prices before calendar is applied. Used to make update_calendar() idempotent.
+    int32_t raw_prices[DAY_AHEAD_PRICE_MAX_AMOUNT] = {};
+    size_t raw_prices_count = 0;
     uint64_t task_id = 0;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
@@ -116,6 +124,7 @@ private:
     ConfigRoot state;
     ConfigRoot prices;
     ConfigRoot prices_update;
+    ConfigRoot calendar;
 
 #ifdef DEBUG_FS_ENABLE
     ConfigRoot debug_price_update;
@@ -127,6 +136,8 @@ public:
     void setup() override;
     void register_urls() override;
     esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
+
+    inline bool is_enabled() { return config.get("enable")->asBool() || config.get("enable_calendar")->asBool(); }
     Option<int32_t> get_minimum_price_between(const uint32_t start, const uint32_t end);
     Option<int32_t> get_minimum_price_today();
     Option<int32_t> get_minimum_price_tomorrow();
