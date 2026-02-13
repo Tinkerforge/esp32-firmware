@@ -168,6 +168,21 @@ void SolarForecast::register_urls()
 
             SolarForecastPlane &p = planes[plane_index];
 
+            if (p.forecast_update.get("first_date")->asUint() == 0) {
+                errmsg = "first_date must not be 0";
+                return;
+            }
+
+            if (p.forecast_update.get("forecast")->count() == 0) {
+                errmsg = "forecast array must not be empty";
+                return;
+            }
+
+            if (p.forecast_update.get("resolution")->asUint() != RESOLUTION_60MIN) {
+                errmsg = "Only 60 minute resolution is supported";
+                return;
+            }
+
             // Auto-enable plane when data is pushed
             if (!p.config.get("enable")->asBool()) {
                 p.config.get("enable")->updateBool(true);
