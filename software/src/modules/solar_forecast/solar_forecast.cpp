@@ -57,6 +57,7 @@ void SolarForecast::pre_setup()
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
+        {"source", Config::Enum(ForecastSource::ForecastService)},
         {"api_url", Config::Str(OPTIONS_SOLAR_FORECAST_API_URL(), 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
@@ -122,6 +123,7 @@ void SolarForecast::pre_setup()
 
         plane.state    = plane_state_prototype;
         plane.forecast = plane_forecast_prototype;
+        plane.forecast_update = plane_forecast_prototype;
         plane.index    = plane_index;
     }
 
@@ -151,6 +153,49 @@ void SolarForecast::register_urls()
         api.addPersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config, {}, {"lat", "long"});
         api.addState(get_path(plane, SolarForecast::PathType::State),    &plane.state, {}, {"place"});
         api.addState(get_path(plane, SolarForecast::PathType::Forecast), &plane.forecast);
+
+        String forecast_update_path = String("solar_forecast/planes/") + String(plane_index) + "/forecast_update";
+        api.addCommand(forecast_update_path, &plane.forecast_update, {}, [this, plane_index](Language /*language*/, String &errmsg) {
+            if (!config.get("enable")->asBool()) {
+                errmsg = "Solar forecast not enabled";
+                return;
+            }
+
+            if (config.get("source")->asEnum<ForecastSource>() != ForecastSource::Push) {
+                errmsg = "Solar forecast not in push mode";
+                return;
+            }
+
+            SolarForecastPlane &p = planes[plane_index];
+
+            // Auto-enable plane when data is pushed
+            if (!p.config.get("enable")->asBool()) {
+                p.config.get("enable")->updateBool(true);
+            }
+
+            auto f = p.forecast.get("forecast");
+            auto fu = p.forecast_update.get("forecast");
+            const size_t old_count = f->count();
+            const size_t new_count = fu->count();
+
+            for (size_t i = 0; i < new_count; i++) {
+                auto forecast_elem = i < old_count ? f->get(i) : f->add();
+                forecast_elem->updateUint(fu->get(i)->asUint());
+            }
+
+            for (size_t i = old_count; i > new_count; i--) {
+                f->removeLast();
+            }
+
+            p.forecast.get("first_date")->updateUint(p.forecast_update.get("first_date")->asUint());
+            p.forecast.get("resolution")->updateUint(p.forecast_update.get("resolution")->asUint());
+
+            const uint32_t current_minutes = rtc.timestamp_minutes();
+            p.state.get("last_sync")->updateUint(current_minutes);
+            p.state.get("last_check")->updateUint(current_minutes);
+
+            update_cached_wh_state();
+        }, true);
     }
 
     task_scheduler.scheduleWhenClockSynced([this]() {
@@ -376,6 +421,10 @@ void SolarForecast::retry_update(millis_t delay)
 void SolarForecast::update()
 {
     if (!config.get("enable")->asBool()) {
+        return;
+    }
+
+    if (config.get("source")->asEnum<ForecastSource>() != ForecastSource::ForecastService) {
         return;
     }
 

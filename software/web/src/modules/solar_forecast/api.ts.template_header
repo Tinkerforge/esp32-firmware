@@ -1,5 +1,6 @@
 export interface config {
     enable: boolean;
+    source: number;
     api_url: string;
     cert_id: number;
 }

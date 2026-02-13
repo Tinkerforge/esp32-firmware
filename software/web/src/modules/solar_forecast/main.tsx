@@ -31,11 +31,13 @@ import { InputFloat } from "../../ts/components/input_float";
 import { Sunrise } from "react-feather";
 import { Table } from "../../ts/components/table";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
+import { ForecastSource } from "./forecast_source.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function minus1_to_nan(val: number) {
@@ -179,6 +181,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
+        const is_forecast_service = API.get("solar_forecast/config").source == ForecastSource.ForecastService;
         return [<>
             <FormRow label={__("solar_forecast.content.plane_config_name")}>
                 <InputText
@@ -189,6 +192,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     maxLength={16}
                 />
             </FormRow>
+            {is_forecast_service &&
             <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
                 <InputFloat
                     required
@@ -199,7 +203,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     min={-900000}
                     max={900000}
                 />
-            </FormRow>
+            </FormRow>}
+            {is_forecast_service &&
             <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
                 <InputFloat
                     required
@@ -210,7 +215,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     min={-1800000}
                     max={1800000}
                 />
-            </FormRow>
+            </FormRow>}
+            {is_forecast_service &&
             <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
                 <InputNumber
                     required
@@ -220,7 +226,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     min={0}
                     max={90}
                 />
-            </FormRow>
+            </FormRow>}
+            {is_forecast_service &&
             <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
                 <InputNumber
                     required
@@ -230,7 +237,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     min={-180}
                     max={180}
                 />
-            </FormRow>
+            </FormRow>}
+            {is_forecast_service &&
             <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
                 <InputFloat
                     required
@@ -241,7 +249,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     min={1}
                     max={100000}
                 />
-            </FormRow>
+            </FormRow>}
         </>]
     }
 
@@ -434,9 +442,10 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 </UplotLoader>
                             </div>
                         </div>
+                        {state.source == ForecastSource.ForecastService &&
                         <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
                             <InputText value={get_next_update_string()}/>
-                        </FormRow>
+                        </FormRow>}
                         <FormRow label={__("solar_forecast.content.solar_forecast_now")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                             <InputText
                                 value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today_remaining) / 1000, "kWh", 2)}
@@ -471,29 +480,45 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
-                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")} label_muted={__("solar_forecast.content.enable_solar_forecast_muted")(state.api_url)}>
+                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")} label_muted={state.source == ForecastSource.ForecastService ? __("solar_forecast.content.source_forecast_service_desc")(state.api_url) : __("solar_forecast.content.source_push_desc")}>
                         <Switch desc={__("solar_forecast.content.solar_forecast_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
+                    <FormRow label={__("solar_forecast.content.source")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("solar_forecast.content.source_forecast_service")],
+                                ["1", __("solar_forecast.content.source_push")],
+                            ]}
+                            value={state.source}
+                            onValue={(v) => this.setState({source: parseInt(v)})}
+                        />
+                    </FormRow>
 
                     <FormSeparator heading={__("solar_forecast.content.planes")} />
                     <div class="form-group">
-                    <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
+                    <Table columnNames={state.source == ForecastSource.ForecastService
+                            ? [__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]
+                            : [__("solar_forecast.content.table_name")]}
                         tableTill="lg"
                         rows={get_active_unsaved_planes().map((active_plane_index) => {
                             let plane_config = state.plane_configs[active_plane_index];
                             return {
-                                extraValue: get_plane_info(active_plane_index),
-                                columnValues: [
-                                    plane_config.name,
-                                    util.toLocaleFixed(plane_config.lat / 10000, 4) + "°",
-                                    util.toLocaleFixed(plane_config.long / 10000, 4) + "°",
-                                    plane_config.dec + "°",
-                                    plane_config.az + "°",
-                                    util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
-                                ],
+                                extraValue: state.source == ForecastSource.ForecastService ? get_plane_info(active_plane_index) : undefined,
+                                columnValues: state.source == ForecastSource.ForecastService
+                                    ? [
+                                        plane_config.name,
+                                        util.toLocaleFixed(plane_config.lat / 10000, 4) + "°",
+                                        util.toLocaleFixed(plane_config.long / 10000, 4) + "°",
+                                        plane_config.dec + "°",
+                                        plane_config.az + "°",
+                                        util.toLocaleFixed(plane_config.wp / 1000, 3) + " kWp",
+                                    ]
+                                    : [
+                                        plane_config.name,
+                                    ],
                                 editTitle: __("solar_forecast.content.edit_plane_config_title"),
                                 onEditShow: async () => this.setState({plane_config_tmp: {...plane_config}}),
                                 onEditGetChildren: () => this.on_get_children(),
