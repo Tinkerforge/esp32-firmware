@@ -284,9 +284,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                 filled: [null],
             }
 
-            for (const index in active_planes) {
-                data.keys.push('plane' + index);
-                data.names.push(this.state.plane_configs[index].name);
+            for (const plane_index of active_planes) {
+                data.keys.push('plane' + plane_index);
+                data.names.push(this.state.plane_configs[plane_index].name);
                 data.values.push([]);
                 data.filled.push(true);
             }
@@ -295,16 +295,16 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             for (let i = 0; i < this.state.plane_forecasts[first_index].forecast.length; i++) {
                 data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + i * 60 * resolution_multiplier);
                 let j = 1;
-                for (const index in active_planes) {
-                    data.values[j].push(this.state.plane_forecasts[index].forecast[i]);
+                for (const plane_index of active_planes) {
+                    data.values[j].push(this.state.plane_forecasts[plane_index].forecast[i]);
                     j++;
                 }
             }
 
             data.values[0].push(this.state.plane_forecasts[first_index].first_date * 60 + this.state.plane_forecasts[first_index].forecast.length * 60 * resolution_multiplier - 1);
             let j = 1;
-            for (const index in active_planes) {
-                data.values[j].push(this.state.plane_forecasts[index].forecast[this.state.plane_forecasts[first_index].forecast.length - 1]);
+            for (const plane_index of active_planes) {
+                data.values[j].push(this.state.plane_forecasts[plane_index].forecast[this.state.plane_forecasts[first_index].forecast.length - 1]);
                 j++;
             }
         }
