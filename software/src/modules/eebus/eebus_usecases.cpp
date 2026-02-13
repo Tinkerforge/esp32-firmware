@@ -756,10 +756,164 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                         return {true, true, CmdClassifierType::reply};
                     }
                     case CmdClassifierType::write: {
-                        // TODO: Implement write for billListData (CRITICAL for spec compliance)
-                        // Spec 3.2.1.2.1.3 requires write support for Energy Broker to send billing data
-                        // Must also implement partial write (update subset of bills)
-                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Writing billing data is not yet supported");
+                        // Spec Reference: USECASE_SPECIFICATIONS.md lines 647-670 (Bill.billListData function)
+                        // Implements write handler with MANDATORY partial write support per spec line 649
+
+                        if (!data->billlistdatatype.has_value() || !data->billlistdatatype->billData.has_value()) {
+                            EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Invalid bill data");
+                            return {true, true, CmdClassifierType::result};
+                        }
+
+                        // Check if this is a partial write operation (MANDATORY per spec)
+                        bool is_partial = false;
+                        if (data->cmdcontroltype.has_value() && data->cmdcontroltype->partial.has_value()) {
+                            is_partial = data->cmdcontroltype->partial.has_value();
+                        }
+
+                        // If not partial, clear all existing bills (full replacement)
+                        if (!is_partial) {
+                            for (auto &entry : bill_entries) {
+                                entry.id = 0; // Mark as unused
+                            }
+                        }
+
+                        // Process each incoming bill
+                        for (const auto &incoming_bill : data->billlistdatatype->billData.get()) {
+                            // Validate billType
+                            if (incoming_bill.billType.get() != BillTypeEnumType::chargingSummary) {
+                                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Only chargingSummary billType is supported");
+                                return {true, true, CmdClassifierType::result};
+                            }
+
+                            // Validate billId range (1-8)
+                            int bill_id = incoming_bill.billId.get();
+                            if (bill_id < 1 || bill_id > 8) {
+                                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "billId must be between 1 and 8");
+                                return {true, true, CmdClassifierType::result};
+                            }
+
+                            int array_idx = bill_id - 1;
+
+                            // Parse total section
+                            if (!incoming_bill.total.has_value() || !incoming_bill.total->timePeriod.has_value()) {
+                                EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Missing total section or time period");
+                                return {true, true, CmdClassifierType::result};
+                            }
+
+                            time_t start_time = 0, end_time = 0;
+                            if (incoming_bill.total->timePeriod->startTime.has_value()) {
+                                EEBUS_USECASE_HELPERS::iso_timestamp_to_unix(incoming_bill.total->timePeriod->startTime->c_str(), &start_time);
+                            }
+                            if (incoming_bill.total->timePeriod->endTime.has_value()) {
+                                EEBUS_USECASE_HELPERS::iso_timestamp_to_unix(incoming_bill.total->timePeriod->endTime->c_str(), &end_time);
+                            }
+
+                            // Parse total energy (Wh)
+                            int energy_wh = 0;
+                            if (incoming_bill.total->value.has_value() && !incoming_bill.total->value->empty()) {
+                                for (const auto &val : incoming_bill.total->value.get()) {
+                                    if (val.unit.has_value() && val.unit.get() == UnitOfMeasurementEnumType::Wh && val.value.has_value()) {
+                                        energy_wh = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(val.value.get());
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Parse total cost (EUR cents)
+                            uint32_t cost_eur_cent = 0;
+                            if (incoming_bill.total->cost.has_value() && !incoming_bill.total->cost->empty()) {
+                                for (const auto &cost : incoming_bill.total->cost.get()) {
+                                    if (cost.currency.has_value() && cost.currency.get() == CurrencyEnumType::EUR && cost.cost.has_value()) {
+                                        // Cost is in ScaledNumber format, typically with scale=-2 (cents)
+                                        int cost_value = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(cost.cost.get());
+                                        // Adjust for scale: if scale=-2, value is already in cents
+                                        int scale = cost.cost->scale.has_value() ? cost.cost->scale.get() : 0;
+                                        if (scale == -2) {
+                                            cost_eur_cent = cost_value;
+                                        } else if (scale == 0) {
+                                            cost_eur_cent = cost_value * 100; // Convert EUR to cents
+                                        } else {
+                                            cost_eur_cent = static_cast<uint32_t>(cost_value * std::pow(10.0, -scale - 2));
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Parse positions (MANDATORY: grid and self-produced)
+                            int grid_energy_percent = 0, grid_cost_percent = 0;
+                            int self_produced_energy_percent = 0, self_produced_cost_percent = 0;
+
+                            if (incoming_bill.position.has_value()) {
+                                for (const auto &pos : incoming_bill.position.get()) {
+                                    if (!pos.positionType.has_value())
+                                        continue;
+
+                                    if (pos.positionType.get() == BillPositionTypeEnumType::gridElectricEnergy) {
+                                        // Position 1: Grid energy
+                                        if (pos.value.has_value() && !pos.value->empty()) {
+                                            for (const auto &val : pos.value.get()) {
+                                                if (val.valuePercentage.has_value()) {
+                                                    grid_energy_percent = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(val.valuePercentage.get());
+                                                }
+                                            }
+                                        }
+                                        if (pos.cost.has_value() && !pos.cost->empty()) {
+                                            for (const auto &cost : pos.cost.get()) {
+                                                if (cost.costPercentage.has_value()) {
+                                                    grid_cost_percent = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(cost.costPercentage.get());
+                                                }
+                                            }
+                                        }
+                                    } else if (pos.positionType.get() == BillPositionTypeEnumType::selfProducedElectricEnergy) {
+                                        // Position 2: Self-produced energy
+                                        if (pos.value.has_value() && !pos.value->empty()) {
+                                            for (const auto &val : pos.value.get()) {
+                                                if (val.valuePercentage.has_value()) {
+                                                    self_produced_energy_percent = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(val.valuePercentage.get());
+                                                }
+                                            }
+                                        }
+                                        if (pos.cost.has_value() && !pos.cost->empty()) {
+                                            for (const auto &cost : pos.cost.get()) {
+                                                if (cost.costPercentage.has_value()) {
+                                                    self_produced_cost_percent = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(cost.costPercentage.get());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Validate percentages sum to 100% (spec requirement)
+                            if (grid_energy_percent + self_produced_energy_percent != 100) {
+                                eebus.trace_fmtln("EVCS Warning: Energy percentages do not sum to 100%% (grid: %d%%, self: %d%%)", grid_energy_percent, self_produced_energy_percent);
+                            }
+                            if (grid_cost_percent + self_produced_cost_percent != 100) {
+                                eebus.trace_fmtln("EVCS Warning: Cost percentages do not sum to 100%% (grid: %d%%, self: %d%%)", grid_cost_percent, self_produced_cost_percent);
+                            }
+
+                            // Store bill entry
+                            bill_entries[array_idx].id = bill_id;
+                            bill_entries[array_idx].start_time = start_time;
+                            bill_entries[array_idx].end_time = end_time;
+                            bill_entries[array_idx].energy_wh = energy_wh;
+                            bill_entries[array_idx].cost_eur_cent = cost_eur_cent;
+                            bill_entries[array_idx].grid_energy_percent = grid_energy_percent;
+                            bill_entries[array_idx].grid_cost_percent = grid_cost_percent;
+                            bill_entries[array_idx].self_produced_energy_percent = self_produced_energy_percent;
+                            bill_entries[array_idx].self_produced_cost_percent = self_produced_cost_percent;
+                        }
+
+                        // Update API state
+                        update_api();
+
+                        // Notify subscribers (with partial flag if applicable)
+                        BillListDataType bill_list_data;
+                        get_bill_list_data(&bill_list_data);
+                        eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Bill), bill_list_data, "billListData");
+
+                        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
                         return {true, true, CmdClassifierType::result};
                     }
                     default:;
@@ -865,7 +1019,7 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
 
         // Total energy and cost
         billData.total->timePeriod->startTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
-        billData.total->timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.start_time).c_str();
+        billData.total->timePeriod->endTime = EEBUS_USECASE_HELPERS::unix_to_iso_timestamp(entry.end_time).c_str();
         BillValueType total_value;
         total_value.value->number = entry.energy_wh;
         total_value.unit = UnitOfMeasurementEnumType::Wh;
@@ -898,9 +1052,9 @@ void EvcsUsecase::get_bill_list_data(BillListDataType *data) const
         self_produced_value.valuePercentage->number = entry.self_produced_energy_percent;
         self_produced_value.valuePercentage->scale = 0;
         BillCostType self_produced_cost;
-        self_produced_cost.costPercentage->number = entry.self_produced_energy_percent;
-        grid_position.cost->push_back(grid_cost);
-        grid_position.value->push_back(grid_value);
+        self_produced_cost.costPercentage->number = entry.self_produced_cost_percent;
+        self_produced_position.cost->push_back(self_produced_cost);
+        self_produced_position.value->push_back(self_produced_value);
 
         billData.position->push_back(grid_position);
         billData.position->push_back(self_produced_position);
