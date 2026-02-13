@@ -10,7 +10,6 @@ let x = {
         "content": {
             "solar_forecast": "Solar Forecast",
             "enable_solar_forecast": "Solar forecast enabled",
-            "enable_solar_forecast_muted": /*FFN*/(api_url: string) => <>The forecast is queried from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "source": "Source",
             "source_forecast_service": "Automatic via forecast service",
             "source_forecast_service_desc": /*FFN*/(api_url: string) => <>The forecast is queried from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
@@ -33,7 +32,7 @@ let x = {
             "add_plane_config_title": "Add PV plane",
             "add_plane_config_message": /*SFN*/(have: number, max: number) => `${have} of ${max} PV planes configured`/*NF*/,
             "edit_plane_config_title": "Edit PV plane",
-            "solar_forecast_desc": <>Automatic download of solar forecast data. {__("The_device")} must be connected to the Internet.</>,
+            "solar_forecast_desc": "Enable PV yield forecast.",
             "table_name": "Name",
             "table_azimuth": "Azimuth",
             "table_declination": "Declination",

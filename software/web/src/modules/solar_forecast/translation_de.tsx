@@ -10,7 +10,6 @@ let x = {
         "content": {
             "solar_forecast": "PV-Ertragsprognose",
             "enable_solar_forecast": "PV-Ertragsprognose aktiviert",
-            "enable_solar_forecast_muted": /*FFN*/(api_url: string) => <>Die Prognose wird von <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> abgefragt.</>/*NF*/,
             "source": "Quelle",
             "source_forecast_service": "Automatisch über Prognosedienst",
             "source_forecast_service_desc": /*FFN*/(api_url: string) => <>Die Prognose wird von <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a> abgefragt.</>/*NF*/,
@@ -33,7 +32,7 @@ let x = {
             "add_plane_config_title": "PV-Fläche hinzufügen",
             "add_plane_config_message": /*SFN*/(have: number, max: number) => `${have} von ${max} PV-Flächen konfiguriert`/*NF*/,
             "edit_plane_config_title": "PV-Fläche bearbeiten",
-            "solar_forecast_desc": <>Lädt automatisch die PV-Ertragsprognose herunter. Für diese Funktion muss {__("the_device")} Internetzugriff haben.</>,
+            "solar_forecast_desc": "PV-Ertragsprognose aktivieren.",
             "table_name": "Name",
             "table_azimuth": "Azimut",
             "table_declination": "Neigung",

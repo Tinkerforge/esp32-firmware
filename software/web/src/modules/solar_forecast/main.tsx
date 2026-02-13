@@ -473,13 +473,14 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
-                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")} label_muted={state.source == ForecastSource.ForecastService ? __("solar_forecast.content.source_forecast_service_desc")(state.api_url) : __("solar_forecast.content.source_push_desc")}>
+                    <FormRow label={__("solar_forecast.content.enable_solar_forecast")}>
                         <Switch desc={__("solar_forecast.content.solar_forecast_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label={__("solar_forecast.content.source")}>
+                    <FormRow label={__("solar_forecast.content.source")}
+                             label_muted={state.source == ForecastSource.ForecastService ? __("solar_forecast.content.source_forecast_service_desc")(state.api_url) : __("solar_forecast.content.source_push_desc")}>
                         <InputSelect
                             items={[
                                 ["0", __("solar_forecast.content.source_forecast_service")],
