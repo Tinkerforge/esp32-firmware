@@ -503,6 +503,13 @@ def hyphenate(s, key, lang):
         return f'___STYLE_{len(style_placeholders) - 1}___'
     s = re.sub(r'style=\{[^}]+\}|style="[^"]+"', escape_style, s)
 
+    # Escape href attributes to prevent hyphenation of URLs
+    href_placeholders = []
+    def escape_href(match):
+        href_placeholders.append(match.group(0))
+        return f'___HREF_{len(href_placeholders) - 1}___'
+    s = re.sub(r'href=\{[^}]+\}|href="[^"]+"', escape_href, s)
+
     def repl(m: re.Match):
         word = m.group(0)
 
@@ -526,6 +533,10 @@ def hyphenate(s, key, lang):
     # Reverse escaping of style attributes.
     for i, style in enumerate(style_placeholders):
         s = s.replace(f'___STYLE_{i}___', style)
+
+    # Reverse escaping of href attributes.
+    for i, href in enumerate(href_placeholders):
+        s = s.replace(f'___HREF_{i}___', href)
 
     # Reverse escaping of translation keys.
     s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace("ÄÖÜÄÖÜ", ".")}")', s)
