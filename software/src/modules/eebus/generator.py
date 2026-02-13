@@ -995,7 +995,7 @@ void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);
         if not elements:
             return (
                 f"bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"
-                f"\n\treturn true;\n}}\n"
+                f"\tif (!dst.to<JsonObject>()) {{return false;}}\n\treturn true;\n}}\n"
             )
 
         code = (

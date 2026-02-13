@@ -8517,7 +8517,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
 }
 bool convertToJson(const ElementTagType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElementTagType &dst)
@@ -16381,7 +16383,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
 }
 bool convertToJson(const NetworkManagementAbortCallType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType &dst)
@@ -16389,7 +16393,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType
 }
 bool convertToJson(const NetworkManagementAbortCallElementsType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElementsType &dst)
@@ -18065,7 +18071,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 }
 bool convertToJson(const SpecificationVersionDataElementsType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElementsType &dst)
@@ -19549,7 +19557,9 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataTy
 }
 bool convertToJson(const SpecificationVersionListDataSelectorsType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSelectorsType &dst)
@@ -19557,7 +19567,9 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSe
 }
 bool convertToJson(const TaskManagementDirectControlRelatedType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedType &dst)
@@ -19565,7 +19577,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRel
 }
 bool convertToJson(const TaskManagementDirectControlRelatedElementsType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedElementsType &dst)
@@ -27317,7 +27331,9 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
 }
 bool convertToJson(const TimeDistributorEnquiryCallType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType &dst)
@@ -27325,7 +27341,9 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType
 }
 bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVariant &dst)
 {
-
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElementsType &dst)
