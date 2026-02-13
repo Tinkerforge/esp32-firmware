@@ -36,7 +36,7 @@ import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Resolution } from "./resolution.enum";
 import { Region } from "./region.enum";
-import { Source } from "./source.enum";
+import { PriceSource } from "./price_source.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function get_timestamp_today_00_00_in_seconds() {
@@ -395,7 +395,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label={__("day_ahead_prices.content.source")} label_muted={dap.source == Source.SpotMarket ? __("day_ahead_prices.content.source_spot_market_desc")(dap.api_url) : __("day_ahead_prices.content.source_push_desc")}>
+                    <FormRow label={__("day_ahead_prices.content.source")} label_muted={dap.source == PriceSource.SpotMarket ? __("day_ahead_prices.content.source_spot_market_desc")(dap.api_url) : __("day_ahead_prices.content.source_push_desc")}>
                         <InputSelect
                             items={[
                                 ["0", __("day_ahead_prices.content.source_spot_market")],
@@ -405,7 +405,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             onValue={(v) => this.setState({source: parseInt(v)})}
                         />
                     </FormRow>
-                    {dap.source == Source.SpotMarket &&
+                    {dap.source == PriceSource.SpotMarket &&
                     <FormRow label={__("day_ahead_prices.content.region")}>
                         <InputSelect
                             items={[
@@ -424,7 +424,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             }}
                         />
                     </FormRow>}
-                    {dap.source == Source.SpotMarket &&
+                    {dap.source == PriceSource.SpotMarket &&
                     <FormRow label={__("day_ahead_prices.content.resolution")} label_muted={__("day_ahead_prices.content.resolution_muted")}>
                         <InputSelect
                             items={

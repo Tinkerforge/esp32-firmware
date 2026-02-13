@@ -18,7 +18,7 @@
  */
 #include "day_ahead_prices.h"
 
-#include "source.enum.h"
+#include "price_source.enum.h"
 #include "region.enum.h"
 #include "resolution.enum.h"
 
@@ -50,7 +50,7 @@ void DayAheadPrices::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"source", Config::Enum(Source::SpotMarket)},
+        {"source", Config::Enum(PriceSource::SpotMarket)},
         {"api_url", Config::Str(OPTIONS_DAY_AHEAD_PRICE_API_URL(), 0, 64)},
         {"region", Config::Enum(Region::DE)},
         {"resolution", Config::Enum(Resolution::Min15)},
@@ -73,7 +73,7 @@ void DayAheadPrices::pre_setup()
 
         // If region, resolution or source changes we discard the current state
         // and trigger a new update (with the new config).
-        if ((update.get("source")->asEnum<Source>()         != config.get("source")->asEnum<Source>()) ||
+        if ((update.get("source")->asEnum<PriceSource>()    != config.get("source")->asEnum<PriceSource>()) ||
             (update.get("region")->asEnum<Region>()         != config.get("region")->asEnum<Region>()) ||
             (update.get("resolution")->asEnum<Resolution>() != config.get("resolution")->asEnum<Resolution>()) ||
             (update.get("enable")->asBool()                 != config.get("enable")->asBool()) ||
@@ -163,7 +163,7 @@ void DayAheadPrices::register_urls()
             return;
         }
 
-        if (config.get("source")->asEnum<Source>() != Source::Push) {
+        if (config.get("source")->asEnum<PriceSource>() != PriceSource::Push) {
             errmsg = "Day ahead prices not in push mode";
             return;
         }
@@ -309,7 +309,7 @@ void DayAheadPrices::update()
         return;
     }
 
-    if (config.get("source")->asEnum<Source>() != Source::SpotMarket) {
+    if (config.get("source")->asEnum<PriceSource>() != PriceSource::SpotMarket) {
         return;
     }
 
