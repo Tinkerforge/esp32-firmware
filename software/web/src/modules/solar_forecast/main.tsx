@@ -128,16 +128,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             });
 
             util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/config`, () => {
-                let config = API.get_unchecked(`solar_forecast/planes/${plane_index}/config`);
-
-                this.setState((prevState) => ({
-                    plane_configs: {
-                        ...prevState.plane_configs,
-                        [plane_index]: config
-                    }
-                }));
-
                 if (!this.isDirty()) {
+                    let config = API.get_unchecked(`solar_forecast/planes/${plane_index}/config`);
+
                     this.setState((prevState) => ({
                         plane_configs: {
                             ...prevState.plane_configs,
