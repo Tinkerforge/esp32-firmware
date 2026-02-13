@@ -8,7 +8,7 @@ Usage:
     python3 dap_push_test.py <device-ip> [--resolution 15|60] [--hours N]
 
 Prerequisites on the device:
-    - day_ahead_prices/config: enable=true, mode=1 (Push)
+    - day_ahead_prices/config: enable=true, source=1 (Push)
 """
 
 import argparse
@@ -112,8 +112,8 @@ def main():
     if not config.get("enable", False):
         print("\nERROR: day_ahead_prices is not enabled. Set enable=true first.")
         sys.exit(1)
-    if config.get("mode", 0) != 1:
-        print("\nERROR: day_ahead_prices is not in Push mode (mode=1). Set mode=1 first.")
+    if config.get("source", 0) != 1:
+        print("\nERROR: day_ahead_prices is not in Push mode (source=1). Set source=1 first.")
         sys.exit(1)
 
     # Build payload

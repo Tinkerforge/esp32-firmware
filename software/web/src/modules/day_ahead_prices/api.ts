@@ -1,6 +1,6 @@
 export interface config {
     enable: boolean;
-    mode: number;
+    source: number;
     api_url: string;
     region: number;
     resolution: number;
