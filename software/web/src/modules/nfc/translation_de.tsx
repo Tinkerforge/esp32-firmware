@@ -47,7 +47,7 @@ let x = {
             "type_4": "NFC Forum Typ 4",
             "type_5": "NFC Forum Typ 5",
             "type_6": "Smartphone",
-            "tap_to_unlock_no_app": "Um dein Smartphone zur Ladefreigabe zu konfigurieren, öffne diese Seite in der WARP App auf einem Android-Gerät.",
+            "tap_to_unlock_no_app": <>Um dein Smartphone zur Ladefreigabe zu konfigurieren, öffne diese Seite in der <a href="https://play.google.com/store/apps/details?id=com.tinkerforge.warp" target="_blank">WARP App</a> auf einem Android-Gerät.</>,
             "tap_to_unlock_ios": "Ladefreigabe per Smartphone ist nur für Android-Geräte verfügbar. Apple erlaubt kein NFC-Host Card Emulation auf iOS.",
             "tap_to_unlock_not_supported": "Dein Smartphone unterstützt kein NFC-Host Card Emulation oder du musst deine WARP App aktualisieren.",
             "tap_to_unlock_add": "Smartphone-Ladefreigabe",
