@@ -174,7 +174,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
     // FormRows for onEditGetChildren and onAddGetChildren
     on_get_children() {
-        const is_forecast_service = API.get("solar_forecast/config").source == ForecastSource.ForecastService;
+        const is_forecast_service = this.state.source == ForecastSource.ForecastService;
         return [<>
             <FormRow label={__("solar_forecast.content.plane_config_name")}>
                 <InputText
