@@ -26,6 +26,11 @@ export interface state {
     next_update: number;
 }
 
+export interface plan {
+    cheap: boolean[];
+    expensive: boolean[];
+}
+
 export interface reset_holding_time {}
 
 export interface sgr_blocking_override {

@@ -109,6 +109,11 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             this.update_uplot();
         });
 
+        util.addApiEventListener("heating/plan", () => {
+            // Update chart when backend plan changes
+            this.update_uplot();
+        });
+
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
     }
@@ -219,41 +224,17 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             data.values[0].push(dap_prices.first_date * 60 + dap_prices.prices.length * 60 * resolution_multiplier - 1);
             data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
 
-            const hour_multiplier = 60/resolution_multiplier;
-            const num_per_day     = 24*hour_multiplier;
-            const extended        = this.state.extended ? extended_hours*hour_multiplier : 0;
-            const blocking        = this.state.blocking ? blocking_hours*hour_multiplier : 0;
-
-            let num_per_period = 0;
-            switch(this.state.control_period) {
-                case ControlPeriod.Hours24: num_per_period = num_per_day; break;
-                case ControlPeriod.Hours12: num_per_period = num_per_day/2; break;
-                case ControlPeriod.Hours8:  num_per_period = num_per_day/3; break;
-                case ControlPeriod.Hours6:  num_per_period = num_per_day/4; break;
-                case ControlPeriod.Hours4:  num_per_period = num_per_day/6; break;
-                default: console.log("Invalid control period: " + this.state.control_period); num_per_period = num_per_day; break;
+            // Use backend-computed plan (respects min_hold_time via DP algorithm)
+            const plan = API.get("heating/plan");
+            for (let i = 0; i < Math.min(plan.cheap.length, dap_prices.prices.length); i++) {
+                if (plan.cheap[i]) {
+                    data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
+                }
             }
-
-            for (let start = 0; start < dap_prices.prices.length; start += num_per_period) {
-                const cheap_hours = data.values[1]
-                    .slice(start, start + num_per_period)
-                    .map((price, index) => ({ price, index }))
-                    .sort((a, b) => a.price - b.price)
-                    .slice(0, extended)
-                    .map(item => item.index + start);
-                const expensive_hours = data.values[1]
-                    .slice(start, start + num_per_period)
-                    .map((price, index) => ({ price, index }))
-                    .sort((a, b) => b.price - a.price)
-                    .slice(0, blocking)
-                    .map(item => item.index + start);
-
-                cheap_hours.forEach(index => {
-                    data.lines_vertical.push({'index': index, 'text': '', 'color': [40, 167, 69, 0.5]});
-                });
-                expensive_hours.forEach(index => {
-                    data.lines_vertical.push({'index': index, 'text': '', 'color': [220, 53, 69, 0.5]});
-                });
+            for (let i = 0; i < Math.min(plan.expensive.length, dap_prices.prices.length); i++) {
+                if (plan.expensive[i]) {
+                    data.lines_vertical.push({'index': i, 'text': '', 'color': [220, 53, 69, 0.5]});
+                }
             }
 
             // Add vertical line at current time

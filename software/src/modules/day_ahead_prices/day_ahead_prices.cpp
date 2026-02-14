@@ -28,9 +28,14 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+
 #include "tools.h"
+#include "tools/malloc.h"
 #include "tools/string_builder.h"
 #include "options.h"
+
+// Performance logging for dp_select_slots
+#define DP_PERFORMANCE_LOGGING 0
 
 static constexpr const char DATA_NOT_FOUND_RESPONSE[] = "{\"error\":\"Data not found\"}";
 static constexpr size_t DATA_NOT_FOUND_RESPONSE_LEN = sizeof(DATA_NOT_FOUND_RESPONSE) - 1;
@@ -131,12 +136,22 @@ void DayAheadPrices::pre_setup()
 #ifdef DEBUG_FS_ENABLE
     debug_price_update = Config::Int32(0);
 #endif
+
 }
 
 void DayAheadPrices::setup()
 {
     api.restorePersistentConfig("day_ahead_prices/config", &config);
     prices.get("resolution")->updateEnum(config.get("resolution")->asEnum<Resolution>());
+
+    // Allocate DP result cache on PSRAM (never freed).
+    // This is 1.3kB for DP_CACHE_SIZE=12. If we are at some point out of PSRAM we can remove this cache.
+    // It is not strictly necessary.
+
+    // With the cache size of 12 we can cache for the 8h block configuration.
+    // If the user configures smaller blocks, the cache will be ineffective, but the small blocks can
+    // be optimally calculated in 100us-300us anyway.
+    dp_cache = static_cast<DpCacheEntry *>(calloc_psram_or_dram(DP_CACHE_SIZE, sizeof(DpCacheEntry)));
 
     initialized = true;
 }
@@ -278,6 +293,7 @@ void DayAheadPrices::update_prices_sorted()
 
     prices_sorted_first_date = prices.get("first_date")->asUint();
     prices_sorted_available  = true;
+    dp_cache_generation++;
 }
 
 void DayAheadPrices::update_minmaxavg_price()
@@ -917,6 +933,322 @@ bool DayAheadPrices::get_cheap_1h(const int32_t start_time, const uint8_t durati
 bool DayAheadPrices::get_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *expensive_hours)
 {
     return get_cheap_and_expensive_1h(start_time, duration_1h, amount_1h, nullptr, expensive_hours);
+}
+
+// DP-based slot selection that enforces minimum contiguous block lengths.
+// This solves the NP-hard bin packing problem optimally: it finds the set of 'amount_15m' slots
+// (for cheap: cheapest, for expensive: most expensive) such that every
+// contiguous run of selected and unselected slots is at least 'min_block_15m' long.
+//
+// Algorithm: Block-based dynamic programming.
+//   dp[i][j] = minimum cost to assign slots 0..i-1 with exactly j active (selected) slots,
+//              where each contiguous run of active and inactive slots has length >= min_block_15m.
+//   Transitions place blocks of length >= min_block_15m (active or inactive).
+//   Prefix sums allow O(1) cost computation for each block.
+//   State space: O(N * K), transitions: O(N) per state => O(N^2 * K) total.
+//   For N=96, K=96: worst case ~900k iterations.
+// The slowest real-world configuration we could find was N=96 K=16 B=2
+// (test cases 30-32 in tests/test_heating_plan.py approach the worst case).
+// It runs in 18519us. Because of the cache this will normally only be called every 15mins!
+// If the user is trying out different configurations it can of course be called more often, but
+// still acceptable.
+bool DayAheadPrices::dp_select_slots(
+    const int32_t *slot_prices,  // price for each 15-min slot in the window
+    const uint8_t N,             // number of slots (duration_15m)
+    const uint8_t K,             // number of slots to select (amount_15m)
+    const uint8_t B,             // minimum block size (min_block_15m)
+    bool *result,                // output: bool array of size N
+    const bool find_expensive)   // true: maximize cost (expensive), false: minimize cost (cheap)
+{
+    // Nothing to select
+    if (K == 0) {
+        std::fill_n(result, N, false);
+        return true;
+    }
+
+    // Select everything
+    if (K == N) {
+        std::fill_n(result, N, true);
+        return true;
+    }
+
+    // Feasibility check: we need at least one active block of length >= B
+    // and at least one inactive block of length >= B (unless K==0 or K==N, handled above).
+    if (K < B || (N - K) < B) {
+        return false;
+    }
+
+    // For expensive selection, negate prices so we can always minimize.
+    int32_t prices_work[N];
+    for (uint8_t i = 0; i < N; i++) {
+        prices_work[i] = find_expensive ? -slot_prices[i] : slot_prices[i];
+    }
+
+    // Prefix sums for O(1) range-sum queries: prefix[i] = sum of prices_work[0..i-1]
+    int32_t prefix[N + 1];
+    prefix[0] = 0;
+    for (uint8_t i = 0; i < N; i++) {
+        prefix[i + 1] = prefix[i] + prices_work[i];
+    }
+
+    // DP table: dp[i][j] = minimum cost to fill slots 0..i-1 with j active slots.
+    // Parent table for backtracking: stores (prev_i, was_active_block).
+    const uint16_t dp_rows = N + 1;
+    const uint16_t dp_cols = K + 1;
+    const size_t dp_size = static_cast<size_t>(dp_rows) * dp_cols;
+
+    int32_t *dp = static_cast<int32_t *>(calloc_psram_or_dram(dp_size, sizeof(int32_t)));
+    if (dp == nullptr) {
+        return false;
+    }
+
+    // Parent tracking: encode (prev_i << 1 | was_active) in a uint8_t.
+    // prev_i fits in 7 bits (max 96), was_active is 1 bit.
+    uint8_t *parent = static_cast<uint8_t *>(calloc_psram_or_dram(dp_size, sizeof(uint8_t)));
+    if (parent == nullptr) {
+        free_any(dp);
+        return false;
+    }
+
+    // 2D indexing helpers for the flat arrays.
+    auto dp_at = [dp, dp_cols](uint8_t i, uint8_t j) -> int32_t & {
+        return dp[static_cast<uint8_t>(i) * dp_cols + j];
+    };
+    auto parent_at = [parent, dp_cols](uint8_t i, uint8_t j) -> uint8_t & {
+        return parent[static_cast<uint8_t>(i) * dp_cols + j];
+    };
+
+    const int32_t INF = INT32_MAX / 2;
+
+    for (size_t idx = 0; idx < dp_size; idx++) {
+        dp[idx] = INF;
+    }
+
+    dp_at(0, 0) = 0;
+
+    for (uint8_t i = 0; i < N; i++) {
+        for (uint8_t j = 0; j <= K; j++) {
+            if (dp_at(i, j) >= INF) {
+                continue;
+            }
+
+            // Place an inactive block of length len (>= B)
+            for (uint8_t len = B; i + len <= N; len++) {
+                if (dp_at(i + len, j) > dp_at(i, j)) {
+                    dp_at(i + len, j) = dp_at(i, j);
+                    parent_at(i + len, j) = (static_cast<uint16_t>(i) << 1) | 0;
+                }
+            }
+
+            // Place an active block of length len (>= B)
+            for (uint8_t len = B; len <= K - j && i + len <= N; len++) {
+                int32_t block_cost = prefix[i + len] - prefix[i];
+                int32_t new_cost = dp_at(i, j) + block_cost;
+                if (dp_at(i + len, j + len) > new_cost) {
+                    dp_at(i + len, j + len) = new_cost;
+                    parent_at(i + len, j + len) = (static_cast<uint16_t>(i) << 1) | 1;
+                }
+            }
+        }
+    }
+
+    // Check if a feasible solution was found
+    if (dp_at(N, K) >= INF) {
+        free_any(dp);
+        free_any(parent);
+        return false;
+    }
+
+    // Backtrack to reconstruct the solution
+    std::fill_n(result, N, false);
+    uint8_t ci = N;
+    uint8_t cj = K;
+    while (ci > 0) {
+        uint16_t p = parent_at(ci, cj);
+        uint8_t prev_i = static_cast<uint8_t>(p >> 1);
+        bool was_active = (p & 1) != 0;
+
+        if (was_active) {
+            for (uint8_t s = prev_i; s < ci; s++) {
+                result[s] = true;
+            }
+            cj -= (ci - prev_i);
+        }
+
+        ci = prev_i;
+    }
+
+    free_any(dp);
+    free_any(parent);
+
+    return true;
+}
+
+bool DayAheadPrices::get_cheap_and_expensive_15m_blocked(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, const uint8_t min_block_15m, bool *cheap_hours, bool *expensive_hours)
+{
+    // If no minimum block constraint or block size is 1, use the existing O(n*logn) method
+    if (min_block_15m <= 1) {
+        return get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, expensive_hours);
+    }
+
+    if (cheap_hours == nullptr && expensive_hours == nullptr) {
+        return false;
+    }
+
+    // Get raw prices for the requested window
+    auto p = prices.get("prices");
+    const size_t num_prices = p->count();
+    if (num_prices == 0) {
+        return false;
+    }
+
+    const uint32_t first_date = prices.get("first_date")->asUint();
+    const uint8_t resolution_mul = (prices.get("resolution")->asEnum<Resolution>() == Resolution::Min15) ? 1 : 4;
+    const int32_t start_index = (start_time - first_date) / 15;
+
+    // When resolution is 60-min, run DP at hourly granularity to avoid sub-hour
+    const bool use_hourly_dp = (resolution_mul == 4);
+    const uint8_t dp_N = use_hourly_dp ? (duration_15m / 4) : duration_15m;
+    const uint8_t dp_K = use_hourly_dp ? (amount_15m / 4) : amount_15m;
+    const uint8_t dp_B = use_hourly_dp ? ((min_block_15m + 3) / 4) : min_block_15m;  // ceil(min_block_15m / 4)
+
+    // Extract prices at the DP granularity
+    int32_t slot_prices[dp_N];
+    for (uint8_t i = 0; i < dp_N; i++) {
+        int32_t raw_index = start_index + (use_hourly_dp ? (i * 4) : i);
+        if (raw_index < 0 || raw_index >= static_cast<int32_t>(num_prices * resolution_mul)) {
+            return false;
+        }
+        slot_prices[i] = p->get(static_cast<uint32_t>(raw_index) / resolution_mul)->asInt();
+    }
+
+    // Helper to expand hourly DP result to 15-min output by replicating each entry 4x
+    auto expand_result = [use_hourly_dp, dp_N, duration_15m](const bool *dp_result, bool *out) {
+        if (use_hourly_dp) {
+            for (uint8_t i = 0; i < dp_N; i++) {
+                out[i * 4]     = dp_result[i];
+                out[i * 4 + 1] = dp_result[i];
+                out[i * 4 + 2] = dp_result[i];
+                out[i * 4 + 3] = dp_result[i];
+            }
+        } else {
+            std::copy_n(dp_result, duration_15m, out);
+        }
+    };
+
+    // Helper to look up a cached DP result. Returns pointer to entry on hit, nullptr on miss.
+    const uint32_t gen = dp_cache_generation;
+    auto cache_lookup = [&](bool find_expensive) -> DpCacheEntry * {
+        if (dp_cache == nullptr) {
+            return nullptr;
+        }
+        for (size_t i = 0; i < DP_CACHE_SIZE; i++) {
+            DpCacheEntry &e = dp_cache[i];
+            if (e.valid
+                && e.generation == gen
+                && e.start_index == start_index
+                && e.N == dp_N
+                && e.K == dp_K
+                && e.B == dp_B
+                && e.find_expensive == find_expensive) {
+                return &e;
+            }
+        }
+        return nullptr;
+    };
+
+    // Helper to store a DP result in the cache.
+    auto cache_store = [&](bool find_expensive, bool success, const bool *result) {
+        if (dp_cache == nullptr) {
+            return;
+        }
+        DpCacheEntry &e = dp_cache[dp_cache_next];
+        dp_cache_next = (dp_cache_next + 1) % DP_CACHE_SIZE;
+        e.start_index = start_index;
+        e.N = dp_N;
+        e.K = dp_K;
+        e.B = dp_B;
+        e.find_expensive = find_expensive;
+        e.success = success;
+        e.generation = gen;
+        e.valid = true;
+        if (success) {
+            std::copy_n(result, dp_N, e.result);
+        }
+    };
+
+    bool success = true;
+    bool dp_result[dp_N];
+
+    if (cheap_hours != nullptr) {
+        DpCacheEntry *hit = cache_lookup(false);
+        if (hit != nullptr) {
+#if DP_PERFORMANCE_LOGGING
+            logger.printfln("dp_cache HIT: si=%ld N=%u K=%u B=%u cheap", start_index, dp_N, dp_K, dp_B);
+#endif
+            if (!hit->success) {
+                success = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, nullptr);
+            } else {
+                expand_result(hit->result, cheap_hours);
+            }
+        } else {
+#if DP_PERFORMANCE_LOGGING
+            micros_t t_start = now_us();
+#endif
+            bool dp_ok = dp_select_slots(slot_prices, dp_N, dp_K, dp_B, dp_result, false);
+            cache_store(false, dp_ok, dp_result);
+            if (!dp_ok) {
+                success = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, cheap_hours, nullptr);
+                logger.printfln("dp_select_slots failed to find solution (N=%u K=%u B=%u)", dp_N, dp_K, dp_B);
+            } else {
+                expand_result(dp_result, cheap_hours);
+#if DP_PERFORMANCE_LOGGING
+                logger.printfln("dp_select_slots: si=%ld N=%u K=%u B=%u cheap took %lu us", start_index, dp_N, dp_K, dp_B, (now_us() - t_start).as<uint32_t>());
+#endif
+            }
+        }
+    }
+
+    if (expensive_hours != nullptr) {
+        DpCacheEntry *hit = cache_lookup(true);
+        if (hit != nullptr) {
+#if DP_PERFORMANCE_LOGGING
+            logger.printfln("dp_cache HIT: si=%ld N=%u K=%u B=%u expensive", start_index, dp_N, dp_K, dp_B);
+#endif
+            if (!hit->success) {
+                success = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, nullptr, expensive_hours) && success;
+            } else {
+                expand_result(hit->result, expensive_hours);
+            }
+        } else {
+#if DP_PERFORMANCE_LOGGING
+            micros_t t_start = now_us();
+#endif
+            bool dp_ok = dp_select_slots(slot_prices, dp_N, dp_K, dp_B, dp_result, true);
+            cache_store(true, dp_ok, dp_result);
+            if (!dp_ok) {
+                success = get_cheap_and_expensive_15m(start_time, duration_15m, amount_15m, nullptr, expensive_hours) && success;
+                logger.printfln("dp_select_slots failed to find solution (N=%u K=%u B=%u)", dp_N, dp_K, dp_B);
+            } else {
+                expand_result(dp_result, expensive_hours);
+#if DP_PERFORMANCE_LOGGING
+                logger.printfln("dp_select_slots: si=%ld N=%u K=%u B=%u expensive took %lu us", start_index, dp_N, dp_K, dp_B, (now_us() - t_start).as<uint32_t>());
+#endif
+            }
+        }
+    }
+
+    return success;
+}
+
+bool DayAheadPrices::get_cheap_1h_blocked(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, const uint8_t min_block_15m, bool *cheap_hours)
+{
+    return get_cheap_and_expensive_15m_blocked(start_time, duration_1h * 4, amount_1h * 4, min_block_15m, cheap_hours, nullptr);
+}
+
+bool DayAheadPrices::get_expensive_1h_blocked(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, const uint8_t min_block_15m, bool *expensive_hours)
+{
+    return get_cheap_and_expensive_15m_blocked(start_time, duration_1h * 4, amount_1h * 4, min_block_15m, nullptr, expensive_hours);
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()

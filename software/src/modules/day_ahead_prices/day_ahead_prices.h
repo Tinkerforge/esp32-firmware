@@ -47,6 +47,23 @@ enum DAPDownloadState {
     DAP_DOWNLOAD_STATE_ERROR
 };
 
+// DP result cache entry for blocked slot selection.
+// Avoids redundant DP computations when update() calls both
+// update_plan() and handle_dynamic_price for the same control period blocks.
+struct DpCacheEntry {
+    int32_t  start_index;
+    uint8_t  N;
+    uint8_t  K;
+    uint8_t  B;
+    bool     find_expensive;
+    bool     success;
+    uint32_t generation;
+    bool     valid;
+    bool     result[96]; // max dp_N
+};
+
+static constexpr size_t DP_CACHE_SIZE = 12;
+
 class DayAheadPrices final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
                           , public IAutomationBackend
@@ -64,6 +81,7 @@ private:
     void update_minmaxavg_price();
     void update_current_price();
     void update_prices_sorted();
+    bool dp_select_slots(const int32_t *slot_prices, const uint8_t N, const uint8_t K, const uint8_t B, bool *result, const bool find_expensive);
 
     micros_t last_update_begin;
     char *json_buffer = nullptr;
@@ -86,6 +104,11 @@ private:
     typedef std::pair<uint8_t, int32_t> PriceSorted;
     PriceSorted *prices_sorted = nullptr;
     int32_t prices_sorted_first_date = 0;
+
+    // DP result cache, allocated on PSRAM in setup()
+    uint32_t dp_cache_generation = 0;
+    DpCacheEntry *dp_cache = nullptr;
+    size_t dp_cache_next = 0;
 
     Option<micros_t> last_no_prices_available = {};
 
@@ -121,6 +144,9 @@ public:
     bool get_expensive_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, bool *expensive_hours);
     bool get_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *cheap_hours);
     bool get_expensive_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, bool *expensive_hours);
+    bool get_cheap_and_expensive_15m_blocked(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m, const uint8_t min_block_15m, bool *cheap_hours, bool *expensive_hours);
+    bool get_cheap_1h_blocked(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, const uint8_t min_block_15m, bool *cheap_hours);
+    bool get_expensive_1h_blocked(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h, const uint8_t min_block_15m, bool *expensive_hours);
     bool is_start_time_cheap_15m(const int32_t start_time, const uint8_t duration_15m, const uint8_t amount_15m);
     bool is_start_time_cheap_1h(const int32_t start_time, const uint8_t duration_1h, const uint8_t amount_1h);
     int32_t get_grid_cost_plus_tax_plus_markup();

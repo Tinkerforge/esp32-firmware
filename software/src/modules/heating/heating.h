@@ -28,11 +28,13 @@ class Heating final : public IModule
 {
 private:
     void update();
+    void update_plan();
     bool must_delay_startup();
     EventResult check_startup_delay_event();
 
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot plan;
     ConfigRoot sgr_blocking_override;
     uint32_t last_sg_ready_change = 0;
 

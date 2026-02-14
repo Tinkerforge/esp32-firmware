@@ -70,6 +70,10 @@ void Heating::pre_setup()
         {"override_until", Config::Uint32(0)},
     })};
 
+    plan = Config::Object({
+        {"cheap",     Config::Array({}, Config::get_prototype_bool_false(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT)},
+        {"expensive", Config::Array({}, Config::get_prototype_bool_false(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT)},
+    });
     state = Config::Object({
         {"automation_override", Config::Bool(false)},
         {"sgr_blocking", Config::Bool(false)},
@@ -103,6 +107,7 @@ void Heating::register_urls()
 {
     api.addPersistentConfig("heating/config", &config);
     api.addState("heating/state",             &state);
+    api.addState("heating/plan",              &plan);
     api.addCommand("heating/reset_holding_time", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->last_sg_ready_change = 0;
         this->update();
@@ -235,6 +240,134 @@ Heating::Status Heating::get_status()
     return Status::Idle;
 }
 
+void Heating::update_plan()
+{
+    const bool     extended       = config.get("extended")->asBool();
+    const uint32_t extended_hours = config.get("extended_hours")->asUint();
+    const bool     blocking       = config.get("blocking")->asBool();
+    const uint32_t blocking_hours = config.get("blocking_hours")->asUint();
+    const uint32_t min_hold_time  = config.get("min_hold_time")->asUint();
+    const ControlPeriod control_period = config.get("control_period")->asEnum<ControlPeriod>();
+
+    // Get plan arrays early so early-return paths can clear them
+    auto plan_cheap     = plan.get("cheap");
+    auto plan_expensive = plan.get("expensive");
+
+    // Get price data metadata via API
+    const Config *prices_state = api.getState("day_ahead_prices/prices", false);
+    if (prices_state == nullptr) {
+        plan_cheap->removeAll();
+        plan_expensive->removeAll();
+        return;
+    }
+
+    auto prices_arr = prices_state->get("prices");
+    const size_t num_prices = prices_arr->count();
+
+    // If no prices or no price-based control, clear the plan
+    if (num_prices == 0 || (!extended && !blocking)) {
+        plan_cheap->removeAll();
+        plan_expensive->removeAll();
+        return;
+    }
+
+    const uint32_t first_date = prices_state->get("first_date")->asUint();
+    const bool is_15min = (prices_state->get("resolution")->asUint() == 0);
+    const uint8_t resolution_minutes = is_15min ? 15 : 60;
+    const uint8_t slots_per_hour = is_15min ? 4 : 1;
+
+    uint8_t duration_hours = 0;
+    switch(control_period) {
+        case ControlPeriod::Hours24: duration_hours = 24; break;
+        case ControlPeriod::Hours12: duration_hours = 12; break;
+        case ControlPeriod::Hours8:  duration_hours = 8;  break;
+        case ControlPeriod::Hours6:  duration_hours = 6;  break;
+        case ControlPeriod::Hours4:  duration_hours = 4;  break;
+        default: plan_cheap->removeAll(); plan_expensive->removeAll(); return;
+    }
+
+    const uint8_t min_block_15m = (min_hold_time + 14) / 15;
+    const uint8_t slots_per_period = duration_hours * slots_per_hour;
+    // get_cheap_1h_blocked always returns at 15-min resolution (duration_hours * 4 entries)
+    const uint8_t data_slots = duration_hours * 4;
+
+    // Resize plan arrays to match price array length
+    plan_cheap->setCount(num_prices);
+    plan_expensive->setCount(num_prices);
+
+    // Initialize all to false
+    for (size_t i = 0; i < num_prices; i++) {
+        plan_cheap->get(i)->updateBool(false);
+        plan_expensive->get(i)->updateBool(false);
+    }
+
+    // For each control period block that overlaps with the price range,
+    // compute the plan and fill in the corresponding plan slots.
+    //
+    // Blocks are aligned to local midnight + multiples of duration_hours.
+    // We find the first block start that is <= first_date, then iterate forward.
+
+    // Convert first_date (UTC minutes) to a local time to find block alignment
+    const time_t first_date_seconds = static_cast<time_t>(first_date) * 60;
+    struct tm first_local;
+    localtime_r(&first_date_seconds, &first_local);
+    const uint16_t first_minutes_since_midnight = first_local.tm_hour * 60 + first_local.tm_min;
+    const uint16_t duration_minutes = duration_hours * 60;
+
+    // Find the local-time block that contains first_date
+    const uint16_t block_offset = (first_minutes_since_midnight / duration_minutes) * duration_minutes;
+    // first_date minus the offset within the block gives us the start of that block (in UTC minutes)
+    const int32_t first_block_start = static_cast<int32_t>(first_date) - (first_minutes_since_midnight - block_offset);
+
+    const int32_t price_end = static_cast<int32_t>(first_date) + static_cast<int32_t>(num_prices) * resolution_minutes;
+
+    // Max data_slots is 24*4 = 96
+    bool data[96];
+
+    for (int32_t block_start = first_block_start; block_start < price_end; block_start += duration_minutes) {
+        // Only process full blocks completely covered by price data
+        const int32_t block_start_index = (block_start - static_cast<int32_t>(first_date)) / resolution_minutes;
+        const int32_t block_end_index = block_start_index + slots_per_period;
+        if (block_start_index < 0 || block_end_index > static_cast<int32_t>(num_prices)) {
+            continue;
+        }
+
+        if (extended) {
+            std::fill_n(data, data_slots, false);
+            if (day_ahead_prices.get_cheap_1h_blocked(block_start, duration_hours, extended_hours, min_block_15m, data)) {
+                if (is_15min) {
+                    // 1:1 mapping: data has slots_per_period entries
+                    for (uint8_t i = 0; i < slots_per_period; i++) {
+                        plan_cheap->get(static_cast<uint32_t>(block_start_index + i))->updateBool(data[i]);
+                    }
+                } else {
+                    // 4:1 mapping: data has duration_hours*4 entries, price array has duration_hours entries
+                    for (uint8_t i = 0; i < slots_per_period; i++) {
+                        bool any = data[i*4] || data[i*4+1] || data[i*4+2] || data[i*4+3];
+                        plan_cheap->get(static_cast<uint32_t>(block_start_index + i))->updateBool(any);
+                    }
+                }
+            }
+        }
+
+        if (blocking) {
+            std::fill_n(data, data_slots, false);
+            if (day_ahead_prices.get_expensive_1h_blocked(block_start, duration_hours, blocking_hours, min_block_15m, data)) {
+                if (is_15min) {
+                    for (uint8_t i = 0; i < slots_per_period; i++) {
+                        plan_expensive->get(static_cast<uint32_t>(block_start_index + i))->updateBool(data[i]);
+                    }
+                } else {
+                    for (uint8_t i = 0; i < slots_per_period; i++) {
+                        bool any = data[i*4] || data[i*4+1] || data[i*4+2] || data[i*4+3];
+                        plan_expensive->get(static_cast<uint32_t>(block_start_index + i))->updateBool(any);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Heating::update()
 {
     if (state.get("automation_override")->asBool()) {
@@ -255,6 +388,11 @@ void Heating::update()
         logger.tracefln(this->trace_buffer_index, "Clock not synced. Skipping update.");
         return;
     }
+
+    // Update the plan state early (before the holding time guard) so that
+    // the API always reflects the current config/prices, even while the
+    // relay is being held steady.
+    update_plan();
 
     if (startup_delay_task_id != 0) {
         logger.tracefln(this->trace_buffer_index, "Startup delay active. Skipping update.");
@@ -411,8 +549,10 @@ void Heating::update()
             const uint32_t start_time     = midnight/60 + duration_block;
             const uint8_t current_index   = (minutes_since_midnight - duration_block)/15;
 
+            const uint8_t min_block_15m = (min_hold_time + 14) / 15; // ceil(min_hold_time / 15)
+
             if (handle_extended) {
-                const bool data_available = day_ahead_prices.get_cheap_1h(start_time, duration, extended_hours, data);
+                const bool data_available = day_ahead_prices.get_cheap_1h_blocked(start_time, duration, extended_hours, min_block_15m, data);
                 if (!data_available) {
                     logger.tracefln(this->trace_buffer_index, "Cheap hours not available. Ignoring extended control.");
                 } else {
@@ -427,7 +567,7 @@ void Heating::update()
                 }
             }
             if (handle_blocking) {
-                const bool data_available = day_ahead_prices.get_expensive_1h(start_time, duration, blocking_hours, data);
+                const bool data_available = day_ahead_prices.get_expensive_1h_blocked(start_time, duration, blocking_hours, min_block_15m, data);
                 if (!data_available) {
                     logger.tracefln(this->trace_buffer_index, "Expensive hours not available. Ignoring blocking control.");
                 } else {
