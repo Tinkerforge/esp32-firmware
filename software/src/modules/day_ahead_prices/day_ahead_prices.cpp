@@ -879,7 +879,7 @@ bool DayAheadPrices::get_cheap_and_expensive_15m(const int32_t start_time, const
         std::fill_n(expensive_hours, duration_15m, false);
 
         int16_t expensive_count = 0;
-        for (int16_t i = prices_sorted_count-1; i > 0; i--) {
+        for (int16_t i = prices_sorted_count-1; i >= 0; i--) {
             auto price_index = prices_sorted[i].first;
             if (price_index >= start_index && price_index < end_index) {
                 expensive_count++;
