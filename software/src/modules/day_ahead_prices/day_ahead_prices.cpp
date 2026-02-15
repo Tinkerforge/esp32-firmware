@@ -206,16 +206,38 @@ void DayAheadPrices::setup()
     api.restorePersistentConfig("day_ahead_prices/calendar", &calendar);
     prices.get("resolution")->updateEnum(config.get("resolution")->asEnum<Resolution>());
 
-    // Allocate DP result cache on PSRAM (never freed).
-    // This is 1.3kB for DP_CACHE_SIZE=12. If we are at some point out of PSRAM we can remove this cache.
-    // It is not strictly necessary.
-
-    // With the cache size of 12 we can cache for the 8h block configuration.
-    // If the user configures smaller blocks, the cache will be ineffective, but the small blocks can
-    // be optimally calculated in 100us-300us anyway.
-    dp_cache = static_cast<DpCacheEntry *>(calloc_psram_or_dram(DP_CACHE_SIZE, sizeof(DpCacheEntry)));
+    // Pre-allocate PSRAM buffers if DAP is already enabled from saved config
+    if (is_enabled()) {
+        ensure_psram_allocated();
+    }
 
     initialized = true;
+}
+
+void DayAheadPrices::ensure_psram_allocated()
+{
+    // Allocate buffers that are smallish but too large for the SRAM permanently in
+    // PSRAM on first use. They are small enough that it makes sense to keep them allocated.
+    // But if a user doesn't need the day ahead prices they can stay un-allocated.
+
+    // DP result cache (~1.3kB for DP_CACHE_SIZE=12).
+    // With cache size 12 we can cache for the 8h block configuration.
+    // If the user configures smaller blocks, the cache will be ineffective, but the small blocks can
+    // be optimally calculated in 100us-300us anyway.
+    // If we are at some point out of PSRAM we can remove this cache. It is not strictly necessary.
+    if (dp_cache == nullptr) {
+        dp_cache = static_cast<DpCacheEntry *>(calloc_psram_or_dram(DP_CACHE_SIZE, sizeof(DpCacheEntry)));
+    }
+
+    // Raw DAP prices before calendar overlay (~800B).
+    if (raw_prices == nullptr) {
+        raw_prices = static_cast<int32_t *>(calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_AMOUNT, sizeof(int32_t)));
+    }
+
+    // Sorted prices for cheap/expensive slot selection (1kB).
+    if (prices_sorted == nullptr) {
+        prices_sorted = new_array_psram_or_dram<PriceSorted>(DAY_AHEAD_PRICE_MAX_AMOUNT);
+    }
 }
 
 void DayAheadPrices::register_urls()
@@ -269,6 +291,8 @@ void DayAheadPrices::register_urls()
         for (size_t i = old_count; i > new_count; i--) {
             p->removeLast();
         }
+
+        ensure_psram_allocated();
 
         // Save raw DAP prices before calendar is applied
         raw_prices_count = new_count;
@@ -329,9 +353,7 @@ void DayAheadPrices::update_current_price()
 
 void DayAheadPrices::update_prices_sorted()
 {
-    if (prices_sorted == nullptr) {
-        prices_sorted = new_array_psram_or_dram<PriceSorted>(DAY_AHEAD_PRICE_MAX_AMOUNT);
-    }
+    ensure_psram_allocated();
 
     const Config *p = static_cast<const Config *>(prices.get("prices"));
     const size_t num_prices = p->count();
@@ -616,6 +638,7 @@ void DayAheadPrices::handle_new_data()
         }
 
         // Save raw DAP prices before calendar is applied
+        ensure_psram_allocated();
         raw_prices_count = count;
         for (size_t i = 0; i < count; i++) {
             raw_prices[i] = p->get(i)->asInt();

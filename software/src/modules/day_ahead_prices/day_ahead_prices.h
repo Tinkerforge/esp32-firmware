@@ -85,6 +85,7 @@ private:
     void update_prices_sorted();
     bool dp_select_slots(const int32_t *slot_prices, const uint8_t N, const uint8_t K, const uint8_t B, bool *result, const bool find_expensive);
     void update_calendar();
+    void ensure_psram_allocated();
 
     micros_t last_update_begin;
     char *json_buffer = nullptr;
@@ -93,9 +94,6 @@ private:
     int8_t calendar_last_generated_wday = -1; // day-of-week for which calendar prices were last generated
     AsyncHTTPSClient https_client;
 
-    // Raw DAP prices before calendar is applied. Used to make update_calendar() idempotent.
-    int32_t raw_prices[DAY_AHEAD_PRICE_MAX_AMOUNT] = {};
-    size_t raw_prices_count = 0;
     uint64_t task_id = 0;
 
     DAPDownloadState download_state =  DAP_DOWNLOAD_STATE_OK;
@@ -108,14 +106,16 @@ private:
     Option<int32_t> price_maximum_today;
     Option<int32_t> price_maximum_tomorrow;
 
+    int32_t *raw_prices = nullptr; // allocated via ensure_psram_allocated() on first use (never freed)
+    size_t raw_prices_count = 0;
+
     size_t prices_sorted_count = 0;
     typedef std::pair<uint8_t, int32_t> PriceSorted;
-    PriceSorted *prices_sorted = nullptr;
+    PriceSorted *prices_sorted = nullptr; // allocated via ensure_psram_allocated() on first use (never freed)
     int32_t prices_sorted_first_date = 0;
 
-    // DP result cache, allocated on PSRAM in setup()
     uint32_t dp_cache_generation = 0;
-    DpCacheEntry *dp_cache = nullptr;
+    DpCacheEntry *dp_cache = nullptr; // allocated via ensure_psram_allocated() on first use (never freed)
     size_t dp_cache_next = 0;
 
     Option<micros_t> last_no_prices_available = {};
