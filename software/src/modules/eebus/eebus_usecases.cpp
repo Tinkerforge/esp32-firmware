@@ -710,16 +710,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             case SpineDataTypeHandler::Function::billDescriptionListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
-                        BillDescriptionListDataType billDescriptionListData{};
-                        billDescriptionListData.billDescriptionData.emplace();
-                        for (BillEntry bill_entry : bill_entries) {
-                            BillDescriptionDataType billDescriptionData{};
-                            billDescriptionData.billWriteable = false; // Bills are read-only (managed internally)
-                            billDescriptionData.billId = bill_entry.id;
-                            billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
-                            billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
-                        }
-                        response["billDescriptionListData"] = billDescriptionListData;
+                        response["billDescriptionListData"] = EVSEEntity::get_bill_description_list_data();
                         return {true, false, CmdClassifierType::reply};
                     }
                     default:
@@ -730,16 +721,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             case SpineDataTypeHandler::Function::billConstraintsListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
-                        BillConstraintsListDataType billConstraintsListData{};
-                        billConstraintsListData.billConstraintsData.emplace();
-                        for (BillEntry bill_entry : bill_entries) {
-                            BillConstraintsDataType billConstraintsData{};
-                            billConstraintsData.billId = bill_entry.id;
-                            billConstraintsData.positionCountMin = "0";
-                            billConstraintsData.positionCountMax = std::to_string(2); // gridElectricEnergy + selfProducedElectricEnergy
-                            billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
-                        }
-                        response["billConstraintsListData"] = billConstraintsListData;
+                        response["billConstraintsListData"] = EVSEEntity::get_bill_constraints_list_data();
                         return {true, true, CmdClassifierType::reply};
                     }
                     default:
@@ -750,13 +732,10 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             case SpineDataTypeHandler::Function::billListData: {
                 switch (header.cmdClassifier.get()) {
                     case CmdClassifierType::read: {
-                        BillListDataType billListData{};
-                        get_bill_list_data(&billListData);
-                        response["billListData"] = billListData;
+                        response["billListData"] = EVSEEntity::get_bill_list_data();
                         return {true, true, CmdClassifierType::reply};
                     }
                     case CmdClassifierType::write: {
-                        // Spec Reference: USECASE_SPECIFICATIONS.md lines 647-670 (Bill.billListData function)
                         // Implements write handler with MANDATORY partial write support per spec line 649
 
                         if (!data->billlistdatatype.has_value() || !data->billlistdatatype->billData.has_value()) {
@@ -909,8 +888,7 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
                         update_api();
 
                         // Notify subscribers (with partial flag if applicable)
-                        BillListDataType bill_list_data;
-                        get_bill_list_data(&bill_list_data);
+                        BillListDataType bill_list_data = EVSEEntity::get_bill_list_data();
                         eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Bill), bill_list_data, "billListData");
 
                         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
@@ -995,10 +973,43 @@ void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time
 
     //eebus.data_handler->billlistdatatype = bill_list_data;
     //eebus.data_handler->last_cmd = SpineDataTypeHandler::Function::billListData;
-    BillListDataType bill_list_data;
-    get_bill_list_data(&bill_list_data);
+    BillListDataType bill_list_data = EVSEEntity::get_bill_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::Bill), bill_list_data, "billListData");
     update_api();
+}
+
+// Spec 3.2.1.2.1.1: Builds billDescriptionListData with metadata for each bill
+void EvcsUsecase::get_bill_description_list(BillDescriptionListDataType *data) const
+{
+    if (data == nullptr)
+        return;
+    data->billDescriptionData.emplace();
+    for (BillEntry entry : bill_entries) {
+        if (!entry.id)
+            continue;
+        BillDescriptionDataType billDescriptionData{};
+        billDescriptionData.billWriteable = false; // Bills are read-only (managed internally)
+        billDescriptionData.billId = entry.id;
+        billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
+        data->billDescriptionData->push_back(billDescriptionData);
+    }
+}
+
+// Spec 3.2.1.2.1.2: Builds billConstraintsListData with position count constraints
+void EvcsUsecase::get_bill_constraints_list(BillConstraintsListDataType *data) const
+{
+    if (data == nullptr)
+        return;
+    data->billConstraintsData.emplace();
+    for (BillEntry entry : bill_entries) {
+        if (!entry.id)
+            continue;
+        BillConstraintsDataType billConstraintsData{};
+        billConstraintsData.billId = entry.id;
+        billConstraintsData.positionCountMin = "0";
+        billConstraintsData.positionCountMax = std::to_string(2); // gridElectricEnergy + selfProducedElectricEnergy
+        data->billConstraintsData->push_back(billConstraintsData);
+    }
 }
 
 // Spec 3.2.1.2.1.3: Builds billListData with total energy/cost and position breakdowns
@@ -5374,6 +5385,35 @@ MeasurementListDataType EVSEEntity::get_measurement_list_data()
 #endif
     return measurement_list_data;
 }
+
+// Bill entity functions for EVCS usecase
+BillDescriptionListDataType EVSEEntity::get_bill_description_list_data()
+{
+    BillDescriptionListDataType bill_description_list_data;
+#ifdef EEBUS_ENABLE_EVCS_USECASE
+    eebus.usecases->charging_summary.get_bill_description_list(&bill_description_list_data);
+#endif
+    return bill_description_list_data;
+}
+
+BillConstraintsListDataType EVSEEntity::get_bill_constraints_list_data()
+{
+    BillConstraintsListDataType bill_constraints_list_data;
+#ifdef EEBUS_ENABLE_EVCS_USECASE
+    eebus.usecases->charging_summary.get_bill_constraints_list(&bill_constraints_list_data);
+#endif
+    return bill_constraints_list_data;
+}
+
+BillListDataType EVSEEntity::get_bill_list_data()
+{
+    BillListDataType bill_list_data;
+#ifdef EEBUS_ENABLE_EVCS_USECASE
+    eebus.usecases->charging_summary.get_bill_list_data(&bill_list_data);
+#endif
+    return bill_list_data;
+}
+
 DeviceConfigurationKeyValueDescriptionListDataType EVEntity::get_device_configuration_value_description_list()
 {
     DeviceConfigurationKeyValueDescriptionListDataType device_configuration_value_list_data;

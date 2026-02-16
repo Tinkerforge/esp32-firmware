@@ -215,12 +215,10 @@ public:
     static MeasurementConstraintsListDataType get_measurement_constraints_list_data();
     static MeasurementListDataType get_measurement_list_data();
 
-    // MGCP-specific offsets (Monitoring of Grid Connection Point)
-
     // Bill
-    BillDescriptionListDataType get_bill_description_list_data();
-    BillConstraintsListDataType get_bill_constraints_list_data();
-    BillListDataType get_bill_list_data();
+    static BillDescriptionListDataType get_bill_description_list_data();
+    static BillConstraintsListDataType get_bill_constraints_list_data();
+    static BillListDataType get_bill_list_data();
 };
 
 class EVEntity
@@ -525,6 +523,8 @@ public:
         return {FeatureTypeEnumType::Bill};
     }
 
+    void get_bill_description_list(BillDescriptionListDataType *data) const;
+    void get_bill_constraints_list(BillConstraintsListDataType *data) const;
     void get_bill_list_data(BillListDataType *data) const;
 
 private:
