@@ -436,9 +436,12 @@ int FrontPanel::update_front_page_charger(const uint8_t index, const TileType ty
 #if MODULE_CHARGE_MANAGER_AVAILABLE()
     size_t charger_count = charge_manager.get_charger_count();
     if (charger_count > 0) {
-        auto *charger = charge_manager.get_charger_state(param);
-        const int32_t watt = charger->power_total_sum/charger->power_total_count;
-        str2 = watt_value_to_display_string(watt);
+        const auto *charger = charge_manager.get_charger_state(param);
+        
+        if (charger->power_total_count > 0) {
+            const int32_t watt = charger->power_total_sum / charger->power_total_count;
+            str2 = watt_value_to_display_string(watt);
+        }
     }
 #endif
 
