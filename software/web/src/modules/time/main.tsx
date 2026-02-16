@@ -124,8 +124,8 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         }
 
         let splt = state.timezone.split("/");
-
         let date = get_rtc_date();
+        let third = timezones[splt[0]][splt[1]];
 
         return (
             <SubPage name="time">
@@ -154,6 +154,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                     <FormRow label={__("time.content.timezone")}>
                         <div class="input-group">
                             <InputSelect
+                                style={third != null ? "width: 33%" : "width: 50%"}
                                 required
                                 value={splt[0]}
                                 onValue={(v) => this.updateTimezone(v, 0)}
@@ -169,17 +170,15 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                                     Object.keys(timezones[splt[0]]).map(t => [t, t.replace(/_/g, " ")])
                                 }
                             />
-                            {
-                                timezones[splt[0]][splt[1]] == null ? "" :
+                            {third != null ?
                                 <InputSelect
                                     required
                                     value={splt[2]}
                                     onValue={(v) => this.updateTimezone(v, 2)}
                                     items={
-                                        Object.keys(timezones[splt[0]][splt[1]]).map(t => [t, t.replace(/_/g, " ")])
+                                        Object.keys(third).map(t => [t, t.replace(/_/g, " ")])
                                     }
-                                />
-                            }
+                                /> : undefined}
                         </div>
                         <br/>
                         <Button variant="primary" className="w-100" onClick={() => this.setState({timezone: Intl.DateTimeFormat().resolvedOptions().timeZone})}>{__("time.content.use_browser_timezone")}</Button>
