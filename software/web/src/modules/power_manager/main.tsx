@@ -151,26 +151,24 @@ export class PowerManagerStatus extends Component {
 
         return <StatusSection name="power_manager">
             {is_warp3 || wem1_cont ?
-                API.hasFeature("phase_switch") && ((is_warp3 && !API.get_unchecked("evse/management_enabled").enabled) || (wem1_cont && API.get_unchecked("power_manager/config").phase_switching_mode == 3)) ?
+                true/*API.hasFeature("phase_switch") && ((is_warp3 && !API.get_unchecked("evse/management_enabled").enabled) || (wem1_cont && API.get_unchecked("power_manager/config").phase_switching_mode == 3))*/ ?
                     <FormRow label={__("power_manager.status.phase_switching")}>
-                        <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
-                            <Button
-                                style="display: flex;align-items: center;justify-content: center;"
-                                className="m-1 rounded-start rounded-end"
+                        <div class="row g-2">
+                            <div class="col text-nowrap"><Button
+                                className="d-flex align-items-center justify-content-center w-100"
                                 variant={!phases_bt ? "success" : "primary"}
                                 disabled={!phases_bt || state.external_control != 0}
                                 onClick={() => this.change_phase(1)}>
-                                {state.external_control != 3 ? (!phases_bt ? <CheckCircle size="20"/> : <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.single_phase")}</span>
-                            </Button>
-                            <Button
-                                style="display: flex;align-items: center;justify-content: center;"
-                                className="m-1 rounded-start rounded-end"
+                                {state.external_control != 3 ? (!phases_bt ? <CheckCircle size="20"/> : <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span class="ms-2">{__("power_manager.status.single_phase")}</span>
+                            </Button></div>
+                            <div class="col text-nowrap"><Button
+                                className="d-flex align-items-center justify-content-center w-100"
                                 variant={phases_bt ? "success" : "primary"}
                                 disabled={phases_bt || state.external_control != 0}
                                 onClick={() => this.change_phase(3)}>
-                                {state.external_control != 3 ? (phases_bt ? <CheckCircle size="20"/> :  <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span>&nbsp;&nbsp;</span><span>{__("power_manager.status.three_phase")}</span>
-                            </Button>
-                        </ButtonGroup>
+                                {state.external_control != 3 ? (phases_bt ? <CheckCircle size="20"/> :  <Circle size="20"/>) : <Spinner size="sm" animation="grow" />} <span class="ms-2">{__("power_manager.status.three_phase")}</span>
+                            </Button></div>
+                        </div>
                     </FormRow>
                 :
                     <FormRow label={__("power_manager.status.phase_switching")}>

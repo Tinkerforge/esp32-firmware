@@ -1,7 +1,26 @@
+/* esp32-firmware
+ * Copyright (C) 2025 Erik Fleckstein <erik@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 import * as API from "../../ts/api";
 import { __ } from "../../ts/translation";
 import { h } from "preact";
-import { ButtonGroup, Button } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { CheckCircle, Circle } from "react-feather";
 import { ConfigChargeMode } from "./config_charge_mode.enum";
 
@@ -14,14 +33,13 @@ selected disabled   variant   clickable   symbol
 */
 
 function ChargeModeButton(props: {selected: boolean, disabled: boolean, mode: ConfigChargeMode, name: string, setMode: (x: ConfigChargeMode) => void}) {
-    return <Button
-        style="display: flex;align-items: center;justify-content: center;"
-        className="m-1 rounded-start rounded-end"
+    return <div class="col text-nowrap"><Button
+        className="d-flex align-items-center justify-content-center w-100"
         variant={props.selected ? "success" : (props.disabled ? "secondary" : "primary")}
         disabled={props.disabled}
         onClick={() => props.setMode(props.mode)}>
-        {(props.selected && props.disabled) ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
-    </Button>
+        {(props.selected && props.disabled) ? <CheckCircle size="20"/> : <Circle size="20"/>} <span class="ms-2">{props.name}</span>
+    </Button></div>;
 }
 
 export function ChargeModeButtons(props: {mode: ConfigChargeMode, setMode: (x: ConfigChargeMode) => void, supportedModes: readonly ConfigChargeMode[], modeEnabled: boolean}) {
@@ -52,7 +70,5 @@ export function ChargeModeButtons(props: {mode: ConfigChargeMode, setMode: (x: C
 
     let buttons = all_buttons.filter(b => modes.indexOf(b.props.mode) >= 0);
 
-    return <ButtonGroup className="flex-wrap m-n1" style="width: calc(100% + 0.5rem);">
-        {buttons}
-    </ButtonGroup>
+    return <div class="row g-2">{buttons}</div>;
 }
