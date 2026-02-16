@@ -151,7 +151,7 @@ export class PowerManagerStatus extends Component {
 
         return <StatusSection name="power_manager">
             {is_warp3 || wem1_cont ?
-                true/*API.hasFeature("phase_switch") && ((is_warp3 && !API.get_unchecked("evse/management_enabled").enabled) || (wem1_cont && API.get_unchecked("power_manager/config").phase_switching_mode == 3))*/ ?
+                API.hasFeature("phase_switch") && ((is_warp3 && !API.get_unchecked("evse/management_enabled").enabled) || (wem1_cont && API.get_unchecked("power_manager/config").phase_switching_mode == 3)) ?
                     <FormRow label={__("power_manager.status.phase_switching")}>
                         <div class="row g-2">
                             <div class="col text-nowrap"><Button
