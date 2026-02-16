@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
-import { __, removeUnicodeHacks } from "../../ts/translation";
+import { __ } from "../../ts/translation";
 let x = {
     "heating": {
         "status": {},
@@ -9,7 +9,7 @@ let x = {
         },
         "content": {
             "heating": "Heating",
-            "heating_disabled": <>Heating control is disabled because SG Ready output automation rules exist. To use heating control, remove all SG Ready output <a href={removeUnicodeHacks("#automation")}>{__("automation.content.automation")}</a> rules.</>,
+            "heating_disabled": <>Heating control is disabled because SG Ready output automation rules exist. To use heating control, remove all SG Ready output <a href="#automation">{__("automation.content.automation")}</a> rules.</>,
             "override": "Override",
             "override_blocking": "Override blocking operation",
             "discard_override": "Cancel",

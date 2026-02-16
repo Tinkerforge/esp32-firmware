@@ -1,6 +1,5 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
-import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "modbus_tcp_debug": {
         "status": {
@@ -12,7 +11,7 @@ let x = {
             "modbus_tcp": "Modbus/TCP",
 
             "server_missing": <>__("The_device") currently has no Modbus/TCP server. Presumably it will be added by a future firmware update__("modbus_tcp_debug.content.server_missing_github").</>,
-            "server_missing_github": <>, see <a href={removeUnicodeHacks("https://github.com/Tinkerforge/esp32-firmware/issues/215")}>GitHub issue #215</a></>,
+            "server_missing_github": <>, see <a href="https://github.com/Tinkerforge/esp32-firmware/issues/215">GitHub issue #215</a></>,
 
             "debug": "Debug client",
             "expert_warning": "This is a tool for advanced users. It allows to debug and explore the Modbus/TCP communication of other Modbus/TCP devices. The debug client is not required for normal operation.",
