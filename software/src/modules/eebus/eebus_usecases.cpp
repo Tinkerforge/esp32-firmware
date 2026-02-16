@@ -2372,8 +2372,7 @@ bool LoadPowerLimitUsecase::update_limit(bool limit, int current_limit_w, const 
     update_state();
     update_api();
 
-    LoadControlLimitListDataType data{};
-    get_loadcontrol_limit_list(&data);
+    LoadControlLimitListDataType data = EVSEEntity::get_load_control_limit_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), data, "loadControlLimitListData");
     return true;
 }
@@ -4013,8 +4012,7 @@ void CevcUsecase::notify_subscribers_time_series() const
         return;
     }
     // Build the time series data to send to subscribers
-    TimeSeriesListDataType ts_data;
-    read_time_series_list(&ts_data);
+    TimeSeriesListDataType ts_data = EVEntity::get_time_series_list_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::TimeSeries), ts_data, "timeSeriesListData");
 }
 
@@ -4024,8 +4022,7 @@ void CevcUsecase::notify_subscribers_incentives() const
         return;
     }
     // Build the incentive data to send to subscribers
-    IncentiveTableDataType it_data;
-    read_incentive_table_data(&it_data);
+    IncentiveTableDataType it_data = EVEntity::get_incentive_table_data();
     eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::IncentiveTable), it_data, "incentiveTableData");
 }
 
@@ -5533,6 +5530,62 @@ LoadControlLimitConstraintsListDataType EVEntity::get_load_control_limit_constra
     //eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_load_control_constraints_list_data(&load_control_limit_constraints_list_data);
 #endif
     return load_control_limit_constraints_list_data;
+}
+
+// TimeSeries entity functions for CEVC usecase
+TimeSeriesDescriptionListDataType EVEntity::get_time_series_description_list_data()
+{
+    TimeSeriesDescriptionListDataType time_series_description_list_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_time_series_description(&time_series_description_list_data);
+#endif
+    return time_series_description_list_data;
+}
+
+TimeSeriesConstraintsListDataType EVEntity::get_time_series_constraints_list_data()
+{
+    TimeSeriesConstraintsListDataType time_series_constraints_list_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_time_series_constraints(&time_series_constraints_list_data);
+#endif
+    return time_series_constraints_list_data;
+}
+
+TimeSeriesListDataType EVEntity::get_time_series_list_data()
+{
+    TimeSeriesListDataType time_series_list_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_time_series_list(&time_series_list_data);
+#endif
+    return time_series_list_data;
+}
+
+// IncentiveTable entity functions for CEVC usecase
+IncentiveTableDescriptionDataType EVEntity::get_incentive_table_description_data()
+{
+    IncentiveTableDescriptionDataType incentive_table_description_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_incentive_table_description(&incentive_table_description_data);
+#endif
+    return incentive_table_description_data;
+}
+
+IncentiveTableConstraintsDataType EVEntity::get_incentive_table_constraints_data()
+{
+    IncentiveTableConstraintsDataType incentive_table_constraints_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_incentive_table_constraints(&incentive_table_constraints_data);
+#endif
+    return incentive_table_constraints_data;
+}
+
+IncentiveTableDataType EVEntity::get_incentive_table_data()
+{
+    IncentiveTableDataType incentive_table_data;
+#ifdef EEBUS_ENABLE_CEVC_USECASE
+    eebus.usecases->coordinate_ev_charging.read_incentive_table_data(&incentive_table_data);
+#endif
+    return incentive_table_data;
 }
 
 namespace EEBUS_USECASE_HELPERS

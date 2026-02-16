@@ -260,6 +260,16 @@ public:
     static LoadControlLimitDescriptionListDataType get_load_control_limit_description_list_data();
     static LoadControlLimitListDataType get_load_control_limit_list_data();
     static LoadControlLimitConstraintsListDataType get_load_control_limit_constraints_list_data();
+
+    // TimeSeries (CEVC)
+    static TimeSeriesDescriptionListDataType get_time_series_description_list_data();
+    static TimeSeriesConstraintsListDataType get_time_series_constraints_list_data();
+    static TimeSeriesListDataType get_time_series_list_data();
+
+    // IncentiveTable (CEVC)
+    static IncentiveTableDescriptionDataType get_incentive_table_description_data();
+    static IncentiveTableConstraintsDataType get_incentive_table_constraints_data();
+    static IncentiveTableDataType get_incentive_table_data();
 };
 
 /**
