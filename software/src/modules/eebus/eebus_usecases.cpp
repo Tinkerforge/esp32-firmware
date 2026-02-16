@@ -4396,22 +4396,35 @@ MessageReturn OpevUsecase::write_load_control_limit_list_data(HeaderType &header
     bool limit_enabled = false;
 
     for (const auto &limit_data : data->loadControlLimitData.get()) {
+        int limit_value_milliamps = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
+
         switch (limit_data.limitId.get()) {
             case id_x_1:
-                limit_phase_a = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
+                limit_phase_a = limit_value_milliamps;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             case id_x_2:
-                limit_phase_b = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
+                limit_phase_b = limit_value_milliamps;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             case id_x_3:
-                limit_phase_c = EEBUS_USECASE_HELPERS::scaled_numbertype_to_int(limit_data.value.get()) * 1000;
+                limit_phase_c = limit_value_milliamps;
                 limit_enabled = limit_active || limit_data.isLimitActive.get();
                 break;
             default:
                 break;
         }
+    }
+    // Check if received limits are within min/max defined in electricalConnectionPermittedValueSetListData
+    auto check_limit = [this](int limit_milliamps) -> bool {
+        return (limit_milliamps < 0) || // -1 means "not set", always valid
+               (limit_milliamps >= limit_milliamps_min && limit_milliamps <= limit_milliamps_max);
+    };
+
+    if (!check_limit(limit_phase_a) || !check_limit(limit_phase_b) || !check_limit(limit_phase_c)) {
+        logger.printfln("OPEV: Received limit out of range (min: %d mA, max: %d mA). L1: %d mA, L2: %d mA, L3: %d mA", limit_milliamps_min, limit_milliamps_max, limit_phase_a, limit_phase_b, limit_phase_c);
+        EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected, "Limit value outside permitted range");
+        return {true, true, CmdClassifierType::result};
     }
     update_limits(limit_phase_a, limit_phase_b, limit_phase_c, limit_enabled);
     return {true, false, CmdClassifierType::reply};
