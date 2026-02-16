@@ -2175,7 +2175,6 @@ MessageReturn LoadPowerLimitUsecase::load_control_feature(HeaderType &header, Sp
         }
     }
     if (header.cmdClassifier == CmdClassifierType::write) {
-        logger.printfln("Got write to Load Control feature with command: %s", data->function_to_string(data->last_cmd).c_str());
         FeatureAddressType feature_address{};
         feature_address.entity = entity_address;
         feature_address.feature = feature_addresses.at(FeatureTypeEnumType::LoadControl);
@@ -2335,6 +2334,8 @@ bool LoadPowerLimitUsecase::update_limit(bool limit, int current_limit_w, const 
             return false;
         }
     }
+    // TODO: Add more limit validation here.
+    // For example: Can this limit be applied electrically.
 
     configured_limit = current_limit_w;
 
@@ -3746,6 +3747,7 @@ MessageReturn CevcUsecase::write_incentive_table_description(HeaderType &header,
     }
 
     // Parse the incentive table description to extract currency if provided
+    // Only fields present in the incoming data are updated (partial write support)
     for (const auto &desc : data->incentiveTableDescription.get()) {
         if (desc.tier.has_value()) {
             for (const auto &tier : desc.tier.get()) {
@@ -3855,8 +3857,9 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
         return {true, true, CmdClassifierType::result};
     }
 
-    received_incentives.clear();
-    incentives_valid = false;
+    // Process incoming incentive slots
+    int updated_slots = 0;
+    int new_slots = 0;
 
     for (const auto &table : data->incentiveTable.get()) {
         if (!table.incentiveSlot.has_value()) {
@@ -3904,18 +3907,32 @@ MessageReturn CevcUsecase::write_incentive_table_data(HeaderType &header, SpineO
                 }
             }
 
-            received_incentives.push_back(entry);
+            // Try to find existing slot by matching time interval (startTime + endTime)
+            bool found = false;
+            for (auto &existing : received_incentives) {
+                // Match by time interval (start_time and end_time must match)
+                if (existing.start_time == entry.start_time && existing.end_time == entry.end_time) {
+                    // Update existing slot with new tier data
+                    existing.tiers = entry.tiers;
+                    found = true;
+                    updated_slots++;
+                    break;
+                }
+            }
 
-            // Limit to max slots
-            if (received_incentives.size() >= MAX_INCENTIVE_SLOTS) {
-                break;
+            if (!found) {
+                // Add new slot if not found and within limit
+                if (received_incentives.size() < MAX_INCENTIVE_SLOTS) {
+                    received_incentives.push_back(entry);
+                    new_slots++;
+                }
             }
         }
     }
 
     if (!received_incentives.empty()) {
         incentives_valid = true;
-        eebus.trace_fmtln("CEVC: Received incentive table with %d slots", received_incentives.size());
+        eebus.trace_fmtln("CEVC: Updated incentive table (%d updated, %d new, total %d slots)", updated_slots, new_slots, received_incentives.size());
         notify_subscribers_incentives();
         update_api_state();
         EEBUS_USECASE_HELPERS::build_result_data(response, EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError, "");
