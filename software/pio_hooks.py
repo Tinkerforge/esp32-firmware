@@ -1868,7 +1868,7 @@ def main():
 
     global additional_imports
     tfutil.specialize_template(os.path.join("web", "translation.tsx.template"), os.path.join("web", "src", "ts", "translation.tsx"), {
-        '{{{additional_imports}}}': "".join(additional_imports),
+        '{{{additional_imports}}}': "".join(sorted(additional_imports)),
         '{{{translation}}}': translation_str,
     })
 
