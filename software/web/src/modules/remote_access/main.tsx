@@ -704,10 +704,10 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 </Modal.Header>
                 <Modal.Body>
                     <Container fluid>
-                        <Row className="justify-content-center mb-2">
+                        <Row className="justify-content-center mb-3">
                             <Spinner animation="border" variant="primary"/>
                         </Row>
-                        <Row className="justify-content-center message-box-body">
+                        <Row className="text-center message-box-body">
                             <div>{this.state.status_modal_string}</div>
                         </Row>
                     </Container>
