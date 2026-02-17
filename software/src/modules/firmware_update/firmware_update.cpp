@@ -1691,7 +1691,7 @@ void FirmwareUpdate::read_app_partition_state()
     // This is sufficient because the bootloader will never boot an aborted partition if there is another one
     // that is new, pending-verify or valid.
     if ((app0_running && app0_state == ESP_OTA_IMG_ABORTED) || (app1_running && app1_state == ESP_OTA_IMG_ABORTED)) {
-        logger.printfln("Trying to recover from an aborted/aborted or aborted/invalid app partition state");
+        logger.printfln("Running app partition in aborted state, trying to recover");
 
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
@@ -1711,12 +1711,26 @@ void FirmwareUpdate::read_app_partition_state()
     // from new state to pending-verify state hoping that the bootloader would do it's job for the
     // pending-verify state to aborted state transition.
     if ((app0_running && app0_state == ESP_OTA_IMG_NEW) || (app1_running && app1_state == ESP_OTA_IMG_NEW)) {
-        logger.printfln("Bootloader left the running app partition in new state, trying to recover");
+        logger.printfln("Running app partition in new state, trying to recover");
 
         // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
 
         if (running_partition != nullptr) {
             change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_NEW, ESP_OTA_IMG_PENDING_VERIFY, false);
+        }
+    }
+
+    // in case the boot partition is not bootable due to its state (invalid or aborted) or its content (missing
+    // magic number or checksum error) the bootloader might choose the other app partition even if its state would
+    // normally not allowed it to be booted. if the running partition is marked as invalid then mark it as
+    // pending-verify to (re-)start the verification process.
+    if ((app0_running && app0_state == ESP_OTA_IMG_INVALID) || (app1_running && app1_state == ESP_OTA_IMG_INVALID)) {
+        logger.printfln("Running app partition in invalid state, trying to recover");
+
+        // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
+
+        if (running_partition != nullptr) {
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_INVALID, ESP_OTA_IMG_PENDING_VERIFY, false);
         }
     }
 }
