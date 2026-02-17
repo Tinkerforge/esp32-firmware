@@ -30,6 +30,38 @@
 #include "file_type.enum.h"
 #include "csv_flavor.enum.h"
 #include "generation_state.enum.h"
+#include "charge_log_send_error.enum.h"
+
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+#include "../remote_access/remote_access_packets.h"
+
+// States for the charge log send state machine
+enum class ChargeLogSendState : uint8_t {
+    Idle,                // Not sending
+    RequestSent,         // Sent RequestChargeLogSend, waiting for potential Nack
+    MetadataSent,        // Sent MetadataForChargeLog, waiting for Ack
+    OpeningConnection,   // Opening TCP connection to server
+    SendingData,         // Streaming charge log data over TCP
+    WaitingForFinalAck,  // TCP closed, waiting for final Ack from server
+    Done,                // Successfully completed
+    Error,               // Failed
+};
+
+// Context for the packet-driven charge log send state machine.
+struct ChargeLogSendContext {
+    ChargeLogSendState state = ChargeLogSendState::Idle;
+    int tcp_sock = -1;
+    ChargeLogSendError error_code = ChargeLogSendError::Success;
+    NackReason nack_reason = {};
+
+    // Metadata needed for building MetadataForChargeLog packet
+    uint8_t user_uuid[16] = {};
+    uint8_t lang[2] = {};
+    bool is_monthly_email = false;
+    String filename;
+    String display_name;
+};
+#endif
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 struct RemoteUploadRequest;
@@ -71,6 +103,23 @@ public:
     void send_file_via_mgmt(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs();
     void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const int device_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
+
+    // Processes a pre-validated Ack or Nack management packet for the charge log send state machine.
+    // Header checking (magic, packet type) is done by the remote_access module before calling this.
+    // Returns true if the packet was consumed by the state machine.
+    bool handle_charge_log_send_packet(PacketType type, NackReason nack_reason);
+
+    // Initiates the charge log send state machine.
+    // Stores the metadata context and sends RequestChargeLogSend.
+    // Returns true if the request was sent successfully.
+    bool start_charge_log_send_sm(const char *filename, size_t filename_len,
+                                  const char *display_name, size_t display_name_len,
+                                  const uint8_t user_uuid[16],
+                                  Language language,
+                                  bool is_monthly_email = false);
+                                
+    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
+
 #endif
 
     ConfigRoot last_charges;
@@ -84,10 +133,11 @@ public:
     std::mutex records_mutex;
     std::mutex pdf_mutex;
 
+    ChargeLogSendContext charge_log_send_ctx;
+
 private:
     bool repair_last(float, const char *);
     void repair_charges();
-    int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
     std::vector<ChargeWithLocation> readLastChargesFromDirectory(const char *directory);
     bool getChargerChargeRecords(const char *directory, uint32_t *first_record, uint32_t *last_record);
 
@@ -97,6 +147,13 @@ private:
 
     std::vector<ChargeWithLocation> oldest_charges_per_directory;
     uint32_t total_charge_log_files;
+
+    std::unique_ptr<RemoteUploadRequest> remote_upload_request;
+
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+    // Sends the MetadataForChargeLog packet using data stored in charge_log_send_ctx.
+    bool send_metadata_from_ctx();
+#endif
 };
 
 /**

@@ -2155,6 +2155,7 @@ void ChargeTracker::send_file_via_mgmt(std::unique_ptr<RemoteUploadRequest> uplo
 }
 
 static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
+static constexpr uint32_t CHARGE_LOG_SEND_TASK_STACK_SIZE = 6144;
 
 static void upload_charge_logs_task(void *arg)
 {
@@ -2240,6 +2241,152 @@ static void upload_charge_logs_task(void *arg)
     vTaskDelete(NULL); // exit RTOS task
 }
 
+static void charge_log_send_tcp_task(void *arg)
+{
+    std::unique_ptr<RemoteUploadRequest> upload_args{static_cast<RemoteUploadRequest *>(arg)};
+    if (!upload_args) {
+        vTaskDelete(NULL);
+        return;
+    }
+
+    int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tcp_sock < 0) {
+        logger.printfln("Failed to create TCP socket for charge log: %s (%i)", strerror(errno), errno);
+        charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+        charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to create TCP socket");
+        }
+        vTaskDelete(NULL);
+        return;
+    }
+
+    struct sockaddr_in local_addr;
+    memset(&local_addr, 0, sizeof(local_addr));
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = 0;
+    local_addr.sin_addr.s_addr = inet_addr("10.123.123.2");
+
+    int ret = bind(tcp_sock, reinterpret_cast<struct sockaddr *>(&local_addr), sizeof(local_addr));
+    if (ret < 0) {
+        logger.printfln("Failed to bind TCP socket for charge log: %s (%i)", strerror(errno), errno);
+        close(tcp_sock);
+        charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+        charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to bind TCP socket");
+        }
+        vTaskDelete(NULL);
+        return;
+    }
+
+    struct sockaddr_in src_addr;
+    socklen_t addr_len = sizeof(src_addr);
+    if (getsockname(tcp_sock, reinterpret_cast<struct sockaddr *>(&src_addr), &addr_len) == 0) {
+        remote_access.send_port = ntohs(src_addr.sin_port);
+    }
+
+    struct sockaddr_in tcp_dest;
+    memset(&tcp_dest, 0, sizeof(tcp_dest));
+    tcp_dest.sin_family = AF_INET;
+    tcp_dest.sin_port = htons(8080);
+    tcp_dest.sin_addr.s_addr = inet_addr("10.123.123.3");
+
+    ret = connect(tcp_sock, reinterpret_cast<struct sockaddr *>(&tcp_dest), sizeof(tcp_dest));
+    if (ret < 0) {
+        logger.printfln("Failed to connect TCP socket for charge log: %s (%i)", strerror(errno), errno);
+        close(tcp_sock);
+        charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+        charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "Failed to connect TCP socket");
+        }
+        vTaskDelete(NULL);
+        return;
+    }
+
+    charge_tracker.charge_log_send_ctx.tcp_sock = tcp_sock;
+    charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::SendingData;
+
+    bool send_error = false;
+    auto tcp_send_fn = [tcp_sock, &send_error](const void *buf, size_t len) -> int {
+        if (send_error) {
+            return -1;
+        }
+
+        logger.printfln("Sending chunk of size %u to TCP socket", len);
+        const uint8_t *data = static_cast<const uint8_t *>(buf);
+        size_t total_sent = 0;
+        while (total_sent < len) {
+            int sent = send(tcp_sock, data + total_sent, len - total_sent, 0);
+            if (sent <= 0) {
+                logger.printfln("TCP send error: %s (%i)", strerror(errno), errno);
+                send_error = true;
+                return -1;
+            }
+            total_sent += sent;
+        }
+        return 0;
+    };
+
+    if (upload_args->file_type == FileType::PDF) {
+        char default_letterhead[1] = {'\0'};
+        char *letterhead = upload_args->letterhead ? upload_args->letterhead.get() : default_letterhead;
+        const int letterhead_lines = read_letterhead_lines(letterhead);
+
+        charge_tracker.generate_pdf(
+            [&tcp_send_fn](const void *buffer, size_t len) -> int {
+                return tcp_send_fn(buffer, len);
+            },
+            upload_args->user_filter,
+            upload_args->device_filter,
+            upload_args->start_timestamp_min,
+            upload_args->end_timestamp_min,
+            rtc.timestamp_minutes(),
+            upload_args->language,
+            letterhead,
+            letterhead_lines,
+            nullptr);
+    } else {
+        CSVGenerationParams csv_params;
+        csv_params.user_filter = upload_args->user_filter;
+        csv_params.device_filter = upload_args->device_filter;
+        csv_params.start_timestamp_min = upload_args->start_timestamp_min;
+        csv_params.end_timestamp_min = upload_args->end_timestamp_min;
+        csv_params.language = upload_args->language;
+        csv_params.flavor = upload_args->csv_delimiter;
+        task_scheduler.await([&csv_params]() {
+            csv_params.electricity_price = charge_tracker.config.get("electricity_price")->asUint();
+        });
+
+        CSVChargeLogGenerator csv_generator;
+        csv_generator.generateCSV(csv_params, [&tcp_send_fn](const char *buffer, size_t len) -> int {
+            return tcp_send_fn(buffer, len);
+        });
+    }
+
+    if (send_error) {
+        logger.printfln("Error occurred while sending charge log data via TCP");
+        close(tcp_sock);
+        charge_tracker.charge_log_send_ctx.tcp_sock = -1;
+        charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ServerErrorAfterDataSend;
+        charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
+        if (upload_args->use_format_overrides && upload_args->cookie != 0) {
+            push_upload_result_error(upload_args->cookie, "TCP send error during data transfer");
+        }
+        vTaskDelete(NULL);
+        return;
+    }
+
+    shutdown(tcp_sock, SHUT_WR);
+    close(tcp_sock);
+    charge_tracker.charge_log_send_ctx.tcp_sock = -1;
+    charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::WaitingForFinalAck;
+
+    vTaskDelete(NULL);
+    return;
+}
+
 void ChargeTracker::upload_charge_logs()
 {
     uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
@@ -2267,24 +2414,320 @@ void ChargeTracker::upload_charge_logs()
 
 void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const int device_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)
 {
-    RemoteUploadRequest *task_args = new RemoteUploadRequest;
-    task_args->cookie = cookie;
-    task_args->user_filter = user_filter;
-    task_args->device_filter = device_filter;
-    task_args->start_timestamp_min = start_timestamp_min;
-    task_args->end_timestamp_min = end_timestamp_min;
-    task_args->language = language;
-    task_args->file_type = file_type;
-    task_args->csv_delimiter = csv_delimiter;
-    task_args->use_format_overrides = true;
-    task_args->letterhead = std::move(letterhead);
-    task_args->generation_lock = std::move(generation_lock);
-    task_args->remote_access_user_uuid = remote_access_user_uuid;
+    // Parse the remote_access_user_uuid string to extract the binary UUID
+    uint8_t user_uuid[16] = {0};
+    if (!remote_access.parse_uuid_string(remote_access_user_uuid.c_str(), user_uuid)) {
+        logger.printfln("Invalid remote access user UUID: %s", remote_access_user_uuid.c_str());
+        if (cookie != 0) {
+            push_upload_result_error(cookie, "Invalid remote access user UUID");
+        }
+        return;
+    }
 
-    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
+    // Build filename for the charge log
+    time_t t_now = time(nullptr);
+    char filename_buf[128];
+    StringWriter filename_writer(filename_buf, sizeof(filename_buf));
 
-    if (ret != pdPASS_safe) {
-        logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+    tm local_time;
+    localtime_r(&t_now, &local_time);
+
+    filename_writer.printf("charge-log-%04d-%02d-%02d",
+                           1900 + local_time.tm_year,
+                           1 + local_time.tm_mon,
+                           local_time.tm_mday);
+
+    String filename = filename_writer.toString();
+    String display_name = device_name.display_name.get("display_name")->asString();
+
+    // Initiate the charge log send state machine
+    if (!start_charge_log_send_sm(filename.c_str(), filename.length(),
+                                   display_name.c_str(), display_name.length(),
+                                   user_uuid, language, false)) {
+        logger.printfln("Failed to initiate charge log send state machine");
+        // If the state machine couldn't be started, notify and return
+        if (cookie != 0) {
+            push_upload_result_error(cookie, "Failed to start charge log send");
+        }
+        return;
+    }
+
+    // Create task for file generation and transmission
+    remote_upload_request = std::make_unique<RemoteUploadRequest>();
+    remote_upload_request->cookie = cookie;
+    remote_upload_request->user_filter = user_filter;
+    remote_upload_request->device_filter = device_filter;
+    remote_upload_request->start_timestamp_min = start_timestamp_min;
+    remote_upload_request->end_timestamp_min = end_timestamp_min;
+    remote_upload_request->language = language;
+    remote_upload_request->file_type = file_type;
+    remote_upload_request->csv_delimiter = csv_delimiter;
+    remote_upload_request->use_format_overrides = true;
+    remote_upload_request->letterhead = std::move(letterhead);
+    remote_upload_request->generation_lock = std::move(generation_lock);
+    remote_upload_request->remote_access_user_uuid = remote_access_user_uuid;
+}
+
+bool ChargeTracker::send_metadata_from_ctx()
+{
+    const size_t filename_len = charge_log_send_ctx.filename.length();
+    const size_t display_name_len = charge_log_send_ctx.display_name.length();
+
+    const size_t meta_total = sizeof(management_packet_header) + 16 + sizeof(uint16_t) + sizeof(uint16_t) + 2 + 1 + filename_len + display_name_len;
+    auto meta_buf = heap_alloc_array<uint8_t>(meta_total);
+    if (!meta_buf) {
+        logger.printfln("Cannot send charge log: out of memory for metadata");
+        return false;
+    }
+
+    management_packet_header meta_header;
+    meta_header.magic = 0x1234;
+    meta_header.length = static_cast<uint16_t>(meta_total - sizeof(management_packet_header));
+    meta_header.seq_num = 0;
+    meta_header.version = 1;
+    meta_header.type = PacketType::MetadataForChargeLog;
+
+    size_t written = charge_log_send_metadata_packet::write_to_buffer(
+        meta_buf.get(), meta_total,
+        meta_header,
+        charge_log_send_ctx.user_uuid,
+        charge_log_send_ctx.lang,
+        charge_log_send_ctx.is_monthly_email,
+        charge_log_send_ctx.filename.c_str(), static_cast<uint16_t>(filename_len),
+        charge_log_send_ctx.display_name.c_str(), static_cast<uint16_t>(display_name_len)
+    );
+
+    if (written == 0) {
+        logger.printfln("Cannot send charge log: metadata buffer too small");
+        return false;
+    }
+
+    int ret = remote_access.send_to_mgmt_server(meta_buf.get(), written);
+    if (ret < 0) {
+        logger.printfln("Failed to send charge log metadata: %s (%i)", strerror(errno), errno);
+        return false;
+    }
+
+    logger.printfln("Sent MetadataForChargeLog packet (%zu bytes)", written);
+    return true;
+}
+
+bool ChargeTracker::start_charge_log_send_sm(
+    const char *filename, size_t filename_len,
+    const char *display_name, size_t display_name_len,
+    const uint8_t user_uuid[16],
+    Language language,
+    bool is_monthly_email)
+{
+    if (!remote_access.is_mgmt_connected()) {
+        logger.printfln("Cannot send charge log: management connection not established");
+        return false;
+    }
+
+    if (charge_log_send_ctx.state != ChargeLogSendState::Idle
+        && charge_log_send_ctx.state != ChargeLogSendState::Done
+        && charge_log_send_ctx.state != ChargeLogSendState::Error) {
+        logger.printfln("Cannot send charge log: state machine already active (state %u)",
+                        static_cast<uint8_t>(charge_log_send_ctx.state));
+        return false;
+    }
+
+    // Store metadata context
+    memcpy(charge_log_send_ctx.user_uuid, user_uuid, 16);
+    charge_log_send_ctx.is_monthly_email = is_monthly_email;
+    charge_log_send_ctx.filename = String(filename, filename_len);
+    charge_log_send_ctx.display_name = String(display_name, display_name_len);
+    charge_log_send_ctx.tcp_sock = -1;
+    charge_log_send_ctx.error_code = ChargeLogSendError::Success;
+    charge_log_send_ctx.nack_reason = {};
+
+    const char *lang_str = nullptr;
+    switch (language) {
+        case Language::German:  lang_str = "de"; break;
+        case Language::English: lang_str = "en"; break;
+        default:
+            logger.printfln("Cannot send charge log: unsupported language");
+            return false;
+    }
+    charge_log_send_ctx.lang[0] = static_cast<uint8_t>(lang_str[0]);
+    charge_log_send_ctx.lang[1] = static_cast<uint8_t>(lang_str[1]);
+
+    // Send RequestChargeLogSend
+    management_packet_header request_header;
+    request_header.magic = 0x1234;
+    request_header.length = 0;
+    request_header.seq_num = 0;
+    request_header.version = 1;
+    request_header.type = PacketType::RequestChargeLogSend;
+
+    int ret = remote_access.send_to_mgmt_server(&request_header, sizeof(request_header));
+    if (ret < 0) {
+        logger.printfln("Failed to send charge log request: %s (%i)", strerror(errno), errno);
+        charge_log_send_ctx.state = ChargeLogSendState::Error;
+        charge_log_send_ctx.error_code = ChargeLogSendError::SendRequestFailed;
+        return false;
+    }
+
+    logger.printfln("Sent RequestChargeLogSend packet");
+    charge_log_send_ctx.state = ChargeLogSendState::RequestSent;
+    return true;
+}
+
+bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason nack_reason)
+{
+    // Only process packets while in a packet-driven state
+    switch (charge_log_send_ctx.state) {
+        case ChargeLogSendState::RequestSent:
+        case ChargeLogSendState::MetadataSent:
+        case ChargeLogSendState::OpeningConnection:
+        case ChargeLogSendState::WaitingForFinalAck:
+            break;
+
+        case ChargeLogSendState::Idle:
+        case ChargeLogSendState::Done:
+        case ChargeLogSendState::Error:
+        default:
+            return false;
+    }
+
+    switch (charge_log_send_ctx.state) {
+        case ChargeLogSendState::RequestSent: {
+            if (type == PacketType::Nack) {
+                charge_log_send_ctx.nack_reason = nack_reason;
+                charge_log_send_ctx.error_code = ChargeLogSendError::RequestRejected;
+                charge_log_send_ctx.state = ChargeLogSendState::Error;
+
+                const char *reason_str = "unknown";
+                switch (nack_reason) {
+                    case NackReason::Busy: reason_str = "server busy"; break;
+                    case NackReason::ToManyRequests: reason_str = "too many requests"; break;
+                    case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
+                    case NackReason::Timeout: reason_str = "timeout"; break;
+                    default: break;
+                }
+
+                if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                    char err_msg[128];
+                    snprintf(err_msg, sizeof(err_msg), "Charge log request rejected: %s", reason_str);
+                    push_upload_result_error(remote_upload_request->cookie, err_msg);
+                }
+                remote_upload_request.reset();
+                return true;
+            }
+
+            // Ack means server explicitly accepted - send metadata and advance
+            if (type == PacketType::Ack) {
+                if (!send_metadata_from_ctx()) {
+                    charge_log_send_ctx.error_code = ChargeLogSendError::SendMetadataFailed;
+                    charge_log_send_ctx.state = ChargeLogSendState::Error;
+                    return true;
+                }
+                charge_log_send_ctx.state = ChargeLogSendState::MetadataSent;
+                return true;
+            }
+            return false;
+        }
+
+        case ChargeLogSendState::MetadataSent: {
+            if (type == PacketType::Ack) {
+                charge_log_send_ctx.state = ChargeLogSendState::OpeningConnection;
+                logger.printfln("Metadata accepted, opening TCP connection...");
+                return true;
+            }
+            if (type == PacketType::Nack) {
+                charge_log_send_ctx.nack_reason = nack_reason;
+                charge_log_send_ctx.error_code = ChargeLogSendError::MetadataRejected;
+                charge_log_send_ctx.state = ChargeLogSendState::Error;
+                logger.printfln("Charge log metadata rejected (reason: %s)",
+                                get_nack_reason_name(nack_reason));
+                if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                    char err_msg[128];
+                    snprintf(err_msg, sizeof(err_msg), "Charge log metadata rejected: %s", get_nack_reason_name(nack_reason));
+                    push_upload_result_error(remote_upload_request->cookie, err_msg);
+                }
+                remote_upload_request.reset();
+                return true;
+            }
+            return false;
+        }
+
+        case ChargeLogSendState::OpeningConnection: {
+            if (type == PacketType::Ack) {
+                if (remote_upload_request == nullptr) {
+                    logger.printfln("Cannot send charge log: no upload request available");
+                    charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+                    charge_log_send_ctx.state = ChargeLogSendState::Error;
+                    return true;
+                }
+
+                logger.printfln("Here!!!!");
+
+                RemoteUploadRequest *args = remote_upload_request.get();
+                const BaseType_t ret = xTaskCreatePinnedToCore(
+                    charge_log_send_tcp_task,
+                    "ChargeLogSendTcp",
+                    CHARGE_LOG_SEND_TASK_STACK_SIZE,
+                    args,
+                    1,
+                    nullptr,
+                    0);
+
+                if (ret != pdPASS_safe) {
+                    logger.printfln("Charge log send task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+                    charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+                    charge_log_send_ctx.state = ChargeLogSendState::Error;
+                    if (remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                        push_upload_result_error(remote_upload_request->cookie, "Failed to start charge log send task");
+                    }
+                    remote_upload_request.reset();
+                    return true;
+                }
+
+                remote_upload_request.release();
+                return true;
+            }
+            if (type == PacketType::Nack) {
+                charge_log_send_ctx.nack_reason = nack_reason;
+                charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
+                charge_log_send_ctx.state = ChargeLogSendState::Error;
+                logger.printfln("Failed to open connection (reason: %s)",
+                                get_nack_reason_name(nack_reason));
+                if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                    char err_msg[128];
+                    snprintf(err_msg, sizeof(err_msg), "Failed to open connection: %s", get_nack_reason_name(nack_reason));
+                    push_upload_result_error(remote_upload_request->cookie, err_msg);
+                }
+                remote_upload_request.reset();
+                return true;
+            }
+            return false;
+        }
+
+        case ChargeLogSendState::WaitingForFinalAck: {
+            if (type == PacketType::Ack) {
+                charge_log_send_ctx.state = ChargeLogSendState::Done;
+                logger.printfln("Charge log send completed successfully");
+                return true;
+            }
+            if (type == PacketType::Nack) {
+                charge_log_send_ctx.nack_reason = nack_reason;
+                charge_log_send_ctx.error_code = ChargeLogSendError::ServerErrorAfterDataSend;
+                charge_log_send_ctx.state = ChargeLogSendState::Error;
+                logger.printfln("Server reported error after charge log data send (reason: %s)",
+                                get_nack_reason_name(nack_reason));
+                if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                    char err_msg[128];
+                    snprintf(err_msg, sizeof(err_msg), "Server error after data send: %s", get_nack_reason_name(nack_reason));
+                    push_upload_result_error(remote_upload_request->cookie, err_msg);
+                }
+                remote_upload_request.reset();
+                return true;
+            }
+            return false;
+        }
+
+        default:
+            return false;
     }
 }
 #endif

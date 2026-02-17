@@ -2032,6 +2032,23 @@ void RemoteAccess::run_management()
         setup_inner_socket();
         return;
     }
+
+    // Try to feed Ack/Nack packets to the charge tracker's charge log send state machine.
+#if MODULE_CHARGE_TRACKER_AVAILABLE()
+    if (ret >= static_cast<int>(sizeof(management_packet_header))) {
+        const auto *header = reinterpret_cast<const management_packet_header *>(buf);
+        if (header->magic == 0x1234 && (header->type != PacketType::ManagementCommand)) {
+            NackReason nack_reason = {};
+            if (header->type == PacketType::Nack && ret >= static_cast<int>(sizeof(management_packet_header) + 1)) {
+                nack_reason = static_cast<NackReason>(buf[sizeof(management_packet_header)]);
+            }
+            if (charge_tracker.handle_charge_log_send_packet(header->type, nack_reason)) {
+                return;
+            }
+        }
+    }
+#endif
+
     if (ret != sizeof(management_command_packet)) {
         logger.printfln("Didnt receive Management command.");
         return;
@@ -2257,18 +2274,27 @@ int RemoteAccess::stop_ping() {
     return 0;
 }
 
-static bool parse_uuid_string(const char *uuid_str, uint8_t *out)
+bool RemoteAccess::parse_uuid_string(const char *uuid_str, uint8_t *out)
 {
-    if (strlen(uuid_str) != 36) return false;
+    if (strnlen(uuid_str, 37) != 36) return false;
 
-    const char *p = uuid_str;
-    if (p[8] != '-' || p[13] != '-' || p[18] != '-' || p[23] != '-') return false;
+    // Check dashes are at the correct positions
+    if (uuid_str[8] != '-' || uuid_str[13] != '-' || uuid_str[18] != '-' || uuid_str[23] != '-') return false;
+
+    // Check version field (position 14 must be '4' for UUID v4)
+    if (uuid_str[14] != '4') return false;
+
+    // Check variant bits (position 19 must be 8, 9, a, b, A, or B)
+    char variant = uuid_str[19];
+    if (variant != '8' && variant != '9' &&
+        variant != 'a' && variant != 'b' &&
+        variant != 'A' && variant != 'B') return false;
 
     size_t out_idx = 0;
-    for (size_t i = 0; i < 36 && out_idx < 16; i++) {
-        if (p[i] == '-') continue;
-        if (!isxdigit(p[i]) || !isxdigit(p[i + 1])) return false;
-        char hex[3] = {p[i], p[i + 1], '\0'};
+    for (size_t i = 0; i < 35 && out_idx < 16; i++) {
+        if (uuid_str[i] == '-') continue;
+        char hex[3] = {uuid_str[i], uuid_str[i + 1], '\0'};
+        if (!isxdigit(uuid_str[i]) || !isxdigit(uuid_str[i + 1])) return false;
         out[out_idx++] = static_cast<uint8_t>(strtoul(hex, nullptr, 16));
         i++; // Skip the second hex digit
     }
@@ -2342,7 +2368,7 @@ int RemoteAccess::begin_charge_log_send(
     const char *user_uuid_str,
     Language language)
 {
-    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+    if (!is_mgmt_connected()) {
         logger.printfln("Cannot send charge log: management connection not established");
         return -1;
     }
@@ -2354,7 +2380,7 @@ int RemoteAccess::begin_charge_log_send(
 
     // Parse user UUID
     uint8_t user_uuid[16];
-    if (!parse_uuid_string(user_uuid_str, user_uuid)) {
+    if (!this->parse_uuid_string(user_uuid_str, user_uuid)) {
         logger.printfln("Cannot send charge log: invalid user UUID '%s'", user_uuid_str);
         return -3;
     }
@@ -2402,9 +2428,11 @@ int RemoteAccess::begin_charge_log_send(
         const char *reason_str = "unknown";
         switch (static_cast<NackReason>(nack_reason)) {
             case NackReason::Busy: reason_str = "server busy"; break;
-            case NackReason::TooManyRequests: reason_str = "too many requests"; break;
+            case NackReason::ToManyRequests: reason_str = "too many requests"; break;
             case NackReason::OngoingRequest: reason_str = "ongoing request"; break;
             case NackReason::Timeout: reason_str = "timeout"; break;
+            case NackReason::Unauthorized: reason_str = "unauthorized"; break;
+            case NackReason::InternalError: reason_str = "server error"; break;
             default: esp_system_abort("BUG: How did we end here? The switch statement should be exhaustive!");
         }
         logger.printfln("Charge log request was rejected: %s", reason_str);
@@ -2562,9 +2590,30 @@ int RemoteAccess::end_charge_log_send(int tcp_sock)
     return 0;
 }
 
+int RemoteAccess::send_to_mgmt_server(const void *data, size_t len)
+{
+    if (inner_socket < 0) {
+        return -1;
+    }
+
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(12345);
+    dest_addr.sin_addr.s_addr = inet_addr("10.123.123.3");
+
+    return sendto(inner_socket, data, len, 0,
+                  reinterpret_cast<struct sockaddr *>(&dest_addr), sizeof(dest_addr));
+}
+
+bool RemoteAccess::is_mgmt_connected() const
+{
+    return management != nullptr && management_request_done && inner_socket >= 0;
+}
+
 int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language)
 {
-    if (management == nullptr || !management->is_peer_up(nullptr, nullptr)) {
+    if (!is_mgmt_connected()) {
         logger.printfln("Cannot send charge log metadata: management connection not established");
         return -1;
     }
@@ -2593,7 +2642,7 @@ int RemoteAccess::send_charge_log_metadata(const char *filename, size_t filename
         return -7;
     }
 
-    if (!parse_uuid_string(user_uuid_str, user_uuid)) {
+    if (!this->parse_uuid_string(user_uuid_str.c_str(), user_uuid)) {
         logger.printfln("Cannot send charge log metadata: failed to parse user UUID");
         return -9;
     }
