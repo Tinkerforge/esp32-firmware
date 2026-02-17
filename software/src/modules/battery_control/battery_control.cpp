@@ -193,12 +193,6 @@ void BatteryControl::register_events()
         return;
     }
 
-    const size_t total_rules_cnt = static_cast<size_t>(data->charge_rules_count) + static_cast<size_t>(data->discharge_rules_count);
-
-    if (total_rules_cnt == 0) {
-        return;
-    }
-
     if (data->have_fast_chg_rule) {
 #if MODULE_NETWORK_AVAILABLE()
         network.on_network_connected([this](const Config *connected) {
@@ -363,13 +357,21 @@ void BatteryControl::register_events()
         }, 1_min, 0_ms, false);
     }
 
-    task_scheduler.scheduleOnce([this]() {
+    // When there are no rules, set to normal mode right away. Otherwise, perform a fallback-check after two minutes.
+    const size_t total_rules_cnt = static_cast<size_t>(data->charge_rules_count) + static_cast<size_t>(data->discharge_rules_count);
+    const millis_t set_normal_delay = total_rules_cnt == 0 ? 0_ms : 2_min;
+
+    task_scheduler.scheduleOnce([this, total_rules_cnt]() {
         if (this->data->last_mode == BatteryMode::None) {
-            logger.tracefln(this->trace_buffer_idx, "Defaulting to Normal mode after 2 minutes without data trigger");
+            if (total_rules_cnt == 0) {
+                logger.tracefln(this->trace_buffer_idx, "No rules enabled; defaulting to Normal mode");
+            } else {
+                logger.tracefln(this->trace_buffer_idx, "Defaulting to Normal mode after 2 minutes without data trigger");
+            }
 
             this->set_mode(BatteryMode::Normal);
         }
-    }, 2_min);
+    }, set_normal_delay);
 }
 
 void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *rules)
