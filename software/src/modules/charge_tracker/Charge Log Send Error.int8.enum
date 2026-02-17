@@ -1,0 +1,7 @@
+Success = 0
+Server Error After Data Send = -1
+Send Request Failed = -2
+Request Rejected = -3
+Send Metadata Failed = -4
+Metadata Rejected = -5
+Connection Open Failed = -6
