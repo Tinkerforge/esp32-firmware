@@ -71,23 +71,6 @@ public:
 
     uint16_t send_port = 0;
 
-    // Opens a TCP connection to the management server for streaming a charge log.
-    // Sends RequestChargeLogSend and MetadataForChargeLog, waits for Ack.
-    // Returns a connected TCP socket fd on success, or negative error code.
-    // Must be called from a non-main thread (e.g., FreeRTOS task).
-    int begin_charge_log_send(const char *filename, size_t filename_len,
-                              const char *display_name, size_t display_name_len,
-                              const char *user_uuid_str,
-                              Language language);
-
-    // Closes the TCP socket and waits for the server's final Ack.
-    // Returns 0 on success, negative error code on failure.
-    // Must be called from the same thread as begin_charge_log_send.
-    int end_charge_log_send(int tcp_sock);
-
-    // Release the inner socket back to run_management.
-    void release_inner_socket();
-
     // Sends a UDP packet to the management server (10.123.123.3:12345).
     // Thread-safe: can be called without locking the inner socket.
     // Returns bytes sent on success, negative on error.
@@ -123,11 +106,6 @@ private:
     void setup_inner_socket();
     int start_ping();
     int stop_ping();
-    int send_charge_log_metadata(const char *filename, size_t filename_len, const char *display_name, size_t display_name_len, int user_id, Language language);
-
-    // Polls inner_socket for an Ack or Nack management packet.
-    // Returns: 1 for Ack, -1 for Nack (nack_reason set), 0 for timeout.
-    int poll_for_mgmt_response(uint32_t timeout_ms, uint8_t *nack_reason);
 
     std::unique_ptr<WireGuard> management = nullptr;
     Connection remote_connections[MAX_USER_CONNECTIONS] = {};
@@ -139,7 +117,6 @@ private:
     bool management_request_failed = false;
     bool management_request_allowed = true;
     bool management_auth_failed = false;
-    bool charge_log_sending = false;
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
 

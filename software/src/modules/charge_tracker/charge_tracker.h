@@ -100,7 +100,6 @@ public:
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     void send_file(std::unique_ptr<RemoteUploadRequest> args);
-    void send_file_via_mgmt(std::unique_ptr<RemoteUploadRequest> args);
     void upload_charge_logs();
     void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const int device_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
 
