@@ -1,0 +1,6 @@
+Busy = 0
+To Many Requests = 1
+Ongoing Request = 2
+Timeout = 3
+Unauthorized = 4
+Internal Error = 5
