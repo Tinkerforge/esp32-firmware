@@ -353,12 +353,18 @@ void SolarForecast::handle_new_data()
                     day_start0 = key[8];
                     day_start1 = key[9];
 
-                    // Parse date of first day
+                    // Parse date of first day or use today's date for test data
                     struct tm tm;
+
+#ifdef SOLAR_FORECAST_USE_TEST_DATA
+                    const time_t now = time(nullptr);
+                    localtime_r(&now, &tm);
+#else
                     if (!strptime(key, "%Y-%m-%d", &tm)) {
                         logger.printfln("Cannot parse first day's date: '%s'", key);
                         continue;
                     }
+#endif
 
                     // 00:00:00 of first day
                     tm.tm_hour = 0;
