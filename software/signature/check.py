@@ -159,7 +159,7 @@ def main():
                 '--list-secret-keys',
             ])
         except:
-            raise Exception(f'Could not list secret key from GPG keyring')
+            raise Exception('Could not list secret key from GPG keyring')
 
     print('Check successful')
 

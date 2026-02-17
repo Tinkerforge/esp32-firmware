@@ -815,5 +815,5 @@ print_cpp(r"    }")
 print_cpp(r"};")
 
 cpp_output.seek(0)
-with open(f"model_parser_gen.cpp", "w", encoding="utf-8") as outfile:
+with open("model_parser_gen.cpp", "w", encoding="utf-8") as outfile:
     shutil.copyfileobj(cpp_output, outfile)

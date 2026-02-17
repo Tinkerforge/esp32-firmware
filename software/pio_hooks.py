@@ -258,18 +258,13 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
     return has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper
 
 def generate_backend_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_backend_modules_upper, backend_module_instance_names):
-    if backend_module:
-        module_name = backend_module.space
-    else:
-        module_name = f'[{info_path}]'
-
     has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper = generate_module_dependencies(info_path, backend_module, backend_modules, all_backend_modules_upper)
 
     if has_dependencies:
         backend_modules_upper = [x.upper for x in backend_modules]
 
         defines  = ''.join(['#define MODULE_{}_AVAILABLE() {}\n'.format(x, "1" if x in backend_modules_upper else "0") for x in all_optional_modules_upper])
-        undefs  = ''.join(['#undef MODULE_{}_AVAILABLE\n'.format(x) for x in all_optional_modules_upper])
+        undefs   = ''.join(['#undef MODULE_{}_AVAILABLE\n'.format(x) for x in all_optional_modules_upper])
         includes = ''.join([f'#include "modules/{x.under}/{x.under}.h"\n' for x in dep_modules])
         decls    = ''.join([f'extern {x.camel} {backend_module_instance_names[x.space]};\n' for x in dep_modules])
 
@@ -300,7 +295,7 @@ def generate_backend_module_dependencies_header(info_path, header_path_prefix, b
             dependencies_h_content += '\n' + decls
 
         dependencies_h_content += f'\n\n#include "{os.path.split(header_path_prefix)[-1]}available.h"\n'
-        dependencies_h_content += f'#define MODULE_DEPENDENCIES_H_INCLUDED\n'
+        dependencies_h_content += '#define MODULE_DEPENDENCIES_H_INCLUDED\n'
 
         if wants_module_list:
             dependencies_h_content += '\n'
@@ -322,17 +317,12 @@ def generate_backend_module_dependencies_header(info_path, header_path_prefix, b
             pass
 
 def generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper):
-    if frontend_module:
-        module_name = frontend_module.space
-    else:
-        module_name = f'[{info_path}]'
-
     has_dependencies, wants_module_list, dep_modules, all_optional_modules_upper = generate_module_dependencies(info_path, frontend_module, frontend_modules, all_frontend_modules_upper)
 
     if has_dependencies:
         frontend_modules_upper = [x.upper for x in frontend_modules]
         defines = ''.join(['//#define MODULE_{}_AVAILABLE {}\n'.format(x, "1" if x in frontend_modules_upper else "0") for x in all_optional_modules_upper])
-        available_inc_content  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n'
+        available_inc_content = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n'
 
         if defines:
             available_inc_content += '\n' + defines
@@ -2098,8 +2088,6 @@ def main():
             shutil.rmtree('web/build')
         except FileNotFoundError:
             pass
-
-        build_py_args = []
 
         js_source_map = False
         css_source_map = False

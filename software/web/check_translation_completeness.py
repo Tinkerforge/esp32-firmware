@@ -74,7 +74,7 @@ def main():
                 v.append((lang, replacement))
                 to_remove.append(x)
 
-        unused = [x for x in unused if not x in to_remove]
+        unused = [x for x in unused if x not in to_remove]
 
     if len(unused) > 0:
         unused_filtered = []

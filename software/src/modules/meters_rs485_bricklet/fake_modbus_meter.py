@@ -1,14 +1,12 @@
 #!/usr/bin/env -S python3 -u
 
-HOST = "localhost"
-PORT = 4223
-
 import time
-import sys
 from struct import pack, unpack
-
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_rs485 import BrickletRS485
+
+HOST = "localhost"
+PORT = 4223
 
 # Callback function for Modbus master write single register response callback
 def cb_modbus_slave_read_input_registers_request(rs485, uid, request_id, starting_address, count):

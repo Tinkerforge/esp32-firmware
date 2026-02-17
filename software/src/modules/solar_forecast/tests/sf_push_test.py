@@ -181,7 +181,7 @@ def main():
     print(f"  slots: {count} ({args.hours}h, capped at {MAX_FORECAST_SLOTS})")
     print(f"  first_date: {first_date_minutes} (minutes) = "
           f"{time.strftime('%Y-%m-%d %H:%M %Z', time.localtime(local_midnight))}")
-    print(f"  resolution: 1 (60min)")
+    print("  resolution: 1 (60min)")
 
     success_count = 0
     for plane_idx in target_planes:
@@ -245,7 +245,7 @@ def main():
     if all_ok:
         print(f"\nSUCCESS: {success_count} plane(s) updated and verified.")
     else:
-        print(f"\nWARNING: Some verifications failed (see above).")
+        print("\nWARNING: Some verifications failed (see above).")
 
 
 if __name__ == "__main__":

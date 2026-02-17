@@ -1,4 +1,3 @@
-import sys
 import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'software')

@@ -396,7 +396,7 @@ def enable_debug_mode(charger_ip: str) -> bool:
         print(f"  Failed: Could not connect to {charger_ip}")
         return False
     except requests.exceptions.Timeout:
-        print(f"  Failed: Connection timeout")
+        print("  Failed: Connection timeout")
         return False
     except Exception as e:
         print(f"  Failed: {e}")

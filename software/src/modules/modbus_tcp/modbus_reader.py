@@ -2,19 +2,11 @@
 
 import sys
 import time
-import binascii
 import copy
 import math
-
 import pymodbus.client as ModbusClient
-from pymodbus import (
-    ExceptionResponse,
-    FramerType,
-    ModbusException,
-    pymodbus_apply_logging_config,
-)
-
-from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
+from pymodbus import ExceptionResponse, FramerType
+from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
 
 class RegisterBlock:

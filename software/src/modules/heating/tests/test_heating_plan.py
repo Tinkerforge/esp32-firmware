@@ -1036,7 +1036,7 @@ Examples:
             tz_name = ntp_config.get("timezone", "UTC")
             try:
                 from zoneinfo import ZoneInfo
-                from datetime import datetime, timezone
+                from datetime import datetime
                 tz = ZoneInfo(tz_name)
                 now_dt = datetime.now(tz)
                 tz_offset_minutes = int(now_dt.utcoffset().total_seconds()) // 60
@@ -1056,7 +1056,7 @@ Examples:
             print(f"No tests matching '{args.test}'")
             sys.exit(1)
 
-    print(f"=== Heating Plan Test Suite (ILP Reference) ===")
+    print("=== Heating Plan Test Suite (ILP Reference) ===")
     print(f"Device: {host or '(offline mode)'}")
     print(f"Resolution: {args.resolution}min")
     print(f"TZ offset: {tz_offset_minutes}min")

@@ -109,7 +109,7 @@ for module in modules:
                 if member_name == 'device_address':
                     table_new.append(f'device_address: DefaultDeviceAddress.{table_id.camel}')
                 elif member_name == 'device_address_no_default':
-                    table_new.append(f'device_address: null')
+                    table_new.append('device_address: null')
                 else:
                     table_new.append(f'{member_name}: null')
 

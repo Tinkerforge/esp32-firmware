@@ -139,7 +139,7 @@ class PowerManagerEmu(QMainWindow, Ui_PowerManagerEmu):
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
             print(datetime.datetime.now().isoformat(), "Sent", data)
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
 
 def main():
