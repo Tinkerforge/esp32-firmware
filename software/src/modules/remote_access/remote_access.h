@@ -88,6 +88,16 @@ public:
     // Release the inner socket back to run_management.
     void release_inner_socket();
 
+    // Sends a UDP packet to the management server (10.123.123.3:12345).
+    // Thread-safe: can be called without locking the inner socket.
+    // Returns bytes sent on success, negative on error.
+    int send_to_mgmt_server(const void *data, size_t len);
+
+    // Returns true if the management WireGuard tunnel is up and the inner socket is available.
+    bool is_mgmt_connected() const;
+
+    bool parse_uuid_string(const char *uuid_str, uint8_t *out);
+
 private:
     void resolve_management();
     void connect_management();
