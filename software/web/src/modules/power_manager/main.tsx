@@ -33,6 +33,7 @@ import { InputSelect     } from "../../ts/components/input_select";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
 import { MeterClassID    } from "../meters/meter_class_id.enum";
+import { MeterLocation   } from "../meters/meter_location.enum";
 import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryPriority } from "./battery_priority.enum";
@@ -55,7 +56,7 @@ export enum NoninternalMeterSelector {
     AllValues,
 }
 
-export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID[]>, meter_selector : NoninternalMeterSelector, missing_values_message: string) {
+export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID[]>, meter_selector : NoninternalMeterSelector, missing_values_message: string, location?: MeterLocation, incorrect_location_message?: string) {
     let meter_slots: StringStringTuple[] = [];
 
     for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
@@ -69,6 +70,9 @@ export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID
         } else if (cfg[0] as any == MeterClassID.RS485Bricklet || cfg[0] as any == MeterClassID.EVSEV2) {
             // Disallow selecting the charger-internal meter for PM
             meter_slots.push([i.toString() + "-disabled", `${cfg[1]?.display_name} (${__("power_manager.script.meter_slots_internal")})`]);
+        } else if (location && location != cfg[1]?.location) {
+            // Disallow selecting meters with the wrong location
+            meter_slots.push([i.toString() + "-disabled", `${cfg[1]?.display_name} (${incorrect_location_message})`]);
         } else {
             const value_ids = API.get_unchecked(`meters/${i}/value_ids`) as Readonly<number[]>;
 
@@ -202,23 +206,9 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         mode_list = mode_list.concat(get_allowed_charge_modes({with_default: false, pv_enabled_override: s.excess_charging_enable})
                                              .map(i => [i.toString(), __("cm_networking.status.mode_by_index")(i)]));
 
-        let meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"));
-        for (let i = 0; i < meter_slots.length; i++) {
-            if (parseInt(meter_slots[i][0]) == s.meter_slot_battery_power) {
-                meter_slots[i][0] += "-disabled";
-                meter_slots[i][1] += " (" + __("power_manager.content.meter_slot_grid_power_in_use_by_battery") + ")";
-                break;
-            }
-        }
+        const meter_slots = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff], NoninternalMeterSelector.AllValues, __("power_manager.content.meter_slot_grid_power_missing_value"), MeterLocation.Grid, __("power_manager.content.meter_slot_grid_power_incorrect_location"));
 
-        let meter_slots_for_battery = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff, MeterValueID.PowerDCImExDiff, MeterValueID.PowerDCChaDisDiff], NoninternalMeterSelector.AnyValue, __("power_manager.content.meter_slot_battery_power_missing_value"));
-        for (let i = 0; i < meter_slots_for_battery.length; i++) {
-            if (parseInt(meter_slots_for_battery[i][0]) == s.meter_slot_grid_power) {
-                meter_slots_for_battery[i][0] += "-disabled";
-                meter_slots_for_battery[i][1] += " (" + __("power_manager.content.meter_slot_battery_power_in_use_by_grid") + ")";
-                break;
-            }
-        }
+        let meter_slots_for_battery = get_noninternal_meter_slots([MeterValueID.PowerActiveLSumImExDiff, MeterValueID.PowerDCImExDiff, MeterValueID.PowerDCChaDisDiff], NoninternalMeterSelector.AnyValue, __("power_manager.content.meter_slot_battery_power_missing_value"), MeterLocation.Battery, __("power_manager.content.meter_slot_battery_power_incorrect_location"));
         meter_slots_for_battery.unshift(["255", __("power_manager.content.meter_slot_battery_power_none")]);
 
         let cm_config = API.get_unchecked("charge_manager/config");
