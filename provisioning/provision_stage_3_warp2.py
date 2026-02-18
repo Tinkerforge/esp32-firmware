@@ -31,6 +31,8 @@ from provisioning.tinkerforge.bricklet_nfc import BrickletNFC
 from provisioning.provision_common.inventory import Inventory
 from provisioning.provision_common.provision_common import FatalError, fatal_error, green, my_input
 
+import provisioning.blackbox as blackbox
+
 IPCON_HOST = 'localhost'
 IPCON_TIMEOUT = 1.0 # seconds
 
@@ -834,9 +836,6 @@ class Stage3:
             elif not expect_on_meter and meter_voltages[i] > VOLTAGE_OFF_THRESHOLD:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
-    def is_meter_connected_to_usb(self):
-        return subprocess.call(['lsusb', '-d', 'c251:7350'], stdout=subprocess.DEVNULL) == 0
-
     # requires power_on
     def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
@@ -848,33 +847,38 @@ class Stage3:
         if has_phase_switch:
             assert self.switch_phases_function != None
 
-        # check for QR code first to also catch the case when the meter is actually off. because
-        # in this situation the meter doesn't show up on USB either even if it's actually connected
-        while self.read_meter_qr_code(allow_no_detection=True) != '01':
-            self.beep_notify()
+        tester_status = blackbox.bb_get_status()._asdict()
 
-            while my_input('Bring electrical tester to step 01/15 and press y + return to continue. Press "Memory Organzier", blue heading, top-most right button, select next free (without green blob) test (newer date in name), select innermost test, press play twice') != 'y':
-                pass
+        if not tester_status['success']:
+            fatal_error('Could not get electrical tester status')
 
-        while self.is_meter_connected_to_usb():
-            self.beep_notify()
+        if tester_status['response'] == 'ENABLE = 0':
+            tester_enable = blackbox.bb_enable()._asdict()
 
-            while my_input('Disconnect electrical tester from USB and press y + return to continue') != 'y':
-                pass
+            if not tester_enable['success']:
+                fatal_error('Could not enable electrical tester blackbox mode')
+
+        tester_reset = blackbox.bb_reset()._asdict()
+
+        if not tester_reset['success']:
+            fatal_error('Could not reset electrical tester')
+
+        report = {}
+
+        report['device_info'] = blackbox.bb_get_device_info()._asdict()
+
+        if not report['device_info']['valid']:
+            fatal_error('Could not get electrical tester device info')
 
         self.evse_uptime_start = self.get_evse_uptime_function()
         self.wall_clock_start = time.time()
 
         # step 01
-        print('Testing wallbox, step 01/15, test IEC states')
-
-        self.click_meter_run_button() # skip QR code
-
+        print('Electrical test IEC states')
         print('Connecting power to L1, L2 and L3')
 
         self.connect_warp_power(['L1', 'L2', 'L3'])
         self.connect_voltage_monitors(True)
-
         time.sleep(RELAY_SETTLE_DURATION)
 
         # step 01: test IEC states
@@ -909,7 +913,6 @@ class Stage3:
         # after state D. the previous test ends with state D, so we need to leave
         # state D and then wait here for at least 30 seconds
         self.change_cp_pe_state('A')
-
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
@@ -924,6 +927,7 @@ class Stage3:
         # step 01: test phase separation
         self.change_cp_pe_state('C')
         time.sleep(EVSE_SETTLE_DURATION)
+
         if not self.check_iec_state('C'):
             fatal_error('Wallbox not in IEC state C')
 
@@ -932,8 +936,10 @@ class Stage3:
                        ['L1', 'L3'],
                        ['L1', 'L2', 'L3']]:
             print('Connecting power to', ', '.join(phases))
+
             self.connect_warp_power(phases)
             time.sleep(RELAY_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+
             self.verify_voltages(phases)
 
         if has_phase_switch:
@@ -954,7 +960,6 @@ class Stage3:
         print('Disconnecting PE')
 
         self.connect_type2_pe(False)
-
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('A'):
@@ -963,26 +968,12 @@ class Stage3:
         print('Reconnecting PE')
 
         self.connect_type2_pe(True)
-
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         self.verify_evse_not_crashed()
 
-        # step 01: mark test as passed
-        self.click_meter_run_button()
-        self.click_meter_run_button()
-        self.click_meter_back_button()
-
-        if self.read_meter_qr_code() != '02':
-            fatal_error('Meter in wrong step')
-
-        self.verify_evse_not_crashed()
-
         # step 02: test voltage L1
-        print('Testing wallbox, step 02/15, test voltage L1')
-
         self.change_cp_pe_state('C')
-
         time.sleep(RELAY_SETTLE_DURATION + EVSE_SETTLE_DURATION)
 
         if not self.check_iec_state('C'):
@@ -991,207 +982,157 @@ class Stage3:
         self.change_meter_state('Type2-L1')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test voltage L1')
 
-        print('Waiting for test to become ready')
+        report['voltage_L1'] = blackbox.bb_measure_voltage()._asdict()
 
-        time.sleep(METER_SETTLE_DURATION)
-
-        print('Starting test')
-
-        self.click_meter_run_button()
-
-        if self.read_meter_qr_code(timeout=15) != '03':
-            fatal_error('Step 02 timed out')
+        if not report['voltage_L1']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 03: test Z auto L1
-        print('Testing wallbox, step 03/15, test Z auto L1')
+        print('Electrical test Z auto L1')
 
-        self.click_meter_run_button() # skip QR code
+        report['zauto_L1'] = blackbox.bb_measure_zauto()._asdict()
 
-        print('Waiting for test to become ready')
-
-        time.sleep(METER_SETTLE_DURATION)
-
-        print('Starting test')
-
-        self.click_meter_run_button()
-
-        if self.read_meter_qr_code(timeout=30) != '04':
-            fatal_error('Step 03 timed out')
+        if not report['zauto_L1']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 04: test voltage L2
-        print('Testing wallbox, step 04/15, test voltage L2')
-
         self.change_meter_state('Type2-L2')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test voltage L2')
 
-        print('Test autostarts')
+        report['voltage_L2'] = blackbox.bb_measure_voltage()._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '05':
-            fatal_error('Step 04 timed out')
+        if not report['voltage_L2']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 05: test Z auto L2
-        print('Testing wallbox, step 05/15, test Z auto L2')
+        print('Electrical test Z auto L2')
 
-        self.click_meter_run_button() # skip QR code
+        report['zauto_L2'] = blackbox.bb_measure_zauto()._asdict()
 
-        print('Test autostarts')
-
-        if self.read_meter_qr_code(timeout=30) != '06':
-            fatal_error('Step 05 timed out')
+        if not report['zauto_L2']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 06: test voltage L3
-        print('Testing wallbox, step 06/15, test voltage L3')
-
         self.change_meter_state('Type2-L3')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test voltage L3')
 
-        print('Test autostarts')
+        report['voltage_L3'] = blackbox.bb_measure_voltage()._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '07':
-            fatal_error('Step 06 timed out')
+        if not report['voltage_L3']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 07: test Z auto L3
-        print('Testing wallbox, step 07/15, test Z auto L3')
+        print('Electrical test Z auto L3')
 
-        self.click_meter_run_button() # skip QR code
+        report['zauto_L3'] = blackbox.bb_measure_zauto()._asdict()
 
-        print('Test autostarts')
-
-        if self.read_meter_qr_code(timeout=30) != '08':
-            fatal_error('Step 07 timed out')
+        if not report['zauto_L3']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 08: test RCD positive
-        print('Testing wallbox, step 08/15, test RCD positive')
-
         self.change_meter_state('Type2-L1')
-
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test RCD positive')
 
-        print('Waiting for test to become ready')
+        report['rcdi_positive'] = blackbox.bb_measure_rcdi('+')._asdict()
 
-        time.sleep(METER_SETTLE_DURATION)
-
-        self.click_meter_run_button()
-
-        print('Starting test')
-
-        if self.read_meter_qr_code(timeout=30) != '09':
-            fatal_error('Step 08 timed out')
+        if not report['rcdi_positive']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.reset_dc_fault('C')
-
         self.verify_evse_not_crashed()
 
         # step 09: test RCD negative
-        print('Testing wallbox, step 09/15, test RCD negative')
+        print('Electrical test RCD negative')
 
-        self.click_meter_run_button() # skip QR code
+        report['rcdi_negative'] = blackbox.bb_measure_rcdi('-')._asdict()
 
-        print('Waiting for test to become ready')
-
-        time.sleep(METER_SETTLE_DURATION)
-
-        print('Starting test')
-
-        self.click_meter_run_button()
-
-        if self.read_meter_qr_code(timeout=30) != '10':
-            fatal_error('Step 09 timed out')
+        if not report['rcdi_negative']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.reset_dc_fault('A')
-
         self.verify_evse_not_crashed()
 
         # step 10: test R iso L1
-        print('Testing wallbox, step 10/15, test R iso L1')
+        print('Electrical test R iso L1')
 
-        self.click_meter_run_button() # skip QR code
+        report['riso_L1'] = blackbox.bb_measure_riso('L1/PE')._asdict()
 
-        print('Test autostarts')
-
-        if self.read_meter_qr_code(timeout=15) != '11':
-            fatal_error('Step 10 timed out')
+        if not report['riso_L1']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 11: test R iso L2
-        print('Testing wallbox, step 11/15, test R iso L2')
-
         self.change_meter_state('Type2-L2')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test R iso L2')
 
-        print('Test autostarts')
+        report['riso_L2'] = blackbox.bb_measure_riso('L2/PE')._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '12':
-            fatal_error('Step 11 timed out')
+        if not report['riso_L2']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 12: test R iso L3
-        print('Testing wallbox, step 12/15, test R iso L3')
-
         self.change_meter_state('Type2-L3')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test R iso L3')
 
-        print('Test autostarts')
+        report['riso_L3'] = blackbox.bb_measure_riso('L3/PE')._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '13':
-            fatal_error('Step 12 timed out')
+        if not report['riso_L3']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 13: test R iso N
-        print('Testing wallbox, step 13/15, test R iso N')
-
         self.change_meter_state('Type2-L1')
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test R iso N')
 
-        print('Test autostarts')
+        report['riso_N'] = blackbox.bb_measure_riso('N/PE')._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '14':
-            fatal_error('Step 13 timed out')
+        if not report['riso_N']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         self.verify_evse_not_crashed()
 
         # step 14: test R low front panel
-        print('Testing wallbox, step 14/15, test R low front panel')
         print('Disconnecting front panel')
 
         self.connect_front_panel(True)
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        print('Electrical test R low front panel')
 
-        print('Test autostarts')
+        report['rlow'] = blackbox.bb_measure_rlow()._asdict()
 
-        if self.read_meter_qr_code(timeout=15) != '15':
-            fatal_error('Step 14 timed out')
+        if not report['rlow']['passed']:
+            fatal_error('Electrical test failed, see tester display for details')
 
         print('Connecting front panel')
 
@@ -1200,17 +1141,15 @@ class Stage3:
 
         self.verify_evse_not_crashed()
 
-        # step 15: result
-        print('Testing wallbox, step 15/15')
-
+        # clean up
         self.connect_warp_power(['L1'])
         time.sleep(RELAY_SETTLE_DURATION)
 
-        self.click_meter_run_button() # skip QR code
+        blackbox.bb_disable()
 
-        self.verify_evse_not_crashed()
+        print('Electrical test done')
 
-        print('Testing wallbox, done')
+        return report
 
 def main():
     stage3 = Stage3(is_front_panel_button_pressed_function=lambda: False,
