@@ -442,7 +442,6 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                             type="text"
                             class="form-control"
                             value={this.state.price_input}
-                            placeholder="0.00"
                             onInput={(e) => this.setState({price_input: (e.target as HTMLInputElement).value})}
                             onKeyDown={(e) => { if (e.key === "Enter") this.apply_price(); }}
                         />

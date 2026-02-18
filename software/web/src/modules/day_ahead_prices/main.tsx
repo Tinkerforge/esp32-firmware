@@ -165,11 +165,53 @@ export function get_prices_as_15min() {
     return dap_prices_15min;
 }
 
+function get_current_price_label() {
+    const config = API.get("day_ahead_prices/config");
+    if (config.enable && config.enable_calendar) {
+        return __("day_ahead_prices.content.current_price");
+    } else if (config.enable) {
+        return __("day_ahead_prices.content.current_price_spot_market");
+    } else {
+        return __("day_ahead_prices.content.current_price_calendar");
+    }
+}
+
+function get_calendar_price_for_timestamp(timestamp_seconds: number): number {
+    const calendar = API.get("day_ahead_prices/calendar");
+    const date = new Date(timestamp_seconds * 1000);
+    // JavaScript getDay(): Sunday=0; backend uses Monday=0
+    const wday = (date.getDay() + 6) % 7;
+    const slot = date.getHours() * 4 + Math.floor(date.getMinutes() / 15);
+    const index = wday * 96 + slot;
+    if (index >= 0 && index < calendar.prices.length) {
+        return calendar.prices[index];
+    }
+    return 0;
+}
+
 function get_current_price_string() {
     const dap_config = API.get("day_ahead_prices/config");
+    const net_price = get_current_price(false, false);
+    const has_extra_costs = (dap_config.vat != 0) || (dap_config.grid_costs_and_taxes != 0) || (dap_config.supplier_markup != 0);
 
-    let str = util.get_value_with_unit(get_current_price(false, false), "ct/kWh", 2, 1000);
-    if ((dap_config.vat != 0) || (dap_config.grid_costs_and_taxes) != 0 || (dap_config.supplier_markup != 0)) {
+    let str = util.get_value_with_unit(net_price, "ct/kWh", 2, 1000);
+
+    if (dap_config.enable && dap_config.enable_calendar && !isNaN(net_price)) {
+        const calendar_price = get_calendar_price_for_timestamp(Math.floor(Date.now() / 1000));
+        const spot_price = net_price - calendar_price;
+        str += " (";
+        str += util.get_value_with_unit(spot_price, "ct/kWh", 2, 1000);
+        str += " " + __("day_ahead_prices.content.price_component_spot_market");
+        str += ", ";
+        str += util.get_value_with_unit(calendar_price, "ct/kWh", 2, 1000);
+        str += " " + __("day_ahead_prices.content.price_component_calendar");
+        if (has_extra_costs) {
+            str += "; ";
+            str += util.get_value_with_unit(get_current_price(true, true), "ct/kWh", 2, 1000);
+            str += " " + __("day_ahead_prices.content.incl_all_costs");
+        }
+        str += ")";
+    } else if (has_extra_costs) {
         str += " (";
         str += util.get_value_with_unit(get_current_price(true, true), "ct/kWh", 2, 1000);
         str += " ";
@@ -234,6 +276,7 @@ interface DayAheadPricesState {
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {status_ref?: RefObject<DayAheadPricesStatus>}, DayAheadPricesState> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
+    calendar_grid_ref       = createRef<CalendarGrid>();
     uplot_effect_dispose:   (() => void) | null = null;
 
     constructor() {
@@ -300,31 +343,71 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                 stacked: [null],
                 paths: [null],
             }
-        // Else fill with time and the three different prices we want to show
+        // Else fill with time and the different prices we want to show
         } else {
-            data = {
-                keys: [null, 'price', 'price2', 'price3'],
-                names: [null, __("day_ahead_prices.content.electricity_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
-                values: [[], [], [], []],
-                stacked: [null, true, true, true],
-                paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
-                // Only enable the electricity price by default.
-                // The chart with only electricity price is the most useful in most cases.
-                default_visibilty: [null, true, false, false],
-                lines_vertical: []
+            const dap_config = API.get("day_ahead_prices/config");
+            const both_enabled = dap_config.enable && dap_config.enable_calendar;
+
+            if (both_enabled) {
+                data = {
+                    keys: [null, 'spot_price', 'calendar_price', 'grid_fees', 'surcharge'],
+                    names: [null, __("day_ahead_prices.content.spot_market_price"), __("day_ahead_prices.content.calendar_price"), __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    values: [[], [], [], [], []],
+                    stacked: [null, true, true, true, true],
+                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step, UplotPath.Step],
+                    default_visibilty: [null, true, true, false, false],
+                    lines_vertical: []
+                }
+            } else {
+                const price_label = dap_config.enable
+                    ? __("day_ahead_prices.content.spot_market_price")
+                    : __("day_ahead_prices.content.calendar_price");
+                data = {
+                    keys: [null, 'price', 'price2', 'price3'],
+                    names: [null, price_label, __("day_ahead_prices.content.grid_fees_plus_taxes"), __("day_ahead_prices.content.surcharge")],
+                    values: [[], [], [], []],
+                    stacked: [null, true, true, true],
+                    paths: [null, UplotPath.Step, UplotPath.Step, UplotPath.Step],
+                    // Only enable the price by default.
+                    // The chart with only the price is the most useful in most cases.
+                    default_visibilty: [null, true, false, false],
+                    lines_vertical: []
+                }
             }
+
+            const vat_multiplier = dap_config.vat != 0 ? (1 + dap_config.vat / 10000.0) : 1;
             let resolution_multiplier = this.state.dap_prices.resolution == Resolution.Min15 ? 15 : 60
             for (let i = 0; i < this.state.dap_prices.prices.length; i++) {
-                data.values[0].push(this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier);
-                data.values[1].push(get_price_from_index(i) / 1000.0);
+                const timestamp_seconds = this.state.dap_prices.first_date * 60 + i * 60 * resolution_multiplier;
+                data.values[0].push(timestamp_seconds);
+                if (both_enabled) {
+                    const cal_raw = get_calendar_price_for_timestamp(timestamp_seconds);
+                    const spot_raw = this.state.dap_prices.prices[i] - cal_raw;
+                    data.values[1].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
+                    data.values[2].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                    data.values[3].push(this.state.grid_costs_and_taxes / 1000.0);
+                    data.values[4].push(this.state.supplier_markup / 1000.0);
+                } else {
+                    data.values[1].push(get_price_from_index(i) / 1000.0);
+                    data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
+                    data.values[3].push(this.state.supplier_markup / 1000.0);
+                }
+            }
+
+            const last_timestamp = this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1;
+            data.values[0].push(last_timestamp);
+            if (both_enabled) {
+                const cal_raw = get_calendar_price_for_timestamp(last_timestamp);
+                const spot_raw = this.state.dap_prices.prices[this.state.dap_prices.prices.length - 1] - cal_raw;
+                data.values[1].push(Math.round(spot_raw * vat_multiplier) / 1000.0);
+                data.values[2].push(Math.round(cal_raw * vat_multiplier) / 1000.0);
+                data.values[3].push(this.state.grid_costs_and_taxes / 1000.0);
+                data.values[4].push(this.state.supplier_markup / 1000.0);
+            } else {
+                data.values[1].push(get_price_from_index(this.state.dap_prices.prices.length - 1) / 1000.0);
                 data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
                 data.values[3].push(this.state.supplier_markup / 1000.0);
             }
-
-            data.values[0].push(this.state.dap_prices.first_date * 60 + this.state.dap_prices.prices.length * 60 * resolution_multiplier - 1);
-            data.values[1].push(get_price_from_index(this.state.dap_prices.prices.length - 1) / 1000.0);
-            data.values[2].push(this.state.grid_costs_and_taxes / 1000.0);
-            data.values[3].push(this.state.supplier_markup / 1000.0);
 
             // Add vertical line at current time
             const diff = Math.floor(date_now / 60000) - this.state.dap_prices.first_date;
@@ -379,7 +462,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 </UplotLoader>
                             </div>
                         </div>
-                        <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
+                        <FormRow label={get_current_price_label()} label_muted={get_price_timeframe()}>
                             <InputText value={get_current_price_string()}/>
                         </FormRow>
                         <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((dap.vat != 0) || (dap.grid_costs_and_taxes) != 0 || (dap.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>
@@ -463,7 +546,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             onValue={(v) => this.setState({resolution: parseInt(v)})}
                         />
                     </FormRow>}
-                    <FormRow label={__("day_ahead_prices.content.enable_calendar")} help={__("day_ahead_prices.content.enable_calendar_help")}>
+                    <FormRow label={__("day_ahead_prices.content.enable_calendar")} label_muted={__("day_ahead_prices.content.enable_calendar_muted")} help={__("day_ahead_prices.content.enable_calendar_help")}>
                         <Switch desc={dap.enable ? __("day_ahead_prices.content.enable_calendar_desc") : __("day_ahead_prices.content.enable_calendar_desc_standalone")}
                                 checked={dap.enable_calendar}
                                 onClick={this.toggle('enable_calendar')}
@@ -498,6 +581,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         </Modal.Header>
                         <Modal.Body>
                             <CalendarGrid
+                                ref={this.calendar_grid_ref}
                                 prices={dap.calendar_prices_draft || new Array(672).fill(0)}
                                 onPricesChanged={(prices) => {
                                     this.setState({calendar_prices_draft: prices});
@@ -526,9 +610,16 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                                 {__("main.abort")}
                             </Button>
                             <Button variant="primary" onClick={() => {
-                                const prices = this.state.calendar_prices_draft;
-                                this.setState({calendar_prices: prices, show_calendar_modal: false, calendar_prices_draft: null});
-                                API.save("day_ahead_prices/calendar", {prices: prices}, () => __("day_ahead_prices.script.save_failed"));
+                                // Apply any pending price edit before saving
+                                this.calendar_grid_ref.current?.apply_price();
+                                // Functional setState to read the latest draft
+                                // (including any update from apply_price)
+                                let prices_to_save: number[] | null = null;
+                                this.setState((prevState: DayAheadPricesState): Partial<DayAheadPricesState> => {
+                                    prices_to_save = prevState.calendar_prices_draft;
+                                    return {calendar_prices: prevState.calendar_prices_draft, show_calendar_modal: false, calendar_prices_draft: null};
+                                });
+                                API.save("day_ahead_prices/calendar", {prices: prices_to_save}, () => __("day_ahead_prices.script.save_failed"));
                             }}>
                                 {__("component.config_form.save")}
                             </Button>
@@ -561,7 +652,7 @@ export class DayAheadPricesStatus extends Component
             return <StatusSection name="day_ahead_prices" />
 
         return <StatusSection name="day_ahead_prices">
-            <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
+            <FormRow label={get_current_price_label()} label_muted={get_price_timeframe()}>
                 <InputText value={get_current_price_string()}/>
             </FormRow>
             <FormRow label={__("day_ahead_prices.content.average_price")} label_muted={((config.vat != 0) || (config.grid_costs_and_taxes) != 0 || (config.supplier_markup != 0)) ? __("day_ahead_prices.content.incl_all_costs") : ""}>

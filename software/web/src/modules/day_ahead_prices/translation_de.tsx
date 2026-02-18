@@ -10,11 +10,13 @@ let x = {
         },
         "content": {
             "day_ahead_prices": "Dynamischer Strompreis",
-            "enable_day_ahead_prices": "Dynamischer Strompreis aktiviert",
+            "enable_day_ahead_prices": "Börsenstrompreis aktiviert",
             "no_data": "Keine Daten vorhanden",
             "loading": "Lade Daten...",
             "time": "Uhrzeit",
             "electricity_price": "Strompreis",
+            "spot_market_price": "Börsenstrompreis",
+            "calendar_price": "Kalenderpreis",
             "grid_fees_plus_taxes": "Netzentgelte + Steuern",
             "surcharge": "Preisaufschlag",
             "day_ahead_prices_desc": <>Day-Ahead-Börsenstrompreise aktivieren.</>,
@@ -36,7 +38,11 @@ let x = {
             "electricity_provider_surcharge": "Preisaufschlag des Stromtarifs",
             "electricity_provider_base_fee": "Grundgebühr des Stromtarifs",
             "price_ct_per_kwh": "Preis [ct/kWh]",
-            "current_price": "Aktueller Börsenpreis",
+            "current_price": "Aktueller Strompreis",
+            "current_price_spot_market": "Aktueller Börsenstrompreis",
+            "current_price_calendar": "Aktueller Kalenderpreis",
+            "price_component_spot_market": "Börse",
+            "price_component_calendar": "Kalender",
             "average_price": "Durchschnittspreis",
             "now": "Jetzt",
             "vat": "Mehrwertsteuer",
@@ -56,11 +62,12 @@ let x = {
             "enable_calendar": "Preiskalender",
             "enable_calendar_help": <>
                 <p>Der Preiskalender kann zur Umsetzung von <strong>Modul 3 nach § 14a EnWG</strong> verwendet werden. Modul 3 sieht zeitvariable Netzentgelte vor, bei denen in Schwachlastzeiten reduzierte und in Hochlastzeiten erhöhte Netzentgelte gelten.</p>
-                <p>Zur Konfiguration werden die Netzentgeltdifferenzen als Preisaufschläge im Kalender eingetragen. Zum Beispiel kann ein negativer Wert in Schwachlastzeiten (reduzierte Netzentgelte) und ein positiver Wert in Hochlastzeiten eingetragen werden. Diese Aufschläge werden zu den Day-Ahead-Börsenstrompreisen addiert, sodass die Eco-Ladeoptimierung automatisch die günstigeren Zeitfenster bevorzugt.</p>
+                <p>Zur Konfiguration werden die Netzentgeltdifferenzen als Preisaufschläge im Kalender eingetragen. Zum Beispiel kann ein negativer Wert in Schwachlastzeiten (reduzierte Netzentgelte) und ein positiver Wert in Hochlastzeiten eingetragen werden. Diese Aufschläge werden zu den Day-Ahead-Börsenstrompreisen addiert.</p>
                 <p>Wenn der dynamische Strompreis deaktiviert ist, werden die Kalenderpreise direkt ohne Day-Ahead-Preise verwendet.</p>
             </>,
             "enable_calendar_desc": "Feste Preisaufschläge pro Wochentag und Uhrzeit zu den Day-Ahead-Preisen addieren.",
             "enable_calendar_desc_standalone": "Festen Preis pro Wochentag und Uhrzeit definieren.",
+            "enable_calendar_muted": "z.B. für Modul 3 nach § 14a EnWG",
             "calendar_mon": "Mo",
             "calendar_tue": "Di",
             "calendar_wed": "Mi",

@@ -10,11 +10,13 @@ let x = {
         },
         "content": {
             "day_ahead_prices": "Dynamic Tariff",
-            "enable_day_ahead_prices": "Dynamic tariff enabled",
+            "enable_day_ahead_prices": "Spot market electricity prices enabled",
             "no_data": "No data available",
             "loading": "Loading data...",
             "time": "Time of day",
             "electricity_price": "Electricity price",
+            "spot_market_price": "Spot market price",
+            "calendar_price": "Calendar price",
             "grid_fees_plus_taxes": "Grid fees and taxes",
             "surcharge": "Surcharge",
             "day_ahead_prices_desc": <>Enable day-ahead spot market prices.</>,
@@ -36,7 +38,11 @@ let x = {
             "electricity_provider_surcharge": "Electric utility surcharge",
             "electricity_provider_base_fee": "Electric utility basic fee",
             "price_ct_per_kwh": "Price [ct/kWh]",
-            "current_price": "Current market price",
+            "current_price": "Current electricity price",
+            "current_price_spot_market": "Current spot market price",
+            "current_price_calendar": "Current calendar price",
+            "price_component_spot_market": "spot market",
+            "price_component_calendar": "calendar",
             "average_price": "Average price",
             "now": "Now",
             "vat": "Value-added tax",
@@ -56,11 +62,12 @@ let x = {
             "enable_calendar": "Price calendar",
             "enable_calendar_help": <>
                 <p>The price calendar can be used to implement <strong>Module 3 according to § 14a EnWG</strong> (German Energy Industry Act). Module 3 requires time-variable grid fees, where reduced grid fees apply during off-peak hours and higher fees during peak hours.</p>
-                <p>To configure this, enter the grid fee differences as price offsets in the calendar. For example, set a negative value during off-peak hours (when reduced grid fees apply) and a positive value during peak hours. These offsets are added to the day-ahead spot market prices, so that the eco charging optimization automatically prefers the cheaper time slots.</p>
+                <p>To configure this, enter the grid fee differences as price offsets in the calendar. For example, set a negative value during off-peak hours (when reduced grid fees apply) and a positive value during peak hours. These offsets are added to the day-ahead spot market prices.</p>
                 <p>If the dynamic tariff is disabled, the calendar prices are used as-is without any day-ahead prices.</p>
             </>,
             "enable_calendar_desc": "Add fixed price offsets per weekday and time of day to the day-ahead prices.",
             "enable_calendar_desc_standalone": "Define a fixed price per weekday and time of day.",
+            "enable_calendar_muted": "e.g. for Module 3 according to § 14a EnWG",
             "calendar_mon": "Mon",
             "calendar_tue": "Tue",
             "calendar_wed": "Wed",
