@@ -801,7 +801,8 @@ class Stage3:
 
     def verify_voltages(self, p_type2: list[typing.Literal['L1', 'L2', 'L3']], p_meter: list[typing.Literal['L1', 'L2', 'L3']] | None = None):
         voltages = self.read_voltage_monitors()
-        print('Reading voltages as {0}'.format(voltages), ' expecting ', p_type2)
+        voltages_str = ', '.join([f'{x:02}' for x in voltages])
+        print(f'Reading voltages as {voltages_str} expecting {", ".join(p_type2)}')
 
         meter_voltages = self.get_meter_voltages_function()
 
@@ -816,7 +817,8 @@ class Stage3:
             # This results in the same check being run twice below, which is fine(tm)
             p_meter = p_type2
         else:
-            print('Energy meter measured voltages as {0}'.format(meter_voltages), ' expecting ', p_meter)
+            meter_voltages_str = ', '.join([f'{x:02}' for x in meter_voltages])
+            print(f'Energy meter measured voltages as {meter_voltages_str} expecting {", ".join(p_meter)}')
 
         for i in range(3):
             name = ['L1', 'L2', 'L3'][i]
