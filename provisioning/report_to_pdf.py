@@ -1,4 +1,8 @@
-#!/usr/bin/env -S python3 -u
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.12"
+# dependencies = []
+# ///
 
 import os
 import argparse
