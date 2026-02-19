@@ -697,7 +697,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                             </Button>
                         </div>
                     </div>
-                    {this.state.sgr_extended/*p14enwg*/ ?
+                    {this.state.p14enwg ?
                         <div class="mt-1 mb-0">{__("heating.content.override_blocked_by_p14enwg")}</div>
                         : undefined}
                 </form>

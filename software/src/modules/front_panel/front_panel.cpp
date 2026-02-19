@@ -623,7 +623,7 @@ int FrontPanel::update_front_page_heating_status(const uint8_t index, const Tile
     uint32_t icon_index = SPRITE_ICON_HEATING;
 
 #if MODULE_HEATING_AVAILABLE()
-    if (heating.is_active()) {
+    if (heating.is_active() || heating.is_p14enwg_active()) {
         auto status = heating.get_status();
         switch (status) {
             case Heating::Status::Idle:

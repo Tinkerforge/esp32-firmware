@@ -422,6 +422,7 @@ void Heating::update()
     // If it is not triggered it depends on the heating controller if it should be on or off.
     if (p14enwg_on) {
         state.get("p14enwg")->updateBool(true);
+        state.get("sgr_blocking")->updateBool(true);
         logger.tracefln(this->trace_buffer_index, "§14 EnWG blocks heating. Turning on SG ready output 0 (%s).", sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED ? "active closed" : "active open");
         em_v2.set_sg_ready_output(0, sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     } else {
