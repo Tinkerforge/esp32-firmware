@@ -131,10 +131,31 @@ bool WebSockets::send_ws_work_item(const ws_work_item *wi)
     return result;
 }
 
+void WebSockets::processPendingCloses_HTTPThread()
+{
+    // Drain the pending close queue. This runs on the HTTP thread,
+    // so it is safe to call httpd_ws_get_fd_info and httpd_sess_delete here.
+    int fds_to_close[MAX_WEB_SOCKET_CLIENTS];
+    size_t count;
+    {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        count = pending_close_count;
+        memcpy(fds_to_close, pending_close_fds, count * sizeof(int));
+        pending_close_count = 0;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        this->keepAliveCloseDead_HTTPThread(fds_to_close[i]);
+    }
+}
+
 void WebSockets::work(void *arg)
 {
     WebSockets *ws = static_cast<WebSockets *>(arg);
     ws->worker_active = WEBSOCKET_WORKER_RUNNING;
+
+    // Process pending session closes first, before sending new data.
+    ws->processPendingCloses_HTTPThread();
 
     ws_work_item wi;
     while (ws->haveWork(&wi)) {
@@ -297,23 +318,17 @@ void WebSockets::keepAliveCloseDead_async(int fd)
 
     this->keepAliveRemove(fd);
 
-    // Don't kill this socket if it is a HTTP socket:
-    // Sometimes a fd is reused so fast that the keep alive does not notice
-    // the closed fd before it is reopened as normal HTTP connection.
-    // This should probably be removed because it should be called from the HTTP thread only.
-    const httpd_ws_client_info_t ws_client_info = httpd_ws_get_fd_info(httpd, fd);
-
-    if (ws_client_info == HTTPD_WS_CLIENT_HTTP) {
-        logger.printfln("keepAliveCloseDead_async encountered fd %i reused for HTTP", fd);
-        return;
+    // Enqueue the fd for closing on the HTTP thread.
+    // The fd-validity and fd-reuse checks (httpd_ws_get_fd_info) must not
+    // be called from non-HTTP threads because they access httpd's internal
+    // sock_db without synchronization. The HTTP thread will perform these
+    // checks in processPendingCloses_HTTPThread() before actually closing.
+    {
+        std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
+        if (pending_close_count < MAX_WEB_SOCKET_CLIENTS) {
+            pending_close_fds[pending_close_count++] = fd;
+        }
     }
-
-    if (ws_client_info == HTTPD_WS_CLIENT_INVALID) {
-        logger.printfln("keepAliveCloseDead_async encountered invalid fd %i with no associated session", fd);
-        return;
-    }
-
-    httpd_sess_trigger_close(httpd, fd);
 }
 
 void WebSockets::keepAliveCloseDead_HTTPThread(int fd)
@@ -383,17 +398,6 @@ void WebSockets::checkActiveClients()
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (keep_alive_fds[i] == -1)
             continue;
-
-        // This should probably be removed because it should be called from the HTTP thread only.
-        // Alternative: Move this check to the HTTP thread and call httpd_sess_delete_invalid there as well.
-        // The timeout check below can then run only once a second.
-        const httpd_ws_client_info_t type = httpd_ws_get_fd_info(httpd, keep_alive_fds[i]);
-
-        if  (type != HTTPD_WS_CLIENT_WEBSOCKET) {
-            logger.printfln("checkActiveClients encountered fd reused for HTTP, type %u", static_cast<unsigned>(type));
-            this->keepAliveCloseDead_async(keep_alive_fds[i]);
-            continue;
-        }
 
         if (deadline_elapsed(keep_alive_last_pong[i] + KEEP_ALIVE_TIMEOUT)) {
             this->keepAliveCloseDead_async(keep_alive_fds[i]);
@@ -607,7 +611,7 @@ void WebSockets::triggerHttpThread()
 #endif
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        if (work_queue.empty()) {
+        if (work_queue.empty() && (pending_close_count == 0)) {
             return;
         }
     }

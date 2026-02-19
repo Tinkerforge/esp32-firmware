@@ -92,6 +92,7 @@ private:
     void keepAliveRemove(int fd);
     void keepAliveCloseDead_async(int fd);
     void keepAliveCloseDead_HTTPThread(int fd);
+    void processPendingCloses_HTTPThread();
 
     void updateDebugState();
 
@@ -104,6 +105,8 @@ private:
 
     std::recursive_mutex work_queue_mutex;
     std::deque<ws_work_item> work_queue;
+    int pending_close_fds[MAX_WEB_SOCKET_CLIENTS]; // Guarded by work_queue_mutex. Drained on the HTTP thread.
+    size_t pending_close_count = 0;
 
     std::atomic<uint8_t> worker_active;
     micros_t last_worker_run = 0_us;
