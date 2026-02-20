@@ -753,9 +753,6 @@ def main(stage3, scanner):
 
         print("Performing the electrical tests")
         result["electrical_tests"] = stage3.test_wallbox(has_phase_switch=generation >= 3)
-
-        import pprint
-        pprint.pprint(result["electrical_tests"])
     finally:
         if browser is not None:
             browser.quit()
@@ -788,8 +785,13 @@ def main(stage3, scanner):
         print("Tracked charges removed.")
     result["end"] = now()
 
-    with open("{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-")), "w") as f:
+    report_path = "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-"))
+
+    with open(report_path, "w") as f:
         json.dump(result, f, indent=4)
+
+    if os.system(f"./report_to_pdf.py {report_path} {report_path.replace('.json', '.pdf')} > /dev/null") != 0:
+        fatal_error("Could not generate PDF report file")
 
     print('Done!')
 
