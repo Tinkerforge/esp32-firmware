@@ -797,7 +797,7 @@ def main(stage3, scanner):
 
     print(f"Printing report {report_path_pdf}")
 
-    if os.system(f'lpr -P Brother_DCP_L2530DW_series_USB -o Duplex=DuplexNoTumble {report_path_pdf}') != 0:
+    if os.system(f'lpr {report_path_pdf}') != 0:
         fatal_error(f"Could not print report")
 
     print('Done!')
