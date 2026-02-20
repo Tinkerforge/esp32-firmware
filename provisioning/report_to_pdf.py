@@ -10,6 +10,7 @@ import argparse
 import json
 import tempfile
 import shutil
+from datetime import datetime
 
 
 def main():
@@ -65,7 +66,7 @@ def main():
 Modell           & {[x[2:] for x in report["qr_code"].split(";") if x.startswith("T:")][0]} \\
 Firmware-Version & {report["firmware_version"]} \\
 Seriennummer     & {report["serial"]} \\
-Testdatum        & {".".join(reversed(report["start"].split("T")[0].split("-")))} {report["start"].split("T")[1].split(".")[0]} \\
+Prüfdatum        & {datetime.fromisoformat(report["start"]).astimezone().strftime("%d.%m.%Y %H:%M:%S")} \\
 \bottomrule
 \end{{tabularx}}
 
