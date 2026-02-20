@@ -602,10 +602,11 @@ def main(stage3, scanner):
             time.sleep(3)
             connect_to_ethernet(ssid, "firmware_update/validate")
             factory_reset(ssid)
+
+            info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
         else:
             print("Flashed firmware is up-to-date.")
 
-        info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
         result["firmware_version"] = info_version['firmware']
         result["firmware_file"] = firmware_path.split("/")[-1]
 
