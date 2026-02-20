@@ -331,10 +331,10 @@ PP (I\textsubscript{{max}})                            & bestanden \\
         with open('report.tex', 'w') as f:
             f.write(latex)
 
-        if os.system('pdflatex report.tex') != 0:
+        if os.system('pdflatex -halt-on-error -interaction nonstopmode report.tex') != 0:
             return 1
 
-        if os.system('pdflatex report.tex') != 0:
+        if os.system('pdflatex -halt-on-error -interaction nonstopmode report.tex') != 0:
             return 2
 
         if os.system(f'ps2pdf14 -dPDFSETTINGS=/prepress -dSubsetFonts=false -dCompressFonts=true report.pdf {output_file}') != 0:
