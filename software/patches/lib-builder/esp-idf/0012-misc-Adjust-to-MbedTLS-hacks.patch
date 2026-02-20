@@ -1,0 +1,59 @@
+From e88da79516ddf2fe14d3afcfefe88f45d2726302 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 18 Feb 2026 17:00:56 +0100
+Subject: [PATCH] misc: Adjust to MbedTLS hacks
+
+Companion patch to MbedTLS patch 0003-ecp-bignum-Hacks-to-optimize-ECDSA-and-ECDHE.
+---
+ components/mbedtls/port/bignum/esp_bignum.c                 | 6 ++++++
+ components/mbedtls/port/include/mbedtls/esp_config.h        | 4 ++--
+ .../wpa_supplicant/esp_supplicant/src/crypto/tls_mbedtls.c  | 1 +
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/components/mbedtls/port/bignum/esp_bignum.c b/components/mbedtls/port/bignum/esp_bignum.c
+index 1c799b3c2a..6d2d1f4bdf 100644
+--- a/components/mbedtls/port/bignum/esp_bignum.c
++++ b/components/mbedtls/port/bignum/esp_bignum.c
+@@ -489,6 +489,12 @@ int mbedtls_mpi_mul_mpi( mbedtls_mpi *Z, const mbedtls_mpi *X, const mbedtls_mpi
+     int ret = 0;
+     size_t x_bits = mbedtls_mpi_bitlen(X);
+     size_t y_bits = mbedtls_mpi_bitlen(Y);
++
++    // Always use software multiplication for "small" numbers that are used for ECDSA with 521 bit curves and smaller.
++    if (x_bits <= 543 && y_bits <= 543) {
++        return mbedtls_mpi_mul_mpi_software(Z, X, Y);
++    }
++
+     size_t x_words = bits_to_words(x_bits);
+     size_t y_words = bits_to_words(y_bits);
+     size_t z_words = bits_to_words(x_bits + y_bits);
+diff --git a/components/mbedtls/port/include/mbedtls/esp_config.h b/components/mbedtls/port/include/mbedtls/esp_config.h
+index 54f49bdc14..ef78c60ab4 100644
+--- a/components/mbedtls/port/include/mbedtls/esp_config.h
++++ b/components/mbedtls/port/include/mbedtls/esp_config.h
+@@ -492,8 +492,8 @@
+ #else
+ #undef MBEDTLS_ECP_DP_CURVE25519_ENABLED
+ #endif
+-#ifdef MBEDTLS_ECP_DP_CURVE448_ENABLED
+-#undef MBEDTLS_ECP_DP_CURVE448_ENABLED
++#ifndef MBEDTLS_ECP_DP_CURVE448_ENABLED
++#define MBEDTLS_ECP_DP_CURVE448_ENABLED
+ #endif
+ 
+ /**
+diff --git a/components/wpa_supplicant/esp_supplicant/src/crypto/tls_mbedtls.c b/components/wpa_supplicant/esp_supplicant/src/crypto/tls_mbedtls.c
+index 4eef749d73..cd87358d40 100644
+--- a/components/wpa_supplicant/esp_supplicant/src/crypto/tls_mbedtls.c
++++ b/components/wpa_supplicant/esp_supplicant/src/crypto/tls_mbedtls.c
+@@ -383,6 +383,7 @@ const mbedtls_x509_crt_profile eap_mbedtls_x509_crt_profile = {
+     0xFFFFFFF, /* Any PK alg    */
+     0xFFFFFFF, /* Any curve     */
+     1024,
++    0,
+ };
+ 
+ static void tls_enable_sha1_config(tls_context_t *tls)
+-- 
+2.47.3
+

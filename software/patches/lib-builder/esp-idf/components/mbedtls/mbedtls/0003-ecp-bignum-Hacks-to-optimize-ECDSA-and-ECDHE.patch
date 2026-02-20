@@ -1,0 +1,262 @@
+From 01d94f1acb110766756a81beed576e897ca13353 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 18 Feb 2026 15:51:51 +0100
+Subject: [PATCH] ecp, bignum: Hacks to optimize ECDSA and ECDHE
+
+- Allow skipping certificate signature verification and export function for manual verification.
+- Use tweaked optimization settings for hot code.
+- Use hardware multiplication only for actually "large" numbers so that all ECC multiplications
+  are calculated in software and thus don't have to fight over the hardware when parallelized.
+---
+ include/mbedtls/bignum.h   |  3 +++
+ include/mbedtls/x509_crt.h |  4 ++++
+ library/bignum.c           | 15 +++++++++++----
+ library/bignum_core.c      |  2 ++
+ library/ecp.c              |  6 ++++--
+ library/x509_crt.c         | 22 ++++++++++++++++------
+ 6 files changed, 40 insertions(+), 12 deletions(-)
+
+diff --git a/include/mbedtls/bignum.h b/include/mbedtls/bignum.h
+index 22c3efcd5..512088e33 100644
+--- a/include/mbedtls/bignum.h
++++ b/include/mbedtls/bignum.h
+@@ -785,6 +785,9 @@ int mbedtls_mpi_sub_int(mbedtls_mpi *X, const mbedtls_mpi *A,
+ int mbedtls_mpi_mul_mpi(mbedtls_mpi *X, const mbedtls_mpi *A,
+                         const mbedtls_mpi *B);
+ 
++int mbedtls_mpi_mul_mpi_software(mbedtls_mpi *X, const mbedtls_mpi *A,
++                        const mbedtls_mpi *B);
++
+ /**
+  * \brief          Perform a multiplication of an MPI with an unsigned integer:
+  *                 X = A * b
+diff --git a/include/mbedtls/x509_crt.h b/include/mbedtls/x509_crt.h
+index 6b9603959..ecd3fae14 100644
+--- a/include/mbedtls/x509_crt.h
++++ b/include/mbedtls/x509_crt.h
+@@ -129,6 +129,8 @@ typedef struct mbedtls_x509_crt_profile {
+                                  *   in the provided chain.     */
+     uint32_t allowed_curves;    /**< Elliptic curves for ECDSA  */
+     uint32_t rsa_min_bitlen;    /**< Minimum size for RSA keys  */
++
++    uint8_t skip_signature_verification;
+ }
+ mbedtls_x509_crt_profile;
+ 
+@@ -597,6 +599,8 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
+                                  uint32_t flags);
+ #endif /* !MBEDTLS_X509_REMOVE_INFO */
+ 
++int x509_crt_check_signature(const mbedtls_x509_crt *child, mbedtls_x509_crt *parent, mbedtls_x509_crt_restart_ctx *rs_ctx);
++
+ /**
+  * \brief          Verify a chain of certificates.
+  *
+diff --git a/library/bignum.c b/library/bignum.c
+index af080b1aa..a0b8f9296 100644
+--- a/library/bignum.c
++++ b/library/bignum.c
+@@ -38,6 +38,9 @@
+ 
+ #include "mbedtls/platform.h"
+ 
++#pragma GCC optimize ("O2")
++#pragma GCC optimize ("no-stack-protector")
++
+ #if !defined(MBEDTLS_BIGNUM_ALT)
+ 
+ /*
+@@ -215,7 +218,7 @@ int mbedtls_mpi_grow(mbedtls_mpi *X, size_t nblimbs)
+     }
+ 
+     if (X->n < nblimbs) {
+-        if ((p = (mbedtls_mpi_uint *) mbedtls_calloc(nblimbs, ciL)) == NULL) {
++        if ((p = (mbedtls_mpi_uint *) calloc(nblimbs, ciL)) == NULL) {
+             return MBEDTLS_ERR_MPI_ALLOC_FAILED;
+         }
+ 
+@@ -263,7 +266,7 @@ int mbedtls_mpi_shrink(mbedtls_mpi *X, size_t nblimbs)
+         i = nblimbs;
+     }
+ 
+-    if ((p = (mbedtls_mpi_uint *) mbedtls_calloc(i, ciL)) == NULL) {
++    if ((p = (mbedtls_mpi_uint *) calloc(i, ciL)) == NULL) {
+         return MBEDTLS_ERR_MPI_ALLOC_FAILED;
+     }
+ 
+@@ -1192,11 +1195,14 @@ int mbedtls_mpi_sub_int(mbedtls_mpi *X, const mbedtls_mpi *A, mbedtls_mpi_sint b
+     return mbedtls_mpi_sub_mpi(X, A, &B);
+ }
+ 
+-#if !defined(MBEDTLS_MPI_MUL_MPI_ALT)
+ /*
+  * Baseline multiplication: X = A * B  (HAC 14.12)
+  */
++#if defined(MBEDTLS_MPI_MUL_MPI_ALT)
++int mbedtls_mpi_mul_mpi_software(mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B)
++#else
+ int mbedtls_mpi_mul_mpi(mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi *B)
++#endif
+ {
+     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+     size_t i, j;
+@@ -1253,6 +1259,7 @@ cleanup:
+     return ret;
+ }
+ 
++#if !defined(MBEDTLS_MPI_MUL_MPI_ALT)
+ /*
+  * Baseline multiplication: X = A * b
+  */
+@@ -1816,7 +1823,7 @@ int mbedtls_mpi_gcd_modinv_odd(mbedtls_mpi *G,
+         MBEDTLS_MPI_CHK(mbedtls_mpi_grow(I, N->n));
+     }
+ 
+-    T = mbedtls_calloc(sizeof(mbedtls_mpi_uint) * N->n, T_factor);
++    T = calloc(sizeof(mbedtls_mpi_uint) * N->n, T_factor);
+     if (T == NULL) {
+         ret = MBEDTLS_ERR_MPI_ALLOC_FAILED;
+         goto cleanup;
+diff --git a/library/bignum_core.c b/library/bignum_core.c
+index 809169461..fe54eafa8 100644
+--- a/library/bignum_core.c
++++ b/library/bignum_core.c
+@@ -22,6 +22,8 @@
+ #include "bn_mul.h"
+ #include "constant_time_internal.h"
+ 
++#pragma GCC optimize ("O2")
++
+ size_t mbedtls_mpi_core_clz(mbedtls_mpi_uint a)
+ {
+ #if defined(__has_builtin)
+diff --git a/library/ecp.c b/library/ecp.c
+index 0e73d769b..05eb9756a 100644
+--- a/library/ecp.c
++++ b/library/ecp.c
+@@ -79,6 +79,8 @@
+ 
+ #include "ecp_internal_alt.h"
+ 
++#pragma GCC optimize ("O2")
++
+ #if defined(MBEDTLS_SELF_TEST)
+ /*
+  * Counts of point addition and doubling, and field multiplications.
+@@ -1379,7 +1381,7 @@ static int ecp_normalize_jac_many(const mbedtls_ecp_group *grp,
+     size_t i;
+     mbedtls_mpi *c, t;
+ 
+-    if ((c = mbedtls_calloc(T_size, sizeof(mbedtls_mpi))) == NULL) {
++    if ((c = calloc(T_size, sizeof(mbedtls_mpi))) == NULL) {
+         return MBEDTLS_ERR_ECP_ALLOC_FAILED;
+     }
+ 
+@@ -2322,7 +2324,7 @@ static int ecp_mul_comb(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
+ #endif
+     /* Allocate table if we didn't have any */
+     {
+-        T = mbedtls_calloc(T_size, sizeof(mbedtls_ecp_point));
++        T = calloc(T_size, sizeof(mbedtls_ecp_point));
+         if (T == NULL) {
+             ret = MBEDTLS_ERR_ECP_ALLOC_FAILED;
+             goto cleanup;
+diff --git a/library/x509_crt.c b/library/x509_crt.c
+index 53cdcf026..d72cdaac5 100644
+--- a/library/x509_crt.c
++++ b/library/x509_crt.c
+@@ -108,6 +108,7 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default =
+     0,
+ #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+     2048,
++    0,
+ };
+ 
+ /* Next-generation profile. Currently identical to the default, but may
+@@ -132,6 +133,7 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_next =
+     0,
+ #endif
+     2048,
++    0,
+ };
+ 
+ /*
+@@ -153,6 +155,7 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_suiteb =
+     0,
+ #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
+     0,
++    0,
+ };
+ 
+ /*
+@@ -164,6 +167,7 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none =
+     0,
+     0,
+     (uint32_t) -1,
++    0,
+ };
+ 
+ /*
+@@ -2121,7 +2125,7 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
+ /*
+  * Check the signature of a certificate by its parent
+  */
+-static int x509_crt_check_signature(const mbedtls_x509_crt *child,
++int x509_crt_check_signature(const mbedtls_x509_crt *child,
+                                     mbedtls_x509_crt *parent,
+                                     mbedtls_x509_crt_restart_ctx *rs_ctx)
+ {
+@@ -2260,7 +2264,8 @@ static int x509_crt_find_parent_in(
+     unsigned path_cnt,
+     unsigned self_cnt,
+     mbedtls_x509_crt_restart_ctx *rs_ctx,
+-    const mbedtls_x509_time *now)
++    const mbedtls_x509_time *now,
++    uint8_t skip_signature_verification)
+ {
+     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+     mbedtls_x509_crt *parent, *fallback_parent;
+@@ -2303,7 +2308,11 @@ static int x509_crt_find_parent_in(
+ #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+ check_signature:
+ #endif
+-        ret = x509_crt_check_signature(child, parent, rs_ctx);
++        if (skip_signature_verification == 1) {
++            ret = 0;
++        } else {
++            ret = x509_crt_check_signature(child, parent, rs_ctx);
++        }
+ 
+ #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
+@@ -2383,7 +2392,8 @@ static int x509_crt_find_parent(
+     unsigned path_cnt,
+     unsigned self_cnt,
+     mbedtls_x509_crt_restart_ctx *rs_ctx,
+-    const mbedtls_x509_time *now)
++    const mbedtls_x509_time *now,
++    uint8_t skip_signature_verification)
+ {
+     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+     mbedtls_x509_crt *search_list;
+@@ -2404,7 +2414,7 @@ static int x509_crt_find_parent(
+         ret = x509_crt_find_parent_in(child, search_list,
+                                       parent, signature_is_good,
+                                       *parent_is_trusted,
+-                                      path_cnt, self_cnt, rs_ctx, now);
++                                      path_cnt, self_cnt, rs_ctx, now, skip_signature_verification);
+ 
+ #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
+@@ -2623,7 +2633,7 @@ find_parent:
+         ret = x509_crt_find_parent(child, cur_trust_ca, &parent,
+                                    &parent_is_trusted, &signature_is_good,
+                                    ver_chain->len - 1, self_cnt, rs_ctx,
+-                                   &now);
++                                   &now, profile->skip_signature_verification);
+ 
+ #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
+         if (rs_ctx != NULL && ret == MBEDTLS_ERR_ECP_IN_PROGRESS) {
+-- 
+2.47.3
+

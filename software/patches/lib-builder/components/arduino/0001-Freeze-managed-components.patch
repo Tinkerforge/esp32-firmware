@@ -27,7 +27,7 @@ index dd783e537..fa841ab60 100644
      version: "^1.10.2"
 +    override_path: ../../managed_components/joltwallet__littlefs
  examples:
-   - path: ./idf_component_examples/hello_world
+   - path: ./idf_component_examples/Arduino_ESP_Matter_over_OpenThread
 -- 
 2.47.3
 
