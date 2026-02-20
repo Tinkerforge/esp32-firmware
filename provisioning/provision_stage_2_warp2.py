@@ -785,13 +785,19 @@ def main(stage3, scanner):
         print("Tracked charges removed.")
     result["end"] = now()
 
-    report_path = "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-"))
+    report_path_json = "{}_{}_report_stage_2.json".format(ssid, now().replace(":", "-"))
+    report_path_pdf = report_path_json.replace('.json', '.pdf')
 
-    with open(report_path, "w") as f:
+    with open(report_path_json, "w") as f:
         json.dump(result, f, indent=4)
 
-    if os.system(f"./report_to_pdf.py {report_path} {report_path.replace('.json', '.pdf')} > /dev/null") != 0:
-        fatal_error("Could not generate PDF report file")
+    if os.system(f"./report_to_pdf.py {report_path_json} {report_path_pdf} > /dev/null") != 0:
+        fatal_error(f"Could not generate PDF report file from {report_path_json}")
+
+    print(f"Printing report {report_path_pdf}")
+
+    if os.system(f'lpr -P Brother_DCP_L2530DW_series_USB -o Duplex=DuplexNoTumble {report_path_pdf}') != 0:
+        fatal_error(f"Could not print report")
 
     print('Done!')
 
