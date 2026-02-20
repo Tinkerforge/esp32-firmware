@@ -565,7 +565,6 @@ def main(stage3, scanner):
         host = ssid + ".local"
 
         info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
-        print(info_version)
 
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
         latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
@@ -606,7 +605,9 @@ def main(stage3, scanner):
         else:
             print("Flashed firmware is up-to-date.")
 
-        result["firmware"] = firmware_path.split("/")[-1]
+        info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
+        result["firmware_version"] = info_version['firmware']
+        result["firmware_file"] = firmware_path.split("/")[-1]
 
         host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
 
