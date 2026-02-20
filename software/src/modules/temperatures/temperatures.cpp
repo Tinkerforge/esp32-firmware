@@ -60,9 +60,11 @@ void Temperatures::pre_setup()
             temperatures.get("today_date")->updateUint(0);
             temperatures.get("today_min")->updateInt(INT16_MAX);
             temperatures.get("today_max")->updateInt(INT16_MIN);
+            temperatures.get("today_avg")->updateInt(INT16_MAX);
             temperatures.get("tomorrow_date")->updateUint(0);
             temperatures.get("tomorrow_min")->updateInt(INT16_MAX);
             temperatures.get("tomorrow_max")->updateInt(INT16_MIN);
+            temperatures.get("tomorrow_avg")->updateInt(INT16_MAX);
 
             if (boot_stage == BootStage::LOOP) {
                 task_scheduler.scheduleOnce([this]() {
@@ -84,9 +86,11 @@ void Temperatures::pre_setup()
         {"today_date",    Config::Uint32(0)},     // unix timestamp in seconds
         {"today_min",     Config::Int16(INT16_MAX)},   // temperature in °C * 100 (e.g., 1050 = 10.50°C)
         {"today_max",     Config::Int16(INT16_MIN)},   // temperature in °C * 100
+        {"today_avg",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
         {"tomorrow_date", Config::Uint32(0)},     // unix timestamp in seconds
         {"tomorrow_min",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
         {"tomorrow_max",  Config::Int16(INT16_MIN)},   // temperature in °C * 100
+        {"tomorrow_avg",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
     });
 }
 
@@ -291,6 +295,7 @@ void Temperatures::handle_new_data()
             temperatures.get("today_date")->updateUint(today["date"].as<uint32_t>());
             temperatures.get("today_min")->updateInt(static_cast<int16_t>(roundf(today["min"].as<float>() * 100.0f)));
             temperatures.get("today_max")->updateInt(static_cast<int16_t>(roundf(today["max"].as<float>() * 100.0f)));
+            temperatures.get("today_avg")->updateInt(static_cast<int16_t>(roundf(today["avg"].as<float>() * 100.0f)));
         }
 
         JsonObject tomorrow = json_doc["tomorrow"];
@@ -298,6 +303,7 @@ void Temperatures::handle_new_data()
             temperatures.get("tomorrow_date")->updateUint(tomorrow["date"].as<uint32_t>());
             temperatures.get("tomorrow_min")->updateInt(static_cast<int16_t>(roundf(tomorrow["min"].as<float>() * 100.0f)));
             temperatures.get("tomorrow_max")->updateInt(static_cast<int16_t>(roundf(tomorrow["max"].as<float>() * 100.0f)));
+            temperatures.get("tomorrow_avg")->updateInt(static_cast<int16_t>(roundf(tomorrow["avg"].as<float>() * 100.0f)));
         }
 
         const uint32_t current_minutes = rtc.timestamp_minutes();
@@ -349,6 +355,11 @@ int16_t Temperatures::get_today_max()
     return temperatures.get("today_max")->asInt();
 }
 
+int16_t Temperatures::get_today_avg()
+{
+    return temperatures.get("today_avg")->asInt();
+}
+
 int16_t Temperatures::get_tomorrow_min()
 {
     return temperatures.get("tomorrow_min")->asInt();
@@ -357,4 +368,9 @@ int16_t Temperatures::get_tomorrow_min()
 int16_t Temperatures::get_tomorrow_max()
 {
     return temperatures.get("tomorrow_max")->asInt();
+}
+
+int16_t Temperatures::get_tomorrow_avg()
+{
+    return temperatures.get("tomorrow_avg")->asInt();
 }

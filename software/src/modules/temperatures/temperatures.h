@@ -48,8 +48,10 @@ public:
 
     int16_t get_today_min();
     int16_t get_today_max();
+    int16_t get_today_avg();
     int16_t get_tomorrow_min();
     int16_t get_tomorrow_max();
+    int16_t get_tomorrow_avg();
 
 private:
     void update();

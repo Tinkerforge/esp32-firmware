@@ -21,6 +21,7 @@ let x = {
             "tomorrow": "Morgen",
             "min_temp": "Min",
             "max_temp": "Max",
+            "avg_temp": "Mittel",
             "last_update": "Letzte Aktualisierung",
             "next_update": "Nächste Aktualisierung",
             "no_data": "Keine Daten verfügbar",
