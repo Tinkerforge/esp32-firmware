@@ -245,7 +245,7 @@ def bb_measure_zauto():
 
 
 def bb_measure_rcdi(polarity):
-    return bb_start_test(f'13; P131 = EVSE / MI; P238 = MI RCD; P239 = 30 mA / 6 mA d.c.; P441 = d.c.; P242 = TN/TT; P14 = EN 61008 / EN 61009; P166 = L1/PE; P21 = ({polarity}); P240 = d.c.')
+    return bb_start_test(f'13; P131 = other; P238 = MI RCD; P239 = 30 mA / 6 mA d.c.; P441 = d.c.; P242 = TN/TT; P14 = EN 61008 / EN 61009; P166 = -; P21 = ({polarity}); P240 = d.c.')
 
 
 def bb_measure_riso(type_):
