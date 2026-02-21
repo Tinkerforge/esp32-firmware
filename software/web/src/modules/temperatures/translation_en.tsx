@@ -14,8 +14,13 @@ let x = {
                 <p>Downloads outdoor temperature forecasts (min, max, daily average) for the configured GPS coordinates (latitude/longitude). The data is fetched from a weather API every 6 hours and provides forecasts for today and tomorrow.</p>
                 <p>The daily average temperature is used by the heating module's temperature heating curve to automatically adjust extended and blocking operation hours based on outdoor conditions.</p>
             </>,
-            "temperatures_muted": /*FFN*/(api_url: string) => <>The data is fetched from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
             "temperatures_desc": <>Automatic download of temperature forecasts for today and tomorrow. {__("The_device")} must be connected to the Internet.</>,
+            "temperatures_push_desc": <>Temperature forecasts for today and tomorrow are provided via the API. No Internet connection required.</>,
+            "source": "Source",
+            "source_weather_service": "Automatic via weather service",
+            "source_weather_service_desc": /*FFN*/(api_url: string) => <>The data is fetched from <a href={api_url}>{api_url.replace("https://", "").replace(/\/$/, "")}</a>.</>/*NF*/,
+            "source_push": "Push via API",
+            "source_push_desc": <>In push mode, temperature data is provided via the API endpoint <a href="https://docs.warp-charger.com/docs/interfaces/mqtt_http/api_reference/temperatures" target="_blank">temperatures/temperatures_update</a>.</>,
             "latitude": "Latitude",
             "latitude_muted": "in degrees (e.g., 51.9035)",
             "longitude": "Longitude",

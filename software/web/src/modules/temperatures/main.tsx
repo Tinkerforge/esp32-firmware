@@ -28,7 +28,9 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
+import { InputSelect } from "../../ts/components/input_select";
 import { Thermometer } from "react-feather";
+import { TemperatureSource } from "./temperature_source.enum";
 
 const INT16_MAX = 32767;
 const INT16_MIN = -32768;
@@ -76,12 +78,13 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
         }
 
         const is_configured = state.lat !== 0 || state.lon !== 0;
+        const is_weather_service = state.source == TemperatureSource.WeatherService;
 
         return (
             <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
                 {state.enable &&
                     <SubPage.Status>
-                        {!is_configured ? (
+                        {is_weather_service && !is_configured ? (
                             <FormRow>
                                 <InputText value={__("temperatures.content.not_configured")} />
                             </FormRow>
@@ -148,11 +151,12 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                                         value={state.state?.last_sync ? new Date(state.state.last_sync * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
                                     />
                                 </FormRow>
+                                {is_weather_service &&
                                 <FormRow label={__("temperatures.content.next_update")}>
                                     <InputText
                                         value={state.state?.next_check ? new Date(state.state.next_check * 60 * 1000).toLocaleString() : __("temperatures.content.unknown")}
                                     />
-                                </FormRow>
+                                </FormRow>}
                             </>
                         )}
                     </SubPage.Status>
@@ -163,12 +167,26 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("temperatures.content.enable_temperatures")} label_muted={__("temperatures.content.temperatures_muted")(state.api_url)} help={__("temperatures.content.enable_temperatures_help")}>
-                        <Switch desc={__("temperatures.content.temperatures_desc")}
+                    <FormRow label={__("temperatures.content.enable_temperatures")} help={__("temperatures.content.enable_temperatures_help")}>
+                        <Switch desc={is_weather_service ? __("temperatures.content.temperatures_desc") : __("temperatures.content.temperatures_push_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
+                    <FormRow label={__("temperatures.content.source")}
+                             label_muted={is_weather_service
+                                 ? __("temperatures.content.source_weather_service_desc")(state.api_url)
+                                 : __("temperatures.content.source_push_desc")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("temperatures.content.source_weather_service")],
+                                ["1", __("temperatures.content.source_push")],
+                            ]}
+                            value={state.source}
+                            onValue={(v) => this.setState({source: parseInt(v)})}
+                        />
+                    </FormRow>
+                    {is_weather_service &&
                     <FormRow label={__("temperatures.content.latitude")} label_muted={__("temperatures.content.latitude_muted")}>
                         <InputFloat
                             required
@@ -179,7 +197,8 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             min={-900000}
                             max={900000}
                         />
-                    </FormRow>
+                    </FormRow>}
+                    {is_weather_service &&
                     <FormRow label={__("temperatures.content.longitude")} label_muted={__("temperatures.content.longitude_muted")}>
                         <InputFloat
                             required
@@ -190,7 +209,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             min={-1800000}
                             max={1800000}
                         />
-                    </FormRow>
+                    </FormRow>}
                 </SubPage.Config>
             </SubPage>
         );

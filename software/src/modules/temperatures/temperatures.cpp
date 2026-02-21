@@ -34,6 +34,7 @@ void Temperatures::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
+        {"source", Config::Enum(TemperatureSource::WeatherService)},
         {"api_url", Config::Str(OPTIONS_TEMPERATURES_API_URL(), 0, 64)},
         {"lat", Config::Int32(0)},  // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
         {"lon", Config::Int32(0)},  // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
@@ -46,11 +47,12 @@ void Temperatures::pre_setup()
         }
 
         // If config changes, trigger a new update
-        if ((update.get("enable")->asBool()     != config.get("enable")->asBool()) ||
-            (update.get("api_url")->asString()  != config.get("api_url")->asString()) ||
-            (update.get("lat")->asInt()         != config.get("lat")->asInt()) ||
-            (update.get("lon")->asInt()         != config.get("lon")->asInt()) ||
-            (update.get("cert_id")->asInt()     != config.get("cert_id")->asInt())) {
+        if ((update.get("enable")->asBool()                    != config.get("enable")->asBool()) ||
+            (update.get("source")->asEnum<TemperatureSource>() != config.get("source")->asEnum<TemperatureSource>()) ||
+            (update.get("api_url")->asString()                 != config.get("api_url")->asString()) ||
+            (update.get("lat")->asInt()                        != config.get("lat")->asInt()) ||
+            (update.get("lon")->asInt()                        != config.get("lon")->asInt()) ||
+            (update.get("cert_id")->asInt()                    != config.get("cert_id")->asInt())) {
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
@@ -91,6 +93,17 @@ void Temperatures::pre_setup()
         {"tomorrow_max",  Config::Int16(INT16_MIN)},   // temperature in °C * 100
         {"tomorrow_avg",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
     });
+
+    temperatures_update = Config::Object({
+        {"today_date",    Config::Uint32(0)},     // unix timestamp in seconds
+        {"today_min",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
+        {"today_max",     Config::Int16(INT16_MIN)},   // temperature in °C * 100
+        {"today_avg",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
+        {"tomorrow_date", Config::Uint32(0)},     // unix timestamp in seconds
+        {"tomorrow_min",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
+        {"tomorrow_max",  Config::Int16(INT16_MIN)},   // temperature in °C * 100
+        {"tomorrow_avg",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
+    });
 }
 
 void Temperatures::setup()
@@ -105,6 +118,31 @@ void Temperatures::register_urls()
     api.addPersistentConfig("temperatures/config", &config);
     api.addState("temperatures/state",             &state);
     api.addState("temperatures/temperatures",      &temperatures);
+
+    api.addCommand("temperatures/temperatures_update", &temperatures_update, {}, [this](Language /*language*/, String &errmsg) {
+        if (!config.get("enable")->asBool()) {
+            errmsg = "Temperatures not enabled";
+            return;
+        }
+
+        if (config.get("source")->asEnum<TemperatureSource>() != TemperatureSource::Push) {
+            errmsg = "Temperatures not in push mode";
+            return;
+        }
+
+        temperatures.get("today_date")->updateUint(temperatures_update.get("today_date")->asUint());
+        temperatures.get("today_min")->updateInt(temperatures_update.get("today_min")->asInt());
+        temperatures.get("today_max")->updateInt(temperatures_update.get("today_max")->asInt());
+        temperatures.get("today_avg")->updateInt(temperatures_update.get("today_avg")->asInt());
+        temperatures.get("tomorrow_date")->updateUint(temperatures_update.get("tomorrow_date")->asUint());
+        temperatures.get("tomorrow_min")->updateInt(temperatures_update.get("tomorrow_min")->asInt());
+        temperatures.get("tomorrow_max")->updateInt(temperatures_update.get("tomorrow_max")->asInt());
+        temperatures.get("tomorrow_avg")->updateInt(temperatures_update.get("tomorrow_avg")->asInt());
+
+        const uint32_t current_minutes = rtc.timestamp_minutes();
+        state.get("last_sync")->updateUint(current_minutes);
+        state.get("last_check")->updateUint(current_minutes);
+    }, true);
 
     task_scheduler.scheduleWhenClockSynced([this]() {
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
@@ -128,6 +166,10 @@ void Temperatures::retry_update(millis_t delay)
 void Temperatures::update()
 {
     if (!config.get("enable")->asBool()) {
+        return;
+    }
+
+    if (config.get("source")->asEnum<TemperatureSource>() != TemperatureSource::WeatherService) {
         return;
     }
 

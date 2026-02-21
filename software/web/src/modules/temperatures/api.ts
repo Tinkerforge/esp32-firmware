@@ -1,5 +1,6 @@
 export interface config {
     enable: boolean;
+    source: number;
     api_url: string;
     lat: number;
     lon: number;

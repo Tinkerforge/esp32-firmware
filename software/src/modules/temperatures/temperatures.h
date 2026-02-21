@@ -25,6 +25,7 @@
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
+#include "temperature_source.enum.h"
 
 #define TEMPERATURES_MAX_JSON_LENGTH 512
 #define TEMPERATURES_MAX_ARDUINO_JSON_BUFFER_SIZE 512
@@ -68,4 +69,5 @@ private:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot temperatures;
+    ConfigRoot temperatures_update;
 };
