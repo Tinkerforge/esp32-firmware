@@ -851,7 +851,7 @@ void Heating::update()
         }
     }
 
-    // If §14 EnWG is triggerend, we don't override it.
+    // If §14 EnWG is triggered, we don't override it.
     if (!p14enwg_on) {
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         if (sg_ready0_on) {
