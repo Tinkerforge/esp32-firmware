@@ -75,6 +75,34 @@ void Heating::pre_setup()
         {"p14enwg_input", Config::Uint(0, 0, 3)},
         {"p14enwg_type", Config::Uint(0, 0, 1)}
     }), [this](Config &update, ConfigSource source) -> String {
+        uint8_t control_period_hours = 24;
+        switch (update.get("control_period")->asEnum<ControlPeriod>()) {
+            case ControlPeriod::Hours24: control_period_hours = 24; break;
+            case ControlPeriod::Hours12: control_period_hours = 12; break;
+            case ControlPeriod::Hours8:  control_period_hours = 8;  break;
+            case ControlPeriod::Hours6:  control_period_hours = 6;  break;
+            case ControlPeriod::Hours4:  control_period_hours = 4;  break;
+        }
+
+        // Validate that hours don't exceed the control period
+        if (update.get("extended_hours")->asUint() > control_period_hours) {
+            return "Extended hours exceed control period";
+        }
+        if (update.get("blocking_hours")->asUint() > control_period_hours) {
+            return "Blocking hours exceed control period";
+        }
+        if (update.get("extended_hours")->asUint() + update.get("blocking_hours")->asUint() > control_period_hours) {
+            return "Sum of extended and blocking hours exceeds control period";
+        }
+
+        // Validate curve hours at both endpoints
+        if (update.get("extended_hours_warm")->asUint() + update.get("blocking_hours_warm")->asUint() > control_period_hours) {
+            return "Sum of extended and blocking hours at warm endpoint exceeds control period";
+        }
+        if (update.get("extended_hours_cold")->asUint() + update.get("blocking_hours_cold")->asUint() > control_period_hours) {
+            return "Sum of extended and blocking hours at cold endpoint exceeds control period";
+        }
+
         task_scheduler.scheduleOnce([this]() {
             this->update();
         });
