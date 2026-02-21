@@ -328,9 +328,9 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                 curve_extended_hours = Math.round((state.extended_hours_warm ?? 0) + frac * ((state.extended_hours_cold ?? 0) - (state.extended_hours_warm ?? 0)));
                 curve_blocking_hours = Math.round((state.blocking_hours_warm ?? 0) + frac * ((state.blocking_hours_cold ?? 0) - (state.blocking_hours_warm ?? 0)));
             } else {
-                // No temperature data yet — fall back to warm endpoint
-                curve_extended_hours = state.extended_hours_warm ?? 0;
-                curve_blocking_hours = state.blocking_hours_warm ?? 0;
+                // No temperature data yet — fall back to flat config values (matches backend)
+                curve_extended_hours = state.extended_hours ?? 0;
+                curve_blocking_hours = state.blocking_hours ?? 0;
             }
         }
 
@@ -571,7 +571,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.extended_hours_warm}
                             onValue={(v) => this.setState({extended_hours_warm: v})}
                             min={0}
-                            max={this.get_control_period_hours()}
+                            max={this.get_control_period_hours() - state.blocking_hours_warm}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.extended_hours_at_cold")}>
@@ -580,7 +580,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.extended_hours_cold}
                             onValue={(v) => this.setState({extended_hours_cold: v})}
                             min={0}
-                            max={this.get_control_period_hours()}
+                            max={this.get_control_period_hours() - state.blocking_hours_cold}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.blocking_hours_at_warm")}>
@@ -589,7 +589,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.blocking_hours_warm}
                             onValue={(v) => this.setState({blocking_hours_warm: v})}
                             min={0}
-                            max={this.get_control_period_hours()}
+                            max={this.get_control_period_hours() - state.extended_hours_warm}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.blocking_hours_at_cold")}>
@@ -598,7 +598,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             value={state.blocking_hours_cold}
                             onValue={(v) => this.setState({blocking_hours_cold: v})}
                             min={0}
-                            max={this.get_control_period_hours()}
+                            max={this.get_control_period_hours() - state.extended_hours_cold}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.temperature_heating_curve")} label_muted={__("heating.content.temperature_heating_curve_muted")}>
