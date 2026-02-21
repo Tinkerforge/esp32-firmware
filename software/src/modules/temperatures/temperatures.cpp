@@ -130,6 +130,28 @@ void Temperatures::register_urls()
             return;
         }
 
+        const uint32_t today_date    = temperatures_update.get("today_date")->asUint();
+        const int16_t  today_min     = temperatures_update.get("today_min")->asInt();
+        const int16_t  today_max     = temperatures_update.get("today_max")->asInt();
+        const uint32_t tomorrow_date = temperatures_update.get("tomorrow_date")->asUint();
+        const int16_t  tomorrow_min  = temperatures_update.get("tomorrow_min")->asInt();
+        const int16_t  tomorrow_max  = temperatures_update.get("tomorrow_max")->asInt();
+
+        if (today_date == 0 && tomorrow_date == 0) {
+            errmsg = "At least one of today_date or tomorrow_date must be non-zero";
+            return;
+        }
+
+        if (today_date != 0 && today_min > today_max) {
+            errmsg = "today_min must be <= today_max";
+            return;
+        }
+
+        if (tomorrow_date != 0 && tomorrow_min > tomorrow_max) {
+            errmsg = "tomorrow_min must be <= tomorrow_max";
+            return;
+        }
+
         temperatures.get("today_date")->updateUint(temperatures_update.get("today_date")->asUint());
         temperatures.get("today_min")->updateInt(temperatures_update.get("today_min")->asInt());
         temperatures.get("today_max")->updateInt(temperatures_update.get("today_max")->asInt());
@@ -142,6 +164,7 @@ void Temperatures::register_urls()
         const uint32_t current_minutes = rtc.timestamp_minutes();
         state.get("last_sync")->updateUint(current_minutes);
         state.get("last_check")->updateUint(current_minutes);
+        state.get("next_check")->updateUint(0);
     }, true);
 
     task_scheduler.scheduleWhenClockSynced([this]() {
@@ -190,6 +213,8 @@ void Temperatures::update()
     if (config.get("api_url")->asString().length() == 0) {
         logger.printfln("No temperatures API server configured");
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+        retry_update(RETRY_INTERVAL);
         return;
     }
 
@@ -197,6 +222,8 @@ void Temperatures::update()
     if (config.get("lat")->asInt() == 0 && config.get("lon")->asInt() == 0) {
         logger.printfln("Latitude and longitude not configured");
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+        retry_update(RETRY_INTERVAL);
         return;
     }
 
@@ -255,6 +282,7 @@ void Temperatures::update()
             }
 
             download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+            state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
             handle_cleanup();
             retry_update(RETRY_INTERVAL);
             break;
@@ -330,6 +358,7 @@ void Temperatures::handle_new_data()
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
         retry_update(RETRY_INTERVAL);
         return;
     } else {
