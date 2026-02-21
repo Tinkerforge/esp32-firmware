@@ -651,10 +651,13 @@ void Heating::update()
             }
 
             auto print_hours_today = [&] (const char *name, const bool *hours, const uint8_t duration) {
-                char buffer[duration*4 + 1] = {'\0'};
-                for (int i = 0; i < duration*4; i++) {
+                // Max duration is 24, so max buffer size is 24*4 + 1 = 97
+                char buffer[97];
+                const uint8_t len = duration * 4;
+                for (uint8_t i = 0; i < len; i++) {
                     buffer[i] = hours[i] ? '1' : '0';
                 }
+                buffer[len] = '\0';
                 logger.tracefln(this->trace_buffer_index, "%s: %s", name, buffer);
             };
 
@@ -679,7 +682,8 @@ void Heating::update()
                     logger.printfln("Unknown control period %d", static_cast<std::underlying_type<ControlPeriod>::type>(control_period));
                     return;
             }
-            bool data[duration*4] = {false};
+            bool data[96]; // Max: 24 hours * 4 slots per hour
+            std::fill_n(data, 96, false);
 
             // start_time is the nearest time block with length duration and index for current time within the block
             const uint32_t duration_block = (minutes_since_midnight / (duration*60)) * (duration*60);
