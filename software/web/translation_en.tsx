@@ -131,6 +131,13 @@ let x = {
             "legend_error": "Error",
             "legend_disabled": "Disabled",
             "show_disabled": "Show disabled"
+        },
+        "heating_curve_chart": {
+            "temperature_daily_avg": "Daily average temperature (°C)",
+            "current_temperature": "Today's average",
+            "curve_hours": "Hours",
+            "extended_operation": "Extended operation",
+            "blocking_operation": "Blocking operation"
         }
     },
     "util": {

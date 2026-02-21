@@ -49,7 +49,7 @@ let x = {
             "inactive": "Inaktiv",
             "watt": "W",
             "price_based_heating_plan": "Preisbasierter Heizplan",
-            "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise: Rot = blockierender Betrieb, Grün = erweiterter Betrieb",
+            "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise",
             "status": "Status",
             "status_help": <>Der preisbasierte Heizplan zeigt den Heizplan anhand der konfigurierten günstigsten und teuersten Stunden an. Der Heizplan muss nicht der echten späteren Steuerung der Heizung entsprechen, da z.B. ein unerwartet hoher PV-Überschuss den blockierenden Betrieb verhindern kann.</>,
             "january": "Januar",
@@ -96,6 +96,7 @@ let x = {
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/Tag" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/Tag",
             "for_the_most_expensive": "Bei den teuersten",
+            "hours_from_heating_curve": "Wert wird automatisch durch die Temperatur-Heizkurve bestimmt.",
             "p14_enwg": "§14a EnWG",
             "p14_enwg_help": <>
                 <p>Ab dem 1. Januar 2024 fordert der §14a des EnWG die Steuerbarkeit von Wärmepumpen. Konkret müssen neu verbaute Wärmepumpen über eine Kommunikationsschnittstelle zum Netzbetreiber verfügen, damit dieser in Ausnahmefällen die Leistung des Geräts anpassen kann.</p>
@@ -120,7 +121,27 @@ let x = {
                 <p>In dieser Konfiguration würde die Heizung auch pro Tag 8 Stunden in den erweiterten Betrieb sowieso 8 Stunden in den blockierenden Betrieb gebracht.</p>
                 <p>Allerdings wird der Tag in zwei 12 Stunden Regelzeiträume geteilt in denen je die günstigsten/teuersten Steunden gesucht werden und entsprechend kann die Heizung pro 12 Stunden auch höchsten für 4 Stunden am Stück in den erweiterten oder blockierenden Betrieb gebracht werden.</p>
             </>,
-            "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden. Je besser die Speicherfähigkeit des Gebäudes, umso größer können die Zeiträume gewählt werden."
+            "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden. Je besser die Speicherfähigkeit des Gebäudes, umso größer können die Zeiträume gewählt werden.",
+            "temperature_heating_curve": "Temperatur-Heizkurve",
+            "enable_heating_curve": "Heizkurve",
+            "enable_heating_curve_desc": "Erweiterte und blockierende Stunden anhand der Außentemperatur anpassen",
+            "temperatures_needs_activation": <>Um die Temperatur-Heizkurve nutzen zu können, muss das <a href="#temperatures">Temperaturen</a>-Modul aktiviert werden.</>,
+            "temperature_heating_curve_help": <>
+                <p>Die Temperatur-Heizkurve ermöglicht es, die Anzahl der Stunden für den erweiterten und blockierenden Betrieb automatisch anhand der Tagesmitteltemperatur anzupassen.</p>
+                <p>Es werden zwei Temperaturpunkte verwendet: 20 °C (warm) und -10 °C (kalt). Die Stundenanzahl wird zwischen diesen beiden Endpunkten basierend auf der aktuellen Tagesmitteltemperatur linear interpoliert.</p>
+                <p>Beispiel: Wenn der erweiterte Betrieb für 2 Stunden bei 20 °C und 8 Stunden bei -10 °C konfiguriert ist und die aktuelle Tagesmitteltemperatur 5 °C beträgt, dann wird der erweiterte Betrieb für 5 Stunden aktiviert.</p>
+            </>,
+            "temperature_heating_curve_muted": "Stunden werden linear anhand der Tagesmitteltemperatur interpoliert",
+            "extended_hours_at_warm": "Erweitert Stunden bei 20 °C",
+            "extended_hours_at_cold": "Erweitert Stunden bei -10 °C",
+            "blocking_hours_at_warm": "Blockierend Stunden bei 20 °C",
+            "blocking_hours_at_cold": "Blockierend Stunden bei -10 °C",
+
+            "daytime_extension": "Luft-Luft-Wärmepumpe",
+            "daytime_extension_desc": "Wenn die Tagesmitteltemperatur unter 5 °C liegt, wird der erweiterte Betrieb auf 09:00–18:00 Uhr begrenzt. Empfohlen für Luft-Luft-Wärmepumpen, die bei niedrigen Außentemperaturen ineffizient arbeiten. So wird verhindert, dass der preisbasierte Plan den erweiterten Betrieb in den kältesten Stunden (Nacht/früher Morgen) aktiviert, wenn die Effizienz besonders schlecht ist.",
+            "legend_extended": "Erweiterter Betrieb",
+            "legend_suppressed": "Unterdrückt",
+            "legend_blocking": "Blockierender Betrieb"
         },
         "script": {
             "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen"

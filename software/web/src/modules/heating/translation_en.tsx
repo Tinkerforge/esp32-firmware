@@ -49,7 +49,7 @@ let x = {
             "inactive": "Inactive",
             "watt": "W",
             "price_based_heating_plan": "Price-based Heating Plan",
-            "price_based_heating_plan_muted": "Heating plan based on dynamic prices: Red = blocking operation, Green = activation recommendation",
+            "price_based_heating_plan_muted": "Heating plan based on dynamic prices",
             "status": "Status",
             "status_help": <>The <i>price-based heating plan</i> shows the heating plan based on the configured cheapest and most expensive hours. The heating plan does not have to correspond to the actual control of the heating, as e.g. an unexpectedly high PV excess can prevent the blocking operation.</>,
             "january": "January",
@@ -96,6 +96,7 @@ let x = {
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/day" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/day",
             "for_the_most_expensive": "For the most expensive",
+            "hours_from_heating_curve": "Value is automatically determined by the temperature heating curve.",
             "p14_enwg": "§14a EnWG",
             "p14_enwg_help": <>
                 <p>From January 1st 2024, §14a EnWG requires the controllability of heat pumps in Germany. Specifically, newly installed heat pumps must have a communication interface to the grid operator such that the grid operator can adjust the power of the device in exceptional cases.</p>
@@ -119,7 +120,27 @@ let x = {
                 </ul>
                 <p>In this configuration, the day is divided into two 12-hour control periods in which the cheapest/most expensive hours are determined and accordingly the heating can be brought into extended or blocking operation for a maximum of 4 hours at a time per 12 hours.</p>
             </>,
-            "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined. The better the storage capacity of the building, the larger the periods can be chosen."
+            "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined. The better the storage capacity of the building, the larger the periods can be chosen.",
+            "temperature_heating_curve": "Temperature heating curve",
+            "enable_heating_curve": "Heating curve",
+            "enable_heating_curve_desc": "Adjust extended and blocking hours based on outdoor temperature",
+            "temperatures_needs_activation": <>To use the temperature heating curve, the <a href="#temperatures">temperatures</a> module must be enabled.</>,
+            "temperature_heating_curve_help": <>
+                <p>The temperature heating curve allows the number of hours for extended and blocking operation to be automatically adjusted based on the daily average outdoor temperature.</p>
+                <p>Two temperature endpoints are used: 20 °C (warm) and -10 °C (cold). The number of hours is linearly interpolated between these two endpoints based on the current daily average temperature.</p>
+                <p>Example: If extended operation is configured for 2 hours at 20 °C and 8 hours at -10 °C, and the current daily average temperature is 5 °C, then extended operation would run for 5 hours.</p>
+            </>,
+            "temperature_heating_curve_muted": "Hours are linearly interpolated based on the daily average temperature",
+            "extended_hours_at_warm": "Extended hours at 20 °C",
+            "extended_hours_at_cold": "Extended hours at -10 °C",
+            "blocking_hours_at_warm": "Blocking hours at 20 °C",
+            "blocking_hours_at_cold": "Blocking hours at -10 °C",
+
+            "daytime_extension": "Air-to-air heat pump",
+            "daytime_extension_desc": "If the daily average temperature is below 5 °C, extended operation is limited to 09:00–18:00. Recommended for air-to-air heat pumps, which operate inefficiently at low outdoor temperatures. This prevents the price-based plan from activating extended operation during the coldest hours (night/early morning), when efficiency is particularly poor.",
+            "legend_extended": "Extended operation",
+            "legend_suppressed": "Suppressed",
+            "legend_blocking": "Blocking operation"
         },
         "script": {
             "save_failed": "Failed to save the heating settings"
