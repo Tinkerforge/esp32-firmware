@@ -333,13 +333,13 @@ String Temperatures::get_api_url_with_path()
     const int32_t lon = config.get("lon")->asInt();
 
     char lat_str[16];
-    snprintf(lat_str, sizeof(lat_str), "%ld.%04ld", lat / 10000, labs(lat % 10000));
+    snprintf(lat_str, sizeof(lat_str), "%s%ld.%04ld", lat < 0 ? "-" : "", labs(lat) / 10000, labs(lat) % 10000);
     sw.puts(lat_str);
 
     sw.putc('/');
 
     char lon_str[16];
-    snprintf(lon_str, sizeof(lon_str), "%ld.%04ld", lon / 10000, labs(lon % 10000));
+    snprintf(lon_str, sizeof(lon_str), "%s%ld.%04ld", lon < 0 ? "-" : "", labs(lon) / 10000, labs(lon) % 10000);
     sw.puts(lon_str);
 
     return String(buf, sw.getLength());
