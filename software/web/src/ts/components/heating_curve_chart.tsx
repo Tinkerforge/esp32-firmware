@@ -171,6 +171,39 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                || this.props.onBlockingHoursWarmChange || this.props.onBlockingHoursColdChange);
     }
 
+    // Resolve label Y positions so that two labels on the same side don't overlap.
+    // Each raw Y is the circle center; the label normally sits above (-8) or below (+16)
+    // relative to the circle when near the top edge.
+    // Returns [adjustedExtLabelY, adjustedBlkLabelY].
+    resolveEndpointLabelYs(extCircleY: number, blkCircleY: number, bothVisible: boolean): [number, number] {
+        const M = HeatingCurveChart.MARGIN;
+        const minGap = 14; // minimum vertical distance between label baselines
+
+        // Default label offset: above the circle, or below if too close to top
+        const labelY = (cy: number) => cy + (cy < M.top + 20 ? 16 : -8);
+
+        let extLY = labelY(extCircleY);
+        let blkLY = labelY(blkCircleY);
+
+        if (!bothVisible) return [extLY, blkLY];
+
+        const gap = Math.abs(extLY - blkLY);
+        if (gap < minGap) {
+            // Push apart symmetrically around midpoint
+            const mid = (extLY + blkLY) / 2;
+            const halfGap = minGap / 2;
+            if (extCircleY <= blkCircleY) {
+                // ext is higher (smaller Y) -> its label goes up, blk goes down
+                extLY = mid - halfGap;
+                blkLY = mid + halfGap;
+            } else {
+                extLY = mid + halfGap;
+                blkLY = mid - halfGap;
+            }
+        }
+        return [extLY, blkLY];
+    }
+
     render() {
         const { extended_hours_warm, extended_hours_cold, blocking_hours_warm, blocking_hours_cold,
                 current_temperature, show_extended, show_blocking } = this.props;
@@ -208,15 +241,36 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
         const blkX2 = this.tempToX(TEMP_COLD);
         const blkY2 = this.hoursToY(blocking_hours_cold, yMax);
 
+        // Resolve endpoint label positions to avoid overlap when both lines are visible
+        const bothVisible = show_extended && show_blocking;
+        const [extWarmLabelY, blkWarmLabelY] = this.resolveEndpointLabelYs(extY1, blkY1, bothVisible);
+        const [extColdLabelY, blkColdLabelY] = this.resolveEndpointLabelYs(extY2, blkY2, bothVisible);
+
         // Current temperature marker
         let currentTempX: number = null;
         let currentExtHours: number = null;
         let currentBlkHours: number = null;
+        let currentExtLabelY: number = null;
+        let currentBlkLabelY: number = null;
         if (current_temperature !== null && current_temperature !== undefined) {
             const clampedTemp = Math.max(TEMP_COLD, Math.min(TEMP_WARM, current_temperature));
             currentTempX = this.tempToX(clampedTemp);
             currentExtHours = this.interpolateHours(extended_hours_warm, extended_hours_cold, clampedTemp);
             currentBlkHours = this.interpolateHours(blocking_hours_warm, blocking_hours_cold, clampedTemp);
+
+            // Resolve right-axis label positions to avoid overlap
+            const extRY = this.hoursToY(currentExtHours, yMax) + 4;
+            const blkRY = this.hoursToY(currentBlkHours, yMax) + 4;
+            const minGap = 14;
+            if (bothVisible && Math.abs(extRY - blkRY) < minGap) {
+                const mid = (extRY + blkRY) / 2;
+                const halfGap = minGap / 2;
+                currentExtLabelY = extRY <= blkRY ? mid - halfGap : mid + halfGap;
+                currentBlkLabelY = extRY <= blkRY ? mid + halfGap : mid - halfGap;
+            } else {
+                currentExtLabelY = extRY;
+                currentBlkLabelY = blkRY;
+            }
         }
 
         const textColor = "var(--bs-body-color)";
@@ -333,11 +387,11 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                                 onPointerEnter={() => this.setState({ hovered: "ext_cold" })}
                                 onPointerLeave={() => { if (hovered === "ext_cold") this.setState({ hovered: null }); }}
                         />}
-                        <text x={extX1 - 6} y={extY1 + (extY1 < M.top + 20 ? 16 : -8)}
+                        <text x={extX1 - 6} y={extWarmLabelY}
                               text-anchor="end" font-size="11" font-weight="bold" fill={extColor}>
                             {extended_hours_warm}h
                         </text>
-                        <text x={extX2 + 6} y={extY2 + (extY2 < M.top + 20 ? 16 : -8)}
+                        <text x={extX2 + 6} y={extColdLabelY}
                               text-anchor="start" font-size="11" font-weight="bold" fill={extColor}>
                             {extended_hours_cold}h
                         </text>
@@ -369,11 +423,11 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                                 onPointerEnter={() => this.setState({ hovered: "blk_cold" })}
                                 onPointerLeave={() => { if (hovered === "blk_cold") this.setState({ hovered: null }); }}
                         />}
-                        <text x={blkX1 - 6} y={blkY1 + (blkY1 < M.top + 20 ? 16 : -8)}
+                        <text x={blkX1 - 6} y={blkWarmLabelY}
                               text-anchor="end" font-size="11" font-weight="bold" fill={blkColor}>
                             {blocking_hours_warm}h
                         </text>
-                        <text x={blkX2 + 6} y={blkY2 + (blkY2 < M.top + 20 ? 16 : -8)}
+                        <text x={blkX2 + 6} y={blkColdLabelY}
                               text-anchor="start" font-size="11" font-weight="bold" fill={blkColor}>
                             {blocking_hours_cold}h
                         </text>
@@ -386,7 +440,7 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                         <line x1={currentTempX} y1={this.hoursToY(currentExtHours, yMax)}
                               x2={VW - M.right} y2={this.hoursToY(currentExtHours, yMax)}
                               stroke={extColor} stroke-width="1" stroke-dasharray="3,3" />
-                        <text x={VW - M.right + 4} y={this.hoursToY(currentExtHours, yMax) + 4}
+                        <text x={VW - M.right + 4} y={currentExtLabelY}
                               text-anchor="start" font-size="11" font-weight="bold" fill={extColor}>
                             {util.toLocaleFixed(currentExtHours, 1)}h
                         </text>
@@ -397,7 +451,7 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
                         <line x1={currentTempX} y1={this.hoursToY(currentBlkHours, yMax)}
                               x2={VW - M.right} y2={this.hoursToY(currentBlkHours, yMax)}
                               stroke={blkColor} stroke-width="1" stroke-dasharray="3,3" />
-                        <text x={VW - M.right + 4} y={this.hoursToY(currentBlkHours, yMax) + 4}
+                        <text x={VW - M.right + 4} y={currentBlkLabelY}
                               text-anchor="start" font-size="11" font-weight="bold" fill={blkColor}>
                             {util.toLocaleFixed(currentBlkHours, 1)}h
                         </text>
