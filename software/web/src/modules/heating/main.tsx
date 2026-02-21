@@ -64,11 +64,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
-    summer_start_day:   number;
-    summer_start_month: number;
-    summer_end_day:     number;
-    summer_end_month:   number;
-
     static days(): [string, string][] {
         return [...Array(31).keys()].map((i) => [
             (i+1).toString(),
