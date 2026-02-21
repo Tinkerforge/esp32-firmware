@@ -31,6 +31,7 @@ private:
     void update_plan();
     bool must_delay_startup();
     EventResult check_startup_delay_event();
+    bool get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *out_blocking_hours);
 
     ConfigRoot config;
     ConfigRoot state;

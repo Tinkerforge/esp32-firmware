@@ -39,10 +39,12 @@ import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_w
 import { InputText } from "../../ts/components/input_text";
 import { is_solar_forecast_enabled, get_kwh_today, get_kwh_tomorrow } from  "../solar_forecast/main";
 import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price_tomorrow, get_price_from_index } from "../day_ahead_prices/main";
+import { is_temperatures_enabled } from "../temperatures/main";
 import { StatusSection } from "../../ts/components/status_section";
-import { Alert, Button } from "react-bootstrap";
+import { Alert, Button, Collapse } from "react-bootstrap";
 import { ControlPeriod } from "./control_period.enum";
 import { sgr_blocking_override, state } from "./api";
+import { HeatingCurveChart } from "../../ts/components/heating_curve_chart";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;
@@ -53,6 +55,7 @@ type HeatingConfig = API.getType["heating/config"];
 interface HeatingState {
     heating_state: API.getType["heating/state"];
     dap_config: API.getType["day_ahead_prices/config"];
+    temperatures: API.getType["temperatures/temperatures"];
     active_sgr_blocking_type: number;
     active_sgr_extended_type: number;
 }
@@ -104,6 +107,10 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             this.setState({active_sgr_blocking_type: config.sgr_blocking_type, active_sgr_extended_type: config.sgr_extended_type});
         });
 
+        util.addApiEventListener("temperatures/temperatures", () => {
+            this.setState({temperatures: API.get("temperatures/temperatures")});
+        });
+
         util.addApiEventListener("day_ahead_prices/prices", () => {
             // Update chart every time new price data comes in
             this.update_uplot();
@@ -152,6 +159,15 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             case ControlPeriod.Hours4:  return 4;
             default: console.log("Invalid control period: " + control_period); return 24;
         }
+    }
+
+    get_current_temperature(): number | null {
+        const temps = this.state.temperatures;
+        if (!temps || (temps.today_avg === 32767)) {
+            return null;
+        }
+        // temperatures are stored as °C * 100
+        return temps.today_avg / 100;
     }
 
     update_uplot() {
@@ -226,9 +242,29 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
             // Use backend-computed plan (respects min_hold_time via DP algorithm)
             const plan = API.get("heating/plan");
+
+            // Determine if the daytime restriction is active:
+            // heating curve enabled + daytime extension enabled + avg temp < 5°C
+            const current_temp = this.get_current_temperature();
+            const daytime_restriction_active = this.state.enable_heating_curve
+                && this.state.enable_daytime_extension
+                && current_temp !== null
+                && current_temp < 5;
+
             for (let i = 0; i < Math.min(plan.cheap.length, dap_prices.prices.length); i++) {
                 if (plan.cheap[i]) {
-                    data.lines_vertical.push({'index': i, 'text': '', 'color': [40, 167, 69, 0.5]});
+                    // Check if this slot is outside the 09:00-18:00 local time window
+                    let suppressed = false;
+                    if (daytime_restriction_active) {
+                        const slot_date = new Date(data.values[0][i] * 1000);
+                        const local_hour = slot_date.getHours();
+                        const local_min = slot_date.getMinutes();
+                        const local_minutes = local_hour * 60 + local_min;
+                        if (local_minutes < 9 * 60 || local_minutes >= 18 * 60) {
+                            suppressed = true;
+                        }
+                    }
+                    data.lines_vertical.push({'index': i, 'text': '', 'color': suppressed ? [40, 167, 69, 0.15] : [40, 167, 69, 0.5]});
                 }
             }
             for (let i = 0; i < Math.min(plan.expensive.length, dap_prices.prices.length); i++) {
@@ -277,7 +313,31 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
         const solar_forecast_enabled   = is_solar_forecast_enabled();
         const day_ahead_prices_enabled = is_day_ahead_prices_enabled();
+        const temperatures_enabled     = is_temperatures_enabled();
         const meter_available          = meter_slots.length > 0;
+
+        // When the heating curve is enabled, compute interpolated hours from the curve
+        const heating_curve_active = state.enable_heating_curve && temperatures_enabled;
+        const current_temp = this.get_current_temperature();
+        const daytime_restriction_active = heating_curve_active
+            && state.enable_daytime_extension
+            && current_temp !== null
+            && current_temp < 5;
+        let curve_extended_hours: number = null;
+        let curve_blocking_hours: number = null;
+        if (heating_curve_active) {
+            const temp = this.get_current_temperature();
+            if (temp !== null) {
+                const clamped = Math.max(-10, Math.min(20, temp));
+                const frac = (20 - clamped) / 30;
+                curve_extended_hours = Math.round((state.extended_hours_warm ?? 0) + frac * ((state.extended_hours_cold ?? 0) - (state.extended_hours_warm ?? 0)));
+                curve_blocking_hours = Math.round((state.blocking_hours_warm ?? 0) + frac * ((state.blocking_hours_cold ?? 0) - (state.blocking_hours_warm ?? 0)));
+            } else {
+                // No temperature data yet — fall back to warm endpoint
+                curve_extended_hours = state.extended_hours_warm ?? 0;
+                curve_blocking_hours = state.blocking_hours_warm ?? 0;
+            }
+        }
 
         function get_remaining_minutes() {
             if (state.heating_state.next_update == 0) {
@@ -324,6 +384,22 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     padding={[30, 15, null, 5]}
                                 />
                             </UplotLoader>
+                        </div>
+                        <div class="d-flex justify-content-center flex-wrap gap-3 px-2 pb-2" style="font-size: 0.8rem;">
+                            <span class="d-flex align-items-center gap-1">
+                                <svg width="12" height="12"><rect width="12" height="12" rx="2" fill="rgba(40, 167, 69, 0.5)" /></svg>
+                                {__("heating.content.legend_extended")}
+                            </span>
+                            {daytime_restriction_active &&
+                                <span class="d-flex align-items-center gap-1">
+                                    <svg width="12" height="12"><rect width="12" height="12" rx="2" fill="rgba(40, 167, 69, 0.15)" stroke="rgba(40, 167, 69, 0.4)" stroke-width="1" /></svg>
+                                    {__("heating.content.legend_suppressed")}
+                                </span>
+                            }
+                            <span class="d-flex align-items-center gap-1">
+                                <svg width="12" height="12"><rect width="12" height="12" rx="2" fill="rgba(220, 53, 69, 0.5)" /></svg>
+                                {__("heating.content.legend_blocking")}
+                            </span>
                         </div>
                     </div>
                     </FormRow>
@@ -482,6 +558,78 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             onValue={(v) => this.setState({control_period: parseInt(v)}, this.update_uplot)}
                         />
                     </FormRow>
+                    <FormSeparator heading={__("heating.content.temperature_heating_curve")} help={__("heating.content.temperature_heating_curve_help")}/>
+                    <FormRow label={__("heating.content.enable_heating_curve")}
+                             error={__("heating.content.temperatures_needs_activation")}
+                             show_error={state.enable_heating_curve && !temperatures_enabled}>
+                        <Switch desc={__("heating.content.enable_heating_curve_desc")}
+                                disabled={!temperatures_enabled}
+                                checked={state.enable_heating_curve}
+                                onClick={this.toggle('enable_heating_curve')}
+                        />
+                    </FormRow>
+                    <Collapse in={state.enable_heating_curve}>
+                        <div>
+                    <FormRow label={__("heating.content.extended_hours_at_warm")}>
+                        <InputNumber
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
+                            value={state.extended_hours_warm}
+                            onValue={(v) => this.setState({extended_hours_warm: v})}
+                            min={0}
+                            max={this.get_control_period_hours()}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.extended_hours_at_cold")}>
+                        <InputNumber
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
+                            value={state.extended_hours_cold}
+                            onValue={(v) => this.setState({extended_hours_cold: v})}
+                            min={0}
+                            max={this.get_control_period_hours()}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.blocking_hours_at_warm")}>
+                        <InputNumber
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
+                            value={state.blocking_hours_warm}
+                            onValue={(v) => this.setState({blocking_hours_warm: v})}
+                            min={0}
+                            max={this.get_control_period_hours()}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.blocking_hours_at_cold")}>
+                        <InputNumber
+                            unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
+                            value={state.blocking_hours_cold}
+                            onValue={(v) => this.setState({blocking_hours_cold: v})}
+                            min={0}
+                            max={this.get_control_period_hours()}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.temperature_heating_curve")} label_muted={__("heating.content.temperature_heating_curve_muted")}>
+                        <HeatingCurveChart
+                            extended_hours_warm={state.extended_hours_warm ?? 0}
+                            extended_hours_cold={state.extended_hours_cold ?? 0}
+                            blocking_hours_warm={state.blocking_hours_warm ?? 0}
+                            blocking_hours_cold={state.blocking_hours_cold ?? 0}
+                            current_temperature={this.get_current_temperature()}
+                            show_extended={true}
+                            show_blocking={true}
+                            max_hours={this.get_control_period_hours()}
+                            onExtendedHoursWarmChange={(v) => this.setState({extended_hours_warm: v})}
+                            onExtendedHoursColdChange={(v) => this.setState({extended_hours_cold: v})}
+                            onBlockingHoursWarmChange={(v) => this.setState({blocking_hours_warm: v})}
+                            onBlockingHoursColdChange={(v) => this.setState({blocking_hours_cold: v})}
+                        />
+                    </FormRow>
+                    <FormRow label={__("heating.content.daytime_extension")}>
+                        <Switch desc={__("heating.content.daytime_extension_desc")}
+                                checked={state.enable_daytime_extension}
+                                onClick={this.toggle('enable_daytime_extension')}
+                        />
+                    </FormRow>
+                        </div>
+                    </Collapse>
                     <FormSeparator heading={__("heating.content.extended_operation")} help={__("heating.content.extended_operation_help")}/>
                     <FormRow label={__("heating.content.pv_excess_control")}
                              error={__("heating.content.meter_needs_activation")}
@@ -505,19 +653,22 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormRow label={__("heating.content.dpc_low")}
                              error={__("heating.content.day_ahead_prices_needs_activation")}
-                             show_error={state.extended && !day_ahead_prices_enabled}
+                             show_error={(heating_curve_active || state.extended) && !day_ahead_prices_enabled}
+                             warning={__("heating.content.hours_from_heating_curve")}
+                             show_warning={heating_curve_active}
                              class="mb-2 mb-lg-0">
                         <SwitchableInputNumber
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.extended}
-                            onClick={this.toggle('extended', this.update_uplot)}
-                            value={state.extended_hours}
+                            checked={heating_curve_active || state.extended}
+                            onClick={heating_curve_active ? undefined : this.toggle('extended', this.update_uplot)}
+                            value={heating_curve_active ? curve_extended_hours : state.extended_hours}
                             onValue={(v) => {this.setState({extended_hours: v}, this.update_uplot)}}
                             min={0}
                             max={this.get_control_period_hours() - state.blocking_hours}
                             switch_label_min_width="110px"
+                            disabled={heating_curve_active}
                         />
                     </FormRow>
                     <FormRow label={__("heating.content.but_only_if")} small class="mb-0">
@@ -525,13 +676,13 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     </FormRow>
                     <FormRow label={__("heating.content.pv_yield_forecast")}
                              error={__("heating.content.solar_forecast_needs_activation")}
-                             show_error={state.yield_forecast && state.extended && !solar_forecast_enabled}>
+                             show_error={state.yield_forecast && (heating_curve_active || state.extended) && !solar_forecast_enabled}>
                         <SwitchableInputNumber
-                            disabled={!state.extended}
+                            disabled={!heating_curve_active && !state.extended}
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.kwh_per_day")}
-                            checked={state.yield_forecast && state.extended}
+                            checked={state.yield_forecast && (heating_curve_active || state.extended)}
                             onClick={this.toggle('yield_forecast', this.update_uplot)}
                             value={state.yield_forecast_threshold}
                             onValue={this.set("yield_forecast_threshold", this.update_uplot)}
@@ -543,18 +694,21 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormSeparator heading={__("heating.content.blocking_operation")} help={__("heating.content.blocking_operation_help")}/>
                     <FormRow label={__("heating.content.for_the_most_expensive")}
                              error={__("heating.content.day_ahead_prices_needs_activation")}
-                             show_error={state.blocking && !day_ahead_prices_enabled}>
+                             show_error={(heating_curve_active || state.blocking) && !day_ahead_prices_enabled}
+                             warning={__("heating.content.hours_from_heating_curve")}
+                             show_warning={heating_curve_active}>
                         <SwitchableInputNumber
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
                             unit={__("heating.content.h_per_x")(this.get_control_period_hours())}
-                            checked={state.blocking}
-                            onClick={this.toggle('blocking', this.update_uplot)}
-                            value={state.blocking_hours}
+                            checked={heating_curve_active || state.blocking}
+                            onClick={heating_curve_active ? undefined : this.toggle('blocking', this.update_uplot)}
+                            value={heating_curve_active ? curve_blocking_hours : state.blocking_hours}
                             onValue={(v) => {this.setState({blocking_hours: v}, this.update_uplot)}}
                             min={0}
                             max={this.get_control_period_hours() - state.extended_hours}
                             switch_label_min_width="110px"
+                            disabled={heating_curve_active}
                         />
                     </FormRow>
 

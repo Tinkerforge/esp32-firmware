@@ -23,12 +23,22 @@
 
 #include <time.h>
 #include <type_traits>
+#include <climits>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "control_period.enum.h"
+
+// Heating curve temperature endpoints in degrees Celsius * 100
+static constexpr int16_t HEATING_CURVE_WARM_TEMP = 2000;  // 20.00°C
+static constexpr int16_t HEATING_CURVE_COLD_TEMP = -1000; // -10.00°C
+
+// Daytime extension: extended operation from 09:00 to 18:00 if daily average < 5°C
+static constexpr int16_t DAYTIME_EXTENSION_TEMP_THRESHOLD = 500; // 5.00°C
+static constexpr uint16_t DAYTIME_EXTENSION_START_MINUTES = 9 * 60;   // 09:00
+static constexpr uint16_t DAYTIME_EXTENSION_END_MINUTES   = 18 * 60;  // 18:00
 
 static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
 static constexpr auto MAX_STARTUP_DELAY = 1_min;
@@ -46,13 +56,19 @@ void Heating::pre_setup()
         {"min_hold_time", Config::Uint(15, 10, 60)},
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
+        {"enable_heating_curve", Config::Bool(false)},
+        {"enable_daytime_extension", Config::Bool(false)},
         {"extended_logging", Config::Bool(false)}, // Obsolete. Logging to trace log is now always on.
         {"yield_forecast", Config::Bool(false)},
         {"yield_forecast_threshold", Config::Uint16(0)},
         {"extended", Config::Bool(false)},
         {"extended_hours", Config::Uint(4, 0, 24)},
+        {"extended_hours_warm", Config::Uint(3, 0, 24)},
+        {"extended_hours_cold", Config::Uint(8, 0, 24)},
         {"blocking", Config::Bool(false)},
         {"blocking_hours", Config::Uint(0, 0, 24)},
+        {"blocking_hours_warm", Config::Uint(8, 0, 24)},
+        {"blocking_hours_cold", Config::Uint(0, 0, 24)},
         {"pv_excess_control", Config::Bool(false)},
         {"pv_excess_control_threshold", Config::Uint32(0)},
         {"p14enwg", Config::Bool(false)},
@@ -183,7 +199,7 @@ void Heating::register_events()
     }
 
     if (startup_delay_task_id != 0) {
-        if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
+        if (config.get("extended")->asBool() || config.get("blocking")->asBool() || config.get("enable_heating_curve")->asBool()) {
             event.registerEvent("day_ahead_prices/state", {}, [this](const Config * /*cfg*/) {
                 return this->check_startup_delay_event();
             });
@@ -203,8 +219,9 @@ bool Heating::is_active()
     const bool blocking          = config.get("blocking")->asBool();
     const bool pv_excess_control = config.get("pv_excess_control")->asBool();
     const bool yield_forecast    = config.get("yield_forecast")->asBool();
+    const bool heating_curve     = config.get("enable_heating_curve")->asBool();
 
-    if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
+    if(!yield_forecast && !extended && !blocking && !pv_excess_control && !heating_curve) {
         return false;
     }
 
@@ -240,12 +257,88 @@ Heating::Status Heating::get_status()
     return Status::Idle;
 }
 
+bool Heating::get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *out_blocking_hours)
+{
+#if MODULE_TEMPERATURES_AVAILABLE()
+    const int16_t today_avg = temperatures.get_today_avg();
+
+    // Check for sentinel value (no data available)
+    if (today_avg == INT16_MAX) {
+        logger.tracefln(this->trace_buffer_index, "Heating curve: Temperature data not available (avg=%d). Falling back to flat config.", today_avg);
+        return false;
+    }
+
+    // Daily average temperature (in units of °C * 100)
+    const int32_t avg_temp = static_cast<int32_t>(today_avg);
+
+    // Clamp to curve endpoints
+    const int32_t clamped_temp = std::max(static_cast<int32_t>(HEATING_CURVE_COLD_TEMP), std::min(static_cast<int32_t>(HEATING_CURVE_WARM_TEMP), avg_temp));
+
+    // Linear interpolation factor: 0.0 at warm (20°C), 1.0 at cold (-10°C)
+    // t = (warm - clamped) / (warm - cold)
+    const int32_t temp_range = HEATING_CURVE_WARM_TEMP - HEATING_CURVE_COLD_TEMP; // 3000
+    const int32_t t_num = HEATING_CURVE_WARM_TEMP - clamped_temp;
+
+    const uint32_t extended_hours_warm = config.get("extended_hours_warm")->asUint();
+    const uint32_t extended_hours_cold = config.get("extended_hours_cold")->asUint();
+    const uint32_t blocking_hours_warm = config.get("blocking_hours_warm")->asUint();
+    const uint32_t blocking_hours_cold = config.get("blocking_hours_cold")->asUint();
+
+    // Interpolate: hours = warm_hours + (cold_hours - warm_hours) * t
+    // Using integer arithmetic with rounding: result = warm + (cold - warm) * t_num / temp_range
+    // Round to nearest: add temp_range/2 before dividing
+    auto interpolate = [&](uint32_t hours_warm, uint32_t hours_cold) -> uint32_t {
+        const int32_t diff = static_cast<int32_t>(hours_cold) - static_cast<int32_t>(hours_warm);
+        const int32_t interpolated = static_cast<int32_t>(hours_warm) + (diff * t_num + (diff >= 0 ? temp_range / 2 : -temp_range / 2)) / temp_range;
+        return static_cast<uint32_t>(std::max(static_cast<int32_t>(0), interpolated));
+    };
+
+    *out_extended_hours = interpolate(extended_hours_warm, extended_hours_cold);
+    *out_blocking_hours = interpolate(blocking_hours_warm, blocking_hours_cold);
+
+    logger.tracefln(this->trace_buffer_index, "Heating curve: avg_temp=%.2f°C, extended=%lu h, blocking=%lu h",
+                    avg_temp / 100.0f,
+                    static_cast<unsigned long>(*out_extended_hours),
+                    static_cast<unsigned long>(*out_blocking_hours));
+
+    return true;
+#else
+    (void)out_extended_hours;
+    (void)out_blocking_hours;
+    logger.tracefln(this->trace_buffer_index, "Heating curve: Temperatures module not available.");
+    return false;
+#endif
+}
+
 void Heating::update_plan()
 {
-    const bool     extended       = config.get("extended")->asBool();
-    const uint32_t extended_hours = config.get("extended_hours")->asUint();
-    const bool     blocking       = config.get("blocking")->asBool();
-    const uint32_t blocking_hours = config.get("blocking_hours")->asUint();
+    const bool enable_heating_curve = config.get("enable_heating_curve")->asBool();
+    const bool extended = config.get("extended")->asBool() || enable_heating_curve;
+    const bool blocking = config.get("blocking")->asBool() || enable_heating_curve;
+
+    uint32_t extended_hours;
+    uint32_t blocking_hours;
+
+    if (enable_heating_curve && get_heating_curve_hours(&extended_hours, &blocking_hours)) {
+        // Heating curve successfully computed interpolated hours.
+        // If a curve channel computes 0 hours, treat that channel as inactive.
+        // (get_heating_curve_hours already did the interpolation and rounding.)
+    } else {
+        // Fall back to flat config values (also used when heating curve is disabled).
+        extended_hours = config.get("extended_hours")->asUint();
+        blocking_hours = config.get("blocking_hours")->asUint();
+    }
+
+    // Respect the per-channel enable flags when curve is not active
+    if (!enable_heating_curve) {
+        if (!config.get("extended")->asBool()) {
+            extended_hours = 0;
+        }
+        if (!config.get("blocking")->asBool()) {
+            blocking_hours = 0;
+        }
+    }
+
     const uint32_t min_hold_time  = config.get("min_hold_time")->asUint();
     const ControlPeriod control_period = config.get("control_period")->asEnum<ControlPeriod>();
 
@@ -453,13 +546,32 @@ void Heating::update()
     const uint32_t meter_slot_grid_power       = config.get("meter_slot_grid_power")->asUint();
     const bool     yield_forecast              = config.get("yield_forecast")->asBool();
     const uint32_t yield_forecast_threshold    = config.get("yield_forecast_threshold")->asUint();
-    const bool     extended                    = config.get("extended")->asBool();
-    const uint32_t extended_hours              = config.get("extended_hours")->asUint();
-    const bool     blocking                    = config.get("blocking")->asBool();
-    const uint32_t blocking_hours              = config.get("blocking_hours")->asUint();
+    const bool     enable_heating_curve        = config.get("enable_heating_curve")->asBool();
+    const bool     enable_daytime_extension    = config.get("enable_daytime_extension")->asBool();
     const bool     pv_excess_control           = config.get("pv_excess_control")->asBool();
     const uint32_t pv_excess_control_threshold = config.get("pv_excess_control_threshold")->asUint();
     const ControlPeriod control_period         = config.get("control_period")->asEnum<ControlPeriod>();
+
+    // Determine effective extended/blocking hours, considering heating curve
+    bool extended;
+    uint32_t extended_hours;
+    bool blocking;
+    uint32_t blocking_hours;
+
+    uint32_t curve_ext = 0, curve_blk = 0;
+    if (enable_heating_curve && get_heating_curve_hours(&curve_ext, &curve_blk)) {
+        // Heating curve is active: use interpolated values
+        extended       = true;
+        extended_hours = curve_ext;
+        blocking       = true;
+        blocking_hours = curve_blk;
+    } else {
+        // Flat config values (also fallback when curve data unavailable)
+        extended       = config.get("extended")->asBool();
+        extended_hours = config.get("extended_hours")->asUint();
+        blocking       = config.get("blocking")->asBool();
+        blocking_hours = config.get("blocking_hours")->asUint();
+    }
 
     bool sg_ready0_on = false;
     bool sg_ready1_on = false;
@@ -618,6 +730,50 @@ void Heating::update()
         handle_pv_excess();
     }
 
+    // Cold weather daytime restriction: If daily average temperature < 5°C,
+    // restrict extended operation to the 09:00-18:00 window only.
+    // Outside this window, price-based extended operation is suppressed.
+    // Useful for air-to-air heat pumps that are very inefficient at low temperatures.
+    if (enable_heating_curve && enable_daytime_extension) {
+#if MODULE_TEMPERATURES_AVAILABLE()
+        const int16_t today_avg = temperatures.get_today_avg();
+
+        if (today_avg != INT16_MAX) {
+            const int32_t avg_temp = static_cast<int32_t>(today_avg);
+
+            if (avg_temp < DAYTIME_EXTENSION_TEMP_THRESHOLD) {
+                const time_t now_dt = time(NULL);
+                struct tm local_now;
+                localtime_r(&now_dt, &local_now);
+                const uint16_t minutes_now = local_now.tm_hour * 60 + local_now.tm_min;
+
+                if ((minutes_now < DAYTIME_EXTENSION_START_MINUTES) || (minutes_now >= DAYTIME_EXTENSION_END_MINUTES)) {
+                    logger.tracefln(this->trace_buffer_index,
+                                    "Daytime restriction active: avg_temp=%.2f°C < 5°C, time %02d:%02d outside 09:00-18:00 window. Suppressing extended operation.",
+                                    avg_temp / 100.0f,
+                                    local_now.tm_hour,
+                                    local_now.tm_min);
+                    sg_ready1_on = false;
+                } else {
+                    logger.tracefln(this->trace_buffer_index,
+                                    "Daytime restriction: avg_temp=%.2f°C < 5°C, time %02d:%02d within 09:00-18:00 window. Extended operation allowed.",
+                                    avg_temp / 100.0f,
+                                    local_now.tm_hour,
+                                    local_now.tm_min);
+                }
+            } else {
+                logger.tracefln(this->trace_buffer_index,
+                                "Daytime restriction: avg_temp=%.2f°C >= 5°C threshold. No restriction applied.",
+                                avg_temp / 100.0f);
+            }
+        } else {
+            logger.tracefln(this->trace_buffer_index, "Daytime restriction: Temperature data not available. No restriction applied.");
+        }
+#else
+        logger.tracefln(this->trace_buffer_index, "Daytime restriction: Temperatures module not available.");
+#endif
+    }
+
     // If p14enwg is triggered, we never turn output 1 (extended operation) on.
     if (p14enwg_on) {
         sg_ready1_on = false;
@@ -686,7 +842,7 @@ void Heating::update()
 
 bool Heating::must_delay_startup()
 {
-    if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
+    if (config.get("extended")->asBool() || config.get("blocking")->asBool() || config.get("enable_heating_curve")->asBool()) {
         auto current_price_net = day_ahead_prices.get_current_price_net();
         if (current_price_net.is_none()) {
             return true;
