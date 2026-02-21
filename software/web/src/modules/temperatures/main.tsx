@@ -163,7 +163,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             onSave={this.save}
                             onReset={this.reset}
                             onDirtyChange={this.setDirty}>
-                    <FormRow label={__("temperatures.content.enable_temperatures")} label_muted={__("temperatures.content.temperatures_muted")(state.api_url)}>
+                    <FormRow label={__("temperatures.content.enable_temperatures")} label_muted={__("temperatures.content.temperatures_muted")(state.api_url)} help={__("temperatures.content.enable_temperatures_help")}>
                         <Switch desc={__("temperatures.content.temperatures_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
