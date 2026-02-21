@@ -95,14 +95,14 @@ let x = {
                     <li>Erweiterter Betrieb: Günstigste 8 Stunden</li>
                     <li>Blockierender Betrieb: Teuerste 8 Stunden</li>
                 </ul>
-                <p>In diesem Fall Kann es passieren das bis zu 8 Stunden am Stück der erweiterte Betrieb und bis zu 8 Stunden am Stück der blockierende Betrieb geschaltet wird. Angenommen die Heizung muss mindestens 2x pro Tag laufen damit eine gewünschte Temperatur eingehalten wird, würde sich eventuell folgende Konfiguration anbieten:</p>
+                <p>In diesem Fall kann es passieren, dass bis zu 8 Stunden am Stück der erweiterte Betrieb und bis zu 8 Stunden am Stück der blockierende Betrieb geschaltet wird. Angenommen die Heizung muss mindestens 2x pro Tag laufen damit eine gewünschte Temperatur eingehalten wird, würde sich eventuell folgende Konfiguration anbieten:</p>
                 <ul>
                     <li>Regelzeitraum: 12 Stunden</li>
                     <li>Erweiterter Betrieb: Günstigste 4 Stunden</li>
                     <li>Blockierender Betrieb: Teuerste 4 Stunden</li>
                 </ul>
-                <p>In dieser Konfiguration würde die Heizung auch pro Tag 8 Stunden in den erweiterten Betrieb sowieso 8 Stunden in den blockierenden Betrieb gebracht.</p>
-                <p>Allerdings wird der Tag in zwei 12 Stunden Regelzeiträume geteilt in denen je die günstigsten/teuersten Steunden gesucht werden und entsprechend kann die Heizung pro 12 Stunden auch höchsten für 4 Stunden am Stück in den erweiterten oder blockierenden Betrieb gebracht werden.</p>
+                <p>In dieser Konfiguration würde die Heizung auch pro Tag 8 Stunden in den erweiterten Betrieb sowie 8 Stunden in den blockierenden Betrieb gebracht.</p>
+                <p>Allerdings wird der Tag in zwei 12 Stunden Regelzeiträume geteilt in denen je die günstigsten/teuersten Stunden gesucht werden und entsprechend kann die Heizung pro 12 Stunden auch höchsten für 4 Stunden am Stück in den erweiterten oder blockierenden Betrieb gebracht werden.</p>
             </>,
             "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden. Je besser die Speicherfähigkeit des Gebäudes, umso größer können die Zeiträume gewählt werden.",
             "temperature_heating_curve": "Temperatur-Heizkurve",
