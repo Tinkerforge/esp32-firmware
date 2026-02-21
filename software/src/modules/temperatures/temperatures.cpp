@@ -28,7 +28,7 @@
 #include "options.h"
 
 static constexpr auto CHECK_INTERVAL = 6_h; // Update every 6 hours
-static constexpr auto RETRY_INTERVAL = 10_min; // Retry after 5 minutes on error
+static constexpr auto RETRY_INTERVAL = 10_min; // Retry after 10 minutes on error
 
 void Temperatures::pre_setup()
 {
@@ -288,6 +288,8 @@ void Temperatures::handle_new_data()
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        retry_update(RETRY_INTERVAL);
+        return;
     } else {
         JsonObject today = json_doc["today"];
         if (today) {
