@@ -137,6 +137,19 @@ export class HeatingCurveChart extends Component<HeatingCurveChartProps, Heating
         // Clamp to valid range and round to nearest integer
         hours = Math.round(Math.max(0, Math.min(this.props.max_hours, hours)));
 
+        // Cross-validate: extended + blocking must not exceed max_hours at each endpoint
+        const { max_hours, extended_hours_warm, extended_hours_cold, blocking_hours_warm, blocking_hours_cold,
+                show_extended, show_blocking } = this.props;
+        if (show_extended && show_blocking) {
+            switch (dragging) {
+                case "ext_warm":  hours = Math.min(hours, max_hours - blocking_hours_warm);  break;
+                case "ext_cold":  hours = Math.min(hours, max_hours - blocking_hours_cold);  break;
+                case "blk_warm":  hours = Math.min(hours, max_hours - extended_hours_warm);  break;
+                case "blk_cold":  hours = Math.min(hours, max_hours - extended_hours_cold);  break;
+            }
+            hours = Math.max(0, hours);
+        }
+
         // Call the appropriate callback
         switch (dragging) {
             case "ext_warm":
