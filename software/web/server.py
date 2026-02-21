@@ -8,6 +8,7 @@ from flask_sock import Sock  # pip install flask-sock
 import websocket  # pip install websocket-client
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
+import socket
 import queue
 import json
 import threading
@@ -114,6 +115,17 @@ host = args.host
 thread = threading.Thread(target=ws_thread_fn, args=[ws_thread_queue])
 thread.start()
 
-app.run(host="::")
+port = 5000
+while True:
+    try:
+        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        s.bind(('::', port))
+        s.close()
+        break
+    except OSError:
+        print(f"Port {port} already in use, trying {port + 1}")
+        port += 1
+
+app.run(host="::", port=port)
 
 ws_thread_queue.put(None)
