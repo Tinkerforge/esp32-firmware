@@ -361,28 +361,62 @@ void Temperatures::handle_new_data()
         state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
         retry_update(RETRY_INTERVAL);
         return;
-    } else {
-        JsonObject today = json_doc["today"];
-        if (today) {
-            temperatures.get("today_date")->updateUint(today["date"].as<uint32_t>());
-            temperatures.get("today_min")->updateInt(static_cast<int16_t>(roundf(today["min"].as<float>() * 100.0f)));
-            temperatures.get("today_max")->updateInt(static_cast<int16_t>(roundf(today["max"].as<float>() * 100.0f)));
-            temperatures.get("today_avg")->updateInt(static_cast<int16_t>(roundf(today["avg"].as<float>() * 100.0f)));
-        }
-
-        JsonObject tomorrow = json_doc["tomorrow"];
-        if (tomorrow) {
-            temperatures.get("tomorrow_date")->updateUint(tomorrow["date"].as<uint32_t>());
-            temperatures.get("tomorrow_min")->updateInt(static_cast<int16_t>(roundf(tomorrow["min"].as<float>() * 100.0f)));
-            temperatures.get("tomorrow_max")->updateInt(static_cast<int16_t>(roundf(tomorrow["max"].as<float>() * 100.0f)));
-            temperatures.get("tomorrow_avg")->updateInt(static_cast<int16_t>(roundf(tomorrow["avg"].as<float>() * 100.0f)));
-        }
-
-        const uint32_t current_minutes = rtc.timestamp_minutes();
-        state.get("last_sync")->updateUint(current_minutes);
-        state.get("last_check")->updateUint(current_minutes);
-        state.get("next_check")->updateUint(current_minutes + (CHECK_INTERVAL / 1_min).as<uint32_t>());
     }
+
+    // Helper: clamp float to int16_t range before cast to avoid undefined behavior
+    auto float_to_int16 = [](float val) -> int16_t {
+        float scaled = roundf(val * 100.0f);
+        if (scaled > static_cast<float>(INT16_MAX)) return INT16_MAX;
+        if (scaled < static_cast<float>(INT16_MIN)) return INT16_MIN;
+        return static_cast<int16_t>(scaled);
+    };
+
+    bool got_data = false;
+
+    JsonObject today = json_doc["today"];
+    if (today) {
+        if (!today.containsKey("date") || !today.containsKey("min") || !today.containsKey("max") || !today.containsKey("avg")) {
+            logger.printfln("JSON 'today' object missing required keys (date, min, max, avg)");
+            download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+            state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+            retry_update(RETRY_INTERVAL);
+            return;
+        }
+        temperatures.get("today_date")->updateUint(today["date"].as<uint32_t>());
+        temperatures.get("today_min")->updateInt(float_to_int16(today["min"].as<float>()));
+        temperatures.get("today_max")->updateInt(float_to_int16(today["max"].as<float>()));
+        temperatures.get("today_avg")->updateInt(float_to_int16(today["avg"].as<float>()));
+        got_data = true;
+    }
+
+    JsonObject tomorrow = json_doc["tomorrow"];
+    if (tomorrow) {
+        if (!tomorrow.containsKey("date") || !tomorrow.containsKey("min") || !tomorrow.containsKey("max") || !tomorrow.containsKey("avg")) {
+            logger.printfln("JSON 'tomorrow' object missing required keys (date, min, max, avg)");
+            download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+            state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+            retry_update(RETRY_INTERVAL);
+            return;
+        }
+        temperatures.get("tomorrow_date")->updateUint(tomorrow["date"].as<uint32_t>());
+        temperatures.get("tomorrow_min")->updateInt(float_to_int16(tomorrow["min"].as<float>()));
+        temperatures.get("tomorrow_max")->updateInt(float_to_int16(tomorrow["max"].as<float>()));
+        temperatures.get("tomorrow_avg")->updateInt(float_to_int16(tomorrow["avg"].as<float>()));
+        got_data = true;
+    }
+
+    if (!got_data) {
+        logger.printfln("JSON contains neither 'today' nor 'tomorrow' object");
+        download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+        retry_update(RETRY_INTERVAL);
+        return;
+    }
+
+    const uint32_t current_minutes = rtc.timestamp_minutes();
+    state.get("last_sync")->updateUint(current_minutes);
+    state.get("last_check")->updateUint(current_minutes);
+    state.get("next_check")->updateUint(current_minutes + (CHECK_INTERVAL / 1_min).as<uint32_t>());
 }
 
 // Create API path that includes currently configured latitude and longitude
@@ -393,7 +427,7 @@ String Temperatures::get_api_url_with_path()
 
     sw.puts(config.get("api_url")->asString());
 
-    if (*(sw.getRemainingPtr() - 1) != '/') {
+    if (sw.getLength() > 0 && *(sw.getRemainingPtr() - 1) != '/') {
         sw.putc('/');
     }
 
