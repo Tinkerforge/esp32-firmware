@@ -9,6 +9,14 @@ Usage: Add to [base] in platformio.ini:
 Then upload normally:
     pio run -e <env> -t upload
 
+Controlled by the `fast_flash` option in platformio.ini:
+    custom_fast_flash = fast        ; (default) diff-based reflash, with verification
+    custom_fast_flash = no-verify   ; diff-based reflash, skip verification (fastest)
+    custom_fast_flash = off         ; use PlatformIO's default upload command
+
+Override per-invocation with the FAST_FLASH environment variable:
+    FAST_FLASH=no-verify pio run -e <env> -t upload
+
 The script reads flash images and offsets dynamically from PlatformIO's
 FLASH_EXTRA_IMAGES and ESP32_APP_OFFSET environment variables.
 
@@ -24,7 +32,6 @@ boot_app0.bin. We always skip diffing for this region.
 Import("env")
 
 import os
-import sys
 import shutil
 import subprocess
 import time
@@ -33,6 +40,9 @@ import re
 
 # Minimum esptool version that supports --diff-with
 MIN_ESPTOOL_VERSION = (5, 2, 0)
+
+# Valid modes for the fast_flash option
+VALID_MODES = ("fast", "no-verify", "off")
 
 # Prefix for all print output to distinguish from esptool's native output
 P = ">>>"
@@ -217,7 +227,7 @@ def get_upload_flags(env, port):
     return flags
 
 
-def do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir):
+def do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir, mode):
     # For OTA data (boot_app0.bin), we always use 'skip' because the
     # on-device content is modified by the ESP32 at runtime (OTA state tracking).
     upload_flags = get_upload_flags(env, port)
@@ -247,6 +257,8 @@ def do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir):
 
     if has_any_diff:
         cmd += ["--diff-with"] + diff_args
+        if mode == "no-verify":
+            cmd += ["--no-diff-verify"]
     else:
         print(f"{P} No previous binaries for comparison -- full flash this time.")
 
@@ -281,7 +293,14 @@ def upload_callback(source, target, env):
     build_dir = env.subst("$BUILD_DIR")
     last_flashed_dir = os.path.join(build_dir, "last_flashed")
 
-    print(f"{P} Fast Reflash Upload")
+    # Read fast_flash mode: env var FAST_FLASH overrides platformio.ini setting
+    mode = os.environ.get("FAST_FLASH", "").strip().lower() \
+        or env.GetProjectOption("custom_fast_flash", "fast").strip().lower()
+    if mode not in VALID_MODES:
+        print(f"{P} ERROR: Invalid fast_flash mode '{mode}'. Valid: {', '.join(VALID_MODES)}")
+        return 1
+
+    print(f"{P} Fast Reflash Upload (mode: {mode})")
 
     # Resolve upload port
     port = env.subst("$UPLOAD_PORT")
@@ -327,7 +346,8 @@ def upload_callback(source, target, env):
             if not is_otadata
         )
         if has_prev:
-            print(f"{P} Using esptool {ver_str} with fast reflash (--diff-with)")
+            verify_note = ", no verification" if mode == "no-verify" else ""
+            print(f"{P} Using esptool {ver_str} with fast reflash (--diff-with{verify_note})")
         else:
             print(f"{P} Using esptool {ver_str} -- first flash, no diff references yet")
     else:
@@ -340,7 +360,7 @@ def upload_callback(source, target, env):
     start_time = time.time()
 
     if supports_diff:
-        ret = do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir)
+        ret = do_fast_reflash(env, esptool_cmd, port, binaries, last_flashed_dir, mode)
     else:
         ret = do_normal_flash(env, esptool_cmd, port, binaries)
 
@@ -357,5 +377,8 @@ def upload_callback(source, target, env):
     return ret
 
 
-# Register the custom upload command with PlatformIO
-env.Replace(UPLOADCMD=upload_callback)
+# Register the custom upload command with PlatformIO (unless mode is "off")
+_mode = os.environ.get("FAST_FLASH", "").strip().lower() \
+    or env.GetProjectOption("custom_fast_flash", "fast").strip().lower()
+if _mode != "off":
+    env.Replace(UPLOADCMD=upload_callback)
