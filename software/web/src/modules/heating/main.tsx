@@ -168,7 +168,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             data = {
                 keys: [null, 'price'],
                 names: [null, __("day_ahead_prices.content.electricity_price")],
-                values: [[], [], [], []],
+                values: [[], []],
                 stacked: [null, true],
                 paths: [null, UplotPath.Step],
                 // Only enable the electricity price by default.
