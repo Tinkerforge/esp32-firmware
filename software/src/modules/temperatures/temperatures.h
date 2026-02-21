@@ -20,7 +20,6 @@
 #pragma once
 
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
-#include <esp_http_client.h>
 #include <ArduinoJson.h>
 
 #include "async_https_client.h"
@@ -44,7 +43,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    esp_err_t update_event_handler_impl(esp_http_client_event_t *event);
 
     int16_t get_today_min();
     int16_t get_today_max();
@@ -60,7 +58,6 @@ private:
     void handle_new_data();
     void handle_cleanup();
 
-    micros_t last_update_begin;
     char *json_buffer = nullptr;
     uint32_t json_buffer_position = 0;
     AsyncHTTPSClient https_client;

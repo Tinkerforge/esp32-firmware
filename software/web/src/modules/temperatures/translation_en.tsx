@@ -20,7 +20,6 @@ let x = {
             "latitude_muted": "in degrees (e.g., 51.9035)",
             "longitude": "Longitude",
             "longitude_muted": "in degrees (e.g., 8.6720)",
-            "status_section": "Status",
             "today": "Today",
             "tomorrow": "Tomorrow",
             "min_temp": "Min",

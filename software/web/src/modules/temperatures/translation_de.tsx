@@ -20,7 +20,6 @@ let x = {
             "latitude_muted": "in Grad (z.B. 51,9035)",
             "longitude": "Längengrad",
             "longitude_muted": "in Grad (z.B. 8,6720)",
-            "status_section": "Status",
             "today": "Heute",
             "tomorrow": "Morgen",
             "min_temp": "Min",
