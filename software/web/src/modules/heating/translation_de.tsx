@@ -16,7 +16,7 @@ let x = {
             "override_blocked_by_p14enwg": "Aufhebung durch §14a EnWG außer Kraft gesetzt",
             "close_now": "Jetzt schließen",
             "open_now": "Jetzt öffnen",
-            "toogle_now_failed": /*SFN*/(x: number) => `Konnte SG-Ready-Ausgang ${x} nicht umschalten`/*NF*/,
+            "toggle_now_failed": /*SFN*/(x: number) => `Konnte SG-Ready-Ausgang ${x} nicht umschalten`/*NF*/,
             "minimum_holding_time": "Mindesthaltezeit",
             "minimum_holding_time_muted": "für SG-Ready-Ausgang 1 und SG-Ready-Ausgang 2",
             "remaining_holding_time": "Resthaltezeit",
@@ -132,10 +132,10 @@ let x = {
                 <p>Beispiel: Wenn der erweiterte Betrieb für 2 Stunden bei 20 °C und 8 Stunden bei -10 °C konfiguriert ist und die aktuelle Tagesmitteltemperatur 5 °C beträgt, dann wird der erweiterte Betrieb für 5 Stunden aktiviert.</p>
             </>,
             "temperature_heating_curve_muted": "Stunden werden linear anhand der Tagesmitteltemperatur interpoliert",
-            "extended_hours_at_warm": "Erweitert Stunden bei 20 °C",
-            "extended_hours_at_cold": "Erweitert Stunden bei -10 °C",
-            "blocking_hours_at_warm": "Blockierend Stunden bei 20 °C",
-            "blocking_hours_at_cold": "Blockierend Stunden bei -10 °C",
+            "extended_hours_at_warm": "Erweiterte Stunden bei 20 °C",
+            "extended_hours_at_cold": "Erweiterte Stunden bei -10 °C",
+            "blocking_hours_at_warm": "Blockierende Stunden bei 20 °C",
+            "blocking_hours_at_cold": "Blockierende Stunden bei -10 °C",
 
             "daytime_extension": "Luft-Luft-Wärmepumpe",
             "daytime_extension_desc": "Wenn die Tagesmitteltemperatur unter 5 °C liegt, wird der erweiterte Betrieb auf 09:00–18:00 Uhr begrenzt. Empfohlen für Luft-Luft-Wärmepumpen, die bei niedrigen Außentemperaturen ineffizient arbeiten. So wird verhindert, dass der preisbasierte Plan den erweiterten Betrieb in den kältesten Stunden (Nacht/früher Morgen) aktiviert, wenn die Effizienz besonders schlecht ist.",

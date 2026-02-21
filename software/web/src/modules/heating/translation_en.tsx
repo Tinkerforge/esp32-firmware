@@ -16,7 +16,7 @@ let x = {
             "override_blocked_by_p14enwg": "Override suspended by §14a EnWG",
             "close_now": "Close now",
             "open_now": "Open now",
-            "toogle_now_failed": /*SFN*/(x: number) => `Could not toggle SG Ready output ${x}`/*NF*/,
+            "toggle_now_failed": /*SFN*/(x: number) => `Could not toggle SG Ready output ${x}`/*NF*/,
             "minimum_holding_time": "Minimum holding time",
             "minimum_holding_time_muted": "for SG Ready output 1 and SG Ready output 2",
             "remaining_holding_time": "Remaining holding time",

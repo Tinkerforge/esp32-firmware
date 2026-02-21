@@ -513,7 +513,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             {state.active_sgr_blocking_type !== undefined ?
                                 <div class="col-auto">
                                     <Button variant="primary"
-                                            onClick={() => API.call("heating/toggle_sgr_blocking", {}, () => __("heating.content.toogle_now_failed")(1))}>
+                                            onClick={() => API.call("heating/toggle_sgr_blocking", {}, () => __("heating.content.toggle_now_failed")(1))}>
                                         {state.heating_state.sgr_blocking === (state.active_sgr_blocking_type === 0) ? __("heating.content.open_now") : __("heating.content.close_now")}
                                     </Button>
                                 </div> : undefined}
@@ -534,7 +534,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             {state.active_sgr_extended_type !== undefined ?
                                 <div class="col-auto">
                                     <Button variant="primary"
-                                            onClick={() => API.call("heating/toggle_sgr_extended", {}, () => __("heating.content.toogle_now_failed")(2))}>
+                                            onClick={() => API.call("heating/toggle_sgr_extended", {}, () => __("heating.content.toggle_now_failed")(2))}>
                                         {state.heating_state.sgr_extended === (state.active_sgr_extended_type === 0) ? __("heating.content.open_now") : __("heating.content.close_now")}
                                     </Button>
                                 </div> : undefined}
