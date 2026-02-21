@@ -606,14 +606,14 @@ void Heating::update()
 
     const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
 
+    const time_t now = time(NULL);
+    struct tm current_time;
+    localtime_r(&now, &current_time);
+    const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
+
     if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
         logger.tracefln(this->trace_buffer_index, "No control active.");
     } else {
-        const time_t now = time(NULL);
-        struct tm current_time;
-        localtime_r(&now, &current_time);
-
-        const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
         if (minutes_since_midnight >= 24*60) {
             logger.tracefln(this->trace_buffer_index, "Too many minutes since midnight: %d.", minutes_since_midnight);
             return;
@@ -774,24 +774,19 @@ void Heating::update()
             const int32_t avg_temp = static_cast<int32_t>(today_avg);
 
             if (avg_temp < DAYTIME_EXTENSION_TEMP_THRESHOLD) {
-                const time_t now_dt = time(NULL);
-                struct tm local_now;
-                localtime_r(&now_dt, &local_now);
-                const uint16_t minutes_now = local_now.tm_hour * 60 + local_now.tm_min;
-
-                if ((minutes_now < DAYTIME_EXTENSION_START_MINUTES) || (minutes_now >= DAYTIME_EXTENSION_END_MINUTES)) {
+                if ((minutes_since_midnight < DAYTIME_EXTENSION_START_MINUTES) || (minutes_since_midnight >= DAYTIME_EXTENSION_END_MINUTES)) {
                     logger.tracefln(this->trace_buffer_index,
                                     "Daytime restriction active: avg_temp=%.2f°C < 5°C, time %02d:%02d outside 09:00-18:00 window. Suppressing extended operation.",
                                     avg_temp / 100.0f,
-                                    local_now.tm_hour,
-                                    local_now.tm_min);
+                                    current_time.tm_hour,
+                                    current_time.tm_min);
                     sg_ready1_on = false;
                 } else {
                     logger.tracefln(this->trace_buffer_index,
                                     "Daytime restriction: avg_temp=%.2f°C < 5°C, time %02d:%02d within 09:00-18:00 window. Extended operation allowed.",
                                     avg_temp / 100.0f,
-                                    local_now.tm_hour,
-                                    local_now.tm_min);
+                                    current_time.tm_hour,
+                                    current_time.tm_min);
                 }
             } else {
                 logger.tracefln(this->trace_buffer_index,
