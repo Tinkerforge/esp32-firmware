@@ -109,11 +109,34 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
     get_current_temperature(): number | null {
         const temps = this.state.temperatures;
-        if (!temps || (temps.today_avg === 32767)) {
+        if (!temps || !temps.first_date || !temps.temperatures || (temps.temperatures.length < 47)) {
             return null;
         }
-        // temperatures are stored as °C * 100
-        return temps.today_avg / 100;
+
+        const first_date_seconds = temps.first_date * 60;
+
+        // Compute today's average from the temperatures array
+        const now = new Date();
+        const today_midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+        const tomorrow_midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() / 1000;
+
+        let start_idx = Math.floor((today_midnight - first_date_seconds) / 3600);
+        let end_idx = Math.floor((tomorrow_midnight - first_date_seconds) / 3600);
+
+        if (start_idx < 0) start_idx = 0;
+        if (end_idx > temps.temperatures.length) end_idx = temps.temperatures.length;
+        if (start_idx >= end_idx) return null;
+
+        let sum = 0;
+        for (let i = start_idx; i < end_idx; i++) {
+            sum += temps.temperatures[i];
+        }
+        const avg = Math.round(sum / (end_idx - start_idx));
+
+        if (avg === 32767) return null;
+
+        // temperatures are stored as °C * 10
+        return avg / 10;
     }
 
     update_uplot() {

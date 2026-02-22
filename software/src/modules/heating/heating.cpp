@@ -31,12 +31,12 @@
 #include "options.h"
 #include "control_period.enum.h"
 
-// Heating curve temperature endpoints in degrees Celsius * 100
-static constexpr int16_t HEATING_CURVE_WARM_TEMP = 2000;  // 20.00°C
-static constexpr int16_t HEATING_CURVE_COLD_TEMP = -1000; // -10.00°C
+// Heating curve temperature endpoints in degrees Celsius * 10
+static constexpr int16_t HEATING_CURVE_WARM_TEMP = 200;  // 20.0°C
+static constexpr int16_t HEATING_CURVE_COLD_TEMP = -100; // -10.0°C
 
 // Daytime extension: extended operation from 09:00 to 18:00 if daily average < 5°C
-static constexpr int16_t DAYTIME_EXTENSION_TEMP_THRESHOLD = 500; // 5.00°C
+static constexpr int16_t DAYTIME_EXTENSION_TEMP_THRESHOLD = 50; // 5.0°C
 static constexpr uint16_t DAYTIME_EXTENSION_START_MINUTES = 9 * 60;   // 09:00
 static constexpr uint16_t DAYTIME_EXTENSION_END_MINUTES   = 18 * 60;  // 18:00
 
@@ -305,7 +305,7 @@ bool Heating::get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *ou
         return false;
     }
 
-    // Daily average temperature (in units of °C * 100)
+    // Daily average temperature (in units of °C * 10)
     const int32_t avg_temp = static_cast<int32_t>(today_avg);
 
     // Clamp to curve endpoints
@@ -313,7 +313,7 @@ bool Heating::get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *ou
 
     // Linear interpolation factor: 0.0 at warm (20°C), 1.0 at cold (-10°C)
     // t = (warm - clamped) / (warm - cold)
-    const int32_t temp_range = HEATING_CURVE_WARM_TEMP - HEATING_CURVE_COLD_TEMP; // 3000
+    const int32_t temp_range = HEATING_CURVE_WARM_TEMP - HEATING_CURVE_COLD_TEMP; // 300
     const int32_t t_num = HEATING_CURVE_WARM_TEMP - clamped_temp;
 
     const uint32_t extended_hours_warm = config.get("extended_hours_warm")->asUint();
@@ -333,8 +333,8 @@ bool Heating::get_heating_curve_hours(uint32_t *out_extended_hours, uint32_t *ou
     *out_extended_hours = interpolate(extended_hours_warm, extended_hours_cold);
     *out_blocking_hours = interpolate(blocking_hours_warm, blocking_hours_cold);
 
-    logger.tracefln(this->trace_buffer_index, "Heating curve: avg_temp=%.2f°C, extended=%lu h, blocking=%lu h",
-                    avg_temp / 100.0f,
+    logger.tracefln(this->trace_buffer_index, "Heating curve: avg_temp=%.1f°C, extended=%lu h, blocking=%lu h",
+                    avg_temp / 10.0f,
                     static_cast<unsigned long>(*out_extended_hours),
                     static_cast<unsigned long>(*out_blocking_hours));
 
@@ -785,22 +785,22 @@ void Heating::update()
             if (avg_temp < DAYTIME_EXTENSION_TEMP_THRESHOLD) {
                 if ((minutes_since_midnight < DAYTIME_EXTENSION_START_MINUTES) || (minutes_since_midnight >= DAYTIME_EXTENSION_END_MINUTES)) {
                     logger.tracefln(this->trace_buffer_index,
-                                    "Daytime restriction active: avg_temp=%.2f°C < 5°C, time %02d:%02d outside 09:00-18:00 window. Suppressing extended operation.",
-                                    avg_temp / 100.0f,
+                                    "Daytime restriction active: avg_temp=%.1f°C < 5°C, time %02d:%02d outside 09:00-18:00 window. Suppressing extended operation.",
+                                    avg_temp / 10.0f,
                                     current_time.tm_hour,
                                     current_time.tm_min);
                     sg_ready1_on = false;
                 } else {
                     logger.tracefln(this->trace_buffer_index,
-                                    "Daytime restriction: avg_temp=%.2f°C < 5°C, time %02d:%02d within 09:00-18:00 window. Extended operation allowed.",
-                                    avg_temp / 100.0f,
+                                    "Daytime restriction: avg_temp=%.1f°C < 5°C, time %02d:%02d within 09:00-18:00 window. Extended operation allowed.",
+                                    avg_temp / 10.0f,
                                     current_time.tm_hour,
                                     current_time.tm_min);
                 }
             } else {
                 logger.tracefln(this->trace_buffer_index,
-                                "Daytime restriction: avg_temp=%.2f°C >= 5°C threshold. No restriction applied.",
-                                avg_temp / 100.0f);
+                                "Daytime restriction: avg_temp=%.1f°C >= 5°C threshold. No restriction applied.",
+                                avg_temp / 10.0f);
             }
         } else {
             logger.tracefln(this->trace_buffer_index, "Daytime restriction: Temperature data not available. No restriction applied.");
@@ -841,12 +841,12 @@ void Heating::update()
 
     uint32_t override_until = sgr_blocking_override.get("override_until")->asUint();
     if (override_until > 0) {
-        uint32_t now = rtc.timestamp_minutes();
-        if (now >= override_until) {
+        uint32_t now_minutes = rtc.timestamp_minutes();
+        if (now_minutes >= override_until) {
             logger.tracefln(this->trace_buffer_index, "Override time is over. Resetting override.");
             sgr_blocking_override.get("override_until")->updateUint(0);
         } else {
-            logger.tracefln(this->trace_buffer_index, "Override time is active. Current time: %limin, override until: %limin.", now, override_until);
+            logger.tracefln(this->trace_buffer_index, "Override time is active. Current time: %limin, override until: %limin.", now_minutes, override_until);
             sg_ready0_on = false;
         }
     }
