@@ -19,7 +19,8 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment } from "preact";
+import { h, Fragment, createRef } from "preact";
+import { effect } from "@preact/signals-core";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -29,6 +30,8 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { InputFloat } from "../../ts/components/input_float";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
+import { UplotLoader } from "../../ts/components/uplot_loader";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { TemperatureSource } from "./temperature_source.enum";
 
 const INT16_MAX = 32767;
@@ -102,6 +105,35 @@ function format_temperature(raw: number): string {
     return util.toLocaleFixed(raw / 10, 1) + " °C";
 }
 
+// Interpolate the current temperature from the hourly array (like firmware get_current()).
+// first_date_seconds is the UTC timestamp in seconds of the first array element.
+// Returns the interpolated value in raw °C*10, or INT16_MAX if unavailable.
+function get_current_temperature(first_date_seconds: number, temperatures: number[]): number {
+    if (!first_date_seconds || !temperatures || temperatures.length < 47) {
+        return INT16_MAX;
+    }
+
+    const now_utc = Math.floor(Date.now() / 1000);
+
+    if (now_utc < first_date_seconds) {
+        return temperatures[0];
+    }
+
+    const seconds_since_start = now_utc - first_date_seconds;
+    const hour_index = Math.floor(seconds_since_start / 3600);
+
+    if (hour_index >= temperatures.length - 1) {
+        return temperatures[temperatures.length - 1];
+    }
+
+    // Interpolate between hour_index and hour_index + 1
+    const t0 = temperatures[hour_index];
+    const t1 = temperatures[hour_index + 1];
+    const seconds_into_hour = seconds_since_start - hour_index * 3600;
+
+    return Math.round(t0 + (t1 - t0) * seconds_into_hour / 3600);
+}
+
 type TemperaturesConfig = API.getType["temperatures/config"];
 
 interface TemperaturesState {
@@ -110,6 +142,9 @@ interface TemperaturesState {
 }
 
 export class Temperatures extends ConfigComponent<"temperatures/config", {}, TemperaturesState> {
+    uplot_loader_ref  = createRef();
+    uplot_wrapper_ref = createRef();
+
     constructor() {
         super('temperatures/config',
               () => __("temperatures.script.save_failed"));
@@ -120,7 +155,65 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
 
         util.addApiEventListener("temperatures/temperatures", () => {
             this.setState({temperatures: API.get("temperatures/temperatures")});
+            this.update_uplot();
         });
+
+        // Update vertical "now" line on time change
+        effect(() => this.update_uplot());
+    }
+
+    update_uplot() {
+        // Touch the reactive signal so effect() tracks the dependency
+        let date_now = util.get_date_now_1m_update_rate();
+
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        const temps = this.state.temperatures;
+        let data: UplotData;
+
+        if (!temps || !temps.first_date || !temps.temperatures || temps.temperatures.length < 47) {
+            data = {
+                keys: [null],
+                names: [null],
+                values: [null],
+                stacked: [null],
+                paths: [null],
+            }
+        } else {
+            // first_date is in minutes; convert to seconds
+            const first_date_seconds = temps.first_date * 60;
+
+            data = {
+                keys: [null, 'temperature'],
+                names: [null, __("temperatures.content.temperature")],
+                values: [[], []],
+                stacked: [null, false],
+                paths: [null, UplotPath.Line],
+                default_visibilty: [null, true],
+                lines_vertical: [],
+            }
+
+            for (let i = 0; i < temps.temperatures.length; i++) {
+                data.values[0].push(first_date_seconds + i * 3600);
+                data.values[1].push(temps.temperatures[i] / 10);
+            }
+
+            // Duplicate last point to close the line
+            data.values[0].push(first_date_seconds + temps.temperatures.length * 3600 - 1);
+            data.values[1].push(temps.temperatures[temps.temperatures.length - 1] / 10);
+
+            // Add vertical line at current time
+            const diff_seconds = Math.floor(date_now / 1000) - first_date_seconds;
+            const index = Math.floor(diff_seconds / 3600);
+            if (index >= 0 && index < temps.temperatures.length) {
+                data.lines_vertical.push({'index': index, 'text': __("temperatures.content.now"), 'color': [64, 64, 64, 0.2]});
+            }
+        }
+
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_wrapper_ref.current.set_data(data);
     }
 
     render(props: {}, state: TemperaturesState & TemperaturesConfig) {
@@ -144,6 +237,43 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             </FormRow>
                         ) : (
                             <>
+                                <FormRow label={__("temperatures.content.temperature_forecast")}>
+                                    <div class="card">
+                                        <div style="position: relative;">
+                                            <UplotLoader
+                                                ref={this.uplot_loader_ref}
+                                                show
+                                                marker_class="h4"
+                                                no_data={__("temperatures.content.no_data")}
+                                                loading={__("temperatures.content.loading")}>
+                                                <UplotWrapperB
+                                                    ref={this.uplot_wrapper_ref}
+                                                    class="temperatures-chart"
+                                                    sub_page="temperatures"
+                                                    color_cache_group="temperatures.default"
+                                                    show
+                                                    on_mount={() => this.update_uplot()}
+                                                    legend_time_label={__("temperatures.content.time")}
+                                                    legend_time_with_minutes
+                                                    aspect_ratio={3}
+                                                    x_format={{hour: '2-digit', minute: '2-digit'}}
+                                                    x_padding_factor={0}
+                                                    x_include_date
+                                                    y_unit="°C"
+                                                    y_label={__("temperatures.content.temperature_degc")}
+                                                    y_digits={1}
+                                                    only_show_visible
+                                                    padding={[30, 15, null, 5]}
+                                                />
+                                            </UplotLoader>
+                                        </div>
+                                    </div>
+                                </FormRow>
+                                <FormRow label={__("temperatures.content.current_temperature")} label_muted={new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}>
+                                    <InputText
+                                        value={temps ? format_temperature(get_current_temperature(temps.first_date * 60, temps.temperatures)) : __("temperatures.content.no_data")}
+                                    />
+                                </FormRow>
                                 <FormRow label={__("temperatures.content.today")} label_muted={temps?.first_date ? new Date(temps.first_date * 60 * 1000).toLocaleDateString() : ""}>
                                     <div class="row gx-2 gy-1">
                                         <div class="col-md-4">
