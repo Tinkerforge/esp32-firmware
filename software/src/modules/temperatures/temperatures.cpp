@@ -27,7 +27,7 @@
 #include "tools/string_builder.h"
 #include "options.h"
 
-static constexpr auto CHECK_INTERVAL = 6_h; // Update every 6 hours
+static constexpr auto CHECK_INTERVAL = 6_h;    // Update every 6 hours
 static constexpr auto RETRY_INTERVAL = 10_min; // Retry after 10 minutes on error
 
 void Temperatures::pre_setup()
@@ -36,8 +36,8 @@ void Temperatures::pre_setup()
         {"enable", Config::Bool(false)},
         {"source", Config::Enum(TemperatureSource::WeatherService)},
         {"api_url", Config::Str(OPTIONS_TEMPERATURES_API_URL(), 0, 64)},
-        {"lat", Config::Int32(0)},  // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
-        {"lon", Config::Int32(0)},  // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
+        {"lat", Config::Int32(0)}, // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
+        {"lon", Config::Int32(0)}, // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &api_url = update.get("api_url")->asString();
@@ -92,6 +92,17 @@ void Temperatures::pre_setup()
         {"first_date",    Config::Uint32(0)},                                         // UTC timestamp in minutes of local midnight
         {"temperatures",  Config::Array({}, Config::get_prototype_int16_0(), 0, 49)}, // 47-49 hourly temperatures in °C * 10
     });
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_trigger(
+        AutomationTriggerID::TemperatureNow,
+        Config::Object({
+            {"type",       Config::Uint8(0, 6)}, // 0=current, 1=today_min, 2=today_avg, 3=today_max, 4=tomorrow_min, 5=tomorrow_avg, 6=tomorrow_max
+            {"comparison", Config::Uint8(0, 1)}, // 0=greater, 1=less
+            {"value",      Config::Int16(0)},    // threshold in °C * 10
+        })
+    );
+#endif
 }
 
 void Temperatures::setup()
@@ -147,6 +158,9 @@ void Temperatures::register_urls()
 
         // Compute day stats from the new data
         compute_day_stats();
+#if MODULE_AUTOMATION_AVAILABLE()
+        trigger_automation();
+#endif
 
         const uint32_t current_minutes = rtc.timestamp_minutes();
         state.get("last_sync")->updateUint(current_minutes);
@@ -163,6 +177,9 @@ void Temperatures::register_urls()
     // Recompute day stats at midnight so today/tomorrow boundaries shift correctly
     task_scheduler.scheduleWallClock([this]() {
         this->compute_day_stats();
+#if MODULE_AUTOMATION_AVAILABLE()
+        this->trigger_automation();
+#endif
     }, 60_min, 0_ms, false);
 }
 
@@ -365,7 +382,7 @@ void Temperatures::handle_new_data()
         return;
     }
 
-    // API sends first_date in seconds; store as minutes (like day_ahead_prices)
+    // API sends first_date in seconds, store as minutes
     const uint32_t first_date = json_doc["first_date"].as<uint32_t>() / 60;
     JsonArray temps_arr = json_doc["temperatures"].as<JsonArray>();
     const size_t count = temps_arr.size();
@@ -392,6 +409,10 @@ void Temperatures::handle_new_data()
 
     // Compute day stats from the new data
     compute_day_stats();
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    trigger_automation();
+#endif
 
     const uint32_t current_minutes = rtc.timestamp_minutes();
     state.get("last_sync")->updateUint(current_minutes);
@@ -563,7 +584,7 @@ int16_t Temperatures::get_current()
     auto temps_arr = temperatures.get("temperatures");
     const size_t count = temps_arr->count();
 
-    if (first_date == 0 || count < 47) {
+    if ((first_date == 0) || (count < 47)) {
         return INT16_MAX; // No data available
     }
 
@@ -572,12 +593,11 @@ int16_t Temperatures::get_current()
         return INT16_MAX;
     }
 
-    // first_date is stored in minutes; convert to seconds for timestamp math
     const uint32_t first_date_seconds = first_date * 60;
     const uint32_t now_utc = static_cast<uint32_t>(tv_now.tv_sec);
 
     if (now_utc < first_date_seconds) {
-        // Before data starts — return first value
+        // Before data starts return first value
         return temps_arr->get(0)->asInt();
     }
 
@@ -585,7 +605,7 @@ int16_t Temperatures::get_current()
     const uint32_t hour_index = seconds_since_start / 3600;
 
     if (hour_index >= count - 1) {
-        // At or past the last slot — return last value
+        // At or past the last slot return last value
         return temps_arr->get(count - 1)->asInt();
     }
 
@@ -596,3 +616,78 @@ int16_t Temperatures::get_current()
 
     return static_cast<int16_t>(t0 + (t1 - t0) * static_cast<int32_t>(seconds_into_hour) / 3600);
 }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+void Temperatures::trigger_automation()
+{
+    if (boot_stage <= BootStage::SETUP) {
+        return;
+    }
+
+    const int16_t current = get_current();
+    const int16_t t_min   = today_min;
+    const int16_t t_max   = today_max;
+    const int16_t t_avg   = today_avg;
+    const int16_t tm_min  = tomorrow_min;
+    const int16_t tm_max  = tomorrow_max;
+    const int16_t tm_avg  = tomorrow_avg;
+
+    const bool changed = (current != prev_current)
+                      || (t_min   != prev_today_min)
+                      || (t_max   != prev_today_max)
+                      || (t_avg   != prev_today_avg)
+                      || (tm_min  != prev_tomorrow_min)
+                      || (tm_max  != prev_tomorrow_max)
+                      || (tm_avg  != prev_tomorrow_avg);
+
+    if (!changed) {
+        return;
+    }
+
+    prev_current      = current;
+    prev_today_min    = t_min;
+    prev_today_max    = t_max;
+    prev_today_avg    = t_avg;
+    prev_tomorrow_min = tm_min;
+    prev_tomorrow_max = tm_max;
+    prev_tomorrow_avg = tm_avg;
+
+    automation.trigger(AutomationTriggerID::TemperatureNow, nullptr, this);
+}
+
+bool Temperatures::has_triggered(const Config *conf, void *data)
+{
+    if (conf->getTag<AutomationTriggerID>() != AutomationTriggerID::TemperatureNow) {
+        return false;
+    }
+
+    const Config *cfg        = static_cast<const Config *>(conf->get());
+    const uint8_t type       = cfg->get("type")->asUint();
+    const uint8_t comparison = cfg->get("comparison")->asUint();
+    const int16_t value      = static_cast<int16_t>(cfg->get("value")->asInt());
+
+    int16_t measured;
+    switch (type) {
+        case 0: measured = get_current();      break;
+        case 1: measured = get_today_min();    break;
+        case 2: measured = get_today_avg();    break;
+        case 3: measured = get_today_max();    break;
+        case 4: measured = get_tomorrow_min(); break;
+        case 5: measured = get_tomorrow_avg(); break;
+        case 6: measured = get_tomorrow_max(); break;
+        default: return false;
+    }
+
+    if ((measured == INT16_MAX) || (measured == INT16_MIN)) {
+        return false; // No data available
+    }
+
+    if (comparison == 0) {
+        return measured > value;  // greater than
+    } else if (comparison == 1) {
+        return measured < value;  // less than
+    }
+
+    return false;
+}
+#endif

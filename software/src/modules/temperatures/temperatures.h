@@ -25,7 +25,12 @@
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
+#include "module_available.h"
 #include "temperature_source.enum.h"
+
+#if MODULE_AUTOMATION_AVAILABLE()
+#include "modules/automation/automation_backend.h"
+#endif
 
 #define TEMPERATURES_MAX_JSON_LENGTH 1024
 #define TEMPERATURES_MAX_ARDUINO_JSON_BUFFER_SIZE 1536
@@ -38,6 +43,9 @@ enum TemperaturesDownloadState {
 };
 
 class Temperatures final : public IModule
+#if MODULE_AUTOMATION_AVAILABLE()
+                        , public IAutomationBackend
+#endif
 {
 public:
     Temperatures(){}
@@ -53,6 +61,10 @@ public:
     int16_t get_tomorrow_avg();
     int16_t get_current();
 
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool has_triggered(const Config *conf, void *data) override;
+#endif
+
 private:
     void update();
     void retry_update(millis_t delay);
@@ -60,6 +72,9 @@ private:
     void handle_new_data();
     void handle_cleanup();
     void compute_day_stats();
+#if MODULE_AUTOMATION_AVAILABLE()
+    void trigger_automation();
+#endif
 
     char *json_buffer = nullptr;
     uint32_t json_buffer_position = 0;
@@ -75,8 +90,20 @@ private:
     int16_t tomorrow_max = INT16_MIN;
     int16_t tomorrow_avg = INT16_MAX;
 
+#if MODULE_AUTOMATION_AVAILABLE()
+    int16_t prev_current     = INT16_MAX;
+    int16_t prev_today_min   = INT16_MAX;
+    int16_t prev_today_max   = INT16_MIN;
+    int16_t prev_today_avg   = INT16_MAX;
+    int16_t prev_tomorrow_min = INT16_MAX;
+    int16_t prev_tomorrow_max = INT16_MIN;
+    int16_t prev_tomorrow_avg = INT16_MAX;
+#endif
+
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot temperatures;
     ConfigRoot temperatures_update;
 };
+
+#include "module_available_end.h"

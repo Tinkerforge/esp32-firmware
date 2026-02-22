@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "temperatures": {
         "status": {},
@@ -42,6 +43,35 @@ let x = {
             "no_data": "Keine Daten verfügbar",
             "not_configured": "Standort nicht konfiguriert",
             "unknown": "Unbekannt"
+        },
+        "automation": {
+            "trigger_text": /*FFN*/(type: number, comparison: number, value: number) => {
+                const type_names = [
+                    "aktuelle Außentemperatur",
+                    "heutige Mindesttemperatur",
+                    "heutige Durchschnittstemperatur",
+                    "heutige Höchsttemperatur",
+                    "morgige Mindesttemperatur",
+                    "morgige Durchschnittstemperatur",
+                    "morgige Höchsttemperatur",
+                ];
+                const type_name = type_names[type] ?? "unbekannt";
+                const comp = comparison == 0 ? "größer" : "kleiner";
+                return (<>Wenn die {type_name} <b>{comp}</b> als <b>{toLocaleFixed(value / 10, 1)} °C</b> ist,{" "}</>)
+            }/*NF*/,
+            "temperature_type": "Temperaturwert",
+            "type_current": "Aktuelle Außentemperatur",
+            "type_today_min": "Heutiges Minimum",
+            "type_today_avg": "Heutiger Durchschnitt",
+            "type_today_max": "Heutiges Maximum",
+            "type_tomorrow_min": "Morgiges Minimum",
+            "type_tomorrow_avg": "Morgiger Durchschnitt",
+            "type_tomorrow_max": "Morgiges Maximum",
+            "comparison": "Vergleich",
+            "comparison_greater_than": "Größer als",
+            "comparison_less_than": "Kleiner als",
+            "value": "Schwellwert",
+            "current_temperature": "Temperatur"
         },
         "script": {
             "save_failed": "Speichern der Temperatureinstellungen fehlgeschlagen"
