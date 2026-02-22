@@ -14,12 +14,6 @@ export interface state {
 }
 
 export interface temperatures {
-    today_date: number;
-    today_min: number;
-    today_max: number;
-    today_avg: number;
-    tomorrow_date: number;
-    tomorrow_min: number;
-    tomorrow_max: number;
-    tomorrow_avg: number;
+    first_date: number;
+    temperatures: number[];
 }

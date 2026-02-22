@@ -27,8 +27,8 @@
 #include "config.h"
 #include "temperature_source.enum.h"
 
-#define TEMPERATURES_MAX_JSON_LENGTH 512
-#define TEMPERATURES_MAX_ARDUINO_JSON_BUFFER_SIZE 512
+#define TEMPERATURES_MAX_JSON_LENGTH 1024
+#define TEMPERATURES_MAX_ARDUINO_JSON_BUFFER_SIZE 1536
 
 enum TemperaturesDownloadState {
     TEMPERATURES_DOWNLOAD_STATE_OK,
@@ -51,6 +51,7 @@ public:
     int16_t get_tomorrow_min();
     int16_t get_tomorrow_max();
     int16_t get_tomorrow_avg();
+    int16_t get_current();
 
 private:
     void update();
@@ -58,6 +59,7 @@ private:
     String get_api_url_with_path();
     void handle_new_data();
     void handle_cleanup();
+    void compute_day_stats();
 
     char *json_buffer = nullptr;
     uint32_t json_buffer_position = 0;
@@ -65,6 +67,13 @@ private:
     uint64_t task_id = 0;
 
     TemperaturesDownloadState download_state = TEMPERATURES_DOWNLOAD_STATE_OK;
+
+    int16_t today_min    = INT16_MAX;
+    int16_t today_max    = INT16_MIN;
+    int16_t today_avg    = INT16_MAX;
+    int16_t tomorrow_min = INT16_MAX;
+    int16_t tomorrow_max = INT16_MIN;
+    int16_t tomorrow_avg = INT16_MAX;
 
     ConfigRoot config;
     ConfigRoot state;

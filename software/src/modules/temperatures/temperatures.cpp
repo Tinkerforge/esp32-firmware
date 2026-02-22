@@ -58,14 +58,14 @@ void Temperatures::pre_setup()
             state.get("next_check")->updateUint(0);
 
             // Reset temperature data
-            temperatures.get("today_date")->updateUint(0);
-            temperatures.get("today_min")->updateInt(INT16_MAX);
-            temperatures.get("today_max")->updateInt(INT16_MIN);
-            temperatures.get("today_avg")->updateInt(INT16_MAX);
-            temperatures.get("tomorrow_date")->updateUint(0);
-            temperatures.get("tomorrow_min")->updateInt(INT16_MAX);
-            temperatures.get("tomorrow_max")->updateInt(INT16_MIN);
-            temperatures.get("tomorrow_avg")->updateInt(INT16_MAX);
+            temperatures.get("first_date")->updateUint(0);
+            temperatures.get("temperatures")->removeAll();
+            today_min = INT16_MAX;
+            today_max = INT16_MIN;
+            today_avg = INT16_MAX;
+            tomorrow_min = INT16_MAX;
+            tomorrow_max = INT16_MIN;
+            tomorrow_avg = INT16_MAX;
 
             if (boot_stage == BootStage::LOOP) {
                 task_scheduler.scheduleOnce([this]() {
@@ -84,25 +84,13 @@ void Temperatures::pre_setup()
     });
 
     temperatures = Config::Object({
-        {"today_date",    Config::Uint32(0)},     // unix timestamp in seconds
-        {"today_min",     Config::Int16(INT16_MAX)},   // temperature in °C * 100 (e.g., 1050 = 10.50°C)
-        {"today_max",     Config::Int16(INT16_MIN)},   // temperature in °C * 100
-        {"today_avg",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
-        {"tomorrow_date", Config::Uint32(0)},     // unix timestamp in seconds
-        {"tomorrow_min",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
-        {"tomorrow_max",  Config::Int16(INT16_MIN)},   // temperature in °C * 100
-        {"tomorrow_avg",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
+        {"first_date",    Config::Uint32(0)},                                         // UTC timestamp in minutes of local midnight
+        {"temperatures",  Config::Array({}, Config::get_prototype_int16_0(), 0, 49)}, // 47-49 hourly temperatures in °C * 10
     });
 
     temperatures_update = Config::Object({
-        {"today_date",    Config::Uint32(0)},     // unix timestamp in seconds
-        {"today_min",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
-        {"today_max",     Config::Int16(INT16_MIN)},   // temperature in °C * 100
-        {"today_avg",     Config::Int16(INT16_MAX)},   // temperature in °C * 100
-        {"tomorrow_date", Config::Uint32(0)},     // unix timestamp in seconds
-        {"tomorrow_min",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
-        {"tomorrow_max",  Config::Int16(INT16_MIN)},   // temperature in °C * 100
-        {"tomorrow_avg",  Config::Int16(INT16_MAX)},   // temperature in °C * 100
+        {"first_date",    Config::Uint32(0)},                                         // UTC timestamp in minutes of local midnight
+        {"temperatures",  Config::Array({}, Config::get_prototype_int16_0(), 0, 49)}, // 47-49 hourly temperatures in °C * 10
     });
 }
 
@@ -130,36 +118,35 @@ void Temperatures::register_urls()
             return;
         }
 
-        const uint32_t today_date    = temperatures_update.get("today_date")->asUint();
-        const int16_t  today_min     = temperatures_update.get("today_min")->asInt();
-        const int16_t  today_max     = temperatures_update.get("today_max")->asInt();
-        const uint32_t tomorrow_date = temperatures_update.get("tomorrow_date")->asUint();
-        const int16_t  tomorrow_min  = temperatures_update.get("tomorrow_min")->asInt();
-        const int16_t  tomorrow_max  = temperatures_update.get("tomorrow_max")->asInt();
+        const uint32_t first_date = temperatures_update.get("first_date")->asUint();
 
-        if (today_date == 0 && tomorrow_date == 0) {
-            errmsg = "At least one of today_date or tomorrow_date must be non-zero";
+        if (first_date == 0) {
+            errmsg = "first_date must be non-zero";
             return;
         }
 
-        if (today_date != 0 && today_min > today_max) {
-            errmsg = "today_min must be <= today_max";
+        auto src_arr = temperatures_update.get("temperatures");
+        const size_t count = src_arr->count();
+
+        if ((count < 47) || (count > 49)) {
+            errmsg = "temperatures array must have 47-49 elements";
             return;
         }
 
-        if (tomorrow_date != 0 && tomorrow_min > tomorrow_max) {
-            errmsg = "tomorrow_min must be <= tomorrow_max";
-            return;
+        // Store first_date (already in minutes from caller)
+        temperatures.get("first_date")->updateUint(first_date);
+
+        // Copy temperatures array
+        auto dst_arr = temperatures.get("temperatures");
+        while (dst_arr->count() > count) dst_arr->removeLast();
+        while (dst_arr->count() < count) dst_arr->add();
+
+        for (size_t i = 0; i < count; i++) {
+            dst_arr->get(i)->updateInt(src_arr->get(i)->asInt());
         }
 
-        temperatures.get("today_date")->updateUint(temperatures_update.get("today_date")->asUint());
-        temperatures.get("today_min")->updateInt(temperatures_update.get("today_min")->asInt());
-        temperatures.get("today_max")->updateInt(temperatures_update.get("today_max")->asInt());
-        temperatures.get("today_avg")->updateInt(temperatures_update.get("today_avg")->asInt());
-        temperatures.get("tomorrow_date")->updateUint(temperatures_update.get("tomorrow_date")->asUint());
-        temperatures.get("tomorrow_min")->updateInt(temperatures_update.get("tomorrow_min")->asInt());
-        temperatures.get("tomorrow_max")->updateInt(temperatures_update.get("tomorrow_max")->asInt());
-        temperatures.get("tomorrow_avg")->updateInt(temperatures_update.get("tomorrow_avg")->asInt());
+        // Compute day stats from the new data
+        compute_day_stats();
 
         const uint32_t current_minutes = rtc.timestamp_minutes();
         state.get("last_sync")->updateUint(current_minutes);
@@ -172,6 +159,11 @@ void Temperatures::register_urls()
             this->update();
         }, CHECK_INTERVAL);
     });
+
+    // Recompute day stats at midnight so today/tomorrow boundaries shift correctly
+    task_scheduler.scheduleWallClock([this]() {
+        this->compute_day_stats();
+    }, 60_min, 0_ms, false);
 }
 
 void Temperatures::retry_update(millis_t delay)
@@ -352,7 +344,9 @@ void Temperatures::handle_new_data()
 {
     // Deserialize json received from API
     // Expected format:
-    // {"today":{"date":1768608000,"min":3.0,"max":10.4},"tomorrow":{"date":1768694400,"min":0.1,"max":5.0}}
+    // {"first_date":1768608000,"temperatures":[82,85,87,...]}
+    // first_date is UTC timestamp of local midnight (in seconds from API).
+    // temperatures is a flat array of 47-49 temperatures in °C * 10.
     DynamicJsonDocument json_doc{TEMPERATURES_MAX_ARDUINO_JSON_BUFFER_SIZE};
     DeserializationError error = deserializeJson(json_doc, json_buffer, json_buffer_position);
     if (error) {
@@ -363,60 +357,142 @@ void Temperatures::handle_new_data()
         return;
     }
 
-    // Helper: clamp float to int16_t range before cast to avoid undefined behavior
-    auto float_to_int16 = [](float val) -> int16_t {
-        float scaled = roundf(val * 100.0f);
-        if (scaled > static_cast<float>(INT16_MAX)) return INT16_MAX;
-        if (scaled < static_cast<float>(INT16_MIN)) return INT16_MIN;
-        return static_cast<int16_t>(scaled);
-    };
-
-    bool got_data = false;
-
-    JsonObject today = json_doc["today"];
-    if (today) {
-        if (!today.containsKey("date") || !today.containsKey("min") || !today.containsKey("max") || !today.containsKey("avg")) {
-            logger.printfln("JSON 'today' object missing required keys (date, min, max, avg)");
-            download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
-            state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
-            retry_update(RETRY_INTERVAL);
-            return;
-        }
-        temperatures.get("today_date")->updateUint(today["date"].as<uint32_t>());
-        temperatures.get("today_min")->updateInt(float_to_int16(today["min"].as<float>()));
-        temperatures.get("today_max")->updateInt(float_to_int16(today["max"].as<float>()));
-        temperatures.get("today_avg")->updateInt(float_to_int16(today["avg"].as<float>()));
-        got_data = true;
-    }
-
-    JsonObject tomorrow = json_doc["tomorrow"];
-    if (tomorrow) {
-        if (!tomorrow.containsKey("date") || !tomorrow.containsKey("min") || !tomorrow.containsKey("max") || !tomorrow.containsKey("avg")) {
-            logger.printfln("JSON 'tomorrow' object missing required keys (date, min, max, avg)");
-            download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
-            state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
-            retry_update(RETRY_INTERVAL);
-            return;
-        }
-        temperatures.get("tomorrow_date")->updateUint(tomorrow["date"].as<uint32_t>());
-        temperatures.get("tomorrow_min")->updateInt(float_to_int16(tomorrow["min"].as<float>()));
-        temperatures.get("tomorrow_max")->updateInt(float_to_int16(tomorrow["max"].as<float>()));
-        temperatures.get("tomorrow_avg")->updateInt(float_to_int16(tomorrow["avg"].as<float>()));
-        got_data = true;
-    }
-
-    if (!got_data) {
-        logger.printfln("JSON contains neither 'today' nor 'tomorrow' object");
+    if (!json_doc.containsKey("first_date") || !json_doc.containsKey("temperatures")) {
+        logger.printfln("JSON missing 'first_date' or 'temperatures' key");
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
         state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
         retry_update(RETRY_INTERVAL);
         return;
     }
 
+    // API sends first_date in seconds; store as minutes (like day_ahead_prices)
+    const uint32_t first_date = json_doc["first_date"].as<uint32_t>() / 60;
+    JsonArray temps_arr = json_doc["temperatures"].as<JsonArray>();
+    const size_t count = temps_arr.size();
+
+    if ((first_date == 0) || (count < 47) || (count > 49)) {
+        logger.printfln("Invalid first_date (%lu) or temperatures count (%u)", static_cast<unsigned long>(first_date), static_cast<unsigned>(count));
+        download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
+        state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
+        retry_update(RETRY_INTERVAL);
+        return;
+    }
+
+    // Store first_date (in minutes)
+    temperatures.get("first_date")->updateUint(first_date);
+
+    // Copy temperatures array
+    auto dst_arr = temperatures.get("temperatures");
+    while (dst_arr->count() > count) dst_arr->removeLast();
+    while (dst_arr->count() < count) dst_arr->add();
+
+    for (size_t i = 0; i < count; i++) {
+        dst_arr->get(i)->updateInt(temps_arr[i].as<int16_t>());
+    }
+
+    // Compute day stats from the new data
+    compute_day_stats();
+
     const uint32_t current_minutes = rtc.timestamp_minutes();
     state.get("last_sync")->updateUint(current_minutes);
     state.get("last_check")->updateUint(current_minutes);
     state.get("next_check")->updateUint(current_minutes + (CHECK_INTERVAL / 1_min).as<uint32_t>());
+}
+
+// Compute min/avg/max for today and tomorrow from the flat temperatures array.
+// Uses localtime_r/mktime to find local midnight boundaries, then converts
+// to array indices via (midnight_utc - first_date_seconds) / 3600.
+void Temperatures::compute_day_stats()
+{
+    const uint32_t first_date = temperatures.get("first_date")->asUint();
+    auto temps_arr = temperatures.get("temperatures");
+    const size_t count = temps_arr->count();
+
+    if (first_date == 0 || count < 47) {
+        return;
+    }
+
+    // first_date is stored in minutes; convert to seconds for timestamp math
+    const uint32_t first_date_seconds = first_date * 60;
+
+    struct timeval tv_now;
+    if (!rtc.clock_synced(&tv_now)) {
+        return;
+    }
+
+    const time_t now_utc = tv_now.tv_sec;
+
+    // Find local midnight of today: convert now to local time, zero out h/m/s, convert back
+    struct tm tm_local;
+    localtime_r(&now_utc, &tm_local);
+
+    struct tm tm_today_midnight = tm_local;
+    tm_today_midnight.tm_hour = 0;
+    tm_today_midnight.tm_min = 0;
+    tm_today_midnight.tm_sec = 0;
+    tm_today_midnight.tm_isdst = -1; // let mktime figure out DST
+    const time_t today_midnight_utc = mktime(&tm_today_midnight);
+
+    // Tomorrow midnight: add 1 day
+    struct tm tm_tomorrow_midnight = tm_local;
+    tm_tomorrow_midnight.tm_mday += 1;
+    tm_tomorrow_midnight.tm_hour = 0;
+    tm_tomorrow_midnight.tm_min = 0;
+    tm_tomorrow_midnight.tm_sec = 0;
+    tm_tomorrow_midnight.tm_isdst = -1;
+    const time_t tomorrow_midnight_utc = mktime(&tm_tomorrow_midnight);
+
+    // Day-after-tomorrow midnight (end of tomorrow)
+    struct tm tm_day_after = tm_local;
+    tm_day_after.tm_mday += 2;
+    tm_day_after.tm_hour = 0;
+    tm_day_after.tm_min = 0;
+    tm_day_after.tm_sec = 0;
+    tm_day_after.tm_isdst = -1;
+    const time_t day_after_midnight_utc = mktime(&tm_day_after);
+
+    // Convert UTC timestamps to array indices
+    // Each array element is 1 hour apart, starting at first_date_seconds
+    auto utc_to_index = [first_date_seconds](time_t utc) -> int32_t {
+        return static_cast<int32_t>((utc - static_cast<time_t>(first_date_seconds)) / 3600);
+    };
+
+    const int32_t today_start_idx    = utc_to_index(today_midnight_utc);
+    const int32_t tomorrow_start_idx = utc_to_index(tomorrow_midnight_utc);
+    const int32_t day_after_idx      = utc_to_index(day_after_midnight_utc);
+
+    // Helper to compute min/avg/max over a slice [start_idx, end_idx)
+    auto compute_slice = [&](int32_t start_idx, int32_t end_idx,
+                             int16_t &out_min, int16_t &out_max, int16_t &out_avg) {
+        // Clamp to valid array bounds
+        if (start_idx < 0) start_idx = 0;
+        if (end_idx > static_cast<int32_t>(count)) end_idx = static_cast<int32_t>(count);
+
+        if (start_idx >= end_idx) {
+            out_min = INT16_MAX;
+            out_max = INT16_MIN;
+            out_avg = INT16_MAX;
+            return;
+        }
+
+        int16_t min_val = INT16_MAX;
+        int16_t max_val = INT16_MIN;
+        int32_t sum = 0;
+
+        for (int32_t i = start_idx; i < end_idx; i++) {
+            const int16_t val = temps_arr->get(static_cast<size_t>(i))->asInt();
+            if (val < min_val) min_val = val;
+            if (val > max_val) max_val = val;
+            sum += val;
+        }
+
+        out_min = min_val;
+        out_max = max_val;
+        out_avg = static_cast<int16_t>(sum / (end_idx - start_idx));
+    };
+
+    compute_slice(today_start_idx, tomorrow_start_idx, today_min, today_max, today_avg);
+    compute_slice(tomorrow_start_idx, day_after_idx, tomorrow_min, tomorrow_max, tomorrow_avg);
 }
 
 // Create API path that includes currently configured latitude and longitude
@@ -453,30 +529,70 @@ String Temperatures::get_api_url_with_path()
 
 int16_t Temperatures::get_today_min()
 {
-    return temperatures.get("today_min")->asInt();
+    return today_min;
 }
 
 int16_t Temperatures::get_today_max()
 {
-    return temperatures.get("today_max")->asInt();
+    return today_max;
 }
 
 int16_t Temperatures::get_today_avg()
 {
-    return temperatures.get("today_avg")->asInt();
+    return today_avg;
 }
 
 int16_t Temperatures::get_tomorrow_min()
 {
-    return temperatures.get("tomorrow_min")->asInt();
+    return tomorrow_min;
 }
 
 int16_t Temperatures::get_tomorrow_max()
 {
-    return temperatures.get("tomorrow_max")->asInt();
+    return tomorrow_max;
 }
 
 int16_t Temperatures::get_tomorrow_avg()
 {
-    return temperatures.get("tomorrow_avg")->asInt();
+    return tomorrow_avg;
+}
+
+int16_t Temperatures::get_current()
+{
+    const uint32_t first_date = temperatures.get("first_date")->asUint();
+    auto temps_arr = temperatures.get("temperatures");
+    const size_t count = temps_arr->count();
+
+    if (first_date == 0 || count < 47) {
+        return INT16_MAX; // No data available
+    }
+
+    struct timeval tv_now;
+    if (!rtc.clock_synced(&tv_now)) {
+        return INT16_MAX;
+    }
+
+    // first_date is stored in minutes; convert to seconds for timestamp math
+    const uint32_t first_date_seconds = first_date * 60;
+    const uint32_t now_utc = static_cast<uint32_t>(tv_now.tv_sec);
+
+    if (now_utc < first_date_seconds) {
+        // Before data starts — return first value
+        return temps_arr->get(0)->asInt();
+    }
+
+    const uint32_t seconds_since_start = now_utc - first_date_seconds;
+    const uint32_t hour_index = seconds_since_start / 3600;
+
+    if (hour_index >= count - 1) {
+        // At or past the last slot — return last value
+        return temps_arr->get(count - 1)->asInt();
+    }
+
+    // Interpolate between hour_index and hour_index + 1
+    const int32_t t0 = temps_arr->get(hour_index)->asInt();
+    const int32_t t1 = temps_arr->get(hour_index + 1)->asInt();
+    const uint32_t seconds_into_hour = seconds_since_start - hour_index * 3600;
+
+    return static_cast<int16_t>(t0 + (t1 - t0) * static_cast<int32_t>(seconds_into_hour) / 3600);
 }
