@@ -245,7 +245,6 @@ static bool action_needs_reboot(AutomationActionID id)
 {
     switch (id) {
         case AutomationActionID::SetCurrent:
-        case AutomationActionID::EMSGReadySwitch:
         case AutomationActionID::PMBlockCharge:
         case AutomationActionID::PMLimitMaxCurrent:
             return true;

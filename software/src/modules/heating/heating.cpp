@@ -160,17 +160,6 @@ void Heating::register_urls()
         state.get("sgr_extended")->updateBool(!state.get("sgr_extended")->asBool());
     }, true);
 
-#if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.has_task_with_action(AutomationActionID::EMSGReadySwitch)) {
-        logger.printfln("Module disabled because automation rules with SG Ready actions exist");
-        logger.tracefln(this->trace_buffer_index, "Module disabled because automation rules with SG Ready actions exist");
-
-        state.get("automation_override")->updateBool(true);
-
-        return;
-    }
-#endif
-
     task_scheduler.scheduleWallClock([this]() {
         this->update();
     }, HEATING_UPDATE_INTERVAL, 0_ms, true);
@@ -178,10 +167,6 @@ void Heating::register_urls()
 
 void Heating::register_events()
 {
-    if (state.get("automation_override")->asBool()) {
-        return;
-    }
-
     if (startup_delay_task_id != 0) {
         if (config.get("extended")->asBool() || config.get("blocking")->asBool()) {
             event.registerEvent("day_ahead_prices/state", {}, [this](const Config * /*cfg*/) {
@@ -370,16 +355,35 @@ void Heating::update_plan()
 
 void Heating::update()
 {
-    if (state.get("automation_override")->asBool()) {
-        const uint64_t task_id = task_scheduler.currentTaskId();
+#if MODULE_AUTOMATION_AVAILABLE()
+    bool had_sgr_automation = state.get("automation_override")->asBool();
+    bool has_sgr_automation = automation.has_task_with_action(AutomationActionID::EMSGReadySwitch);
+    if (has_sgr_automation != had_sgr_automation) {
+        state.get("automation_override")->updateBool(has_sgr_automation);
+        if (has_sgr_automation) {
+            logger.printfln("Module disabled because automation rules with SG Ready actions exist");
+            logger.tracefln(this->trace_buffer_index, "Module disabled because automation rules with SG Ready actions exist");
 
-        if (task_id != 0) {
-            const auto result = task_scheduler.cancel(task_id);
-            logger.printfln("Cancelled update task: %u", static_cast<unsigned>(result));
+            // Clear stale heating state so the UI doesn't show outdated info.
+            last_sg_ready_change = 0;
+            state.get("sgr_blocking")->updateBool(false);
+            state.get("sgr_extended")->updateBool(false);
+            state.get("p14enwg")->updateBool(false);
+            state.get("next_update")->updateUint(0);
+            if (override_task_id != 0) {
+                task_scheduler.cancel(override_task_id);
+                override_task_id = 0;
+                sgr_blocking_override.get("override_until")->updateUint(0);
+            }
+        } else {
+            logger.printfln("Module re-enabled because automation rules with SG Ready actions were removed");
+            logger.tracefln(this->trace_buffer_index, "Module re-enabled because automation rules with SG Ready actions were removed");
         }
-
+    }
+    if (has_sgr_automation) {
         return;
     }
+#endif
 
     // Only update if clock is synced. Heating control depends on time of day.
     struct timeval tv_now;

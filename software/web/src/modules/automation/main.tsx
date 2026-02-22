@@ -76,11 +76,6 @@ const ACTIONS_REQUIRING_REBOOT: Set<number> = new Set([
     // leaves a stale slot; adding at runtime misses the initial slot setup.
     AutomationActionID.SetCurrent,
 
-    // EMSGReadySwitch (16): The heating module checks once at boot (heating.cpp)
-    // for conflicts with this action. Adding at runtime bypasses the conflict check;
-    // removing at runtime leaves heating permanently disabled.
-    AutomationActionID.EMSGReadySwitch,
-
     // PMBlockCharge (15): The power manager is force-enabled at boot (power_manager.cpp)
     // if this action exists. Adding at runtime with PM disabled means the action won't work.
     AutomationActionID.PMBlockCharge,
