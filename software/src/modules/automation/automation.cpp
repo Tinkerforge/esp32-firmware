@@ -141,15 +141,22 @@ void Automation::setup()
                 }
             }
 
-            task_scheduler.scheduleOnce([this]() {
-                this->apply_config();
-            });
+            // Only apply the config live if the set of reboot-requiring trigger/action
+            // types hasn't changed since boot. If the same types are present, boot-time
+            // initialization already happened and live-apply is safe.
+            auto new_types = get_reboot_types(cfg);
+            if ((new_types.actions == this->boot_reboot_types.actions) && (new_types.triggers == this->boot_reboot_types.triggers)) {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_config();
+                });
+            }
 
             return "";
         }
     };
 
     api.restorePersistentConfig("automation/config", &config);
+    boot_reboot_types = get_reboot_types(config);
     config_in_use = config;
 
     const size_t task_count = config.get("tasks")->count();
@@ -220,6 +227,50 @@ void Automation::apply_config()
     }
 
     handle_cron_task();
+}
+
+static bool trigger_needs_reboot(AutomationTriggerID id)
+{
+    switch (id) {
+        case AutomationTriggerID::MQTT:
+        case AutomationTriggerID::ChargerState:
+        case AutomationTriggerID::EVSEExternalCurrentWd:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static bool action_needs_reboot(AutomationActionID id)
+{
+    switch (id) {
+        case AutomationActionID::SetCurrent:
+        case AutomationActionID::EMSGReadySwitch:
+        case AutomationActionID::PMBlockCharge:
+        case AutomationActionID::PMLimitMaxCurrent:
+            return true;
+        default:
+            return false;
+    }
+}
+
+Automation::RebootTypeSet Automation::get_reboot_types(const Config &cfg)
+{
+    RebootTypeSet set = {0, 0};
+    for (const Config &task : cfg.get("tasks")) {
+        const Config *trigger = static_cast<const Config *>(task.get("trigger"));
+        AutomationTriggerID tid = trigger->getTag<AutomationTriggerID>();
+        if (trigger_needs_reboot(tid)) {
+            set.triggers |= 1u << static_cast<uint8_t>(tid);
+        }
+
+        const Config *action = static_cast<const Config *>(task.get("action"));
+        AutomationActionID aid = action->getTag<AutomationActionID>();
+        if (action_needs_reboot(aid)) {
+            set.actions |= 1u << static_cast<uint8_t>(aid);
+        }
+    }
+    return set;
 }
 
 void Automation::register_action(AutomationActionID id, const Config &cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
