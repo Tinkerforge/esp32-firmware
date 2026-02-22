@@ -68,6 +68,8 @@ public:
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 
 private:
+    void apply_config();
+    void handle_cron_task();
     Config config_tasks_prototype;
     Config state_actions_prototype;
     Config state_triggers_prototype;
@@ -80,4 +82,7 @@ private:
     std::vector<ConfUnionPrototype<AutomationTriggerID>>    trigger_prototypes;
     std::vector<ConfUnionPrototype<AutomationActionID>>     action_prototypes;
     std::unique_ptr<micros_t[]> last_run;
+
+    std::vector<uint64_t> pending_delayed_tasks;
+    uint64_t cron_task_id = 0;
 };

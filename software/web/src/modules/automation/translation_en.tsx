@@ -133,6 +133,7 @@ let x = {
             "action": "Action",
             "last_run": "Run",
             "never": "Not since reboot",
+            "not_yet_triggered": "Not yet triggered",
             "needs_reboot": "Needs reboot",
             "delay": "Delay",
             "add_rule_title": "Add rule",

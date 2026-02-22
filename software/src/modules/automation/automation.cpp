@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -140,6 +141,10 @@ void Automation::setup()
                 }
             }
 
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+
             return "";
         }
     };
@@ -153,8 +158,23 @@ void Automation::setup()
 
     last_run = heap_alloc_array<micros_t>(task_count);
 
-    if (has_task_with_trigger(AutomationTriggerID::Cron)) {
-        task_scheduler.scheduleUncancelable([this]() {
+    handle_cron_task();
+
+    initialized = true;
+}
+
+void Automation::register_urls()
+{
+    api.addPersistentConfig("automation/config", &config);
+    api.addState("automation/state", &state);
+}
+
+void Automation::handle_cron_task()
+{
+    bool need_cron = has_task_with_trigger(AutomationTriggerID::Cron);
+
+    if (need_cron && cron_task_id == 0) {
+        cron_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             static int last_min = 0;
             static bool was_synced = false;
             timeval tv;
@@ -170,15 +190,36 @@ void Automation::setup()
             last_min = time_struct.tm_min;
             was_synced = is_synced;
         }, 1_s);
+    } else if (!need_cron && cron_task_id != 0) {
+        task_scheduler.cancel(cron_task_id);
+        cron_task_id = 0;
     }
-
-    initialized = true;
 }
 
-void Automation::register_urls()
+void Automation::apply_config()
 {
-    api.addPersistentConfig("automation/config", &config);
-    api.addState("automation/state", &state);
+    // Cancel any pending delayed actions before replacing config_in_use.
+    // Their lambdas capture raw Config pointers into the old config tree,
+    // which would become dangling after the assignment below.
+    for (uint64_t task_id : pending_delayed_tasks) {
+        task_scheduler.cancel(task_id);
+    }
+    pending_delayed_tasks.clear();
+
+    config_in_use = config;
+
+    const size_t task_count = config_in_use.get("tasks")->count();
+
+    // Reallocate last_run array for the new task count.
+    // We zero all timestamps, which means tasks may re-fire once.
+    last_run = heap_alloc_array<micros_t>(task_count);
+
+    this->state.get("last_run")->setCount(task_count);
+    for (size_t i = 0; i < task_count; ++i) {
+        static_cast<Config *>(state.get("last_run")->get(i))->updateUptime(micros_t{0});
+    }
+
+    handle_cron_task();
 }
 
 void Automation::register_action(AutomationActionID id, const Config &cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
@@ -307,9 +348,20 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
             const ActionCb &cb = action_map[action_ident].callback;
             if (delay > 0_s) {
                 logger.printfln("Running rule #%d in %lu seconds", current_rule, delay.as<uint32_t>());
-                task_scheduler.scheduleOnce([cb, action](){
+                uint64_t task_id = task_scheduler.scheduleOnce([this, cb, action](){
                     cb(static_cast<const Config *>(action->get()));
+
+                    // Remove this task from the pending list now that it is executed
+                    uint64_t current_id = task_scheduler.currentTaskId();
+                    for (size_t j = 0; j < pending_delayed_tasks.size(); ++j) {
+                        if (pending_delayed_tasks[j] == current_id) {
+                            pending_delayed_tasks[j] = pending_delayed_tasks.back();
+                            pending_delayed_tasks.pop_back();
+                            break;
+                        }
+                    }
                 }, delay);
+                pending_delayed_tasks.push_back(task_id);
             } else {
                 logger.printfln("Running rule #%d", current_rule);
                 cb(static_cast<const Config *>(action->get()));

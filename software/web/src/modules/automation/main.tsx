@@ -56,6 +56,52 @@ type AutomationState = {
 let automation_trigger_components: AutomationTriggerComponents = {};
 let automation_action_components: AutomationActionComponents = {};
 
+const TRIGGERS_REQUIRING_REBOOT: Set<number> = new Set([
+    // MQTT (3): Topic subscriptions are created once in mqtt.cpp register_urls().
+    // New automation MQTT triggers added at runtime won't have their topics subscribed.
+    AutomationTriggerID.MQTT,
+
+    // ChargerState (2): The event listener on evse/state is only registered in
+    // evse_common.cpp register_events() if a ChargerState trigger exists at boot.
+    AutomationTriggerID.ChargerState,
+
+    // EVSEExternalCurrentWd (9): The 1-second monitoring task is only started in
+    // evse_common.cpp register_urls() if this trigger exists at boot time.
+    AutomationTriggerID.EVSEExternalCurrentWd,
+]);
+
+const ACTIONS_REQUIRING_REBOOT: Set<number> = new Set([
+    // SetCurrent (3): The CHARGING_SLOT_AUTOMATION slot is only cleared in
+    // evse_common.cpp if no SetCurrent action exists at boot. Removing at runtime
+    // leaves a stale slot; adding at runtime misses the initial slot setup.
+    AutomationActionID.SetCurrent,
+
+    // EMSGReadySwitch (16): The heating module checks once at boot (heating.cpp)
+    // for conflicts with this action. Adding at runtime bypasses the conflict check;
+    // removing at runtime leaves heating permanently disabled.
+    AutomationActionID.EMSGReadySwitch,
+
+    // PMBlockCharge (15): The power manager is force-enabled at boot (power_manager.cpp)
+    // if this action exists. Adding at runtime with PM disabled means the action won't work.
+    AutomationActionID.PMBlockCharge,
+
+    // PMLimitMaxCurrent (14): Same as PMBlockCharge - the power manager is only
+    // force-enabled at boot time if this action type is present.
+    AutomationActionID.PMLimitMaxCurrent,
+]);
+
+function configNeedsReboot(tasks: Task[]): boolean {
+    for (const task of tasks) {
+        if (TRIGGERS_REQUIRING_REBOOT.has(task.trigger[0] as number)) {
+            return true;
+        }
+        if (ACTIONS_REQUIRING_REBOOT.has(task.action[0] as number)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export class Automation extends ConfigComponent<"automation/config", {}, AutomationState> {
     constructor() {
         super('automation/config',
@@ -82,6 +128,16 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 last_run: state.last_run,
             })
         });
+    }
+
+    override async sendSave(topic: "automation/config", cfg: API.getType["automation/config"]) {
+        // Check both the currently saved config and the new config being saved.
+        // If either contains trigger/action types that require boot-time initialization,
+        // a reboot is needed. This covers both adding and removing problematic types.
+        const saved_config = API.get("automation/config");
+        const needs_reboot = configNeedsReboot(cfg.tasks) || configNeedsReboot(saved_config.tasks);
+
+        await API.save(topic, cfg, this.error_string, needs_reboot ? this.reboot_string : undefined);
     }
 
     createSelectors() {
@@ -259,7 +315,9 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
 
             let last_run_timestamp;
             if (last_run === undefined) {
-                last_run_timestamp = __("automation.content.needs_reboot");
+                last_run_timestamp = configNeedsReboot([task])
+                    ? __("automation.content.needs_reboot")
+                    : __("automation.content.not_yet_triggered");
             } else if (last_run == 0) {
                 last_run_timestamp = __("automation.content.never")
             } else if (last_run > uptime) {

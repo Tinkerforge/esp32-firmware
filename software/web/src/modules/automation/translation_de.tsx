@@ -131,6 +131,7 @@ let x = {
             "last_run": "Ausführung",
             "never": "Nicht seit Neustart",
             "needs_reboot": "Benötigt Neustart",
+            "not_yet_triggered": "Noch nicht ausgelöst",
             "delay": "Verzögerung",
             "add_rule_title": "Regel hinzufügen",
             "add_rule_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Regeln konfiguriert`/*NF*/,
