@@ -868,6 +868,7 @@ class LoadPowerLimitUsecase : public EebusUsecase
 {
 public:
     explicit LoadPowerLimitUsecase(const LoadPowerLimitConfig &config);
+    ~LoadPowerLimitUsecase() override;
 
     /**
      * Builds and returns the UseCaseInformationDataType.
@@ -1927,6 +1928,7 @@ class EebusHeartBeat : public EebusUsecase
 {
 public:
     EebusHeartBeat();
+    ~EebusHeartBeat();
     /**
      * Read the current heartbeat information.
      * @return

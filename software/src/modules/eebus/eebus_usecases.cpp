@@ -35,6 +35,12 @@ template <typename T> void insert_vector(std::vector<T> &dest, const std::vector
     dest.insert(dest.end(), src.begin(), src.end());
 }
 
+EebusHeartBeat::~EebusHeartBeat()
+{
+    task_scheduler.cancel(heartbeat_received_timeout_task);
+    task_scheduler.cancel(heartbeat_send_task);
+}
+
 EebusHeartBeat::EebusHeartBeat()
 {
     heartbeat_received_timeout_task = task_scheduler.scheduleOnce(
@@ -2047,6 +2053,12 @@ void EvseccUsecase::update_api() const
 // LoadPowerLimitUsecase - Base class for LPC and LPP usecases
 // =============================================================================
 #if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
+
+LoadPowerLimitUsecase::~LoadPowerLimitUsecase()
+{
+    task_scheduler.cancel(limit_endtime_timer);
+    task_scheduler.cancel(failsafe_expiry_timer);
+}
 
 // Base class constructor - initializes IDs from config offsets
 LoadPowerLimitUsecase::LoadPowerLimitUsecase(const LoadPowerLimitConfig &config) :
