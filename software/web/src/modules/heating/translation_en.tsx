@@ -46,7 +46,7 @@ let x = {
             "inactive": "Inactive",
             "watt": "W",
             "price_based_heating_plan": "Price-based Heating Plan",
-            "price_based_heating_plan_muted": "Heating plan based on dynamic prices",
+            "price_based_heating_plan_muted": "Heating plan based on dynamic prices incl. VAT and grid fees",
             "status_help": <>The <i>price-based heating plan</i> shows the heating plan based on the configured cheapest and most expensive hours. The heating plan does not have to correspond to the actual control of the heating, as e.g. an unexpectedly high PV excess can prevent the blocking operation.</>,
             "blocked": "Blocked",
             "extended": "Extended",

@@ -46,7 +46,7 @@ let x = {
             "inactive": "Inaktiv",
             "watt": "W",
             "price_based_heating_plan": "Preisbasierter Heizplan",
-            "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise",
+            "price_based_heating_plan_muted": "Heizplan anhand dynamischer Preise inkl. MwSt und Netzentgelte",
             "status_help": <>Der preisbasierte Heizplan zeigt den Heizplan anhand der konfigurierten günstigsten und teuersten Stunden an. Der Heizplan muss nicht der echten späteren Steuerung der Heizung entsprechen, da z.B. ein unerwartet hoher PV-Überschuss den blockierenden Betrieb verhindern kann.</>,
             "blocked": "Blockiert",
             "extended": "Erweitert",
