@@ -184,6 +184,7 @@ interface EEBusState {
     add: EEBusAdd;
     state: EEBusStateType;
     config: EEBusConfig;
+    config_enable: boolean;
     usecases: EEBusUsecases;
 }
 
@@ -194,7 +195,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
             this.setState({state: API.get('eebus/state')});
         });
         util.addApiEventListener('eebus/config', () => {
-            this.setState({config: API.get('eebus/config')});
+            let config = API.get('eebus/config');
+            this.setState({config: config, config_enable: config.enable});
         });
         util.addApiEventListener('eebus/config', () => {
             this.setState({usecases: API.get('eebus/usecases')});
@@ -202,12 +204,14 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     }
 
     override async sendSave(topic: "eebus/config", cfg: EEBusConfig) {
+        this.setState({config_enable: cfg.enable}); // avoid round trip time
         // TODO: why is this unchecked? Currently cargo-culted from OCPP and Modbus TCP. Maybe add those API definitions to ocpp/api.ts (or modbus_tcp or eebus) with //APIPath?
         await API.save_unchecked('evse/eebus_enabled', {enabled: cfg.enable}, () => __("eebus.script.save_failed"));
         await super.sendSave(topic, cfg);
     }
 
     override async sendReset(topic: "eebus/config") {
+        this.setState({config_enable: false}); // avoid round trip time
         await API.save_unchecked('evse/eebus_enabled', {enabled: false}, () => __("eebus.script.save_failed"));
         await super.sendReset(topic);
     }
@@ -230,7 +234,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
         return (
             <SubPage name="eebus" title="EEBUS">
-                {state.enable &&
+                {state.config_enable &&
                     <SubPage.Status>
                     <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")} help={__("eebus.content.ski_help")}>
                         <InputText value={ski}/>
