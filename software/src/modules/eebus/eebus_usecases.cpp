@@ -25,7 +25,6 @@
 #include "module_dependencies.h"
 #include "ship_types.h"
 #include <chrono>
-#include <regex>
 #include <utility>
 
 // clang-format on
@@ -5695,40 +5694,42 @@ std::string iso_duration_to_string(seconds_t duration)
 seconds_t iso_duration_to_seconds(const std::string &iso_duration)
 {
     int64_t duration_seconds = 0;
-    size_t p_pos = iso_duration.find('P');
-    size_t t_pos = iso_duration.find('T');
-    std::string between_p_t = (p_pos != std::string::npos && t_pos != std::string::npos && t_pos > p_pos + 1) ? iso_duration.substr(p_pos + 1, t_pos - p_pos - 1) : "";
-    std::string after_t = (t_pos != std::string::npos) ? iso_duration.substr(t_pos + 1) : "";
+    bool in_time_part = false;
+    int accumulated = 0;
 
-    std::regex first_part_regex("([0-9]+[YMD])");
-    std::sregex_iterator first_it(between_p_t.begin(), between_p_t.end(), first_part_regex);
-    std::sregex_iterator first_end;
-    for (; first_it != first_end; ++first_it) {
-        std::string match = first_it->str();
-        int value = std::stoi(match.substr(0, match.size() - 1));
-        char unit = match.back();
-        if (unit == 'Y') {
-            duration_seconds += value * 31536000; // Approximate, not accounting for leap years
-        } else if (unit == 'M') {
-            duration_seconds += value * 2592000; // Approximate, assuming 30 days in a month
-        } else if (unit == 'D') {
-            duration_seconds += value * 86400;
+    for (char c : iso_duration) {
+        if (c == 'P') {
+            continue;
         }
-    }
-    std::regex second_part_regex("([0-9]+[HMS])");
-
-    std::sregex_iterator second_it(after_t.begin(), after_t.end(), second_part_regex);
-    for (std::sregex_iterator second_end; second_it != second_end; ++second_it) {
-        std::string match = second_it->str();
-        int value = std::stoi(match.substr(0, match.size() - 1));
-        char unit = match.back();
-        if (unit == 'H') {
-            duration_seconds += value * 3600;
-        } else if (unit == 'M') {
-            duration_seconds += value * 60;
-        } else if (unit == 'S') {
-            duration_seconds += value;
+        if (c == 'T') {
+            in_time_part = true;
+            accumulated = 0;
+            continue;
         }
+        if (c >= '0' && c <= '9') {
+            accumulated = accumulated * 10 + (c - '0');
+            continue;
+        }
+        // Date components (before T)
+        if (!in_time_part) {
+            if (c == 'Y') {
+                duration_seconds += accumulated * 31536000; // Approximate, not accounting for leap years
+            } else if (c == 'M') {
+                duration_seconds += accumulated * 2592000; // Approximate, assuming 30 days in a month
+            } else if (c == 'D') {
+                duration_seconds += accumulated * 86400;
+            }
+        } else {
+            // Time components (after T)
+            if (c == 'H') {
+                duration_seconds += accumulated * 3600;
+            } else if (c == 'M') {
+                duration_seconds += accumulated * 60;
+            } else if (c == 'S') {
+                duration_seconds += accumulated;
+            }
+        }
+        accumulated = 0;
     }
     return seconds_t(duration_seconds);
 }
