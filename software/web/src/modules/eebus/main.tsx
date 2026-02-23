@@ -896,9 +896,7 @@ export function init() {
             const connectedCount = state?.peers?.filter(p =>
                 p.state >= NodeState.Connected && p.state <= NodeState.EEBUSDegraded
             ).length ?? 0;
-            const discoveredCount = state?.peers?.filter(p =>
-                p.state === NodeState.Discovered
-            ).length ?? 0;
+            const discoveredCount = state?.peers?.length ?? 0;
 
             // Check for specific error conditions and return appropriate message
             if (state?.peers?.some(p => p.state === NodeState.EEBUSDegraded)) {
@@ -907,6 +905,7 @@ export function init() {
                     text: () => __("eebus.status.peer_degraded")
                 };
             }
+
 
             if (usecases?.usecases_supported?.indexOf(Usecases.LPC) > -1 &&
                 usecases?.power_consumption_limitation?.usecase_state === LoadcontrolState.Failsafe) {
@@ -928,6 +927,14 @@ export function init() {
                 return {
                     status: ModuleStatus.Error,
                     text: () => __("eebus.status.heartbeat_timeout")
+                };
+            }
+
+
+            if (state?.peers?.some(p => p.state === NodeState.EEBUSActive)) {
+                return {
+                    status: ModuleStatus.Ok,
+                    text: () => `${connectedCount}/${discoveredCount} ` + __("eebus.content.peer_info.state_eebus_connected")
                 };
             }
 

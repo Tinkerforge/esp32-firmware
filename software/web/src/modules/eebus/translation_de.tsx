@@ -56,7 +56,7 @@ let x = {
                 "edit_peer_title": "Bearbeiten",
                 "wss_path": "WSS Pfad",
                 "state": "Status",
-                "state_connected": "Verbunden",
+                "state_connected": "SHIP Aktiv",
                 "state_eebus_connected": "EEBUS Aktiv",
                 "state_disconnected": "Getrennt",
                 "state_discovered": "Entdeckt",
