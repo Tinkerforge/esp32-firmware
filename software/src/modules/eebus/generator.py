@@ -161,6 +161,7 @@ class CppTemplates:
 #include <string>
 #include <vector>
 #include <optional>
+#include <type_traits>
 
 namespace ArduinoJson
 {
@@ -329,6 +330,14 @@ struct DateTimeStruct
     SpineOptional<uint16_t> millisecond;
     SpineOptional<int8_t> timezone; // Offset from UTC in hours, 0 if time is UTC, empty if no TZ is given
 };
+
+// Generic enum-to-JSON conversion via convertToString (declared per enum below).
+template <typename E, std::enable_if_t<std::is_enum_v<E>, int> = 0>
+inline bool convertToJson(const E &src, JsonVariant &dst) { return dst.set(convertToString(src)); }
+
+// Generic JSON-to-enum conversion via convertFromString (declared per enum below).
+template <typename E, std::enable_if_t<std::is_enum_v<E>, int> = 0>
+inline void convertFromJson(const JsonVariantConst &src, E &dst) { String s = src.as<const char *>(); convertFromString(s, dst); }
 """
 
     SPINE_IMPLEMENTATION = """
@@ -773,33 +782,16 @@ class EnumTypeGenerator:
         return code
 
     def _generate_function_prototypes(self, enum_type_name: str) -> str:
-        """Generate function prototypes for the enum."""
-        return f"""/**
- * Convert the enum {enum_type_name} to its String representation
- */
-String convertToString(const {enum_type_name} &src);
-
-/**
- * Convert the enum {enum_type_name} to JSON (uses convertToString)
- */
-bool convertToJson(const {enum_type_name} &src, JsonVariant& dst);
-
-/**
- * Convert a string to a {enum_type_name}
- */
+        """Generate function prototypes for the enum (toString/fromString only; JSON handled by templates)."""
+        return f"""String convertToString(const {enum_type_name} &src);
 void convertFromString(const String &src, {enum_type_name} &dst);
-
-/**
- * Convert a JSON variant containing a string to a {enum_type_name} (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);
 
 """
 
     def _generate_to_json_code(
             self, enum_type_name: str, enum_list: list, enum_undefined_name: str
     ) -> str:
-        """Generate static names array, convertToString and convertToJson implementations."""
+        """Generate static names array and convertToString implementation."""
         # Static names array (enum values are sequential 0..N-1, so index == enum value)
         names_var = f"{enum_type_name}_names"
         code = f"static const char *const {names_var}[] = {{\n"
@@ -819,35 +811,20 @@ void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);
             f"\treturn enumValueToName({names_var}, {enum_type_name}_count, static_cast<int>(src));\n}}\n\n"
         )
 
-        # convertToJson implementation
-        code += (
-            f"bool convertToJson(const {enum_type_name} &src, JsonVariant& dst) {{\n"
-            f"\treturn dst.set(convertToString(src));\n}}\n\n"
-        )
-
         return code
 
     def _generate_from_json_code(
             self, enum_type_name: str, enum_list: list, enum_undefined_name: str
     ) -> str:
-        """Generate convertFromString and convertFromJson implementations."""
+        """Generate convertFromString implementation."""
         names_var = f"{enum_type_name}_names"
         undefined_var = make_variable_name(enum_undefined_name)
 
         # convertFromString implementation (linear scan of names array)
-        from_string_impl = (
+        return (
             f"void convertFromString(const String &src, {enum_type_name} &dst) {{\n"
             f"\tdst = static_cast<{enum_type_name}>(enumNameToValue({names_var}, {enum_type_name}_count, src, static_cast<int>({enum_type_name}::{undefined_var})));\n}}\n\n"
         )
-
-        # convertFromJson implementation
-        from_json_impl = (
-            f"void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst) {{\n"
-            f"\tString s = src.as<const char*>();\n"
-            f"\tconvertFromString(s, dst);\n}}\n\n"
-        )
-
-        return from_string_impl + from_json_impl
 
 
 # =============================================================================

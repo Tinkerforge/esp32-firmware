@@ -7,6 +7,7 @@
 #include "module.h"
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ArduinoJson
@@ -173,6 +174,19 @@ struct DateTimeStruct {
     SpineOptional<int8_t> timezone; // Offset from UTC in hours, 0 if time is UTC, empty if no TZ is given
 };
 
+// Generic enum-to-JSON conversion via convertToString (declared per enum below).
+template <typename E, std::enable_if_t<std::is_enum_v<E>, int> = 0> inline bool convertToJson(const E &src, JsonVariant &dst)
+{
+    return dst.set(convertToString(src));
+}
+
+// Generic JSON-to-enum conversion via convertFromString (declared per enum below).
+template <typename E, std::enable_if_t<std::is_enum_v<E>, int> = 0> inline void convertFromJson(const JsonVariantConst &src, E &dst)
+{
+    String s = src.as<const char *>();
+    convertFromString(s, dst);
+}
+
 using BillIdType = int;
 using BillPositionIdType = int;
 using BillPositionCountType = std::string;
@@ -240,25 +254,8 @@ enum class BillTypeEnumType {
     chargingSummary,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum BillTypeEnumType to its String representation
- */
 String convertToString(const BillTypeEnumType &src);
-
-/**
- * Convert the enum BillTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a BillTypeEnumType
- */
 void convertFromString(const String &src, BillTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a BillTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst);
 
 /**
 * Datatype BillPositionTypeEnumType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -268,25 +265,8 @@ enum class BillPositionTypeEnumType {
     selfProducedElectricEnergy,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum BillPositionTypeEnumType to its String representation
- */
 String convertToString(const BillPositionTypeEnumType &src);
-
-/**
- * Convert the enum BillPositionTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a BillPositionTypeEnumType
- */
 void convertFromString(const String &src, BillPositionTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a BillPositionTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst);
 
 /**
 * Datatype BillCostTypeEnumType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -299,25 +279,8 @@ enum class BillCostTypeEnumType {
     radioactiveWaste,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum BillCostTypeEnumType to its String representation
- */
 String convertToString(const BillCostTypeEnumType &src);
-
-/**
- * Convert the enum BillCostTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a BillCostTypeEnumType
- */
 void convertFromString(const String &src, BillCostTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a BillCostTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst);
 
 /**
 * Datatype RecurringIntervalEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -332,25 +295,8 @@ enum class RecurringIntervalEnumType {
     everySecond,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum RecurringIntervalEnumType to its String representation
- */
 String convertToString(const RecurringIntervalEnumType &src);
-
-/**
- * Convert the enum RecurringIntervalEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a RecurringIntervalEnumType
- */
 void convertFromString(const String &src, RecurringIntervalEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a RecurringIntervalEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst);
 
 /**
 * Datatype MonthType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -370,25 +316,8 @@ enum class MonthType {
     december,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MonthType to its String representation
- */
 String convertToString(const MonthType &src);
-
-/**
- * Convert the enum MonthType to JSON (uses convertToString)
- */
-bool convertToJson(const MonthType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MonthType
- */
 void convertFromString(const String &src, MonthType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MonthType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MonthType &dst);
 
 /**
 * Datatype OccurrenceEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -401,25 +330,8 @@ enum class OccurrenceEnumType {
     last,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum OccurrenceEnumType to its String representation
- */
 String convertToString(const OccurrenceEnumType &src);
-
-/**
- * Convert the enum OccurrenceEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a OccurrenceEnumType
- */
 void convertFromString(const String &src, OccurrenceEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a OccurrenceEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst);
 
 /**
 * Datatype CommodityTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -438,25 +350,8 @@ enum class CommodityTypeEnumType {
     air,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum CommodityTypeEnumType to its String representation
- */
 String convertToString(const CommodityTypeEnumType &src);
-
-/**
- * Convert the enum CommodityTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a CommodityTypeEnumType
- */
 void convertFromString(const String &src, CommodityTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a CommodityTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst);
 
 /**
 * Datatype EnergyDirectionEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -466,25 +361,8 @@ enum class EnergyDirectionEnumType {
     produce,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum EnergyDirectionEnumType to its String representation
- */
 String convertToString(const EnergyDirectionEnumType &src);
-
-/**
- * Convert the enum EnergyDirectionEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a EnergyDirectionEnumType
- */
 void convertFromString(const String &src, EnergyDirectionEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a EnergyDirectionEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst);
 
 /**
 * Datatype UnitOfMeasurementEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -586,25 +464,8 @@ enum class UnitOfMeasurementEnumType {
     kg_Wh,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum UnitOfMeasurementEnumType to its String representation
- */
 String convertToString(const UnitOfMeasurementEnumType &src);
-
-/**
- * Convert the enum UnitOfMeasurementEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a UnitOfMeasurementEnumType
- */
 void convertFromString(const String &src, UnitOfMeasurementEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a UnitOfMeasurementEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst);
 
 /**
 * Datatype CurrencyEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -790,25 +651,8 @@ enum class CurrencyEnumType {
     ZWL,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum CurrencyEnumType to its String representation
- */
 String convertToString(const CurrencyEnumType &src);
-
-/**
- * Convert the enum CurrencyEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a CurrencyEnumType
- */
 void convertFromString(const String &src, CurrencyEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a CurrencyEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst);
 
 /**
 * Datatype ScopeTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -902,25 +746,8 @@ enum class ScopeTypeEnumType {
     activePowerForecast,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ScopeTypeEnumType to its String representation
- */
 String convertToString(const ScopeTypeEnumType &src);
-
-/**
- * Convert the enum ScopeTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ScopeTypeEnumType
- */
 void convertFromString(const String &src, ScopeTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ScopeTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst);
 
 /**
 * Datatype RoleType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -931,25 +758,8 @@ enum class RoleType {
     special,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum RoleType to its String representation
- */
 String convertToString(const RoleType &src);
-
-/**
- * Convert the enum RoleType to JSON (uses convertToString)
- */
-bool convertToJson(const RoleType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a RoleType
- */
 void convertFromString(const String &src, RoleType &dst);
-
-/**
- * Convert a JSON variant containing a string to a RoleType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, RoleType &dst);
 
 /**
 * Datatype DeviceTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -971,25 +781,8 @@ enum class DeviceTypeEnumType {
     ChargingStation,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum DeviceTypeEnumType to its String representation
- */
 String convertToString(const DeviceTypeEnumType &src);
-
-/**
- * Convert the enum DeviceTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a DeviceTypeEnumType
- */
 void convertFromString(const String &src, DeviceTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a DeviceTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst);
 
 /**
 * Datatype EntityTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1045,25 +838,8 @@ enum class EntityTypeEnumType {
     ControllableSystem,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum EntityTypeEnumType to its String representation
- */
 String convertToString(const EntityTypeEnumType &src);
-
-/**
- * Convert the enum EntityTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a EntityTypeEnumType
- */
 void convertFromString(const String &src, EntityTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a EntityTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst);
 
 /**
 * Datatype FeatureTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1103,25 +879,8 @@ enum class FeatureTypeEnumType {
     StateInformation,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum FeatureTypeEnumType to its String representation
- */
 String convertToString(const FeatureTypeEnumType &src);
-
-/**
- * Convert the enum FeatureTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a FeatureTypeEnumType
- */
 void convertFromString(const String &src, FeatureTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a FeatureTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst);
 
 /**
 * Datatype FunctionEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1271,25 +1030,8 @@ enum class FunctionEnumType {
     stateInformationListData,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum FunctionEnumType to its String representation
- */
 String convertToString(const FunctionEnumType &src);
-
-/**
- * Convert the enum FunctionEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const FunctionEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a FunctionEnumType
- */
 void convertFromString(const String &src, FunctionEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a FunctionEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst);
 
 /**
 * Datatype IdentificationTypeEnumType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -1300,25 +1042,8 @@ enum class IdentificationTypeEnumType {
     userRfidTag,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum IdentificationTypeEnumType to its String representation
- */
 String convertToString(const IdentificationTypeEnumType &src);
-
-/**
- * Convert the enum IdentificationTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a IdentificationTypeEnumType
- */
 void convertFromString(const String &src, IdentificationTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a IdentificationTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst);
 
 /**
 * Datatype MeasurementTypeEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1368,25 +1093,8 @@ enum class MeasurementTypeEnumType {
     volumetricFlow,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MeasurementTypeEnumType to its String representation
- */
 String convertToString(const MeasurementTypeEnumType &src);
-
-/**
- * Convert the enum MeasurementTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MeasurementTypeEnumType
- */
 void convertFromString(const String &src, MeasurementTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MeasurementTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst);
 
 /**
 * Datatype MeasurementValueTypeEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1399,25 +1107,8 @@ enum class MeasurementValueTypeEnumType {
     standardDeviation,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MeasurementValueTypeEnumType to its String representation
- */
 String convertToString(const MeasurementValueTypeEnumType &src);
-
-/**
- * Convert the enum MeasurementValueTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MeasurementValueTypeEnumType
- */
 void convertFromString(const String &src, MeasurementValueTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MeasurementValueTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst);
 
 /**
 * Datatype MeasurementValueSourceEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1428,25 +1119,8 @@ enum class MeasurementValueSourceEnumType {
     empiricalValue,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MeasurementValueSourceEnumType to its String representation
- */
 String convertToString(const MeasurementValueSourceEnumType &src);
-
-/**
- * Convert the enum MeasurementValueSourceEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MeasurementValueSourceEnumType
- */
 void convertFromString(const String &src, MeasurementValueSourceEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MeasurementValueSourceEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst);
 
 /**
 * Datatype MeasurementValueTendencyEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1457,25 +1131,8 @@ enum class MeasurementValueTendencyEnumType {
     falling,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MeasurementValueTendencyEnumType to its String representation
- */
 String convertToString(const MeasurementValueTendencyEnumType &src);
-
-/**
- * Convert the enum MeasurementValueTendencyEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MeasurementValueTendencyEnumType
- */
 void convertFromString(const String &src, MeasurementValueTendencyEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MeasurementValueTendencyEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst);
 
 /**
 * Datatype MeasurementValueStateEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1486,25 +1143,8 @@ enum class MeasurementValueStateEnumType {
     error,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum MeasurementValueStateEnumType to its String representation
- */
 String convertToString(const MeasurementValueStateEnumType &src);
-
-/**
- * Convert the enum MeasurementValueStateEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a MeasurementValueStateEnumType
- */
 void convertFromString(const String &src, MeasurementValueStateEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a MeasurementValueStateEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst);
 
 /**
 * Datatype PowerSourceEnumType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -1517,25 +1157,8 @@ enum class PowerSourceEnumType {
     dc,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum PowerSourceEnumType to its String representation
- */
 String convertToString(const PowerSourceEnumType &src);
-
-/**
- * Convert the enum PowerSourceEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a PowerSourceEnumType
- */
 void convertFromString(const String &src, PowerSourceEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a PowerSourceEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst);
 
 /**
 * Datatype DeviceConfigurationKeyNameEnumType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -1580,25 +1203,8 @@ enum class DeviceConfigurationKeyNameEnumType {
     incentivesWaitIncentiveWriteable,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum DeviceConfigurationKeyNameEnumType to its String representation
- */
 String convertToString(const DeviceConfigurationKeyNameEnumType &src);
-
-/**
- * Convert the enum DeviceConfigurationKeyNameEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a DeviceConfigurationKeyNameEnumType
- */
 void convertFromString(const String &src, DeviceConfigurationKeyNameEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a DeviceConfigurationKeyNameEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst);
 
 /**
 * Datatype DeviceConfigurationKeyValueTypeType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -1614,25 +1220,8 @@ enum class DeviceConfigurationKeyValueTypeType {
     integer,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum DeviceConfigurationKeyValueTypeType to its String representation
- */
 String convertToString(const DeviceConfigurationKeyValueTypeType &src);
-
-/**
- * Convert the enum DeviceConfigurationKeyValueTypeType to JSON (uses convertToString)
- */
-bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a DeviceConfigurationKeyValueTypeType
- */
 void convertFromString(const String &src, DeviceConfigurationKeyValueTypeType &dst);
-
-/**
- * Convert a JSON variant containing a string to a DeviceConfigurationKeyValueTypeType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst);
 
 /**
 * Datatype DeviceDiagnosisOperatingStateEnumType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -1650,25 +1239,8 @@ enum class DeviceDiagnosisOperatingStateEnumType {
     off,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum DeviceDiagnosisOperatingStateEnumType to its String representation
- */
 String convertToString(const DeviceDiagnosisOperatingStateEnumType &src);
-
-/**
- * Convert the enum DeviceDiagnosisOperatingStateEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a DeviceDiagnosisOperatingStateEnumType
- */
 void convertFromString(const String &src, DeviceDiagnosisOperatingStateEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a DeviceDiagnosisOperatingStateEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst);
 
 /**
 * Datatype PowerSupplyConditionEnumType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -1681,25 +1253,8 @@ enum class PowerSupplyConditionEnumType {
     error,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum PowerSupplyConditionEnumType to its String representation
- */
 String convertToString(const PowerSupplyConditionEnumType &src);
-
-/**
- * Convert the enum PowerSupplyConditionEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a PowerSupplyConditionEnumType
- */
 void convertFromString(const String &src, PowerSupplyConditionEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a PowerSupplyConditionEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionMeasurandVariantEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1712,25 +1267,8 @@ enum class ElectricalConnectionMeasurandVariantEnumType {
     cosPhi,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionMeasurandVariantEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionMeasurandVariantEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionMeasurandVariantEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionMeasurandVariantEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionMeasurandVariantEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionMeasurandVariantEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionVoltageTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1740,25 +1278,8 @@ enum class ElectricalConnectionVoltageTypeEnumType {
     dc,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionVoltageTypeEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionVoltageTypeEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionVoltageTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionVoltageTypeEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionVoltageTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionVoltageTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionAcMeasurementTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1770,25 +1291,8 @@ enum class ElectricalConnectionAcMeasurementTypeEnumType {
     phase,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionAcMeasurementTypeEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionAcMeasurementTypeEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionAcMeasurementTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionAcMeasurementTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionPhaseNameEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1806,25 +1310,8 @@ enum class ElectricalConnectionPhaseNameEnumType {
     none,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionPhaseNameEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionPhaseNameEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionPhaseNameEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionPhaseNameEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionPhaseNameEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionPhaseNameEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionCharacteristicContextEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1837,25 +1324,8 @@ enum class ElectricalConnectionCharacteristicContextEnumType {
     battery,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionCharacteristicContextEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionCharacteristicContextEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionCharacteristicContextEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionCharacteristicContextEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionCharacteristicContextEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionCharacteristicContextEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst);
 
 /**
 * Datatype ElectricalConnectionCharacteristicTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -1876,25 +1346,8 @@ enum class ElectricalConnectionCharacteristicTypeEnumType {
     apparentPowerConsumptionNominalMax,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum ElectricalConnectionCharacteristicTypeEnumType to its String representation
- */
 String convertToString(const ElectricalConnectionCharacteristicTypeEnumType &src);
-
-/**
- * Convert the enum ElectricalConnectionCharacteristicTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType
- */
 void convertFromString(const String &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a ElectricalConnectionCharacteristicTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
 
 /**
 * Datatype TierBoundaryTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -1905,25 +1358,8 @@ enum class TierBoundaryTypeEnumType {
     countBoundary,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum TierBoundaryTypeEnumType to its String representation
- */
 String convertToString(const TierBoundaryTypeEnumType &src);
-
-/**
- * Convert the enum TierBoundaryTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a TierBoundaryTypeEnumType
- */
 void convertFromString(const String &src, TierBoundaryTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a TierBoundaryTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst);
 
 /**
 * Datatype TierTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -1933,25 +1369,8 @@ enum class TierTypeEnumType {
     dynamicCost,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum TierTypeEnumType to its String representation
- */
 String convertToString(const TierTypeEnumType &src);
-
-/**
- * Convert the enum TierTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a TierTypeEnumType
- */
 void convertFromString(const String &src, TierTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a TierTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst);
 
 /**
 * Datatype IncentiveTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -1963,25 +1382,8 @@ enum class IncentiveTypeEnumType {
     co2Emission,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum IncentiveTypeEnumType to its String representation
- */
 String convertToString(const IncentiveTypeEnumType &src);
-
-/**
- * Convert the enum IncentiveTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a IncentiveTypeEnumType
- */
 void convertFromString(const String &src, IncentiveTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a IncentiveTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst);
 
 /**
 * Datatype IncentiveValueTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -1993,25 +1395,8 @@ enum class IncentiveValueTypeEnumType {
     maxValue,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum IncentiveValueTypeEnumType to its String representation
- */
 String convertToString(const IncentiveValueTypeEnumType &src);
-
-/**
- * Convert the enum IncentiveValueTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a IncentiveValueTypeEnumType
- */
 void convertFromString(const String &src, IncentiveValueTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a IncentiveValueTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst);
 
 /**
 * Datatype LoadControlLimitTypeEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2022,25 +1407,8 @@ enum class LoadControlLimitTypeEnumType {
     signDependentAbsValueLimit,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum LoadControlLimitTypeEnumType to its String representation
- */
 String convertToString(const LoadControlLimitTypeEnumType &src);
-
-/**
- * Convert the enum LoadControlLimitTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a LoadControlLimitTypeEnumType
- */
 void convertFromString(const String &src, LoadControlLimitTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a LoadControlLimitTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst);
 
 /**
 * Datatype LoadControlCategoryEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2051,25 +1419,8 @@ enum class LoadControlCategoryEnumType {
     optimization,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum LoadControlCategoryEnumType to its String representation
- */
 String convertToString(const LoadControlCategoryEnumType &src);
-
-/**
- * Convert the enum LoadControlCategoryEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a LoadControlCategoryEnumType
- */
 void convertFromString(const String &src, LoadControlCategoryEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a LoadControlCategoryEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst);
 
 /**
 * Datatype NetworkManagementFeatureSetType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -2081,25 +1432,8 @@ enum class NetworkManagementFeatureSetType {
     simple,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum NetworkManagementFeatureSetType to its String representation
- */
 String convertToString(const NetworkManagementFeatureSetType &src);
-
-/**
- * Convert the enum NetworkManagementFeatureSetType to JSON (uses convertToString)
- */
-bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a NetworkManagementFeatureSetType
- */
 void convertFromString(const String &src, NetworkManagementFeatureSetType &dst);
-
-/**
- * Convert a JSON variant containing a string to a NetworkManagementFeatureSetType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst);
 
 /**
 * Datatype NetworkManagementStateChangeType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -2110,25 +1444,8 @@ enum class NetworkManagementStateChangeType {
     modified,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum NetworkManagementStateChangeType to its String representation
- */
 String convertToString(const NetworkManagementStateChangeType &src);
-
-/**
- * Convert the enum NetworkManagementStateChangeType to JSON (uses convertToString)
- */
-bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a NetworkManagementStateChangeType
- */
 void convertFromString(const String &src, NetworkManagementStateChangeType &dst);
-
-/**
- * Convert a JSON variant containing a string to a NetworkManagementStateChangeType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst);
 
 /**
 * Datatype TimeSeriesTypeEnumType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -2143,25 +1460,8 @@ enum class TimeSeriesTypeEnumType {
     productionLimitCurve,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum TimeSeriesTypeEnumType to its String representation
- */
 String convertToString(const TimeSeriesTypeEnumType &src);
-
-/**
- * Convert the enum TimeSeriesTypeEnumType to JSON (uses convertToString)
- */
-bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a TimeSeriesTypeEnumType
- */
 void convertFromString(const String &src, TimeSeriesTypeEnumType &dst);
-
-/**
- * Convert a JSON variant containing a string to a TimeSeriesTypeEnumType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst);
 
 /**
 * Datatype CmdClassifierType as defined in EEBus_SPINE_TS_CommandFrame.xsd
@@ -2175,25 +1475,8 @@ enum class CmdClassifierType {
     result,
     EnumUndefined, // This is not part of the spec but its needed for error handling
 };
-/**
- * Convert the enum CmdClassifierType to its String representation
- */
 String convertToString(const CmdClassifierType &src);
-
-/**
- * Convert the enum CmdClassifierType to JSON (uses convertToString)
- */
-bool convertToJson(const CmdClassifierType &src, JsonVariant &dst);
-
-/**
- * Convert a string to a CmdClassifierType
- */
 void convertFromString(const String &src, CmdClassifierType &dst);
-
-/**
- * Convert a JSON variant containing a string to a CmdClassifierType (uses convertFromString)
- */
-void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst);
 
 /**
  * Datatype ScaledNumberType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd

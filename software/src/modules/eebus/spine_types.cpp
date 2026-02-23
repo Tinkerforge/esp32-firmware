@@ -71,20 +71,9 @@ String convertToString(const BillTypeEnumType &src)
     return enumValueToName(BillTypeEnumType_names, BillTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, BillTypeEnumType &dst)
 {
     dst = static_cast<BillTypeEnumType>(enumNameToValue(BillTypeEnumType_names, BillTypeEnumType_count, src, static_cast<int>(BillTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const BillPositionTypeEnumType_names[] = {
@@ -98,20 +87,9 @@ String convertToString(const BillPositionTypeEnumType &src)
     return enumValueToName(BillPositionTypeEnumType_names, BillPositionTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, BillPositionTypeEnumType &dst)
 {
     dst = static_cast<BillPositionTypeEnumType>(enumNameToValue(BillPositionTypeEnumType_names, BillPositionTypeEnumType_count, src, static_cast<int>(BillPositionTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const BillCostTypeEnumType_names[] = {
@@ -128,20 +106,9 @@ String convertToString(const BillCostTypeEnumType &src)
     return enumValueToName(BillCostTypeEnumType_names, BillCostTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, BillCostTypeEnumType &dst)
 {
     dst = static_cast<BillCostTypeEnumType>(enumNameToValue(BillCostTypeEnumType_names, BillCostTypeEnumType_count, src, static_cast<int>(BillCostTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const RecurringIntervalEnumType_names[] = {
@@ -160,20 +127,9 @@ String convertToString(const RecurringIntervalEnumType &src)
     return enumValueToName(RecurringIntervalEnumType_names, RecurringIntervalEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, RecurringIntervalEnumType &dst)
 {
     dst = static_cast<RecurringIntervalEnumType>(enumNameToValue(RecurringIntervalEnumType_names, RecurringIntervalEnumType_count, src, static_cast<int>(RecurringIntervalEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MonthType_names[] = {
@@ -197,20 +153,9 @@ String convertToString(const MonthType &src)
     return enumValueToName(MonthType_names, MonthType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MonthType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MonthType &dst)
 {
     dst = static_cast<MonthType>(enumNameToValue(MonthType_names, MonthType_count, src, static_cast<int>(MonthType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MonthType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const OccurrenceEnumType_names[] = {
@@ -227,20 +172,9 @@ String convertToString(const OccurrenceEnumType &src)
     return enumValueToName(OccurrenceEnumType_names, OccurrenceEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, OccurrenceEnumType &dst)
 {
     dst = static_cast<OccurrenceEnumType>(enumNameToValue(OccurrenceEnumType_names, OccurrenceEnumType_count, src, static_cast<int>(OccurrenceEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const CommodityTypeEnumType_names[] = {
@@ -263,20 +197,9 @@ String convertToString(const CommodityTypeEnumType &src)
     return enumValueToName(CommodityTypeEnumType_names, CommodityTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, CommodityTypeEnumType &dst)
 {
     dst = static_cast<CommodityTypeEnumType>(enumNameToValue(CommodityTypeEnumType_names, CommodityTypeEnumType_count, src, static_cast<int>(CommodityTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const EnergyDirectionEnumType_names[] = {
@@ -290,20 +213,9 @@ String convertToString(const EnergyDirectionEnumType &src)
     return enumValueToName(EnergyDirectionEnumType_names, EnergyDirectionEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, EnergyDirectionEnumType &dst)
 {
     dst = static_cast<EnergyDirectionEnumType>(enumNameToValue(EnergyDirectionEnumType_names, EnergyDirectionEnumType_count, src, static_cast<int>(EnergyDirectionEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const UnitOfMeasurementEnumType_names[] = {
@@ -317,20 +229,9 @@ String convertToString(const UnitOfMeasurementEnumType &src)
     return enumValueToName(UnitOfMeasurementEnumType_names, UnitOfMeasurementEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, UnitOfMeasurementEnumType &dst)
 {
     dst = static_cast<UnitOfMeasurementEnumType>(enumNameToValue(UnitOfMeasurementEnumType_names, UnitOfMeasurementEnumType_count, src, static_cast<int>(UnitOfMeasurementEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const CurrencyEnumType_names[] = {
@@ -345,20 +246,9 @@ String convertToString(const CurrencyEnumType &src)
     return enumValueToName(CurrencyEnumType_names, CurrencyEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, CurrencyEnumType &dst)
 {
     dst = static_cast<CurrencyEnumType>(enumNameToValue(CurrencyEnumType_names, CurrencyEnumType_count, src, static_cast<int>(CurrencyEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ScopeTypeEnumType_names[] = {
@@ -456,20 +346,9 @@ String convertToString(const ScopeTypeEnumType &src)
     return enumValueToName(ScopeTypeEnumType_names, ScopeTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ScopeTypeEnumType &dst)
 {
     dst = static_cast<ScopeTypeEnumType>(enumNameToValue(ScopeTypeEnumType_names, ScopeTypeEnumType_count, src, static_cast<int>(ScopeTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const RoleType_names[] = {
@@ -484,20 +363,9 @@ String convertToString(const RoleType &src)
     return enumValueToName(RoleType_names, RoleType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const RoleType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, RoleType &dst)
 {
     dst = static_cast<RoleType>(enumNameToValue(RoleType_names, RoleType_count, src, static_cast<int>(RoleType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, RoleType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const DeviceTypeEnumType_names[] = {
@@ -523,20 +391,9 @@ String convertToString(const DeviceTypeEnumType &src)
     return enumValueToName(DeviceTypeEnumType_names, DeviceTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, DeviceTypeEnumType &dst)
 {
     dst = static_cast<DeviceTypeEnumType>(enumNameToValue(DeviceTypeEnumType_names, DeviceTypeEnumType_count, src, static_cast<int>(DeviceTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const EntityTypeEnumType_names[] = {
@@ -596,20 +453,9 @@ String convertToString(const EntityTypeEnumType &src)
     return enumValueToName(EntityTypeEnumType_names, EntityTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, EntityTypeEnumType &dst)
 {
     dst = static_cast<EntityTypeEnumType>(enumNameToValue(EntityTypeEnumType_names, EntityTypeEnumType_count, src, static_cast<int>(EntityTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const FeatureTypeEnumType_names[] = {
@@ -623,20 +469,9 @@ String convertToString(const FeatureTypeEnumType &src)
     return enumValueToName(FeatureTypeEnumType_names, FeatureTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, FeatureTypeEnumType &dst)
 {
     dst = static_cast<FeatureTypeEnumType>(enumNameToValue(FeatureTypeEnumType_names, FeatureTypeEnumType_count, src, static_cast<int>(FeatureTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const FunctionEnumType_names[] = {
@@ -790,20 +625,9 @@ String convertToString(const FunctionEnumType &src)
     return enumValueToName(FunctionEnumType_names, FunctionEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const FunctionEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, FunctionEnumType &dst)
 {
     dst = static_cast<FunctionEnumType>(enumNameToValue(FunctionEnumType_names, FunctionEnumType_count, src, static_cast<int>(FunctionEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const IdentificationTypeEnumType_names[] = {
@@ -818,20 +642,9 @@ String convertToString(const IdentificationTypeEnumType &src)
     return enumValueToName(IdentificationTypeEnumType_names, IdentificationTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, IdentificationTypeEnumType &dst)
 {
     dst = static_cast<IdentificationTypeEnumType>(enumNameToValue(IdentificationTypeEnumType_names, IdentificationTypeEnumType_count, src, static_cast<int>(IdentificationTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MeasurementTypeEnumType_names[] = {
@@ -845,20 +658,9 @@ String convertToString(const MeasurementTypeEnumType &src)
     return enumValueToName(MeasurementTypeEnumType_names, MeasurementTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MeasurementTypeEnumType &dst)
 {
     dst = static_cast<MeasurementTypeEnumType>(enumNameToValue(MeasurementTypeEnumType_names, MeasurementTypeEnumType_count, src, static_cast<int>(MeasurementTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MeasurementValueTypeEnumType_names[] = {
@@ -875,20 +677,9 @@ String convertToString(const MeasurementValueTypeEnumType &src)
     return enumValueToName(MeasurementValueTypeEnumType_names, MeasurementValueTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MeasurementValueTypeEnumType &dst)
 {
     dst = static_cast<MeasurementValueTypeEnumType>(enumNameToValue(MeasurementValueTypeEnumType_names, MeasurementValueTypeEnumType_count, src, static_cast<int>(MeasurementValueTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MeasurementValueSourceEnumType_names[] = {
@@ -903,20 +694,9 @@ String convertToString(const MeasurementValueSourceEnumType &src)
     return enumValueToName(MeasurementValueSourceEnumType_names, MeasurementValueSourceEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MeasurementValueSourceEnumType &dst)
 {
     dst = static_cast<MeasurementValueSourceEnumType>(enumNameToValue(MeasurementValueSourceEnumType_names, MeasurementValueSourceEnumType_count, src, static_cast<int>(MeasurementValueSourceEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MeasurementValueTendencyEnumType_names[] = {
@@ -931,20 +711,9 @@ String convertToString(const MeasurementValueTendencyEnumType &src)
     return enumValueToName(MeasurementValueTendencyEnumType_names, MeasurementValueTendencyEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MeasurementValueTendencyEnumType &dst)
 {
     dst = static_cast<MeasurementValueTendencyEnumType>(enumNameToValue(MeasurementValueTendencyEnumType_names, MeasurementValueTendencyEnumType_count, src, static_cast<int>(MeasurementValueTendencyEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const MeasurementValueStateEnumType_names[] = {
@@ -959,20 +728,9 @@ String convertToString(const MeasurementValueStateEnumType &src)
     return enumValueToName(MeasurementValueStateEnumType_names, MeasurementValueStateEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, MeasurementValueStateEnumType &dst)
 {
     dst = static_cast<MeasurementValueStateEnumType>(enumNameToValue(MeasurementValueStateEnumType_names, MeasurementValueStateEnumType_count, src, static_cast<int>(MeasurementValueStateEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const PowerSourceEnumType_names[] = {
@@ -989,20 +747,9 @@ String convertToString(const PowerSourceEnumType &src)
     return enumValueToName(PowerSourceEnumType_names, PowerSourceEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, PowerSourceEnumType &dst)
 {
     dst = static_cast<PowerSourceEnumType>(enumNameToValue(PowerSourceEnumType_names, PowerSourceEnumType_count, src, static_cast<int>(PowerSourceEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const DeviceConfigurationKeyNameEnumType_names[] = {
@@ -1051,20 +798,9 @@ String convertToString(const DeviceConfigurationKeyNameEnumType &src)
     return enumValueToName(DeviceConfigurationKeyNameEnumType_names, DeviceConfigurationKeyNameEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, DeviceConfigurationKeyNameEnumType &dst)
 {
     dst = static_cast<DeviceConfigurationKeyNameEnumType>(enumNameToValue(DeviceConfigurationKeyNameEnumType_names, DeviceConfigurationKeyNameEnumType_count, src, static_cast<int>(DeviceConfigurationKeyNameEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const DeviceConfigurationKeyValueTypeType_names[] = {
@@ -1084,20 +820,9 @@ String convertToString(const DeviceConfigurationKeyValueTypeType &src)
     return enumValueToName(DeviceConfigurationKeyValueTypeType_names, DeviceConfigurationKeyValueTypeType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, DeviceConfigurationKeyValueTypeType &dst)
 {
     dst = static_cast<DeviceConfigurationKeyValueTypeType>(enumNameToValue(DeviceConfigurationKeyValueTypeType_names, DeviceConfigurationKeyValueTypeType_count, src, static_cast<int>(DeviceConfigurationKeyValueTypeType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const DeviceDiagnosisOperatingStateEnumType_names[] = {
@@ -1119,20 +844,9 @@ String convertToString(const DeviceDiagnosisOperatingStateEnumType &src)
     return enumValueToName(DeviceDiagnosisOperatingStateEnumType_names, DeviceDiagnosisOperatingStateEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, DeviceDiagnosisOperatingStateEnumType &dst)
 {
     dst = static_cast<DeviceDiagnosisOperatingStateEnumType>(enumNameToValue(DeviceDiagnosisOperatingStateEnumType_names, DeviceDiagnosisOperatingStateEnumType_count, src, static_cast<int>(DeviceDiagnosisOperatingStateEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const PowerSupplyConditionEnumType_names[] = {
@@ -1149,20 +863,9 @@ String convertToString(const PowerSupplyConditionEnumType &src)
     return enumValueToName(PowerSupplyConditionEnumType_names, PowerSupplyConditionEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, PowerSupplyConditionEnumType &dst)
 {
     dst = static_cast<PowerSupplyConditionEnumType>(enumNameToValue(PowerSupplyConditionEnumType_names, PowerSupplyConditionEnumType_count, src, static_cast<int>(PowerSupplyConditionEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionMeasurandVariantEnumType_names[] = {
@@ -1179,20 +882,9 @@ String convertToString(const ElectricalConnectionMeasurandVariantEnumType &src)
     return enumValueToName(ElectricalConnectionMeasurandVariantEnumType_names, ElectricalConnectionMeasurandVariantEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionMeasurandVariantEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionMeasurandVariantEnumType>(enumNameToValue(ElectricalConnectionMeasurandVariantEnumType_names, ElectricalConnectionMeasurandVariantEnumType_count, src, static_cast<int>(ElectricalConnectionMeasurandVariantEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionVoltageTypeEnumType_names[] = {
@@ -1206,20 +898,9 @@ String convertToString(const ElectricalConnectionVoltageTypeEnumType &src)
     return enumValueToName(ElectricalConnectionVoltageTypeEnumType_names, ElectricalConnectionVoltageTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionVoltageTypeEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionVoltageTypeEnumType>(enumNameToValue(ElectricalConnectionVoltageTypeEnumType_names, ElectricalConnectionVoltageTypeEnumType_count, src, static_cast<int>(ElectricalConnectionVoltageTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionAcMeasurementTypeEnumType_names[] = {
@@ -1235,20 +916,9 @@ String convertToString(const ElectricalConnectionAcMeasurementTypeEnumType &src)
     return enumValueToName(ElectricalConnectionAcMeasurementTypeEnumType_names, ElectricalConnectionAcMeasurementTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionAcMeasurementTypeEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionAcMeasurementTypeEnumType>(enumNameToValue(ElectricalConnectionAcMeasurementTypeEnumType_names, ElectricalConnectionAcMeasurementTypeEnumType_count, src, static_cast<int>(ElectricalConnectionAcMeasurementTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionPhaseNameEnumType_names[] = {
@@ -1270,20 +940,9 @@ String convertToString(const ElectricalConnectionPhaseNameEnumType &src)
     return enumValueToName(ElectricalConnectionPhaseNameEnumType_names, ElectricalConnectionPhaseNameEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionPhaseNameEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionPhaseNameEnumType>(enumNameToValue(ElectricalConnectionPhaseNameEnumType_names, ElectricalConnectionPhaseNameEnumType_count, src, static_cast<int>(ElectricalConnectionPhaseNameEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionCharacteristicContextEnumType_names[] = {
@@ -1300,20 +959,9 @@ String convertToString(const ElectricalConnectionCharacteristicContextEnumType &
     return enumValueToName(ElectricalConnectionCharacteristicContextEnumType_names, ElectricalConnectionCharacteristicContextEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionCharacteristicContextEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionCharacteristicContextEnumType>(enumNameToValue(ElectricalConnectionCharacteristicContextEnumType_names, ElectricalConnectionCharacteristicContextEnumType_count, src, static_cast<int>(ElectricalConnectionCharacteristicContextEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const ElectricalConnectionCharacteristicTypeEnumType_names[] = {
@@ -1338,20 +986,9 @@ String convertToString(const ElectricalConnectionCharacteristicTypeEnumType &src
     return enumValueToName(ElectricalConnectionCharacteristicTypeEnumType_names, ElectricalConnectionCharacteristicTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, ElectricalConnectionCharacteristicTypeEnumType &dst)
 {
     dst = static_cast<ElectricalConnectionCharacteristicTypeEnumType>(enumNameToValue(ElectricalConnectionCharacteristicTypeEnumType_names, ElectricalConnectionCharacteristicTypeEnumType_count, src, static_cast<int>(ElectricalConnectionCharacteristicTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const TierBoundaryTypeEnumType_names[] = {
@@ -1366,20 +1003,9 @@ String convertToString(const TierBoundaryTypeEnumType &src)
     return enumValueToName(TierBoundaryTypeEnumType_names, TierBoundaryTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, TierBoundaryTypeEnumType &dst)
 {
     dst = static_cast<TierBoundaryTypeEnumType>(enumNameToValue(TierBoundaryTypeEnumType_names, TierBoundaryTypeEnumType_count, src, static_cast<int>(TierBoundaryTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const TierTypeEnumType_names[] = {
@@ -1393,20 +1019,9 @@ String convertToString(const TierTypeEnumType &src)
     return enumValueToName(TierTypeEnumType_names, TierTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, TierTypeEnumType &dst)
 {
     dst = static_cast<TierTypeEnumType>(enumNameToValue(TierTypeEnumType_names, TierTypeEnumType_count, src, static_cast<int>(TierTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const IncentiveTypeEnumType_names[] = {
@@ -1422,20 +1037,9 @@ String convertToString(const IncentiveTypeEnumType &src)
     return enumValueToName(IncentiveTypeEnumType_names, IncentiveTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, IncentiveTypeEnumType &dst)
 {
     dst = static_cast<IncentiveTypeEnumType>(enumNameToValue(IncentiveTypeEnumType_names, IncentiveTypeEnumType_count, src, static_cast<int>(IncentiveTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const IncentiveValueTypeEnumType_names[] = {
@@ -1451,20 +1055,9 @@ String convertToString(const IncentiveValueTypeEnumType &src)
     return enumValueToName(IncentiveValueTypeEnumType_names, IncentiveValueTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, IncentiveValueTypeEnumType &dst)
 {
     dst = static_cast<IncentiveValueTypeEnumType>(enumNameToValue(IncentiveValueTypeEnumType_names, IncentiveValueTypeEnumType_count, src, static_cast<int>(IncentiveValueTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const LoadControlLimitTypeEnumType_names[] = {
@@ -1479,20 +1072,9 @@ String convertToString(const LoadControlLimitTypeEnumType &src)
     return enumValueToName(LoadControlLimitTypeEnumType_names, LoadControlLimitTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, LoadControlLimitTypeEnumType &dst)
 {
     dst = static_cast<LoadControlLimitTypeEnumType>(enumNameToValue(LoadControlLimitTypeEnumType_names, LoadControlLimitTypeEnumType_count, src, static_cast<int>(LoadControlLimitTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const LoadControlCategoryEnumType_names[] = {
@@ -1507,20 +1089,9 @@ String convertToString(const LoadControlCategoryEnumType &src)
     return enumValueToName(LoadControlCategoryEnumType_names, LoadControlCategoryEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, LoadControlCategoryEnumType &dst)
 {
     dst = static_cast<LoadControlCategoryEnumType>(enumNameToValue(LoadControlCategoryEnumType_names, LoadControlCategoryEnumType_count, src, static_cast<int>(LoadControlCategoryEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const NetworkManagementFeatureSetType_names[] = {
@@ -1536,20 +1107,9 @@ String convertToString(const NetworkManagementFeatureSetType &src)
     return enumValueToName(NetworkManagementFeatureSetType_names, NetworkManagementFeatureSetType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, NetworkManagementFeatureSetType &dst)
 {
     dst = static_cast<NetworkManagementFeatureSetType>(enumNameToValue(NetworkManagementFeatureSetType_names, NetworkManagementFeatureSetType_count, src, static_cast<int>(NetworkManagementFeatureSetType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const NetworkManagementStateChangeType_names[] = {
@@ -1564,20 +1124,9 @@ String convertToString(const NetworkManagementStateChangeType &src)
     return enumValueToName(NetworkManagementStateChangeType_names, NetworkManagementStateChangeType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, NetworkManagementStateChangeType &dst)
 {
     dst = static_cast<NetworkManagementStateChangeType>(enumNameToValue(NetworkManagementStateChangeType_names, NetworkManagementStateChangeType_count, src, static_cast<int>(NetworkManagementStateChangeType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const TimeSeriesTypeEnumType_names[] = {
@@ -1596,20 +1145,9 @@ String convertToString(const TimeSeriesTypeEnumType &src)
     return enumValueToName(TimeSeriesTypeEnumType_names, TimeSeriesTypeEnumType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, TimeSeriesTypeEnumType &dst)
 {
     dst = static_cast<TimeSeriesTypeEnumType>(enumNameToValue(TimeSeriesTypeEnumType_names, TimeSeriesTypeEnumType_count, src, static_cast<int>(TimeSeriesTypeEnumType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 static const char *const CmdClassifierType_names[] = {
@@ -1627,20 +1165,9 @@ String convertToString(const CmdClassifierType &src)
     return enumValueToName(CmdClassifierType_names, CmdClassifierType_count, static_cast<int>(src));
 }
 
-bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
-{
-    return dst.set(convertToString(src));
-}
-
 void convertFromString(const String &src, CmdClassifierType &dst)
 {
     dst = static_cast<CmdClassifierType>(enumNameToValue(CmdClassifierType_names, CmdClassifierType_count, src, static_cast<int>(CmdClassifierType::EnumUndefined)));
-}
-
-void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
-{
-    String s = src.as<const char *>();
-    convertFromString(s, dst);
 }
 
 bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
