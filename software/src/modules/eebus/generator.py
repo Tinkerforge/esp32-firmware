@@ -369,6 +369,18 @@ bool Converter<std::vector<T>>::checkJson(JsonVariantConst src)
 
 
 } // namespace ArduinoJson
+
+static const char *enumValueToName(const char *const *names, size_t count, int value) {
+    if (value >= 0 && static_cast<size_t>(value) < count) return names[value];
+    return "EnumUndefined";
+}
+
+static int enumNameToValue(const char *const *names, size_t count, const String &s, int fallback) {
+    for (size_t i = 0; i < count; ++i) {
+        if (s == names[i]) return static_cast<int>(i);
+    }
+    return fallback;
+}
 """
 
     SHIP_HEADER = """
@@ -776,57 +788,46 @@ void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);
     def _generate_to_json_code(
             self, enum_type_name: str, enum_list: list, enum_undefined_name: str
     ) -> str:
-        """Generate convertToString and convertToJson implementations."""
-        # convertToString implementation
-        to_string_impl = f"String convertToString(const {enum_type_name} &src) {{\n\tswitch(src) {{\n"
+        """Generate static names array, convertToString and convertToJson implementations."""
+        # Static names array (enum values are sequential 0..N-1, so index == enum value)
+        names_var = f"{enum_type_name}_names"
+        code = f"static const char *const {names_var}[] = {{\n"
 
         for enumeration in enum_list:
             enum_string_name = str(enumeration)
-            enum_variable_name = make_variable_name(enum_string_name)
-
             if enum_string_name == enum_undefined_name:
                 continue
+            code += f"\t\"{enum_string_name}\",\n"
 
-            to_string_impl += (
-                f"\tcase {enum_type_name}::{enum_variable_name}:\n"
-                f"\t\treturn \"{enum_string_name}\";\n"
-            )
+        code += "};\n"
+        code += f"static constexpr size_t {enum_type_name}_count = sizeof({names_var}) / sizeof({names_var}[0]);\n\n"
 
-        # Default case for undefined
-        undefined_var = make_variable_name(enum_undefined_name)
-        to_string_impl += f"\tdefault:\n\t\treturn \"{enum_undefined_name}\";\n\t}}\n}}\n\n"
+        # convertToString implementation (O(1) index lookup)
+        code += (
+            f"String convertToString(const {enum_type_name} &src) {{\n"
+            f"\treturn enumValueToName({names_var}, {enum_type_name}_count, static_cast<int>(src));\n}}\n\n"
+        )
 
         # convertToJson implementation
-        to_json_impl = (
+        code += (
             f"bool convertToJson(const {enum_type_name} &src, JsonVariant& dst) {{\n"
             f"\treturn dst.set(convertToString(src));\n}}\n\n"
         )
 
-        return to_string_impl + to_json_impl
+        return code
 
     def _generate_from_json_code(
             self, enum_type_name: str, enum_list: list, enum_undefined_name: str
     ) -> str:
         """Generate convertFromString and convertFromJson implementations."""
-        # convertFromString implementation
-        from_string_impl = f"void convertFromString(const String &src, {enum_type_name} &dst) {{\n"
-
-        for enumeration in enum_list:
-            enum_string_name = str(enumeration)
-            enum_variable_name = make_variable_name(enum_string_name)
-
-            if enum_string_name == enum_undefined_name:
-                continue
-
-            from_string_impl += (
-                f"\tif (src == \"{enum_string_name}\") {{\n"
-                f"\t\tdst = {enum_type_name}::{enum_variable_name};\n"
-                f"\t\treturn;\n\t}}\n"
-            )
-
-        # Fallback to undefined
+        names_var = f"{enum_type_name}_names"
         undefined_var = make_variable_name(enum_undefined_name)
-        from_string_impl += f"\tdst = {enum_type_name}::{undefined_var};\n}}\n\n"
+
+        # convertFromString implementation (linear scan of names array)
+        from_string_impl = (
+            f"void convertFromString(const String &src, {enum_type_name} &dst) {{\n"
+            f"\tdst = static_cast<{enum_type_name}>(enumNameToValue({names_var}, {enum_type_name}_count, src, static_cast<int>({enum_type_name}::{undefined_var})));\n}}\n\n"
+        )
 
         # convertFromJson implementation
         from_json_impl = (

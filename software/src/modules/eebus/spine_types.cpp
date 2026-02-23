@@ -31,14 +31,30 @@ template <typename T> bool Converter<std::vector<T>>::checkJson(JsonVariantConst
 }
 
 } // namespace ArduinoJson
+
+static const char *enumValueToName(const char *const *names, size_t count, int value)
+{
+    if (value >= 0 && static_cast<size_t>(value) < count)
+        return names[value];
+    return "EnumUndefined";
+}
+
+static int enumNameToValue(const char *const *names, size_t count, const String &s, int fallback)
+{
+    for (size_t i = 0; i < count; ++i) {
+        if (s == names[i])
+            return static_cast<int>(i);
+    }
+    return fallback;
+}
+static const char *const BillTypeEnumType_names[] = {
+    "chargingSummary",
+};
+static constexpr size_t BillTypeEnumType_count = sizeof(BillTypeEnumType_names) / sizeof(BillTypeEnumType_names[0]);
+
 String convertToString(const BillTypeEnumType &src)
 {
-    switch (src) {
-        case BillTypeEnumType::chargingSummary:
-            return "chargingSummary";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(BillTypeEnumType_names, BillTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
@@ -48,11 +64,7 @@ bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, BillTypeEnumType &dst)
 {
-    if (src == "chargingSummary") {
-        dst = BillTypeEnumType::chargingSummary;
-        return;
-    }
-    dst = BillTypeEnumType::EnumUndefined;
+    dst = static_cast<BillTypeEnumType>(enumNameToValue(BillTypeEnumType_names, BillTypeEnumType_count, src, static_cast<int>(BillTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
@@ -61,16 +73,15 @@ void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const BillPositionTypeEnumType_names[] = {
+    "gridElectricEnergy",
+    "selfProducedElectricEnergy",
+};
+static constexpr size_t BillPositionTypeEnumType_count = sizeof(BillPositionTypeEnumType_names) / sizeof(BillPositionTypeEnumType_names[0]);
+
 String convertToString(const BillPositionTypeEnumType &src)
 {
-    switch (src) {
-        case BillPositionTypeEnumType::gridElectricEnergy:
-            return "gridElectricEnergy";
-        case BillPositionTypeEnumType::selfProducedElectricEnergy:
-            return "selfProducedElectricEnergy";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(BillPositionTypeEnumType_names, BillPositionTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
@@ -80,15 +91,7 @@ bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, BillPositionTypeEnumType &dst)
 {
-    if (src == "gridElectricEnergy") {
-        dst = BillPositionTypeEnumType::gridElectricEnergy;
-        return;
-    }
-    if (src == "selfProducedElectricEnergy") {
-        dst = BillPositionTypeEnumType::selfProducedElectricEnergy;
-        return;
-    }
-    dst = BillPositionTypeEnumType::EnumUndefined;
+    dst = static_cast<BillPositionTypeEnumType>(enumNameToValue(BillPositionTypeEnumType_names, BillPositionTypeEnumType_count, src, static_cast<int>(BillPositionTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
@@ -97,22 +100,18 @@ void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const BillCostTypeEnumType_names[] = {
+    "absolutePrice",
+    "relativePrice",
+    "co2Emission",
+    "renewableEnergy",
+    "radioactiveWaste",
+};
+static constexpr size_t BillCostTypeEnumType_count = sizeof(BillCostTypeEnumType_names) / sizeof(BillCostTypeEnumType_names[0]);
+
 String convertToString(const BillCostTypeEnumType &src)
 {
-    switch (src) {
-        case BillCostTypeEnumType::absolutePrice:
-            return "absolutePrice";
-        case BillCostTypeEnumType::relativePrice:
-            return "relativePrice";
-        case BillCostTypeEnumType::co2Emission:
-            return "co2Emission";
-        case BillCostTypeEnumType::renewableEnergy:
-            return "renewableEnergy";
-        case BillCostTypeEnumType::radioactiveWaste:
-            return "radioactiveWaste";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(BillCostTypeEnumType_names, BillCostTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
@@ -122,27 +121,7 @@ bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, BillCostTypeEnumType &dst)
 {
-    if (src == "absolutePrice") {
-        dst = BillCostTypeEnumType::absolutePrice;
-        return;
-    }
-    if (src == "relativePrice") {
-        dst = BillCostTypeEnumType::relativePrice;
-        return;
-    }
-    if (src == "co2Emission") {
-        dst = BillCostTypeEnumType::co2Emission;
-        return;
-    }
-    if (src == "renewableEnergy") {
-        dst = BillCostTypeEnumType::renewableEnergy;
-        return;
-    }
-    if (src == "radioactiveWaste") {
-        dst = BillCostTypeEnumType::radioactiveWaste;
-        return;
-    }
-    dst = BillCostTypeEnumType::EnumUndefined;
+    dst = static_cast<BillCostTypeEnumType>(enumNameToValue(BillCostTypeEnumType_names, BillCostTypeEnumType_count, src, static_cast<int>(BillCostTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
@@ -151,26 +130,20 @@ void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const RecurringIntervalEnumType_names[] = {
+    "yearly",
+    "monthly",
+    "weekly",
+    "daily",
+    "hourly",
+    "everyMinute",
+    "everySecond",
+};
+static constexpr size_t RecurringIntervalEnumType_count = sizeof(RecurringIntervalEnumType_names) / sizeof(RecurringIntervalEnumType_names[0]);
+
 String convertToString(const RecurringIntervalEnumType &src)
 {
-    switch (src) {
-        case RecurringIntervalEnumType::yearly:
-            return "yearly";
-        case RecurringIntervalEnumType::monthly:
-            return "monthly";
-        case RecurringIntervalEnumType::weekly:
-            return "weekly";
-        case RecurringIntervalEnumType::daily:
-            return "daily";
-        case RecurringIntervalEnumType::hourly:
-            return "hourly";
-        case RecurringIntervalEnumType::everyMinute:
-            return "everyMinute";
-        case RecurringIntervalEnumType::everySecond:
-            return "everySecond";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(RecurringIntervalEnumType_names, RecurringIntervalEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst)
@@ -180,35 +153,7 @@ bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, RecurringIntervalEnumType &dst)
 {
-    if (src == "yearly") {
-        dst = RecurringIntervalEnumType::yearly;
-        return;
-    }
-    if (src == "monthly") {
-        dst = RecurringIntervalEnumType::monthly;
-        return;
-    }
-    if (src == "weekly") {
-        dst = RecurringIntervalEnumType::weekly;
-        return;
-    }
-    if (src == "daily") {
-        dst = RecurringIntervalEnumType::daily;
-        return;
-    }
-    if (src == "hourly") {
-        dst = RecurringIntervalEnumType::hourly;
-        return;
-    }
-    if (src == "everyMinute") {
-        dst = RecurringIntervalEnumType::everyMinute;
-        return;
-    }
-    if (src == "everySecond") {
-        dst = RecurringIntervalEnumType::everySecond;
-        return;
-    }
-    dst = RecurringIntervalEnumType::EnumUndefined;
+    dst = static_cast<RecurringIntervalEnumType>(enumNameToValue(RecurringIntervalEnumType_names, RecurringIntervalEnumType_count, src, static_cast<int>(RecurringIntervalEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst)
@@ -217,36 +162,25 @@ void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst
     convertFromString(s, dst);
 }
 
+static const char *const MonthType_names[] = {
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+};
+static constexpr size_t MonthType_count = sizeof(MonthType_names) / sizeof(MonthType_names[0]);
+
 String convertToString(const MonthType &src)
 {
-    switch (src) {
-        case MonthType::january:
-            return "january";
-        case MonthType::february:
-            return "february";
-        case MonthType::march:
-            return "march";
-        case MonthType::april:
-            return "april";
-        case MonthType::may:
-            return "may";
-        case MonthType::june:
-            return "june";
-        case MonthType::july:
-            return "july";
-        case MonthType::august:
-            return "august";
-        case MonthType::september:
-            return "september";
-        case MonthType::october:
-            return "october";
-        case MonthType::november:
-            return "november";
-        case MonthType::december:
-            return "december";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MonthType_names, MonthType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MonthType &src, JsonVariant &dst)
@@ -256,55 +190,7 @@ bool convertToJson(const MonthType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, MonthType &dst)
 {
-    if (src == "january") {
-        dst = MonthType::january;
-        return;
-    }
-    if (src == "february") {
-        dst = MonthType::february;
-        return;
-    }
-    if (src == "march") {
-        dst = MonthType::march;
-        return;
-    }
-    if (src == "april") {
-        dst = MonthType::april;
-        return;
-    }
-    if (src == "may") {
-        dst = MonthType::may;
-        return;
-    }
-    if (src == "june") {
-        dst = MonthType::june;
-        return;
-    }
-    if (src == "july") {
-        dst = MonthType::july;
-        return;
-    }
-    if (src == "august") {
-        dst = MonthType::august;
-        return;
-    }
-    if (src == "september") {
-        dst = MonthType::september;
-        return;
-    }
-    if (src == "october") {
-        dst = MonthType::october;
-        return;
-    }
-    if (src == "november") {
-        dst = MonthType::november;
-        return;
-    }
-    if (src == "december") {
-        dst = MonthType::december;
-        return;
-    }
-    dst = MonthType::EnumUndefined;
+    dst = static_cast<MonthType>(enumNameToValue(MonthType_names, MonthType_count, src, static_cast<int>(MonthType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MonthType &dst)
@@ -313,22 +199,18 @@ void convertFromJson(const JsonVariantConst &src, MonthType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const OccurrenceEnumType_names[] = {
+    "first",
+    "second",
+    "third",
+    "fourth",
+    "last",
+};
+static constexpr size_t OccurrenceEnumType_count = sizeof(OccurrenceEnumType_names) / sizeof(OccurrenceEnumType_names[0]);
+
 String convertToString(const OccurrenceEnumType &src)
 {
-    switch (src) {
-        case OccurrenceEnumType::first:
-            return "first";
-        case OccurrenceEnumType::second:
-            return "second";
-        case OccurrenceEnumType::third:
-            return "third";
-        case OccurrenceEnumType::fourth:
-            return "fourth";
-        case OccurrenceEnumType::last:
-            return "last";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(OccurrenceEnumType_names, OccurrenceEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst)
@@ -338,27 +220,7 @@ bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, OccurrenceEnumType &dst)
 {
-    if (src == "first") {
-        dst = OccurrenceEnumType::first;
-        return;
-    }
-    if (src == "second") {
-        dst = OccurrenceEnumType::second;
-        return;
-    }
-    if (src == "third") {
-        dst = OccurrenceEnumType::third;
-        return;
-    }
-    if (src == "fourth") {
-        dst = OccurrenceEnumType::fourth;
-        return;
-    }
-    if (src == "last") {
-        dst = OccurrenceEnumType::last;
-        return;
-    }
-    dst = OccurrenceEnumType::EnumUndefined;
+    dst = static_cast<OccurrenceEnumType>(enumNameToValue(OccurrenceEnumType_names, OccurrenceEnumType_count, src, static_cast<int>(OccurrenceEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst)
@@ -367,34 +229,24 @@ void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const CommodityTypeEnumType_names[] = {
+    "electricity",
+    "gas",
+    "oil",
+    "water",
+    "wasteWater",
+    "domesticHotWater",
+    "heatingWater",
+    "steam",
+    "heat",
+    "coolingLoad",
+    "air",
+};
+static constexpr size_t CommodityTypeEnumType_count = sizeof(CommodityTypeEnumType_names) / sizeof(CommodityTypeEnumType_names[0]);
+
 String convertToString(const CommodityTypeEnumType &src)
 {
-    switch (src) {
-        case CommodityTypeEnumType::electricity:
-            return "electricity";
-        case CommodityTypeEnumType::gas:
-            return "gas";
-        case CommodityTypeEnumType::oil:
-            return "oil";
-        case CommodityTypeEnumType::water:
-            return "water";
-        case CommodityTypeEnumType::wasteWater:
-            return "wasteWater";
-        case CommodityTypeEnumType::domesticHotWater:
-            return "domesticHotWater";
-        case CommodityTypeEnumType::heatingWater:
-            return "heatingWater";
-        case CommodityTypeEnumType::steam:
-            return "steam";
-        case CommodityTypeEnumType::heat:
-            return "heat";
-        case CommodityTypeEnumType::coolingLoad:
-            return "coolingLoad";
-        case CommodityTypeEnumType::air:
-            return "air";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(CommodityTypeEnumType_names, CommodityTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst)
@@ -404,51 +256,7 @@ bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, CommodityTypeEnumType &dst)
 {
-    if (src == "electricity") {
-        dst = CommodityTypeEnumType::electricity;
-        return;
-    }
-    if (src == "gas") {
-        dst = CommodityTypeEnumType::gas;
-        return;
-    }
-    if (src == "oil") {
-        dst = CommodityTypeEnumType::oil;
-        return;
-    }
-    if (src == "water") {
-        dst = CommodityTypeEnumType::water;
-        return;
-    }
-    if (src == "wasteWater") {
-        dst = CommodityTypeEnumType::wasteWater;
-        return;
-    }
-    if (src == "domesticHotWater") {
-        dst = CommodityTypeEnumType::domesticHotWater;
-        return;
-    }
-    if (src == "heatingWater") {
-        dst = CommodityTypeEnumType::heatingWater;
-        return;
-    }
-    if (src == "steam") {
-        dst = CommodityTypeEnumType::steam;
-        return;
-    }
-    if (src == "heat") {
-        dst = CommodityTypeEnumType::heat;
-        return;
-    }
-    if (src == "coolingLoad") {
-        dst = CommodityTypeEnumType::coolingLoad;
-        return;
-    }
-    if (src == "air") {
-        dst = CommodityTypeEnumType::air;
-        return;
-    }
-    dst = CommodityTypeEnumType::EnumUndefined;
+    dst = static_cast<CommodityTypeEnumType>(enumNameToValue(CommodityTypeEnumType_names, CommodityTypeEnumType_count, src, static_cast<int>(CommodityTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst)
@@ -457,16 +265,15 @@ void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const EnergyDirectionEnumType_names[] = {
+    "consume",
+    "produce",
+};
+static constexpr size_t EnergyDirectionEnumType_count = sizeof(EnergyDirectionEnumType_names) / sizeof(EnergyDirectionEnumType_names[0]);
+
 String convertToString(const EnergyDirectionEnumType &src)
 {
-    switch (src) {
-        case EnergyDirectionEnumType::consume:
-            return "consume";
-        case EnergyDirectionEnumType::produce:
-            return "produce";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(EnergyDirectionEnumType_names, EnergyDirectionEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst)
@@ -476,15 +283,7 @@ bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, EnergyDirectionEnumType &dst)
 {
-    if (src == "consume") {
-        dst = EnergyDirectionEnumType::consume;
-        return;
-    }
-    if (src == "produce") {
-        dst = EnergyDirectionEnumType::produce;
-        return;
-    }
-    dst = EnergyDirectionEnumType::EnumUndefined;
+    dst = static_cast<EnergyDirectionEnumType>(enumNameToValue(EnergyDirectionEnumType_names, EnergyDirectionEnumType_count, src, static_cast<int>(EnergyDirectionEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst)
@@ -493,200 +292,15 @@ void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const UnitOfMeasurementEnumType_names[] = {
+    "unknown", "1",    "m",   "kg",  "s",     "A",   "K",     "mol",   "cd",    "V",      "W",    "Wh",    "VA",    "VAh", "var", "varh",  "degC",  "degF", "Lm",  "lx",  "Ohm",  "Hz",     "dB", "dBm", "pct",  "ppm", "l",   "l/s",  "l/h",  "deg",    "rad",  "rad/s", "sr",   "Gy",     "Bq",  "Bq/m^3", "Sv",         "Rd",           "C",       "F",         "H",   "J",     "N",  "N_m",   "N_s", "Wb", "T", "Pa", "bar", "atm",
+    "psi",     "mmHg", "m^2", "m^3", "m^3/h", "m/s", "m/s^2", "m^3/s", "m/m^3", "kg/m^3", "kg_m", "m^2/s", "W/m_K", "J/K", "1/s", "W/m^2", "J/m^2", "S",    "S/m", "K/s", "Pa/s", "J/kg_K", "Vs", "V/m", "V/Hz", "As",  "A/m", "Hz/s", "kg/s", "kg_m^2", "J/Wh", "W/s",   "ft^3", "ft^3/h", "ccf", "ccf/h",  "US.liq.gal", "US.liq.gal/h", "Imp.gal", "Imp.gal/h", "Btu", "Btu/h", "Ah", "kg/Wh",
+};
+static constexpr size_t UnitOfMeasurementEnumType_count = sizeof(UnitOfMeasurementEnumType_names) / sizeof(UnitOfMeasurementEnumType_names[0]);
+
 String convertToString(const UnitOfMeasurementEnumType &src)
 {
-    switch (src) {
-        case UnitOfMeasurementEnumType::unknown:
-            return "unknown";
-        case UnitOfMeasurementEnumType::var_1:
-            return "1";
-        case UnitOfMeasurementEnumType::m:
-            return "m";
-        case UnitOfMeasurementEnumType::kg:
-            return "kg";
-        case UnitOfMeasurementEnumType::s:
-            return "s";
-        case UnitOfMeasurementEnumType::A:
-            return "A";
-        case UnitOfMeasurementEnumType::K:
-            return "K";
-        case UnitOfMeasurementEnumType::mol:
-            return "mol";
-        case UnitOfMeasurementEnumType::cd:
-            return "cd";
-        case UnitOfMeasurementEnumType::V:
-            return "V";
-        case UnitOfMeasurementEnumType::W:
-            return "W";
-        case UnitOfMeasurementEnumType::Wh:
-            return "Wh";
-        case UnitOfMeasurementEnumType::VA:
-            return "VA";
-        case UnitOfMeasurementEnumType::VAh:
-            return "VAh";
-        case UnitOfMeasurementEnumType::var:
-            return "var";
-        case UnitOfMeasurementEnumType::varh:
-            return "varh";
-        case UnitOfMeasurementEnumType::degC:
-            return "degC";
-        case UnitOfMeasurementEnumType::degF:
-            return "degF";
-        case UnitOfMeasurementEnumType::Lm:
-            return "Lm";
-        case UnitOfMeasurementEnumType::lx:
-            return "lx";
-        case UnitOfMeasurementEnumType::Ohm:
-            return "Ohm";
-        case UnitOfMeasurementEnumType::Hz:
-            return "Hz";
-        case UnitOfMeasurementEnumType::dB:
-            return "dB";
-        case UnitOfMeasurementEnumType::dBm:
-            return "dBm";
-        case UnitOfMeasurementEnumType::pct:
-            return "pct";
-        case UnitOfMeasurementEnumType::ppm:
-            return "ppm";
-        case UnitOfMeasurementEnumType::l:
-            return "l";
-        case UnitOfMeasurementEnumType::l_s:
-            return "l/s";
-        case UnitOfMeasurementEnumType::l_h:
-            return "l/h";
-        case UnitOfMeasurementEnumType::deg:
-            return "deg";
-        case UnitOfMeasurementEnumType::rad:
-            return "rad";
-        case UnitOfMeasurementEnumType::rad_s:
-            return "rad/s";
-        case UnitOfMeasurementEnumType::sr:
-            return "sr";
-        case UnitOfMeasurementEnumType::Gy:
-            return "Gy";
-        case UnitOfMeasurementEnumType::Bq:
-            return "Bq";
-        case UnitOfMeasurementEnumType::Bq_m_3:
-            return "Bq/m^3";
-        case UnitOfMeasurementEnumType::Sv:
-            return "Sv";
-        case UnitOfMeasurementEnumType::Rd:
-            return "Rd";
-        case UnitOfMeasurementEnumType::C:
-            return "C";
-        case UnitOfMeasurementEnumType::F:
-            return "F";
-        case UnitOfMeasurementEnumType::H:
-            return "H";
-        case UnitOfMeasurementEnumType::J:
-            return "J";
-        case UnitOfMeasurementEnumType::N:
-            return "N";
-        case UnitOfMeasurementEnumType::N_m:
-            return "N_m";
-        case UnitOfMeasurementEnumType::N_s:
-            return "N_s";
-        case UnitOfMeasurementEnumType::Wb:
-            return "Wb";
-        case UnitOfMeasurementEnumType::T:
-            return "T";
-        case UnitOfMeasurementEnumType::Pa:
-            return "Pa";
-        case UnitOfMeasurementEnumType::bar:
-            return "bar";
-        case UnitOfMeasurementEnumType::atm:
-            return "atm";
-        case UnitOfMeasurementEnumType::psi:
-            return "psi";
-        case UnitOfMeasurementEnumType::mmHg:
-            return "mmHg";
-        case UnitOfMeasurementEnumType::m_2:
-            return "m^2";
-        case UnitOfMeasurementEnumType::m_3:
-            return "m^3";
-        case UnitOfMeasurementEnumType::m_3_h:
-            return "m^3/h";
-        case UnitOfMeasurementEnumType::m_s:
-            return "m/s";
-        case UnitOfMeasurementEnumType::m_s_2:
-            return "m/s^2";
-        case UnitOfMeasurementEnumType::m_3_s:
-            return "m^3/s";
-        case UnitOfMeasurementEnumType::m_m_3:
-            return "m/m^3";
-        case UnitOfMeasurementEnumType::kg_m_3:
-            return "kg/m^3";
-        case UnitOfMeasurementEnumType::kg_m:
-            return "kg_m";
-        case UnitOfMeasurementEnumType::m_2_s:
-            return "m^2/s";
-        case UnitOfMeasurementEnumType::W_m_K:
-            return "W/m_K";
-        case UnitOfMeasurementEnumType::J_K:
-            return "J/K";
-        case UnitOfMeasurementEnumType::var_1_s:
-            return "1/s";
-        case UnitOfMeasurementEnumType::W_m_2:
-            return "W/m^2";
-        case UnitOfMeasurementEnumType::J_m_2:
-            return "J/m^2";
-        case UnitOfMeasurementEnumType::S:
-            return "S";
-        case UnitOfMeasurementEnumType::S_m:
-            return "S/m";
-        case UnitOfMeasurementEnumType::K_s:
-            return "K/s";
-        case UnitOfMeasurementEnumType::Pa_s:
-            return "Pa/s";
-        case UnitOfMeasurementEnumType::J_kg_K:
-            return "J/kg_K";
-        case UnitOfMeasurementEnumType::Vs:
-            return "Vs";
-        case UnitOfMeasurementEnumType::V_m:
-            return "V/m";
-        case UnitOfMeasurementEnumType::V_Hz:
-            return "V/Hz";
-        case UnitOfMeasurementEnumType::As:
-            return "As";
-        case UnitOfMeasurementEnumType::A_m:
-            return "A/m";
-        case UnitOfMeasurementEnumType::Hz_s:
-            return "Hz/s";
-        case UnitOfMeasurementEnumType::kg_s:
-            return "kg/s";
-        case UnitOfMeasurementEnumType::kg_m_2:
-            return "kg_m^2";
-        case UnitOfMeasurementEnumType::J_Wh:
-            return "J/Wh";
-        case UnitOfMeasurementEnumType::W_s:
-            return "W/s";
-        case UnitOfMeasurementEnumType::ft_3:
-            return "ft^3";
-        case UnitOfMeasurementEnumType::ft_3_h:
-            return "ft^3/h";
-        case UnitOfMeasurementEnumType::ccf:
-            return "ccf";
-        case UnitOfMeasurementEnumType::ccf_h:
-            return "ccf/h";
-        case UnitOfMeasurementEnumType::US_liq_gal:
-            return "US.liq.gal";
-        case UnitOfMeasurementEnumType::US_liq_gal_h:
-            return "US.liq.gal/h";
-        case UnitOfMeasurementEnumType::Imp_gal:
-            return "Imp.gal";
-        case UnitOfMeasurementEnumType::Imp_gal_h:
-            return "Imp.gal/h";
-        case UnitOfMeasurementEnumType::Btu:
-            return "Btu";
-        case UnitOfMeasurementEnumType::Btu_h:
-            return "Btu/h";
-        case UnitOfMeasurementEnumType::Ah:
-            return "Ah";
-        case UnitOfMeasurementEnumType::kg_Wh:
-            return "kg/Wh";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(UnitOfMeasurementEnumType_names, UnitOfMeasurementEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst)
@@ -696,383 +310,7 @@ bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, UnitOfMeasurementEnumType &dst)
 {
-    if (src == "unknown") {
-        dst = UnitOfMeasurementEnumType::unknown;
-        return;
-    }
-    if (src == "1") {
-        dst = UnitOfMeasurementEnumType::var_1;
-        return;
-    }
-    if (src == "m") {
-        dst = UnitOfMeasurementEnumType::m;
-        return;
-    }
-    if (src == "kg") {
-        dst = UnitOfMeasurementEnumType::kg;
-        return;
-    }
-    if (src == "s") {
-        dst = UnitOfMeasurementEnumType::s;
-        return;
-    }
-    if (src == "A") {
-        dst = UnitOfMeasurementEnumType::A;
-        return;
-    }
-    if (src == "K") {
-        dst = UnitOfMeasurementEnumType::K;
-        return;
-    }
-    if (src == "mol") {
-        dst = UnitOfMeasurementEnumType::mol;
-        return;
-    }
-    if (src == "cd") {
-        dst = UnitOfMeasurementEnumType::cd;
-        return;
-    }
-    if (src == "V") {
-        dst = UnitOfMeasurementEnumType::V;
-        return;
-    }
-    if (src == "W") {
-        dst = UnitOfMeasurementEnumType::W;
-        return;
-    }
-    if (src == "Wh") {
-        dst = UnitOfMeasurementEnumType::Wh;
-        return;
-    }
-    if (src == "VA") {
-        dst = UnitOfMeasurementEnumType::VA;
-        return;
-    }
-    if (src == "VAh") {
-        dst = UnitOfMeasurementEnumType::VAh;
-        return;
-    }
-    if (src == "var") {
-        dst = UnitOfMeasurementEnumType::var;
-        return;
-    }
-    if (src == "varh") {
-        dst = UnitOfMeasurementEnumType::varh;
-        return;
-    }
-    if (src == "degC") {
-        dst = UnitOfMeasurementEnumType::degC;
-        return;
-    }
-    if (src == "degF") {
-        dst = UnitOfMeasurementEnumType::degF;
-        return;
-    }
-    if (src == "Lm") {
-        dst = UnitOfMeasurementEnumType::Lm;
-        return;
-    }
-    if (src == "lx") {
-        dst = UnitOfMeasurementEnumType::lx;
-        return;
-    }
-    if (src == "Ohm") {
-        dst = UnitOfMeasurementEnumType::Ohm;
-        return;
-    }
-    if (src == "Hz") {
-        dst = UnitOfMeasurementEnumType::Hz;
-        return;
-    }
-    if (src == "dB") {
-        dst = UnitOfMeasurementEnumType::dB;
-        return;
-    }
-    if (src == "dBm") {
-        dst = UnitOfMeasurementEnumType::dBm;
-        return;
-    }
-    if (src == "pct") {
-        dst = UnitOfMeasurementEnumType::pct;
-        return;
-    }
-    if (src == "ppm") {
-        dst = UnitOfMeasurementEnumType::ppm;
-        return;
-    }
-    if (src == "l") {
-        dst = UnitOfMeasurementEnumType::l;
-        return;
-    }
-    if (src == "l/s") {
-        dst = UnitOfMeasurementEnumType::l_s;
-        return;
-    }
-    if (src == "l/h") {
-        dst = UnitOfMeasurementEnumType::l_h;
-        return;
-    }
-    if (src == "deg") {
-        dst = UnitOfMeasurementEnumType::deg;
-        return;
-    }
-    if (src == "rad") {
-        dst = UnitOfMeasurementEnumType::rad;
-        return;
-    }
-    if (src == "rad/s") {
-        dst = UnitOfMeasurementEnumType::rad_s;
-        return;
-    }
-    if (src == "sr") {
-        dst = UnitOfMeasurementEnumType::sr;
-        return;
-    }
-    if (src == "Gy") {
-        dst = UnitOfMeasurementEnumType::Gy;
-        return;
-    }
-    if (src == "Bq") {
-        dst = UnitOfMeasurementEnumType::Bq;
-        return;
-    }
-    if (src == "Bq/m^3") {
-        dst = UnitOfMeasurementEnumType::Bq_m_3;
-        return;
-    }
-    if (src == "Sv") {
-        dst = UnitOfMeasurementEnumType::Sv;
-        return;
-    }
-    if (src == "Rd") {
-        dst = UnitOfMeasurementEnumType::Rd;
-        return;
-    }
-    if (src == "C") {
-        dst = UnitOfMeasurementEnumType::C;
-        return;
-    }
-    if (src == "F") {
-        dst = UnitOfMeasurementEnumType::F;
-        return;
-    }
-    if (src == "H") {
-        dst = UnitOfMeasurementEnumType::H;
-        return;
-    }
-    if (src == "J") {
-        dst = UnitOfMeasurementEnumType::J;
-        return;
-    }
-    if (src == "N") {
-        dst = UnitOfMeasurementEnumType::N;
-        return;
-    }
-    if (src == "N_m") {
-        dst = UnitOfMeasurementEnumType::N_m;
-        return;
-    }
-    if (src == "N_s") {
-        dst = UnitOfMeasurementEnumType::N_s;
-        return;
-    }
-    if (src == "Wb") {
-        dst = UnitOfMeasurementEnumType::Wb;
-        return;
-    }
-    if (src == "T") {
-        dst = UnitOfMeasurementEnumType::T;
-        return;
-    }
-    if (src == "Pa") {
-        dst = UnitOfMeasurementEnumType::Pa;
-        return;
-    }
-    if (src == "bar") {
-        dst = UnitOfMeasurementEnumType::bar;
-        return;
-    }
-    if (src == "atm") {
-        dst = UnitOfMeasurementEnumType::atm;
-        return;
-    }
-    if (src == "psi") {
-        dst = UnitOfMeasurementEnumType::psi;
-        return;
-    }
-    if (src == "mmHg") {
-        dst = UnitOfMeasurementEnumType::mmHg;
-        return;
-    }
-    if (src == "m^2") {
-        dst = UnitOfMeasurementEnumType::m_2;
-        return;
-    }
-    if (src == "m^3") {
-        dst = UnitOfMeasurementEnumType::m_3;
-        return;
-    }
-    if (src == "m^3/h") {
-        dst = UnitOfMeasurementEnumType::m_3_h;
-        return;
-    }
-    if (src == "m/s") {
-        dst = UnitOfMeasurementEnumType::m_s;
-        return;
-    }
-    if (src == "m/s^2") {
-        dst = UnitOfMeasurementEnumType::m_s_2;
-        return;
-    }
-    if (src == "m^3/s") {
-        dst = UnitOfMeasurementEnumType::m_3_s;
-        return;
-    }
-    if (src == "m/m^3") {
-        dst = UnitOfMeasurementEnumType::m_m_3;
-        return;
-    }
-    if (src == "kg/m^3") {
-        dst = UnitOfMeasurementEnumType::kg_m_3;
-        return;
-    }
-    if (src == "kg_m") {
-        dst = UnitOfMeasurementEnumType::kg_m;
-        return;
-    }
-    if (src == "m^2/s") {
-        dst = UnitOfMeasurementEnumType::m_2_s;
-        return;
-    }
-    if (src == "W/m_K") {
-        dst = UnitOfMeasurementEnumType::W_m_K;
-        return;
-    }
-    if (src == "J/K") {
-        dst = UnitOfMeasurementEnumType::J_K;
-        return;
-    }
-    if (src == "1/s") {
-        dst = UnitOfMeasurementEnumType::var_1_s;
-        return;
-    }
-    if (src == "W/m^2") {
-        dst = UnitOfMeasurementEnumType::W_m_2;
-        return;
-    }
-    if (src == "J/m^2") {
-        dst = UnitOfMeasurementEnumType::J_m_2;
-        return;
-    }
-    if (src == "S") {
-        dst = UnitOfMeasurementEnumType::S;
-        return;
-    }
-    if (src == "S/m") {
-        dst = UnitOfMeasurementEnumType::S_m;
-        return;
-    }
-    if (src == "K/s") {
-        dst = UnitOfMeasurementEnumType::K_s;
-        return;
-    }
-    if (src == "Pa/s") {
-        dst = UnitOfMeasurementEnumType::Pa_s;
-        return;
-    }
-    if (src == "J/kg_K") {
-        dst = UnitOfMeasurementEnumType::J_kg_K;
-        return;
-    }
-    if (src == "Vs") {
-        dst = UnitOfMeasurementEnumType::Vs;
-        return;
-    }
-    if (src == "V/m") {
-        dst = UnitOfMeasurementEnumType::V_m;
-        return;
-    }
-    if (src == "V/Hz") {
-        dst = UnitOfMeasurementEnumType::V_Hz;
-        return;
-    }
-    if (src == "As") {
-        dst = UnitOfMeasurementEnumType::As;
-        return;
-    }
-    if (src == "A/m") {
-        dst = UnitOfMeasurementEnumType::A_m;
-        return;
-    }
-    if (src == "Hz/s") {
-        dst = UnitOfMeasurementEnumType::Hz_s;
-        return;
-    }
-    if (src == "kg/s") {
-        dst = UnitOfMeasurementEnumType::kg_s;
-        return;
-    }
-    if (src == "kg_m^2") {
-        dst = UnitOfMeasurementEnumType::kg_m_2;
-        return;
-    }
-    if (src == "J/Wh") {
-        dst = UnitOfMeasurementEnumType::J_Wh;
-        return;
-    }
-    if (src == "W/s") {
-        dst = UnitOfMeasurementEnumType::W_s;
-        return;
-    }
-    if (src == "ft^3") {
-        dst = UnitOfMeasurementEnumType::ft_3;
-        return;
-    }
-    if (src == "ft^3/h") {
-        dst = UnitOfMeasurementEnumType::ft_3_h;
-        return;
-    }
-    if (src == "ccf") {
-        dst = UnitOfMeasurementEnumType::ccf;
-        return;
-    }
-    if (src == "ccf/h") {
-        dst = UnitOfMeasurementEnumType::ccf_h;
-        return;
-    }
-    if (src == "US.liq.gal") {
-        dst = UnitOfMeasurementEnumType::US_liq_gal;
-        return;
-    }
-    if (src == "US.liq.gal/h") {
-        dst = UnitOfMeasurementEnumType::US_liq_gal_h;
-        return;
-    }
-    if (src == "Imp.gal") {
-        dst = UnitOfMeasurementEnumType::Imp_gal;
-        return;
-    }
-    if (src == "Imp.gal/h") {
-        dst = UnitOfMeasurementEnumType::Imp_gal_h;
-        return;
-    }
-    if (src == "Btu") {
-        dst = UnitOfMeasurementEnumType::Btu;
-        return;
-    }
-    if (src == "Btu/h") {
-        dst = UnitOfMeasurementEnumType::Btu_h;
-        return;
-    }
-    if (src == "Ah") {
-        dst = UnitOfMeasurementEnumType::Ah;
-        return;
-    }
-    if (src == "kg/Wh") {
-        dst = UnitOfMeasurementEnumType::kg_Wh;
-        return;
-    }
-    dst = UnitOfMeasurementEnumType::EnumUndefined;
+    dst = static_cast<UnitOfMeasurementEnumType>(enumNameToValue(UnitOfMeasurementEnumType_names, UnitOfMeasurementEnumType_count, src, static_cast<int>(UnitOfMeasurementEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst)
@@ -1081,368 +319,16 @@ void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst
     convertFromString(s, dst);
 }
 
+static const char *const CurrencyEnumType_names[] = {
+    "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BOV", "BRL", "BSD", "BTN", "BWP", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLF", "CLP", "CNY", "COP", "COU", "CRC", "CUC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD",
+    "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "INR", "IQD", "IRR", "ISK", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MUR", "MVR", "MWK", "MXN", "MXV", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD",
+    "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SRD", "SSP", "STD", "SVC", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "USD", "USN", "UYI", "UYU", "UZS", "VEF", "VND", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XOF", "XPD", "XPF", "XPT", "XSU", "XTS", "XUA", "XXX", "YER", "ZAR", "ZMW", "ZWL",
+};
+static constexpr size_t CurrencyEnumType_count = sizeof(CurrencyEnumType_names) / sizeof(CurrencyEnumType_names[0]);
+
 String convertToString(const CurrencyEnumType &src)
 {
-    switch (src) {
-        case CurrencyEnumType::AED:
-            return "AED";
-        case CurrencyEnumType::AFN:
-            return "AFN";
-        case CurrencyEnumType::ALL:
-            return "ALL";
-        case CurrencyEnumType::AMD:
-            return "AMD";
-        case CurrencyEnumType::ANG:
-            return "ANG";
-        case CurrencyEnumType::AOA:
-            return "AOA";
-        case CurrencyEnumType::ARS:
-            return "ARS";
-        case CurrencyEnumType::AUD:
-            return "AUD";
-        case CurrencyEnumType::AWG:
-            return "AWG";
-        case CurrencyEnumType::AZN:
-            return "AZN";
-        case CurrencyEnumType::BAM:
-            return "BAM";
-        case CurrencyEnumType::BBD:
-            return "BBD";
-        case CurrencyEnumType::BDT:
-            return "BDT";
-        case CurrencyEnumType::BGN:
-            return "BGN";
-        case CurrencyEnumType::BHD:
-            return "BHD";
-        case CurrencyEnumType::BIF:
-            return "BIF";
-        case CurrencyEnumType::BMD:
-            return "BMD";
-        case CurrencyEnumType::BND:
-            return "BND";
-        case CurrencyEnumType::BOB:
-            return "BOB";
-        case CurrencyEnumType::BOV:
-            return "BOV";
-        case CurrencyEnumType::BRL:
-            return "BRL";
-        case CurrencyEnumType::BSD:
-            return "BSD";
-        case CurrencyEnumType::BTN:
-            return "BTN";
-        case CurrencyEnumType::BWP:
-            return "BWP";
-        case CurrencyEnumType::BYR:
-            return "BYR";
-        case CurrencyEnumType::BZD:
-            return "BZD";
-        case CurrencyEnumType::CAD:
-            return "CAD";
-        case CurrencyEnumType::CDF:
-            return "CDF";
-        case CurrencyEnumType::CHE:
-            return "CHE";
-        case CurrencyEnumType::CHF:
-            return "CHF";
-        case CurrencyEnumType::CHW:
-            return "CHW";
-        case CurrencyEnumType::CLF:
-            return "CLF";
-        case CurrencyEnumType::CLP:
-            return "CLP";
-        case CurrencyEnumType::CNY:
-            return "CNY";
-        case CurrencyEnumType::COP:
-            return "COP";
-        case CurrencyEnumType::COU:
-            return "COU";
-        case CurrencyEnumType::CRC:
-            return "CRC";
-        case CurrencyEnumType::CUC:
-            return "CUC";
-        case CurrencyEnumType::CUP:
-            return "CUP";
-        case CurrencyEnumType::CVE:
-            return "CVE";
-        case CurrencyEnumType::CZK:
-            return "CZK";
-        case CurrencyEnumType::DJF:
-            return "DJF";
-        case CurrencyEnumType::DKK:
-            return "DKK";
-        case CurrencyEnumType::DOP:
-            return "DOP";
-        case CurrencyEnumType::DZD:
-            return "DZD";
-        case CurrencyEnumType::EGP:
-            return "EGP";
-        case CurrencyEnumType::ERN:
-            return "ERN";
-        case CurrencyEnumType::ETB:
-            return "ETB";
-        case CurrencyEnumType::EUR:
-            return "EUR";
-        case CurrencyEnumType::FJD:
-            return "FJD";
-        case CurrencyEnumType::FKP:
-            return "FKP";
-        case CurrencyEnumType::GBP:
-            return "GBP";
-        case CurrencyEnumType::GEL:
-            return "GEL";
-        case CurrencyEnumType::GHS:
-            return "GHS";
-        case CurrencyEnumType::GIP:
-            return "GIP";
-        case CurrencyEnumType::GMD:
-            return "GMD";
-        case CurrencyEnumType::GNF:
-            return "GNF";
-        case CurrencyEnumType::GTQ:
-            return "GTQ";
-        case CurrencyEnumType::GYD:
-            return "GYD";
-        case CurrencyEnumType::HKD:
-            return "HKD";
-        case CurrencyEnumType::HNL:
-            return "HNL";
-        case CurrencyEnumType::HRK:
-            return "HRK";
-        case CurrencyEnumType::HTG:
-            return "HTG";
-        case CurrencyEnumType::HUF:
-            return "HUF";
-        case CurrencyEnumType::IDR:
-            return "IDR";
-        case CurrencyEnumType::ILS:
-            return "ILS";
-        case CurrencyEnumType::INR:
-            return "INR";
-        case CurrencyEnumType::IQD:
-            return "IQD";
-        case CurrencyEnumType::IRR:
-            return "IRR";
-        case CurrencyEnumType::ISK:
-            return "ISK";
-        case CurrencyEnumType::JMD:
-            return "JMD";
-        case CurrencyEnumType::JOD:
-            return "JOD";
-        case CurrencyEnumType::JPY:
-            return "JPY";
-        case CurrencyEnumType::KES:
-            return "KES";
-        case CurrencyEnumType::KGS:
-            return "KGS";
-        case CurrencyEnumType::KHR:
-            return "KHR";
-        case CurrencyEnumType::KMF:
-            return "KMF";
-        case CurrencyEnumType::KPW:
-            return "KPW";
-        case CurrencyEnumType::KRW:
-            return "KRW";
-        case CurrencyEnumType::KWD:
-            return "KWD";
-        case CurrencyEnumType::KYD:
-            return "KYD";
-        case CurrencyEnumType::KZT:
-            return "KZT";
-        case CurrencyEnumType::LAK:
-            return "LAK";
-        case CurrencyEnumType::LBP:
-            return "LBP";
-        case CurrencyEnumType::LKR:
-            return "LKR";
-        case CurrencyEnumType::LRD:
-            return "LRD";
-        case CurrencyEnumType::LSL:
-            return "LSL";
-        case CurrencyEnumType::LYD:
-            return "LYD";
-        case CurrencyEnumType::MAD:
-            return "MAD";
-        case CurrencyEnumType::MDL:
-            return "MDL";
-        case CurrencyEnumType::MGA:
-            return "MGA";
-        case CurrencyEnumType::MKD:
-            return "MKD";
-        case CurrencyEnumType::MMK:
-            return "MMK";
-        case CurrencyEnumType::MNT:
-            return "MNT";
-        case CurrencyEnumType::MOP:
-            return "MOP";
-        case CurrencyEnumType::MRO:
-            return "MRO";
-        case CurrencyEnumType::MUR:
-            return "MUR";
-        case CurrencyEnumType::MVR:
-            return "MVR";
-        case CurrencyEnumType::MWK:
-            return "MWK";
-        case CurrencyEnumType::MXN:
-            return "MXN";
-        case CurrencyEnumType::MXV:
-            return "MXV";
-        case CurrencyEnumType::MYR:
-            return "MYR";
-        case CurrencyEnumType::MZN:
-            return "MZN";
-        case CurrencyEnumType::NAD:
-            return "NAD";
-        case CurrencyEnumType::NGN:
-            return "NGN";
-        case CurrencyEnumType::NIO:
-            return "NIO";
-        case CurrencyEnumType::NOK:
-            return "NOK";
-        case CurrencyEnumType::NPR:
-            return "NPR";
-        case CurrencyEnumType::NZD:
-            return "NZD";
-        case CurrencyEnumType::OMR:
-            return "OMR";
-        case CurrencyEnumType::PAB:
-            return "PAB";
-        case CurrencyEnumType::PEN:
-            return "PEN";
-        case CurrencyEnumType::PGK:
-            return "PGK";
-        case CurrencyEnumType::PHP:
-            return "PHP";
-        case CurrencyEnumType::PKR:
-            return "PKR";
-        case CurrencyEnumType::PLN:
-            return "PLN";
-        case CurrencyEnumType::PYG:
-            return "PYG";
-        case CurrencyEnumType::QAR:
-            return "QAR";
-        case CurrencyEnumType::RON:
-            return "RON";
-        case CurrencyEnumType::RSD:
-            return "RSD";
-        case CurrencyEnumType::RUB:
-            return "RUB";
-        case CurrencyEnumType::RWF:
-            return "RWF";
-        case CurrencyEnumType::var_SAR:
-            return "SAR";
-        case CurrencyEnumType::SBD:
-            return "SBD";
-        case CurrencyEnumType::SCR:
-            return "SCR";
-        case CurrencyEnumType::SDG:
-            return "SDG";
-        case CurrencyEnumType::SEK:
-            return "SEK";
-        case CurrencyEnumType::SGD:
-            return "SGD";
-        case CurrencyEnumType::SHP:
-            return "SHP";
-        case CurrencyEnumType::SLL:
-            return "SLL";
-        case CurrencyEnumType::SOS:
-            return "SOS";
-        case CurrencyEnumType::SRD:
-            return "SRD";
-        case CurrencyEnumType::SSP:
-            return "SSP";
-        case CurrencyEnumType::STD:
-            return "STD";
-        case CurrencyEnumType::SVC:
-            return "SVC";
-        case CurrencyEnumType::SYP:
-            return "SYP";
-        case CurrencyEnumType::SZL:
-            return "SZL";
-        case CurrencyEnumType::THB:
-            return "THB";
-        case CurrencyEnumType::TJS:
-            return "TJS";
-        case CurrencyEnumType::TMT:
-            return "TMT";
-        case CurrencyEnumType::TND:
-            return "TND";
-        case CurrencyEnumType::TOP:
-            return "TOP";
-        case CurrencyEnumType::TRY:
-            return "TRY";
-        case CurrencyEnumType::TTD:
-            return "TTD";
-        case CurrencyEnumType::TWD:
-            return "TWD";
-        case CurrencyEnumType::TZS:
-            return "TZS";
-        case CurrencyEnumType::UAH:
-            return "UAH";
-        case CurrencyEnumType::UGX:
-            return "UGX";
-        case CurrencyEnumType::USD:
-            return "USD";
-        case CurrencyEnumType::USN:
-            return "USN";
-        case CurrencyEnumType::UYI:
-            return "UYI";
-        case CurrencyEnumType::UYU:
-            return "UYU";
-        case CurrencyEnumType::UZS:
-            return "UZS";
-        case CurrencyEnumType::VEF:
-            return "VEF";
-        case CurrencyEnumType::VND:
-            return "VND";
-        case CurrencyEnumType::VUV:
-            return "VUV";
-        case CurrencyEnumType::WST:
-            return "WST";
-        case CurrencyEnumType::XAF:
-            return "XAF";
-        case CurrencyEnumType::XAG:
-            return "XAG";
-        case CurrencyEnumType::XAU:
-            return "XAU";
-        case CurrencyEnumType::XBA:
-            return "XBA";
-        case CurrencyEnumType::XBB:
-            return "XBB";
-        case CurrencyEnumType::XBC:
-            return "XBC";
-        case CurrencyEnumType::XBD:
-            return "XBD";
-        case CurrencyEnumType::XCD:
-            return "XCD";
-        case CurrencyEnumType::XDR:
-            return "XDR";
-        case CurrencyEnumType::XOF:
-            return "XOF";
-        case CurrencyEnumType::XPD:
-            return "XPD";
-        case CurrencyEnumType::XPF:
-            return "XPF";
-        case CurrencyEnumType::XPT:
-            return "XPT";
-        case CurrencyEnumType::XSU:
-            return "XSU";
-        case CurrencyEnumType::XTS:
-            return "XTS";
-        case CurrencyEnumType::XUA:
-            return "XUA";
-        case CurrencyEnumType::XXX:
-            return "XXX";
-        case CurrencyEnumType::YER:
-            return "YER";
-        case CurrencyEnumType::ZAR:
-            return "ZAR";
-        case CurrencyEnumType::ZMW:
-            return "ZMW";
-        case CurrencyEnumType::ZWL:
-            return "ZWL";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(CurrencyEnumType_names, CurrencyEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst)
@@ -1452,719 +338,7 @@ bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, CurrencyEnumType &dst)
 {
-    if (src == "AED") {
-        dst = CurrencyEnumType::AED;
-        return;
-    }
-    if (src == "AFN") {
-        dst = CurrencyEnumType::AFN;
-        return;
-    }
-    if (src == "ALL") {
-        dst = CurrencyEnumType::ALL;
-        return;
-    }
-    if (src == "AMD") {
-        dst = CurrencyEnumType::AMD;
-        return;
-    }
-    if (src == "ANG") {
-        dst = CurrencyEnumType::ANG;
-        return;
-    }
-    if (src == "AOA") {
-        dst = CurrencyEnumType::AOA;
-        return;
-    }
-    if (src == "ARS") {
-        dst = CurrencyEnumType::ARS;
-        return;
-    }
-    if (src == "AUD") {
-        dst = CurrencyEnumType::AUD;
-        return;
-    }
-    if (src == "AWG") {
-        dst = CurrencyEnumType::AWG;
-        return;
-    }
-    if (src == "AZN") {
-        dst = CurrencyEnumType::AZN;
-        return;
-    }
-    if (src == "BAM") {
-        dst = CurrencyEnumType::BAM;
-        return;
-    }
-    if (src == "BBD") {
-        dst = CurrencyEnumType::BBD;
-        return;
-    }
-    if (src == "BDT") {
-        dst = CurrencyEnumType::BDT;
-        return;
-    }
-    if (src == "BGN") {
-        dst = CurrencyEnumType::BGN;
-        return;
-    }
-    if (src == "BHD") {
-        dst = CurrencyEnumType::BHD;
-        return;
-    }
-    if (src == "BIF") {
-        dst = CurrencyEnumType::BIF;
-        return;
-    }
-    if (src == "BMD") {
-        dst = CurrencyEnumType::BMD;
-        return;
-    }
-    if (src == "BND") {
-        dst = CurrencyEnumType::BND;
-        return;
-    }
-    if (src == "BOB") {
-        dst = CurrencyEnumType::BOB;
-        return;
-    }
-    if (src == "BOV") {
-        dst = CurrencyEnumType::BOV;
-        return;
-    }
-    if (src == "BRL") {
-        dst = CurrencyEnumType::BRL;
-        return;
-    }
-    if (src == "BSD") {
-        dst = CurrencyEnumType::BSD;
-        return;
-    }
-    if (src == "BTN") {
-        dst = CurrencyEnumType::BTN;
-        return;
-    }
-    if (src == "BWP") {
-        dst = CurrencyEnumType::BWP;
-        return;
-    }
-    if (src == "BYR") {
-        dst = CurrencyEnumType::BYR;
-        return;
-    }
-    if (src == "BZD") {
-        dst = CurrencyEnumType::BZD;
-        return;
-    }
-    if (src == "CAD") {
-        dst = CurrencyEnumType::CAD;
-        return;
-    }
-    if (src == "CDF") {
-        dst = CurrencyEnumType::CDF;
-        return;
-    }
-    if (src == "CHE") {
-        dst = CurrencyEnumType::CHE;
-        return;
-    }
-    if (src == "CHF") {
-        dst = CurrencyEnumType::CHF;
-        return;
-    }
-    if (src == "CHW") {
-        dst = CurrencyEnumType::CHW;
-        return;
-    }
-    if (src == "CLF") {
-        dst = CurrencyEnumType::CLF;
-        return;
-    }
-    if (src == "CLP") {
-        dst = CurrencyEnumType::CLP;
-        return;
-    }
-    if (src == "CNY") {
-        dst = CurrencyEnumType::CNY;
-        return;
-    }
-    if (src == "COP") {
-        dst = CurrencyEnumType::COP;
-        return;
-    }
-    if (src == "COU") {
-        dst = CurrencyEnumType::COU;
-        return;
-    }
-    if (src == "CRC") {
-        dst = CurrencyEnumType::CRC;
-        return;
-    }
-    if (src == "CUC") {
-        dst = CurrencyEnumType::CUC;
-        return;
-    }
-    if (src == "CUP") {
-        dst = CurrencyEnumType::CUP;
-        return;
-    }
-    if (src == "CVE") {
-        dst = CurrencyEnumType::CVE;
-        return;
-    }
-    if (src == "CZK") {
-        dst = CurrencyEnumType::CZK;
-        return;
-    }
-    if (src == "DJF") {
-        dst = CurrencyEnumType::DJF;
-        return;
-    }
-    if (src == "DKK") {
-        dst = CurrencyEnumType::DKK;
-        return;
-    }
-    if (src == "DOP") {
-        dst = CurrencyEnumType::DOP;
-        return;
-    }
-    if (src == "DZD") {
-        dst = CurrencyEnumType::DZD;
-        return;
-    }
-    if (src == "EGP") {
-        dst = CurrencyEnumType::EGP;
-        return;
-    }
-    if (src == "ERN") {
-        dst = CurrencyEnumType::ERN;
-        return;
-    }
-    if (src == "ETB") {
-        dst = CurrencyEnumType::ETB;
-        return;
-    }
-    if (src == "EUR") {
-        dst = CurrencyEnumType::EUR;
-        return;
-    }
-    if (src == "FJD") {
-        dst = CurrencyEnumType::FJD;
-        return;
-    }
-    if (src == "FKP") {
-        dst = CurrencyEnumType::FKP;
-        return;
-    }
-    if (src == "GBP") {
-        dst = CurrencyEnumType::GBP;
-        return;
-    }
-    if (src == "GEL") {
-        dst = CurrencyEnumType::GEL;
-        return;
-    }
-    if (src == "GHS") {
-        dst = CurrencyEnumType::GHS;
-        return;
-    }
-    if (src == "GIP") {
-        dst = CurrencyEnumType::GIP;
-        return;
-    }
-    if (src == "GMD") {
-        dst = CurrencyEnumType::GMD;
-        return;
-    }
-    if (src == "GNF") {
-        dst = CurrencyEnumType::GNF;
-        return;
-    }
-    if (src == "GTQ") {
-        dst = CurrencyEnumType::GTQ;
-        return;
-    }
-    if (src == "GYD") {
-        dst = CurrencyEnumType::GYD;
-        return;
-    }
-    if (src == "HKD") {
-        dst = CurrencyEnumType::HKD;
-        return;
-    }
-    if (src == "HNL") {
-        dst = CurrencyEnumType::HNL;
-        return;
-    }
-    if (src == "HRK") {
-        dst = CurrencyEnumType::HRK;
-        return;
-    }
-    if (src == "HTG") {
-        dst = CurrencyEnumType::HTG;
-        return;
-    }
-    if (src == "HUF") {
-        dst = CurrencyEnumType::HUF;
-        return;
-    }
-    if (src == "IDR") {
-        dst = CurrencyEnumType::IDR;
-        return;
-    }
-    if (src == "ILS") {
-        dst = CurrencyEnumType::ILS;
-        return;
-    }
-    if (src == "INR") {
-        dst = CurrencyEnumType::INR;
-        return;
-    }
-    if (src == "IQD") {
-        dst = CurrencyEnumType::IQD;
-        return;
-    }
-    if (src == "IRR") {
-        dst = CurrencyEnumType::IRR;
-        return;
-    }
-    if (src == "ISK") {
-        dst = CurrencyEnumType::ISK;
-        return;
-    }
-    if (src == "JMD") {
-        dst = CurrencyEnumType::JMD;
-        return;
-    }
-    if (src == "JOD") {
-        dst = CurrencyEnumType::JOD;
-        return;
-    }
-    if (src == "JPY") {
-        dst = CurrencyEnumType::JPY;
-        return;
-    }
-    if (src == "KES") {
-        dst = CurrencyEnumType::KES;
-        return;
-    }
-    if (src == "KGS") {
-        dst = CurrencyEnumType::KGS;
-        return;
-    }
-    if (src == "KHR") {
-        dst = CurrencyEnumType::KHR;
-        return;
-    }
-    if (src == "KMF") {
-        dst = CurrencyEnumType::KMF;
-        return;
-    }
-    if (src == "KPW") {
-        dst = CurrencyEnumType::KPW;
-        return;
-    }
-    if (src == "KRW") {
-        dst = CurrencyEnumType::KRW;
-        return;
-    }
-    if (src == "KWD") {
-        dst = CurrencyEnumType::KWD;
-        return;
-    }
-    if (src == "KYD") {
-        dst = CurrencyEnumType::KYD;
-        return;
-    }
-    if (src == "KZT") {
-        dst = CurrencyEnumType::KZT;
-        return;
-    }
-    if (src == "LAK") {
-        dst = CurrencyEnumType::LAK;
-        return;
-    }
-    if (src == "LBP") {
-        dst = CurrencyEnumType::LBP;
-        return;
-    }
-    if (src == "LKR") {
-        dst = CurrencyEnumType::LKR;
-        return;
-    }
-    if (src == "LRD") {
-        dst = CurrencyEnumType::LRD;
-        return;
-    }
-    if (src == "LSL") {
-        dst = CurrencyEnumType::LSL;
-        return;
-    }
-    if (src == "LYD") {
-        dst = CurrencyEnumType::LYD;
-        return;
-    }
-    if (src == "MAD") {
-        dst = CurrencyEnumType::MAD;
-        return;
-    }
-    if (src == "MDL") {
-        dst = CurrencyEnumType::MDL;
-        return;
-    }
-    if (src == "MGA") {
-        dst = CurrencyEnumType::MGA;
-        return;
-    }
-    if (src == "MKD") {
-        dst = CurrencyEnumType::MKD;
-        return;
-    }
-    if (src == "MMK") {
-        dst = CurrencyEnumType::MMK;
-        return;
-    }
-    if (src == "MNT") {
-        dst = CurrencyEnumType::MNT;
-        return;
-    }
-    if (src == "MOP") {
-        dst = CurrencyEnumType::MOP;
-        return;
-    }
-    if (src == "MRO") {
-        dst = CurrencyEnumType::MRO;
-        return;
-    }
-    if (src == "MUR") {
-        dst = CurrencyEnumType::MUR;
-        return;
-    }
-    if (src == "MVR") {
-        dst = CurrencyEnumType::MVR;
-        return;
-    }
-    if (src == "MWK") {
-        dst = CurrencyEnumType::MWK;
-        return;
-    }
-    if (src == "MXN") {
-        dst = CurrencyEnumType::MXN;
-        return;
-    }
-    if (src == "MXV") {
-        dst = CurrencyEnumType::MXV;
-        return;
-    }
-    if (src == "MYR") {
-        dst = CurrencyEnumType::MYR;
-        return;
-    }
-    if (src == "MZN") {
-        dst = CurrencyEnumType::MZN;
-        return;
-    }
-    if (src == "NAD") {
-        dst = CurrencyEnumType::NAD;
-        return;
-    }
-    if (src == "NGN") {
-        dst = CurrencyEnumType::NGN;
-        return;
-    }
-    if (src == "NIO") {
-        dst = CurrencyEnumType::NIO;
-        return;
-    }
-    if (src == "NOK") {
-        dst = CurrencyEnumType::NOK;
-        return;
-    }
-    if (src == "NPR") {
-        dst = CurrencyEnumType::NPR;
-        return;
-    }
-    if (src == "NZD") {
-        dst = CurrencyEnumType::NZD;
-        return;
-    }
-    if (src == "OMR") {
-        dst = CurrencyEnumType::OMR;
-        return;
-    }
-    if (src == "PAB") {
-        dst = CurrencyEnumType::PAB;
-        return;
-    }
-    if (src == "PEN") {
-        dst = CurrencyEnumType::PEN;
-        return;
-    }
-    if (src == "PGK") {
-        dst = CurrencyEnumType::PGK;
-        return;
-    }
-    if (src == "PHP") {
-        dst = CurrencyEnumType::PHP;
-        return;
-    }
-    if (src == "PKR") {
-        dst = CurrencyEnumType::PKR;
-        return;
-    }
-    if (src == "PLN") {
-        dst = CurrencyEnumType::PLN;
-        return;
-    }
-    if (src == "PYG") {
-        dst = CurrencyEnumType::PYG;
-        return;
-    }
-    if (src == "QAR") {
-        dst = CurrencyEnumType::QAR;
-        return;
-    }
-    if (src == "RON") {
-        dst = CurrencyEnumType::RON;
-        return;
-    }
-    if (src == "RSD") {
-        dst = CurrencyEnumType::RSD;
-        return;
-    }
-    if (src == "RUB") {
-        dst = CurrencyEnumType::RUB;
-        return;
-    }
-    if (src == "RWF") {
-        dst = CurrencyEnumType::RWF;
-        return;
-    }
-    if (src == "SAR") {
-        dst = CurrencyEnumType::var_SAR;
-        return;
-    }
-    if (src == "SBD") {
-        dst = CurrencyEnumType::SBD;
-        return;
-    }
-    if (src == "SCR") {
-        dst = CurrencyEnumType::SCR;
-        return;
-    }
-    if (src == "SDG") {
-        dst = CurrencyEnumType::SDG;
-        return;
-    }
-    if (src == "SEK") {
-        dst = CurrencyEnumType::SEK;
-        return;
-    }
-    if (src == "SGD") {
-        dst = CurrencyEnumType::SGD;
-        return;
-    }
-    if (src == "SHP") {
-        dst = CurrencyEnumType::SHP;
-        return;
-    }
-    if (src == "SLL") {
-        dst = CurrencyEnumType::SLL;
-        return;
-    }
-    if (src == "SOS") {
-        dst = CurrencyEnumType::SOS;
-        return;
-    }
-    if (src == "SRD") {
-        dst = CurrencyEnumType::SRD;
-        return;
-    }
-    if (src == "SSP") {
-        dst = CurrencyEnumType::SSP;
-        return;
-    }
-    if (src == "STD") {
-        dst = CurrencyEnumType::STD;
-        return;
-    }
-    if (src == "SVC") {
-        dst = CurrencyEnumType::SVC;
-        return;
-    }
-    if (src == "SYP") {
-        dst = CurrencyEnumType::SYP;
-        return;
-    }
-    if (src == "SZL") {
-        dst = CurrencyEnumType::SZL;
-        return;
-    }
-    if (src == "THB") {
-        dst = CurrencyEnumType::THB;
-        return;
-    }
-    if (src == "TJS") {
-        dst = CurrencyEnumType::TJS;
-        return;
-    }
-    if (src == "TMT") {
-        dst = CurrencyEnumType::TMT;
-        return;
-    }
-    if (src == "TND") {
-        dst = CurrencyEnumType::TND;
-        return;
-    }
-    if (src == "TOP") {
-        dst = CurrencyEnumType::TOP;
-        return;
-    }
-    if (src == "TRY") {
-        dst = CurrencyEnumType::TRY;
-        return;
-    }
-    if (src == "TTD") {
-        dst = CurrencyEnumType::TTD;
-        return;
-    }
-    if (src == "TWD") {
-        dst = CurrencyEnumType::TWD;
-        return;
-    }
-    if (src == "TZS") {
-        dst = CurrencyEnumType::TZS;
-        return;
-    }
-    if (src == "UAH") {
-        dst = CurrencyEnumType::UAH;
-        return;
-    }
-    if (src == "UGX") {
-        dst = CurrencyEnumType::UGX;
-        return;
-    }
-    if (src == "USD") {
-        dst = CurrencyEnumType::USD;
-        return;
-    }
-    if (src == "USN") {
-        dst = CurrencyEnumType::USN;
-        return;
-    }
-    if (src == "UYI") {
-        dst = CurrencyEnumType::UYI;
-        return;
-    }
-    if (src == "UYU") {
-        dst = CurrencyEnumType::UYU;
-        return;
-    }
-    if (src == "UZS") {
-        dst = CurrencyEnumType::UZS;
-        return;
-    }
-    if (src == "VEF") {
-        dst = CurrencyEnumType::VEF;
-        return;
-    }
-    if (src == "VND") {
-        dst = CurrencyEnumType::VND;
-        return;
-    }
-    if (src == "VUV") {
-        dst = CurrencyEnumType::VUV;
-        return;
-    }
-    if (src == "WST") {
-        dst = CurrencyEnumType::WST;
-        return;
-    }
-    if (src == "XAF") {
-        dst = CurrencyEnumType::XAF;
-        return;
-    }
-    if (src == "XAG") {
-        dst = CurrencyEnumType::XAG;
-        return;
-    }
-    if (src == "XAU") {
-        dst = CurrencyEnumType::XAU;
-        return;
-    }
-    if (src == "XBA") {
-        dst = CurrencyEnumType::XBA;
-        return;
-    }
-    if (src == "XBB") {
-        dst = CurrencyEnumType::XBB;
-        return;
-    }
-    if (src == "XBC") {
-        dst = CurrencyEnumType::XBC;
-        return;
-    }
-    if (src == "XBD") {
-        dst = CurrencyEnumType::XBD;
-        return;
-    }
-    if (src == "XCD") {
-        dst = CurrencyEnumType::XCD;
-        return;
-    }
-    if (src == "XDR") {
-        dst = CurrencyEnumType::XDR;
-        return;
-    }
-    if (src == "XOF") {
-        dst = CurrencyEnumType::XOF;
-        return;
-    }
-    if (src == "XPD") {
-        dst = CurrencyEnumType::XPD;
-        return;
-    }
-    if (src == "XPF") {
-        dst = CurrencyEnumType::XPF;
-        return;
-    }
-    if (src == "XPT") {
-        dst = CurrencyEnumType::XPT;
-        return;
-    }
-    if (src == "XSU") {
-        dst = CurrencyEnumType::XSU;
-        return;
-    }
-    if (src == "XTS") {
-        dst = CurrencyEnumType::XTS;
-        return;
-    }
-    if (src == "XUA") {
-        dst = CurrencyEnumType::XUA;
-        return;
-    }
-    if (src == "XXX") {
-        dst = CurrencyEnumType::XXX;
-        return;
-    }
-    if (src == "YER") {
-        dst = CurrencyEnumType::YER;
-        return;
-    }
-    if (src == "ZAR") {
-        dst = CurrencyEnumType::ZAR;
-        return;
-    }
-    if (src == "ZMW") {
-        dst = CurrencyEnumType::ZMW;
-        return;
-    }
-    if (src == "ZWL") {
-        dst = CurrencyEnumType::ZWL;
-        return;
-    }
-    dst = CurrencyEnumType::EnumUndefined;
+    dst = static_cast<CurrencyEnumType>(enumNameToValue(CurrencyEnumType_names, CurrencyEnumType_count, src, static_cast<int>(CurrencyEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst)
@@ -2173,184 +347,99 @@ void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const ScopeTypeEnumType_names[] = {
+    "ac",
+    "acCosPhiGrid",
+    "acCurrentA",
+    "acCurrentB",
+    "acCurrentC",
+    "acFrequencyGrid",
+    "acPowerA",
+    "acPowerB",
+    "acPowerC",
+    "acPowerLimitPct",
+    "acPowerTotal",
+    "acVoltageA",
+    "acVoltageB",
+    "acVoltageC",
+    "acYieldDay",
+    "acYieldTotal",
+    "dcCurrent",
+    "dcPower",
+    "dcString1",
+    "dcString2",
+    "dcString3",
+    "dcString4",
+    "dcString5",
+    "dcString6",
+    "dcTotal",
+    "dcVoltage",
+    "dhwTemperature",
+    "flowTemperature",
+    "outsideAirTemperature",
+    "returnTemperature",
+    "roomAirTemperature",
+    "charge",
+    "stateOfCharge",
+    "discharge",
+    "gridConsumption",
+    "gridFeedIn",
+    "selfConsumption",
+    "overloadProtection",
+    "acPower",
+    "acEnergy",
+    "acCurrent",
+    "acVoltage",
+    "batteryControl",
+    "simpleIncentiveTable",
+    "stateOfHealth",
+    "travelRange",
+    "nominalEnergyCapacity",
+    "acPowerReal",
+    "acPowerApparent",
+    "acPowerReactive",
+    "acYieldMonth",
+    "acYieldYear",
+    "acFrequency",
+    "acCosPhi",
+    "dcEnergy",
+    "insulationResistance",
+    "stateOfEnergy",
+    "useableCapacity",
+    "dcChargeEnergy",
+    "dcDischargeEnergy",
+    "loadCycleCount",
+    "componentTemperature",
+    "gridLimit",
+    "gridLimitFallback",
+    "acPowerApparentTotal",
+    "acPowerReactiveTotal",
+    "acCurrentTotal",
+    "acEnergyConsumed",
+    "acEnergyProduced",
+    "batteryAcPower",
+    "batteryAcPowerPhaseSpecific",
+    "batteryDcPower",
+    "pccPower",
+    "activePowerLimit",
+    "activePowerLimitPercentage",
+    "simpleCommittedIncentiveTable",
+    "simplePreliminaryIncentiveTable",
+    "committedPowerPlan",
+    "preliminaryPowerPlan",
+    "incentiveTableEnConsWithPoETF",
+    "incentiveTableEnProdWithPoETF",
+    "incentiveTableEnConsWithPoE",
+    "incentiveTableEnProdWithPoE",
+    "incentiveTableEnConsWithTF",
+    "incentiveTableEnProdWithTF",
+    "activePowerForecast",
+};
+static constexpr size_t ScopeTypeEnumType_count = sizeof(ScopeTypeEnumType_names) / sizeof(ScopeTypeEnumType_names[0]);
+
 String convertToString(const ScopeTypeEnumType &src)
 {
-    switch (src) {
-        case ScopeTypeEnumType::ac:
-            return "ac";
-        case ScopeTypeEnumType::acCosPhiGrid:
-            return "acCosPhiGrid";
-        case ScopeTypeEnumType::acCurrentA:
-            return "acCurrentA";
-        case ScopeTypeEnumType::acCurrentB:
-            return "acCurrentB";
-        case ScopeTypeEnumType::acCurrentC:
-            return "acCurrentC";
-        case ScopeTypeEnumType::acFrequencyGrid:
-            return "acFrequencyGrid";
-        case ScopeTypeEnumType::acPowerA:
-            return "acPowerA";
-        case ScopeTypeEnumType::acPowerB:
-            return "acPowerB";
-        case ScopeTypeEnumType::acPowerC:
-            return "acPowerC";
-        case ScopeTypeEnumType::acPowerLimitPct:
-            return "acPowerLimitPct";
-        case ScopeTypeEnumType::acPowerTotal:
-            return "acPowerTotal";
-        case ScopeTypeEnumType::acVoltageA:
-            return "acVoltageA";
-        case ScopeTypeEnumType::acVoltageB:
-            return "acVoltageB";
-        case ScopeTypeEnumType::acVoltageC:
-            return "acVoltageC";
-        case ScopeTypeEnumType::acYieldDay:
-            return "acYieldDay";
-        case ScopeTypeEnumType::acYieldTotal:
-            return "acYieldTotal";
-        case ScopeTypeEnumType::dcCurrent:
-            return "dcCurrent";
-        case ScopeTypeEnumType::dcPower:
-            return "dcPower";
-        case ScopeTypeEnumType::dcString1:
-            return "dcString1";
-        case ScopeTypeEnumType::dcString2:
-            return "dcString2";
-        case ScopeTypeEnumType::dcString3:
-            return "dcString3";
-        case ScopeTypeEnumType::dcString4:
-            return "dcString4";
-        case ScopeTypeEnumType::dcString5:
-            return "dcString5";
-        case ScopeTypeEnumType::dcString6:
-            return "dcString6";
-        case ScopeTypeEnumType::dcTotal:
-            return "dcTotal";
-        case ScopeTypeEnumType::dcVoltage:
-            return "dcVoltage";
-        case ScopeTypeEnumType::dhwTemperature:
-            return "dhwTemperature";
-        case ScopeTypeEnumType::flowTemperature:
-            return "flowTemperature";
-        case ScopeTypeEnumType::outsideAirTemperature:
-            return "outsideAirTemperature";
-        case ScopeTypeEnumType::returnTemperature:
-            return "returnTemperature";
-        case ScopeTypeEnumType::roomAirTemperature:
-            return "roomAirTemperature";
-        case ScopeTypeEnumType::charge:
-            return "charge";
-        case ScopeTypeEnumType::stateOfCharge:
-            return "stateOfCharge";
-        case ScopeTypeEnumType::discharge:
-            return "discharge";
-        case ScopeTypeEnumType::gridConsumption:
-            return "gridConsumption";
-        case ScopeTypeEnumType::gridFeedIn:
-            return "gridFeedIn";
-        case ScopeTypeEnumType::selfConsumption:
-            return "selfConsumption";
-        case ScopeTypeEnumType::overloadProtection:
-            return "overloadProtection";
-        case ScopeTypeEnumType::acPower:
-            return "acPower";
-        case ScopeTypeEnumType::acEnergy:
-            return "acEnergy";
-        case ScopeTypeEnumType::acCurrent:
-            return "acCurrent";
-        case ScopeTypeEnumType::acVoltage:
-            return "acVoltage";
-        case ScopeTypeEnumType::batteryControl:
-            return "batteryControl";
-        case ScopeTypeEnumType::simpleIncentiveTable:
-            return "simpleIncentiveTable";
-        case ScopeTypeEnumType::stateOfHealth:
-            return "stateOfHealth";
-        case ScopeTypeEnumType::travelRange:
-            return "travelRange";
-        case ScopeTypeEnumType::nominalEnergyCapacity:
-            return "nominalEnergyCapacity";
-        case ScopeTypeEnumType::acPowerReal:
-            return "acPowerReal";
-        case ScopeTypeEnumType::acPowerApparent:
-            return "acPowerApparent";
-        case ScopeTypeEnumType::acPowerReactive:
-            return "acPowerReactive";
-        case ScopeTypeEnumType::acYieldMonth:
-            return "acYieldMonth";
-        case ScopeTypeEnumType::acYieldYear:
-            return "acYieldYear";
-        case ScopeTypeEnumType::acFrequency:
-            return "acFrequency";
-        case ScopeTypeEnumType::acCosPhi:
-            return "acCosPhi";
-        case ScopeTypeEnumType::dcEnergy:
-            return "dcEnergy";
-        case ScopeTypeEnumType::insulationResistance:
-            return "insulationResistance";
-        case ScopeTypeEnumType::stateOfEnergy:
-            return "stateOfEnergy";
-        case ScopeTypeEnumType::useableCapacity:
-            return "useableCapacity";
-        case ScopeTypeEnumType::dcChargeEnergy:
-            return "dcChargeEnergy";
-        case ScopeTypeEnumType::dcDischargeEnergy:
-            return "dcDischargeEnergy";
-        case ScopeTypeEnumType::loadCycleCount:
-            return "loadCycleCount";
-        case ScopeTypeEnumType::componentTemperature:
-            return "componentTemperature";
-        case ScopeTypeEnumType::gridLimit:
-            return "gridLimit";
-        case ScopeTypeEnumType::gridLimitFallback:
-            return "gridLimitFallback";
-        case ScopeTypeEnumType::acPowerApparentTotal:
-            return "acPowerApparentTotal";
-        case ScopeTypeEnumType::acPowerReactiveTotal:
-            return "acPowerReactiveTotal";
-        case ScopeTypeEnumType::acCurrentTotal:
-            return "acCurrentTotal";
-        case ScopeTypeEnumType::acEnergyConsumed:
-            return "acEnergyConsumed";
-        case ScopeTypeEnumType::acEnergyProduced:
-            return "acEnergyProduced";
-        case ScopeTypeEnumType::batteryAcPower:
-            return "batteryAcPower";
-        case ScopeTypeEnumType::batteryAcPowerPhaseSpecific:
-            return "batteryAcPowerPhaseSpecific";
-        case ScopeTypeEnumType::batteryDcPower:
-            return "batteryDcPower";
-        case ScopeTypeEnumType::pccPower:
-            return "pccPower";
-        case ScopeTypeEnumType::activePowerLimit:
-            return "activePowerLimit";
-        case ScopeTypeEnumType::activePowerLimitPercentage:
-            return "activePowerLimitPercentage";
-        case ScopeTypeEnumType::simpleCommittedIncentiveTable:
-            return "simpleCommittedIncentiveTable";
-        case ScopeTypeEnumType::simplePreliminaryIncentiveTable:
-            return "simplePreliminaryIncentiveTable";
-        case ScopeTypeEnumType::committedPowerPlan:
-            return "committedPowerPlan";
-        case ScopeTypeEnumType::preliminaryPowerPlan:
-            return "preliminaryPowerPlan";
-        case ScopeTypeEnumType::incentiveTableEnConsWithPoETF:
-            return "incentiveTableEnConsWithPoETF";
-        case ScopeTypeEnumType::incentiveTableEnProdWithPoETF:
-            return "incentiveTableEnProdWithPoETF";
-        case ScopeTypeEnumType::incentiveTableEnConsWithPoE:
-            return "incentiveTableEnConsWithPoE";
-        case ScopeTypeEnumType::incentiveTableEnProdWithPoE:
-            return "incentiveTableEnProdWithPoE";
-        case ScopeTypeEnumType::incentiveTableEnConsWithTF:
-            return "incentiveTableEnConsWithTF";
-        case ScopeTypeEnumType::incentiveTableEnProdWithTF:
-            return "incentiveTableEnProdWithTF";
-        case ScopeTypeEnumType::activePowerForecast:
-            return "activePowerForecast";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ScopeTypeEnumType_names, ScopeTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst)
@@ -2360,351 +449,7 @@ bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, ScopeTypeEnumType &dst)
 {
-    if (src == "ac") {
-        dst = ScopeTypeEnumType::ac;
-        return;
-    }
-    if (src == "acCosPhiGrid") {
-        dst = ScopeTypeEnumType::acCosPhiGrid;
-        return;
-    }
-    if (src == "acCurrentA") {
-        dst = ScopeTypeEnumType::acCurrentA;
-        return;
-    }
-    if (src == "acCurrentB") {
-        dst = ScopeTypeEnumType::acCurrentB;
-        return;
-    }
-    if (src == "acCurrentC") {
-        dst = ScopeTypeEnumType::acCurrentC;
-        return;
-    }
-    if (src == "acFrequencyGrid") {
-        dst = ScopeTypeEnumType::acFrequencyGrid;
-        return;
-    }
-    if (src == "acPowerA") {
-        dst = ScopeTypeEnumType::acPowerA;
-        return;
-    }
-    if (src == "acPowerB") {
-        dst = ScopeTypeEnumType::acPowerB;
-        return;
-    }
-    if (src == "acPowerC") {
-        dst = ScopeTypeEnumType::acPowerC;
-        return;
-    }
-    if (src == "acPowerLimitPct") {
-        dst = ScopeTypeEnumType::acPowerLimitPct;
-        return;
-    }
-    if (src == "acPowerTotal") {
-        dst = ScopeTypeEnumType::acPowerTotal;
-        return;
-    }
-    if (src == "acVoltageA") {
-        dst = ScopeTypeEnumType::acVoltageA;
-        return;
-    }
-    if (src == "acVoltageB") {
-        dst = ScopeTypeEnumType::acVoltageB;
-        return;
-    }
-    if (src == "acVoltageC") {
-        dst = ScopeTypeEnumType::acVoltageC;
-        return;
-    }
-    if (src == "acYieldDay") {
-        dst = ScopeTypeEnumType::acYieldDay;
-        return;
-    }
-    if (src == "acYieldTotal") {
-        dst = ScopeTypeEnumType::acYieldTotal;
-        return;
-    }
-    if (src == "dcCurrent") {
-        dst = ScopeTypeEnumType::dcCurrent;
-        return;
-    }
-    if (src == "dcPower") {
-        dst = ScopeTypeEnumType::dcPower;
-        return;
-    }
-    if (src == "dcString1") {
-        dst = ScopeTypeEnumType::dcString1;
-        return;
-    }
-    if (src == "dcString2") {
-        dst = ScopeTypeEnumType::dcString2;
-        return;
-    }
-    if (src == "dcString3") {
-        dst = ScopeTypeEnumType::dcString3;
-        return;
-    }
-    if (src == "dcString4") {
-        dst = ScopeTypeEnumType::dcString4;
-        return;
-    }
-    if (src == "dcString5") {
-        dst = ScopeTypeEnumType::dcString5;
-        return;
-    }
-    if (src == "dcString6") {
-        dst = ScopeTypeEnumType::dcString6;
-        return;
-    }
-    if (src == "dcTotal") {
-        dst = ScopeTypeEnumType::dcTotal;
-        return;
-    }
-    if (src == "dcVoltage") {
-        dst = ScopeTypeEnumType::dcVoltage;
-        return;
-    }
-    if (src == "dhwTemperature") {
-        dst = ScopeTypeEnumType::dhwTemperature;
-        return;
-    }
-    if (src == "flowTemperature") {
-        dst = ScopeTypeEnumType::flowTemperature;
-        return;
-    }
-    if (src == "outsideAirTemperature") {
-        dst = ScopeTypeEnumType::outsideAirTemperature;
-        return;
-    }
-    if (src == "returnTemperature") {
-        dst = ScopeTypeEnumType::returnTemperature;
-        return;
-    }
-    if (src == "roomAirTemperature") {
-        dst = ScopeTypeEnumType::roomAirTemperature;
-        return;
-    }
-    if (src == "charge") {
-        dst = ScopeTypeEnumType::charge;
-        return;
-    }
-    if (src == "stateOfCharge") {
-        dst = ScopeTypeEnumType::stateOfCharge;
-        return;
-    }
-    if (src == "discharge") {
-        dst = ScopeTypeEnumType::discharge;
-        return;
-    }
-    if (src == "gridConsumption") {
-        dst = ScopeTypeEnumType::gridConsumption;
-        return;
-    }
-    if (src == "gridFeedIn") {
-        dst = ScopeTypeEnumType::gridFeedIn;
-        return;
-    }
-    if (src == "selfConsumption") {
-        dst = ScopeTypeEnumType::selfConsumption;
-        return;
-    }
-    if (src == "overloadProtection") {
-        dst = ScopeTypeEnumType::overloadProtection;
-        return;
-    }
-    if (src == "acPower") {
-        dst = ScopeTypeEnumType::acPower;
-        return;
-    }
-    if (src == "acEnergy") {
-        dst = ScopeTypeEnumType::acEnergy;
-        return;
-    }
-    if (src == "acCurrent") {
-        dst = ScopeTypeEnumType::acCurrent;
-        return;
-    }
-    if (src == "acVoltage") {
-        dst = ScopeTypeEnumType::acVoltage;
-        return;
-    }
-    if (src == "batteryControl") {
-        dst = ScopeTypeEnumType::batteryControl;
-        return;
-    }
-    if (src == "simpleIncentiveTable") {
-        dst = ScopeTypeEnumType::simpleIncentiveTable;
-        return;
-    }
-    if (src == "stateOfHealth") {
-        dst = ScopeTypeEnumType::stateOfHealth;
-        return;
-    }
-    if (src == "travelRange") {
-        dst = ScopeTypeEnumType::travelRange;
-        return;
-    }
-    if (src == "nominalEnergyCapacity") {
-        dst = ScopeTypeEnumType::nominalEnergyCapacity;
-        return;
-    }
-    if (src == "acPowerReal") {
-        dst = ScopeTypeEnumType::acPowerReal;
-        return;
-    }
-    if (src == "acPowerApparent") {
-        dst = ScopeTypeEnumType::acPowerApparent;
-        return;
-    }
-    if (src == "acPowerReactive") {
-        dst = ScopeTypeEnumType::acPowerReactive;
-        return;
-    }
-    if (src == "acYieldMonth") {
-        dst = ScopeTypeEnumType::acYieldMonth;
-        return;
-    }
-    if (src == "acYieldYear") {
-        dst = ScopeTypeEnumType::acYieldYear;
-        return;
-    }
-    if (src == "acFrequency") {
-        dst = ScopeTypeEnumType::acFrequency;
-        return;
-    }
-    if (src == "acCosPhi") {
-        dst = ScopeTypeEnumType::acCosPhi;
-        return;
-    }
-    if (src == "dcEnergy") {
-        dst = ScopeTypeEnumType::dcEnergy;
-        return;
-    }
-    if (src == "insulationResistance") {
-        dst = ScopeTypeEnumType::insulationResistance;
-        return;
-    }
-    if (src == "stateOfEnergy") {
-        dst = ScopeTypeEnumType::stateOfEnergy;
-        return;
-    }
-    if (src == "useableCapacity") {
-        dst = ScopeTypeEnumType::useableCapacity;
-        return;
-    }
-    if (src == "dcChargeEnergy") {
-        dst = ScopeTypeEnumType::dcChargeEnergy;
-        return;
-    }
-    if (src == "dcDischargeEnergy") {
-        dst = ScopeTypeEnumType::dcDischargeEnergy;
-        return;
-    }
-    if (src == "loadCycleCount") {
-        dst = ScopeTypeEnumType::loadCycleCount;
-        return;
-    }
-    if (src == "componentTemperature") {
-        dst = ScopeTypeEnumType::componentTemperature;
-        return;
-    }
-    if (src == "gridLimit") {
-        dst = ScopeTypeEnumType::gridLimit;
-        return;
-    }
-    if (src == "gridLimitFallback") {
-        dst = ScopeTypeEnumType::gridLimitFallback;
-        return;
-    }
-    if (src == "acPowerApparentTotal") {
-        dst = ScopeTypeEnumType::acPowerApparentTotal;
-        return;
-    }
-    if (src == "acPowerReactiveTotal") {
-        dst = ScopeTypeEnumType::acPowerReactiveTotal;
-        return;
-    }
-    if (src == "acCurrentTotal") {
-        dst = ScopeTypeEnumType::acCurrentTotal;
-        return;
-    }
-    if (src == "acEnergyConsumed") {
-        dst = ScopeTypeEnumType::acEnergyConsumed;
-        return;
-    }
-    if (src == "acEnergyProduced") {
-        dst = ScopeTypeEnumType::acEnergyProduced;
-        return;
-    }
-    if (src == "batteryAcPower") {
-        dst = ScopeTypeEnumType::batteryAcPower;
-        return;
-    }
-    if (src == "batteryAcPowerPhaseSpecific") {
-        dst = ScopeTypeEnumType::batteryAcPowerPhaseSpecific;
-        return;
-    }
-    if (src == "batteryDcPower") {
-        dst = ScopeTypeEnumType::batteryDcPower;
-        return;
-    }
-    if (src == "pccPower") {
-        dst = ScopeTypeEnumType::pccPower;
-        return;
-    }
-    if (src == "activePowerLimit") {
-        dst = ScopeTypeEnumType::activePowerLimit;
-        return;
-    }
-    if (src == "activePowerLimitPercentage") {
-        dst = ScopeTypeEnumType::activePowerLimitPercentage;
-        return;
-    }
-    if (src == "simpleCommittedIncentiveTable") {
-        dst = ScopeTypeEnumType::simpleCommittedIncentiveTable;
-        return;
-    }
-    if (src == "simplePreliminaryIncentiveTable") {
-        dst = ScopeTypeEnumType::simplePreliminaryIncentiveTable;
-        return;
-    }
-    if (src == "committedPowerPlan") {
-        dst = ScopeTypeEnumType::committedPowerPlan;
-        return;
-    }
-    if (src == "preliminaryPowerPlan") {
-        dst = ScopeTypeEnumType::preliminaryPowerPlan;
-        return;
-    }
-    if (src == "incentiveTableEnConsWithPoETF") {
-        dst = ScopeTypeEnumType::incentiveTableEnConsWithPoETF;
-        return;
-    }
-    if (src == "incentiveTableEnProdWithPoETF") {
-        dst = ScopeTypeEnumType::incentiveTableEnProdWithPoETF;
-        return;
-    }
-    if (src == "incentiveTableEnConsWithPoE") {
-        dst = ScopeTypeEnumType::incentiveTableEnConsWithPoE;
-        return;
-    }
-    if (src == "incentiveTableEnProdWithPoE") {
-        dst = ScopeTypeEnumType::incentiveTableEnProdWithPoE;
-        return;
-    }
-    if (src == "incentiveTableEnConsWithTF") {
-        dst = ScopeTypeEnumType::incentiveTableEnConsWithTF;
-        return;
-    }
-    if (src == "incentiveTableEnProdWithTF") {
-        dst = ScopeTypeEnumType::incentiveTableEnProdWithTF;
-        return;
-    }
-    if (src == "activePowerForecast") {
-        dst = ScopeTypeEnumType::activePowerForecast;
-        return;
-    }
-    dst = ScopeTypeEnumType::EnumUndefined;
+    dst = static_cast<ScopeTypeEnumType>(enumNameToValue(ScopeTypeEnumType_names, ScopeTypeEnumType_count, src, static_cast<int>(ScopeTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst)
@@ -2713,18 +458,16 @@ void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const RoleType_names[] = {
+    "client",
+    "server",
+    "special",
+};
+static constexpr size_t RoleType_count = sizeof(RoleType_names) / sizeof(RoleType_names[0]);
+
 String convertToString(const RoleType &src)
 {
-    switch (src) {
-        case RoleType::client:
-            return "client";
-        case RoleType::server:
-            return "server";
-        case RoleType::special:
-            return "special";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(RoleType_names, RoleType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const RoleType &src, JsonVariant &dst)
@@ -2734,19 +477,7 @@ bool convertToJson(const RoleType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, RoleType &dst)
 {
-    if (src == "client") {
-        dst = RoleType::client;
-        return;
-    }
-    if (src == "server") {
-        dst = RoleType::server;
-        return;
-    }
-    if (src == "special") {
-        dst = RoleType::special;
-        return;
-    }
-    dst = RoleType::EnumUndefined;
+    dst = static_cast<RoleType>(enumNameToValue(RoleType_names, RoleType_count, src, static_cast<int>(RoleType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, RoleType &dst)
@@ -2755,40 +486,27 @@ void convertFromJson(const JsonVariantConst &src, RoleType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const DeviceTypeEnumType_names[] = {
+    "Dishwasher",
+    "Dryer",
+    "EnvironmentSensor",
+    "Generic",
+    "HeatGenerationSystem",
+    "HeatSinkSystem",
+    "HeatStorageSystem",
+    "HVACController",
+    "SubMeter",
+    "Washer",
+    "ElectricitySupplySystem",
+    "EnergyManagementSystem",
+    "Inverter",
+    "ChargingStation",
+};
+static constexpr size_t DeviceTypeEnumType_count = sizeof(DeviceTypeEnumType_names) / sizeof(DeviceTypeEnumType_names[0]);
+
 String convertToString(const DeviceTypeEnumType &src)
 {
-    switch (src) {
-        case DeviceTypeEnumType::Dishwasher:
-            return "Dishwasher";
-        case DeviceTypeEnumType::Dryer:
-            return "Dryer";
-        case DeviceTypeEnumType::EnvironmentSensor:
-            return "EnvironmentSensor";
-        case DeviceTypeEnumType::Generic:
-            return "Generic";
-        case DeviceTypeEnumType::HeatGenerationSystem:
-            return "HeatGenerationSystem";
-        case DeviceTypeEnumType::HeatSinkSystem:
-            return "HeatSinkSystem";
-        case DeviceTypeEnumType::HeatStorageSystem:
-            return "HeatStorageSystem";
-        case DeviceTypeEnumType::HVACController:
-            return "HVACController";
-        case DeviceTypeEnumType::SubMeter:
-            return "SubMeter";
-        case DeviceTypeEnumType::Washer:
-            return "Washer";
-        case DeviceTypeEnumType::ElectricitySupplySystem:
-            return "ElectricitySupplySystem";
-        case DeviceTypeEnumType::EnergyManagementSystem:
-            return "EnergyManagementSystem";
-        case DeviceTypeEnumType::Inverter:
-            return "Inverter";
-        case DeviceTypeEnumType::ChargingStation:
-            return "ChargingStation";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(DeviceTypeEnumType_names, DeviceTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst)
@@ -2798,63 +516,7 @@ bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, DeviceTypeEnumType &dst)
 {
-    if (src == "Dishwasher") {
-        dst = DeviceTypeEnumType::Dishwasher;
-        return;
-    }
-    if (src == "Dryer") {
-        dst = DeviceTypeEnumType::Dryer;
-        return;
-    }
-    if (src == "EnvironmentSensor") {
-        dst = DeviceTypeEnumType::EnvironmentSensor;
-        return;
-    }
-    if (src == "Generic") {
-        dst = DeviceTypeEnumType::Generic;
-        return;
-    }
-    if (src == "HeatGenerationSystem") {
-        dst = DeviceTypeEnumType::HeatGenerationSystem;
-        return;
-    }
-    if (src == "HeatSinkSystem") {
-        dst = DeviceTypeEnumType::HeatSinkSystem;
-        return;
-    }
-    if (src == "HeatStorageSystem") {
-        dst = DeviceTypeEnumType::HeatStorageSystem;
-        return;
-    }
-    if (src == "HVACController") {
-        dst = DeviceTypeEnumType::HVACController;
-        return;
-    }
-    if (src == "SubMeter") {
-        dst = DeviceTypeEnumType::SubMeter;
-        return;
-    }
-    if (src == "Washer") {
-        dst = DeviceTypeEnumType::Washer;
-        return;
-    }
-    if (src == "ElectricitySupplySystem") {
-        dst = DeviceTypeEnumType::ElectricitySupplySystem;
-        return;
-    }
-    if (src == "EnergyManagementSystem") {
-        dst = DeviceTypeEnumType::EnergyManagementSystem;
-        return;
-    }
-    if (src == "Inverter") {
-        dst = DeviceTypeEnumType::Inverter;
-        return;
-    }
-    if (src == "ChargingStation") {
-        dst = DeviceTypeEnumType::ChargingStation;
-        return;
-    }
-    dst = DeviceTypeEnumType::EnumUndefined;
+    dst = static_cast<DeviceTypeEnumType>(enumNameToValue(DeviceTypeEnumType_names, DeviceTypeEnumType_count, src, static_cast<int>(DeviceTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst)
@@ -2863,108 +525,61 @@ void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const EntityTypeEnumType_names[] = {
+    "Battery",
+    "Compressor",
+    "DeviceInformation",
+    "DHWCircuit",
+    "DHWStorage",
+    "Dishwasher",
+    "Dryer",
+    "ElectricalImmersionHeater",
+    "Fan",
+    "GasHeatingAppliance",
+    "Generic",
+    "HeatingBufferStorage",
+    "HeatingCircuit",
+    "HeatingObject",
+    "HeatingZone",
+    "HeatPumpAppliance",
+    "HeatSinkCircuit",
+    "HeatSourceCircuit",
+    "HeatSourceUnit",
+    "HVACController",
+    "HVACRoom",
+    "InstantDHWHeater",
+    "Inverter",
+    "OilHeatingAppliance",
+    "Pump",
+    "RefrigerantCircuit",
+    "SmartEnergyAppliance",
+    "SolarDHWStorage",
+    "SolarThermalCircuit",
+    "SubMeterElectricity",
+    "TemperatureSensor",
+    "Washer",
+    "BatterySystem",
+    "ElectricityGenerationSystem",
+    "ElectricityStorageSystem",
+    "GridConnectionPointOfPremises",
+    "Household",
+    "PVSystem",
+    "EV",
+    "EVSE",
+    "ChargingOutlet",
+    "CEM",
+    "PV",
+    "PVESHybrid",
+    "ElectricalStorage",
+    "PVString",
+    "GridGuard",
+    "ControllableSystem",
+};
+static constexpr size_t EntityTypeEnumType_count = sizeof(EntityTypeEnumType_names) / sizeof(EntityTypeEnumType_names[0]);
+
 String convertToString(const EntityTypeEnumType &src)
 {
-    switch (src) {
-        case EntityTypeEnumType::Battery:
-            return "Battery";
-        case EntityTypeEnumType::Compressor:
-            return "Compressor";
-        case EntityTypeEnumType::DeviceInformation:
-            return "DeviceInformation";
-        case EntityTypeEnumType::DHWCircuit:
-            return "DHWCircuit";
-        case EntityTypeEnumType::DHWStorage:
-            return "DHWStorage";
-        case EntityTypeEnumType::Dishwasher:
-            return "Dishwasher";
-        case EntityTypeEnumType::Dryer:
-            return "Dryer";
-        case EntityTypeEnumType::ElectricalImmersionHeater:
-            return "ElectricalImmersionHeater";
-        case EntityTypeEnumType::Fan:
-            return "Fan";
-        case EntityTypeEnumType::GasHeatingAppliance:
-            return "GasHeatingAppliance";
-        case EntityTypeEnumType::Generic:
-            return "Generic";
-        case EntityTypeEnumType::HeatingBufferStorage:
-            return "HeatingBufferStorage";
-        case EntityTypeEnumType::HeatingCircuit:
-            return "HeatingCircuit";
-        case EntityTypeEnumType::HeatingObject:
-            return "HeatingObject";
-        case EntityTypeEnumType::HeatingZone:
-            return "HeatingZone";
-        case EntityTypeEnumType::HeatPumpAppliance:
-            return "HeatPumpAppliance";
-        case EntityTypeEnumType::HeatSinkCircuit:
-            return "HeatSinkCircuit";
-        case EntityTypeEnumType::HeatSourceCircuit:
-            return "HeatSourceCircuit";
-        case EntityTypeEnumType::HeatSourceUnit:
-            return "HeatSourceUnit";
-        case EntityTypeEnumType::HVACController:
-            return "HVACController";
-        case EntityTypeEnumType::HVACRoom:
-            return "HVACRoom";
-        case EntityTypeEnumType::InstantDHWHeater:
-            return "InstantDHWHeater";
-        case EntityTypeEnumType::Inverter:
-            return "Inverter";
-        case EntityTypeEnumType::OilHeatingAppliance:
-            return "OilHeatingAppliance";
-        case EntityTypeEnumType::Pump:
-            return "Pump";
-        case EntityTypeEnumType::RefrigerantCircuit:
-            return "RefrigerantCircuit";
-        case EntityTypeEnumType::SmartEnergyAppliance:
-            return "SmartEnergyAppliance";
-        case EntityTypeEnumType::SolarDHWStorage:
-            return "SolarDHWStorage";
-        case EntityTypeEnumType::SolarThermalCircuit:
-            return "SolarThermalCircuit";
-        case EntityTypeEnumType::SubMeterElectricity:
-            return "SubMeterElectricity";
-        case EntityTypeEnumType::TemperatureSensor:
-            return "TemperatureSensor";
-        case EntityTypeEnumType::Washer:
-            return "Washer";
-        case EntityTypeEnumType::BatterySystem:
-            return "BatterySystem";
-        case EntityTypeEnumType::ElectricityGenerationSystem:
-            return "ElectricityGenerationSystem";
-        case EntityTypeEnumType::ElectricityStorageSystem:
-            return "ElectricityStorageSystem";
-        case EntityTypeEnumType::GridConnectionPointOfPremises:
-            return "GridConnectionPointOfPremises";
-        case EntityTypeEnumType::Household:
-            return "Household";
-        case EntityTypeEnumType::PVSystem:
-            return "PVSystem";
-        case EntityTypeEnumType::EV:
-            return "EV";
-        case EntityTypeEnumType::EVSE:
-            return "EVSE";
-        case EntityTypeEnumType::ChargingOutlet:
-            return "ChargingOutlet";
-        case EntityTypeEnumType::CEM:
-            return "CEM";
-        case EntityTypeEnumType::PV:
-            return "PV";
-        case EntityTypeEnumType::PVESHybrid:
-            return "PVESHybrid";
-        case EntityTypeEnumType::ElectricalStorage:
-            return "ElectricalStorage";
-        case EntityTypeEnumType::PVString:
-            return "PVString";
-        case EntityTypeEnumType::GridGuard:
-            return "GridGuard";
-        case EntityTypeEnumType::ControllableSystem:
-            return "ControllableSystem";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(EntityTypeEnumType_names, EntityTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst)
@@ -2974,199 +589,7 @@ bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, EntityTypeEnumType &dst)
 {
-    if (src == "Battery") {
-        dst = EntityTypeEnumType::Battery;
-        return;
-    }
-    if (src == "Compressor") {
-        dst = EntityTypeEnumType::Compressor;
-        return;
-    }
-    if (src == "DeviceInformation") {
-        dst = EntityTypeEnumType::DeviceInformation;
-        return;
-    }
-    if (src == "DHWCircuit") {
-        dst = EntityTypeEnumType::DHWCircuit;
-        return;
-    }
-    if (src == "DHWStorage") {
-        dst = EntityTypeEnumType::DHWStorage;
-        return;
-    }
-    if (src == "Dishwasher") {
-        dst = EntityTypeEnumType::Dishwasher;
-        return;
-    }
-    if (src == "Dryer") {
-        dst = EntityTypeEnumType::Dryer;
-        return;
-    }
-    if (src == "ElectricalImmersionHeater") {
-        dst = EntityTypeEnumType::ElectricalImmersionHeater;
-        return;
-    }
-    if (src == "Fan") {
-        dst = EntityTypeEnumType::Fan;
-        return;
-    }
-    if (src == "GasHeatingAppliance") {
-        dst = EntityTypeEnumType::GasHeatingAppliance;
-        return;
-    }
-    if (src == "Generic") {
-        dst = EntityTypeEnumType::Generic;
-        return;
-    }
-    if (src == "HeatingBufferStorage") {
-        dst = EntityTypeEnumType::HeatingBufferStorage;
-        return;
-    }
-    if (src == "HeatingCircuit") {
-        dst = EntityTypeEnumType::HeatingCircuit;
-        return;
-    }
-    if (src == "HeatingObject") {
-        dst = EntityTypeEnumType::HeatingObject;
-        return;
-    }
-    if (src == "HeatingZone") {
-        dst = EntityTypeEnumType::HeatingZone;
-        return;
-    }
-    if (src == "HeatPumpAppliance") {
-        dst = EntityTypeEnumType::HeatPumpAppliance;
-        return;
-    }
-    if (src == "HeatSinkCircuit") {
-        dst = EntityTypeEnumType::HeatSinkCircuit;
-        return;
-    }
-    if (src == "HeatSourceCircuit") {
-        dst = EntityTypeEnumType::HeatSourceCircuit;
-        return;
-    }
-    if (src == "HeatSourceUnit") {
-        dst = EntityTypeEnumType::HeatSourceUnit;
-        return;
-    }
-    if (src == "HVACController") {
-        dst = EntityTypeEnumType::HVACController;
-        return;
-    }
-    if (src == "HVACRoom") {
-        dst = EntityTypeEnumType::HVACRoom;
-        return;
-    }
-    if (src == "InstantDHWHeater") {
-        dst = EntityTypeEnumType::InstantDHWHeater;
-        return;
-    }
-    if (src == "Inverter") {
-        dst = EntityTypeEnumType::Inverter;
-        return;
-    }
-    if (src == "OilHeatingAppliance") {
-        dst = EntityTypeEnumType::OilHeatingAppliance;
-        return;
-    }
-    if (src == "Pump") {
-        dst = EntityTypeEnumType::Pump;
-        return;
-    }
-    if (src == "RefrigerantCircuit") {
-        dst = EntityTypeEnumType::RefrigerantCircuit;
-        return;
-    }
-    if (src == "SmartEnergyAppliance") {
-        dst = EntityTypeEnumType::SmartEnergyAppliance;
-        return;
-    }
-    if (src == "SolarDHWStorage") {
-        dst = EntityTypeEnumType::SolarDHWStorage;
-        return;
-    }
-    if (src == "SolarThermalCircuit") {
-        dst = EntityTypeEnumType::SolarThermalCircuit;
-        return;
-    }
-    if (src == "SubMeterElectricity") {
-        dst = EntityTypeEnumType::SubMeterElectricity;
-        return;
-    }
-    if (src == "TemperatureSensor") {
-        dst = EntityTypeEnumType::TemperatureSensor;
-        return;
-    }
-    if (src == "Washer") {
-        dst = EntityTypeEnumType::Washer;
-        return;
-    }
-    if (src == "BatterySystem") {
-        dst = EntityTypeEnumType::BatterySystem;
-        return;
-    }
-    if (src == "ElectricityGenerationSystem") {
-        dst = EntityTypeEnumType::ElectricityGenerationSystem;
-        return;
-    }
-    if (src == "ElectricityStorageSystem") {
-        dst = EntityTypeEnumType::ElectricityStorageSystem;
-        return;
-    }
-    if (src == "GridConnectionPointOfPremises") {
-        dst = EntityTypeEnumType::GridConnectionPointOfPremises;
-        return;
-    }
-    if (src == "Household") {
-        dst = EntityTypeEnumType::Household;
-        return;
-    }
-    if (src == "PVSystem") {
-        dst = EntityTypeEnumType::PVSystem;
-        return;
-    }
-    if (src == "EV") {
-        dst = EntityTypeEnumType::EV;
-        return;
-    }
-    if (src == "EVSE") {
-        dst = EntityTypeEnumType::EVSE;
-        return;
-    }
-    if (src == "ChargingOutlet") {
-        dst = EntityTypeEnumType::ChargingOutlet;
-        return;
-    }
-    if (src == "CEM") {
-        dst = EntityTypeEnumType::CEM;
-        return;
-    }
-    if (src == "PV") {
-        dst = EntityTypeEnumType::PV;
-        return;
-    }
-    if (src == "PVESHybrid") {
-        dst = EntityTypeEnumType::PVESHybrid;
-        return;
-    }
-    if (src == "ElectricalStorage") {
-        dst = EntityTypeEnumType::ElectricalStorage;
-        return;
-    }
-    if (src == "PVString") {
-        dst = EntityTypeEnumType::PVString;
-        return;
-    }
-    if (src == "GridGuard") {
-        dst = EntityTypeEnumType::GridGuard;
-        return;
-    }
-    if (src == "ControllableSystem") {
-        dst = EntityTypeEnumType::ControllableSystem;
-        return;
-    }
-    dst = EntityTypeEnumType::EnumUndefined;
+    dst = static_cast<EntityTypeEnumType>(enumNameToValue(EntityTypeEnumType_names, EntityTypeEnumType_count, src, static_cast<int>(EntityTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst)
@@ -3175,76 +598,15 @@ void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const FeatureTypeEnumType_names[] = {
+    "ActuatorLevel",  "ActuatorSwitch", "Alarm",           "DataTunneling", "DeviceClassification", "DeviceDiagnosis", "DirectControl", "ElectricalConnection", "Generic",        "HVAC", "LoadControl",    "Measurement",      "Messaging", "NetworkManagement", "NodeManagement", "OperatingConstraints", "PowerSequences", "Sensing", "Setpoint", "SmartEnergyManagementPs",
+    "TaskManagement", "Threshold",      "TimeInformation", "TimeTable",     "DeviceConfiguration",  "SupplyCondition", "TimeSeries",    "TariffInformation",    "IncentiveTable", "Bill", "Identification", "StateInformation",
+};
+static constexpr size_t FeatureTypeEnumType_count = sizeof(FeatureTypeEnumType_names) / sizeof(FeatureTypeEnumType_names[0]);
+
 String convertToString(const FeatureTypeEnumType &src)
 {
-    switch (src) {
-        case FeatureTypeEnumType::ActuatorLevel:
-            return "ActuatorLevel";
-        case FeatureTypeEnumType::ActuatorSwitch:
-            return "ActuatorSwitch";
-        case FeatureTypeEnumType::Alarm:
-            return "Alarm";
-        case FeatureTypeEnumType::DataTunneling:
-            return "DataTunneling";
-        case FeatureTypeEnumType::DeviceClassification:
-            return "DeviceClassification";
-        case FeatureTypeEnumType::DeviceDiagnosis:
-            return "DeviceDiagnosis";
-        case FeatureTypeEnumType::DirectControl:
-            return "DirectControl";
-        case FeatureTypeEnumType::ElectricalConnection:
-            return "ElectricalConnection";
-        case FeatureTypeEnumType::Generic:
-            return "Generic";
-        case FeatureTypeEnumType::HVAC:
-            return "HVAC";
-        case FeatureTypeEnumType::LoadControl:
-            return "LoadControl";
-        case FeatureTypeEnumType::Measurement:
-            return "Measurement";
-        case FeatureTypeEnumType::Messaging:
-            return "Messaging";
-        case FeatureTypeEnumType::NetworkManagement:
-            return "NetworkManagement";
-        case FeatureTypeEnumType::NodeManagement:
-            return "NodeManagement";
-        case FeatureTypeEnumType::OperatingConstraints:
-            return "OperatingConstraints";
-        case FeatureTypeEnumType::PowerSequences:
-            return "PowerSequences";
-        case FeatureTypeEnumType::Sensing:
-            return "Sensing";
-        case FeatureTypeEnumType::Setpoint:
-            return "Setpoint";
-        case FeatureTypeEnumType::SmartEnergyManagementPs:
-            return "SmartEnergyManagementPs";
-        case FeatureTypeEnumType::TaskManagement:
-            return "TaskManagement";
-        case FeatureTypeEnumType::Threshold:
-            return "Threshold";
-        case FeatureTypeEnumType::TimeInformation:
-            return "TimeInformation";
-        case FeatureTypeEnumType::TimeTable:
-            return "TimeTable";
-        case FeatureTypeEnumType::DeviceConfiguration:
-            return "DeviceConfiguration";
-        case FeatureTypeEnumType::SupplyCondition:
-            return "SupplyCondition";
-        case FeatureTypeEnumType::TimeSeries:
-            return "TimeSeries";
-        case FeatureTypeEnumType::TariffInformation:
-            return "TariffInformation";
-        case FeatureTypeEnumType::IncentiveTable:
-            return "IncentiveTable";
-        case FeatureTypeEnumType::Bill:
-            return "Bill";
-        case FeatureTypeEnumType::Identification:
-            return "Identification";
-        case FeatureTypeEnumType::StateInformation:
-            return "StateInformation";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(FeatureTypeEnumType_names, FeatureTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst)
@@ -3254,135 +616,7 @@ bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, FeatureTypeEnumType &dst)
 {
-    if (src == "ActuatorLevel") {
-        dst = FeatureTypeEnumType::ActuatorLevel;
-        return;
-    }
-    if (src == "ActuatorSwitch") {
-        dst = FeatureTypeEnumType::ActuatorSwitch;
-        return;
-    }
-    if (src == "Alarm") {
-        dst = FeatureTypeEnumType::Alarm;
-        return;
-    }
-    if (src == "DataTunneling") {
-        dst = FeatureTypeEnumType::DataTunneling;
-        return;
-    }
-    if (src == "DeviceClassification") {
-        dst = FeatureTypeEnumType::DeviceClassification;
-        return;
-    }
-    if (src == "DeviceDiagnosis") {
-        dst = FeatureTypeEnumType::DeviceDiagnosis;
-        return;
-    }
-    if (src == "DirectControl") {
-        dst = FeatureTypeEnumType::DirectControl;
-        return;
-    }
-    if (src == "ElectricalConnection") {
-        dst = FeatureTypeEnumType::ElectricalConnection;
-        return;
-    }
-    if (src == "Generic") {
-        dst = FeatureTypeEnumType::Generic;
-        return;
-    }
-    if (src == "HVAC") {
-        dst = FeatureTypeEnumType::HVAC;
-        return;
-    }
-    if (src == "LoadControl") {
-        dst = FeatureTypeEnumType::LoadControl;
-        return;
-    }
-    if (src == "Measurement") {
-        dst = FeatureTypeEnumType::Measurement;
-        return;
-    }
-    if (src == "Messaging") {
-        dst = FeatureTypeEnumType::Messaging;
-        return;
-    }
-    if (src == "NetworkManagement") {
-        dst = FeatureTypeEnumType::NetworkManagement;
-        return;
-    }
-    if (src == "NodeManagement") {
-        dst = FeatureTypeEnumType::NodeManagement;
-        return;
-    }
-    if (src == "OperatingConstraints") {
-        dst = FeatureTypeEnumType::OperatingConstraints;
-        return;
-    }
-    if (src == "PowerSequences") {
-        dst = FeatureTypeEnumType::PowerSequences;
-        return;
-    }
-    if (src == "Sensing") {
-        dst = FeatureTypeEnumType::Sensing;
-        return;
-    }
-    if (src == "Setpoint") {
-        dst = FeatureTypeEnumType::Setpoint;
-        return;
-    }
-    if (src == "SmartEnergyManagementPs") {
-        dst = FeatureTypeEnumType::SmartEnergyManagementPs;
-        return;
-    }
-    if (src == "TaskManagement") {
-        dst = FeatureTypeEnumType::TaskManagement;
-        return;
-    }
-    if (src == "Threshold") {
-        dst = FeatureTypeEnumType::Threshold;
-        return;
-    }
-    if (src == "TimeInformation") {
-        dst = FeatureTypeEnumType::TimeInformation;
-        return;
-    }
-    if (src == "TimeTable") {
-        dst = FeatureTypeEnumType::TimeTable;
-        return;
-    }
-    if (src == "DeviceConfiguration") {
-        dst = FeatureTypeEnumType::DeviceConfiguration;
-        return;
-    }
-    if (src == "SupplyCondition") {
-        dst = FeatureTypeEnumType::SupplyCondition;
-        return;
-    }
-    if (src == "TimeSeries") {
-        dst = FeatureTypeEnumType::TimeSeries;
-        return;
-    }
-    if (src == "TariffInformation") {
-        dst = FeatureTypeEnumType::TariffInformation;
-        return;
-    }
-    if (src == "IncentiveTable") {
-        dst = FeatureTypeEnumType::IncentiveTable;
-        return;
-    }
-    if (src == "Bill") {
-        dst = FeatureTypeEnumType::Bill;
-        return;
-    }
-    if (src == "Identification") {
-        dst = FeatureTypeEnumType::Identification;
-        return;
-    }
-    if (src == "StateInformation") {
-        dst = FeatureTypeEnumType::StateInformation;
-        return;
-    }
-    dst = FeatureTypeEnumType::EnumUndefined;
+    dst = static_cast<FeatureTypeEnumType>(enumNameToValue(FeatureTypeEnumType_names, FeatureTypeEnumType_count, src, static_cast<int>(FeatureTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst)
@@ -3391,296 +625,155 @@ void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const FunctionEnumType_names[] = {
+    "actuatorLevelData",
+    "actuatorLevelDescriptionData",
+    "actuatorSwitchData",
+    "actuatorSwitchDescriptionData",
+    "alarmListData",
+    "bindingManagementDeleteCall",
+    "bindingManagementEntryListData",
+    "bindingManagementRequestCall",
+    "dataTunnelingCall",
+    "deviceClassificationManufacturerData",
+    "deviceClassificationUserData",
+    "deviceDiagnosisHeartbeatData",
+    "deviceDiagnosisServiceData",
+    "deviceDiagnosisStateData",
+    "directControlActivityListData",
+    "directControlDescriptionData",
+    "electricalConnectionDescriptionListData",
+    "electricalConnectionParameterDescriptionListData",
+    "electricalConnectionStateListData",
+    "hvacOperationModeDescriptionListData",
+    "hvacOverrunDescriptionListData",
+    "hvacOverrunListData",
+    "hvacSystemFunctionDescriptionListData",
+    "hvacSystemFunctionListData",
+    "hvacSystemFunctionOperationModeRelationListData",
+    "hvacSystemFunctionPowerSequenceRelationListData",
+    "hvacSystemFunctionSetpointRelationListData",
+    "loadControlEventListData",
+    "loadControlStateListData",
+    "measurementConstraintsListData",
+    "measurementDescriptionListData",
+    "measurementListData",
+    "measurementThresholdRelationListData",
+    "messagingListData",
+    "networkManagementAbortCall",
+    "networkManagementAddNodeCall",
+    "networkManagementDeviceDescriptionListData",
+    "networkManagementDiscoverCall",
+    "networkManagementEntityDescriptionListData",
+    "networkManagementFeatureDescriptionListData",
+    "networkManagementJoiningModeData",
+    "networkManagementModifyNodeCall",
+    "networkManagementProcessStateData",
+    "networkManagementRemoveNodeCall",
+    "networkManagementReportCandidateData",
+    "networkManagementScanNetworkCall",
+    "nodeManagementBindingData",
+    "nodeManagementBindingDeleteCall",
+    "nodeManagementBindingRequestCall",
+    "nodeManagementDestinationListData",
+    "nodeManagementDetailedDiscoveryData",
+    "nodeManagementSubscriptionData",
+    "nodeManagementSubscriptionDeleteCall",
+    "nodeManagementSubscriptionRequestCall",
+    "operatingConstraintsDurationListData",
+    "operatingConstraintsInterruptListData",
+    "operatingConstraintsPowerDescriptionListData",
+    "operatingConstraintsPowerLevelListData",
+    "operatingConstraintsPowerRangeListData",
+    "operatingConstraintsResumeImplicationListData",
+    "powerSequenceAlternativesRelationListData",
+    "powerSequenceDescriptionListData",
+    "powerSequenceNodeScheduleInformationData",
+    "powerSequencePriceCalculationRequestCall",
+    "powerSequencePriceListData",
+    "powerSequenceScheduleConfigurationRequestCall",
+    "powerSequenceScheduleConstraintsListData",
+    "powerSequenceScheduleListData",
+    "powerSequenceSchedulePreferenceListData",
+    "powerSequenceStateListData",
+    "powerTimeSlotScheduleConstraintsListData",
+    "powerTimeSlotScheduleListData",
+    "powerTimeSlotValueListData",
+    "resultData",
+    "sensingDescriptionData",
+    "sensingListData",
+    "sessionIdentificationListData",
+    "sessionMeasurementRelationListData",
+    "setpointConstraintsListData",
+    "setpointDescriptionListData",
+    "setpointListData",
+    "smartEnergyManagementPsConfigurationRequestCall",
+    "smartEnergyManagementPsData",
+    "smartEnergyManagementPsPriceCalculationRequestCall",
+    "smartEnergyManagementPsPriceData",
+    "specificationVersionListData",
+    "subscriptionManagementDeleteCall",
+    "subscriptionManagementEntryListData",
+    "subscriptionManagementRequestCall",
+    "supplyConditionDescriptionListData",
+    "supplyConditionListData",
+    "supplyConditionThresholdRelationListData",
+    "taskManagementJobDescriptionListData",
+    "taskManagementJobListData",
+    "taskManagementJobRelationListData",
+    "taskManagementOverviewData",
+    "thresholdConstraintsListData",
+    "thresholdDescriptionListData",
+    "thresholdListData",
+    "timeDistributorData",
+    "timeDistributorEnquiryCall",
+    "timeInformationData",
+    "timePrecisionData",
+    "timeTableConstraintsListData",
+    "timeTableDescriptionListData",
+    "timeTableListData",
+    "deviceConfigurationKeyValueConstraintsListData",
+    "deviceConfigurationKeyValueListData",
+    "deviceConfigurationKeyValueDescriptionListData",
+    "loadControlLimitConstraintsListData",
+    "loadControlLimitDescriptionListData",
+    "loadControlLimitListData",
+    "loadControlNodeData",
+    "timeSeriesConstraintsListData",
+    "timeSeriesDescriptionListData",
+    "timeSeriesListData",
+    "tariffOverallConstraintsData",
+    "tariffListData",
+    "tariffBoundaryRelationListData",
+    "tariffTierRelationListData",
+    "tariffDescriptionListData",
+    "tierBoundaryListData",
+    "tierBoundaryDescriptionListData",
+    "commodityListData",
+    "tierListData",
+    "tierIncentiveRelationListData",
+    "tierDescriptionListData",
+    "incentiveListData",
+    "incentiveDescriptionListData",
+    "incentiveTableData",
+    "incentiveTableDescriptionData",
+    "incentiveTableConstraintsData",
+    "electricalConnectionPermittedValueSetListData",
+    "useCaseInformationListData",
+    "nodeManagementUseCaseData",
+    "billConstraintsListData",
+    "billDescriptionListData",
+    "billListData",
+    "identificationListData",
+    "measurementSeriesListData",
+    "electricalConnectionCharacteristicListData",
+    "stateInformationListData",
+};
+static constexpr size_t FunctionEnumType_count = sizeof(FunctionEnumType_names) / sizeof(FunctionEnumType_names[0]);
+
 String convertToString(const FunctionEnumType &src)
 {
-    switch (src) {
-        case FunctionEnumType::actuatorLevelData:
-            return "actuatorLevelData";
-        case FunctionEnumType::actuatorLevelDescriptionData:
-            return "actuatorLevelDescriptionData";
-        case FunctionEnumType::actuatorSwitchData:
-            return "actuatorSwitchData";
-        case FunctionEnumType::actuatorSwitchDescriptionData:
-            return "actuatorSwitchDescriptionData";
-        case FunctionEnumType::alarmListData:
-            return "alarmListData";
-        case FunctionEnumType::bindingManagementDeleteCall:
-            return "bindingManagementDeleteCall";
-        case FunctionEnumType::bindingManagementEntryListData:
-            return "bindingManagementEntryListData";
-        case FunctionEnumType::bindingManagementRequestCall:
-            return "bindingManagementRequestCall";
-        case FunctionEnumType::dataTunnelingCall:
-            return "dataTunnelingCall";
-        case FunctionEnumType::deviceClassificationManufacturerData:
-            return "deviceClassificationManufacturerData";
-        case FunctionEnumType::deviceClassificationUserData:
-            return "deviceClassificationUserData";
-        case FunctionEnumType::deviceDiagnosisHeartbeatData:
-            return "deviceDiagnosisHeartbeatData";
-        case FunctionEnumType::deviceDiagnosisServiceData:
-            return "deviceDiagnosisServiceData";
-        case FunctionEnumType::deviceDiagnosisStateData:
-            return "deviceDiagnosisStateData";
-        case FunctionEnumType::directControlActivityListData:
-            return "directControlActivityListData";
-        case FunctionEnumType::directControlDescriptionData:
-            return "directControlDescriptionData";
-        case FunctionEnumType::electricalConnectionDescriptionListData:
-            return "electricalConnectionDescriptionListData";
-        case FunctionEnumType::electricalConnectionParameterDescriptionListData:
-            return "electricalConnectionParameterDescriptionListData";
-        case FunctionEnumType::electricalConnectionStateListData:
-            return "electricalConnectionStateListData";
-        case FunctionEnumType::hvacOperationModeDescriptionListData:
-            return "hvacOperationModeDescriptionListData";
-        case FunctionEnumType::hvacOverrunDescriptionListData:
-            return "hvacOverrunDescriptionListData";
-        case FunctionEnumType::hvacOverrunListData:
-            return "hvacOverrunListData";
-        case FunctionEnumType::hvacSystemFunctionDescriptionListData:
-            return "hvacSystemFunctionDescriptionListData";
-        case FunctionEnumType::hvacSystemFunctionListData:
-            return "hvacSystemFunctionListData";
-        case FunctionEnumType::hvacSystemFunctionOperationModeRelationListData:
-            return "hvacSystemFunctionOperationModeRelationListData";
-        case FunctionEnumType::hvacSystemFunctionPowerSequenceRelationListData:
-            return "hvacSystemFunctionPowerSequenceRelationListData";
-        case FunctionEnumType::hvacSystemFunctionSetpointRelationListData:
-            return "hvacSystemFunctionSetpointRelationListData";
-        case FunctionEnumType::loadControlEventListData:
-            return "loadControlEventListData";
-        case FunctionEnumType::loadControlStateListData:
-            return "loadControlStateListData";
-        case FunctionEnumType::measurementConstraintsListData:
-            return "measurementConstraintsListData";
-        case FunctionEnumType::measurementDescriptionListData:
-            return "measurementDescriptionListData";
-        case FunctionEnumType::measurementListData:
-            return "measurementListData";
-        case FunctionEnumType::measurementThresholdRelationListData:
-            return "measurementThresholdRelationListData";
-        case FunctionEnumType::messagingListData:
-            return "messagingListData";
-        case FunctionEnumType::networkManagementAbortCall:
-            return "networkManagementAbortCall";
-        case FunctionEnumType::networkManagementAddNodeCall:
-            return "networkManagementAddNodeCall";
-        case FunctionEnumType::networkManagementDeviceDescriptionListData:
-            return "networkManagementDeviceDescriptionListData";
-        case FunctionEnumType::networkManagementDiscoverCall:
-            return "networkManagementDiscoverCall";
-        case FunctionEnumType::networkManagementEntityDescriptionListData:
-            return "networkManagementEntityDescriptionListData";
-        case FunctionEnumType::networkManagementFeatureDescriptionListData:
-            return "networkManagementFeatureDescriptionListData";
-        case FunctionEnumType::networkManagementJoiningModeData:
-            return "networkManagementJoiningModeData";
-        case FunctionEnumType::networkManagementModifyNodeCall:
-            return "networkManagementModifyNodeCall";
-        case FunctionEnumType::networkManagementProcessStateData:
-            return "networkManagementProcessStateData";
-        case FunctionEnumType::networkManagementRemoveNodeCall:
-            return "networkManagementRemoveNodeCall";
-        case FunctionEnumType::networkManagementReportCandidateData:
-            return "networkManagementReportCandidateData";
-        case FunctionEnumType::networkManagementScanNetworkCall:
-            return "networkManagementScanNetworkCall";
-        case FunctionEnumType::nodeManagementBindingData:
-            return "nodeManagementBindingData";
-        case FunctionEnumType::nodeManagementBindingDeleteCall:
-            return "nodeManagementBindingDeleteCall";
-        case FunctionEnumType::nodeManagementBindingRequestCall:
-            return "nodeManagementBindingRequestCall";
-        case FunctionEnumType::nodeManagementDestinationListData:
-            return "nodeManagementDestinationListData";
-        case FunctionEnumType::nodeManagementDetailedDiscoveryData:
-            return "nodeManagementDetailedDiscoveryData";
-        case FunctionEnumType::nodeManagementSubscriptionData:
-            return "nodeManagementSubscriptionData";
-        case FunctionEnumType::nodeManagementSubscriptionDeleteCall:
-            return "nodeManagementSubscriptionDeleteCall";
-        case FunctionEnumType::nodeManagementSubscriptionRequestCall:
-            return "nodeManagementSubscriptionRequestCall";
-        case FunctionEnumType::operatingConstraintsDurationListData:
-            return "operatingConstraintsDurationListData";
-        case FunctionEnumType::operatingConstraintsInterruptListData:
-            return "operatingConstraintsInterruptListData";
-        case FunctionEnumType::operatingConstraintsPowerDescriptionListData:
-            return "operatingConstraintsPowerDescriptionListData";
-        case FunctionEnumType::operatingConstraintsPowerLevelListData:
-            return "operatingConstraintsPowerLevelListData";
-        case FunctionEnumType::operatingConstraintsPowerRangeListData:
-            return "operatingConstraintsPowerRangeListData";
-        case FunctionEnumType::operatingConstraintsResumeImplicationListData:
-            return "operatingConstraintsResumeImplicationListData";
-        case FunctionEnumType::powerSequenceAlternativesRelationListData:
-            return "powerSequenceAlternativesRelationListData";
-        case FunctionEnumType::powerSequenceDescriptionListData:
-            return "powerSequenceDescriptionListData";
-        case FunctionEnumType::powerSequenceNodeScheduleInformationData:
-            return "powerSequenceNodeScheduleInformationData";
-        case FunctionEnumType::powerSequencePriceCalculationRequestCall:
-            return "powerSequencePriceCalculationRequestCall";
-        case FunctionEnumType::powerSequencePriceListData:
-            return "powerSequencePriceListData";
-        case FunctionEnumType::powerSequenceScheduleConfigurationRequestCall:
-            return "powerSequenceScheduleConfigurationRequestCall";
-        case FunctionEnumType::powerSequenceScheduleConstraintsListData:
-            return "powerSequenceScheduleConstraintsListData";
-        case FunctionEnumType::powerSequenceScheduleListData:
-            return "powerSequenceScheduleListData";
-        case FunctionEnumType::powerSequenceSchedulePreferenceListData:
-            return "powerSequenceSchedulePreferenceListData";
-        case FunctionEnumType::powerSequenceStateListData:
-            return "powerSequenceStateListData";
-        case FunctionEnumType::powerTimeSlotScheduleConstraintsListData:
-            return "powerTimeSlotScheduleConstraintsListData";
-        case FunctionEnumType::powerTimeSlotScheduleListData:
-            return "powerTimeSlotScheduleListData";
-        case FunctionEnumType::powerTimeSlotValueListData:
-            return "powerTimeSlotValueListData";
-        case FunctionEnumType::resultData:
-            return "resultData";
-        case FunctionEnumType::sensingDescriptionData:
-            return "sensingDescriptionData";
-        case FunctionEnumType::sensingListData:
-            return "sensingListData";
-        case FunctionEnumType::sessionIdentificationListData:
-            return "sessionIdentificationListData";
-        case FunctionEnumType::sessionMeasurementRelationListData:
-            return "sessionMeasurementRelationListData";
-        case FunctionEnumType::setpointConstraintsListData:
-            return "setpointConstraintsListData";
-        case FunctionEnumType::setpointDescriptionListData:
-            return "setpointDescriptionListData";
-        case FunctionEnumType::setpointListData:
-            return "setpointListData";
-        case FunctionEnumType::smartEnergyManagementPsConfigurationRequestCall:
-            return "smartEnergyManagementPsConfigurationRequestCall";
-        case FunctionEnumType::smartEnergyManagementPsData:
-            return "smartEnergyManagementPsData";
-        case FunctionEnumType::smartEnergyManagementPsPriceCalculationRequestCall:
-            return "smartEnergyManagementPsPriceCalculationRequestCall";
-        case FunctionEnumType::smartEnergyManagementPsPriceData:
-            return "smartEnergyManagementPsPriceData";
-        case FunctionEnumType::specificationVersionListData:
-            return "specificationVersionListData";
-        case FunctionEnumType::subscriptionManagementDeleteCall:
-            return "subscriptionManagementDeleteCall";
-        case FunctionEnumType::subscriptionManagementEntryListData:
-            return "subscriptionManagementEntryListData";
-        case FunctionEnumType::subscriptionManagementRequestCall:
-            return "subscriptionManagementRequestCall";
-        case FunctionEnumType::supplyConditionDescriptionListData:
-            return "supplyConditionDescriptionListData";
-        case FunctionEnumType::supplyConditionListData:
-            return "supplyConditionListData";
-        case FunctionEnumType::supplyConditionThresholdRelationListData:
-            return "supplyConditionThresholdRelationListData";
-        case FunctionEnumType::taskManagementJobDescriptionListData:
-            return "taskManagementJobDescriptionListData";
-        case FunctionEnumType::taskManagementJobListData:
-            return "taskManagementJobListData";
-        case FunctionEnumType::taskManagementJobRelationListData:
-            return "taskManagementJobRelationListData";
-        case FunctionEnumType::taskManagementOverviewData:
-            return "taskManagementOverviewData";
-        case FunctionEnumType::thresholdConstraintsListData:
-            return "thresholdConstraintsListData";
-        case FunctionEnumType::thresholdDescriptionListData:
-            return "thresholdDescriptionListData";
-        case FunctionEnumType::thresholdListData:
-            return "thresholdListData";
-        case FunctionEnumType::timeDistributorData:
-            return "timeDistributorData";
-        case FunctionEnumType::timeDistributorEnquiryCall:
-            return "timeDistributorEnquiryCall";
-        case FunctionEnumType::timeInformationData:
-            return "timeInformationData";
-        case FunctionEnumType::timePrecisionData:
-            return "timePrecisionData";
-        case FunctionEnumType::timeTableConstraintsListData:
-            return "timeTableConstraintsListData";
-        case FunctionEnumType::timeTableDescriptionListData:
-            return "timeTableDescriptionListData";
-        case FunctionEnumType::timeTableListData:
-            return "timeTableListData";
-        case FunctionEnumType::deviceConfigurationKeyValueConstraintsListData:
-            return "deviceConfigurationKeyValueConstraintsListData";
-        case FunctionEnumType::deviceConfigurationKeyValueListData:
-            return "deviceConfigurationKeyValueListData";
-        case FunctionEnumType::deviceConfigurationKeyValueDescriptionListData:
-            return "deviceConfigurationKeyValueDescriptionListData";
-        case FunctionEnumType::loadControlLimitConstraintsListData:
-            return "loadControlLimitConstraintsListData";
-        case FunctionEnumType::loadControlLimitDescriptionListData:
-            return "loadControlLimitDescriptionListData";
-        case FunctionEnumType::loadControlLimitListData:
-            return "loadControlLimitListData";
-        case FunctionEnumType::loadControlNodeData:
-            return "loadControlNodeData";
-        case FunctionEnumType::timeSeriesConstraintsListData:
-            return "timeSeriesConstraintsListData";
-        case FunctionEnumType::timeSeriesDescriptionListData:
-            return "timeSeriesDescriptionListData";
-        case FunctionEnumType::timeSeriesListData:
-            return "timeSeriesListData";
-        case FunctionEnumType::tariffOverallConstraintsData:
-            return "tariffOverallConstraintsData";
-        case FunctionEnumType::tariffListData:
-            return "tariffListData";
-        case FunctionEnumType::tariffBoundaryRelationListData:
-            return "tariffBoundaryRelationListData";
-        case FunctionEnumType::tariffTierRelationListData:
-            return "tariffTierRelationListData";
-        case FunctionEnumType::tariffDescriptionListData:
-            return "tariffDescriptionListData";
-        case FunctionEnumType::tierBoundaryListData:
-            return "tierBoundaryListData";
-        case FunctionEnumType::tierBoundaryDescriptionListData:
-            return "tierBoundaryDescriptionListData";
-        case FunctionEnumType::commodityListData:
-            return "commodityListData";
-        case FunctionEnumType::tierListData:
-            return "tierListData";
-        case FunctionEnumType::tierIncentiveRelationListData:
-            return "tierIncentiveRelationListData";
-        case FunctionEnumType::tierDescriptionListData:
-            return "tierDescriptionListData";
-        case FunctionEnumType::incentiveListData:
-            return "incentiveListData";
-        case FunctionEnumType::incentiveDescriptionListData:
-            return "incentiveDescriptionListData";
-        case FunctionEnumType::incentiveTableData:
-            return "incentiveTableData";
-        case FunctionEnumType::incentiveTableDescriptionData:
-            return "incentiveTableDescriptionData";
-        case FunctionEnumType::incentiveTableConstraintsData:
-            return "incentiveTableConstraintsData";
-        case FunctionEnumType::electricalConnectionPermittedValueSetListData:
-            return "electricalConnectionPermittedValueSetListData";
-        case FunctionEnumType::useCaseInformationListData:
-            return "useCaseInformationListData";
-        case FunctionEnumType::nodeManagementUseCaseData:
-            return "nodeManagementUseCaseData";
-        case FunctionEnumType::billConstraintsListData:
-            return "billConstraintsListData";
-        case FunctionEnumType::billDescriptionListData:
-            return "billDescriptionListData";
-        case FunctionEnumType::billListData:
-            return "billListData";
-        case FunctionEnumType::identificationListData:
-            return "identificationListData";
-        case FunctionEnumType::measurementSeriesListData:
-            return "measurementSeriesListData";
-        case FunctionEnumType::electricalConnectionCharacteristicListData:
-            return "electricalConnectionCharacteristicListData";
-        case FunctionEnumType::stateInformationListData:
-            return "stateInformationListData";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(FunctionEnumType_names, FunctionEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const FunctionEnumType &src, JsonVariant &dst)
@@ -3690,575 +783,7 @@ bool convertToJson(const FunctionEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, FunctionEnumType &dst)
 {
-    if (src == "actuatorLevelData") {
-        dst = FunctionEnumType::actuatorLevelData;
-        return;
-    }
-    if (src == "actuatorLevelDescriptionData") {
-        dst = FunctionEnumType::actuatorLevelDescriptionData;
-        return;
-    }
-    if (src == "actuatorSwitchData") {
-        dst = FunctionEnumType::actuatorSwitchData;
-        return;
-    }
-    if (src == "actuatorSwitchDescriptionData") {
-        dst = FunctionEnumType::actuatorSwitchDescriptionData;
-        return;
-    }
-    if (src == "alarmListData") {
-        dst = FunctionEnumType::alarmListData;
-        return;
-    }
-    if (src == "bindingManagementDeleteCall") {
-        dst = FunctionEnumType::bindingManagementDeleteCall;
-        return;
-    }
-    if (src == "bindingManagementEntryListData") {
-        dst = FunctionEnumType::bindingManagementEntryListData;
-        return;
-    }
-    if (src == "bindingManagementRequestCall") {
-        dst = FunctionEnumType::bindingManagementRequestCall;
-        return;
-    }
-    if (src == "dataTunnelingCall") {
-        dst = FunctionEnumType::dataTunnelingCall;
-        return;
-    }
-    if (src == "deviceClassificationManufacturerData") {
-        dst = FunctionEnumType::deviceClassificationManufacturerData;
-        return;
-    }
-    if (src == "deviceClassificationUserData") {
-        dst = FunctionEnumType::deviceClassificationUserData;
-        return;
-    }
-    if (src == "deviceDiagnosisHeartbeatData") {
-        dst = FunctionEnumType::deviceDiagnosisHeartbeatData;
-        return;
-    }
-    if (src == "deviceDiagnosisServiceData") {
-        dst = FunctionEnumType::deviceDiagnosisServiceData;
-        return;
-    }
-    if (src == "deviceDiagnosisStateData") {
-        dst = FunctionEnumType::deviceDiagnosisStateData;
-        return;
-    }
-    if (src == "directControlActivityListData") {
-        dst = FunctionEnumType::directControlActivityListData;
-        return;
-    }
-    if (src == "directControlDescriptionData") {
-        dst = FunctionEnumType::directControlDescriptionData;
-        return;
-    }
-    if (src == "electricalConnectionDescriptionListData") {
-        dst = FunctionEnumType::electricalConnectionDescriptionListData;
-        return;
-    }
-    if (src == "electricalConnectionParameterDescriptionListData") {
-        dst = FunctionEnumType::electricalConnectionParameterDescriptionListData;
-        return;
-    }
-    if (src == "electricalConnectionStateListData") {
-        dst = FunctionEnumType::electricalConnectionStateListData;
-        return;
-    }
-    if (src == "hvacOperationModeDescriptionListData") {
-        dst = FunctionEnumType::hvacOperationModeDescriptionListData;
-        return;
-    }
-    if (src == "hvacOverrunDescriptionListData") {
-        dst = FunctionEnumType::hvacOverrunDescriptionListData;
-        return;
-    }
-    if (src == "hvacOverrunListData") {
-        dst = FunctionEnumType::hvacOverrunListData;
-        return;
-    }
-    if (src == "hvacSystemFunctionDescriptionListData") {
-        dst = FunctionEnumType::hvacSystemFunctionDescriptionListData;
-        return;
-    }
-    if (src == "hvacSystemFunctionListData") {
-        dst = FunctionEnumType::hvacSystemFunctionListData;
-        return;
-    }
-    if (src == "hvacSystemFunctionOperationModeRelationListData") {
-        dst = FunctionEnumType::hvacSystemFunctionOperationModeRelationListData;
-        return;
-    }
-    if (src == "hvacSystemFunctionPowerSequenceRelationListData") {
-        dst = FunctionEnumType::hvacSystemFunctionPowerSequenceRelationListData;
-        return;
-    }
-    if (src == "hvacSystemFunctionSetpointRelationListData") {
-        dst = FunctionEnumType::hvacSystemFunctionSetpointRelationListData;
-        return;
-    }
-    if (src == "loadControlEventListData") {
-        dst = FunctionEnumType::loadControlEventListData;
-        return;
-    }
-    if (src == "loadControlStateListData") {
-        dst = FunctionEnumType::loadControlStateListData;
-        return;
-    }
-    if (src == "measurementConstraintsListData") {
-        dst = FunctionEnumType::measurementConstraintsListData;
-        return;
-    }
-    if (src == "measurementDescriptionListData") {
-        dst = FunctionEnumType::measurementDescriptionListData;
-        return;
-    }
-    if (src == "measurementListData") {
-        dst = FunctionEnumType::measurementListData;
-        return;
-    }
-    if (src == "measurementThresholdRelationListData") {
-        dst = FunctionEnumType::measurementThresholdRelationListData;
-        return;
-    }
-    if (src == "messagingListData") {
-        dst = FunctionEnumType::messagingListData;
-        return;
-    }
-    if (src == "networkManagementAbortCall") {
-        dst = FunctionEnumType::networkManagementAbortCall;
-        return;
-    }
-    if (src == "networkManagementAddNodeCall") {
-        dst = FunctionEnumType::networkManagementAddNodeCall;
-        return;
-    }
-    if (src == "networkManagementDeviceDescriptionListData") {
-        dst = FunctionEnumType::networkManagementDeviceDescriptionListData;
-        return;
-    }
-    if (src == "networkManagementDiscoverCall") {
-        dst = FunctionEnumType::networkManagementDiscoverCall;
-        return;
-    }
-    if (src == "networkManagementEntityDescriptionListData") {
-        dst = FunctionEnumType::networkManagementEntityDescriptionListData;
-        return;
-    }
-    if (src == "networkManagementFeatureDescriptionListData") {
-        dst = FunctionEnumType::networkManagementFeatureDescriptionListData;
-        return;
-    }
-    if (src == "networkManagementJoiningModeData") {
-        dst = FunctionEnumType::networkManagementJoiningModeData;
-        return;
-    }
-    if (src == "networkManagementModifyNodeCall") {
-        dst = FunctionEnumType::networkManagementModifyNodeCall;
-        return;
-    }
-    if (src == "networkManagementProcessStateData") {
-        dst = FunctionEnumType::networkManagementProcessStateData;
-        return;
-    }
-    if (src == "networkManagementRemoveNodeCall") {
-        dst = FunctionEnumType::networkManagementRemoveNodeCall;
-        return;
-    }
-    if (src == "networkManagementReportCandidateData") {
-        dst = FunctionEnumType::networkManagementReportCandidateData;
-        return;
-    }
-    if (src == "networkManagementScanNetworkCall") {
-        dst = FunctionEnumType::networkManagementScanNetworkCall;
-        return;
-    }
-    if (src == "nodeManagementBindingData") {
-        dst = FunctionEnumType::nodeManagementBindingData;
-        return;
-    }
-    if (src == "nodeManagementBindingDeleteCall") {
-        dst = FunctionEnumType::nodeManagementBindingDeleteCall;
-        return;
-    }
-    if (src == "nodeManagementBindingRequestCall") {
-        dst = FunctionEnumType::nodeManagementBindingRequestCall;
-        return;
-    }
-    if (src == "nodeManagementDestinationListData") {
-        dst = FunctionEnumType::nodeManagementDestinationListData;
-        return;
-    }
-    if (src == "nodeManagementDetailedDiscoveryData") {
-        dst = FunctionEnumType::nodeManagementDetailedDiscoveryData;
-        return;
-    }
-    if (src == "nodeManagementSubscriptionData") {
-        dst = FunctionEnumType::nodeManagementSubscriptionData;
-        return;
-    }
-    if (src == "nodeManagementSubscriptionDeleteCall") {
-        dst = FunctionEnumType::nodeManagementSubscriptionDeleteCall;
-        return;
-    }
-    if (src == "nodeManagementSubscriptionRequestCall") {
-        dst = FunctionEnumType::nodeManagementSubscriptionRequestCall;
-        return;
-    }
-    if (src == "operatingConstraintsDurationListData") {
-        dst = FunctionEnumType::operatingConstraintsDurationListData;
-        return;
-    }
-    if (src == "operatingConstraintsInterruptListData") {
-        dst = FunctionEnumType::operatingConstraintsInterruptListData;
-        return;
-    }
-    if (src == "operatingConstraintsPowerDescriptionListData") {
-        dst = FunctionEnumType::operatingConstraintsPowerDescriptionListData;
-        return;
-    }
-    if (src == "operatingConstraintsPowerLevelListData") {
-        dst = FunctionEnumType::operatingConstraintsPowerLevelListData;
-        return;
-    }
-    if (src == "operatingConstraintsPowerRangeListData") {
-        dst = FunctionEnumType::operatingConstraintsPowerRangeListData;
-        return;
-    }
-    if (src == "operatingConstraintsResumeImplicationListData") {
-        dst = FunctionEnumType::operatingConstraintsResumeImplicationListData;
-        return;
-    }
-    if (src == "powerSequenceAlternativesRelationListData") {
-        dst = FunctionEnumType::powerSequenceAlternativesRelationListData;
-        return;
-    }
-    if (src == "powerSequenceDescriptionListData") {
-        dst = FunctionEnumType::powerSequenceDescriptionListData;
-        return;
-    }
-    if (src == "powerSequenceNodeScheduleInformationData") {
-        dst = FunctionEnumType::powerSequenceNodeScheduleInformationData;
-        return;
-    }
-    if (src == "powerSequencePriceCalculationRequestCall") {
-        dst = FunctionEnumType::powerSequencePriceCalculationRequestCall;
-        return;
-    }
-    if (src == "powerSequencePriceListData") {
-        dst = FunctionEnumType::powerSequencePriceListData;
-        return;
-    }
-    if (src == "powerSequenceScheduleConfigurationRequestCall") {
-        dst = FunctionEnumType::powerSequenceScheduleConfigurationRequestCall;
-        return;
-    }
-    if (src == "powerSequenceScheduleConstraintsListData") {
-        dst = FunctionEnumType::powerSequenceScheduleConstraintsListData;
-        return;
-    }
-    if (src == "powerSequenceScheduleListData") {
-        dst = FunctionEnumType::powerSequenceScheduleListData;
-        return;
-    }
-    if (src == "powerSequenceSchedulePreferenceListData") {
-        dst = FunctionEnumType::powerSequenceSchedulePreferenceListData;
-        return;
-    }
-    if (src == "powerSequenceStateListData") {
-        dst = FunctionEnumType::powerSequenceStateListData;
-        return;
-    }
-    if (src == "powerTimeSlotScheduleConstraintsListData") {
-        dst = FunctionEnumType::powerTimeSlotScheduleConstraintsListData;
-        return;
-    }
-    if (src == "powerTimeSlotScheduleListData") {
-        dst = FunctionEnumType::powerTimeSlotScheduleListData;
-        return;
-    }
-    if (src == "powerTimeSlotValueListData") {
-        dst = FunctionEnumType::powerTimeSlotValueListData;
-        return;
-    }
-    if (src == "resultData") {
-        dst = FunctionEnumType::resultData;
-        return;
-    }
-    if (src == "sensingDescriptionData") {
-        dst = FunctionEnumType::sensingDescriptionData;
-        return;
-    }
-    if (src == "sensingListData") {
-        dst = FunctionEnumType::sensingListData;
-        return;
-    }
-    if (src == "sessionIdentificationListData") {
-        dst = FunctionEnumType::sessionIdentificationListData;
-        return;
-    }
-    if (src == "sessionMeasurementRelationListData") {
-        dst = FunctionEnumType::sessionMeasurementRelationListData;
-        return;
-    }
-    if (src == "setpointConstraintsListData") {
-        dst = FunctionEnumType::setpointConstraintsListData;
-        return;
-    }
-    if (src == "setpointDescriptionListData") {
-        dst = FunctionEnumType::setpointDescriptionListData;
-        return;
-    }
-    if (src == "setpointListData") {
-        dst = FunctionEnumType::setpointListData;
-        return;
-    }
-    if (src == "smartEnergyManagementPsConfigurationRequestCall") {
-        dst = FunctionEnumType::smartEnergyManagementPsConfigurationRequestCall;
-        return;
-    }
-    if (src == "smartEnergyManagementPsData") {
-        dst = FunctionEnumType::smartEnergyManagementPsData;
-        return;
-    }
-    if (src == "smartEnergyManagementPsPriceCalculationRequestCall") {
-        dst = FunctionEnumType::smartEnergyManagementPsPriceCalculationRequestCall;
-        return;
-    }
-    if (src == "smartEnergyManagementPsPriceData") {
-        dst = FunctionEnumType::smartEnergyManagementPsPriceData;
-        return;
-    }
-    if (src == "specificationVersionListData") {
-        dst = FunctionEnumType::specificationVersionListData;
-        return;
-    }
-    if (src == "subscriptionManagementDeleteCall") {
-        dst = FunctionEnumType::subscriptionManagementDeleteCall;
-        return;
-    }
-    if (src == "subscriptionManagementEntryListData") {
-        dst = FunctionEnumType::subscriptionManagementEntryListData;
-        return;
-    }
-    if (src == "subscriptionManagementRequestCall") {
-        dst = FunctionEnumType::subscriptionManagementRequestCall;
-        return;
-    }
-    if (src == "supplyConditionDescriptionListData") {
-        dst = FunctionEnumType::supplyConditionDescriptionListData;
-        return;
-    }
-    if (src == "supplyConditionListData") {
-        dst = FunctionEnumType::supplyConditionListData;
-        return;
-    }
-    if (src == "supplyConditionThresholdRelationListData") {
-        dst = FunctionEnumType::supplyConditionThresholdRelationListData;
-        return;
-    }
-    if (src == "taskManagementJobDescriptionListData") {
-        dst = FunctionEnumType::taskManagementJobDescriptionListData;
-        return;
-    }
-    if (src == "taskManagementJobListData") {
-        dst = FunctionEnumType::taskManagementJobListData;
-        return;
-    }
-    if (src == "taskManagementJobRelationListData") {
-        dst = FunctionEnumType::taskManagementJobRelationListData;
-        return;
-    }
-    if (src == "taskManagementOverviewData") {
-        dst = FunctionEnumType::taskManagementOverviewData;
-        return;
-    }
-    if (src == "thresholdConstraintsListData") {
-        dst = FunctionEnumType::thresholdConstraintsListData;
-        return;
-    }
-    if (src == "thresholdDescriptionListData") {
-        dst = FunctionEnumType::thresholdDescriptionListData;
-        return;
-    }
-    if (src == "thresholdListData") {
-        dst = FunctionEnumType::thresholdListData;
-        return;
-    }
-    if (src == "timeDistributorData") {
-        dst = FunctionEnumType::timeDistributorData;
-        return;
-    }
-    if (src == "timeDistributorEnquiryCall") {
-        dst = FunctionEnumType::timeDistributorEnquiryCall;
-        return;
-    }
-    if (src == "timeInformationData") {
-        dst = FunctionEnumType::timeInformationData;
-        return;
-    }
-    if (src == "timePrecisionData") {
-        dst = FunctionEnumType::timePrecisionData;
-        return;
-    }
-    if (src == "timeTableConstraintsListData") {
-        dst = FunctionEnumType::timeTableConstraintsListData;
-        return;
-    }
-    if (src == "timeTableDescriptionListData") {
-        dst = FunctionEnumType::timeTableDescriptionListData;
-        return;
-    }
-    if (src == "timeTableListData") {
-        dst = FunctionEnumType::timeTableListData;
-        return;
-    }
-    if (src == "deviceConfigurationKeyValueConstraintsListData") {
-        dst = FunctionEnumType::deviceConfigurationKeyValueConstraintsListData;
-        return;
-    }
-    if (src == "deviceConfigurationKeyValueListData") {
-        dst = FunctionEnumType::deviceConfigurationKeyValueListData;
-        return;
-    }
-    if (src == "deviceConfigurationKeyValueDescriptionListData") {
-        dst = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
-        return;
-    }
-    if (src == "loadControlLimitConstraintsListData") {
-        dst = FunctionEnumType::loadControlLimitConstraintsListData;
-        return;
-    }
-    if (src == "loadControlLimitDescriptionListData") {
-        dst = FunctionEnumType::loadControlLimitDescriptionListData;
-        return;
-    }
-    if (src == "loadControlLimitListData") {
-        dst = FunctionEnumType::loadControlLimitListData;
-        return;
-    }
-    if (src == "loadControlNodeData") {
-        dst = FunctionEnumType::loadControlNodeData;
-        return;
-    }
-    if (src == "timeSeriesConstraintsListData") {
-        dst = FunctionEnumType::timeSeriesConstraintsListData;
-        return;
-    }
-    if (src == "timeSeriesDescriptionListData") {
-        dst = FunctionEnumType::timeSeriesDescriptionListData;
-        return;
-    }
-    if (src == "timeSeriesListData") {
-        dst = FunctionEnumType::timeSeriesListData;
-        return;
-    }
-    if (src == "tariffOverallConstraintsData") {
-        dst = FunctionEnumType::tariffOverallConstraintsData;
-        return;
-    }
-    if (src == "tariffListData") {
-        dst = FunctionEnumType::tariffListData;
-        return;
-    }
-    if (src == "tariffBoundaryRelationListData") {
-        dst = FunctionEnumType::tariffBoundaryRelationListData;
-        return;
-    }
-    if (src == "tariffTierRelationListData") {
-        dst = FunctionEnumType::tariffTierRelationListData;
-        return;
-    }
-    if (src == "tariffDescriptionListData") {
-        dst = FunctionEnumType::tariffDescriptionListData;
-        return;
-    }
-    if (src == "tierBoundaryListData") {
-        dst = FunctionEnumType::tierBoundaryListData;
-        return;
-    }
-    if (src == "tierBoundaryDescriptionListData") {
-        dst = FunctionEnumType::tierBoundaryDescriptionListData;
-        return;
-    }
-    if (src == "commodityListData") {
-        dst = FunctionEnumType::commodityListData;
-        return;
-    }
-    if (src == "tierListData") {
-        dst = FunctionEnumType::tierListData;
-        return;
-    }
-    if (src == "tierIncentiveRelationListData") {
-        dst = FunctionEnumType::tierIncentiveRelationListData;
-        return;
-    }
-    if (src == "tierDescriptionListData") {
-        dst = FunctionEnumType::tierDescriptionListData;
-        return;
-    }
-    if (src == "incentiveListData") {
-        dst = FunctionEnumType::incentiveListData;
-        return;
-    }
-    if (src == "incentiveDescriptionListData") {
-        dst = FunctionEnumType::incentiveDescriptionListData;
-        return;
-    }
-    if (src == "incentiveTableData") {
-        dst = FunctionEnumType::incentiveTableData;
-        return;
-    }
-    if (src == "incentiveTableDescriptionData") {
-        dst = FunctionEnumType::incentiveTableDescriptionData;
-        return;
-    }
-    if (src == "incentiveTableConstraintsData") {
-        dst = FunctionEnumType::incentiveTableConstraintsData;
-        return;
-    }
-    if (src == "electricalConnectionPermittedValueSetListData") {
-        dst = FunctionEnumType::electricalConnectionPermittedValueSetListData;
-        return;
-    }
-    if (src == "useCaseInformationListData") {
-        dst = FunctionEnumType::useCaseInformationListData;
-        return;
-    }
-    if (src == "nodeManagementUseCaseData") {
-        dst = FunctionEnumType::nodeManagementUseCaseData;
-        return;
-    }
-    if (src == "billConstraintsListData") {
-        dst = FunctionEnumType::billConstraintsListData;
-        return;
-    }
-    if (src == "billDescriptionListData") {
-        dst = FunctionEnumType::billDescriptionListData;
-        return;
-    }
-    if (src == "billListData") {
-        dst = FunctionEnumType::billListData;
-        return;
-    }
-    if (src == "identificationListData") {
-        dst = FunctionEnumType::identificationListData;
-        return;
-    }
-    if (src == "measurementSeriesListData") {
-        dst = FunctionEnumType::measurementSeriesListData;
-        return;
-    }
-    if (src == "electricalConnectionCharacteristicListData") {
-        dst = FunctionEnumType::electricalConnectionCharacteristicListData;
-        return;
-    }
-    if (src == "stateInformationListData") {
-        dst = FunctionEnumType::stateInformationListData;
-        return;
-    }
-    dst = FunctionEnumType::EnumUndefined;
+    dst = static_cast<FunctionEnumType>(enumNameToValue(FunctionEnumType_names, FunctionEnumType_count, src, static_cast<int>(FunctionEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst)
@@ -4267,18 +792,16 @@ void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const IdentificationTypeEnumType_names[] = {
+    "eui48",
+    "eui64",
+    "userRfidTag",
+};
+static constexpr size_t IdentificationTypeEnumType_count = sizeof(IdentificationTypeEnumType_names) / sizeof(IdentificationTypeEnumType_names[0]);
+
 String convertToString(const IdentificationTypeEnumType &src)
 {
-    switch (src) {
-        case IdentificationTypeEnumType::eui48:
-            return "eui48";
-        case IdentificationTypeEnumType::eui64:
-            return "eui64";
-        case IdentificationTypeEnumType::userRfidTag:
-            return "userRfidTag";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(IdentificationTypeEnumType_names, IdentificationTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
@@ -4288,19 +811,7 @@ bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, IdentificationTypeEnumType &dst)
 {
-    if (src == "eui48") {
-        dst = IdentificationTypeEnumType::eui48;
-        return;
-    }
-    if (src == "eui64") {
-        dst = IdentificationTypeEnumType::eui64;
-        return;
-    }
-    if (src == "userRfidTag") {
-        dst = IdentificationTypeEnumType::userRfidTag;
-        return;
-    }
-    dst = IdentificationTypeEnumType::EnumUndefined;
+    dst = static_cast<IdentificationTypeEnumType>(enumNameToValue(IdentificationTypeEnumType_names, IdentificationTypeEnumType_count, src, static_cast<int>(IdentificationTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst)
@@ -4309,96 +820,15 @@ void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &ds
     convertFromString(s, dst);
 }
 
+static const char *const MeasurementTypeEnumType_names[] = {
+    "acceleration", "angle",       "angularVelocity", "area",          "atmosphericPressure", "capacity",   "concentration",  "count", "current",     "density", "distance", "electricField", "energy",   "force",   "frequency", "harmonicDistortion", "heat", "heatFlux", "illuminance", "impulse", "level", "magneticField", "mass", "massFlow", "particles", "percentage",
+    "power",        "powerFactor", "pressure",        "radonActivity", "relativeHumidity",    "resistance", "solarRadiation", "speed", "temperature", "time",    "torque",   "unknown",       "velocity", "voltage", "volume",    "volumetricFlow",
+};
+static constexpr size_t MeasurementTypeEnumType_count = sizeof(MeasurementTypeEnumType_names) / sizeof(MeasurementTypeEnumType_names[0]);
+
 String convertToString(const MeasurementTypeEnumType &src)
 {
-    switch (src) {
-        case MeasurementTypeEnumType::acceleration:
-            return "acceleration";
-        case MeasurementTypeEnumType::angle:
-            return "angle";
-        case MeasurementTypeEnumType::angularVelocity:
-            return "angularVelocity";
-        case MeasurementTypeEnumType::area:
-            return "area";
-        case MeasurementTypeEnumType::atmosphericPressure:
-            return "atmosphericPressure";
-        case MeasurementTypeEnumType::capacity:
-            return "capacity";
-        case MeasurementTypeEnumType::concentration:
-            return "concentration";
-        case MeasurementTypeEnumType::count:
-            return "count";
-        case MeasurementTypeEnumType::current:
-            return "current";
-        case MeasurementTypeEnumType::density:
-            return "density";
-        case MeasurementTypeEnumType::distance:
-            return "distance";
-        case MeasurementTypeEnumType::electricField:
-            return "electricField";
-        case MeasurementTypeEnumType::energy:
-            return "energy";
-        case MeasurementTypeEnumType::force:
-            return "force";
-        case MeasurementTypeEnumType::frequency:
-            return "frequency";
-        case MeasurementTypeEnumType::harmonicDistortion:
-            return "harmonicDistortion";
-        case MeasurementTypeEnumType::heat:
-            return "heat";
-        case MeasurementTypeEnumType::heatFlux:
-            return "heatFlux";
-        case MeasurementTypeEnumType::illuminance:
-            return "illuminance";
-        case MeasurementTypeEnumType::impulse:
-            return "impulse";
-        case MeasurementTypeEnumType::level:
-            return "level";
-        case MeasurementTypeEnumType::magneticField:
-            return "magneticField";
-        case MeasurementTypeEnumType::mass:
-            return "mass";
-        case MeasurementTypeEnumType::massFlow:
-            return "massFlow";
-        case MeasurementTypeEnumType::particles:
-            return "particles";
-        case MeasurementTypeEnumType::percentage:
-            return "percentage";
-        case MeasurementTypeEnumType::power:
-            return "power";
-        case MeasurementTypeEnumType::powerFactor:
-            return "powerFactor";
-        case MeasurementTypeEnumType::pressure:
-            return "pressure";
-        case MeasurementTypeEnumType::radonActivity:
-            return "radonActivity";
-        case MeasurementTypeEnumType::relativeHumidity:
-            return "relativeHumidity";
-        case MeasurementTypeEnumType::resistance:
-            return "resistance";
-        case MeasurementTypeEnumType::solarRadiation:
-            return "solarRadiation";
-        case MeasurementTypeEnumType::speed:
-            return "speed";
-        case MeasurementTypeEnumType::temperature:
-            return "temperature";
-        case MeasurementTypeEnumType::time:
-            return "time";
-        case MeasurementTypeEnumType::torque:
-            return "torque";
-        case MeasurementTypeEnumType::unknown:
-            return "unknown";
-        case MeasurementTypeEnumType::velocity:
-            return "velocity";
-        case MeasurementTypeEnumType::voltage:
-            return "voltage";
-        case MeasurementTypeEnumType::volume:
-            return "volume";
-        case MeasurementTypeEnumType::volumetricFlow:
-            return "volumetricFlow";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MeasurementTypeEnumType_names, MeasurementTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst)
@@ -4408,175 +838,7 @@ bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, MeasurementTypeEnumType &dst)
 {
-    if (src == "acceleration") {
-        dst = MeasurementTypeEnumType::acceleration;
-        return;
-    }
-    if (src == "angle") {
-        dst = MeasurementTypeEnumType::angle;
-        return;
-    }
-    if (src == "angularVelocity") {
-        dst = MeasurementTypeEnumType::angularVelocity;
-        return;
-    }
-    if (src == "area") {
-        dst = MeasurementTypeEnumType::area;
-        return;
-    }
-    if (src == "atmosphericPressure") {
-        dst = MeasurementTypeEnumType::atmosphericPressure;
-        return;
-    }
-    if (src == "capacity") {
-        dst = MeasurementTypeEnumType::capacity;
-        return;
-    }
-    if (src == "concentration") {
-        dst = MeasurementTypeEnumType::concentration;
-        return;
-    }
-    if (src == "count") {
-        dst = MeasurementTypeEnumType::count;
-        return;
-    }
-    if (src == "current") {
-        dst = MeasurementTypeEnumType::current;
-        return;
-    }
-    if (src == "density") {
-        dst = MeasurementTypeEnumType::density;
-        return;
-    }
-    if (src == "distance") {
-        dst = MeasurementTypeEnumType::distance;
-        return;
-    }
-    if (src == "electricField") {
-        dst = MeasurementTypeEnumType::electricField;
-        return;
-    }
-    if (src == "energy") {
-        dst = MeasurementTypeEnumType::energy;
-        return;
-    }
-    if (src == "force") {
-        dst = MeasurementTypeEnumType::force;
-        return;
-    }
-    if (src == "frequency") {
-        dst = MeasurementTypeEnumType::frequency;
-        return;
-    }
-    if (src == "harmonicDistortion") {
-        dst = MeasurementTypeEnumType::harmonicDistortion;
-        return;
-    }
-    if (src == "heat") {
-        dst = MeasurementTypeEnumType::heat;
-        return;
-    }
-    if (src == "heatFlux") {
-        dst = MeasurementTypeEnumType::heatFlux;
-        return;
-    }
-    if (src == "illuminance") {
-        dst = MeasurementTypeEnumType::illuminance;
-        return;
-    }
-    if (src == "impulse") {
-        dst = MeasurementTypeEnumType::impulse;
-        return;
-    }
-    if (src == "level") {
-        dst = MeasurementTypeEnumType::level;
-        return;
-    }
-    if (src == "magneticField") {
-        dst = MeasurementTypeEnumType::magneticField;
-        return;
-    }
-    if (src == "mass") {
-        dst = MeasurementTypeEnumType::mass;
-        return;
-    }
-    if (src == "massFlow") {
-        dst = MeasurementTypeEnumType::massFlow;
-        return;
-    }
-    if (src == "particles") {
-        dst = MeasurementTypeEnumType::particles;
-        return;
-    }
-    if (src == "percentage") {
-        dst = MeasurementTypeEnumType::percentage;
-        return;
-    }
-    if (src == "power") {
-        dst = MeasurementTypeEnumType::power;
-        return;
-    }
-    if (src == "powerFactor") {
-        dst = MeasurementTypeEnumType::powerFactor;
-        return;
-    }
-    if (src == "pressure") {
-        dst = MeasurementTypeEnumType::pressure;
-        return;
-    }
-    if (src == "radonActivity") {
-        dst = MeasurementTypeEnumType::radonActivity;
-        return;
-    }
-    if (src == "relativeHumidity") {
-        dst = MeasurementTypeEnumType::relativeHumidity;
-        return;
-    }
-    if (src == "resistance") {
-        dst = MeasurementTypeEnumType::resistance;
-        return;
-    }
-    if (src == "solarRadiation") {
-        dst = MeasurementTypeEnumType::solarRadiation;
-        return;
-    }
-    if (src == "speed") {
-        dst = MeasurementTypeEnumType::speed;
-        return;
-    }
-    if (src == "temperature") {
-        dst = MeasurementTypeEnumType::temperature;
-        return;
-    }
-    if (src == "time") {
-        dst = MeasurementTypeEnumType::time;
-        return;
-    }
-    if (src == "torque") {
-        dst = MeasurementTypeEnumType::torque;
-        return;
-    }
-    if (src == "unknown") {
-        dst = MeasurementTypeEnumType::unknown;
-        return;
-    }
-    if (src == "velocity") {
-        dst = MeasurementTypeEnumType::velocity;
-        return;
-    }
-    if (src == "voltage") {
-        dst = MeasurementTypeEnumType::voltage;
-        return;
-    }
-    if (src == "volume") {
-        dst = MeasurementTypeEnumType::volume;
-        return;
-    }
-    if (src == "volumetricFlow") {
-        dst = MeasurementTypeEnumType::volumetricFlow;
-        return;
-    }
-    dst = MeasurementTypeEnumType::EnumUndefined;
+    dst = static_cast<MeasurementTypeEnumType>(enumNameToValue(MeasurementTypeEnumType_names, MeasurementTypeEnumType_count, src, static_cast<int>(MeasurementTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst)
@@ -4585,22 +847,18 @@ void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const MeasurementValueTypeEnumType_names[] = {
+    "value",
+    "averageValue",
+    "minValue",
+    "maxValue",
+    "standardDeviation",
+};
+static constexpr size_t MeasurementValueTypeEnumType_count = sizeof(MeasurementValueTypeEnumType_names) / sizeof(MeasurementValueTypeEnumType_names[0]);
+
 String convertToString(const MeasurementValueTypeEnumType &src)
 {
-    switch (src) {
-        case MeasurementValueTypeEnumType::value:
-            return "value";
-        case MeasurementValueTypeEnumType::averageValue:
-            return "averageValue";
-        case MeasurementValueTypeEnumType::minValue:
-            return "minValue";
-        case MeasurementValueTypeEnumType::maxValue:
-            return "maxValue";
-        case MeasurementValueTypeEnumType::standardDeviation:
-            return "standardDeviation";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MeasurementValueTypeEnumType_names, MeasurementValueTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst)
@@ -4610,27 +868,7 @@ bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, MeasurementValueTypeEnumType &dst)
 {
-    if (src == "value") {
-        dst = MeasurementValueTypeEnumType::value;
-        return;
-    }
-    if (src == "averageValue") {
-        dst = MeasurementValueTypeEnumType::averageValue;
-        return;
-    }
-    if (src == "minValue") {
-        dst = MeasurementValueTypeEnumType::minValue;
-        return;
-    }
-    if (src == "maxValue") {
-        dst = MeasurementValueTypeEnumType::maxValue;
-        return;
-    }
-    if (src == "standardDeviation") {
-        dst = MeasurementValueTypeEnumType::standardDeviation;
-        return;
-    }
-    dst = MeasurementValueTypeEnumType::EnumUndefined;
+    dst = static_cast<MeasurementValueTypeEnumType>(enumNameToValue(MeasurementValueTypeEnumType_names, MeasurementValueTypeEnumType_count, src, static_cast<int>(MeasurementValueTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst)
@@ -4639,18 +877,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &
     convertFromString(s, dst);
 }
 
+static const char *const MeasurementValueSourceEnumType_names[] = {
+    "measuredValue",
+    "calculatedValue",
+    "empiricalValue",
+};
+static constexpr size_t MeasurementValueSourceEnumType_count = sizeof(MeasurementValueSourceEnumType_names) / sizeof(MeasurementValueSourceEnumType_names[0]);
+
 String convertToString(const MeasurementValueSourceEnumType &src)
 {
-    switch (src) {
-        case MeasurementValueSourceEnumType::measuredValue:
-            return "measuredValue";
-        case MeasurementValueSourceEnumType::calculatedValue:
-            return "calculatedValue";
-        case MeasurementValueSourceEnumType::empiricalValue:
-            return "empiricalValue";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MeasurementValueSourceEnumType_names, MeasurementValueSourceEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst)
@@ -4660,19 +896,7 @@ bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, MeasurementValueSourceEnumType &dst)
 {
-    if (src == "measuredValue") {
-        dst = MeasurementValueSourceEnumType::measuredValue;
-        return;
-    }
-    if (src == "calculatedValue") {
-        dst = MeasurementValueSourceEnumType::calculatedValue;
-        return;
-    }
-    if (src == "empiricalValue") {
-        dst = MeasurementValueSourceEnumType::empiricalValue;
-        return;
-    }
-    dst = MeasurementValueSourceEnumType::EnumUndefined;
+    dst = static_cast<MeasurementValueSourceEnumType>(enumNameToValue(MeasurementValueSourceEnumType_names, MeasurementValueSourceEnumType_count, src, static_cast<int>(MeasurementValueSourceEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst)
@@ -4681,18 +905,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType
     convertFromString(s, dst);
 }
 
+static const char *const MeasurementValueTendencyEnumType_names[] = {
+    "rising",
+    "stable",
+    "falling",
+};
+static constexpr size_t MeasurementValueTendencyEnumType_count = sizeof(MeasurementValueTendencyEnumType_names) / sizeof(MeasurementValueTendencyEnumType_names[0]);
+
 String convertToString(const MeasurementValueTendencyEnumType &src)
 {
-    switch (src) {
-        case MeasurementValueTendencyEnumType::rising:
-            return "rising";
-        case MeasurementValueTendencyEnumType::stable:
-            return "stable";
-        case MeasurementValueTendencyEnumType::falling:
-            return "falling";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MeasurementValueTendencyEnumType_names, MeasurementValueTendencyEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst)
@@ -4702,19 +924,7 @@ bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst
 
 void convertFromString(const String &src, MeasurementValueTendencyEnumType &dst)
 {
-    if (src == "rising") {
-        dst = MeasurementValueTendencyEnumType::rising;
-        return;
-    }
-    if (src == "stable") {
-        dst = MeasurementValueTendencyEnumType::stable;
-        return;
-    }
-    if (src == "falling") {
-        dst = MeasurementValueTendencyEnumType::falling;
-        return;
-    }
-    dst = MeasurementValueTendencyEnumType::EnumUndefined;
+    dst = static_cast<MeasurementValueTendencyEnumType>(enumNameToValue(MeasurementValueTendencyEnumType_names, MeasurementValueTendencyEnumType_count, src, static_cast<int>(MeasurementValueTendencyEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst)
@@ -4723,18 +933,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumTy
     convertFromString(s, dst);
 }
 
+static const char *const MeasurementValueStateEnumType_names[] = {
+    "normal",
+    "outOfRange",
+    "error",
+};
+static constexpr size_t MeasurementValueStateEnumType_count = sizeof(MeasurementValueStateEnumType_names) / sizeof(MeasurementValueStateEnumType_names[0]);
+
 String convertToString(const MeasurementValueStateEnumType &src)
 {
-    switch (src) {
-        case MeasurementValueStateEnumType::normal:
-            return "normal";
-        case MeasurementValueStateEnumType::outOfRange:
-            return "outOfRange";
-        case MeasurementValueStateEnumType::error:
-            return "error";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(MeasurementValueStateEnumType_names, MeasurementValueStateEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst)
@@ -4744,19 +952,7 @@ bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, MeasurementValueStateEnumType &dst)
 {
-    if (src == "normal") {
-        dst = MeasurementValueStateEnumType::normal;
-        return;
-    }
-    if (src == "outOfRange") {
-        dst = MeasurementValueStateEnumType::outOfRange;
-        return;
-    }
-    if (src == "error") {
-        dst = MeasurementValueStateEnumType::error;
-        return;
-    }
-    dst = MeasurementValueStateEnumType::EnumUndefined;
+    dst = static_cast<MeasurementValueStateEnumType>(enumNameToValue(MeasurementValueStateEnumType_names, MeasurementValueStateEnumType_count, src, static_cast<int>(MeasurementValueStateEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst)
@@ -4765,22 +961,18 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType 
     convertFromString(s, dst);
 }
 
+static const char *const PowerSourceEnumType_names[] = {
+    "unknown",
+    "mainsSinglePhase",
+    "mains3Phase",
+    "battery",
+    "dc",
+};
+static constexpr size_t PowerSourceEnumType_count = sizeof(PowerSourceEnumType_names) / sizeof(PowerSourceEnumType_names[0]);
+
 String convertToString(const PowerSourceEnumType &src)
 {
-    switch (src) {
-        case PowerSourceEnumType::unknown:
-            return "unknown";
-        case PowerSourceEnumType::mainsSinglePhase:
-            return "mainsSinglePhase";
-        case PowerSourceEnumType::mains3Phase:
-            return "mains3Phase";
-        case PowerSourceEnumType::battery:
-            return "battery";
-        case PowerSourceEnumType::dc:
-            return "dc";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(PowerSourceEnumType_names, PowerSourceEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst)
@@ -4790,27 +982,7 @@ bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, PowerSourceEnumType &dst)
 {
-    if (src == "unknown") {
-        dst = PowerSourceEnumType::unknown;
-        return;
-    }
-    if (src == "mainsSinglePhase") {
-        dst = PowerSourceEnumType::mainsSinglePhase;
-        return;
-    }
-    if (src == "mains3Phase") {
-        dst = PowerSourceEnumType::mains3Phase;
-        return;
-    }
-    if (src == "battery") {
-        dst = PowerSourceEnumType::battery;
-        return;
-    }
-    if (src == "dc") {
-        dst = PowerSourceEnumType::dc;
-        return;
-    }
-    dst = PowerSourceEnumType::EnumUndefined;
+    dst = static_cast<PowerSourceEnumType>(enumNameToValue(PowerSourceEnumType_names, PowerSourceEnumType_count, src, static_cast<int>(PowerSourceEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst)
@@ -4819,86 +991,50 @@ void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const DeviceConfigurationKeyNameEnumType_names[] = {
+    "peakPowerOfPvSystem",
+    "pvCurtailmentLimitFactor",
+    "asymmetricChargingSupported",
+    "communicationsStandard",
+    "inverterGridCode",
+    "pvStringAvailabilityStatus",
+    "batteryAvailabilityStatus",
+    "gridConnectionStatus",
+    "timeToAcChargePowerMax",
+    "timeToAcDischargePowerMax",
+    "tilt",
+    "azimuth",
+    "batteryType",
+    "maxCycleCountPerDay",
+    "failsafeConsumptionActivePowerLimit",
+    "failsafeProductionActivePowerLimit",
+    "failsafePositiveReactivePowerLimit",
+    "failsafeNegativeReactivePowerLimit",
+    "failsafePositiveCosPhiLimit",
+    "failsafeNegativeCosPhiLimit",
+    "maxAcChargePower",
+    "maxAcDischargePower",
+    "maxDcChargePower",
+    "maxDcDischargePower",
+    "batteryActiveControlMode",
+    "defaultAcPower",
+    "defaultDcPower",
+    "defaultPccPower",
+    "failsafeAcPowerSetpoint",
+    "failsafeDcPowerSetpoint",
+    "failsafePccPowerSetpoint",
+    "failsafeDurationMinimum",
+    "dischargingBelowTargetEnergyRequestPermitted",
+    "incentivesSimulationCyclesMax",
+    "incentivesSimulationConcurrent",
+    "incentivesTimeoutIncentiveRequest",
+    "incentivesWaitIncentiveWriteable",
+};
+static constexpr size_t DeviceConfigurationKeyNameEnumType_count = sizeof(DeviceConfigurationKeyNameEnumType_names) / sizeof(DeviceConfigurationKeyNameEnumType_names[0]);
+
 String convertToString(const DeviceConfigurationKeyNameEnumType &src)
 {
-    switch (src) {
-        case DeviceConfigurationKeyNameEnumType::peakPowerOfPvSystem:
-            return "peakPowerOfPvSystem";
-        case DeviceConfigurationKeyNameEnumType::pvCurtailmentLimitFactor:
-            return "pvCurtailmentLimitFactor";
-        case DeviceConfigurationKeyNameEnumType::asymmetricChargingSupported:
-            return "asymmetricChargingSupported";
-        case DeviceConfigurationKeyNameEnumType::communicationsStandard:
-            return "communicationsStandard";
-        case DeviceConfigurationKeyNameEnumType::inverterGridCode:
-            return "inverterGridCode";
-        case DeviceConfigurationKeyNameEnumType::pvStringAvailabilityStatus:
-            return "pvStringAvailabilityStatus";
-        case DeviceConfigurationKeyNameEnumType::batteryAvailabilityStatus:
-            return "batteryAvailabilityStatus";
-        case DeviceConfigurationKeyNameEnumType::gridConnectionStatus:
-            return "gridConnectionStatus";
-        case DeviceConfigurationKeyNameEnumType::timeToAcChargePowerMax:
-            return "timeToAcChargePowerMax";
-        case DeviceConfigurationKeyNameEnumType::timeToAcDischargePowerMax:
-            return "timeToAcDischargePowerMax";
-        case DeviceConfigurationKeyNameEnumType::tilt:
-            return "tilt";
-        case DeviceConfigurationKeyNameEnumType::azimuth:
-            return "azimuth";
-        case DeviceConfigurationKeyNameEnumType::batteryType:
-            return "batteryType";
-        case DeviceConfigurationKeyNameEnumType::maxCycleCountPerDay:
-            return "maxCycleCountPerDay";
-        case DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit:
-            return "failsafeConsumptionActivePowerLimit";
-        case DeviceConfigurationKeyNameEnumType::failsafeProductionActivePowerLimit:
-            return "failsafeProductionActivePowerLimit";
-        case DeviceConfigurationKeyNameEnumType::failsafePositiveReactivePowerLimit:
-            return "failsafePositiveReactivePowerLimit";
-        case DeviceConfigurationKeyNameEnumType::failsafeNegativeReactivePowerLimit:
-            return "failsafeNegativeReactivePowerLimit";
-        case DeviceConfigurationKeyNameEnumType::failsafePositiveCosPhiLimit:
-            return "failsafePositiveCosPhiLimit";
-        case DeviceConfigurationKeyNameEnumType::failsafeNegativeCosPhiLimit:
-            return "failsafeNegativeCosPhiLimit";
-        case DeviceConfigurationKeyNameEnumType::maxAcChargePower:
-            return "maxAcChargePower";
-        case DeviceConfigurationKeyNameEnumType::maxAcDischargePower:
-            return "maxAcDischargePower";
-        case DeviceConfigurationKeyNameEnumType::maxDcChargePower:
-            return "maxDcChargePower";
-        case DeviceConfigurationKeyNameEnumType::maxDcDischargePower:
-            return "maxDcDischargePower";
-        case DeviceConfigurationKeyNameEnumType::batteryActiveControlMode:
-            return "batteryActiveControlMode";
-        case DeviceConfigurationKeyNameEnumType::defaultAcPower:
-            return "defaultAcPower";
-        case DeviceConfigurationKeyNameEnumType::defaultDcPower:
-            return "defaultDcPower";
-        case DeviceConfigurationKeyNameEnumType::defaultPccPower:
-            return "defaultPccPower";
-        case DeviceConfigurationKeyNameEnumType::failsafeAcPowerSetpoint:
-            return "failsafeAcPowerSetpoint";
-        case DeviceConfigurationKeyNameEnumType::failsafeDcPowerSetpoint:
-            return "failsafeDcPowerSetpoint";
-        case DeviceConfigurationKeyNameEnumType::failsafePccPowerSetpoint:
-            return "failsafePccPowerSetpoint";
-        case DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum:
-            return "failsafeDurationMinimum";
-        case DeviceConfigurationKeyNameEnumType::dischargingBelowTargetEnergyRequestPermitted:
-            return "dischargingBelowTargetEnergyRequestPermitted";
-        case DeviceConfigurationKeyNameEnumType::incentivesSimulationCyclesMax:
-            return "incentivesSimulationCyclesMax";
-        case DeviceConfigurationKeyNameEnumType::incentivesSimulationConcurrent:
-            return "incentivesSimulationConcurrent";
-        case DeviceConfigurationKeyNameEnumType::incentivesTimeoutIncentiveRequest:
-            return "incentivesTimeoutIncentiveRequest";
-        case DeviceConfigurationKeyNameEnumType::incentivesWaitIncentiveWriteable:
-            return "incentivesWaitIncentiveWriteable";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(DeviceConfigurationKeyNameEnumType_names, DeviceConfigurationKeyNameEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst)
@@ -4908,155 +1044,7 @@ bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &d
 
 void convertFromString(const String &src, DeviceConfigurationKeyNameEnumType &dst)
 {
-    if (src == "peakPowerOfPvSystem") {
-        dst = DeviceConfigurationKeyNameEnumType::peakPowerOfPvSystem;
-        return;
-    }
-    if (src == "pvCurtailmentLimitFactor") {
-        dst = DeviceConfigurationKeyNameEnumType::pvCurtailmentLimitFactor;
-        return;
-    }
-    if (src == "asymmetricChargingSupported") {
-        dst = DeviceConfigurationKeyNameEnumType::asymmetricChargingSupported;
-        return;
-    }
-    if (src == "communicationsStandard") {
-        dst = DeviceConfigurationKeyNameEnumType::communicationsStandard;
-        return;
-    }
-    if (src == "inverterGridCode") {
-        dst = DeviceConfigurationKeyNameEnumType::inverterGridCode;
-        return;
-    }
-    if (src == "pvStringAvailabilityStatus") {
-        dst = DeviceConfigurationKeyNameEnumType::pvStringAvailabilityStatus;
-        return;
-    }
-    if (src == "batteryAvailabilityStatus") {
-        dst = DeviceConfigurationKeyNameEnumType::batteryAvailabilityStatus;
-        return;
-    }
-    if (src == "gridConnectionStatus") {
-        dst = DeviceConfigurationKeyNameEnumType::gridConnectionStatus;
-        return;
-    }
-    if (src == "timeToAcChargePowerMax") {
-        dst = DeviceConfigurationKeyNameEnumType::timeToAcChargePowerMax;
-        return;
-    }
-    if (src == "timeToAcDischargePowerMax") {
-        dst = DeviceConfigurationKeyNameEnumType::timeToAcDischargePowerMax;
-        return;
-    }
-    if (src == "tilt") {
-        dst = DeviceConfigurationKeyNameEnumType::tilt;
-        return;
-    }
-    if (src == "azimuth") {
-        dst = DeviceConfigurationKeyNameEnumType::azimuth;
-        return;
-    }
-    if (src == "batteryType") {
-        dst = DeviceConfigurationKeyNameEnumType::batteryType;
-        return;
-    }
-    if (src == "maxCycleCountPerDay") {
-        dst = DeviceConfigurationKeyNameEnumType::maxCycleCountPerDay;
-        return;
-    }
-    if (src == "failsafeConsumptionActivePowerLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeConsumptionActivePowerLimit;
-        return;
-    }
-    if (src == "failsafeProductionActivePowerLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeProductionActivePowerLimit;
-        return;
-    }
-    if (src == "failsafePositiveReactivePowerLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafePositiveReactivePowerLimit;
-        return;
-    }
-    if (src == "failsafeNegativeReactivePowerLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeNegativeReactivePowerLimit;
-        return;
-    }
-    if (src == "failsafePositiveCosPhiLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafePositiveCosPhiLimit;
-        return;
-    }
-    if (src == "failsafeNegativeCosPhiLimit") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeNegativeCosPhiLimit;
-        return;
-    }
-    if (src == "maxAcChargePower") {
-        dst = DeviceConfigurationKeyNameEnumType::maxAcChargePower;
-        return;
-    }
-    if (src == "maxAcDischargePower") {
-        dst = DeviceConfigurationKeyNameEnumType::maxAcDischargePower;
-        return;
-    }
-    if (src == "maxDcChargePower") {
-        dst = DeviceConfigurationKeyNameEnumType::maxDcChargePower;
-        return;
-    }
-    if (src == "maxDcDischargePower") {
-        dst = DeviceConfigurationKeyNameEnumType::maxDcDischargePower;
-        return;
-    }
-    if (src == "batteryActiveControlMode") {
-        dst = DeviceConfigurationKeyNameEnumType::batteryActiveControlMode;
-        return;
-    }
-    if (src == "defaultAcPower") {
-        dst = DeviceConfigurationKeyNameEnumType::defaultAcPower;
-        return;
-    }
-    if (src == "defaultDcPower") {
-        dst = DeviceConfigurationKeyNameEnumType::defaultDcPower;
-        return;
-    }
-    if (src == "defaultPccPower") {
-        dst = DeviceConfigurationKeyNameEnumType::defaultPccPower;
-        return;
-    }
-    if (src == "failsafeAcPowerSetpoint") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeAcPowerSetpoint;
-        return;
-    }
-    if (src == "failsafeDcPowerSetpoint") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeDcPowerSetpoint;
-        return;
-    }
-    if (src == "failsafePccPowerSetpoint") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafePccPowerSetpoint;
-        return;
-    }
-    if (src == "failsafeDurationMinimum") {
-        dst = DeviceConfigurationKeyNameEnumType::failsafeDurationMinimum;
-        return;
-    }
-    if (src == "dischargingBelowTargetEnergyRequestPermitted") {
-        dst = DeviceConfigurationKeyNameEnumType::dischargingBelowTargetEnergyRequestPermitted;
-        return;
-    }
-    if (src == "incentivesSimulationCyclesMax") {
-        dst = DeviceConfigurationKeyNameEnumType::incentivesSimulationCyclesMax;
-        return;
-    }
-    if (src == "incentivesSimulationConcurrent") {
-        dst = DeviceConfigurationKeyNameEnumType::incentivesSimulationConcurrent;
-        return;
-    }
-    if (src == "incentivesTimeoutIncentiveRequest") {
-        dst = DeviceConfigurationKeyNameEnumType::incentivesTimeoutIncentiveRequest;
-        return;
-    }
-    if (src == "incentivesWaitIncentiveWriteable") {
-        dst = DeviceConfigurationKeyNameEnumType::incentivesWaitIncentiveWriteable;
-        return;
-    }
-    dst = DeviceConfigurationKeyNameEnumType::EnumUndefined;
+    dst = static_cast<DeviceConfigurationKeyNameEnumType>(enumNameToValue(DeviceConfigurationKeyNameEnumType_names, DeviceConfigurationKeyNameEnumType_count, src, static_cast<int>(DeviceConfigurationKeyNameEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst)
@@ -5065,28 +1053,21 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnum
     convertFromString(s, dst);
 }
 
+static const char *const DeviceConfigurationKeyValueTypeType_names[] = {
+    "boolean",
+    "date",
+    "dateTime",
+    "duration",
+    "string",
+    "time",
+    "scaledNumber",
+    "integer",
+};
+static constexpr size_t DeviceConfigurationKeyValueTypeType_count = sizeof(DeviceConfigurationKeyValueTypeType_names) / sizeof(DeviceConfigurationKeyValueTypeType_names[0]);
+
 String convertToString(const DeviceConfigurationKeyValueTypeType &src)
 {
-    switch (src) {
-        case DeviceConfigurationKeyValueTypeType::boolean:
-            return "boolean";
-        case DeviceConfigurationKeyValueTypeType::date:
-            return "date";
-        case DeviceConfigurationKeyValueTypeType::dateTime:
-            return "dateTime";
-        case DeviceConfigurationKeyValueTypeType::duration:
-            return "duration";
-        case DeviceConfigurationKeyValueTypeType::string:
-            return "string";
-        case DeviceConfigurationKeyValueTypeType::time:
-            return "time";
-        case DeviceConfigurationKeyValueTypeType::scaledNumber:
-            return "scaledNumber";
-        case DeviceConfigurationKeyValueTypeType::integer:
-            return "integer";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(DeviceConfigurationKeyValueTypeType_names, DeviceConfigurationKeyValueTypeType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst)
@@ -5096,39 +1077,7 @@ bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &
 
 void convertFromString(const String &src, DeviceConfigurationKeyValueTypeType &dst)
 {
-    if (src == "boolean") {
-        dst = DeviceConfigurationKeyValueTypeType::boolean;
-        return;
-    }
-    if (src == "date") {
-        dst = DeviceConfigurationKeyValueTypeType::date;
-        return;
-    }
-    if (src == "dateTime") {
-        dst = DeviceConfigurationKeyValueTypeType::dateTime;
-        return;
-    }
-    if (src == "duration") {
-        dst = DeviceConfigurationKeyValueTypeType::duration;
-        return;
-    }
-    if (src == "string") {
-        dst = DeviceConfigurationKeyValueTypeType::string;
-        return;
-    }
-    if (src == "time") {
-        dst = DeviceConfigurationKeyValueTypeType::time;
-        return;
-    }
-    if (src == "scaledNumber") {
-        dst = DeviceConfigurationKeyValueTypeType::scaledNumber;
-        return;
-    }
-    if (src == "integer") {
-        dst = DeviceConfigurationKeyValueTypeType::integer;
-        return;
-    }
-    dst = DeviceConfigurationKeyValueTypeType::EnumUndefined;
+    dst = static_cast<DeviceConfigurationKeyValueTypeType>(enumNameToValue(DeviceConfigurationKeyValueTypeType_names, DeviceConfigurationKeyValueTypeType_count, src, static_cast<int>(DeviceConfigurationKeyValueTypeType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst)
@@ -5137,32 +1086,23 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTyp
     convertFromString(s, dst);
 }
 
+static const char *const DeviceDiagnosisOperatingStateEnumType_names[] = {
+    "normalOperation",
+    "standby",
+    "failure",
+    "serviceNeeded",
+    "overrideDetected",
+    "inAlarm",
+    "notReachable",
+    "finished",
+    "temporarilyNotReady",
+    "off",
+};
+static constexpr size_t DeviceDiagnosisOperatingStateEnumType_count = sizeof(DeviceDiagnosisOperatingStateEnumType_names) / sizeof(DeviceDiagnosisOperatingStateEnumType_names[0]);
+
 String convertToString(const DeviceDiagnosisOperatingStateEnumType &src)
 {
-    switch (src) {
-        case DeviceDiagnosisOperatingStateEnumType::normalOperation:
-            return "normalOperation";
-        case DeviceDiagnosisOperatingStateEnumType::standby:
-            return "standby";
-        case DeviceDiagnosisOperatingStateEnumType::failure:
-            return "failure";
-        case DeviceDiagnosisOperatingStateEnumType::serviceNeeded:
-            return "serviceNeeded";
-        case DeviceDiagnosisOperatingStateEnumType::overrideDetected:
-            return "overrideDetected";
-        case DeviceDiagnosisOperatingStateEnumType::inAlarm:
-            return "inAlarm";
-        case DeviceDiagnosisOperatingStateEnumType::notReachable:
-            return "notReachable";
-        case DeviceDiagnosisOperatingStateEnumType::finished:
-            return "finished";
-        case DeviceDiagnosisOperatingStateEnumType::temporarilyNotReady:
-            return "temporarilyNotReady";
-        case DeviceDiagnosisOperatingStateEnumType::off:
-            return "off";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(DeviceDiagnosisOperatingStateEnumType_names, DeviceDiagnosisOperatingStateEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst)
@@ -5172,47 +1112,7 @@ bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant
 
 void convertFromString(const String &src, DeviceDiagnosisOperatingStateEnumType &dst)
 {
-    if (src == "normalOperation") {
-        dst = DeviceDiagnosisOperatingStateEnumType::normalOperation;
-        return;
-    }
-    if (src == "standby") {
-        dst = DeviceDiagnosisOperatingStateEnumType::standby;
-        return;
-    }
-    if (src == "failure") {
-        dst = DeviceDiagnosisOperatingStateEnumType::failure;
-        return;
-    }
-    if (src == "serviceNeeded") {
-        dst = DeviceDiagnosisOperatingStateEnumType::serviceNeeded;
-        return;
-    }
-    if (src == "overrideDetected") {
-        dst = DeviceDiagnosisOperatingStateEnumType::overrideDetected;
-        return;
-    }
-    if (src == "inAlarm") {
-        dst = DeviceDiagnosisOperatingStateEnumType::inAlarm;
-        return;
-    }
-    if (src == "notReachable") {
-        dst = DeviceDiagnosisOperatingStateEnumType::notReachable;
-        return;
-    }
-    if (src == "finished") {
-        dst = DeviceDiagnosisOperatingStateEnumType::finished;
-        return;
-    }
-    if (src == "temporarilyNotReady") {
-        dst = DeviceDiagnosisOperatingStateEnumType::temporarilyNotReady;
-        return;
-    }
-    if (src == "off") {
-        dst = DeviceDiagnosisOperatingStateEnumType::off;
-        return;
-    }
-    dst = DeviceDiagnosisOperatingStateEnumType::EnumUndefined;
+    dst = static_cast<DeviceDiagnosisOperatingStateEnumType>(enumNameToValue(DeviceDiagnosisOperatingStateEnumType_names, DeviceDiagnosisOperatingStateEnumType_count, src, static_cast<int>(DeviceDiagnosisOperatingStateEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst)
@@ -5221,22 +1121,18 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateE
     convertFromString(s, dst);
 }
 
+static const char *const PowerSupplyConditionEnumType_names[] = {
+    "good",
+    "low",
+    "critical",
+    "unknown",
+    "error",
+};
+static constexpr size_t PowerSupplyConditionEnumType_count = sizeof(PowerSupplyConditionEnumType_names) / sizeof(PowerSupplyConditionEnumType_names[0]);
+
 String convertToString(const PowerSupplyConditionEnumType &src)
 {
-    switch (src) {
-        case PowerSupplyConditionEnumType::good:
-            return "good";
-        case PowerSupplyConditionEnumType::low:
-            return "low";
-        case PowerSupplyConditionEnumType::critical:
-            return "critical";
-        case PowerSupplyConditionEnumType::unknown:
-            return "unknown";
-        case PowerSupplyConditionEnumType::error:
-            return "error";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(PowerSupplyConditionEnumType_names, PowerSupplyConditionEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst)
@@ -5246,27 +1142,7 @@ bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, PowerSupplyConditionEnumType &dst)
 {
-    if (src == "good") {
-        dst = PowerSupplyConditionEnumType::good;
-        return;
-    }
-    if (src == "low") {
-        dst = PowerSupplyConditionEnumType::low;
-        return;
-    }
-    if (src == "critical") {
-        dst = PowerSupplyConditionEnumType::critical;
-        return;
-    }
-    if (src == "unknown") {
-        dst = PowerSupplyConditionEnumType::unknown;
-        return;
-    }
-    if (src == "error") {
-        dst = PowerSupplyConditionEnumType::error;
-        return;
-    }
-    dst = PowerSupplyConditionEnumType::EnumUndefined;
+    dst = static_cast<PowerSupplyConditionEnumType>(enumNameToValue(PowerSupplyConditionEnumType_names, PowerSupplyConditionEnumType_count, src, static_cast<int>(PowerSupplyConditionEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst)
@@ -5275,22 +1151,18 @@ void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionMeasurandVariantEnumType_names[] = {
+    "amplitude",
+    "rms",
+    "instantaneous",
+    "angle",
+    "cosPhi",
+};
+static constexpr size_t ElectricalConnectionMeasurandVariantEnumType_count = sizeof(ElectricalConnectionMeasurandVariantEnumType_names) / sizeof(ElectricalConnectionMeasurandVariantEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionMeasurandVariantEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionMeasurandVariantEnumType::amplitude:
-            return "amplitude";
-        case ElectricalConnectionMeasurandVariantEnumType::rms:
-            return "rms";
-        case ElectricalConnectionMeasurandVariantEnumType::instantaneous:
-            return "instantaneous";
-        case ElectricalConnectionMeasurandVariantEnumType::angle:
-            return "angle";
-        case ElectricalConnectionMeasurandVariantEnumType::cosPhi:
-            return "cosPhi";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionMeasurandVariantEnumType_names, ElectricalConnectionMeasurandVariantEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst)
@@ -5300,27 +1172,7 @@ bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, Json
 
 void convertFromString(const String &src, ElectricalConnectionMeasurandVariantEnumType &dst)
 {
-    if (src == "amplitude") {
-        dst = ElectricalConnectionMeasurandVariantEnumType::amplitude;
-        return;
-    }
-    if (src == "rms") {
-        dst = ElectricalConnectionMeasurandVariantEnumType::rms;
-        return;
-    }
-    if (src == "instantaneous") {
-        dst = ElectricalConnectionMeasurandVariantEnumType::instantaneous;
-        return;
-    }
-    if (src == "angle") {
-        dst = ElectricalConnectionMeasurandVariantEnumType::angle;
-        return;
-    }
-    if (src == "cosPhi") {
-        dst = ElectricalConnectionMeasurandVariantEnumType::cosPhi;
-        return;
-    }
-    dst = ElectricalConnectionMeasurandVariantEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionMeasurandVariantEnumType>(enumNameToValue(ElectricalConnectionMeasurandVariantEnumType_names, ElectricalConnectionMeasurandVariantEnumType_count, src, static_cast<int>(ElectricalConnectionMeasurandVariantEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst)
@@ -5329,16 +1181,15 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandV
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionVoltageTypeEnumType_names[] = {
+    "ac",
+    "dc",
+};
+static constexpr size_t ElectricalConnectionVoltageTypeEnumType_count = sizeof(ElectricalConnectionVoltageTypeEnumType_names) / sizeof(ElectricalConnectionVoltageTypeEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionVoltageTypeEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionVoltageTypeEnumType::ac:
-            return "ac";
-        case ElectricalConnectionVoltageTypeEnumType::dc:
-            return "dc";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionVoltageTypeEnumType_names, ElectricalConnectionVoltageTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst)
@@ -5348,15 +1199,7 @@ bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVaria
 
 void convertFromString(const String &src, ElectricalConnectionVoltageTypeEnumType &dst)
 {
-    if (src == "ac") {
-        dst = ElectricalConnectionVoltageTypeEnumType::ac;
-        return;
-    }
-    if (src == "dc") {
-        dst = ElectricalConnectionVoltageTypeEnumType::dc;
-        return;
-    }
-    dst = ElectricalConnectionVoltageTypeEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionVoltageTypeEnumType>(enumNameToValue(ElectricalConnectionVoltageTypeEnumType_names, ElectricalConnectionVoltageTypeEnumType_count, src, static_cast<int>(ElectricalConnectionVoltageTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst)
@@ -5365,20 +1208,17 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTyp
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionAcMeasurementTypeEnumType_names[] = {
+    "real",
+    "reactive",
+    "apparent",
+    "phase",
+};
+static constexpr size_t ElectricalConnectionAcMeasurementTypeEnumType_count = sizeof(ElectricalConnectionAcMeasurementTypeEnumType_names) / sizeof(ElectricalConnectionAcMeasurementTypeEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionAcMeasurementTypeEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionAcMeasurementTypeEnumType::real:
-            return "real";
-        case ElectricalConnectionAcMeasurementTypeEnumType::reactive:
-            return "reactive";
-        case ElectricalConnectionAcMeasurementTypeEnumType::apparent:
-            return "apparent";
-        case ElectricalConnectionAcMeasurementTypeEnumType::phase:
-            return "phase";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionAcMeasurementTypeEnumType_names, ElectricalConnectionAcMeasurementTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst)
@@ -5388,23 +1228,7 @@ bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, Jso
 
 void convertFromString(const String &src, ElectricalConnectionAcMeasurementTypeEnumType &dst)
 {
-    if (src == "real") {
-        dst = ElectricalConnectionAcMeasurementTypeEnumType::real;
-        return;
-    }
-    if (src == "reactive") {
-        dst = ElectricalConnectionAcMeasurementTypeEnumType::reactive;
-        return;
-    }
-    if (src == "apparent") {
-        dst = ElectricalConnectionAcMeasurementTypeEnumType::apparent;
-        return;
-    }
-    if (src == "phase") {
-        dst = ElectricalConnectionAcMeasurementTypeEnumType::phase;
-        return;
-    }
-    dst = ElectricalConnectionAcMeasurementTypeEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionAcMeasurementTypeEnumType>(enumNameToValue(ElectricalConnectionAcMeasurementTypeEnumType_names, ElectricalConnectionAcMeasurementTypeEnumType_count, src, static_cast<int>(ElectricalConnectionAcMeasurementTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst)
@@ -5413,32 +1237,23 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurem
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionPhaseNameEnumType_names[] = {
+    "a",
+    "b",
+    "c",
+    "ab",
+    "bc",
+    "ac",
+    "abc",
+    "neutral",
+    "ground",
+    "none",
+};
+static constexpr size_t ElectricalConnectionPhaseNameEnumType_count = sizeof(ElectricalConnectionPhaseNameEnumType_names) / sizeof(ElectricalConnectionPhaseNameEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionPhaseNameEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionPhaseNameEnumType::a:
-            return "a";
-        case ElectricalConnectionPhaseNameEnumType::b:
-            return "b";
-        case ElectricalConnectionPhaseNameEnumType::c:
-            return "c";
-        case ElectricalConnectionPhaseNameEnumType::ab:
-            return "ab";
-        case ElectricalConnectionPhaseNameEnumType::bc:
-            return "bc";
-        case ElectricalConnectionPhaseNameEnumType::ac:
-            return "ac";
-        case ElectricalConnectionPhaseNameEnumType::abc:
-            return "abc";
-        case ElectricalConnectionPhaseNameEnumType::neutral:
-            return "neutral";
-        case ElectricalConnectionPhaseNameEnumType::ground:
-            return "ground";
-        case ElectricalConnectionPhaseNameEnumType::none:
-            return "none";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionPhaseNameEnumType_names, ElectricalConnectionPhaseNameEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst)
@@ -5448,47 +1263,7 @@ bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant
 
 void convertFromString(const String &src, ElectricalConnectionPhaseNameEnumType &dst)
 {
-    if (src == "a") {
-        dst = ElectricalConnectionPhaseNameEnumType::a;
-        return;
-    }
-    if (src == "b") {
-        dst = ElectricalConnectionPhaseNameEnumType::b;
-        return;
-    }
-    if (src == "c") {
-        dst = ElectricalConnectionPhaseNameEnumType::c;
-        return;
-    }
-    if (src == "ab") {
-        dst = ElectricalConnectionPhaseNameEnumType::ab;
-        return;
-    }
-    if (src == "bc") {
-        dst = ElectricalConnectionPhaseNameEnumType::bc;
-        return;
-    }
-    if (src == "ac") {
-        dst = ElectricalConnectionPhaseNameEnumType::ac;
-        return;
-    }
-    if (src == "abc") {
-        dst = ElectricalConnectionPhaseNameEnumType::abc;
-        return;
-    }
-    if (src == "neutral") {
-        dst = ElectricalConnectionPhaseNameEnumType::neutral;
-        return;
-    }
-    if (src == "ground") {
-        dst = ElectricalConnectionPhaseNameEnumType::ground;
-        return;
-    }
-    if (src == "none") {
-        dst = ElectricalConnectionPhaseNameEnumType::none;
-        return;
-    }
-    dst = ElectricalConnectionPhaseNameEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionPhaseNameEnumType>(enumNameToValue(ElectricalConnectionPhaseNameEnumType_names, ElectricalConnectionPhaseNameEnumType_count, src, static_cast<int>(ElectricalConnectionPhaseNameEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst)
@@ -5497,22 +1272,18 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameE
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionCharacteristicContextEnumType_names[] = {
+    "device",
+    "entity",
+    "inverter",
+    "pvString",
+    "battery",
+};
+static constexpr size_t ElectricalConnectionCharacteristicContextEnumType_count = sizeof(ElectricalConnectionCharacteristicContextEnumType_names) / sizeof(ElectricalConnectionCharacteristicContextEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionCharacteristicContextEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionCharacteristicContextEnumType::device:
-            return "device";
-        case ElectricalConnectionCharacteristicContextEnumType::entity:
-            return "entity";
-        case ElectricalConnectionCharacteristicContextEnumType::inverter:
-            return "inverter";
-        case ElectricalConnectionCharacteristicContextEnumType::pvString:
-            return "pvString";
-        case ElectricalConnectionCharacteristicContextEnumType::battery:
-            return "battery";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionCharacteristicContextEnumType_names, ElectricalConnectionCharacteristicContextEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst)
@@ -5522,27 +1293,7 @@ bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src,
 
 void convertFromString(const String &src, ElectricalConnectionCharacteristicContextEnumType &dst)
 {
-    if (src == "device") {
-        dst = ElectricalConnectionCharacteristicContextEnumType::device;
-        return;
-    }
-    if (src == "entity") {
-        dst = ElectricalConnectionCharacteristicContextEnumType::entity;
-        return;
-    }
-    if (src == "inverter") {
-        dst = ElectricalConnectionCharacteristicContextEnumType::inverter;
-        return;
-    }
-    if (src == "pvString") {
-        dst = ElectricalConnectionCharacteristicContextEnumType::pvString;
-        return;
-    }
-    if (src == "battery") {
-        dst = ElectricalConnectionCharacteristicContextEnumType::battery;
-        return;
-    }
-    dst = ElectricalConnectionCharacteristicContextEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionCharacteristicContextEnumType>(enumNameToValue(ElectricalConnectionCharacteristicContextEnumType_names, ElectricalConnectionCharacteristicContextEnumType_count, src, static_cast<int>(ElectricalConnectionCharacteristicContextEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst)
@@ -5551,38 +1302,26 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     convertFromString(s, dst);
 }
 
+static const char *const ElectricalConnectionCharacteristicTypeEnumType_names[] = {
+    "powerConsumptionMin",
+    "powerConsumptionMax",
+    "powerConsumptionNominalMin",
+    "powerConsumptionNominalMax",
+    "powerProductionMin",
+    "powerProductionMax",
+    "powerProductionNominalMin",
+    "powerProductionNominalMax",
+    "energyCapacityNominalMax",
+    "contractualConsumptionNominalMax",
+    "contractualProductionNominalMax",
+    "apparentPowerProductionNominalMax",
+    "apparentPowerConsumptionNominalMax",
+};
+static constexpr size_t ElectricalConnectionCharacteristicTypeEnumType_count = sizeof(ElectricalConnectionCharacteristicTypeEnumType_names) / sizeof(ElectricalConnectionCharacteristicTypeEnumType_names[0]);
+
 String convertToString(const ElectricalConnectionCharacteristicTypeEnumType &src)
 {
-    switch (src) {
-        case ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMin:
-            return "powerConsumptionMin";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax:
-            return "powerConsumptionMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionNominalMin:
-            return "powerConsumptionNominalMin";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionNominalMax:
-            return "powerConsumptionNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerProductionMin:
-            return "powerProductionMin";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerProductionMax:
-            return "powerProductionMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerProductionNominalMin:
-            return "powerProductionNominalMin";
-        case ElectricalConnectionCharacteristicTypeEnumType::powerProductionNominalMax:
-            return "powerProductionNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::energyCapacityNominalMax:
-            return "energyCapacityNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax:
-            return "contractualConsumptionNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::contractualProductionNominalMax:
-            return "contractualProductionNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::apparentPowerProductionNominalMax:
-            return "apparentPowerProductionNominalMax";
-        case ElectricalConnectionCharacteristicTypeEnumType::apparentPowerConsumptionNominalMax:
-            return "apparentPowerConsumptionNominalMax";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(ElectricalConnectionCharacteristicTypeEnumType_names, ElectricalConnectionCharacteristicTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst)
@@ -5592,59 +1331,7 @@ bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, Js
 
 void convertFromString(const String &src, ElectricalConnectionCharacteristicTypeEnumType &dst)
 {
-    if (src == "powerConsumptionMin") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMin;
-        return;
-    }
-    if (src == "powerConsumptionMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionMax;
-        return;
-    }
-    if (src == "powerConsumptionNominalMin") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionNominalMin;
-        return;
-    }
-    if (src == "powerConsumptionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerConsumptionNominalMax;
-        return;
-    }
-    if (src == "powerProductionMin") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerProductionMin;
-        return;
-    }
-    if (src == "powerProductionMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerProductionMax;
-        return;
-    }
-    if (src == "powerProductionNominalMin") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerProductionNominalMin;
-        return;
-    }
-    if (src == "powerProductionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::powerProductionNominalMax;
-        return;
-    }
-    if (src == "energyCapacityNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::energyCapacityNominalMax;
-        return;
-    }
-    if (src == "contractualConsumptionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::contractualConsumptionNominalMax;
-        return;
-    }
-    if (src == "contractualProductionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::contractualProductionNominalMax;
-        return;
-    }
-    if (src == "apparentPowerProductionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::apparentPowerProductionNominalMax;
-        return;
-    }
-    if (src == "apparentPowerConsumptionNominalMax") {
-        dst = ElectricalConnectionCharacteristicTypeEnumType::apparentPowerConsumptionNominalMax;
-        return;
-    }
-    dst = ElectricalConnectionCharacteristicTypeEnumType::EnumUndefined;
+    dst = static_cast<ElectricalConnectionCharacteristicTypeEnumType>(enumNameToValue(ElectricalConnectionCharacteristicTypeEnumType_names, ElectricalConnectionCharacteristicTypeEnumType_count, src, static_cast<int>(ElectricalConnectionCharacteristicTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst)
@@ -5653,18 +1340,16 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     convertFromString(s, dst);
 }
 
+static const char *const TierBoundaryTypeEnumType_names[] = {
+    "powerBoundary",
+    "energyBoundary",
+    "countBoundary",
+};
+static constexpr size_t TierBoundaryTypeEnumType_count = sizeof(TierBoundaryTypeEnumType_names) / sizeof(TierBoundaryTypeEnumType_names[0]);
+
 String convertToString(const TierBoundaryTypeEnumType &src)
 {
-    switch (src) {
-        case TierBoundaryTypeEnumType::powerBoundary:
-            return "powerBoundary";
-        case TierBoundaryTypeEnumType::energyBoundary:
-            return "energyBoundary";
-        case TierBoundaryTypeEnumType::countBoundary:
-            return "countBoundary";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(TierBoundaryTypeEnumType_names, TierBoundaryTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst)
@@ -5674,19 +1359,7 @@ bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, TierBoundaryTypeEnumType &dst)
 {
-    if (src == "powerBoundary") {
-        dst = TierBoundaryTypeEnumType::powerBoundary;
-        return;
-    }
-    if (src == "energyBoundary") {
-        dst = TierBoundaryTypeEnumType::energyBoundary;
-        return;
-    }
-    if (src == "countBoundary") {
-        dst = TierBoundaryTypeEnumType::countBoundary;
-        return;
-    }
-    dst = TierBoundaryTypeEnumType::EnumUndefined;
+    dst = static_cast<TierBoundaryTypeEnumType>(enumNameToValue(TierBoundaryTypeEnumType_names, TierBoundaryTypeEnumType_count, src, static_cast<int>(TierBoundaryTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst)
@@ -5695,16 +1368,15 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const TierTypeEnumType_names[] = {
+    "fixedCost",
+    "dynamicCost",
+};
+static constexpr size_t TierTypeEnumType_count = sizeof(TierTypeEnumType_names) / sizeof(TierTypeEnumType_names[0]);
+
 String convertToString(const TierTypeEnumType &src)
 {
-    switch (src) {
-        case TierTypeEnumType::fixedCost:
-            return "fixedCost";
-        case TierTypeEnumType::dynamicCost:
-            return "dynamicCost";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(TierTypeEnumType_names, TierTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst)
@@ -5714,15 +1386,7 @@ bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, TierTypeEnumType &dst)
 {
-    if (src == "fixedCost") {
-        dst = TierTypeEnumType::fixedCost;
-        return;
-    }
-    if (src == "dynamicCost") {
-        dst = TierTypeEnumType::dynamicCost;
-        return;
-    }
-    dst = TierTypeEnumType::EnumUndefined;
+    dst = static_cast<TierTypeEnumType>(enumNameToValue(TierTypeEnumType_names, TierTypeEnumType_count, src, static_cast<int>(TierTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst)
@@ -5731,20 +1395,17 @@ void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const IncentiveTypeEnumType_names[] = {
+    "absoluteCost",
+    "relativeCost",
+    "renewableEnergyPercentage",
+    "co2Emission",
+};
+static constexpr size_t IncentiveTypeEnumType_count = sizeof(IncentiveTypeEnumType_names) / sizeof(IncentiveTypeEnumType_names[0]);
+
 String convertToString(const IncentiveTypeEnumType &src)
 {
-    switch (src) {
-        case IncentiveTypeEnumType::absoluteCost:
-            return "absoluteCost";
-        case IncentiveTypeEnumType::relativeCost:
-            return "relativeCost";
-        case IncentiveTypeEnumType::renewableEnergyPercentage:
-            return "renewableEnergyPercentage";
-        case IncentiveTypeEnumType::co2Emission:
-            return "co2Emission";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(IncentiveTypeEnumType_names, IncentiveTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst)
@@ -5754,23 +1415,7 @@ bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, IncentiveTypeEnumType &dst)
 {
-    if (src == "absoluteCost") {
-        dst = IncentiveTypeEnumType::absoluteCost;
-        return;
-    }
-    if (src == "relativeCost") {
-        dst = IncentiveTypeEnumType::relativeCost;
-        return;
-    }
-    if (src == "renewableEnergyPercentage") {
-        dst = IncentiveTypeEnumType::renewableEnergyPercentage;
-        return;
-    }
-    if (src == "co2Emission") {
-        dst = IncentiveTypeEnumType::co2Emission;
-        return;
-    }
-    dst = IncentiveTypeEnumType::EnumUndefined;
+    dst = static_cast<IncentiveTypeEnumType>(enumNameToValue(IncentiveTypeEnumType_names, IncentiveTypeEnumType_count, src, static_cast<int>(IncentiveTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst)
@@ -5779,20 +1424,17 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const IncentiveValueTypeEnumType_names[] = {
+    "value",
+    "averageValue",
+    "minValue",
+    "maxValue",
+};
+static constexpr size_t IncentiveValueTypeEnumType_count = sizeof(IncentiveValueTypeEnumType_names) / sizeof(IncentiveValueTypeEnumType_names[0]);
+
 String convertToString(const IncentiveValueTypeEnumType &src)
 {
-    switch (src) {
-        case IncentiveValueTypeEnumType::value:
-            return "value";
-        case IncentiveValueTypeEnumType::averageValue:
-            return "averageValue";
-        case IncentiveValueTypeEnumType::minValue:
-            return "minValue";
-        case IncentiveValueTypeEnumType::maxValue:
-            return "maxValue";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(IncentiveValueTypeEnumType_names, IncentiveValueTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst)
@@ -5802,23 +1444,7 @@ bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, IncentiveValueTypeEnumType &dst)
 {
-    if (src == "value") {
-        dst = IncentiveValueTypeEnumType::value;
-        return;
-    }
-    if (src == "averageValue") {
-        dst = IncentiveValueTypeEnumType::averageValue;
-        return;
-    }
-    if (src == "minValue") {
-        dst = IncentiveValueTypeEnumType::minValue;
-        return;
-    }
-    if (src == "maxValue") {
-        dst = IncentiveValueTypeEnumType::maxValue;
-        return;
-    }
-    dst = IncentiveValueTypeEnumType::EnumUndefined;
+    dst = static_cast<IncentiveValueTypeEnumType>(enumNameToValue(IncentiveValueTypeEnumType_names, IncentiveValueTypeEnumType_count, src, static_cast<int>(IncentiveValueTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst)
@@ -5827,18 +1453,16 @@ void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &ds
     convertFromString(s, dst);
 }
 
+static const char *const LoadControlLimitTypeEnumType_names[] = {
+    "minValueLimit",
+    "maxValueLimit",
+    "signDependentAbsValueLimit",
+};
+static constexpr size_t LoadControlLimitTypeEnumType_count = sizeof(LoadControlLimitTypeEnumType_names) / sizeof(LoadControlLimitTypeEnumType_names[0]);
+
 String convertToString(const LoadControlLimitTypeEnumType &src)
 {
-    switch (src) {
-        case LoadControlLimitTypeEnumType::minValueLimit:
-            return "minValueLimit";
-        case LoadControlLimitTypeEnumType::maxValueLimit:
-            return "maxValueLimit";
-        case LoadControlLimitTypeEnumType::signDependentAbsValueLimit:
-            return "signDependentAbsValueLimit";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(LoadControlLimitTypeEnumType_names, LoadControlLimitTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst)
@@ -5848,19 +1472,7 @@ bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, LoadControlLimitTypeEnumType &dst)
 {
-    if (src == "minValueLimit") {
-        dst = LoadControlLimitTypeEnumType::minValueLimit;
-        return;
-    }
-    if (src == "maxValueLimit") {
-        dst = LoadControlLimitTypeEnumType::maxValueLimit;
-        return;
-    }
-    if (src == "signDependentAbsValueLimit") {
-        dst = LoadControlLimitTypeEnumType::signDependentAbsValueLimit;
-        return;
-    }
-    dst = LoadControlLimitTypeEnumType::EnumUndefined;
+    dst = static_cast<LoadControlLimitTypeEnumType>(enumNameToValue(LoadControlLimitTypeEnumType_names, LoadControlLimitTypeEnumType_count, src, static_cast<int>(LoadControlLimitTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst)
@@ -5869,18 +1481,16 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &
     convertFromString(s, dst);
 }
 
+static const char *const LoadControlCategoryEnumType_names[] = {
+    "obligation",
+    "recommendation",
+    "optimization",
+};
+static constexpr size_t LoadControlCategoryEnumType_count = sizeof(LoadControlCategoryEnumType_names) / sizeof(LoadControlCategoryEnumType_names[0]);
+
 String convertToString(const LoadControlCategoryEnumType &src)
 {
-    switch (src) {
-        case LoadControlCategoryEnumType::obligation:
-            return "obligation";
-        case LoadControlCategoryEnumType::recommendation:
-            return "recommendation";
-        case LoadControlCategoryEnumType::optimization:
-            return "optimization";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(LoadControlCategoryEnumType_names, LoadControlCategoryEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst)
@@ -5890,19 +1500,7 @@ bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, LoadControlCategoryEnumType &dst)
 {
-    if (src == "obligation") {
-        dst = LoadControlCategoryEnumType::obligation;
-        return;
-    }
-    if (src == "recommendation") {
-        dst = LoadControlCategoryEnumType::recommendation;
-        return;
-    }
-    if (src == "optimization") {
-        dst = LoadControlCategoryEnumType::optimization;
-        return;
-    }
-    dst = LoadControlCategoryEnumType::EnumUndefined;
+    dst = static_cast<LoadControlCategoryEnumType>(enumNameToValue(LoadControlCategoryEnumType_names, LoadControlCategoryEnumType_count, src, static_cast<int>(LoadControlCategoryEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst)
@@ -5911,20 +1509,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &d
     convertFromString(s, dst);
 }
 
+static const char *const NetworkManagementFeatureSetType_names[] = {
+    "gateway",
+    "router",
+    "smart",
+    "simple",
+};
+static constexpr size_t NetworkManagementFeatureSetType_count = sizeof(NetworkManagementFeatureSetType_names) / sizeof(NetworkManagementFeatureSetType_names[0]);
+
 String convertToString(const NetworkManagementFeatureSetType &src)
 {
-    switch (src) {
-        case NetworkManagementFeatureSetType::gateway:
-            return "gateway";
-        case NetworkManagementFeatureSetType::router:
-            return "router";
-        case NetworkManagementFeatureSetType::smart:
-            return "smart";
-        case NetworkManagementFeatureSetType::simple:
-            return "simple";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(NetworkManagementFeatureSetType_names, NetworkManagementFeatureSetType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst)
@@ -5934,23 +1529,7 @@ bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, NetworkManagementFeatureSetType &dst)
 {
-    if (src == "gateway") {
-        dst = NetworkManagementFeatureSetType::gateway;
-        return;
-    }
-    if (src == "router") {
-        dst = NetworkManagementFeatureSetType::router;
-        return;
-    }
-    if (src == "smart") {
-        dst = NetworkManagementFeatureSetType::smart;
-        return;
-    }
-    if (src == "simple") {
-        dst = NetworkManagementFeatureSetType::simple;
-        return;
-    }
-    dst = NetworkManagementFeatureSetType::EnumUndefined;
+    dst = static_cast<NetworkManagementFeatureSetType>(enumNameToValue(NetworkManagementFeatureSetType_names, NetworkManagementFeatureSetType_count, src, static_cast<int>(NetworkManagementFeatureSetType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst)
@@ -5959,18 +1538,16 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetTyp
     convertFromString(s, dst);
 }
 
+static const char *const NetworkManagementStateChangeType_names[] = {
+    "added",
+    "removed",
+    "modified",
+};
+static constexpr size_t NetworkManagementStateChangeType_count = sizeof(NetworkManagementStateChangeType_names) / sizeof(NetworkManagementStateChangeType_names[0]);
+
 String convertToString(const NetworkManagementStateChangeType &src)
 {
-    switch (src) {
-        case NetworkManagementStateChangeType::added:
-            return "added";
-        case NetworkManagementStateChangeType::removed:
-            return "removed";
-        case NetworkManagementStateChangeType::modified:
-            return "modified";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(NetworkManagementStateChangeType_names, NetworkManagementStateChangeType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst)
@@ -5980,19 +1557,7 @@ bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst
 
 void convertFromString(const String &src, NetworkManagementStateChangeType &dst)
 {
-    if (src == "added") {
-        dst = NetworkManagementStateChangeType::added;
-        return;
-    }
-    if (src == "removed") {
-        dst = NetworkManagementStateChangeType::removed;
-        return;
-    }
-    if (src == "modified") {
-        dst = NetworkManagementStateChangeType::modified;
-        return;
-    }
-    dst = NetworkManagementStateChangeType::EnumUndefined;
+    dst = static_cast<NetworkManagementStateChangeType>(enumNameToValue(NetworkManagementStateChangeType_names, NetworkManagementStateChangeType_count, src, static_cast<int>(NetworkManagementStateChangeType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst)
@@ -6001,26 +1566,20 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeTy
     convertFromString(s, dst);
 }
 
+static const char *const TimeSeriesTypeEnumType_names[] = {
+    "plan",
+    "singleDemand",
+    "constraints",
+    "energyRequest",
+    "dischargingEnergyRequest",
+    "consumptionLimitCurve",
+    "productionLimitCurve",
+};
+static constexpr size_t TimeSeriesTypeEnumType_count = sizeof(TimeSeriesTypeEnumType_names) / sizeof(TimeSeriesTypeEnumType_names[0]);
+
 String convertToString(const TimeSeriesTypeEnumType &src)
 {
-    switch (src) {
-        case TimeSeriesTypeEnumType::plan:
-            return "plan";
-        case TimeSeriesTypeEnumType::singleDemand:
-            return "singleDemand";
-        case TimeSeriesTypeEnumType::constraints:
-            return "constraints";
-        case TimeSeriesTypeEnumType::energyRequest:
-            return "energyRequest";
-        case TimeSeriesTypeEnumType::dischargingEnergyRequest:
-            return "dischargingEnergyRequest";
-        case TimeSeriesTypeEnumType::consumptionLimitCurve:
-            return "consumptionLimitCurve";
-        case TimeSeriesTypeEnumType::productionLimitCurve:
-            return "productionLimitCurve";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(TimeSeriesTypeEnumType_names, TimeSeriesTypeEnumType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
@@ -6030,35 +1589,7 @@ bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, TimeSeriesTypeEnumType &dst)
 {
-    if (src == "plan") {
-        dst = TimeSeriesTypeEnumType::plan;
-        return;
-    }
-    if (src == "singleDemand") {
-        dst = TimeSeriesTypeEnumType::singleDemand;
-        return;
-    }
-    if (src == "constraints") {
-        dst = TimeSeriesTypeEnumType::constraints;
-        return;
-    }
-    if (src == "energyRequest") {
-        dst = TimeSeriesTypeEnumType::energyRequest;
-        return;
-    }
-    if (src == "dischargingEnergyRequest") {
-        dst = TimeSeriesTypeEnumType::dischargingEnergyRequest;
-        return;
-    }
-    if (src == "consumptionLimitCurve") {
-        dst = TimeSeriesTypeEnumType::consumptionLimitCurve;
-        return;
-    }
-    if (src == "productionLimitCurve") {
-        dst = TimeSeriesTypeEnumType::productionLimitCurve;
-        return;
-    }
-    dst = TimeSeriesTypeEnumType::EnumUndefined;
+    dst = static_cast<TimeSeriesTypeEnumType>(enumNameToValue(TimeSeriesTypeEnumType_names, TimeSeriesTypeEnumType_count, src, static_cast<int>(TimeSeriesTypeEnumType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
@@ -6067,24 +1598,19 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
     convertFromString(s, dst);
 }
 
+static const char *const CmdClassifierType_names[] = {
+    "read",
+    "reply",
+    "notify",
+    "write",
+    "call",
+    "result",
+};
+static constexpr size_t CmdClassifierType_count = sizeof(CmdClassifierType_names) / sizeof(CmdClassifierType_names[0]);
+
 String convertToString(const CmdClassifierType &src)
 {
-    switch (src) {
-        case CmdClassifierType::read:
-            return "read";
-        case CmdClassifierType::reply:
-            return "reply";
-        case CmdClassifierType::notify:
-            return "notify";
-        case CmdClassifierType::write:
-            return "write";
-        case CmdClassifierType::call:
-            return "call";
-        case CmdClassifierType::result:
-            return "result";
-        default:
-            return "EnumUndefined";
-    }
+    return enumValueToName(CmdClassifierType_names, CmdClassifierType_count, static_cast<int>(src));
 }
 
 bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
@@ -6094,31 +1620,7 @@ bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
 
 void convertFromString(const String &src, CmdClassifierType &dst)
 {
-    if (src == "read") {
-        dst = CmdClassifierType::read;
-        return;
-    }
-    if (src == "reply") {
-        dst = CmdClassifierType::reply;
-        return;
-    }
-    if (src == "notify") {
-        dst = CmdClassifierType::notify;
-        return;
-    }
-    if (src == "write") {
-        dst = CmdClassifierType::write;
-        return;
-    }
-    if (src == "call") {
-        dst = CmdClassifierType::call;
-        return;
-    }
-    if (src == "result") {
-        dst = CmdClassifierType::result;
-        return;
-    }
-    dst = CmdClassifierType::EnumUndefined;
+    dst = static_cast<CmdClassifierType>(enumNameToValue(CmdClassifierType_names, CmdClassifierType_count, src, static_cast<int>(CmdClassifierType::EnumUndefined)));
 }
 
 void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
