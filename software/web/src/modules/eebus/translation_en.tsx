@@ -5,27 +5,21 @@ let x = {
         "content": {
             "enable_eebus": "Enabled EEBUS",
             "enable_eebus_desc": "Enables communication with EEBUS devices",
-            "enable_eebus_help": <>
+            "enable_eebus_help_intro": <>
                 <p>EEBUS is a communication standard for smart energy management. It enables communication
                 between energy devices such as wallboxes, heat pumps, PV systems and energy management systems (HEMS).</p>
-                <p>The following use cases are supported:</p>
-                <ul>
-                    <li><b>LPC (Limitation of Power Consumption)</b>: Power consumption limitation. Used by control boxes
-                    (Steuerbox) for grid control according to §14a EnWG in Germany. Allows the grid operator to limit charging power.</li>
-                    <li><b>MPC (Monitoring of Power Consumption)</b>: Power consumption monitoring. Provides power and
-                    energy measurements to external systems.</li>
-                    <li><b>CEVC (Coordinated EV Charging)</b>: Coordinated charging. Allows an energy manager to
-                    control charging based on charging plans and incentives.</li>
-                    <li><b>EVCC (EV Commissioning and Configuration)</b>: Vehicle configuration. Reports information about
-                    the connected electric vehicle such as communication standard and power limits.</li>
-                    <li><b>EVCEM (EV Charging Electricity Measurement)</b>: Charging measurement. Provides measurements
-                    such as current, power and charged energy per phase.</li>
-                    <li><b>EVSECC (EVSE Commissioning and Configuration)</b>: Wallbox status. Reports the operating state
-                    of the charging station and any error conditions.</li>
-                    <li><b>EVCS (EV Charging Summary)</b>: Charging summary. Provides summaries of completed
-                    charging sessions with energy amount and costs.</li>
-                </ul>
             </>,
+            "enable_eebus_help_usecases_intro": "The following use cases are supported:",
+            "usecase_lpc_desc": "Power consumption limitation. Used by control boxes for grid control according to §14a EnWG. Allows the grid operator to limit charging power.",
+            "usecase_lpp_desc": "Power production limitation. Allows limiting the power feed-in to the grid by the grid operator.",
+            "usecase_mpc_desc": "Power consumption monitoring. Provides power and energy measurements to external systems.",
+            "usecase_mgcp_desc": "Grid connection point monitoring. Monitors the power flow at the grid connection point including feed-in and consumption.",
+            "usecase_cevc_desc": "Coordinated charging. Allows an energy manager to control charging based on charging plans and incentives.",
+            "usecase_evcc_desc": "Vehicle configuration. Reports information about the connected electric vehicle such as communication standard and power limits.",
+            "usecase_evcem_desc": "Charging measurement. Provides measurements such as current, power and charged energy.",
+            "usecase_evsecc_desc": "Wallbox status. Reports the operating state of the charging station and any error conditions.",
+            "usecase_evcs_desc": "Charging summary. Provides summaries of completed charging sessions with energy amount and costs.",
+            "usecase_opev_desc": "Overload protection. Allows limiting the charging current.",
             "cert": "certificate",
             "key": "key",
             "ski": "SKI",

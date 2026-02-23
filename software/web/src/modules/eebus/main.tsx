@@ -89,6 +89,86 @@ function PhaseRow(props: {label: string, label_muted: string, values: [number, n
     </FormRow>;
 }
 
+/**
+ * Build the EEBUS help text dynamically based on enabled use cases.
+ * Only includes descriptions for use cases that are actually supported.
+ */
+function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild {
+    // Mapping of use case enum values to their descriptions (as ComponentChild)
+    const usecaseDescMap: {[key: number]: {name: string, desc: string}} = {
+        [Usecases.LPC]: {
+            name: "LPC (Limitation of Power Consumption)",
+            desc: __("eebus.content.usecase_lpc_desc")
+        },
+        [Usecases.LPP]: {
+            name: "LPP (Limitation of Power Production)",
+            desc: __("eebus.content.usecase_lpp_desc")
+        },
+        [Usecases.MPC]: {
+            name: "MPC (Monitoring of Power Consumption)",
+            desc: __("eebus.content.usecase_mpc_desc")
+        },
+        [Usecases.MGCP]: {
+            name: "MGCP (Monitoring of Grid Connection Point)",
+            desc: __("eebus.content.usecase_mgcp_desc")
+        },
+        [Usecases.CEVC]: {
+            name: "CEVC (Coordinated EV Charging)",
+            desc: __("eebus.content.usecase_cevc_desc")
+        },
+        [Usecases.EVCC]: {
+            name: "EVCC (EV Commissioning and Configuration)",
+            desc: __("eebus.content.usecase_evcc_desc")
+        },
+        [Usecases.EVCEM]: {
+            name: "EVCEM (EV Charging Electricity Measurement)",
+            desc: __("eebus.content.usecase_evcem_desc")
+        },
+        [Usecases.EVSECC]: {
+            name: "EVSECC (EVSE Commissioning and Configuration)",
+            desc: __("eebus.content.usecase_evsecc_desc")
+        },
+        [Usecases.EVCS]: {
+            name: "EVCS (EV Charging Summary)",
+            desc: __("eebus.content.usecase_evcs_desc")
+        },
+        [Usecases.OPEV]: {
+            name: "OPEV (Overload Protection by EV Charging Current Curtailment)",
+            desc: __("eebus.content.usecase_opev_desc")
+        },
+    };
+
+    // Get the list of supported use cases, excluding NMC (internal) and HEARTBEAT (internal)
+    const supportedUsecases = (usecases?.usecases_supported || []).filter(
+        uc => uc !== Usecases.NMC && uc !== Usecases.HEARTBEAT
+    );
+
+    // Build the list items only for enabled use cases
+    const usecaseItems = supportedUsecases.map(uc => {
+        const info = usecaseDescMap[uc];
+        if (info) {
+            return (
+                <li key={uc}>
+                    <b>{info.name}</b>: {info.desc}
+                </li>
+            );
+        }
+        return null;
+    }).filter(item => item !== null);
+
+    return (
+        <>
+            {__("eebus.content.enable_eebus_help_intro")}
+            {usecaseItems.length > 0 && (
+                <>
+                    <p>{__("eebus.content.enable_eebus_help_usecases_intro")}</p>
+                    <ul>{usecaseItems}</ul>
+                </>
+            )}
+        </>
+    );
+}
+
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
 }
@@ -578,7 +658,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
                 <SubPage.Config id="eebus_config_form" isModified={this.isModified()} isDirty={this.isDirty()}
                                 onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("eebus.content.enable_eebus")} help={__("eebus.content.enable_eebus_help")}>
+                    <FormRow label={__("eebus.content.enable_eebus")} help={buildEEBusHelpText(state.usecases)}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}

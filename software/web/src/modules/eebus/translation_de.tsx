@@ -5,27 +5,21 @@ let x = {
         "content": {
             "enable_eebus": "EEBUS aktivieren",
             "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
-            "enable_eebus_help": <>
+            "enable_eebus_help_intro": <>
                 <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die Kommunikation
                 zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen (HEMS).</p>
-                <p>Folgende Use Cases werden unterstützt:</p>
-                <ul>
-                    <li><b>LPC (Limitation of Power Consumption)</b>: Begrenzung der Leistungsaufnahme. Wird von Steuerboxen
-                    zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Ladeleistung zu begrenzen.</li>
-                    <li><b>MPC (Monitoring of Power Consumption)</b>: Überwachung des Stromverbrauchs. Stellt Leistungs- und
-                    Energiemesswerte für externe Systeme bereit.</li>
-                    <li><b>CEVC (Coordinated EV Charging)</b>: Koordiniertes Laden. Ermöglicht einem Energiemanager die
-                    Steuerung des Ladevorgangs basierend auf Ladeplänen und Anreizen.</li>
-                    <li><b>EVCC (EV Commissioning and Configuration)</b>: Fahrzeugkonfiguration. Meldet Informationen über
-                    das angeschlossene Elektrofahrzeug wie Kommunikationsstandard und Leistungsgrenzen.</li>
-                    <li><b>EVCEM (EV Charging Electricity Measurement)</b>: Lademessung. Stellt Messwerte wie Strom,
-                    Leistung und geladene Energie pro Phase bereit.</li>
-                    <li><b>EVSECC (EVSE Commissioning and Configuration)</b>: Wallbox-Status. Meldet den Betriebszustand
-                    der Ladestation und eventuelle Fehlerzustände.</li>
-                    <li><b>EVCS (EV Charging Summary)</b>: Ladeübersicht. Stellt Zusammenfassungen abgeschlossener
-                    Ladevorgänge mit Energiemenge und Kosten bereit.</li>
-                </ul>
             </>,
+            "enable_eebus_help_usecases_intro": "Folgende Use Cases werden unterstützt:",
+            "usecase_lpc_desc": "Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern zu begrenzen zu begrenzen.",
+            "usecase_lpp_desc": "Begrenzung der Leistungsabgabe. Ermöglicht dem Netzbetreiber die Begrenzung der Netzeinspeisung.",
+            "usecase_mpc_desc": "Überwachung des Stromverbrauchs. Stellt Leistungs- und Energiemesswerte für externe Systeme bereit.",
+            "usecase_mgcp_desc": "Netzanschlusspunkt-Überwachung. Überwacht den Leistungsfluss am Netzanschlusspunkt einschließlich Einspeisung und Bezug.",
+            "usecase_cevc_desc": "Koordiniertes Laden. Ermöglicht einem Energiemanager die Steuerung des Ladevorgangs basierend auf Ladeplänen und Anreizen.",
+            "usecase_evcc_desc": "Fahrzeugkonfiguration. Meldet Informationen über das angeschlossene Elektrofahrzeug wie Kommunikationsstandard und Leistungsgrenzen.",
+            "usecase_evcem_desc": "Lademessung. Stellt Messwerte wie Strom, Leistung und geladene Energie bereit.",
+            "usecase_evsecc_desc": "Wallbox-Status. Meldet den Betriebszustand der Ladestation und eventuelle Fehlerzustände.",
+            "usecase_evcs_desc": "Ladeübersicht. Stellt Zusammenfassungen abgeschlossener Ladevorgänge mit Energiemenge und Kosten bereit.",
+            "usecase_opev_desc": "Überlastschutz. Ermöglicht die Begrenzung des Ladestroms.",
             "cert": "Zertifikat",
             "key": "Key",
             "ski": "SKI",
