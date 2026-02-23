@@ -34,6 +34,8 @@
 extern char local_uid_str[32];
 
 #ifdef EEBUS_MODE_EVSE
+// Functions needed for updating the EVSE usecases are here
+
 static void update_usecases_from_phases(const Config *_phases_cfg)
 {
 #if defined(EEBUS_ENABLE_EVCC_USECASE) || defined(EEBUS_ENABLE_EVSECC_USECASE)
@@ -91,7 +93,6 @@ static int sanitized(float x, float scale)
     return isnan(x) ? INT32_MIN : (int)(x * scale);
 }
 
-#endif
 static void update_evse_limit()
 {
     if (eebus.usecases == nullptr) {
@@ -125,6 +126,7 @@ static void update_evse_limit()
     evse_common.set_eebus_current(static_cast<uint16_t>(limit_mA));
 #endif
 }
+#endif
 
 #ifdef EEBUS_DEV_TEST_ENABLE
 size_t dev_test_iteration = 0;
@@ -180,7 +182,7 @@ void run_eebus_usecase_tests()
             // Update power measurements (total + 3 phases) - includes negative value for phase 2 to test feed-in
             eebus.usecases->mpc->update_power(6500, 2200, -150, 4450);
             // Update voltage measurements (3 phase-to-neutral + 3 phase-to-phase)
-            eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 401, 398);
+            eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 405, 398);
             // Update current measurements (3 phases in mA)
             eebus.usecases->mpc->update_current(9570, 6520, 19350);
             // Update frequency (50Hz = 50000 mHz)
@@ -218,6 +220,12 @@ void run_eebus_usecase_tests()
 #ifdef EEBUS_ENABLE_MPC_USECASE
             // Update MPC energy values in subsequent iterations (increasing over time)
             eebus.usecases->mpc->update_energy(150000 + (dev_test_iteration * 100), 25000 + (dev_test_iteration * 50));
+            if (dev_test_iteration % 5 == 0) {
+                eebus.usecases->mpc->update_voltage(230, 231, 229, 400, 405, 398);
+            } else if (dev_test_iteration % 5 == 2) {
+                eebus.usecases->mpc->update_voltage(235, 236, 234, 410, INT32_MIN, 408);
+            }
+            eebus.usecases->mpc->update_frequency(49000 + (dev_test_iteration % 20) * 100);
 #endif
 #ifdef EEBUS_ENABLE_MGCP_USECASE
             // Update MGCP energy values in subsequent iterations (increasing over time)

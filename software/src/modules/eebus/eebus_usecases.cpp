@@ -2869,26 +2869,29 @@ void MpcUsecase::get_electricalConnection_parameter_description_list_data(Electr
             uint8_t measurement_id;
             ElectricalConnectionPhaseNameEnumType measured_phase;
             ElectricalConnectionPhaseNameEnumType measured_in_reference_to;
+            bool supported = true;
         };
-        constexpr std::array<RelativePhaseAssignment, 6> relative_phase_assignments{{
+        const std::array<RelativePhaseAssignment, 6> relative_phase_assignments{{
             {id_p_6_1, id_m_6_1, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::neutral},
             {id_p_6_2, id_m_6_2, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::neutral},
             {id_p_6_3, id_m_6_3, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::neutral},
-            {id_p_6_4, id_m_6_4, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::b},
-            {id_p_6_5, id_m_6_5, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::c},
-            {id_p_6_6, id_m_6_6, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::a},
+            {id_p_6_4, id_m_6_4, ElectricalConnectionPhaseNameEnumType::a, ElectricalConnectionPhaseNameEnumType::b, phase_to_phase_available},
+            {id_p_6_5, id_m_6_5, ElectricalConnectionPhaseNameEnumType::b, ElectricalConnectionPhaseNameEnumType::c, phase_to_phase_available},
+            {id_p_6_6, id_m_6_6, ElectricalConnectionPhaseNameEnumType::c, ElectricalConnectionPhaseNameEnumType::a, phase_to_phase_available},
         }};
         for (const auto &assignment : relative_phase_assignments) {
-            ElectricalConnectionParameterDescriptionDataType current_description_data{};
-            current_description_data.electricalConnectionId = id_ec_1;
-            current_description_data.parameterId = assignment.parameter_id;
-            current_description_data.measurementId = assignment.measurement_id;
-            current_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
-            current_description_data.acMeasuredPhases = assignment.measured_phase;
-            current_description_data.acMeasuredInReferenceTo = assignment.measured_in_reference_to;
-            current_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::apparent;
-            current_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
-            data->electricalConnectionParameterDescriptionData->push_back(current_description_data);
+            if (assignment.supported) {
+                ElectricalConnectionParameterDescriptionDataType current_description_data{};
+                current_description_data.electricalConnectionId = id_ec_1;
+                current_description_data.parameterId = assignment.parameter_id;
+                current_description_data.measurementId = assignment.measurement_id;
+                current_description_data.voltageType = ElectricalConnectionVoltageTypeEnumType::ac;
+                current_description_data.acMeasuredPhases = assignment.measured_phase;
+                current_description_data.acMeasuredInReferenceTo = assignment.measured_in_reference_to;
+                current_description_data.acMeasurementType = ElectricalConnectionAcMeasurementTypeEnumType::apparent;
+                current_description_data.acMeasurementVariant = ElectricalConnectionMeasurandVariantEnumType::rms;
+                data->electricalConnectionParameterDescriptionData->push_back(current_description_data);
+            }
         }
     }
     {
@@ -2908,8 +2911,9 @@ void MpcUsecase::get_measurement_description_list_data(MeasurementDescriptionLis
         MeasurementTypeEnumType measurement_type;
         UnitOfMeasurementEnumType unit;
         ScopeTypeEnumType scope;
+        bool supported = true;
     };
-    constexpr std::array<MeasurementDescriptionEntry, 11> measurement_descriptions{{
+    const std::array<MeasurementDescriptionEntry, 16> measurement_descriptions{{
         {id_m_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPowerTotal},
         {id_m_2_1, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
         {id_m_2_2, MeasurementTypeEnumType::power, UnitOfMeasurementEnumType::W, ScopeTypeEnumType::acPower},
@@ -2920,17 +2924,24 @@ void MpcUsecase::get_measurement_description_list_data(MeasurementDescriptionLis
         {id_m_5_2, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
         {id_m_5_3, MeasurementTypeEnumType::current, UnitOfMeasurementEnumType::A, ScopeTypeEnumType::acCurrent},
         {id_m_6_1, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_2, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_3, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage},
+        {id_m_6_4, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, phase_to_phase_available},
+        {id_m_6_5, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, phase_to_phase_available},
+        {id_m_6_6, MeasurementTypeEnumType::voltage, UnitOfMeasurementEnumType::V, ScopeTypeEnumType::acVoltage, phase_to_phase_available},
         {id_m_7, MeasurementTypeEnumType::frequency, UnitOfMeasurementEnumType::Hz, ScopeTypeEnumType::acFrequency},
     }};
 
     for (const auto &entry : measurement_descriptions) {
-        MeasurementDescriptionDataType measurement_description{};
-        measurement_description.measurementId = entry.measurement_id;
-        measurement_description.measurementType = entry.measurement_type;
-        measurement_description.commodityType = CommodityTypeEnumType::electricity;
-        measurement_description.unit = entry.unit;
-        measurement_description.scopeType = entry.scope;
-        data->measurementDescriptionData->push_back(measurement_description);
+        if (entry.supported) {
+            MeasurementDescriptionDataType measurement_description{};
+            measurement_description.measurementId = entry.measurement_id;
+            measurement_description.measurementType = entry.measurement_type;
+            measurement_description.commodityType = CommodityTypeEnumType::electricity;
+            measurement_description.unit = entry.unit;
+            measurement_description.scopeType = entry.scope;
+            data->measurementDescriptionData->push_back(measurement_description);
+        }
     }
 }
 void MpcUsecase::get_measurement_constraints_list_data(MeasurementConstraintsListDataType *data) const
@@ -2943,6 +2954,7 @@ void MpcUsecase::get_measurement_constraints_list_data(MeasurementConstraintsLis
         int32_t max;
         int32_t stepsize;
         int8_t scale;
+        bool supported = true;
     };
 
     // Use non-constexpr array since we access member variables
@@ -2963,23 +2975,25 @@ void MpcUsecase::get_measurement_constraints_list_data(MeasurementConstraintsLis
         {id_m_6_1, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
         {id_m_6_2, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
         {id_m_6_3, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
-        {id_m_6_4, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
-        {id_m_6_5, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
-        {id_m_6_6, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0},
+        {id_m_6_4, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, phase_to_phase_available},
+        {id_m_6_5, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, phase_to_phase_available},
+        {id_m_6_6, voltage_limit_min_v, voltage_limit_max_v, voltage_limit_stepsize_v, 0, phase_to_phase_available},
         // Frequency (Hz) - scale -3 (mHz)
         {id_m_7, frequency_limit_min_mhz, frequency_limit_max_mhz, frequency_limit_stepsize_mhz, -3},
     }};
 
     for (const auto &entry : entries) {
-        MeasurementConstraintsDataType constraint{};
-        constraint.measurementId = entry.measurement_id;
-        constraint.valueRangeMin->number = entry.min;
-        constraint.valueRangeMin->scale = entry.scale;
-        constraint.valueRangeMax->number = entry.max;
-        constraint.valueRangeMax->scale = entry.scale;
-        constraint.valueStepSize->number = entry.stepsize;
-        constraint.valueStepSize->scale = entry.scale;
-        data->measurementConstraintsData->push_back(constraint);
+        if (entry.supported) {
+            MeasurementConstraintsDataType constraint{};
+            constraint.measurementId = entry.measurement_id;
+            constraint.valueRangeMin->number = entry.min;
+            constraint.valueRangeMin->scale = entry.scale;
+            constraint.valueRangeMax->number = entry.max;
+            constraint.valueRangeMax->scale = entry.scale;
+            constraint.valueStepSize->number = entry.stepsize;
+            constraint.valueStepSize->scale = entry.scale;
+            data->measurementConstraintsData->push_back(constraint);
+        }
     }
 }
 
@@ -3050,14 +3064,16 @@ void MpcUsecase::get_measurement_list_data(MeasurementListDataType *data) const
     }
 
     // Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6) - all values allowed
-    for (int i = 0; i < 3; i++) {
-        MeasurementDataType m{};
-        m.measurementId = id_m_6_4 + i;
-        m.valueType = MeasurementValueTypeEnumType::value;
-        m.value->number = voltage_phase_to_phase_v[i];
-        m.value->scale = 0;
-        m.valueSource = MeasurementValueSourceEnumType::measuredValue;
-        data->measurementData->push_back(m);
+    if (phase_to_phase_available) {
+        for (int i = 0; i < 3; i++) {
+            MeasurementDataType m{};
+            m.measurementId = id_m_6_4 + i;
+            m.valueType = MeasurementValueTypeEnumType::value;
+            m.value->number = voltage_phase_to_phase_v[i];
+            m.value->scale = 0;
+            m.valueSource = MeasurementValueSourceEnumType::measuredValue;
+            data->measurementData->push_back(m);
+        }
     }
 
     // Frequency (id_m_7) - scale -3 (mHz), all values allowed
@@ -3150,9 +3166,22 @@ void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int vo
     voltage_phase_to_neutral_v[0] = voltage_phase_1;
     voltage_phase_to_neutral_v[1] = voltage_phase_2;
     voltage_phase_to_neutral_v[2] = voltage_phase_3;
+
+    bool phase_to_phase_supported_before = phase_to_phase_available;
+    phase_to_phase_available = !(voltage_phase_1_2 == INT32_MIN || voltage_phase_2_3 == INT32_MIN || voltage_phase_3_1 == INT32_MIN);
     voltage_phase_to_phase_v[0] = voltage_phase_1_2;
     voltage_phase_to_phase_v[1] = voltage_phase_2_3;
     voltage_phase_to_phase_v[2] = voltage_phase_3_1;
+    if (phase_to_phase_supported_before!= phase_to_phase_available) {
+        ElectricalConnectionParameterDescriptionListDataType ec_parameter_description_data = EVSEEntity::get_electrical_connection_parameter_description_list_data();
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), ec_parameter_description_data, "electricalConnectionParameterDescriptionListData");
+
+        MeasurementConstraintsListDataType constraints_data = EVSEEntity::get_measurement_constraints_list_data();
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), constraints_data, "measurementConstraintsListData");
+
+        MeasurementDescriptionListDataType measurement_description_data = EVSEEntity::get_measurement_description_list_data();
+        eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::Measurement), measurement_description_data, "measurementDescriptionListData");
+    }
 
     // Inform subscribers of measurement data
     MeasurementListDataType measurement_data = EVSEEntity::get_measurement_list_data();
@@ -4338,7 +4367,6 @@ void OpevUsecase::get_electrical_connection_permitted_list_data(ElectricalConnec
         permittedValueSetData.parameterId = id;
         ScaledNumberSetType permittedValueSet{};
         ScaledNumberRangeType range{};
-        // TODO: We can actually dictate which values can be set here. For now we allow everything between min and max but maybe in future only allow full amp values between 0 and 32A?
         range.min->number = limit_milliamps_min;
         range.min->scale = -3;
         range.max->number = limit_milliamps_max;

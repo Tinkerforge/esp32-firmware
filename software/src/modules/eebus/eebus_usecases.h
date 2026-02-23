@@ -60,13 +60,13 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 //#define EEBUS_ENABLE_EVCEM_USECASE
 //#define EEBUS_ENABLE_EVCC_USECASE
 //#define EEBUS_ENABLE_EVSECC_USECASE
-#define EEBUS_ENABLE_LPC_USECASE
+//#define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_MPC_USECASE
-#define EEBUS_ENABLE_LPP_USECASE
+//#define EEBUS_ENABLE_LPP_USECASE
 //#define EEBUS_ENABLE_EVCS_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
 //#define EEBUS_ENABLE_OPEV_USECASE
-#define EEBUS_ENABLE_MGCP_USECASE
+//#define EEBUS_ENABLE_MGCP_USECASE
 #endif
 
 // Configuration related to the LPC usecases
@@ -1395,9 +1395,9 @@ public:
 
     MpcUsecase();
 
-    static void get_electricalConnection_description_list_data(ElectricalConnectionDescriptionListDataType *data);
+    void get_electricalConnection_description_list_data(ElectricalConnectionDescriptionListDataType *data);
     void get_electricalConnection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data) const;
-    static void get_measurement_description_list_data(MeasurementDescriptionListDataType *data);
+    void get_measurement_description_list_data(MeasurementDescriptionListDataType *data);
     void get_measurement_constraints_list_data(MeasurementConstraintsListDataType *data) const;
     void get_measurement_list_data(MeasurementListDataType *data) const;
 
@@ -1430,11 +1430,11 @@ public:
 
     /**
      * Update the voltage measurements. This will inform all subscribers of the new measurements.
-     * All values are accepted including 0.
+     * All values are accepted including 0. If INT32_MIN is passed to any of the phase_to_phase voltage parameters, it is assumed that the phase-to-phase voltage is not measured and shall therefore be omitted from the data.
      * @param voltage_phase_1 Voltage on phase 1 (phase-to-neutral) in volts (id_m_6_1)
      * @param voltage_phase_2 Voltage on phase 2 (phase-to-neutral) in volts (id_m_6_2)
      * @param voltage_phase_3 Voltage on phase 3 (phase-to-neutral) in volts (id_m_6_3)
-     * @param voltage_phase_1_2 Voltage between phase 1 and 2 in volts (id_m_6_4)
+     * @param voltage_phase_1_2 Voltage between phase 1 and 2 in volts (id_m_6_4).
      * @param voltage_phase_2_3 Voltage between phase 2 and 3 in volts (id_m_6_5)
      * @param voltage_phase_3_1 Voltage between phase 3 and 1 in volts (id_m_6_6)
      */
@@ -1536,6 +1536,7 @@ private:
     // =====================================================================
     int voltage_phase_to_neutral_v[3] = {0, 0, 0}; ///< Voltage phase-to-neutral (id_m_6_1, id_m_6_2, id_m_6_3)
     int voltage_phase_to_phase_v[3] = {0, 0, 0};   ///< Voltage phase-to-phase (id_m_6_4, id_m_6_5, id_m_6_6)
+    bool phase_to_phase_available = true;              ///< Whether phase-to-phase voltage measurement is available (id_p_2)
 
     // =====================================================================
     // Measurement values - Scenario 5: Monitor Frequency
