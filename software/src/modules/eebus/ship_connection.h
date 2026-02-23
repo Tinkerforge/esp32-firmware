@@ -139,6 +139,8 @@ public:
      */
     ShipConnection(tf_websocket_client_config_t ws_config, std::shared_ptr<ShipNode> node);
 
+    ~ShipConnection();
+
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
     const ShipConnection &operator=(const ShipConnection &other) = delete;

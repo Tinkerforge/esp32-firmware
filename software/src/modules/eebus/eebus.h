@@ -48,15 +48,15 @@
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
 //#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
-// The EEBUS Module needs to be configured before the usecases are included as their configuration depends on the module configuration (e.g. device type).
-#include "eebus_usecases.h"
+// Forward declarations (so we don't have to include spine_types.h here)
+class EEBusUseCases;
+class SpineDataTypeHandler;
 
 class EEBus final : public IModule
 {
 public:
-    EEBus()
-    {
-    }
+    EEBus();
+    ~EEBus();
 
     void pre_setup() override;
     void setup() override;

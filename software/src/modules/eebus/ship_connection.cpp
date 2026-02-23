@@ -29,6 +29,10 @@
 #include <esp_https_server.h>
 #include <utility>
 
+// Out-of-line destructor: unique_ptr_any<SpineConnection> needs complete SpineConnection type
+// for DeleterAny.
+ShipConnection::~ShipConnection() = default;
+
 extern EEBus eebus;
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)

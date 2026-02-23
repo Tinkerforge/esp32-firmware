@@ -31,6 +31,11 @@
 
 #include "tools/malloc.h"
 
+// Out-of-line constructor and destructor: unique_ptr_any<EEBusUseCases> and unique_ptr_any<SpineDataTypeHandler>
+// need complete types for their deleters.
+EEBus::EEBus() {}
+EEBus::~EEBus() = default;
+
 extern char local_uid_str[32];
 
 /**
