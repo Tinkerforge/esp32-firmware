@@ -467,12 +467,14 @@ void EEBus::setup()
         10_s);
     logger.printfln("EEBUS Usecase testing is enabled. This updates the eebus system with test data to simulate certain conditions.");
 #endif
+#ifdef EEBUS_MODE_EVSE
     task_scheduler.scheduleUncancelable(
         []() {
             update_evse_limit();
         },
         10_s,
         1_s);
+#endif
 }
 
 void EEBus::register_urls()
