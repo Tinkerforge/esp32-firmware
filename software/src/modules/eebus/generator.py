@@ -381,6 +381,17 @@ static int enumNameToValue(const char *const *names, size_t count, const String 
     }
     return fallback;
 }
+
+template <typename T>
+__attribute__((noinline)) void toJsonField(const SpineOptional<T> &field, const char *name, JsonVariant &dst) {
+    if (field.has_value()) dst[name] = *field;
+}
+
+template <typename T>
+__attribute__((noinline)) void fromJsonField(SpineOptional<T> &field, const char *name, JsonVariantConst src) {
+    if (!src[name].isNull()) field = src[name].as<T>();
+    else field.reset();
+}
 """
 
     SHIP_HEADER = """
@@ -1128,13 +1139,9 @@ void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);
         for elem in elements:
             variable_name_cpp = make_variable_name(elem.variable_name)
             variable_name_string = elem.variable_name
-            code += (
-                f"\tif (src.{variable_name_cpp}.has_value()) {{\n"
-                f"\t\tdst[\"{variable_name_string}\"] = *src.{variable_name_cpp};\n"
-                f"\t}}\n"
-            )
+            code += f"\ttoJsonField(src.{variable_name_cpp}, \"{variable_name_string}\", dst);\n"
 
-        code += "\n\treturn true;\n}\n"
+        code += "\treturn true;\n}\n"
         return code
 
     def _generate_struct_from_json(
@@ -1149,7 +1156,6 @@ void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);
 
         code = (
             f"void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"
-            f"\t\n\t\t"
         )
 
         for elem in elements:
@@ -1161,15 +1167,9 @@ void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);
 
             variable_name_cpp = make_variable_name(elem.variable_name)
             variable_name_string = elem.variable_name
-            code += (
-                f"\tif (!src[\"{variable_name_string}\"].isNull()) {{\n"
-                f"\t\tdst.{variable_name_cpp} = src[\"{variable_name_string}\"]"
-                f".as<decltype(dst.{variable_name_cpp})::value_type>();\n"
-                f"\t}} else {{\n"
-                f"\t\tdst.{variable_name_cpp}.reset();\n\t}}\n"
-            )
+            code += f"\tfromJsonField(dst.{variable_name_cpp}, \"{variable_name_string}\", src);\n"
 
-        code += "\n\t\n\n}\n"
+        code += "}\n"
         return code
 
 

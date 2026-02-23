@@ -47,6 +47,20 @@ static int enumNameToValue(const char *const *names, size_t count, const String 
     }
     return fallback;
 }
+
+template <typename T> __attribute__((noinline)) void toJsonField(const SpineOptional<T> &field, const char *name, JsonVariant &dst)
+{
+    if (field.has_value())
+        dst[name] = *field;
+}
+
+template <typename T> __attribute__((noinline)) void fromJsonField(SpineOptional<T> &field, const char *name, JsonVariantConst src)
+{
+    if (!src[name].isNull())
+        field = src[name].as<T>();
+    else
+        field.reset();
+}
 static const char *const BillTypeEnumType_names[] = {
     "chargingSummary",
 };
@@ -1634,436 +1648,186 @@ bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.number.has_value()) {
-        dst["number"] = *src.number;
-    }
-    if (src.scale.has_value()) {
-        dst["scale"] = *src.scale;
-    }
-
+    toJsonField(src.number, "number", dst);
+    toJsonField(src.scale, "scale", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
 {
-
-    if (!src["number"].isNull()) {
-        dst.number = src["number"].as<decltype(dst.number)::value_type>();
-    } else {
-        dst.number.reset();
-    }
-    if (!src["scale"].isNull()) {
-        dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
-    } else {
-        dst.scale.reset();
-    }
+    fromJsonField(dst.number, "number", src);
+    fromJsonField(dst.scale, "scale", src);
 }
 bool convertToJson(const BillValueType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.valueId.has_value()) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.valuePercentage.has_value()) {
-        dst["valuePercentage"] = *src.valuePercentage;
-    }
-
+    toJsonField(src.valueId, "valueId", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.valuePercentage, "valuePercentage", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
 {
-
-    if (!src["valueId"].isNull()) {
-        dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-    } else {
-        dst.valueId.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["valuePercentage"].isNull()) {
-        dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
-    } else {
-        dst.valuePercentage.reset();
-    }
+    fromJsonField(dst.valueId, "valueId", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.valuePercentage, "valuePercentage", src);
 }
 bool convertToJson(const BillCostType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.costId.has_value()) {
-        dst["costId"] = *src.costId;
-    }
-    if (src.costType.has_value()) {
-        dst["costType"] = *src.costType;
-    }
-    if (src.valueId.has_value()) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.currency.has_value()) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.cost.has_value()) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.costPercentage.has_value()) {
-        dst["costPercentage"] = *src.costPercentage;
-    }
-
+    toJsonField(src.costId, "costId", dst);
+    toJsonField(src.costType, "costType", dst);
+    toJsonField(src.valueId, "valueId", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.currency, "currency", dst);
+    toJsonField(src.cost, "cost", dst);
+    toJsonField(src.costPercentage, "costPercentage", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
 {
-
-    if (!src["costId"].isNull()) {
-        dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
-    } else {
-        dst.costId.reset();
-    }
-    if (!src["costType"].isNull()) {
-        dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
-    } else {
-        dst.costType.reset();
-    }
-    if (!src["valueId"].isNull()) {
-        dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-    } else {
-        dst.valueId.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["currency"].isNull()) {
-        dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
-    } else {
-        dst.currency.reset();
-    }
-    if (!src["cost"].isNull()) {
-        dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-    } else {
-        dst.cost.reset();
-    }
-    if (!src["costPercentage"].isNull()) {
-        dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
-    } else {
-        dst.costPercentage.reset();
-    }
+    fromJsonField(dst.costId, "costId", src);
+    fromJsonField(dst.costType, "costType", src);
+    fromJsonField(dst.valueId, "valueId", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.currency, "currency", src);
+    fromJsonField(dst.cost, "cost", src);
+    fromJsonField(dst.costPercentage, "costPercentage", src);
 }
 bool convertToJson(const TimePeriodType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.startTime.has_value()) {
-        dst["startTime"] = *src.startTime;
-    }
-    if (src.endTime.has_value()) {
-        dst["endTime"] = *src.endTime;
-    }
-
+    toJsonField(src.startTime, "startTime", dst);
+    toJsonField(src.endTime, "endTime", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst)
 {
-
-    if (!src["startTime"].isNull()) {
-        dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
-    } else {
-        dst.startTime.reset();
-    }
-    if (!src["endTime"].isNull()) {
-        dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
-    } else {
-        dst.endTime.reset();
-    }
+    fromJsonField(dst.startTime, "startTime", src);
+    fromJsonField(dst.endTime, "endTime", src);
 }
 bool convertToJson(const BillPositionType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.positionId.has_value()) {
-        dst["positionId"] = *src.positionId;
-    }
-    if (src.positionType.has_value()) {
-        dst["positionType"] = *src.positionType;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.cost.has_value()) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.positionId, "positionId", dst);
+    toJsonField(src.positionType, "positionType", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.cost, "cost", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
 {
-
-    if (!src["positionId"].isNull()) {
-        dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
-    } else {
-        dst.positionId.reset();
-    }
-    if (!src["positionType"].isNull()) {
-        dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
-    } else {
-        dst.positionType.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["cost"].isNull()) {
-        dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-    } else {
-        dst.cost.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.positionId, "positionId", src);
+    fromJsonField(dst.positionType, "positionType", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.cost, "cost", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const BillDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billId.has_value()) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billType.has_value()) {
-        dst["billType"] = *src.billType;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.total.has_value()) {
-        dst["total"] = *src.total;
-    }
-    if (src.position.has_value()) {
-        dst["position"] = *src.position;
-    }
-
+    toJsonField(src.billId, "billId", dst);
+    toJsonField(src.billType, "billType", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.total, "total", dst);
+    toJsonField(src.position, "position", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
 {
-
-    if (!src["billId"].isNull()) {
-        dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-    } else {
-        dst.billId.reset();
-    }
-    if (!src["billType"].isNull()) {
-        dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
-    } else {
-        dst.billType.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["total"].isNull()) {
-        dst.total = src["total"].as<decltype(dst.total)::value_type>();
-    } else {
-        dst.total.reset();
-    }
-    if (!src["position"].isNull()) {
-        dst.position = src["position"].as<decltype(dst.position)::value_type>();
-    } else {
-        dst.position.reset();
-    }
+    fromJsonField(dst.billId, "billId", src);
+    fromJsonField(dst.billType, "billType", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.total, "total", src);
+    fromJsonField(dst.position, "position", src);
 }
 bool convertToJson(const BillListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billData.has_value()) {
-        dst["billData"] = *src.billData;
-    }
-
+    toJsonField(src.billData, "billData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
 {
-
-    if (!src["billData"].isNull()) {
-        dst.billData = src["billData"].as<decltype(dst.billData)::value_type>();
-    } else {
-        dst.billData.reset();
-    }
+    fromJsonField(dst.billData, "billData", src);
 }
 bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billId.has_value()) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.positionCountMin.has_value()) {
-        dst["positionCountMin"] = *src.positionCountMin;
-    }
-    if (src.positionCountMax.has_value()) {
-        dst["positionCountMax"] = *src.positionCountMax;
-    }
-
+    toJsonField(src.billId, "billId", dst);
+    toJsonField(src.positionCountMin, "positionCountMin", dst);
+    toJsonField(src.positionCountMax, "positionCountMax", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
 {
-
-    if (!src["billId"].isNull()) {
-        dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-    } else {
-        dst.billId.reset();
-    }
-    if (!src["positionCountMin"].isNull()) {
-        dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
-    } else {
-        dst.positionCountMin.reset();
-    }
-    if (!src["positionCountMax"].isNull()) {
-        dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
-    } else {
-        dst.positionCountMax.reset();
-    }
+    fromJsonField(dst.billId, "billId", src);
+    fromJsonField(dst.positionCountMin, "positionCountMin", src);
+    fromJsonField(dst.positionCountMax, "positionCountMax", src);
 }
 bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billConstraintsData.has_value()) {
-        dst["billConstraintsData"] = *src.billConstraintsData;
-    }
-
+    toJsonField(src.billConstraintsData, "billConstraintsData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst)
 {
-
-    if (!src["billConstraintsData"].isNull()) {
-        dst.billConstraintsData = src["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
-    } else {
-        dst.billConstraintsData.reset();
-    }
+    fromJsonField(dst.billConstraintsData, "billConstraintsData", src);
 }
 bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billId.has_value()) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billWriteable.has_value()) {
-        dst["billWriteable"] = *src.billWriteable;
-    }
-    if (src.updateRequired.has_value()) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.supportedBillType.has_value()) {
-        dst["supportedBillType"] = *src.supportedBillType;
-    }
-    if (src.sessionId.has_value()) {
-        dst["sessionId"] = *src.sessionId;
-    }
-
+    toJsonField(src.billId, "billId", dst);
+    toJsonField(src.billWriteable, "billWriteable", dst);
+    toJsonField(src.updateRequired, "updateRequired", dst);
+    toJsonField(src.supportedBillType, "supportedBillType", dst);
+    toJsonField(src.sessionId, "sessionId", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
 {
-
-    if (!src["billId"].isNull()) {
-        dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-    } else {
-        dst.billId.reset();
-    }
-    if (!src["billWriteable"].isNull()) {
-        dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
-    } else {
-        dst.billWriteable.reset();
-    }
-    if (!src["updateRequired"].isNull()) {
-        dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-    } else {
-        dst.updateRequired.reset();
-    }
-    if (!src["supportedBillType"].isNull()) {
-        dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
-    } else {
-        dst.supportedBillType.reset();
-    }
-    if (!src["sessionId"].isNull()) {
-        dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-    } else {
-        dst.sessionId.reset();
-    }
+    fromJsonField(dst.billId, "billId", src);
+    fromJsonField(dst.billWriteable, "billWriteable", src);
+    fromJsonField(dst.updateRequired, "updateRequired", src);
+    fromJsonField(dst.supportedBillType, "supportedBillType", src);
+    fromJsonField(dst.sessionId, "sessionId", src);
 }
 bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.billDescriptionData.has_value()) {
-        dst["billDescriptionData"] = *src.billDescriptionData;
-    }
-
+    toJsonField(src.billDescriptionData, "billDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst)
 {
-
-    if (!src["billDescriptionData"].isNull()) {
-        dst.billDescriptionData = src["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
-    } else {
-        dst.billDescriptionData.reset();
-    }
+    fromJsonField(dst.billDescriptionData, "billDescriptionData", src);
 }
 bool convertToJson(const ElementTagType &src, JsonVariant &dst)
 {
@@ -2080,4044 +1844,1676 @@ bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst)
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.monday.has_value()) {
-        dst["monday"] = *src.monday;
-    }
-    if (src.tuesday.has_value()) {
-        dst["tuesday"] = *src.tuesday;
-    }
-    if (src.wednesday.has_value()) {
-        dst["wednesday"] = *src.wednesday;
-    }
-    if (src.thursday.has_value()) {
-        dst["thursday"] = *src.thursday;
-    }
-    if (src.friday.has_value()) {
-        dst["friday"] = *src.friday;
-    }
-    if (src.saturday.has_value()) {
-        dst["saturday"] = *src.saturday;
-    }
-    if (src.sunday.has_value()) {
-        dst["sunday"] = *src.sunday;
-    }
-
+    toJsonField(src.monday, "monday", dst);
+    toJsonField(src.tuesday, "tuesday", dst);
+    toJsonField(src.wednesday, "wednesday", dst);
+    toJsonField(src.thursday, "thursday", dst);
+    toJsonField(src.friday, "friday", dst);
+    toJsonField(src.saturday, "saturday", dst);
+    toJsonField(src.sunday, "sunday", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst)
 {
-
-    if (!src["monday"].isNull()) {
-        dst.monday = src["monday"].as<decltype(dst.monday)::value_type>();
-    } else {
-        dst.monday.reset();
-    }
-    if (!src["tuesday"].isNull()) {
-        dst.tuesday = src["tuesday"].as<decltype(dst.tuesday)::value_type>();
-    } else {
-        dst.tuesday.reset();
-    }
-    if (!src["wednesday"].isNull()) {
-        dst.wednesday = src["wednesday"].as<decltype(dst.wednesday)::value_type>();
-    } else {
-        dst.wednesday.reset();
-    }
-    if (!src["thursday"].isNull()) {
-        dst.thursday = src["thursday"].as<decltype(dst.thursday)::value_type>();
-    } else {
-        dst.thursday.reset();
-    }
-    if (!src["friday"].isNull()) {
-        dst.friday = src["friday"].as<decltype(dst.friday)::value_type>();
-    } else {
-        dst.friday.reset();
-    }
-    if (!src["saturday"].isNull()) {
-        dst.saturday = src["saturday"].as<decltype(dst.saturday)::value_type>();
-    } else {
-        dst.saturday.reset();
-    }
-    if (!src["sunday"].isNull()) {
-        dst.sunday = src["sunday"].as<decltype(dst.sunday)::value_type>();
-    } else {
-        dst.sunday.reset();
-    }
+    fromJsonField(dst.monday, "monday", src);
+    fromJsonField(dst.tuesday, "tuesday", src);
+    fromJsonField(dst.wednesday, "wednesday", src);
+    fromJsonField(dst.thursday, "thursday", src);
+    fromJsonField(dst.friday, "friday", src);
+    fromJsonField(dst.saturday, "saturday", src);
+    fromJsonField(dst.sunday, "sunday", src);
 }
 bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.dateTime.has_value()) {
-        dst["dateTime"] = *src.dateTime;
-    }
-    if (src.month.has_value()) {
-        dst["month"] = *src.month;
-    }
-    if (src.dayOfMonth.has_value()) {
-        dst["dayOfMonth"] = *src.dayOfMonth;
-    }
-    if (src.calendarWeek.has_value()) {
-        dst["calendarWeek"] = *src.calendarWeek;
-    }
-    if (src.dayOfWeekOccurrence.has_value()) {
-        dst["dayOfWeekOccurrence"] = *src.dayOfWeekOccurrence;
-    }
-    if (src.daysOfWeek.has_value()) {
-        dst["daysOfWeek"] = *src.daysOfWeek;
-    }
-    if (src.time.has_value()) {
-        dst["time"] = *src.time;
-    }
-    if (src.relative.has_value()) {
-        dst["relative"] = *src.relative;
-    }
-
+    toJsonField(src.dateTime, "dateTime", dst);
+    toJsonField(src.month, "month", dst);
+    toJsonField(src.dayOfMonth, "dayOfMonth", dst);
+    toJsonField(src.calendarWeek, "calendarWeek", dst);
+    toJsonField(src.dayOfWeekOccurrence, "dayOfWeekOccurrence", dst);
+    toJsonField(src.daysOfWeek, "daysOfWeek", dst);
+    toJsonField(src.time, "time", dst);
+    toJsonField(src.relative, "relative", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &dst)
 {
-
-    if (!src["dateTime"].isNull()) {
-        dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
-    } else {
-        dst.dateTime.reset();
-    }
-    if (!src["month"].isNull()) {
-        dst.month = src["month"].as<decltype(dst.month)::value_type>();
-    } else {
-        dst.month.reset();
-    }
-    if (!src["dayOfMonth"].isNull()) {
-        dst.dayOfMonth = src["dayOfMonth"].as<decltype(dst.dayOfMonth)::value_type>();
-    } else {
-        dst.dayOfMonth.reset();
-    }
-    if (!src["calendarWeek"].isNull()) {
-        dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
-    } else {
-        dst.calendarWeek.reset();
-    }
-    if (!src["dayOfWeekOccurrence"].isNull()) {
-        dst.dayOfWeekOccurrence = src["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
-    } else {
-        dst.dayOfWeekOccurrence.reset();
-    }
-    if (!src["daysOfWeek"].isNull()) {
-        dst.daysOfWeek = src["daysOfWeek"].as<decltype(dst.daysOfWeek)::value_type>();
-    } else {
-        dst.daysOfWeek.reset();
-    }
-    if (!src["time"].isNull()) {
-        dst.time = src["time"].as<decltype(dst.time)::value_type>();
-    } else {
-        dst.time.reset();
-    }
-    if (!src["relative"].isNull()) {
-        dst.relative = src["relative"].as<decltype(dst.relative)::value_type>();
-    } else {
-        dst.relative.reset();
-    }
+    fromJsonField(dst.dateTime, "dateTime", src);
+    fromJsonField(dst.month, "month", src);
+    fromJsonField(dst.dayOfMonth, "dayOfMonth", src);
+    fromJsonField(dst.calendarWeek, "calendarWeek", src);
+    fromJsonField(dst.dayOfWeekOccurrence, "dayOfWeekOccurrence", src);
+    fromJsonField(dst.daysOfWeek, "daysOfWeek", src);
+    fromJsonField(dst.time, "time", src);
+    fromJsonField(dst.relative, "relative", src);
 }
 bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.recurringInterval.has_value()) {
-        dst["recurringInterval"] = *src.recurringInterval;
-    }
-    if (src.recurringIntervalStep.has_value()) {
-        dst["recurringIntervalStep"] = *src.recurringIntervalStep;
-    }
-    if (src.firstExecution.has_value()) {
-        dst["firstExecution"] = *src.firstExecution;
-    }
-    if (src.executionCount.has_value()) {
-        dst["executionCount"] = *src.executionCount;
-    }
-    if (src.lastExecution.has_value()) {
-        dst["lastExecution"] = *src.lastExecution;
-    }
-
+    toJsonField(src.recurringInterval, "recurringInterval", dst);
+    toJsonField(src.recurringIntervalStep, "recurringIntervalStep", dst);
+    toJsonField(src.firstExecution, "firstExecution", dst);
+    toJsonField(src.executionCount, "executionCount", dst);
+    toJsonField(src.lastExecution, "lastExecution", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst)
 {
-
-    if (!src["recurringInterval"].isNull()) {
-        dst.recurringInterval = src["recurringInterval"].as<decltype(dst.recurringInterval)::value_type>();
-    } else {
-        dst.recurringInterval.reset();
-    }
-    if (!src["recurringIntervalStep"].isNull()) {
-        dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
-    } else {
-        dst.recurringIntervalStep.reset();
-    }
-    if (!src["firstExecution"].isNull()) {
-        dst.firstExecution = src["firstExecution"].as<decltype(dst.firstExecution)::value_type>();
-    } else {
-        dst.firstExecution.reset();
-    }
-    if (!src["executionCount"].isNull()) {
-        dst.executionCount = src["executionCount"].as<decltype(dst.executionCount)::value_type>();
-    } else {
-        dst.executionCount.reset();
-    }
-    if (!src["lastExecution"].isNull()) {
-        dst.lastExecution = src["lastExecution"].as<decltype(dst.lastExecution)::value_type>();
-    } else {
-        dst.lastExecution.reset();
-    }
+    fromJsonField(dst.recurringInterval, "recurringInterval", src);
+    fromJsonField(dst.recurringIntervalStep, "recurringIntervalStep", src);
+    fromJsonField(dst.firstExecution, "firstExecution", src);
+    fromJsonField(dst.executionCount, "executionCount", src);
+    fromJsonField(dst.lastExecution, "lastExecution", src);
 }
 bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.min.has_value()) {
-        dst["min"] = *src.min;
-    }
-    if (src.max.has_value()) {
-        dst["max"] = *src.max;
-    }
-
+    toJsonField(src.min, "min", dst);
+    toJsonField(src.max, "max", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
 {
-
-    if (!src["min"].isNull()) {
-        dst.min = src["min"].as<decltype(dst.min)::value_type>();
-    } else {
-        dst.min.reset();
-    }
-    if (!src["max"].isNull()) {
-        dst.max = src["max"].as<decltype(dst.max)::value_type>();
-    } else {
-        dst.max.reset();
-    }
+    fromJsonField(dst.min, "min", src);
+    fromJsonField(dst.max, "max", src);
 }
 bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.range.has_value()) {
-        dst["range"] = *src.range;
-    }
-
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.range, "range", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst)
 {
-
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["range"].isNull()) {
-        dst.range = src["range"].as<decltype(dst.range)::value_type>();
-    } else {
-        dst.range.reset();
-    }
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.range, "range", src);
 }
 bool convertToJson(const DeviceAddressType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.device.has_value()) {
-        dst["device"] = *src.device;
-    }
-
+    toJsonField(src.device, "device", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst)
 {
-
-    if (!src["device"].isNull()) {
-        dst.device = src["device"].as<decltype(dst.device)::value_type>();
-    } else {
-        dst.device.reset();
-    }
+    fromJsonField(dst.device, "device", src);
 }
 bool convertToJson(const EntityAddressType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.device.has_value()) {
-        dst["device"] = *src.device;
-    }
-    if (src.entity.has_value()) {
-        dst["entity"] = *src.entity;
-    }
-
+    toJsonField(src.device, "device", dst);
+    toJsonField(src.entity, "entity", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst)
 {
-
-    if (!src["device"].isNull()) {
-        dst.device = src["device"].as<decltype(dst.device)::value_type>();
-    } else {
-        dst.device.reset();
-    }
-    if (!src["entity"].isNull()) {
-        dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
-    } else {
-        dst.entity.reset();
-    }
+    fromJsonField(dst.device, "device", src);
+    fromJsonField(dst.entity, "entity", src);
 }
 bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.device.has_value()) {
-        dst["device"] = *src.device;
-    }
-    if (src.entity.has_value()) {
-        dst["entity"] = *src.entity;
-    }
-    if (src.feature.has_value()) {
-        dst["feature"] = *src.feature;
-    }
-
+    toJsonField(src.device, "device", dst);
+    toJsonField(src.entity, "entity", dst);
+    toJsonField(src.feature, "feature", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
 {
-
-    if (!src["device"].isNull()) {
-        dst.device = src["device"].as<decltype(dst.device)::value_type>();
-    } else {
-        dst.device.reset();
-    }
-    if (!src["entity"].isNull()) {
-        dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
-    } else {
-        dst.entity.reset();
-    }
-    if (!src["feature"].isNull()) {
-        dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
-    } else {
-        dst.feature.reset();
-    }
+    fromJsonField(dst.device, "device", src);
+    fromJsonField(dst.entity, "entity", src);
+    fromJsonField(dst.feature, "feature", src);
 }
 bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.partial.has_value()) {
-        dst["partial"] = *src.partial;
-    }
-
+    toJsonField(src.partial, "partial", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &dst)
 {
-
-    if (!src["partial"].isNull()) {
-        dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
-    } else {
-        dst.partial.reset();
-    }
+    fromJsonField(dst.partial, "partial", src);
 }
 bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.partial.has_value()) {
-        dst["partial"] = *src.partial;
-    }
-
+    toJsonField(src.partial, "partial", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &dst)
 {
-
-    if (!src["partial"].isNull()) {
-        dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
-    } else {
-        dst.partial.reset();
-    }
+    fromJsonField(dst.partial, "partial", src);
 }
 bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.read.has_value()) {
-        dst["read"] = *src.read;
-    }
-    if (src.write.has_value()) {
-        dst["write"] = *src.write;
-    }
-
+    toJsonField(src.read, "read", dst);
+    toJsonField(src.write, "write", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst)
 {
-
-    if (!src["read"].isNull()) {
-        dst.read = src["read"].as<decltype(dst.read)::value_type>();
-    } else {
-        dst.read.reset();
-    }
-    if (!src["write"].isNull()) {
-        dst.write = src["write"].as<decltype(dst.write)::value_type>();
-    } else {
-        dst.write.reset();
-    }
+    fromJsonField(dst.read, "read", src);
+    fromJsonField(dst.write, "write", src);
 }
 bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.function.has_value()) {
-        dst["function"] = *src.function;
-    }
-    if (src.possibleOperations.has_value()) {
-        dst["possibleOperations"] = *src.possibleOperations;
-    }
-
+    toJsonField(src.function, "function", dst);
+    toJsonField(src.possibleOperations, "possibleOperations", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst)
 {
-
-    if (!src["function"].isNull()) {
-        dst.function = src["function"].as<decltype(dst.function)::value_type>();
-    } else {
-        dst.function.reset();
-    }
-    if (!src["possibleOperations"].isNull()) {
-        dst.possibleOperations = src["possibleOperations"].as<decltype(dst.possibleOperations)::value_type>();
-    } else {
-        dst.possibleOperations.reset();
-    }
+    fromJsonField(dst.function, "function", src);
+    fromJsonField(dst.possibleOperations, "possibleOperations", src);
 }
 bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.identificationId.has_value()) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.identificationType.has_value()) {
-        dst["identificationType"] = *src.identificationType;
-    }
-    if (src.identificationValue.has_value()) {
-        dst["identificationValue"] = *src.identificationValue;
-    }
-    if (src.authorized.has_value()) {
-        dst["authorized"] = *src.authorized;
-    }
-
+    toJsonField(src.identificationId, "identificationId", dst);
+    toJsonField(src.identificationType, "identificationType", dst);
+    toJsonField(src.identificationValue, "identificationValue", dst);
+    toJsonField(src.authorized, "authorized", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
 {
-
-    if (!src["identificationId"].isNull()) {
-        dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-    } else {
-        dst.identificationId.reset();
-    }
-    if (!src["identificationType"].isNull()) {
-        dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
-    } else {
-        dst.identificationType.reset();
-    }
-    if (!src["identificationValue"].isNull()) {
-        dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
-    } else {
-        dst.identificationValue.reset();
-    }
-    if (!src["authorized"].isNull()) {
-        dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
-    } else {
-        dst.authorized.reset();
-    }
+    fromJsonField(dst.identificationId, "identificationId", src);
+    fromJsonField(dst.identificationType, "identificationType", src);
+    fromJsonField(dst.identificationValue, "identificationValue", src);
+    fromJsonField(dst.authorized, "authorized", src);
 }
 bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.identificationData.has_value()) {
-        dst["identificationData"] = *src.identificationData;
-    }
-
+    toJsonField(src.identificationData, "identificationData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst)
 {
-
-    if (!src["identificationData"].isNull()) {
-        dst.identificationData = src["identificationData"].as<decltype(dst.identificationData)::value_type>();
-    } else {
-        dst.identificationData.reset();
-    }
+    fromJsonField(dst.identificationData, "identificationData", src);
 }
 bool convertToJson(const MeasurementDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.valueType.has_value()) {
-        dst["valueType"] = *src.valueType;
-    }
-    if (src.timestamp.has_value()) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.evaluationPeriod.has_value()) {
-        dst["evaluationPeriod"] = *src.evaluationPeriod;
-    }
-    if (src.valueSource.has_value()) {
-        dst["valueSource"] = *src.valueSource;
-    }
-    if (src.valueTendency.has_value()) {
-        dst["valueTendency"] = *src.valueTendency;
-    }
-    if (src.valueState.has_value()) {
-        dst["valueState"] = *src.valueState;
-    }
-
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.valueType, "valueType", dst);
+    toJsonField(src.timestamp, "timestamp", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.evaluationPeriod, "evaluationPeriod", dst);
+    toJsonField(src.valueSource, "valueSource", dst);
+    toJsonField(src.valueTendency, "valueTendency", dst);
+    toJsonField(src.valueState, "valueState", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst)
 {
-
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["valueType"].isNull()) {
-        dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
-    } else {
-        dst.valueType.reset();
-    }
-    if (!src["timestamp"].isNull()) {
-        dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-    } else {
-        dst.timestamp.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["evaluationPeriod"].isNull()) {
-        dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
-    } else {
-        dst.evaluationPeriod.reset();
-    }
-    if (!src["valueSource"].isNull()) {
-        dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
-    } else {
-        dst.valueSource.reset();
-    }
-    if (!src["valueTendency"].isNull()) {
-        dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
-    } else {
-        dst.valueTendency.reset();
-    }
-    if (!src["valueState"].isNull()) {
-        dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
-    } else {
-        dst.valueState.reset();
-    }
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.valueType, "valueType", src);
+    fromJsonField(dst.timestamp, "timestamp", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.evaluationPeriod, "evaluationPeriod", src);
+    fromJsonField(dst.valueSource, "valueSource", src);
+    fromJsonField(dst.valueTendency, "valueTendency", src);
+    fromJsonField(dst.valueState, "valueState", src);
 }
 bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementData.has_value()) {
-        dst["measurementData"] = *src.measurementData;
-    }
-
+    toJsonField(src.measurementData, "measurementData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst)
 {
-
-    if (!src["measurementData"].isNull()) {
-        dst.measurementData = src["measurementData"].as<decltype(dst.measurementData)::value_type>();
-    } else {
-        dst.measurementData.reset();
-    }
+    fromJsonField(dst.measurementData, "measurementData", src);
 }
 bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.valueRangeMin.has_value()) {
-        dst["valueRangeMin"] = *src.valueRangeMin;
-    }
-    if (src.valueRangeMax.has_value()) {
-        dst["valueRangeMax"] = *src.valueRangeMax;
-    }
-    if (src.valueStepSize.has_value()) {
-        dst["valueStepSize"] = *src.valueStepSize;
-    }
-
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.valueRangeMin, "valueRangeMin", dst);
+    toJsonField(src.valueRangeMax, "valueRangeMax", dst);
+    toJsonField(src.valueStepSize, "valueStepSize", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType &dst)
 {
-
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["valueRangeMin"].isNull()) {
-        dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-    } else {
-        dst.valueRangeMin.reset();
-    }
-    if (!src["valueRangeMax"].isNull()) {
-        dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-    } else {
-        dst.valueRangeMax.reset();
-    }
-    if (!src["valueStepSize"].isNull()) {
-        dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-    } else {
-        dst.valueStepSize.reset();
-    }
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.valueRangeMin, "valueRangeMin", src);
+    fromJsonField(dst.valueRangeMax, "valueRangeMax", src);
+    fromJsonField(dst.valueStepSize, "valueStepSize", src);
 }
 bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementConstraintsData.has_value()) {
-        dst["measurementConstraintsData"] = *src.measurementConstraintsData;
-    }
-
+    toJsonField(src.measurementConstraintsData, "measurementConstraintsData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataType &dst)
 {
-
-    if (!src["measurementConstraintsData"].isNull()) {
-        dst.measurementConstraintsData = src["measurementConstraintsData"].as<decltype(dst.measurementConstraintsData)::value_type>();
-    } else {
-        dst.measurementConstraintsData.reset();
-    }
+    fromJsonField(dst.measurementConstraintsData, "measurementConstraintsData", src);
 }
 bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.measurementType.has_value()) {
-        dst["measurementType"] = *src.measurementType;
-    }
-    if (src.commodityType.has_value()) {
-        dst["commodityType"] = *src.commodityType;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.calibrationValue.has_value()) {
-        dst["calibrationValue"] = *src.calibrationValue;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.measurementType, "measurementType", dst);
+    toJsonField(src.commodityType, "commodityType", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.calibrationValue, "calibrationValue", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType &dst)
 {
-
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["measurementType"].isNull()) {
-        dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
-    } else {
-        dst.measurementType.reset();
-    }
-    if (!src["commodityType"].isNull()) {
-        dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
-    } else {
-        dst.commodityType.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["calibrationValue"].isNull()) {
-        dst.calibrationValue = src["calibrationValue"].as<decltype(dst.calibrationValue)::value_type>();
-    } else {
-        dst.calibrationValue.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.measurementType, "measurementType", src);
+    fromJsonField(dst.commodityType, "commodityType", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.calibrationValue, "calibrationValue", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.measurementDescriptionData.has_value()) {
-        dst["measurementDescriptionData"] = *src.measurementDescriptionData;
-    }
-
+    toJsonField(src.measurementDescriptionData, "measurementDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataType &dst)
 {
-
-    if (!src["measurementDescriptionData"].isNull()) {
-        dst.measurementDescriptionData = src["measurementDescriptionData"].as<decltype(dst.measurementDescriptionData)::value_type>();
-    } else {
-        dst.measurementDescriptionData.reset();
-    }
+    fromJsonField(dst.measurementDescriptionData, "measurementDescriptionData", src);
 }
 bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingId.has_value()) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.bindingId, "bindingId", dst);
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst)
 {
-
-    if (!src["bindingId"].isNull()) {
-        dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-    } else {
-        dst.bindingId.reset();
-    }
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.bindingId, "bindingId", src);
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingManagementEntryData.has_value()) {
-        dst["bindingManagementEntryData"] = *src.bindingManagementEntryData;
-    }
-
+    toJsonField(src.bindingManagementEntryData, "bindingManagementEntryData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst)
 {
-
-    if (!src["bindingManagementEntryData"].isNull()) {
-        dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
-    } else {
-        dst.bindingManagementEntryData.reset();
-    }
+    fromJsonField(dst.bindingManagementEntryData, "bindingManagementEntryData", src);
 }
 bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.serverFeatureType.has_value()) {
-        dst["serverFeatureType"] = *src.serverFeatureType;
-    }
-
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
+    toJsonField(src.serverFeatureType, "serverFeatureType", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst)
 {
-
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
-    if (!src["serverFeatureType"].isNull()) {
-        dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-    } else {
-        dst.serverFeatureType.reset();
-    }
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
+    fromJsonField(dst.serverFeatureType, "serverFeatureType", src);
 }
 bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingId.has_value()) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-
+    toJsonField(src.bindingId, "bindingId", dst);
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst)
 {
-
-    if (!src["bindingId"].isNull()) {
-        dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-    } else {
-        dst.bindingId.reset();
-    }
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
+    fromJsonField(dst.bindingId, "bindingId", src);
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
 }
 bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.deviceName.has_value()) {
-        dst["deviceName"] = *src.deviceName;
-    }
-    if (src.deviceCode.has_value()) {
-        dst["deviceCode"] = *src.deviceCode;
-    }
-    if (src.serialNumber.has_value()) {
-        dst["serialNumber"] = *src.serialNumber;
-    }
-    if (src.softwareRevision.has_value()) {
-        dst["softwareRevision"] = *src.softwareRevision;
-    }
-    if (src.hardwareRevision.has_value()) {
-        dst["hardwareRevision"] = *src.hardwareRevision;
-    }
-    if (src.vendorName.has_value()) {
-        dst["vendorName"] = *src.vendorName;
-    }
-    if (src.vendorCode.has_value()) {
-        dst["vendorCode"] = *src.vendorCode;
-    }
-    if (src.brandName.has_value()) {
-        dst["brandName"] = *src.brandName;
-    }
-    if (src.powerSource.has_value()) {
-        dst["powerSource"] = *src.powerSource;
-    }
-    if (src.manufacturerNodeIdentification.has_value()) {
-        dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
-    }
-    if (src.manufacturerLabel.has_value()) {
-        dst["manufacturerLabel"] = *src.manufacturerLabel;
-    }
-    if (src.manufacturerDescription.has_value()) {
-        dst["manufacturerDescription"] = *src.manufacturerDescription;
-    }
-
+    toJsonField(src.deviceName, "deviceName", dst);
+    toJsonField(src.deviceCode, "deviceCode", dst);
+    toJsonField(src.serialNumber, "serialNumber", dst);
+    toJsonField(src.softwareRevision, "softwareRevision", dst);
+    toJsonField(src.hardwareRevision, "hardwareRevision", dst);
+    toJsonField(src.vendorName, "vendorName", dst);
+    toJsonField(src.vendorCode, "vendorCode", dst);
+    toJsonField(src.brandName, "brandName", dst);
+    toJsonField(src.powerSource, "powerSource", dst);
+    toJsonField(src.manufacturerNodeIdentification, "manufacturerNodeIdentification", dst);
+    toJsonField(src.manufacturerLabel, "manufacturerLabel", dst);
+    toJsonField(src.manufacturerDescription, "manufacturerDescription", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst)
 {
-
-    if (!src["deviceName"].isNull()) {
-        dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
-    } else {
-        dst.deviceName.reset();
-    }
-    if (!src["deviceCode"].isNull()) {
-        dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
-    } else {
-        dst.deviceCode.reset();
-    }
-    if (!src["serialNumber"].isNull()) {
-        dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
-    } else {
-        dst.serialNumber.reset();
-    }
-    if (!src["softwareRevision"].isNull()) {
-        dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
-    } else {
-        dst.softwareRevision.reset();
-    }
-    if (!src["hardwareRevision"].isNull()) {
-        dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
-    } else {
-        dst.hardwareRevision.reset();
-    }
-    if (!src["vendorName"].isNull()) {
-        dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
-    } else {
-        dst.vendorName.reset();
-    }
-    if (!src["vendorCode"].isNull()) {
-        dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
-    } else {
-        dst.vendorCode.reset();
-    }
-    if (!src["brandName"].isNull()) {
-        dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
-    } else {
-        dst.brandName.reset();
-    }
-    if (!src["powerSource"].isNull()) {
-        dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
-    } else {
-        dst.powerSource.reset();
-    }
-    if (!src["manufacturerNodeIdentification"].isNull()) {
-        dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
-    } else {
-        dst.manufacturerNodeIdentification.reset();
-    }
-    if (!src["manufacturerLabel"].isNull()) {
-        dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
-    } else {
-        dst.manufacturerLabel.reset();
-    }
-    if (!src["manufacturerDescription"].isNull()) {
-        dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
-    } else {
-        dst.manufacturerDescription.reset();
-    }
+    fromJsonField(dst.deviceName, "deviceName", src);
+    fromJsonField(dst.deviceCode, "deviceCode", src);
+    fromJsonField(dst.serialNumber, "serialNumber", src);
+    fromJsonField(dst.softwareRevision, "softwareRevision", src);
+    fromJsonField(dst.hardwareRevision, "hardwareRevision", src);
+    fromJsonField(dst.vendorName, "vendorName", src);
+    fromJsonField(dst.vendorCode, "vendorCode", src);
+    fromJsonField(dst.brandName, "brandName", src);
+    fromJsonField(dst.powerSource, "powerSource", src);
+    fromJsonField(dst.manufacturerNodeIdentification, "manufacturerNodeIdentification", src);
+    fromJsonField(dst.manufacturerLabel, "manufacturerLabel", src);
+    fromJsonField(dst.manufacturerDescription, "manufacturerDescription", src);
 }
 bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.boolean.has_value()) {
-        dst["boolean"] = *src.boolean;
-    }
-    if (src.date.has_value()) {
-        dst["date"] = *src.date;
-    }
-    if (src.dateTime.has_value()) {
-        dst["dateTime"] = *src.dateTime;
-    }
-    if (src.duration.has_value()) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.string.has_value()) {
-        dst["string"] = *src.string;
-    }
-    if (src.time.has_value()) {
-        dst["time"] = *src.time;
-    }
-    if (src.scaledNumber.has_value()) {
-        dst["scaledNumber"] = *src.scaledNumber;
-    }
-    if (src.integer.has_value()) {
-        dst["integer"] = *src.integer;
-    }
-
+    toJsonField(src.boolean, "boolean", dst);
+    toJsonField(src.date, "date", dst);
+    toJsonField(src.dateTime, "dateTime", dst);
+    toJsonField(src.duration, "duration", dst);
+    toJsonField(src.string, "string", dst);
+    toJsonField(src.time, "time", dst);
+    toJsonField(src.scaledNumber, "scaledNumber", dst);
+    toJsonField(src.integer, "integer", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst)
 {
-
-    if (!src["boolean"].isNull()) {
-        dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
-    } else {
-        dst.boolean.reset();
-    }
-    if (!src["date"].isNull()) {
-        dst.date = src["date"].as<decltype(dst.date)::value_type>();
-    } else {
-        dst.date.reset();
-    }
-    if (!src["dateTime"].isNull()) {
-        dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
-    } else {
-        dst.dateTime.reset();
-    }
-    if (!src["duration"].isNull()) {
-        dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-    } else {
-        dst.duration.reset();
-    }
-    if (!src["string"].isNull()) {
-        dst.string = src["string"].as<decltype(dst.string)::value_type>();
-    } else {
-        dst.string.reset();
-    }
-    if (!src["time"].isNull()) {
-        dst.time = src["time"].as<decltype(dst.time)::value_type>();
-    } else {
-        dst.time.reset();
-    }
-    if (!src["scaledNumber"].isNull()) {
-        dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
-    } else {
-        dst.scaledNumber.reset();
-    }
-    if (!src["integer"].isNull()) {
-        dst.integer = src["integer"].as<decltype(dst.integer)::value_type>();
-    } else {
-        dst.integer.reset();
-    }
+    fromJsonField(dst.boolean, "boolean", src);
+    fromJsonField(dst.date, "date", src);
+    fromJsonField(dst.dateTime, "dateTime", src);
+    fromJsonField(dst.duration, "duration", src);
+    fromJsonField(dst.string, "string", src);
+    fromJsonField(dst.time, "time", src);
+    fromJsonField(dst.scaledNumber, "scaledNumber", src);
+    fromJsonField(dst.integer, "integer", src);
 }
 bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.keyId.has_value()) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.isValueChangeable.has_value()) {
-        dst["isValueChangeable"] = *src.isValueChangeable;
-    }
-
+    toJsonField(src.keyId, "keyId", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.isValueChangeable, "isValueChangeable", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst)
 {
-
-    if (!src["keyId"].isNull()) {
-        dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-    } else {
-        dst.keyId.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["isValueChangeable"].isNull()) {
-        dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
-    } else {
-        dst.isValueChangeable.reset();
-    }
+    fromJsonField(dst.keyId, "keyId", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.isValueChangeable, "isValueChangeable", src);
 }
 bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.deviceConfigurationKeyValueData.has_value()) {
-        dst["deviceConfigurationKeyValueData"] = *src.deviceConfigurationKeyValueData;
-    }
-
+    toJsonField(src.deviceConfigurationKeyValueData, "deviceConfigurationKeyValueData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst)
 {
-
-    if (!src["deviceConfigurationKeyValueData"].isNull()) {
-        dst.deviceConfigurationKeyValueData = src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
-    } else {
-        dst.deviceConfigurationKeyValueData.reset();
-    }
+    fromJsonField(dst.deviceConfigurationKeyValueData, "deviceConfigurationKeyValueData", src);
 }
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.keyId.has_value()) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.keyName.has_value()) {
-        dst["keyName"] = *src.keyName;
-    }
-    if (src.valueType.has_value()) {
-        dst["valueType"] = *src.valueType;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.keyId, "keyId", dst);
+    toJsonField(src.keyName, "keyName", dst);
+    toJsonField(src.valueType, "valueType", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst)
 {
-
-    if (!src["keyId"].isNull()) {
-        dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-    } else {
-        dst.keyId.reset();
-    }
-    if (!src["keyName"].isNull()) {
-        dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
-    } else {
-        dst.keyName.reset();
-    }
-    if (!src["valueType"].isNull()) {
-        dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
-    } else {
-        dst.valueType.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.keyId, "keyId", src);
+    fromJsonField(dst.keyName, "keyName", src);
+    fromJsonField(dst.valueType, "valueType", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.deviceConfigurationKeyValueDescriptionData.has_value()) {
-        dst["deviceConfigurationKeyValueDescriptionData"] = *src.deviceConfigurationKeyValueDescriptionData;
-    }
-
+    toJsonField(src.deviceConfigurationKeyValueDescriptionData, "deviceConfigurationKeyValueDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst)
 {
-
-    if (!src["deviceConfigurationKeyValueDescriptionData"].isNull()) {
-        dst.deviceConfigurationKeyValueDescriptionData = src["deviceConfigurationKeyValueDescriptionData"].as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
-    } else {
-        dst.deviceConfigurationKeyValueDescriptionData.reset();
-    }
+    fromJsonField(dst.deviceConfigurationKeyValueDescriptionData, "deviceConfigurationKeyValueDescriptionData", src);
 }
 bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timestamp.has_value()) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.operatingState.has_value()) {
-        dst["operatingState"] = *src.operatingState;
-    }
-    if (src.vendorStateCode.has_value()) {
-        dst["vendorStateCode"] = *src.vendorStateCode;
-    }
-    if (src.lastErrorCode.has_value()) {
-        dst["lastErrorCode"] = *src.lastErrorCode;
-    }
-    if (src.upTime.has_value()) {
-        dst["upTime"] = *src.upTime;
-    }
-    if (src.totalUpTime.has_value()) {
-        dst["totalUpTime"] = *src.totalUpTime;
-    }
-    if (src.powerSupplyCondition.has_value()) {
-        dst["powerSupplyCondition"] = *src.powerSupplyCondition;
-    }
-
+    toJsonField(src.timestamp, "timestamp", dst);
+    toJsonField(src.operatingState, "operatingState", dst);
+    toJsonField(src.vendorStateCode, "vendorStateCode", dst);
+    toJsonField(src.lastErrorCode, "lastErrorCode", dst);
+    toJsonField(src.upTime, "upTime", dst);
+    toJsonField(src.totalUpTime, "totalUpTime", dst);
+    toJsonField(src.powerSupplyCondition, "powerSupplyCondition", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst)
 {
-
-    if (!src["timestamp"].isNull()) {
-        dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-    } else {
-        dst.timestamp.reset();
-    }
-    if (!src["operatingState"].isNull()) {
-        dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
-    } else {
-        dst.operatingState.reset();
-    }
-    if (!src["vendorStateCode"].isNull()) {
-        dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
-    } else {
-        dst.vendorStateCode.reset();
-    }
-    if (!src["lastErrorCode"].isNull()) {
-        dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
-    } else {
-        dst.lastErrorCode.reset();
-    }
-    if (!src["upTime"].isNull()) {
-        dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
-    } else {
-        dst.upTime.reset();
-    }
-    if (!src["totalUpTime"].isNull()) {
-        dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
-    } else {
-        dst.totalUpTime.reset();
-    }
-    if (!src["powerSupplyCondition"].isNull()) {
-        dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
-    } else {
-        dst.powerSupplyCondition.reset();
-    }
+    fromJsonField(dst.timestamp, "timestamp", src);
+    fromJsonField(dst.operatingState, "operatingState", src);
+    fromJsonField(dst.vendorStateCode, "vendorStateCode", src);
+    fromJsonField(dst.lastErrorCode, "lastErrorCode", src);
+    fromJsonField(dst.upTime, "upTime", src);
+    fromJsonField(dst.totalUpTime, "totalUpTime", src);
+    fromJsonField(dst.powerSupplyCondition, "powerSupplyCondition", src);
 }
 bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timestamp.has_value()) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.heartbeatCounter.has_value()) {
-        dst["heartbeatCounter"] = *src.heartbeatCounter;
-    }
-    if (src.heartbeatTimeout.has_value()) {
-        dst["heartbeatTimeout"] = *src.heartbeatTimeout;
-    }
-
+    toJsonField(src.timestamp, "timestamp", dst);
+    toJsonField(src.heartbeatCounter, "heartbeatCounter", dst);
+    toJsonField(src.heartbeatTimeout, "heartbeatTimeout", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst)
 {
-
-    if (!src["timestamp"].isNull()) {
-        dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-    } else {
-        dst.timestamp.reset();
-    }
-    if (!src["heartbeatCounter"].isNull()) {
-        dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
-    } else {
-        dst.heartbeatCounter.reset();
-    }
-    if (!src["heartbeatTimeout"].isNull()) {
-        dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
-    } else {
-        dst.heartbeatTimeout.reset();
-    }
+    fromJsonField(dst.timestamp, "timestamp", src);
+    fromJsonField(dst.heartbeatCounter, "heartbeatCounter", src);
+    fromJsonField(dst.heartbeatTimeout, "heartbeatTimeout", src);
 }
 bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionId.has_value()) {
-        dst["electricalConnectionId"] = *src.electricalConnectionId;
-    }
-    if (src.parameterId.has_value()) {
-        dst["parameterId"] = *src.parameterId;
-    }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.voltageType.has_value()) {
-        dst["voltageType"] = *src.voltageType;
-    }
-    if (src.acMeasuredPhases.has_value()) {
-        dst["acMeasuredPhases"] = *src.acMeasuredPhases;
-    }
-    if (src.acMeasuredInReferenceTo.has_value()) {
-        dst["acMeasuredInReferenceTo"] = *src.acMeasuredInReferenceTo;
-    }
-    if (src.acMeasurementType.has_value()) {
-        dst["acMeasurementType"] = *src.acMeasurementType;
-    }
-    if (src.acMeasurementVariant.has_value()) {
-        dst["acMeasurementVariant"] = *src.acMeasurementVariant;
-    }
-    if (src.acMeasuredHarmonic.has_value()) {
-        dst["acMeasuredHarmonic"] = *src.acMeasuredHarmonic;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.electricalConnectionId, "electricalConnectionId", dst);
+    toJsonField(src.parameterId, "parameterId", dst);
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.voltageType, "voltageType", dst);
+    toJsonField(src.acMeasuredPhases, "acMeasuredPhases", dst);
+    toJsonField(src.acMeasuredInReferenceTo, "acMeasuredInReferenceTo", dst);
+    toJsonField(src.acMeasurementType, "acMeasurementType", dst);
+    toJsonField(src.acMeasurementVariant, "acMeasurementVariant", dst);
+    toJsonField(src.acMeasuredHarmonic, "acMeasuredHarmonic", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataType &dst)
 {
-
-    if (!src["electricalConnectionId"].isNull()) {
-        dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
-    } else {
-        dst.electricalConnectionId.reset();
-    }
-    if (!src["parameterId"].isNull()) {
-        dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
-    } else {
-        dst.parameterId.reset();
-    }
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["voltageType"].isNull()) {
-        dst.voltageType = src["voltageType"].as<decltype(dst.voltageType)::value_type>();
-    } else {
-        dst.voltageType.reset();
-    }
-    if (!src["acMeasuredPhases"].isNull()) {
-        dst.acMeasuredPhases = src["acMeasuredPhases"].as<decltype(dst.acMeasuredPhases)::value_type>();
-    } else {
-        dst.acMeasuredPhases.reset();
-    }
-    if (!src["acMeasuredInReferenceTo"].isNull()) {
-        dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
-    } else {
-        dst.acMeasuredInReferenceTo.reset();
-    }
-    if (!src["acMeasurementType"].isNull()) {
-        dst.acMeasurementType = src["acMeasurementType"].as<decltype(dst.acMeasurementType)::value_type>();
-    } else {
-        dst.acMeasurementType.reset();
-    }
-    if (!src["acMeasurementVariant"].isNull()) {
-        dst.acMeasurementVariant = src["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
-    } else {
-        dst.acMeasurementVariant.reset();
-    }
-    if (!src["acMeasuredHarmonic"].isNull()) {
-        dst.acMeasuredHarmonic = src["acMeasuredHarmonic"].as<decltype(dst.acMeasuredHarmonic)::value_type>();
-    } else {
-        dst.acMeasuredHarmonic.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.electricalConnectionId, "electricalConnectionId", src);
+    fromJsonField(dst.parameterId, "parameterId", src);
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.voltageType, "voltageType", src);
+    fromJsonField(dst.acMeasuredPhases, "acMeasuredPhases", src);
+    fromJsonField(dst.acMeasuredInReferenceTo, "acMeasuredInReferenceTo", src);
+    fromJsonField(dst.acMeasurementType, "acMeasurementType", src);
+    fromJsonField(dst.acMeasurementVariant, "acMeasurementVariant", src);
+    fromJsonField(dst.acMeasuredHarmonic, "acMeasuredHarmonic", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionParameterDescriptionData.has_value()) {
-        dst["electricalConnectionParameterDescriptionData"] = *src.electricalConnectionParameterDescriptionData;
-    }
-
+    toJsonField(src.electricalConnectionParameterDescriptionData, "electricalConnectionParameterDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataType &dst)
 {
-
-    if (!src["electricalConnectionParameterDescriptionData"].isNull()) {
-        dst.electricalConnectionParameterDescriptionData = src["electricalConnectionParameterDescriptionData"].as<decltype(dst.electricalConnectionParameterDescriptionData)::value_type>();
-    } else {
-        dst.electricalConnectionParameterDescriptionData.reset();
-    }
+    fromJsonField(dst.electricalConnectionParameterDescriptionData, "electricalConnectionParameterDescriptionData", src);
 }
 bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionId.has_value()) {
-        dst["electricalConnectionId"] = *src.electricalConnectionId;
-    }
-    if (src.parameterId.has_value()) {
-        dst["parameterId"] = *src.parameterId;
-    }
-    if (src.permittedValueSet.has_value()) {
-        dst["permittedValueSet"] = *src.permittedValueSet;
-    }
-
+    toJsonField(src.electricalConnectionId, "electricalConnectionId", dst);
+    toJsonField(src.parameterId, "parameterId", dst);
+    toJsonField(src.permittedValueSet, "permittedValueSet", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataType &dst)
 {
-
-    if (!src["electricalConnectionId"].isNull()) {
-        dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
-    } else {
-        dst.electricalConnectionId.reset();
-    }
-    if (!src["parameterId"].isNull()) {
-        dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
-    } else {
-        dst.parameterId.reset();
-    }
-    if (!src["permittedValueSet"].isNull()) {
-        dst.permittedValueSet = src["permittedValueSet"].as<decltype(dst.permittedValueSet)::value_type>();
-    } else {
-        dst.permittedValueSet.reset();
-    }
+    fromJsonField(dst.electricalConnectionId, "electricalConnectionId", src);
+    fromJsonField(dst.parameterId, "parameterId", src);
+    fromJsonField(dst.permittedValueSet, "permittedValueSet", src);
 }
 bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionPermittedValueSetData.has_value()) {
-        dst["electricalConnectionPermittedValueSetData"] = *src.electricalConnectionPermittedValueSetData;
-    }
-
+    toJsonField(src.electricalConnectionPermittedValueSetData, "electricalConnectionPermittedValueSetData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataType &dst)
 {
-
-    if (!src["electricalConnectionPermittedValueSetData"].isNull()) {
-        dst.electricalConnectionPermittedValueSetData = src["electricalConnectionPermittedValueSetData"].as<decltype(dst.electricalConnectionPermittedValueSetData)::value_type>();
-    } else {
-        dst.electricalConnectionPermittedValueSetData.reset();
-    }
+    fromJsonField(dst.electricalConnectionPermittedValueSetData, "electricalConnectionPermittedValueSetData", src);
 }
 bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionId.has_value()) {
-        dst["electricalConnectionId"] = *src.electricalConnectionId;
-    }
-    if (src.parameterId.has_value()) {
-        dst["parameterId"] = *src.parameterId;
-    }
-    if (src.characteristicId.has_value()) {
-        dst["characteristicId"] = *src.characteristicId;
-    }
-    if (src.characteristicContext.has_value()) {
-        dst["characteristicContext"] = *src.characteristicContext;
-    }
-    if (src.characteristicType.has_value()) {
-        dst["characteristicType"] = *src.characteristicType;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-
+    toJsonField(src.electricalConnectionId, "electricalConnectionId", dst);
+    toJsonField(src.parameterId, "parameterId", dst);
+    toJsonField(src.characteristicId, "characteristicId", dst);
+    toJsonField(src.characteristicContext, "characteristicContext", dst);
+    toJsonField(src.characteristicType, "characteristicType", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.unit, "unit", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataType &dst)
 {
-
-    if (!src["electricalConnectionId"].isNull()) {
-        dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
-    } else {
-        dst.electricalConnectionId.reset();
-    }
-    if (!src["parameterId"].isNull()) {
-        dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
-    } else {
-        dst.parameterId.reset();
-    }
-    if (!src["characteristicId"].isNull()) {
-        dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
-    } else {
-        dst.characteristicId.reset();
-    }
-    if (!src["characteristicContext"].isNull()) {
-        dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
-    } else {
-        dst.characteristicContext.reset();
-    }
-    if (!src["characteristicType"].isNull()) {
-        dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
-    } else {
-        dst.characteristicType.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
+    fromJsonField(dst.electricalConnectionId, "electricalConnectionId", src);
+    fromJsonField(dst.parameterId, "parameterId", src);
+    fromJsonField(dst.characteristicId, "characteristicId", src);
+    fromJsonField(dst.characteristicContext, "characteristicContext", src);
+    fromJsonField(dst.characteristicType, "characteristicType", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.unit, "unit", src);
 }
 bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionCharacteristicData.has_value()) {
-        dst["electricalConnectionCharacteristicData"] = *src.electricalConnectionCharacteristicData;
-    }
-
+    toJsonField(src.electricalConnectionCharacteristicData, "electricalConnectionCharacteristicData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataType &dst)
 {
-
-    if (!src["electricalConnectionCharacteristicData"].isNull()) {
-        dst.electricalConnectionCharacteristicData = src["electricalConnectionCharacteristicData"].as<decltype(dst.electricalConnectionCharacteristicData)::value_type>();
-    } else {
-        dst.electricalConnectionCharacteristicData.reset();
-    }
+    fromJsonField(dst.electricalConnectionCharacteristicData, "electricalConnectionCharacteristicData", src);
 }
 bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionId.has_value()) {
-        dst["electricalConnectionId"] = *src.electricalConnectionId;
-    }
-    if (src.powerSupplyType.has_value()) {
-        dst["powerSupplyType"] = *src.powerSupplyType;
-    }
-    if (src.acConnectedPhases.has_value()) {
-        dst["acConnectedPhases"] = *src.acConnectedPhases;
-    }
-    if (src.acRmsPeriodDuration.has_value()) {
-        dst["acRmsPeriodDuration"] = *src.acRmsPeriodDuration;
-    }
-    if (src.positiveEnergyDirection.has_value()) {
-        dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.electricalConnectionId, "electricalConnectionId", dst);
+    toJsonField(src.powerSupplyType, "powerSupplyType", dst);
+    toJsonField(src.acConnectedPhases, "acConnectedPhases", dst);
+    toJsonField(src.acRmsPeriodDuration, "acRmsPeriodDuration", dst);
+    toJsonField(src.positiveEnergyDirection, "positiveEnergyDirection", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataType &dst)
 {
-
-    if (!src["electricalConnectionId"].isNull()) {
-        dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
-    } else {
-        dst.electricalConnectionId.reset();
-    }
-    if (!src["powerSupplyType"].isNull()) {
-        dst.powerSupplyType = src["powerSupplyType"].as<decltype(dst.powerSupplyType)::value_type>();
-    } else {
-        dst.powerSupplyType.reset();
-    }
-    if (!src["acConnectedPhases"].isNull()) {
-        dst.acConnectedPhases = src["acConnectedPhases"].as<decltype(dst.acConnectedPhases)::value_type>();
-    } else {
-        dst.acConnectedPhases.reset();
-    }
-    if (!src["acRmsPeriodDuration"].isNull()) {
-        dst.acRmsPeriodDuration = src["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
-    } else {
-        dst.acRmsPeriodDuration.reset();
-    }
-    if (!src["positiveEnergyDirection"].isNull()) {
-        dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
-    } else {
-        dst.positiveEnergyDirection.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.electricalConnectionId, "electricalConnectionId", src);
+    fromJsonField(dst.powerSupplyType, "powerSupplyType", src);
+    fromJsonField(dst.acConnectedPhases, "acConnectedPhases", src);
+    fromJsonField(dst.acRmsPeriodDuration, "acRmsPeriodDuration", src);
+    fromJsonField(dst.positiveEnergyDirection, "positiveEnergyDirection", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.electricalConnectionDescriptionData.has_value()) {
-        dst["electricalConnectionDescriptionData"] = *src.electricalConnectionDescriptionData;
-    }
-
+    toJsonField(src.electricalConnectionDescriptionData, "electricalConnectionDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataType &dst)
 {
-
-    if (!src["electricalConnectionDescriptionData"].isNull()) {
-        dst.electricalConnectionDescriptionData = src["electricalConnectionDescriptionData"].as<decltype(dst.electricalConnectionDescriptionData)::value_type>();
-    } else {
-        dst.electricalConnectionDescriptionData.reset();
-    }
+    fromJsonField(dst.electricalConnectionDescriptionData, "electricalConnectionDescriptionData", src);
 }
 bool convertToJson(const TimeTableDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeTableId.has_value()) {
-        dst["timeTableId"] = *src.timeTableId;
-    }
-    if (src.timeSlotId.has_value()) {
-        dst["timeSlotId"] = *src.timeSlotId;
-    }
-    if (src.recurrenceInformation.has_value()) {
-        dst["recurrenceInformation"] = *src.recurrenceInformation;
-    }
-    if (src.startTime.has_value()) {
-        dst["startTime"] = *src.startTime;
-    }
-    if (src.endTime.has_value()) {
-        dst["endTime"] = *src.endTime;
-    }
-
+    toJsonField(src.timeTableId, "timeTableId", dst);
+    toJsonField(src.timeSlotId, "timeSlotId", dst);
+    toJsonField(src.recurrenceInformation, "recurrenceInformation", dst);
+    toJsonField(src.startTime, "startTime", dst);
+    toJsonField(src.endTime, "endTime", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
 {
-
-    if (!src["timeTableId"].isNull()) {
-        dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
-    } else {
-        dst.timeTableId.reset();
-    }
-    if (!src["timeSlotId"].isNull()) {
-        dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
-    } else {
-        dst.timeSlotId.reset();
-    }
-    if (!src["recurrenceInformation"].isNull()) {
-        dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-    } else {
-        dst.recurrenceInformation.reset();
-    }
-    if (!src["startTime"].isNull()) {
-        dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
-    } else {
-        dst.startTime.reset();
-    }
-    if (!src["endTime"].isNull()) {
-        dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
-    } else {
-        dst.endTime.reset();
-    }
+    fromJsonField(dst.timeTableId, "timeTableId", src);
+    fromJsonField(dst.timeSlotId, "timeSlotId", src);
+    fromJsonField(dst.recurrenceInformation, "recurrenceInformation", src);
+    fromJsonField(dst.startTime, "startTime", src);
+    fromJsonField(dst.endTime, "endTime", src);
 }
 bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeTableId.has_value()) {
-        dst["timeTableId"] = *src.timeTableId;
-    }
-    if (src.slotCountMin.has_value()) {
-        dst["slotCountMin"] = *src.slotCountMin;
-    }
-    if (src.slotCountMax.has_value()) {
-        dst["slotCountMax"] = *src.slotCountMax;
-    }
-    if (src.slotDurationMin.has_value()) {
-        dst["slotDurationMin"] = *src.slotDurationMin;
-    }
-    if (src.slotDurationMax.has_value()) {
-        dst["slotDurationMax"] = *src.slotDurationMax;
-    }
-    if (src.slotDurationStepSize.has_value()) {
-        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
-    }
-    if (src.slotShiftStepSize.has_value()) {
-        dst["slotShiftStepSize"] = *src.slotShiftStepSize;
-    }
-    if (src.firstSlotBeginsAt.has_value()) {
-        dst["firstSlotBeginsAt"] = *src.firstSlotBeginsAt;
-    }
-
+    toJsonField(src.timeTableId, "timeTableId", dst);
+    toJsonField(src.slotCountMin, "slotCountMin", dst);
+    toJsonField(src.slotCountMax, "slotCountMax", dst);
+    toJsonField(src.slotDurationMin, "slotDurationMin", dst);
+    toJsonField(src.slotDurationMax, "slotDurationMax", dst);
+    toJsonField(src.slotDurationStepSize, "slotDurationStepSize", dst);
+    toJsonField(src.slotShiftStepSize, "slotShiftStepSize", dst);
+    toJsonField(src.firstSlotBeginsAt, "firstSlotBeginsAt", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &dst)
 {
-
-    if (!src["timeTableId"].isNull()) {
-        dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
-    } else {
-        dst.timeTableId.reset();
-    }
-    if (!src["slotCountMin"].isNull()) {
-        dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
-    } else {
-        dst.slotCountMin.reset();
-    }
-    if (!src["slotCountMax"].isNull()) {
-        dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-    } else {
-        dst.slotCountMax.reset();
-    }
-    if (!src["slotDurationMin"].isNull()) {
-        dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-    } else {
-        dst.slotDurationMin.reset();
-    }
-    if (!src["slotDurationMax"].isNull()) {
-        dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-    } else {
-        dst.slotDurationMax.reset();
-    }
-    if (!src["slotDurationStepSize"].isNull()) {
-        dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-    } else {
-        dst.slotDurationStepSize.reset();
-    }
-    if (!src["slotShiftStepSize"].isNull()) {
-        dst.slotShiftStepSize = src["slotShiftStepSize"].as<decltype(dst.slotShiftStepSize)::value_type>();
-    } else {
-        dst.slotShiftStepSize.reset();
-    }
-    if (!src["firstSlotBeginsAt"].isNull()) {
-        dst.firstSlotBeginsAt = src["firstSlotBeginsAt"].as<decltype(dst.firstSlotBeginsAt)::value_type>();
-    } else {
-        dst.firstSlotBeginsAt.reset();
-    }
+    fromJsonField(dst.timeTableId, "timeTableId", src);
+    fromJsonField(dst.slotCountMin, "slotCountMin", src);
+    fromJsonField(dst.slotCountMax, "slotCountMax", src);
+    fromJsonField(dst.slotDurationMin, "slotDurationMin", src);
+    fromJsonField(dst.slotDurationMax, "slotDurationMax", src);
+    fromJsonField(dst.slotDurationStepSize, "slotDurationStepSize", src);
+    fromJsonField(dst.slotShiftStepSize, "slotShiftStepSize", src);
+    fromJsonField(dst.firstSlotBeginsAt, "firstSlotBeginsAt", src);
 }
 bool convertToJson(const TariffDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tariffId.has_value()) {
-        dst["tariffId"] = *src.tariffId;
-    }
-    if (src.activeTierId.has_value()) {
-        dst["activeTierId"] = *src.activeTierId;
-    }
-
+    toJsonField(src.tariffId, "tariffId", dst);
+    toJsonField(src.activeTierId, "activeTierId", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TariffDataType &dst)
 {
-
-    if (!src["tariffId"].isNull()) {
-        dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
-    } else {
-        dst.tariffId.reset();
-    }
-    if (!src["activeTierId"].isNull()) {
-        dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
-    } else {
-        dst.activeTierId.reset();
-    }
+    fromJsonField(dst.tariffId, "tariffId", src);
+    fromJsonField(dst.activeTierId, "activeTierId", src);
 }
 bool convertToJson(const TierDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tierId.has_value()) {
-        dst["tierId"] = *src.tierId;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeTableId.has_value()) {
-        dst["timeTableId"] = *src.timeTableId;
-    }
-    if (src.activeIncentiveId.has_value()) {
-        dst["activeIncentiveId"] = *src.activeIncentiveId;
-    }
-
+    toJsonField(src.tierId, "tierId", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.timeTableId, "timeTableId", dst);
+    toJsonField(src.activeIncentiveId, "activeIncentiveId", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TierDataType &dst)
 {
-
-    if (!src["tierId"].isNull()) {
-        dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
-    } else {
-        dst.tierId.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["timeTableId"].isNull()) {
-        dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
-    } else {
-        dst.timeTableId.reset();
-    }
-    if (!src["activeIncentiveId"].isNull()) {
-        dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
-    } else {
-        dst.activeIncentiveId.reset();
-    }
+    fromJsonField(dst.tierId, "tierId", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.timeTableId, "timeTableId", src);
+    fromJsonField(dst.activeIncentiveId, "activeIncentiveId", src);
 }
 bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.boundaryId.has_value()) {
-        dst["boundaryId"] = *src.boundaryId;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeTableId.has_value()) {
-        dst["timeTableId"] = *src.timeTableId;
-    }
-    if (src.lowerBoundaryValue.has_value()) {
-        dst["lowerBoundaryValue"] = *src.lowerBoundaryValue;
-    }
-    if (src.upperBoundaryValue.has_value()) {
-        dst["upperBoundaryValue"] = *src.upperBoundaryValue;
-    }
-
+    toJsonField(src.boundaryId, "boundaryId", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.timeTableId, "timeTableId", dst);
+    toJsonField(src.lowerBoundaryValue, "lowerBoundaryValue", dst);
+    toJsonField(src.upperBoundaryValue, "upperBoundaryValue", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst)
 {
-
-    if (!src["boundaryId"].isNull()) {
-        dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
-    } else {
-        dst.boundaryId.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["timeTableId"].isNull()) {
-        dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
-    } else {
-        dst.timeTableId.reset();
-    }
-    if (!src["lowerBoundaryValue"].isNull()) {
-        dst.lowerBoundaryValue = src["lowerBoundaryValue"].as<decltype(dst.lowerBoundaryValue)::value_type>();
-    } else {
-        dst.lowerBoundaryValue.reset();
-    }
-    if (!src["upperBoundaryValue"].isNull()) {
-        dst.upperBoundaryValue = src["upperBoundaryValue"].as<decltype(dst.upperBoundaryValue)::value_type>();
-    } else {
-        dst.upperBoundaryValue.reset();
-    }
+    fromJsonField(dst.boundaryId, "boundaryId", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.timeTableId, "timeTableId", src);
+    fromJsonField(dst.lowerBoundaryValue, "lowerBoundaryValue", src);
+    fromJsonField(dst.upperBoundaryValue, "upperBoundaryValue", src);
 }
 bool convertToJson(const IncentiveDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.incentiveId.has_value()) {
-        dst["incentiveId"] = *src.incentiveId;
-    }
-    if (src.valueType.has_value()) {
-        dst["valueType"] = *src.valueType;
-    }
-    if (src.timestamp.has_value()) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeTableId.has_value()) {
-        dst["timeTableId"] = *src.timeTableId;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-
+    toJsonField(src.incentiveId, "incentiveId", dst);
+    toJsonField(src.valueType, "valueType", dst);
+    toJsonField(src.timestamp, "timestamp", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.timeTableId, "timeTableId", dst);
+    toJsonField(src.value, "value", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst)
 {
-
-    if (!src["incentiveId"].isNull()) {
-        dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
-    } else {
-        dst.incentiveId.reset();
-    }
-    if (!src["valueType"].isNull()) {
-        dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
-    } else {
-        dst.valueType.reset();
-    }
-    if (!src["timestamp"].isNull()) {
-        dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-    } else {
-        dst.timestamp.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["timeTableId"].isNull()) {
-        dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
-    } else {
-        dst.timeTableId.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
+    fromJsonField(dst.incentiveId, "incentiveId", src);
+    fromJsonField(dst.valueType, "valueType", src);
+    fromJsonField(dst.timestamp, "timestamp", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.timeTableId, "timeTableId", src);
+    fromJsonField(dst.value, "value", src);
 }
 bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tier.has_value()) {
-        dst["tier"] = *src.tier;
-    }
-    if (src.boundary.has_value()) {
-        dst["boundary"] = *src.boundary;
-    }
-    if (src.incentive.has_value()) {
-        dst["incentive"] = *src.incentive;
-    }
-
+    toJsonField(src.tier, "tier", dst);
+    toJsonField(src.boundary, "boundary", dst);
+    toJsonField(src.incentive, "incentive", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst)
 {
-
-    if (!src["tier"].isNull()) {
-        dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
-    } else {
-        dst.tier.reset();
-    }
-    if (!src["boundary"].isNull()) {
-        dst.boundary = src["boundary"].as<decltype(dst.boundary)::value_type>();
-    } else {
-        dst.boundary.reset();
-    }
-    if (!src["incentive"].isNull()) {
-        dst.incentive = src["incentive"].as<decltype(dst.incentive)::value_type>();
-    } else {
-        dst.incentive.reset();
-    }
+    fromJsonField(dst.tier, "tier", src);
+    fromJsonField(dst.boundary, "boundary", src);
+    fromJsonField(dst.incentive, "incentive", src);
 }
 bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeInterval.has_value()) {
-        dst["timeInterval"] = *src.timeInterval;
-    }
-    if (src.tier.has_value()) {
-        dst["tier"] = *src.tier;
-    }
-
+    toJsonField(src.timeInterval, "timeInterval", dst);
+    toJsonField(src.tier, "tier", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotType &dst)
 {
-
-    if (!src["timeInterval"].isNull()) {
-        dst.timeInterval = src["timeInterval"].as<decltype(dst.timeInterval)::value_type>();
-    } else {
-        dst.timeInterval.reset();
-    }
-    if (!src["tier"].isNull()) {
-        dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
-    } else {
-        dst.tier.reset();
-    }
+    fromJsonField(dst.timeInterval, "timeInterval", src);
+    fromJsonField(dst.tier, "tier", src);
 }
 bool convertToJson(const IncentiveTableType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tariff.has_value()) {
-        dst["tariff"] = *src.tariff;
-    }
-    if (src.incentiveSlot.has_value()) {
-        dst["incentiveSlot"] = *src.incentiveSlot;
-    }
-
+    toJsonField(src.tariff, "tariff", dst);
+    toJsonField(src.incentiveSlot, "incentiveSlot", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst)
 {
-
-    if (!src["tariff"].isNull()) {
-        dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
-    } else {
-        dst.tariff.reset();
-    }
-    if (!src["incentiveSlot"].isNull()) {
-        dst.incentiveSlot = src["incentiveSlot"].as<decltype(dst.incentiveSlot)::value_type>();
-    } else {
-        dst.incentiveSlot.reset();
-    }
+    fromJsonField(dst.tariff, "tariff", src);
+    fromJsonField(dst.incentiveSlot, "incentiveSlot", src);
 }
 bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.incentiveTable.has_value()) {
-        dst["incentiveTable"] = *src.incentiveTable;
-    }
-
+    toJsonField(src.incentiveTable, "incentiveTable", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst)
 {
-
-    if (!src["incentiveTable"].isNull()) {
-        dst.incentiveTable = src["incentiveTable"].as<decltype(dst.incentiveTable)::value_type>();
-    } else {
-        dst.incentiveTable.reset();
-    }
+    fromJsonField(dst.incentiveTable, "incentiveTable", src);
 }
 bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tariffId.has_value()) {
-        dst["tariffId"] = *src.tariffId;
-    }
-    if (src.commodityId.has_value()) {
-        dst["commodityId"] = *src.commodityId;
-    }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.tariffWriteable.has_value()) {
-        dst["tariffWriteable"] = *src.tariffWriteable;
-    }
-    if (src.updateRequired.has_value()) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-    if (src.slotIdSupport.has_value()) {
-        dst["slotIdSupport"] = *src.slotIdSupport;
-    }
-
+    toJsonField(src.tariffId, "tariffId", dst);
+    toJsonField(src.commodityId, "commodityId", dst);
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.tariffWriteable, "tariffWriteable", dst);
+    toJsonField(src.updateRequired, "updateRequired", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
+    toJsonField(src.slotIdSupport, "slotIdSupport", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst)
 {
-
-    if (!src["tariffId"].isNull()) {
-        dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
-    } else {
-        dst.tariffId.reset();
-    }
-    if (!src["commodityId"].isNull()) {
-        dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
-    } else {
-        dst.commodityId.reset();
-    }
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["tariffWriteable"].isNull()) {
-        dst.tariffWriteable = src["tariffWriteable"].as<decltype(dst.tariffWriteable)::value_type>();
-    } else {
-        dst.tariffWriteable.reset();
-    }
-    if (!src["updateRequired"].isNull()) {
-        dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-    } else {
-        dst.updateRequired.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
-    if (!src["slotIdSupport"].isNull()) {
-        dst.slotIdSupport = src["slotIdSupport"].as<decltype(dst.slotIdSupport)::value_type>();
-    } else {
-        dst.slotIdSupport.reset();
-    }
+    fromJsonField(dst.tariffId, "tariffId", src);
+    fromJsonField(dst.commodityId, "commodityId", src);
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.tariffWriteable, "tariffWriteable", src);
+    fromJsonField(dst.updateRequired, "updateRequired", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
+    fromJsonField(dst.slotIdSupport, "slotIdSupport", src);
 }
 bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tierId.has_value()) {
-        dst["tierId"] = *src.tierId;
-    }
-    if (src.tierType.has_value()) {
-        dst["tierType"] = *src.tierType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.tierId, "tierId", dst);
+    toJsonField(src.tierType, "tierType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst)
 {
-
-    if (!src["tierId"].isNull()) {
-        dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
-    } else {
-        dst.tierId.reset();
-    }
-    if (!src["tierType"].isNull()) {
-        dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
-    } else {
-        dst.tierType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.tierId, "tierId", src);
+    fromJsonField(dst.tierType, "tierType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.boundaryId.has_value()) {
-        dst["boundaryId"] = *src.boundaryId;
-    }
-    if (src.boundaryType.has_value()) {
-        dst["boundaryType"] = *src.boundaryType;
-    }
-    if (src.validForTierId.has_value()) {
-        dst["validForTierId"] = *src.validForTierId;
-    }
-    if (src.switchToTierIdWhenLower.has_value()) {
-        dst["switchToTierIdWhenLower"] = *src.switchToTierIdWhenLower;
-    }
-    if (src.switchToTierIdWhenHigher.has_value()) {
-        dst["switchToTierIdWhenHigher"] = *src.switchToTierIdWhenHigher;
-    }
-    if (src.boundaryUnit.has_value()) {
-        dst["boundaryUnit"] = *src.boundaryUnit;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.boundaryId, "boundaryId", dst);
+    toJsonField(src.boundaryType, "boundaryType", dst);
+    toJsonField(src.validForTierId, "validForTierId", dst);
+    toJsonField(src.switchToTierIdWhenLower, "switchToTierIdWhenLower", dst);
+    toJsonField(src.switchToTierIdWhenHigher, "switchToTierIdWhenHigher", dst);
+    toJsonField(src.boundaryUnit, "boundaryUnit", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataType &dst)
 {
-
-    if (!src["boundaryId"].isNull()) {
-        dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
-    } else {
-        dst.boundaryId.reset();
-    }
-    if (!src["boundaryType"].isNull()) {
-        dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
-    } else {
-        dst.boundaryType.reset();
-    }
-    if (!src["validForTierId"].isNull()) {
-        dst.validForTierId = src["validForTierId"].as<decltype(dst.validForTierId)::value_type>();
-    } else {
-        dst.validForTierId.reset();
-    }
-    if (!src["switchToTierIdWhenLower"].isNull()) {
-        dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
-    } else {
-        dst.switchToTierIdWhenLower.reset();
-    }
-    if (!src["switchToTierIdWhenHigher"].isNull()) {
-        dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
-    } else {
-        dst.switchToTierIdWhenHigher.reset();
-    }
-    if (!src["boundaryUnit"].isNull()) {
-        dst.boundaryUnit = src["boundaryUnit"].as<decltype(dst.boundaryUnit)::value_type>();
-    } else {
-        dst.boundaryUnit.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.boundaryId, "boundaryId", src);
+    fromJsonField(dst.boundaryType, "boundaryType", src);
+    fromJsonField(dst.validForTierId, "validForTierId", src);
+    fromJsonField(dst.switchToTierIdWhenLower, "switchToTierIdWhenLower", src);
+    fromJsonField(dst.switchToTierIdWhenHigher, "switchToTierIdWhenHigher", src);
+    fromJsonField(dst.boundaryUnit, "boundaryUnit", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.incentiveId.has_value()) {
-        dst["incentiveId"] = *src.incentiveId;
-    }
-    if (src.incentiveType.has_value()) {
-        dst["incentiveType"] = *src.incentiveType;
-    }
-    if (src.incentivePriority.has_value()) {
-        dst["incentivePriority"] = *src.incentivePriority;
-    }
-    if (src.currency.has_value()) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.incentiveId, "incentiveId", dst);
+    toJsonField(src.incentiveType, "incentiveType", dst);
+    toJsonField(src.incentivePriority, "incentivePriority", dst);
+    toJsonField(src.currency, "currency", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &dst)
 {
-
-    if (!src["incentiveId"].isNull()) {
-        dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
-    } else {
-        dst.incentiveId.reset();
-    }
-    if (!src["incentiveType"].isNull()) {
-        dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
-    } else {
-        dst.incentiveType.reset();
-    }
-    if (!src["incentivePriority"].isNull()) {
-        dst.incentivePriority = src["incentivePriority"].as<decltype(dst.incentivePriority)::value_type>();
-    } else {
-        dst.incentivePriority.reset();
-    }
-    if (!src["currency"].isNull()) {
-        dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
-    } else {
-        dst.currency.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.incentiveId, "incentiveId", src);
+    fromJsonField(dst.incentiveType, "incentiveType", src);
+    fromJsonField(dst.incentivePriority, "incentivePriority", src);
+    fromJsonField(dst.currency, "currency", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tierDescription.has_value()) {
-        dst["tierDescription"] = *src.tierDescription;
-    }
-    if (src.boundaryDescription.has_value()) {
-        dst["boundaryDescription"] = *src.boundaryDescription;
-    }
-    if (src.incentiveDescription.has_value()) {
-        dst["incentiveDescription"] = *src.incentiveDescription;
-    }
-
+    toJsonField(src.tierDescription, "tierDescription", dst);
+    toJsonField(src.boundaryDescription, "boundaryDescription", dst);
+    toJsonField(src.incentiveDescription, "incentiveDescription", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierType &dst)
 {
-
-    if (!src["tierDescription"].isNull()) {
-        dst.tierDescription = src["tierDescription"].as<decltype(dst.tierDescription)::value_type>();
-    } else {
-        dst.tierDescription.reset();
-    }
-    if (!src["boundaryDescription"].isNull()) {
-        dst.boundaryDescription = src["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
-    } else {
-        dst.boundaryDescription.reset();
-    }
-    if (!src["incentiveDescription"].isNull()) {
-        dst.incentiveDescription = src["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
-    } else {
-        dst.incentiveDescription.reset();
-    }
+    fromJsonField(dst.tierDescription, "tierDescription", src);
+    fromJsonField(dst.boundaryDescription, "boundaryDescription", src);
+    fromJsonField(dst.incentiveDescription, "incentiveDescription", src);
 }
 bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tariffDescription.has_value()) {
-        dst["tariffDescription"] = *src.tariffDescription;
-    }
-    if (src.tier.has_value()) {
-        dst["tier"] = *src.tier;
-    }
-
+    toJsonField(src.tariffDescription, "tariffDescription", dst);
+    toJsonField(src.tier, "tier", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType &dst)
 {
-
-    if (!src["tariffDescription"].isNull()) {
-        dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
-    } else {
-        dst.tariffDescription.reset();
-    }
-    if (!src["tier"].isNull()) {
-        dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
-    } else {
-        dst.tier.reset();
-    }
+    fromJsonField(dst.tariffDescription, "tariffDescription", src);
+    fromJsonField(dst.tier, "tier", src);
 }
 bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.incentiveTableDescription.has_value()) {
-        dst["incentiveTableDescription"] = *src.incentiveTableDescription;
-    }
-
+    toJsonField(src.incentiveTableDescription, "incentiveTableDescription", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataType &dst)
 {
-
-    if (!src["incentiveTableDescription"].isNull()) {
-        dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
-    } else {
-        dst.incentiveTableDescription.reset();
-    }
+    fromJsonField(dst.incentiveTableDescription, "incentiveTableDescription", src);
 }
 bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.maxTariffCount.has_value()) {
-        dst["maxTariffCount"] = *src.maxTariffCount;
-    }
-    if (src.maxBoundaryCount.has_value()) {
-        dst["maxBoundaryCount"] = *src.maxBoundaryCount;
-    }
-    if (src.maxTierCount.has_value()) {
-        dst["maxTierCount"] = *src.maxTierCount;
-    }
-    if (src.maxIncentiveCount.has_value()) {
-        dst["maxIncentiveCount"] = *src.maxIncentiveCount;
-    }
-    if (src.maxBoundariesPerTariff.has_value()) {
-        dst["maxBoundariesPerTariff"] = *src.maxBoundariesPerTariff;
-    }
-    if (src.maxTiersPerTariff.has_value()) {
-        dst["maxTiersPerTariff"] = *src.maxTiersPerTariff;
-    }
-    if (src.maxBoundariesPerTier.has_value()) {
-        dst["maxBoundariesPerTier"] = *src.maxBoundariesPerTier;
-    }
-    if (src.maxIncentivesPerTier.has_value()) {
-        dst["maxIncentivesPerTier"] = *src.maxIncentivesPerTier;
-    }
-
+    toJsonField(src.maxTariffCount, "maxTariffCount", dst);
+    toJsonField(src.maxBoundaryCount, "maxBoundaryCount", dst);
+    toJsonField(src.maxTierCount, "maxTierCount", dst);
+    toJsonField(src.maxIncentiveCount, "maxIncentiveCount", dst);
+    toJsonField(src.maxBoundariesPerTariff, "maxBoundariesPerTariff", dst);
+    toJsonField(src.maxTiersPerTariff, "maxTiersPerTariff", dst);
+    toJsonField(src.maxBoundariesPerTier, "maxBoundariesPerTier", dst);
+    toJsonField(src.maxIncentivesPerTier, "maxIncentivesPerTier", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataType &dst)
 {
-
-    if (!src["maxTariffCount"].isNull()) {
-        dst.maxTariffCount = src["maxTariffCount"].as<decltype(dst.maxTariffCount)::value_type>();
-    } else {
-        dst.maxTariffCount.reset();
-    }
-    if (!src["maxBoundaryCount"].isNull()) {
-        dst.maxBoundaryCount = src["maxBoundaryCount"].as<decltype(dst.maxBoundaryCount)::value_type>();
-    } else {
-        dst.maxBoundaryCount.reset();
-    }
-    if (!src["maxTierCount"].isNull()) {
-        dst.maxTierCount = src["maxTierCount"].as<decltype(dst.maxTierCount)::value_type>();
-    } else {
-        dst.maxTierCount.reset();
-    }
-    if (!src["maxIncentiveCount"].isNull()) {
-        dst.maxIncentiveCount = src["maxIncentiveCount"].as<decltype(dst.maxIncentiveCount)::value_type>();
-    } else {
-        dst.maxIncentiveCount.reset();
-    }
-    if (!src["maxBoundariesPerTariff"].isNull()) {
-        dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
-    } else {
-        dst.maxBoundariesPerTariff.reset();
-    }
-    if (!src["maxTiersPerTariff"].isNull()) {
-        dst.maxTiersPerTariff = src["maxTiersPerTariff"].as<decltype(dst.maxTiersPerTariff)::value_type>();
-    } else {
-        dst.maxTiersPerTariff.reset();
-    }
-    if (!src["maxBoundariesPerTier"].isNull()) {
-        dst.maxBoundariesPerTier = src["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
-    } else {
-        dst.maxBoundariesPerTier.reset();
-    }
-    if (!src["maxIncentivesPerTier"].isNull()) {
-        dst.maxIncentivesPerTier = src["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
-    } else {
-        dst.maxIncentivesPerTier.reset();
-    }
+    fromJsonField(dst.maxTariffCount, "maxTariffCount", src);
+    fromJsonField(dst.maxBoundaryCount, "maxBoundaryCount", src);
+    fromJsonField(dst.maxTierCount, "maxTierCount", src);
+    fromJsonField(dst.maxIncentiveCount, "maxIncentiveCount", src);
+    fromJsonField(dst.maxBoundariesPerTariff, "maxBoundariesPerTariff", src);
+    fromJsonField(dst.maxTiersPerTariff, "maxTiersPerTariff", src);
+    fromJsonField(dst.maxBoundariesPerTier, "maxBoundariesPerTier", src);
+    fromJsonField(dst.maxIncentivesPerTier, "maxIncentivesPerTier", src);
 }
 bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.tariff.has_value()) {
-        dst["tariff"] = *src.tariff;
-    }
-    if (src.tariffConstraints.has_value()) {
-        dst["tariffConstraints"] = *src.tariffConstraints;
-    }
-    if (src.incentiveSlotConstraints.has_value()) {
-        dst["incentiveSlotConstraints"] = *src.incentiveSlotConstraints;
-    }
-
+    toJsonField(src.tariff, "tariff", dst);
+    toJsonField(src.tariffConstraints, "tariffConstraints", dst);
+    toJsonField(src.incentiveSlotConstraints, "incentiveSlotConstraints", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType &dst)
 {
-
-    if (!src["tariff"].isNull()) {
-        dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
-    } else {
-        dst.tariff.reset();
-    }
-    if (!src["tariffConstraints"].isNull()) {
-        dst.tariffConstraints = src["tariffConstraints"].as<decltype(dst.tariffConstraints)::value_type>();
-    } else {
-        dst.tariffConstraints.reset();
-    }
-    if (!src["incentiveSlotConstraints"].isNull()) {
-        dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
-    } else {
-        dst.incentiveSlotConstraints.reset();
-    }
+    fromJsonField(dst.tariff, "tariff", src);
+    fromJsonField(dst.tariffConstraints, "tariffConstraints", src);
+    fromJsonField(dst.incentiveSlotConstraints, "incentiveSlotConstraints", src);
 }
 bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.incentiveTableConstraints.has_value()) {
-        dst["incentiveTableConstraints"] = *src.incentiveTableConstraints;
-    }
-
+    toJsonField(src.incentiveTableConstraints, "incentiveTableConstraints", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataType &dst)
 {
-
-    if (!src["incentiveTableConstraints"].isNull()) {
-        dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
-    } else {
-        dst.incentiveTableConstraints.reset();
-    }
+    fromJsonField(dst.incentiveTableConstraints, "incentiveTableConstraints", src);
 }
 bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.limitId.has_value()) {
-        dst["limitId"] = *src.limitId;
-    }
-    if (src.isLimitChangeable.has_value()) {
-        dst["isLimitChangeable"] = *src.isLimitChangeable;
-    }
-    if (src.isLimitActive.has_value()) {
-        dst["isLimitActive"] = *src.isLimitActive;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-
+    toJsonField(src.limitId, "limitId", dst);
+    toJsonField(src.isLimitChangeable, "isLimitChangeable", dst);
+    toJsonField(src.isLimitActive, "isLimitActive", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.value, "value", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
 {
-
-    if (!src["limitId"].isNull()) {
-        dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
-    } else {
-        dst.limitId.reset();
-    }
-    if (!src["isLimitChangeable"].isNull()) {
-        dst.isLimitChangeable = src["isLimitChangeable"].as<decltype(dst.isLimitChangeable)::value_type>();
-    } else {
-        dst.isLimitChangeable.reset();
-    }
-    if (!src["isLimitActive"].isNull()) {
-        dst.isLimitActive = src["isLimitActive"].as<decltype(dst.isLimitActive)::value_type>();
-    } else {
-        dst.isLimitActive.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
+    fromJsonField(dst.limitId, "limitId", src);
+    fromJsonField(dst.isLimitChangeable, "isLimitChangeable", src);
+    fromJsonField(dst.isLimitActive, "isLimitActive", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.value, "value", src);
 }
 bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.loadControlLimitData.has_value()) {
-        dst["loadControlLimitData"] = *src.loadControlLimitData;
-    }
-
+    toJsonField(src.loadControlLimitData, "loadControlLimitData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &dst)
 {
-
-    if (!src["loadControlLimitData"].isNull()) {
-        dst.loadControlLimitData = src["loadControlLimitData"].as<decltype(dst.loadControlLimitData)::value_type>();
-    } else {
-        dst.loadControlLimitData.reset();
-    }
+    fromJsonField(dst.loadControlLimitData, "loadControlLimitData", src);
 }
 bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.limitId.has_value()) {
-        dst["limitId"] = *src.limitId;
-    }
-    if (src.valueRangeMin.has_value()) {
-        dst["valueRangeMin"] = *src.valueRangeMin;
-    }
-    if (src.valueRangeMax.has_value()) {
-        dst["valueRangeMax"] = *src.valueRangeMax;
-    }
-    if (src.valueStepSize.has_value()) {
-        dst["valueStepSize"] = *src.valueStepSize;
-    }
-
+    toJsonField(src.limitId, "limitId", dst);
+    toJsonField(src.valueRangeMin, "valueRangeMin", dst);
+    toJsonField(src.valueRangeMax, "valueRangeMax", dst);
+    toJsonField(src.valueStepSize, "valueStepSize", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataType &dst)
 {
-
-    if (!src["limitId"].isNull()) {
-        dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
-    } else {
-        dst.limitId.reset();
-    }
-    if (!src["valueRangeMin"].isNull()) {
-        dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-    } else {
-        dst.valueRangeMin.reset();
-    }
-    if (!src["valueRangeMax"].isNull()) {
-        dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-    } else {
-        dst.valueRangeMax.reset();
-    }
-    if (!src["valueStepSize"].isNull()) {
-        dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-    } else {
-        dst.valueStepSize.reset();
-    }
+    fromJsonField(dst.limitId, "limitId", src);
+    fromJsonField(dst.valueRangeMin, "valueRangeMin", src);
+    fromJsonField(dst.valueRangeMax, "valueRangeMax", src);
+    fromJsonField(dst.valueStepSize, "valueStepSize", src);
 }
 bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.loadControlLimitConstraintsData.has_value()) {
-        dst["loadControlLimitConstraintsData"] = *src.loadControlLimitConstraintsData;
-    }
-
+    toJsonField(src.loadControlLimitConstraintsData, "loadControlLimitConstraintsData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataType &dst)
 {
-
-    if (!src["loadControlLimitConstraintsData"].isNull()) {
-        dst.loadControlLimitConstraintsData = src["loadControlLimitConstraintsData"].as<decltype(dst.loadControlLimitConstraintsData)::value_type>();
-    } else {
-        dst.loadControlLimitConstraintsData.reset();
-    }
+    fromJsonField(dst.loadControlLimitConstraintsData, "loadControlLimitConstraintsData", src);
 }
 bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.limitId.has_value()) {
-        dst["limitId"] = *src.limitId;
-    }
-    if (src.limitType.has_value()) {
-        dst["limitType"] = *src.limitType;
-    }
-    if (src.limitCategory.has_value()) {
-        dst["limitCategory"] = *src.limitCategory;
-    }
-    if (src.limitDirection.has_value()) {
-        dst["limitDirection"] = *src.limitDirection;
-    }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.limitId, "limitId", dst);
+    toJsonField(src.limitType, "limitType", dst);
+    toJsonField(src.limitCategory, "limitCategory", dst);
+    toJsonField(src.limitDirection, "limitDirection", dst);
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataType &dst)
 {
-
-    if (!src["limitId"].isNull()) {
-        dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
-    } else {
-        dst.limitId.reset();
-    }
-    if (!src["limitType"].isNull()) {
-        dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
-    } else {
-        dst.limitType.reset();
-    }
-    if (!src["limitCategory"].isNull()) {
-        dst.limitCategory = src["limitCategory"].as<decltype(dst.limitCategory)::value_type>();
-    } else {
-        dst.limitCategory.reset();
-    }
-    if (!src["limitDirection"].isNull()) {
-        dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
-    } else {
-        dst.limitDirection.reset();
-    }
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.limitId, "limitId", src);
+    fromJsonField(dst.limitType, "limitType", src);
+    fromJsonField(dst.limitCategory, "limitCategory", src);
+    fromJsonField(dst.limitDirection, "limitDirection", src);
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.loadControlLimitDescriptionData.has_value()) {
-        dst["loadControlLimitDescriptionData"] = *src.loadControlLimitDescriptionData;
-    }
-
+    toJsonField(src.loadControlLimitDescriptionData, "loadControlLimitDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataType &dst)
 {
-
-    if (!src["loadControlLimitDescriptionData"].isNull()) {
-        dst.loadControlLimitDescriptionData = src["loadControlLimitDescriptionData"].as<decltype(dst.loadControlLimitDescriptionData)::value_type>();
-    } else {
-        dst.loadControlLimitDescriptionData.reset();
-    }
+    fromJsonField(dst.loadControlLimitDescriptionData, "loadControlLimitDescriptionData", src);
 }
 bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.deviceAddress.has_value()) {
-        dst["deviceAddress"] = *src.deviceAddress;
-    }
-    if (src.deviceType.has_value()) {
-        dst["deviceType"] = *src.deviceType;
-    }
-    if (src.networkManagementResponsibleAddress.has_value()) {
-        dst["networkManagementResponsibleAddress"] = *src.networkManagementResponsibleAddress;
-    }
-    if (src.nativeSetup.has_value()) {
-        dst["nativeSetup"] = *src.nativeSetup;
-    }
-    if (src.technologyAddress.has_value()) {
-        dst["technologyAddress"] = *src.technologyAddress;
-    }
-    if (src.communicationsTechnologyInformation.has_value()) {
-        dst["communicationsTechnologyInformation"] = *src.communicationsTechnologyInformation;
-    }
-    if (src.networkFeatureSet.has_value()) {
-        dst["networkFeatureSet"] = *src.networkFeatureSet;
-    }
-    if (src.lastStateChange.has_value()) {
-        dst["lastStateChange"] = *src.lastStateChange;
-    }
-    if (src.minimumTrustLevel.has_value()) {
-        dst["minimumTrustLevel"] = *src.minimumTrustLevel;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.deviceAddress, "deviceAddress", dst);
+    toJsonField(src.deviceType, "deviceType", dst);
+    toJsonField(src.networkManagementResponsibleAddress, "networkManagementResponsibleAddress", dst);
+    toJsonField(src.nativeSetup, "nativeSetup", dst);
+    toJsonField(src.technologyAddress, "technologyAddress", dst);
+    toJsonField(src.communicationsTechnologyInformation, "communicationsTechnologyInformation", dst);
+    toJsonField(src.networkFeatureSet, "networkFeatureSet", dst);
+    toJsonField(src.lastStateChange, "lastStateChange", dst);
+    toJsonField(src.minimumTrustLevel, "minimumTrustLevel", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataType &dst)
 {
-
-    if (!src["deviceAddress"].isNull()) {
-        dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
-    } else {
-        dst.deviceAddress.reset();
-    }
-    if (!src["deviceType"].isNull()) {
-        dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
-    } else {
-        dst.deviceType.reset();
-    }
-    if (!src["networkManagementResponsibleAddress"].isNull()) {
-        dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
-    } else {
-        dst.networkManagementResponsibleAddress.reset();
-    }
-    if (!src["nativeSetup"].isNull()) {
-        dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
-    } else {
-        dst.nativeSetup.reset();
-    }
-    if (!src["technologyAddress"].isNull()) {
-        dst.technologyAddress = src["technologyAddress"].as<decltype(dst.technologyAddress)::value_type>();
-    } else {
-        dst.technologyAddress.reset();
-    }
-    if (!src["communicationsTechnologyInformation"].isNull()) {
-        dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
-    } else {
-        dst.communicationsTechnologyInformation.reset();
-    }
-    if (!src["networkFeatureSet"].isNull()) {
-        dst.networkFeatureSet = src["networkFeatureSet"].as<decltype(dst.networkFeatureSet)::value_type>();
-    } else {
-        dst.networkFeatureSet.reset();
-    }
-    if (!src["lastStateChange"].isNull()) {
-        dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
-    } else {
-        dst.lastStateChange.reset();
-    }
-    if (!src["minimumTrustLevel"].isNull()) {
-        dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
-    } else {
-        dst.minimumTrustLevel.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.deviceAddress, "deviceAddress", src);
+    fromJsonField(dst.deviceType, "deviceType", src);
+    fromJsonField(dst.networkManagementResponsibleAddress, "networkManagementResponsibleAddress", src);
+    fromJsonField(dst.nativeSetup, "nativeSetup", src);
+    fromJsonField(dst.technologyAddress, "technologyAddress", src);
+    fromJsonField(dst.communicationsTechnologyInformation, "communicationsTechnologyInformation", src);
+    fromJsonField(dst.networkFeatureSet, "networkFeatureSet", src);
+    fromJsonField(dst.lastStateChange, "lastStateChange", src);
+    fromJsonField(dst.minimumTrustLevel, "minimumTrustLevel", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.entityAddress.has_value()) {
-        dst["entityAddress"] = *src.entityAddress;
-    }
-    if (src.entityType.has_value()) {
-        dst["entityType"] = *src.entityType;
-    }
-    if (src.lastStateChange.has_value()) {
-        dst["lastStateChange"] = *src.lastStateChange;
-    }
-    if (src.minimumTrustLevel.has_value()) {
-        dst["minimumTrustLevel"] = *src.minimumTrustLevel;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.entityAddress, "entityAddress", dst);
+    toJsonField(src.entityType, "entityType", dst);
+    toJsonField(src.lastStateChange, "lastStateChange", dst);
+    toJsonField(src.minimumTrustLevel, "minimumTrustLevel", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataType &dst)
 {
-
-    if (!src["entityAddress"].isNull()) {
-        dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
-    } else {
-        dst.entityAddress.reset();
-    }
-    if (!src["entityType"].isNull()) {
-        dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
-    } else {
-        dst.entityType.reset();
-    }
-    if (!src["lastStateChange"].isNull()) {
-        dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
-    } else {
-        dst.lastStateChange.reset();
-    }
-    if (!src["minimumTrustLevel"].isNull()) {
-        dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
-    } else {
-        dst.minimumTrustLevel.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.entityAddress, "entityAddress", src);
+    fromJsonField(dst.entityType, "entityType", src);
+    fromJsonField(dst.lastStateChange, "lastStateChange", src);
+    fromJsonField(dst.minimumTrustLevel, "minimumTrustLevel", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.featureAddress.has_value()) {
-        dst["featureAddress"] = *src.featureAddress;
-    }
-    if (src.featureType.has_value()) {
-        dst["featureType"] = *src.featureType;
-    }
-    if (src.specificUsage.has_value()) {
-        dst["specificUsage"] = *src.specificUsage;
-    }
-    if (src.featureGroup.has_value()) {
-        dst["featureGroup"] = *src.featureGroup;
-    }
-    if (src.role.has_value()) {
-        dst["role"] = *src.role;
-    }
-    if (src.supportedFunction.has_value()) {
-        dst["supportedFunction"] = *src.supportedFunction;
-    }
-    if (src.lastStateChange.has_value()) {
-        dst["lastStateChange"] = *src.lastStateChange;
-    }
-    if (src.minimumTrustLevel.has_value()) {
-        dst["minimumTrustLevel"] = *src.minimumTrustLevel;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-    if (src.maxResponseDelay.has_value()) {
-        dst["maxResponseDelay"] = *src.maxResponseDelay;
-    }
-
+    toJsonField(src.featureAddress, "featureAddress", dst);
+    toJsonField(src.featureType, "featureType", dst);
+    toJsonField(src.specificUsage, "specificUsage", dst);
+    toJsonField(src.featureGroup, "featureGroup", dst);
+    toJsonField(src.role, "role", dst);
+    toJsonField(src.supportedFunction, "supportedFunction", dst);
+    toJsonField(src.lastStateChange, "lastStateChange", dst);
+    toJsonField(src.minimumTrustLevel, "minimumTrustLevel", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
+    toJsonField(src.maxResponseDelay, "maxResponseDelay", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataType &dst)
 {
-
-    if (!src["featureAddress"].isNull()) {
-        dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
-    } else {
-        dst.featureAddress.reset();
-    }
-    if (!src["featureType"].isNull()) {
-        dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
-    } else {
-        dst.featureType.reset();
-    }
-    if (!src["specificUsage"].isNull()) {
-        dst.specificUsage = src["specificUsage"].as<decltype(dst.specificUsage)::value_type>();
-    } else {
-        dst.specificUsage.reset();
-    }
-    if (!src["featureGroup"].isNull()) {
-        dst.featureGroup = src["featureGroup"].as<decltype(dst.featureGroup)::value_type>();
-    } else {
-        dst.featureGroup.reset();
-    }
-    if (!src["role"].isNull()) {
-        dst.role = src["role"].as<decltype(dst.role)::value_type>();
-    } else {
-        dst.role.reset();
-    }
-    if (!src["supportedFunction"].isNull()) {
-        dst.supportedFunction = src["supportedFunction"].as<decltype(dst.supportedFunction)::value_type>();
-    } else {
-        dst.supportedFunction.reset();
-    }
-    if (!src["lastStateChange"].isNull()) {
-        dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
-    } else {
-        dst.lastStateChange.reset();
-    }
-    if (!src["minimumTrustLevel"].isNull()) {
-        dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
-    } else {
-        dst.minimumTrustLevel.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
-    if (!src["maxResponseDelay"].isNull()) {
-        dst.maxResponseDelay = src["maxResponseDelay"].as<decltype(dst.maxResponseDelay)::value_type>();
-    } else {
-        dst.maxResponseDelay.reset();
-    }
+    fromJsonField(dst.featureAddress, "featureAddress", src);
+    fromJsonField(dst.featureType, "featureType", src);
+    fromJsonField(dst.specificUsage, "specificUsage", src);
+    fromJsonField(dst.featureGroup, "featureGroup", src);
+    fromJsonField(dst.role, "role", src);
+    fromJsonField(dst.supportedFunction, "supportedFunction", src);
+    fromJsonField(dst.lastStateChange, "lastStateChange", src);
+    fromJsonField(dst.minimumTrustLevel, "minimumTrustLevel", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
+    fromJsonField(dst.maxResponseDelay, "maxResponseDelay", src);
 }
 bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.specificationVersion.has_value()) {
-        dst["specificationVersion"] = *src.specificationVersion;
-    }
-
+    toJsonField(src.specificationVersion, "specificationVersion", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListType &dst)
 {
-
-    if (!src["specificationVersion"].isNull()) {
-        dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
-    } else {
-        dst.specificationVersion.reset();
-    }
+    fromJsonField(dst.specificationVersion, "specificationVersion", src);
 }
 bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationType &dst)
 {
-
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationType &dst)
 {
-
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationType &dst)
 {
-
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.specificationVersionList.has_value()) {
-        dst["specificationVersionList"] = *src.specificationVersionList;
-    }
-    if (src.deviceInformation.has_value()) {
-        dst["deviceInformation"] = *src.deviceInformation;
-    }
-    if (src.entityInformation.has_value()) {
-        dst["entityInformation"] = *src.entityInformation;
-    }
-    if (src.featureInformation.has_value()) {
-        dst["featureInformation"] = *src.featureInformation;
-    }
-
+    toJsonField(src.specificationVersionList, "specificationVersionList", dst);
+    toJsonField(src.deviceInformation, "deviceInformation", dst);
+    toJsonField(src.entityInformation, "entityInformation", dst);
+    toJsonField(src.featureInformation, "featureInformation", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataType &dst)
 {
-
-    if (!src["specificationVersionList"].isNull()) {
-        dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
-    } else {
-        dst.specificationVersionList.reset();
-    }
-    if (!src["deviceInformation"].isNull()) {
-        dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
-    } else {
-        dst.deviceInformation.reset();
-    }
-    if (!src["entityInformation"].isNull()) {
-        dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
-    } else {
-        dst.entityInformation.reset();
-    }
-    if (!src["featureInformation"].isNull()) {
-        dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
-    } else {
-        dst.featureInformation.reset();
-    }
+    fromJsonField(dst.specificationVersionList, "specificationVersionList", src);
+    fromJsonField(dst.deviceInformation, "deviceInformation", src);
+    fromJsonField(dst.entityInformation, "entityInformation", src);
+    fromJsonField(dst.featureInformation, "featureInformation", src);
 }
 bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingEntry.has_value()) {
-        dst["bindingEntry"] = *src.bindingEntry;
-    }
-
+    toJsonField(src.bindingEntry, "bindingEntry", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType &dst)
 {
-
-    if (!src["bindingEntry"].isNull()) {
-        dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
-    } else {
-        dst.bindingEntry.reset();
-    }
+    fromJsonField(dst.bindingEntry, "bindingEntry", src);
 }
 bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingRequest.has_value()) {
-        dst["bindingRequest"] = *src.bindingRequest;
-    }
-
+    toJsonField(src.bindingRequest, "bindingRequest", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallType &dst)
 {
-
-    if (!src["bindingRequest"].isNull()) {
-        dst.bindingRequest = src["bindingRequest"].as<decltype(dst.bindingRequest)::value_type>();
-    } else {
-        dst.bindingRequest.reset();
-    }
+    fromJsonField(dst.bindingRequest, "bindingRequest", src);
 }
 bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.bindingDelete.has_value()) {
-        dst["bindingDelete"] = *src.bindingDelete;
-    }
-
+    toJsonField(src.bindingDelete, "bindingDelete", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallType &dst)
 {
-
-    if (!src["bindingDelete"].isNull()) {
-        dst.bindingDelete = src["bindingDelete"].as<decltype(dst.bindingDelete)::value_type>();
-    } else {
-        dst.bindingDelete.reset();
-    }
+    fromJsonField(dst.bindingDelete, "bindingDelete", src);
 }
 bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.subscriptionId.has_value()) {
-        dst["subscriptionId"] = *src.subscriptionId;
-    }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.subscriptionId, "subscriptionId", dst);
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataType &dst)
 {
-
-    if (!src["subscriptionId"].isNull()) {
-        dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
-    } else {
-        dst.subscriptionId.reset();
-    }
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.subscriptionId, "subscriptionId", src);
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.subscriptionEntry.has_value()) {
-        dst["subscriptionEntry"] = *src.subscriptionEntry;
-    }
-
+    toJsonField(src.subscriptionEntry, "subscriptionEntry", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataType &dst)
 {
-
-    if (!src["subscriptionEntry"].isNull()) {
-        dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
-    } else {
-        dst.subscriptionEntry.reset();
-    }
+    fromJsonField(dst.subscriptionEntry, "subscriptionEntry", src);
 }
 bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.serverFeatureType.has_value()) {
-        dst["serverFeatureType"] = *src.serverFeatureType;
-    }
-
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
+    toJsonField(src.serverFeatureType, "serverFeatureType", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallType &dst)
 {
-
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
-    if (!src["serverFeatureType"].isNull()) {
-        dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-    } else {
-        dst.serverFeatureType.reset();
-    }
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
+    fromJsonField(dst.serverFeatureType, "serverFeatureType", src);
 }
 bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.subscriptionRequest.has_value()) {
-        dst["subscriptionRequest"] = *src.subscriptionRequest;
-    }
-
+    toJsonField(src.subscriptionRequest, "subscriptionRequest", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallType &dst)
 {
-
-    if (!src["subscriptionRequest"].isNull()) {
-        dst.subscriptionRequest = src["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
-    } else {
-        dst.subscriptionRequest.reset();
-    }
+    fromJsonField(dst.subscriptionRequest, "subscriptionRequest", src);
 }
 bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.subscriptionId.has_value()) {
-        dst["subscriptionId"] = *src.subscriptionId;
-    }
-    if (src.clientAddress.has_value()) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress.has_value()) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-
+    toJsonField(src.subscriptionId, "subscriptionId", dst);
+    toJsonField(src.clientAddress, "clientAddress", dst);
+    toJsonField(src.serverAddress, "serverAddress", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallType &dst)
 {
-
-    if (!src["subscriptionId"].isNull()) {
-        dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
-    } else {
-        dst.subscriptionId.reset();
-    }
-    if (!src["clientAddress"].isNull()) {
-        dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-    } else {
-        dst.clientAddress.reset();
-    }
-    if (!src["serverAddress"].isNull()) {
-        dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-    } else {
-        dst.serverAddress.reset();
-    }
+    fromJsonField(dst.subscriptionId, "subscriptionId", src);
+    fromJsonField(dst.clientAddress, "clientAddress", src);
+    fromJsonField(dst.serverAddress, "serverAddress", src);
 }
 bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.subscriptionDelete.has_value()) {
-        dst["subscriptionDelete"] = *src.subscriptionDelete;
-    }
-
+    toJsonField(src.subscriptionDelete, "subscriptionDelete", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallType &dst)
 {
-
-    if (!src["subscriptionDelete"].isNull()) {
-        dst.subscriptionDelete = src["subscriptionDelete"].as<decltype(dst.subscriptionDelete)::value_type>();
-    } else {
-        dst.subscriptionDelete.reset();
-    }
+    fromJsonField(dst.subscriptionDelete, "subscriptionDelete", src);
 }
 bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.useCaseName.has_value()) {
-        dst["useCaseName"] = *src.useCaseName;
-    }
-    if (src.useCaseVersion.has_value()) {
-        dst["useCaseVersion"] = *src.useCaseVersion;
-    }
-    if (src.useCaseAvailable.has_value()) {
-        dst["useCaseAvailable"] = *src.useCaseAvailable;
-    }
-    if (src.scenarioSupport.has_value()) {
-        dst["scenarioSupport"] = *src.scenarioSupport;
-    }
-    if (src.useCaseDocumentSubRevision.has_value()) {
-        dst["useCaseDocumentSubRevision"] = *src.useCaseDocumentSubRevision;
-    }
-
+    toJsonField(src.useCaseName, "useCaseName", dst);
+    toJsonField(src.useCaseVersion, "useCaseVersion", dst);
+    toJsonField(src.useCaseAvailable, "useCaseAvailable", dst);
+    toJsonField(src.scenarioSupport, "scenarioSupport", dst);
+    toJsonField(src.useCaseDocumentSubRevision, "useCaseDocumentSubRevision", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst)
 {
-
-    if (!src["useCaseName"].isNull()) {
-        dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
-    } else {
-        dst.useCaseName.reset();
-    }
-    if (!src["useCaseVersion"].isNull()) {
-        dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
-    } else {
-        dst.useCaseVersion.reset();
-    }
-    if (!src["useCaseAvailable"].isNull()) {
-        dst.useCaseAvailable = src["useCaseAvailable"].as<decltype(dst.useCaseAvailable)::value_type>();
-    } else {
-        dst.useCaseAvailable.reset();
-    }
-    if (!src["scenarioSupport"].isNull()) {
-        dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
-    } else {
-        dst.scenarioSupport.reset();
-    }
-    if (!src["useCaseDocumentSubRevision"].isNull()) {
-        dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
-    } else {
-        dst.useCaseDocumentSubRevision.reset();
-    }
+    fromJsonField(dst.useCaseName, "useCaseName", src);
+    fromJsonField(dst.useCaseVersion, "useCaseVersion", src);
+    fromJsonField(dst.useCaseAvailable, "useCaseAvailable", src);
+    fromJsonField(dst.scenarioSupport, "scenarioSupport", src);
+    fromJsonField(dst.useCaseDocumentSubRevision, "useCaseDocumentSubRevision", src);
 }
 bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.address.has_value()) {
-        dst["address"] = *src.address;
-    }
-    if (src.actor.has_value()) {
-        dst["actor"] = *src.actor;
-    }
-    if (src.useCaseSupport.has_value()) {
-        dst["useCaseSupport"] = *src.useCaseSupport;
-    }
-
+    toJsonField(src.address, "address", dst);
+    toJsonField(src.actor, "actor", dst);
+    toJsonField(src.useCaseSupport, "useCaseSupport", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &dst)
 {
-
-    if (!src["address"].isNull()) {
-        dst.address = src["address"].as<decltype(dst.address)::value_type>();
-    } else {
-        dst.address.reset();
-    }
-    if (!src["actor"].isNull()) {
-        dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
-    } else {
-        dst.actor.reset();
-    }
-    if (!src["useCaseSupport"].isNull()) {
-        dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
-    } else {
-        dst.useCaseSupport.reset();
-    }
+    fromJsonField(dst.address, "address", src);
+    fromJsonField(dst.actor, "actor", src);
+    fromJsonField(dst.useCaseSupport, "useCaseSupport", src);
 }
 bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.useCaseInformation.has_value()) {
-        dst["useCaseInformation"] = *src.useCaseInformation;
-    }
-
+    toJsonField(src.useCaseInformation, "useCaseInformation", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType &dst)
 {
-
-    if (!src["useCaseInformation"].isNull()) {
-        dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
-    } else {
-        dst.useCaseInformation.reset();
-    }
+    fromJsonField(dst.useCaseInformation, "useCaseInformation", src);
 }
 bool convertToJson(const ResultDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.errorNumber.has_value()) {
-        dst["errorNumber"] = *src.errorNumber;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-
+    toJsonField(src.errorNumber, "errorNumber", dst);
+    toJsonField(src.description, "description", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
 {
-
-    if (!src["errorNumber"].isNull()) {
-        dst.errorNumber = src["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
-    } else {
-        dst.errorNumber.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
+    fromJsonField(dst.errorNumber, "errorNumber", src);
+    fromJsonField(dst.description, "description", src);
 }
 bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesSlotId.has_value()) {
-        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.duration.has_value()) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.recurrenceInformation.has_value()) {
-        dst["recurrenceInformation"] = *src.recurrenceInformation;
-    }
-    if (src.value.has_value()) {
-        dst["value"] = *src.value;
-    }
-    if (src.minValue.has_value()) {
-        dst["minValue"] = *src.minValue;
-    }
-    if (src.maxValue.has_value()) {
-        dst["maxValue"] = *src.maxValue;
-    }
-
+    toJsonField(src.timeSeriesSlotId, "timeSeriesSlotId", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.duration, "duration", dst);
+    toJsonField(src.recurrenceInformation, "recurrenceInformation", dst);
+    toJsonField(src.value, "value", dst);
+    toJsonField(src.minValue, "minValue", dst);
+    toJsonField(src.maxValue, "maxValue", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
 {
-
-    if (!src["timeSeriesSlotId"].isNull()) {
-        dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
-    } else {
-        dst.timeSeriesSlotId.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["duration"].isNull()) {
-        dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-    } else {
-        dst.duration.reset();
-    }
-    if (!src["recurrenceInformation"].isNull()) {
-        dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-    } else {
-        dst.recurrenceInformation.reset();
-    }
-    if (!src["value"].isNull()) {
-        dst.value = src["value"].as<decltype(dst.value)::value_type>();
-    } else {
-        dst.value.reset();
-    }
-    if (!src["minValue"].isNull()) {
-        dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
-    } else {
-        dst.minValue.reset();
-    }
-    if (!src["maxValue"].isNull()) {
-        dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
-    } else {
-        dst.maxValue.reset();
-    }
+    fromJsonField(dst.timeSeriesSlotId, "timeSeriesSlotId", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.duration, "duration", src);
+    fromJsonField(dst.recurrenceInformation, "recurrenceInformation", src);
+    fromJsonField(dst.value, "value", src);
+    fromJsonField(dst.minValue, "minValue", src);
+    fromJsonField(dst.maxValue, "maxValue", src);
 }
 bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesId.has_value()) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
-    }
-    if (src.timePeriod.has_value()) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeSeriesSlot.has_value()) {
-        dst["timeSeriesSlot"] = *src.timeSeriesSlot;
-    }
-
+    toJsonField(src.timeSeriesId, "timeSeriesId", dst);
+    toJsonField(src.timePeriod, "timePeriod", dst);
+    toJsonField(src.timeSeriesSlot, "timeSeriesSlot", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
 {
-
-    if (!src["timeSeriesId"].isNull()) {
-        dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
-    } else {
-        dst.timeSeriesId.reset();
-    }
-    if (!src["timePeriod"].isNull()) {
-        dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-    } else {
-        dst.timePeriod.reset();
-    }
-    if (!src["timeSeriesSlot"].isNull()) {
-        dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
-    } else {
-        dst.timeSeriesSlot.reset();
-    }
+    fromJsonField(dst.timeSeriesId, "timeSeriesId", src);
+    fromJsonField(dst.timePeriod, "timePeriod", src);
+    fromJsonField(dst.timeSeriesSlot, "timeSeriesSlot", src);
 }
 bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesData.has_value()) {
-        dst["timeSeriesData"] = *src.timeSeriesData;
-    }
-
+    toJsonField(src.timeSeriesData, "timeSeriesData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
 {
-
-    if (!src["timeSeriesData"].isNull()) {
-        dst.timeSeriesData = src["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
-    } else {
-        dst.timeSeriesData.reset();
-    }
+    fromJsonField(dst.timeSeriesData, "timeSeriesData", src);
 }
 bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesId.has_value()) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
-    }
-    if (src.timeSeriesType.has_value()) {
-        dst["timeSeriesType"] = *src.timeSeriesType;
-    }
-    if (src.timeSeriesWriteable.has_value()) {
-        dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
-    }
-    if (src.updateRequired.has_value()) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.measurementId.has_value()) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.currency.has_value()) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.unit.has_value()) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.label.has_value()) {
-        dst["label"] = *src.label;
-    }
-    if (src.description.has_value()) {
-        dst["description"] = *src.description;
-    }
-    if (src.scopeType.has_value()) {
-        dst["scopeType"] = *src.scopeType;
-    }
-
+    toJsonField(src.timeSeriesId, "timeSeriesId", dst);
+    toJsonField(src.timeSeriesType, "timeSeriesType", dst);
+    toJsonField(src.timeSeriesWriteable, "timeSeriesWriteable", dst);
+    toJsonField(src.updateRequired, "updateRequired", dst);
+    toJsonField(src.measurementId, "measurementId", dst);
+    toJsonField(src.currency, "currency", dst);
+    toJsonField(src.unit, "unit", dst);
+    toJsonField(src.label, "label", dst);
+    toJsonField(src.description, "description", dst);
+    toJsonField(src.scopeType, "scopeType", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst)
 {
-
-    if (!src["timeSeriesId"].isNull()) {
-        dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
-    } else {
-        dst.timeSeriesId.reset();
-    }
-    if (!src["timeSeriesType"].isNull()) {
-        dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
-    } else {
-        dst.timeSeriesType.reset();
-    }
-    if (!src["timeSeriesWriteable"].isNull()) {
-        dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
-    } else {
-        dst.timeSeriesWriteable.reset();
-    }
-    if (!src["updateRequired"].isNull()) {
-        dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-    } else {
-        dst.updateRequired.reset();
-    }
-    if (!src["measurementId"].isNull()) {
-        dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-    } else {
-        dst.measurementId.reset();
-    }
-    if (!src["currency"].isNull()) {
-        dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
-    } else {
-        dst.currency.reset();
-    }
-    if (!src["unit"].isNull()) {
-        dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-    } else {
-        dst.unit.reset();
-    }
-    if (!src["label"].isNull()) {
-        dst.label = src["label"].as<decltype(dst.label)::value_type>();
-    } else {
-        dst.label.reset();
-    }
-    if (!src["description"].isNull()) {
-        dst.description = src["description"].as<decltype(dst.description)::value_type>();
-    } else {
-        dst.description.reset();
-    }
-    if (!src["scopeType"].isNull()) {
-        dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-    } else {
-        dst.scopeType.reset();
-    }
+    fromJsonField(dst.timeSeriesId, "timeSeriesId", src);
+    fromJsonField(dst.timeSeriesType, "timeSeriesType", src);
+    fromJsonField(dst.timeSeriesWriteable, "timeSeriesWriteable", src);
+    fromJsonField(dst.updateRequired, "updateRequired", src);
+    fromJsonField(dst.measurementId, "measurementId", src);
+    fromJsonField(dst.currency, "currency", src);
+    fromJsonField(dst.unit, "unit", src);
+    fromJsonField(dst.label, "label", src);
+    fromJsonField(dst.description, "description", src);
+    fromJsonField(dst.scopeType, "scopeType", src);
 }
 bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesDescriptionData.has_value()) {
-        dst["timeSeriesDescriptionData"] = *src.timeSeriesDescriptionData;
-    }
-
+    toJsonField(src.timeSeriesDescriptionData, "timeSeriesDescriptionData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst)
 {
-
-    if (!src["timeSeriesDescriptionData"].isNull()) {
-        dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
-    } else {
-        dst.timeSeriesDescriptionData.reset();
-    }
+    fromJsonField(dst.timeSeriesDescriptionData, "timeSeriesDescriptionData", src);
 }
 bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesId.has_value()) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
-    }
-    if (src.slotCountMin.has_value()) {
-        dst["slotCountMin"] = *src.slotCountMin;
-    }
-    if (src.slotCountMax.has_value()) {
-        dst["slotCountMax"] = *src.slotCountMax;
-    }
-    if (src.slotDurationMin.has_value()) {
-        dst["slotDurationMin"] = *src.slotDurationMin;
-    }
-    if (src.slotDurationMax.has_value()) {
-        dst["slotDurationMax"] = *src.slotDurationMax;
-    }
-    if (src.slotDurationStepSize.has_value()) {
-        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
-    }
-    if (src.earliestTimeSeriesStartTime.has_value()) {
-        dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
-    }
-    if (src.latestTimeSeriesEndTime.has_value()) {
-        dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
-    }
-    if (src.slotValueMin.has_value()) {
-        dst["slotValueMin"] = *src.slotValueMin;
-    }
-    if (src.slotValueMax.has_value()) {
-        dst["slotValueMax"] = *src.slotValueMax;
-    }
-    if (src.slotValueStepSize.has_value()) {
-        dst["slotValueStepSize"] = *src.slotValueStepSize;
-    }
-
+    toJsonField(src.timeSeriesId, "timeSeriesId", dst);
+    toJsonField(src.slotCountMin, "slotCountMin", dst);
+    toJsonField(src.slotCountMax, "slotCountMax", dst);
+    toJsonField(src.slotDurationMin, "slotDurationMin", dst);
+    toJsonField(src.slotDurationMax, "slotDurationMax", dst);
+    toJsonField(src.slotDurationStepSize, "slotDurationStepSize", dst);
+    toJsonField(src.earliestTimeSeriesStartTime, "earliestTimeSeriesStartTime", dst);
+    toJsonField(src.latestTimeSeriesEndTime, "latestTimeSeriesEndTime", dst);
+    toJsonField(src.slotValueMin, "slotValueMin", dst);
+    toJsonField(src.slotValueMax, "slotValueMax", dst);
+    toJsonField(src.slotValueStepSize, "slotValueStepSize", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst)
 {
-
-    if (!src["timeSeriesId"].isNull()) {
-        dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
-    } else {
-        dst.timeSeriesId.reset();
-    }
-    if (!src["slotCountMin"].isNull()) {
-        dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
-    } else {
-        dst.slotCountMin.reset();
-    }
-    if (!src["slotCountMax"].isNull()) {
-        dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-    } else {
-        dst.slotCountMax.reset();
-    }
-    if (!src["slotDurationMin"].isNull()) {
-        dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-    } else {
-        dst.slotDurationMin.reset();
-    }
-    if (!src["slotDurationMax"].isNull()) {
-        dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-    } else {
-        dst.slotDurationMax.reset();
-    }
-    if (!src["slotDurationStepSize"].isNull()) {
-        dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-    } else {
-        dst.slotDurationStepSize.reset();
-    }
-    if (!src["earliestTimeSeriesStartTime"].isNull()) {
-        dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
-    } else {
-        dst.earliestTimeSeriesStartTime.reset();
-    }
-    if (!src["latestTimeSeriesEndTime"].isNull()) {
-        dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
-    } else {
-        dst.latestTimeSeriesEndTime.reset();
-    }
-    if (!src["slotValueMin"].isNull()) {
-        dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
-    } else {
-        dst.slotValueMin.reset();
-    }
-    if (!src["slotValueMax"].isNull()) {
-        dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
-    } else {
-        dst.slotValueMax.reset();
-    }
-    if (!src["slotValueStepSize"].isNull()) {
-        dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
-    } else {
-        dst.slotValueStepSize.reset();
-    }
+    fromJsonField(dst.timeSeriesId, "timeSeriesId", src);
+    fromJsonField(dst.slotCountMin, "slotCountMin", src);
+    fromJsonField(dst.slotCountMax, "slotCountMax", src);
+    fromJsonField(dst.slotDurationMin, "slotDurationMin", src);
+    fromJsonField(dst.slotDurationMax, "slotDurationMax", src);
+    fromJsonField(dst.slotDurationStepSize, "slotDurationStepSize", src);
+    fromJsonField(dst.earliestTimeSeriesStartTime, "earliestTimeSeriesStartTime", src);
+    fromJsonField(dst.latestTimeSeriesEndTime, "latestTimeSeriesEndTime", src);
+    fromJsonField(dst.slotValueMin, "slotValueMin", src);
+    fromJsonField(dst.slotValueMax, "slotValueMax", src);
+    fromJsonField(dst.slotValueStepSize, "slotValueStepSize", src);
 }
 bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.timeSeriesConstraintsData.has_value()) {
-        dst["timeSeriesConstraintsData"] = *src.timeSeriesConstraintsData;
-    }
-
+    toJsonField(src.timeSeriesConstraintsData, "timeSeriesConstraintsData", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst)
 {
-
-    if (!src["timeSeriesConstraintsData"].isNull()) {
-        dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
-    } else {
-        dst.timeSeriesConstraintsData.reset();
-    }
+    fromJsonField(dst.timeSeriesConstraintsData, "timeSeriesConstraintsData", src);
 }
 bool convertToJson(const HeaderType &src, JsonVariant &dst)
 {
     if (!dst.to<JsonObject>()) {
         return false;
     }
-    if (src.specificationVersion.has_value()) {
-        dst["specificationVersion"] = *src.specificationVersion;
-    }
-    if (src.addressSource.has_value()) {
-        dst["addressSource"] = *src.addressSource;
-    }
-    if (src.addressDestination.has_value()) {
-        dst["addressDestination"] = *src.addressDestination;
-    }
-    if (src.addressOriginator.has_value()) {
-        dst["addressOriginator"] = *src.addressOriginator;
-    }
-    if (src.msgCounter.has_value()) {
-        dst["msgCounter"] = *src.msgCounter;
-    }
-    if (src.msgCounterReference.has_value()) {
-        dst["msgCounterReference"] = *src.msgCounterReference;
-    }
-    if (src.cmdClassifier.has_value()) {
-        dst["cmdClassifier"] = *src.cmdClassifier;
-    }
-    if (src.ackRequest.has_value()) {
-        dst["ackRequest"] = *src.ackRequest;
-    }
-    if (src.timestamp.has_value()) {
-        dst["timestamp"] = *src.timestamp;
-    }
-
+    toJsonField(src.specificationVersion, "specificationVersion", dst);
+    toJsonField(src.addressSource, "addressSource", dst);
+    toJsonField(src.addressDestination, "addressDestination", dst);
+    toJsonField(src.addressOriginator, "addressOriginator", dst);
+    toJsonField(src.msgCounter, "msgCounter", dst);
+    toJsonField(src.msgCounterReference, "msgCounterReference", dst);
+    toJsonField(src.cmdClassifier, "cmdClassifier", dst);
+    toJsonField(src.ackRequest, "ackRequest", dst);
+    toJsonField(src.timestamp, "timestamp", dst);
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
 {
-
-    if (!src["specificationVersion"].isNull()) {
-        dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
-    } else {
-        dst.specificationVersion.reset();
-    }
-    if (!src["addressSource"].isNull()) {
-        dst.addressSource = src["addressSource"].as<decltype(dst.addressSource)::value_type>();
-    } else {
-        dst.addressSource.reset();
-    }
-    if (!src["addressDestination"].isNull()) {
-        dst.addressDestination = src["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
-    } else {
-        dst.addressDestination.reset();
-    }
-    if (!src["addressOriginator"].isNull()) {
-        dst.addressOriginator = src["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
-    } else {
-        dst.addressOriginator.reset();
-    }
-    if (!src["msgCounter"].isNull()) {
-        dst.msgCounter = src["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
-    } else {
-        dst.msgCounter.reset();
-    }
-    if (!src["msgCounterReference"].isNull()) {
-        dst.msgCounterReference = src["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
-    } else {
-        dst.msgCounterReference.reset();
-    }
-    if (!src["cmdClassifier"].isNull()) {
-        dst.cmdClassifier = src["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
-    } else {
-        dst.cmdClassifier.reset();
-    }
-    if (!src["ackRequest"].isNull()) {
-        dst.ackRequest = src["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
-    } else {
-        dst.ackRequest.reset();
-    }
-    if (!src["timestamp"].isNull()) {
-        dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-    } else {
-        dst.timestamp.reset();
-    }
+    fromJsonField(dst.specificationVersion, "specificationVersion", src);
+    fromJsonField(dst.addressSource, "addressSource", src);
+    fromJsonField(dst.addressDestination, "addressDestination", src);
+    fromJsonField(dst.addressOriginator, "addressOriginator", src);
+    fromJsonField(dst.msgCounter, "msgCounter", src);
+    fromJsonField(dst.msgCounterReference, "msgCounterReference", src);
+    fromJsonField(dst.cmdClassifier, "cmdClassifier", src);
+    fromJsonField(dst.ackRequest, "ackRequest", src);
+    fromJsonField(dst.timestamp, "timestamp", src);
 }
 
 SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTypeHandler::Function function)
