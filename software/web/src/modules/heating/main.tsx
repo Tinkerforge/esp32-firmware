@@ -510,7 +510,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormSeparator heading={__("heating.content.temperature_heating_curve")} help={__("heating.content.temperature_heating_curve_help")}/>
                     <FormRow label={__("heating.content.enable_heating_curve")}
                              error={__("heating.content.temperatures_needs_activation")}
-                             show_error={state.enable_heating_curve && !temperatures_enabled}>
+                             show_error={!temperatures_enabled}>
                         <Switch desc={__("heating.content.enable_heating_curve_desc")}
                                 disabled={!temperatures_enabled}
                                 checked={state.enable_heating_curve}
