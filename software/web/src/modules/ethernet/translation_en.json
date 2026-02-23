@@ -5,7 +5,8 @@
             "not_configured": "Disabled",
             "not_connected": "Not connected",
             "connecting": "Connecting",
-            "connected": "Connected"
+            "connected": "Connected",
+            "disabled_after_reboot": "Active until reboot"
         },
         "navbar": {
             "ethernet": "LAN Connection"
@@ -14,12 +15,20 @@
             "ethernet": "LAN Connection",
             "mac": "MAC address",
             "mac_none": "LAN connection not active",
+            "status_ip": "IP address",
+            "status_ip_none": "No IP address",
+            "status_link": "Link",
+            "status_link_none": "No link",
+            "full_duplex": "Full Duplex",
+            "half_duplex": "Half Duplex",
             "enable": "LAN connection enabled",
-            "enable_desc": "Automatically connects to the configured network on start-up"
+            "enable_desc": "Automatically connects to the configured network on start-up.",
+            "disabled_but_active": "The LAN connection has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
+            "restart_now": "Restart now.",
+            "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?"
         },
         "script": {
-            "save_failed": "Failed to save connection settings.",
-            "reboot_content_changed": "connection settings"
+            "save_failed": "Failed to save connection settings."
         }
     }
 }

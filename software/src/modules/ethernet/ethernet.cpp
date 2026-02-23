@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +45,11 @@ extern char local_uid_str[32];
 
 static constexpr uint8_t IGMP_MAC[6] = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x01};
 
+// Generation counter for async ETH.begin() tasks. Incremented on every
+// enable or disable so that stale tasks from a prior enable/disable cycle
+// see a mismatch and skip the ETH.begin() call.
+static std::atomic<uint32_t> eth_begin_generation{0};
+
 void Ethernet::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -54,7 +60,7 @@ void Ethernet::pre_setup()
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
     }),
-    [](Config &cfg, ConfigSource source) -> String {
+    [this](Config &cfg, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
         if (!ip_addr.fromString(cfg.get("ip")->asEphemeralCStr()))
@@ -81,6 +87,10 @@ void Ethernet::pre_setup()
         if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
+        task_scheduler.scheduleOnce([this]() {
+            this->apply_config();
+        });
+
         return "";
     }};
 
@@ -105,11 +115,20 @@ void Ethernet::print_con_duration()
     }
 }
 
-static void eth_async_begin(void *)
+static void eth_async_begin(void *arg)
 {
-    if (!ETH.begin()) {
-        logger.printfln("Async start failed. PHY broken?");
+    const uint32_t my_generation = reinterpret_cast<uintptr_t>(arg);
+
+    if (eth_begin_generation.load() == my_generation) {
+        if (!ETH.begin()) {
+            logger.printfln("Async start failed. PHY broken?");
+        }
+    } else {
+        logger.printfln("Async start cancelled (generation mismatch: mine=%lu, current=%lu).",
+                        my_generation,
+                        eth_begin_generation.load());
     }
+
     vTaskDelete(NULL); // exit RTOS task
 }
 
@@ -120,10 +139,6 @@ void Ethernet::setup()
 
     initialized = true;
 
-    if (!config.get("enable_ethernet")->asBool()) {
-        return;
-    }
-
     runtime_data = static_cast<decltype(runtime_data)>(malloc_psram_or_dram(sizeof(*runtime_data)));
 
     if (!runtime_data) {
@@ -131,18 +146,24 @@ void Ethernet::setup()
         return;
     }
 
-    ip4_addr_t subnet_tmp;
-    ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
-    ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
-    ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
-    ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
-    ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
-    runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
-
-    runtime_data->connection_state = EthernetState::NotConnected;
-    state.get("connection_state")->updateEnum(runtime_data->connection_state);
-
     runtime_data->was_connected = false;
+
+    const bool enable = config.get("enable_ethernet")->asBool();
+
+    if (enable) {
+        ip4_addr_t subnet_tmp;
+        ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
+        ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
+        ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
+        ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
+        ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
+        runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
+
+        runtime_data->connection_state = EthernetState::NotConnected;
+        state.get("connection_state")->updateEnum(runtime_data->connection_state);
+    } else {
+        runtime_data->connection_state = EthernetState::NotConfigured;
+    }
 
     Network.begin();
 
@@ -233,6 +254,8 @@ void Ethernet::setup()
             char gw_str[INET_ADDRSTRLEN];
             tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
             const uint32_t subnet = ip_info.netmask.addr;
+            const bool was_already_connected = this->runtime_data->connection_state == EthernetState::Connected;
+            const bool ip_changed = info.got_ip.ip_changed;
 
             logger.printfln("Got IP address: %s/%i, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
 
@@ -243,14 +266,26 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::Connected;
 
             const String ip_string{ip_str};
-            task_scheduler.scheduleOnce([this, now, ip_string, subnet]() {
+            task_scheduler.scheduleOnce([this, now, ip_string, subnet, was_already_connected, ip_changed]() {
                 char subnet_str[INET_ADDRSTRLEN];
                 tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
                 state.get("ip"    )->updateString(ip_string);
                 state.get("subnet")->updateString(subnet_str);
-                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("connection_start")->updateUptime(now);
+
+                if (was_already_connected && ip_changed) {
+                    // When the IP changes while already connected (e.g. static IP reconfigured
+                    // at runtime), ESP-IDF only fires GOT_IP with ip_changed=true but no LOST_IP.
+                    // Set Connecting now so the event system's next polling cycle propagates it to
+                    // network.cpp (which fires on_network_connected(false), making modules release
+                    // old connections).
+                    state.get("connection_state")->updateEnum(EthernetState::Connecting);
+                    this->reconnect_deadline = calculate_deadline(1_s);
+                    this->reconnect_connection_start = now;
+                } else {
+                    state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
+                    state.get("connection_start")->updateUptime(now);
+                }
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -276,6 +311,7 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, now]() {
+                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
@@ -293,6 +329,7 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now]() {
+                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
@@ -307,9 +344,13 @@ void Ethernet::setup()
 
             uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
-            this->runtime_data->connection_state = EthernetState::NotConnected;
+            // If eth_started is false, we're being shut down by apply_config() for a disable.
+            this->runtime_data->connection_state = this->eth_started
+                ? EthernetState::NotConnected
+                : EthernetState::NotConfigured;
 
             task_scheduler.scheduleOnce([this, now_ms]() {
+                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("connection_end")->updateUint(now_ms);
             });
@@ -318,7 +359,10 @@ void Ethernet::setup()
 
     ETH.setTaskStackSize(2304);
 
-    runtime_data->last_connected = now_us();
+    if (enable) {
+        runtime_data->last_connected = now_us();
+        eth_started = true;
+        const uint32_t gen = ++eth_begin_generation;
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -328,23 +372,33 @@ void Ethernet::setup()
     #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
-    const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, uxTaskPriorityGet(nullptr) + 1, nullptr, 1); // Priority of current task + 1
-    if (ret != pdPASS) {
-        logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-        if (!ETH.begin()) {
-            logger.printfln("Start failed. PHY broken?");
+        const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, reinterpret_cast<void *>(gen), uxTaskPriorityGet(nullptr) + 1, nullptr, 1); // Priority of current task + 1
+        if (ret != pdPASS) {
+            logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+            if (!ETH.begin()) {
+                logger.printfln("Start failed. PHY broken?");
+            }
         }
-    }
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
+    }
 }
 
 void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
+}
+
+void Ethernet::loop()
+{
+    if (reconnect_deadline != 0_us && deadline_elapsed(reconnect_deadline)) {
+        reconnect_deadline = 0_us;
+        state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
+        state.get("connection_start")->updateUptime(this->reconnect_connection_start);
+    }
 }
 
 EthernetState Ethernet::get_connection_state() const
@@ -357,5 +411,70 @@ EthernetState Ethernet::get_connection_state() const
 
 bool Ethernet::is_enabled() const
 {
-    return runtime_data != nullptr;
+    return eth_started;
+}
+
+void Ethernet::apply_config()
+{
+    const bool want_enabled = config.get("enable_ethernet")->asBool();
+
+    if (want_enabled) {
+        // Parse new IP settings from config.
+        ip4_addr_t subnet_tmp;
+        ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
+        ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
+        ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
+        ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
+        ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
+        runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
+
+        if (!eth_started) {
+            // Disabled -> Enabled: start the interface.
+            runtime_data->connection_state = EthernetState::NotConnected;
+            state.get("connection_state")->updateEnum(runtime_data->connection_state);
+
+            runtime_data->last_connected = now_us();
+            eth_started = true;
+            const uint32_t gen = ++eth_begin_generation;
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+
+            const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, reinterpret_cast<void *>(gen), uxTaskPriorityGet(nullptr) + 1, nullptr, 1);
+            if (ret != pdPASS) {
+                logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+                if (!ETH.begin()) {
+                    logger.printfln("Start failed. PHY broken?");
+                }
+            }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+        } else {
+            // Already enabled: IP/DNS change.
+            // If connected or connecting, apply new IP settings immediately.
+            // Otherwise the ETH_CONNECTED handler will pick up the new runtime_data values.
+            if (runtime_data->connection_state == EthernetState::Connected
+             || runtime_data->connection_state == EthernetState::Connecting) {
+                if (runtime_data->ip.addr != 0) {
+                    ETH.config({runtime_data->ip.addr     },
+                               {runtime_data->gateway.addr},
+                               {tf_ip4addr_cidr2mask(runtime_data->subnet_cidr).addr},
+                               {runtime_data->dns.addr    },
+                               {runtime_data->dns2.addr   });
+                } else {
+                    ETH.config();
+                }
+            }
+        }
+    } else if (eth_started) {
+        // Enabled -> Disabled: requires a reboot to take effect.
+        // The config is already saved; setup() will skip ETH.begin() on next boot.
+        // The frontend enforces the reboot via a modal dialog.
+        logger.printfln("Ethernet disabled in config. Reboot required to take effect.");
+    }
 }

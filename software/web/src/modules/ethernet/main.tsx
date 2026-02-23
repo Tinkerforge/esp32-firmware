@@ -21,6 +21,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component, RefObject } from "preact";
+import { Alert } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow         } from "../../ts/components/form_row";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
@@ -47,8 +48,7 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
     constructor() {
         super('ethernet/config',
-              () => __("ethernet.script.save_failed"),
-              () => __("ethernet.script.reboot_content_changed"));
+              () => __("ethernet.script.save_failed"));
     }
 
     override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
@@ -64,10 +64,47 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
             return <SubPage name="ethernet" />;
 
         const eth_state = API.get("ethernet/state");
+        const saved_config = API.get("ethernet/config");
+
+        // Mismatch: config says disabled, but the interface is still active
+        // (will be turned off on next reboot).
+        const disabled_but_active = !saved_config.enable_ethernet
+            && eth_state.connection_state != EthernetState.NotConfigured;
 
         return (
             <SubPage name="ethernet" title={__("ethernet.content.ethernet")}>
                 <SubPage.Status>
+                    <FormRow label={__("ethernet.status.ethernet_connection")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={eth_state.connection_state}
+                            items={[
+                                ["primary", __("ethernet.status.not_configured")],
+                                ["danger",  __("ethernet.status.not_connected")],
+                                ["warning", __("ethernet.status.connecting")],
+                                ["success", __("ethernet.status.connected")],
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("ethernet.content.status_ip")}>
+                        <InputText
+                            value={eth_state.ip != "0.0.0.0"
+                                ? eth_state.ip + " (/" + util.countBits(util.parseIP(eth_state.subnet)) + ")"
+                                : __("ethernet.content.status_ip_none")}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("ethernet.content.status_link")}>
+                        <InputText
+                            value={eth_state.link_speed > 0
+                                ? eth_state.link_speed + " Mbps, " + (eth_state.full_duplex
+                                    ? __("ethernet.content.full_duplex")
+                                    : __("ethernet.content.half_duplex"))
+                                : __("ethernet.content.status_link_none")}
+                        />
+                    </FormRow>
+
                     <FormRow label={__("ethernet.content.mac")}>
                         <InputText
                             value={eth_state.mac.length == 0 ? __("ethernet.content.mac_none") : eth_state.mac}
@@ -83,6 +120,24 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
+
+                    {disabled_but_active &&
+                        <Alert variant="warning">
+                            {__("ethernet.content.disabled_but_active")}{" "}
+                            <a href="#" onClick={async (e) => {
+                                e.preventDefault();
+                                if (await util.async_modal_ref.current.show({
+                                        title: () => __("main.reboot_title"),
+                                        body: () => __("ethernet.content.reboot_body"),
+                                        no_text: () => __("main.abort"),
+                                        yes_text: () => __("main.reboot"),
+                                        no_variant: "secondary",
+                                        yes_variant: "danger",
+                                    })) {
+                                    util.reboot();
+                                }
+                            }}>{__("ethernet.content.restart_now")}</a>
+                        </Alert>}
 
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}
@@ -158,6 +213,14 @@ export function init() {
             const config = API.get("ethernet/config");
 
             if (!config?.enable_ethernet) {
+                // Config says disabled, but interface is still active until reboot.
+                if (state?.connection_state != undefined
+                    && state.connection_state != EthernetState.NotConfigured) {
+                    return {
+                        status: ModuleStatus.Error,
+                        text: () => __("ethernet.status.disabled_after_reboot")
+                    };
+                }
                 return {status: ModuleStatus.Disabled};
             }
 
@@ -165,7 +228,7 @@ export function init() {
                 case EthernetState.Connected:
                     return {
                         status: ModuleStatus.Ok,
-                        text: () => state.ip
+                        text: () => state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")"
                     };
                 case EthernetState.Connecting:
                     return {

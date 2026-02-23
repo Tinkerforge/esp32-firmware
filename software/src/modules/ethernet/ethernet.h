@@ -32,6 +32,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void loop() override;
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;
@@ -39,6 +40,7 @@ public:
     void print_con_duration();
 
 private:
+    void apply_config();
 
     struct eth_runtime {
         micros_t last_connected;
@@ -56,4 +58,8 @@ private:
     ConfigRoot state;
 
     eth_runtime *runtime_data = nullptr;
+    bool eth_started = false;
+
+    micros_t reconnect_deadline = 0_us;
+    micros_t reconnect_connection_start = 0_us;
 };
