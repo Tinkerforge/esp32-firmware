@@ -23,6 +23,8 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
+import subprocess
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -1483,6 +1485,15 @@ def main():
             code_header=CppTemplates.SPINE_HEADER,
             code_implementation=implementation_header
         )
+
+        # Run clang-format on the generated files
+        clang_format = shutil.which("clang-format")
+        if clang_format:
+            print("Running clang-format on generated files...")
+            subprocess.run([clang_format, "-i", output_header, output_cpp], check=True)
+        else:
+            print("WARNING: clang-format not found, skipping formatting.")
+
         print("Done processing SPINE XSD files.")
 
     # SHIP processing (currently disabled)
