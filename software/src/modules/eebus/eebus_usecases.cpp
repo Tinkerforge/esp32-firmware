@@ -5156,6 +5156,7 @@ EEBusUseCases::EEBusUseCases()
     task_scheduler.scheduleOnce(
         [this, supported_usecases]() {
             // String usecase_names = "";
+            eebus.eebus_usecase_state.get("usecases_supported")->removeAll();
             for (const Usecases uc : supported_usecases) {
                 //  usecase_names += String(get_usecases_name(uc)) + ",";
                 auto entry = eebus.eebus_usecase_state.get("usecases_supported")->add();
