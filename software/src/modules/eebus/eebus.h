@@ -136,4 +136,16 @@ public:
 private:
     bool module_enabled = false;
     String eebus_name{};
+
+#ifdef EEBUS_MODE_EVSE
+    /**
+     * Register EVSE-specific event handlers.
+     */
+    void register_evse_events();
+
+    /**
+     * Register meter value events for continuous measurement updates.
+     */
+    void register_meter_events();
+#endif
 };
