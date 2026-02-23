@@ -3184,7 +3184,7 @@ void MpcUsecase::update_voltage(int voltage_phase_1, int voltage_phase_2, int vo
     voltage_phase_to_phase_v[0] = voltage_phase_1_2;
     voltage_phase_to_phase_v[1] = voltage_phase_2_3;
     voltage_phase_to_phase_v[2] = voltage_phase_3_1;
-    if (phase_to_phase_supported_before!= phase_to_phase_available) {
+    if (phase_to_phase_supported_before != phase_to_phase_available) {
         ElectricalConnectionParameterDescriptionListDataType ec_parameter_description_data = EVSEEntity::get_electrical_connection_parameter_description_list_data();
         eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), ec_parameter_description_data, "electricalConnectionParameterDescriptionListData");
 
