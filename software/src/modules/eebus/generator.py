@@ -136,6 +136,13 @@ WHITELISTED_FUNCTIONS = frozenset([
     "resultData",
 ])
 
+# Types directly referenced by application code (outside the handler).
+# These are used as extra root types for dependency-based pruning.
+ADDITIONAL_REQUIRED_TYPES = frozenset([
+    "HeaderType",                         # Used in handle_message() signatures
+    "BindingManagementEntryListDataType", # Stored as member in use-case class
+])
+
 
 # =============================================================================
 # C++ Code Templates
@@ -620,6 +627,50 @@ def sort_and_resolve_dependencies(
         visit(datatype)
 
     return sorted_datatypes
+
+
+def prune_unreachable_types(
+        datatypes: list[SpineType],
+        type_function_mapping: list[tuple[str, str]],
+        additional_roots: frozenset[str] = frozenset()
+) -> list[SpineType]:
+    """
+    Remove types that are not transitively reachable from handler function
+    types or additional root types.
+    """
+
+    # Build root set: handler types + additional required types
+    root_types = set(func[1] for func in type_function_mapping) | set(additional_roots)
+
+    # Build name -> depends_on lookup
+    dep_map: dict[str, list[str]] = {dt.name: dt.depends_on for dt in datatypes}
+    all_type_names = {dt.name for dt in datatypes}
+
+    # Walk transitive dependencies via BFS
+    reachable: set[str] = set()
+    queue = list(root_types & all_type_names)
+    # Also seed with additional roots that may not be in function mapping
+    for r in additional_roots:
+        if r in all_type_names and r not in queue:
+            queue.append(r)
+
+    while queue:
+        current = queue.pop()
+        if current in reachable:
+            continue
+        reachable.add(current)
+        for dep in dep_map.get(current, []):
+            if dep not in reachable and dep in all_type_names:
+                queue.append(dep)
+
+    pruned = [dt for dt in datatypes if dt.name in reachable]
+
+    print(f"Pruning: {len(datatypes)} types -> {len(pruned)} reachable "
+          f"({len(datatypes) - len(pruned)} removed)")
+    print(f"  Root types: {len(root_types)} "
+          f"({len(root_types & all_type_names)} found in generated types)")
+
+    return pruned
 
 
 # =============================================================================
@@ -1447,6 +1498,14 @@ def process_xsd_directory(
     print(f"Elements After: {len(_generator_state.cpp_datatypes)}")
     print(f"Functions after dedup: {pre_filter_count}")
     print(f"Functions after whitelist: {len(_generator_state.type_function_mapping)}")
+
+    # Prune types not reachable from handler functions or application code
+    print("Pruning unreachable types...")
+    _generator_state.cpp_datatypes = prune_unreachable_types(
+        _generator_state.cpp_datatypes,
+        _generator_state.type_function_mapping,
+        ADDITIONAL_REQUIRED_TYPES,
+    )
 
     print("Resolving Type Dependencies...")
     _generator_state.cpp_datatypes = sort_and_resolve_dependencies(
