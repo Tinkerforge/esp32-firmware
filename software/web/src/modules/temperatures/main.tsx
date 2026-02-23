@@ -139,6 +139,7 @@ type TemperaturesConfig = API.getType["temperatures/config"];
 interface TemperaturesState {
     state: API.getType["temperatures/state"];
     temperatures: API.getType["temperatures/temperatures"];
+    config_enable: boolean;
 }
 
 export class Temperatures extends ConfigComponent<"temperatures/config", {}, TemperaturesState> {
@@ -158,8 +159,18 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
             this.update_uplot();
         });
 
+        util.addApiEventListener("temperatures/config", () => {
+            let config = API.get("temperatures/config");
+            this.setState({config_enable: config.enable});
+        });
+
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
+    }
+
+    override async sendSave(topic: "temperatures/config", config: TemperaturesConfig) {
+        this.setState({config_enable: config.enable}); // avoid round trip time
+        await super.sendSave(topic, config);
     }
 
     update_uplot() {
@@ -229,7 +240,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
 
         return (
             <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
-                {state.enable &&
+                {state.config_enable &&
                     <SubPage.Status>
                         {is_weather_service && !is_configured ? (
                             <FormRow>
