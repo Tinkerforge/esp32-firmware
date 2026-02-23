@@ -84,38 +84,18 @@ public:
         peers.clear();
     }
 
-    /* Updates identified by SKI (txt_ski). Will add a new peer if no existing one was found with the ip */
     std::shared_ptr<ShipNode> get_peer_by_ski(const String &ski);
-    void remove_peer_by_ski(const String &ski);
-    void update_ip_by_ski(const String &ski, const String &ip, boolean force_front = false);
-    void update_port_by_ski(const String &ski, uint16_t port);
-    void update_trusted_by_ski(const String &ski, bool trusted);
-    void update_state_by_ski(const String &ski, NodeState state);
-    void update_dns_name_by_ski(const String &ski, const String &dns_name);
-    void update_vers_by_ski(const String &ski, const String &txt_vers);
-    void update_id_by_ski(const String &ski, const String &txt_id);
-    void update_wss_path_by_ski(const String &ski, const String &txt_wss_path);
-    void update_autoregister_by_ski(const String &ski, bool autoregister);
-    void update_brand_by_ski(const String &ski, const String &brand);
-    void update_model_by_ski(const String &ski, const String &model);
-    void update_type_by_ski(const String &ski, const String &type);
-
-    /* Updates identified by IP (matches any entry in ShipNode::ip_address). Return true on success. */
     std::shared_ptr<ShipNode> get_peer_by_ip(const String &ip);
+    // Get existing peer or create a new one. Never returns nullptr.
+    ShipNode *get_or_create_by_ski(const String &ski);
+    ShipNode *get_or_create_by_ip(const String &ip);
+
+    void remove_peer_by_ski(const String &ski);
     void remove_peer_by_ip(const String &ip);
-    void update_port_by_ip(const String &ip, uint16_t port);
-    void update_trusted_by_ip(const String &ip, bool trusted);
-    void update_state_by_ip(const String &ip, NodeState state);
-    void update_dns_name_by_ip(const String &ip, const String &dns_name);
-    void update_vers_by_ip(const String &ip, const String &txt_vers);
-    void update_id_by_ip(const String &ip, const String &txt_id);
-    void update_wss_path_by_ip(const String &ip, const String &txt_wss_path);
-    void update_ski_by_ip(const String &ip, const String &txt_ski);
-    void update_autoregister_by_ip(const String &ip, bool autoregister);
-    void update_brand_by_ip(const String &ip, const String &brand);
-    void update_model_by_ip(const String &ip, const String &model);
-    void update_type_by_ip(const String &ip, const String &type);
+
+    void update_ip_by_ski(const String &ski, const String &ip, boolean force_front = false);
     void update_ip_by_ip(const String &ip, const String &new_ip);
+    void update_state_by_ip(const String &ip, NodeState state);
 
     void new_peer_from_ski(const String &ski);
     void new_peer_from_ip(const String &ip);

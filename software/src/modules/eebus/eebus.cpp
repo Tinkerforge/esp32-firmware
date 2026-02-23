@@ -33,7 +33,9 @@
 
 // Out-of-line constructor and destructor: unique_ptr_any<EEBusUseCases> and unique_ptr_any<SpineDataTypeHandler>
 // need complete types for their deleters.
-EEBus::EEBus() {}
+EEBus::EEBus()
+{
+}
 EEBus::~EEBus() = default;
 
 extern char local_uid_str[32];
@@ -537,27 +539,20 @@ void EEBus::register_urls()
             }
             String ski = add_peer.get("ski")->asString();
 
-            auto existing_peer = ship.peer_handler.get_peer_by_ski(ski);
-            if (existing_peer == nullptr) {
-                ship.peer_handler.new_peer_from_ski(ski);
-                existing_peer = ship.peer_handler.get_peer_by_ski(ski);
-            }
+            auto *peer = ship.peer_handler.get_or_create_by_ski(ski);
+            peer->persistent = add_peer.get("persistent")->asBool();
 
-            if (existing_peer != nullptr) {
-                existing_peer->persistent = add_peer.get("persistent")->asBool();
+            ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
+            peer->port = static_cast<uint16_t>(add_peer.get("port")->asUint());
+            peer->trusted = add_peer.get("trusted")->asBool();
+            peer->dns_name = add_peer.get("dns_name")->asString();
+            peer->txt_wss_path = add_peer.get("wss_path")->asString();
 
-                ship.peer_handler.update_ip_by_ski(ski, add_peer.get("ip")->asString());
-                ship.peer_handler.update_port_by_ski(ski, add_peer.get("port")->asUint());
-                ship.peer_handler.update_trusted_by_ski(ski, add_peer.get("trusted")->asBool());
-                ship.peer_handler.update_dns_name_by_ski(ski, add_peer.get("dns_name")->asString());
-                ship.peer_handler.update_wss_path_by_ski(ski, add_peer.get("wss_path")->asString());
+            sync_persistent_peer_to_config(ship.peer_handler.get_peer_by_ski(ski));
 
-                sync_persistent_peer_to_config(existing_peer);
+            update_peers_state();
 
-                update_peers_state();
-
-                ship.connect_trusted_peers();
-            }
+            ship.connect_trusted_peers();
         },
         true);
 

@@ -465,20 +465,21 @@ ShipDiscoveryState Ship::discover_ship_peers()
         }
 
         // This is pretty slow as we have to search for the peer again everytime, could be optimized by adding, getting and then setting the values
-        peer_handler.update_vers_by_ski(txt_ski, txt_vers);
-        peer_handler.update_id_by_ski(txt_ski, txt_id);
-        peer_handler.update_wss_path_by_ski(txt_ski, txt_wss_path);
-        peer_handler.update_model_by_ski(txt_ski, txt_model);
-        peer_handler.update_type_by_ski(txt_ski, txt_type);
-        peer_handler.update_brand_by_ski(txt_ski, txt_brand);
-        peer_handler.update_autoregister_by_ski(txt_ski, txt_autoregister);
-        peer_handler.update_dns_name_by_ski(txt_ski, dns_name);
-        peer_handler.update_port_by_ski(txt_ski, port);
+        auto *peer = peer_handler.get_or_create_by_ski(txt_ski);
+        peer->txt_vers = txt_vers;
+        peer->txt_id = txt_id;
+        peer->txt_wss_path = txt_wss_path;
+        peer->txt_model = txt_model;
+        peer->txt_type = txt_type;
+        peer->txt_brand = txt_brand;
+        peer->txt_autoregister = txt_autoregister;
+        peer->dns_name = dns_name;
+        peer->port = port;
         for (const String &ip : ip_addresses) {
             peer_handler.update_ip_by_ski(txt_ski, ip);
         }
-        if (peer_handler.get_peer_by_ski(txt_ski).get()->state != NodeState::Connected) {
-            peer_handler.update_state_by_ski(txt_ski, NodeState::Discovered);
+        if (peer->state != NodeState::Connected) {
+            peer->state = NodeState::Discovered;
         }
 
         results = results->next;
@@ -599,54 +600,29 @@ void ShipPeerHandler::remove_peer_by_ski(const String &ski)
                 peers.end());
 }
 
+ShipNode *ShipPeerHandler::get_or_create_by_ski(const String &ski)
+{
+    if (auto peer = get_peer_by_ski(ski))
+        return peer.get();
+    new_peer_from_ski(ski);
+    return peers.back().get();
+}
+
 void ShipPeerHandler::update_ip_by_ski(const String &ski, const String &ip, const bool force_front)
 {
-    if (const auto peer = get_peer_by_ski(ski)) {
-        if (!peer.get()->contains_ip(ip)) {
-            if (force_front) {
-                peer.get()->ip_address.resize(peer.get()->ip_address.size() + 1);
-                for (int i = peer.get()->ip_address.size() - 1; i >= 0; i--) {
-                    peer.get()->ip_address[i + 1] = peer.get()->ip_address[i];
-                }
-                peer.get()->ip_address[0] = ip;
-            } else {
-                peer.get()->ip_address.push_back(ip);
-            }
+    auto *peer = get_or_create_by_ski(ski);
+    if (!peer->contains_ip(ip)) {
+        if (force_front) {
+            peer->ip_address.insert(peer->ip_address.begin(), ip);
         } else {
-            bool found = false;
-            for (int i = peer.get()->ip_address.size() - 1; i >= 0; i--) {
-                if (found) {
-                    peer.get()->ip_address[i + 1] = peer.get()->ip_address[i];
-                }
-                if (peer.get()->ip_address[i] == ip) {
-                    found = true;
-                }
-            }
-            peer.get()->ip_address[0] = ip;
+            peer->ip_address.push_back(ip);
         }
-    } else {
-        new_peer_from_ski(ski);
-        update_ip_by_ski(ski, ip);
-    }
-}
-
-void ShipPeerHandler::update_port_by_ski(const String &ski, uint16_t port)
-{
-    if (const auto peer = get_peer_by_ski(ski)) {
-        peer.get()->port = port;
-    } else {
-        new_peer_from_ski(ski);
-        update_port_by_ski(ski, port);
-    }
-}
-
-void ShipPeerHandler::update_trusted_by_ski(const String &ski, bool trusted)
-{
-    if (const auto peer = get_peer_by_ski(ski)) {
-        peer.get()->trusted = trusted;
-    } else {
-        new_peer_from_ski(ski);
-        update_trusted_by_ski(ski, trusted);
+    } else if (force_front && !peer->ip_address.empty() && peer->ip_address[0] != ip) {
+        // Move existing ip to front
+        auto it = std::find(peer->ip_address.begin(), peer->ip_address.end(), ip);
+        if (it != peer->ip_address.end()) {
+            std::rotate(peer->ip_address.begin(), it, it + 1);
+        }
     }
 }
 
@@ -674,226 +650,24 @@ void ShipPeerHandler::remove_peer_by_ip(const String &ip)
                 peers.end());
 }
 
-/* --- update by ski --- */
-void ShipPeerHandler::update_state_by_ski(const String &ski, NodeState state)
+ShipNode *ShipPeerHandler::get_or_create_by_ip(const String &ip)
 {
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->state = state;
-    } else {
-        new_peer_from_ski(ski);
-        update_state_by_ski(ski, state);
-    }
-}
-
-void ShipPeerHandler::update_dns_name_by_ski(const String &ski, const String &dns_name)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->dns_name = dns_name;
-    } else {
-        new_peer_from_ski(ski);
-        update_dns_name_by_ski(ski, dns_name);
-    }
-}
-
-void ShipPeerHandler::update_vers_by_ski(const String &ski, const String &txt_vers)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_vers = txt_vers;
-    } else {
-        new_peer_from_ski(ski);
-        update_vers_by_ski(ski, txt_vers);
-    }
-}
-
-void ShipPeerHandler::update_id_by_ski(const String &ski, const String &txt_id)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_id = txt_id;
-    } else {
-        new_peer_from_ski(ski);
-        update_id_by_ski(ski, txt_id);
-    }
-}
-
-void ShipPeerHandler::update_wss_path_by_ski(const String &ski, const String &txt_wss_path)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_wss_path = txt_wss_path;
-    } else {
-        new_peer_from_ski(ski);
-        update_wss_path_by_ski(ski, txt_wss_path);
-    }
-}
-
-void ShipPeerHandler::update_autoregister_by_ski(const String &ski, bool autoregister)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_autoregister = autoregister;
-    } else {
-        new_peer_from_ski(ski);
-        update_autoregister_by_ski(ski, autoregister);
-    }
-}
-
-void ShipPeerHandler::update_brand_by_ski(const String &ski, const String &brand)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_brand = brand;
-    } else {
-        new_peer_from_ski(ski);
-        update_brand_by_ski(ski, brand);
-    }
-}
-
-void ShipPeerHandler::update_model_by_ski(const String &ski, const String &model)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_model = model;
-    } else {
-        new_peer_from_ski(ski);
-        update_model_by_ski(ski, model);
-    }
-}
-
-void ShipPeerHandler::update_type_by_ski(const String &ski, const String &type)
-{
-    if (const auto peer = get_peer_by_ski(ski).get()) {
-        peer->txt_type = type;
-    } else {
-        new_peer_from_ski(ski);
-        update_type_by_ski(ski, type);
-    }
-}
-
-/* --- update by ip --- */
-void ShipPeerHandler::update_port_by_ip(const String &ip, uint16_t port)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->port = port;
-    } else {
-        new_peer_from_ip(ip);
-        update_port_by_ip(ip, port);
-    }
-}
-
-void ShipPeerHandler::update_trusted_by_ip(const String &ip, bool trusted)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->trusted = trusted;
-    } else {
-        new_peer_from_ip(ip);
-        update_trusted_by_ip(ip, trusted);
-    }
+    if (auto peer = get_peer_by_ip(ip))
+        return peer.get();
+    new_peer_from_ip(ip);
+    return peers.back().get();
 }
 
 void ShipPeerHandler::update_state_by_ip(const String &ip, NodeState state)
 {
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->state = state;
-    } else {
-        new_peer_from_ip(ip);
-        update_state_by_ip(ip, state);
-    }
+    get_or_create_by_ip(ip)->state = state;
 }
 
-void ShipPeerHandler::update_dns_name_by_ip(const String &ip, const String &dns_name)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->dns_name = dns_name;
-    } else {
-        new_peer_from_ip(ip);
-        update_dns_name_by_ip(ip, dns_name);
-    }
-}
-
-void ShipPeerHandler::update_vers_by_ip(const String &ip, const String &txt_vers)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_vers = txt_vers;
-    } else {
-        new_peer_from_ip(ip);
-        update_vers_by_ip(ip, txt_vers);
-    }
-}
-
-void ShipPeerHandler::update_id_by_ip(const String &ip, const String &txt_id)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_id = txt_id;
-    } else {
-        new_peer_from_ip(ip);
-        update_id_by_ip(ip, txt_id);
-    }
-}
-
-void ShipPeerHandler::update_wss_path_by_ip(const String &ip, const String &txt_wss_path)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_wss_path = txt_wss_path;
-    } else {
-        new_peer_from_ip(ip);
-        update_wss_path_by_ip(ip, txt_wss_path);
-    }
-}
-
-void ShipPeerHandler::update_ski_by_ip(const String &ip, const String &txt_ski)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_ski = txt_ski;
-    } else {
-        new_peer_from_ip(ip);
-        update_ski_by_ip(ip, txt_ski);
-    }
-}
-
-void ShipPeerHandler::update_autoregister_by_ip(const String &ip, bool autoregister)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_autoregister = autoregister;
-    } else {
-        new_peer_from_ip(ip);
-        update_autoregister_by_ip(ip, autoregister);
-    }
-}
-
-void ShipPeerHandler::update_brand_by_ip(const String &ip, const String &brand)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_brand = brand;
-    } else {
-        new_peer_from_ip(ip);
-        update_brand_by_ip(ip, brand);
-    }
-}
-
-void ShipPeerHandler::update_model_by_ip(const String &ip, const String &model)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_model = model;
-    } else {
-        new_peer_from_ip(ip);
-        update_model_by_ip(ip, model);
-    }
-}
-
-void ShipPeerHandler::update_type_by_ip(const String &ip, const String &type)
-{
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        peer->txt_type = type;
-    } else {
-        new_peer_from_ip(ip);
-        update_type_by_ip(ip, type);
-    }
-}
 void ShipPeerHandler::update_ip_by_ip(const String &ip, const String &new_ip)
 {
-    if (const auto peer = get_peer_by_ip(ip).get()) {
-        if (!peer->contains_ip(new_ip)) {
-            peer->ip_address.push_back(new_ip);
-        }
-    } else {
-        new_peer_from_ip(ip);
-        update_ip_by_ip(ip, new_ip);
+    auto *peer = get_or_create_by_ip(ip);
+    if (!peer->contains_ip(new_ip)) {
+        peer->ip_address.push_back(new_ip);
     }
 }
 
