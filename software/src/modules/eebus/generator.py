@@ -68,6 +68,74 @@ IGNORED_STRUCT_TYPES = frozenset(["CmdType", "DatagramType", "PayloadType", "Fil
 IGNORED_ELEMENT_TYPES = frozenset(["filtertype", "payloadtype", "datagramtype", "hexbinary"])
 IGNORED_ELEMENT_NAMES = frozenset(["device", "entity", "feature", "hexbinary"])
 
+# Whitelisted XSD schema feature groups to process.
+# Only schemas matching these groups (and their _overview variants) will be processed.
+WHITELISTED_SCHEMA_GROUPS = frozenset([
+    # Core infrastructure
+    "CommonDataTypes",
+    "CommandCommonDefinitions",
+    "CommandFrame",
+    "Datagram",
+    "Version",
+    "Result",
+    # Node/Session management
+    "NodeManagement",
+    "SubscriptionManagement",
+    "BindingManagement",
+    # Device feature groups
+    "DeviceClassification",
+    "DeviceConfiguration",
+    "DeviceDiagnosis",
+    # Use-case specific feature groups
+    "ElectricalConnection",
+    "Measurement",
+    "LoadControl",
+    "Bill",
+    "Identification",
+    "TimeSeries",
+    "IncentiveTable",
+    "UseCaseInformation",
+])
+
+# Whitelisted function names for the SpineDataTypeHandler.
+# Only these functions (and their associated types) will be included in the handler class.
+WHITELISTED_FUNCTIONS = frozenset([
+    "nodeManagementDetailedDiscoveryData",
+    "nodeManagementUseCaseData",
+    "nodeManagementSubscriptionData",
+    "nodeManagementSubscriptionRequestCall",
+    "nodeManagementSubscriptionDeleteCall",
+    "nodeManagementBindingData",
+    "nodeManagementBindingRequestCall",
+    "nodeManagementBindingDeleteCall",
+    "deviceDiagnosisHeartbeatData",
+    "deviceDiagnosisStateData",
+    "deviceClassificationManufacturerData",
+    "deviceConfigurationKeyValueDescriptionListData",
+    "deviceConfigurationKeyValueListData",
+    "identificationListData",
+    "measurementDescriptionListData",
+    "measurementConstraintsListData",
+    "measurementListData",
+    "electricalConnectionDescriptionListData",
+    "electricalConnectionParameterDescriptionListData",
+    "electricalConnectionPermittedValueSetListData",
+    "electricalConnectionCharacteristicListData",
+    "loadControlLimitDescriptionListData",
+    "loadControlLimitConstraintsListData",
+    "loadControlLimitListData",
+    "billDescriptionListData",
+    "billConstraintsListData",
+    "billListData",
+    "timeSeriesDescriptionListData",
+    "timeSeriesConstraintsListData",
+    "timeSeriesListData",
+    "incentiveTableDescriptionData",
+    "incentiveTableConstraintsData",
+    "incentiveTableData",
+    "resultData",
+])
+
 
 # =============================================================================
 # C++ Code Templates
@@ -1080,9 +1148,11 @@ class DataHandlerGenerator:
         type_enum_entries = ''.join(
             f"\n\t\t\t{func[1]}," for func in self.state.type_function_mapping
         )
+        # Only generate data members for types referenced by function mappings
+        handler_type_names = sorted(set(func[1] for func in self.state.type_function_mapping))
         data_types = ''.join(
-            f"\n\t\tSpineOptional<{dt.name}> {dt.name.lower()}{{}};"
-            for dt in self.state.cpp_datatypes
+            f"\n\t\tSpineOptional<{type_name}> {type_name.lower()}{{}};"
+            for type_name in handler_type_names
         )
 
         return f"""
@@ -1143,9 +1213,11 @@ class SpineDataTypeHandler {{
     }}"""
             for func in self.state.type_function_mapping
         )
+        # Only reset data members that are actually part of the handler
+        handler_type_names = sorted(set(func[1] for func in self.state.type_function_mapping))
         reset_calls = ''.join(
-            f"\n\t\t{dt.name.lower()}.reset();"
-            for dt in self.state.cpp_datatypes
+            f"\n\t\t{type_name.lower()}.reset();"
+            for type_name in handler_type_names
         )
 
         return f"""
@@ -1280,13 +1352,19 @@ class SchemaProcessor:
 
     def _process_elements(self, xml_schema):
         """Process schema elements and create function mappings."""
-        for element_name in xml_schema.elements._target_dict:
+        target_dict = getattr(xml_schema.elements, 'target_dict',
+                              getattr(xml_schema.elements, '_target_dict', None))
+        if target_dict is None:
+            print("WARNING: Could not access elements target_dict")
+            return
+
+        for element_name in target_dict:
             if "{http://www.w3.org/2001/XMLSchema}" in element_name:
                 continue
 
             element_name_short = remove_namespace(element_name)
             element_type = remove_namespace(
-                xml_schema.elements._target_dict[element_name].type.name
+                target_dict[element_name].type.name
             )
 
             if (element_name_short.lower() not in IGNORED_ELEMENT_NAMES and
@@ -1297,6 +1375,16 @@ class SchemaProcessor:
 # =============================================================================
 # XSD Directory Processing
 # =============================================================================
+
+def _get_schema_group(filename: str) -> str:
+    name = filename[:-4]  # strip .xsd
+    prefix = "EEBus_SPINE_TS_"
+    if name.startswith(prefix):
+        name = name[len(prefix):]
+    if name.endswith("_overview"):
+        name = name[:-9]
+    return name
+
 
 def process_xsd_directory(
         input_dir: str,
@@ -1323,13 +1411,21 @@ def process_xsd_directory(
     processor = SchemaProcessor(_generator_state)
 
     print("Loading schema...")
-    for xsd_file in os.listdir(input_dir):
-        if xsd_file.endswith(".xsd"):
-            print(f"Processing: {xsd_file}")
-            schema = xmlschema.XMLSchema(os.path.join(input_dir, xsd_file))
-            if schema.version != "1.3.0":
-                print("WARNING: Schema version is not 1.3.0. This might cause issues. The processing will continue.")
-            processor.process_schema(schema)
+    for xsd_file in sorted(os.listdir(input_dir)):
+        if not xsd_file.endswith(".xsd"):
+            continue
+
+        # Filter to whitelisted schema groups only
+        group = _get_schema_group(xsd_file)
+        if group not in WHITELISTED_SCHEMA_GROUPS:
+            print(f"Skipping (not whitelisted): {xsd_file}")
+            continue
+
+        print(f"Processing: {xsd_file}")
+        schema = xmlschema.XMLSchema(os.path.join(input_dir, xsd_file))
+        if schema.version != "1.3.0":
+            print("WARNING: Schema version is not 1.3.0. This might cause issues. The processing will continue.")
+        processor.process_schema(schema)
 
     # Deduplicate and sort
     print("Deduplicating and sorting code...")
@@ -1341,8 +1437,16 @@ def process_xsd_directory(
         _generator_state.type_function_mapping
     )
 
+    # Filter function mappings to only whitelisted functions
+    pre_filter_count = len(_generator_state.type_function_mapping)
+    _generator_state.type_function_mapping = [
+        mapping for mapping in _generator_state.type_function_mapping
+        if mapping[0] in WHITELISTED_FUNCTIONS
+    ]
+
     print(f"Elements After: {len(_generator_state.cpp_datatypes)}")
-    print(f"Functions after: {len(_generator_state.type_function_mapping)}")
+    print(f"Functions after dedup: {pre_filter_count}")
+    print(f"Functions after whitelist: {len(_generator_state.type_function_mapping)}")
 
     print("Resolving Type Dependencies...")
     _generator_state.cpp_datatypes = sort_and_resolve_dependencies(
