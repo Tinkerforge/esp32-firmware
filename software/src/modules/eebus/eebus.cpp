@@ -33,6 +33,15 @@
 
 extern char local_uid_str[32];
 
+/**
+ * Helper to sanitize float values for integer conversion.
+ * Returns INT32_MIN for NaN, otherwise scales and converts to int.
+ */
+static int sanitized(float x, float scale)
+{
+    return isnan(x) ? INT32_MIN : static_cast<int>(x * scale);
+}
+
 // ============================================================================
 // EVSE-specific helper functions (only compiled for EVSE builds)
 // ============================================================================
@@ -98,15 +107,6 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
     eebus.usecases->evsecc->update_operating_state(is_failure);
 #endif
 #endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
-}
-
-/**
- * Helper to sanitize float values for integer conversion.
- * Returns INT32_MIN for NaN, otherwise scales and converts to int.
- */
-static int sanitized(float x, float scale)
-{
-    return isnan(x) ? INT32_MIN : static_cast<int>(x * scale);
 }
 
 /**
@@ -668,6 +668,10 @@ void EEBus::register_events()
 #ifdef EEBUS_MODE_EVSE
     register_evse_events();
 #endif
+
+#ifdef EEBUS_MODE_EM
+    register_em_events();
+#endif
 }
 
 #ifdef EEBUS_MODE_EVSE
@@ -692,19 +696,42 @@ void EEBus::register_evse_events()
     // Meter value updates for EVCEM and MPC usecases
     register_meter_events();
 }
+#endif // EEBUS_MODE_EVSE
+
+#ifdef EEBUS_MODE_EM
+/**
+ * Register Energy Manager specific events.
+ * Called by register_events() when compiled for EM mode.
+ */
+void EEBus::register_em_events()
+{
+    // Meter value updates for MGCP usecase
+    register_meter_events();
+}
+#endif // EEBUS_MODE_EM
 
 /**
  * Register meter value events for continuous measurement updates.
  * Sets up an index cache for efficient value retrieval.
+ *
+ * In EVSE mode: Updates EVCEM (EV charging measurements) and MPC (power consumption monitoring)
+ * In EM mode: Updates MGCP (grid connection point monitoring)
  */
 void EEBus::register_meter_events()
 {
-    auto meter_slot = evse_common.get_charger_meter();
+    // Determine which meter slot to use based on mode
+    uint8_t meter_slot;
+#ifdef EEBUS_MODE_EVSE
+    meter_slot = evse_common.get_charger_meter();
+#else
+    // TODO: Replace with actual EM meter slot
+    meter_slot = 0; // Placeholder for EM mode
+#endif
 
     // First, wait for value IDs to be published
     event.registerEvent(meters.get_path(meter_slot, Meters::PathType::ValueIDs), {}, [meter_slot](const Config *value_ids) {
         if (value_ids->count() == 0) {
-            logger.printfln("EEBUS: Ignoring blank value IDs from charger meter");
+            logger.printfln("EEBUS: Ignoring blank value IDs from meter");
             return EventResult::OK;
         }
 
@@ -735,7 +762,8 @@ void EEBus::register_meter_events()
             v.frequency = sanitized(floats.frequency, 1000.0f);         // Hz -> mHz
             v.total_power = sanitized(floats.total_power, 1.0f);        // W (no scale)
 
-            // Calculate charged energy for current session
+#ifdef EEBUS_MODE_EVSE
+            // Calculate charged energy for current session (EVSE mode only)
             bool charging = (charge_tracker.current_charge.get("user_id")->asInt16() != -1);
             float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
             int charged_wh = !charging ? INT32_MIN : sanitized(floats.energy_import - meter_start, 1000.0f);
@@ -753,8 +781,22 @@ void EEBus::register_meter_events()
             eebus.usecases->mpc->update_voltage(v.voltages[0], v.voltages[1], v.voltages[2], v.phase_voltages[0], v.phase_voltages[1], v.phase_voltages[2]);
             eebus.usecases->mpc->update_frequency(v.frequency);
 #endif
+            (void)charged_wh; // Suppress unused warning
+#endif                        // EEBUS_MODE_EVSE
 
-            (void)charged_wh; // Suppress unused warning when EVCEM is disabled
+#ifdef EEBUS_MODE_EM
+            // Update MGCP usecase (grid connection point monitoring) in EM mode
+#ifdef EEBUS_ENABLE_MGCP_USECASE
+            // Note: MGCP uses load/passive sign convention (negative = feed-in)
+            eebus.usecases->monitoring_of_grid_connection_point.update_power(v.total_power);
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_feed_in(v.energy_export);
+            eebus.usecases->monitoring_of_grid_connection_point.update_energy_consumed(v.energy_import);
+            eebus.usecases->monitoring_of_grid_connection_point.update_current(v.currents[0], v.currents[1], v.currents[2]);
+            eebus.usecases->monitoring_of_grid_connection_point.update_voltage(v.voltages[0], v.voltages[1], v.voltages[2]);
+            eebus.usecases->monitoring_of_grid_connection_point.update_frequency(v.frequency);
+#endif
+#endif // EEBUS_MODE_EM
+
             return EventResult::OK;
         });
 
@@ -762,7 +804,6 @@ void EEBus::register_meter_events()
         return EventResult::Deregister;
     });
 }
-#endif // EEBUS_MODE_EVSE
 
 void EEBus::toggle_module()
 {

@@ -142,10 +142,18 @@ private:
      * Register EVSE-specific event handlers.
      */
     void register_evse_events();
+#endif
+
+#ifdef EEBUS_MODE_EM
+    /**
+     * Register Energy Manager specific event handlers.
+     */
+    void register_em_events();
+#endif
 
     /**
      * Register meter value events for continuous measurement updates.
+     * Works in both EVSE mode (charger meter -> EVCEM/MPC) and EM mode (grid meter -> MGCP).
      */
     void register_meter_events();
-#endif
 };
