@@ -1078,6 +1078,21 @@ void RemoteAccess::register_events()
                 task_scheduler.cancel(this->task_id);
                 this->task_id = 0;
             }
+
+            // Tear down the management WireGuard tunnel so that
+            // its stale lwIP netif and UDP socket don't linger.
+            if (this->management != nullptr) {
+                in_seq_number = 0;
+                this->management_request_done = false;
+                // Close remote connections first to stop all incoming
+                // tunnel traffic before tearing down the management tunnel.
+                this->close_all_remote_connections();
+                if (inner_socket >= 0) {
+                    close(inner_socket);
+                    inner_socket = -1;
+                }
+                this->management = nullptr;
+            }
         }
         return EventResult::OK;
     });
