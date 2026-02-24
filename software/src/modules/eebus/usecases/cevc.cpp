@@ -144,14 +144,10 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 
 NodeManagementDetailedDiscoveryEntityInformationType CevcUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
     if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
-        return entity;
+        return {};
     }
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EV;
-    entity.description->label = "EV";
-    return entity;
+    return build_entity_info(EntityTypeEnumType::EV, "EV");
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::get_detailed_discovery_feature_information() const
@@ -165,60 +161,19 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> CevcUsecase::
     // =========================================================================
     // TimeSeries Feature - See EEBUS UC TS CoordinatedEvCharging v1.0.1.pdf 3.2.1.2.1
     // =========================================================================
-    NodeManagementDetailedDiscoveryFeatureInformationType timeseries_feature{};
-    timeseries_feature.description->featureAddress->entity = entity_address;
-    timeseries_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::TimeSeries);
-    timeseries_feature.description->featureType = FeatureTypeEnumType::TimeSeries;
-    timeseries_feature.description->role = RoleType::server;
-
-    // timeSeriesDescriptionListData - read only
-    FunctionPropertyType timeseries_description{};
-    timeseries_description.function = FunctionEnumType::timeSeriesDescriptionListData;
-    timeseries_description.possibleOperations->read = PossibleOperationsReadType{};
-    timeseries_feature.description->supportedFunction->push_back(timeseries_description);
-
-    // timeSeriesConstraintsListData - read only
-    FunctionPropertyType timeseries_constraints{};
-    timeseries_constraints.function = FunctionEnumType::timeSeriesConstraintsListData;
-    timeseries_constraints.possibleOperations->read = PossibleOperationsReadType{};
-    timeseries_feature.description->supportedFunction->push_back(timeseries_constraints);
-
-    // timeSeriesListData - read and write (write for receiving charging plan)
-    FunctionPropertyType timeseries_data{};
-    timeseries_data.function = FunctionEnumType::timeSeriesListData;
-    timeseries_data.possibleOperations->read = PossibleOperationsReadType{};
-    timeseries_data.possibleOperations->write = PossibleOperationsWriteType{};
-    timeseries_feature.description->supportedFunction->push_back(timeseries_data);
+    NodeManagementDetailedDiscoveryFeatureInformationType timeseries_feature = build_feature_information(FeatureTypeEnumType::TimeSeries);
+    timeseries_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::timeSeriesDescriptionListData));
+    timeseries_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::timeSeriesConstraintsListData));
+    timeseries_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::timeSeriesListData, true));
     features.push_back(timeseries_feature);
 
     // =========================================================================
     // IncentiveTable Feature - See EEBUS UC TS CoordinatedEvCharging v1.0.1.pdf 3.2.1.2.2
     // =========================================================================
-    NodeManagementDetailedDiscoveryFeatureInformationType incentive_table_feature{};
-    incentive_table_feature.description->featureAddress->entity = entity_address;
-    incentive_table_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::IncentiveTable);
-    incentive_table_feature.description->featureType = FeatureTypeEnumType::IncentiveTable;
-    incentive_table_feature.description->role = RoleType::server;
-
-    // incentiveTableDescriptionData - read and write
-    FunctionPropertyType incentivetable_description{};
-    incentivetable_description.function = FunctionEnumType::incentiveTableDescriptionData;
-    incentivetable_description.possibleOperations->read = PossibleOperationsReadType{};
-    incentivetable_description.possibleOperations->write = PossibleOperationsWriteType{};
-    incentive_table_feature.description->supportedFunction->push_back(incentivetable_description);
-
-    // incentiveTableConstraintsData - read only
-    FunctionPropertyType incentivetable_constraints{};
-    incentivetable_constraints.function = FunctionEnumType::incentiveTableConstraintsData;
-    incentivetable_constraints.possibleOperations->read = PossibleOperationsReadType{};
-    incentive_table_feature.description->supportedFunction->push_back(incentivetable_constraints);
-
-    // incentiveTableData - read and write
-    FunctionPropertyType incentivetable_data{};
-    incentivetable_data.function = FunctionEnumType::incentiveTableData;
-    incentivetable_data.possibleOperations->read = PossibleOperationsReadType{};
-    incentivetable_data.possibleOperations->write = PossibleOperationsWriteType{};
-    incentive_table_feature.description->supportedFunction->push_back(incentivetable_data);
+    NodeManagementDetailedDiscoveryFeatureInformationType incentive_table_feature = build_feature_information(FeatureTypeEnumType::IncentiveTable);
+    incentive_table_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::incentiveTableDescriptionData, true));
+    incentive_table_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::incentiveTableConstraintsData));
+    incentive_table_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::incentiveTableData, true));
     features.push_back(incentive_table_feature);
 
     return features;

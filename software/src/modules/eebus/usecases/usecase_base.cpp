@@ -80,3 +80,36 @@ FeatureTypeEnumType EebusUsecase::get_feature_by_address(AddressFeatureType feat
     }
     return FeatureTypeEnumType::EnumUndefined;
 }
+NodeManagementDetailedDiscoveryEntityInformationType EebusUsecase::build_entity_info(const EntityTypeEnumType type, const char *label) const
+{
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity = entity_address;
+    entity.description->entityType = type; // Should be set by the use case
+    if (label != nullptr) {
+        entity.description->label = label; // The label of the entity. This is optional but recommended.
+    }
+    return entity;
+}
+NodeManagementDetailedDiscoveryFeatureInformationType EebusUsecase::build_feature_information(const FeatureTypeEnumType feature_type, const RoleType role) const
+{
+    NodeManagementDetailedDiscoveryFeatureInformationType feature{};
+    feature.description->featureAddress->entity = entity_address;
+    feature.description->featureAddress->feature = feature_addresses.at(feature_type);
+    feature.description->featureType = feature_type;
+    feature.description->role = role;
+    return feature;
+}
+FunctionPropertyType EebusUsecase::build_function_property(const FunctionEnumType function, const bool write, const bool partial_write) const
+{
+    FunctionPropertyType function_property{};
+    function_property.function = function;
+    if (write) {
+        function_property.possibleOperations->write = PossibleOperationsWriteType{};
+        if (partial_write) {
+            function_property.possibleOperations->write->partial = ElementTagType{};
+        }
+    } else {
+        function_property.possibleOperations->read = PossibleOperationsReadType{};
+    }
+    return function_property;
+}

@@ -75,15 +75,13 @@ MessageReturn LoadPowerLimitUsecase::handle_message(HeaderType &header, SpineDat
 
 NodeManagementDetailedDiscoveryEntityInformationType LoadPowerLimitUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-#ifndef EEBUS_MODE_EM
-    entity.description->entityType = EntityTypeEnumType::EVSE;
+#ifdef EEBUS_MODE_EVSE
+    return build_entity_info(EntityTypeEnumType::EVSE, "Controllable System");
+#elifdef EEBUS_MODE_EM
+    return build_entity_info(EntityTypeEnumType::CEM, "Controllable System");
 #else
-    entity.description->entityType = EntityTypeEnumType::CEM;
+    return {};
 #endif
-    entity.description->label = "Controllable System";
-    return entity;
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LoadPowerLimitUsecase::get_detailed_discovery_feature_information() const
@@ -91,55 +89,20 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> LoadPowerLimi
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
 
     // LoadControl Feature
-    NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature{};
-    loadControlFeature.description->featureAddress->entity = entity_address;
-    loadControlFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::LoadControl);
-    loadControlFeature.description->featureType = FeatureTypeEnumType::LoadControl;
-    loadControlFeature.description->role = RoleType::server;
-
-    FunctionPropertyType loadControlDescriptionList{};
-    loadControlDescriptionList.function = FunctionEnumType::loadControlLimitDescriptionListData;
-    loadControlDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
-    loadControlFeature.description->supportedFunction->push_back(loadControlDescriptionList);
-
-    FunctionPropertyType loadControlLimitListData{};
-    loadControlLimitListData.function = FunctionEnumType::loadControlLimitListData;
-    loadControlLimitListData.possibleOperations->read = PossibleOperationsReadType{};
-    loadControlLimitListData.possibleOperations->write = PossibleOperationsWriteType{};
-    loadControlLimitListData.possibleOperations->write->partial = ElementTagType{};
-    loadControlFeature.description->supportedFunction->push_back(loadControlLimitListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature = build_feature_information(FeatureTypeEnumType::LoadControl);
+    loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitDescriptionListData));
+    loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitListData, true, true));
     features.push_back(loadControlFeature);
 
     // DeviceConfiguration Feature
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigurationFeature{};
-    deviceConfigurationFeature.description->featureAddress->entity = entity_address;
-    deviceConfigurationFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration);
-    deviceConfigurationFeature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
-    deviceConfigurationFeature.description->role = RoleType::server;
-
-    FunctionPropertyType deviceConfigurationKeyValueDescriptionListData{};
-    deviceConfigurationKeyValueDescriptionListData.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
-    deviceConfigurationKeyValueDescriptionListData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceConfigurationFeature.description->supportedFunction->push_back(deviceConfigurationKeyValueDescriptionListData);
-
-    FunctionPropertyType deviceConfigurationKeyValueListData{};
-    deviceConfigurationKeyValueListData.function = FunctionEnumType::deviceConfigurationKeyValueListData;
-    deviceConfigurationKeyValueListData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceConfigurationKeyValueListData.possibleOperations->write = PossibleOperationsWriteType{};
-    deviceConfigurationFeature.description->supportedFunction->push_back(deviceConfigurationKeyValueListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigurationFeature = build_feature_information(FeatureTypeEnumType::DeviceConfiguration);
+    deviceConfigurationFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueDescriptionListData));
+    deviceConfigurationFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueListData, true));
     features.push_back(deviceConfigurationFeature);
 
     // ElectricalConnection Feature
-    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
-    electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::ElectricalConnection);
-    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
-    electricalConnectionFeature.description->role = RoleType::server;
-
-    FunctionPropertyType electricalConnectionCharacteristicsListData{};
-    electricalConnectionCharacteristicsListData.function = FunctionEnumType::electricalConnectionCharacteristicListData;
-    electricalConnectionCharacteristicsListData.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionCharacteristicsListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature = build_feature_information(FeatureTypeEnumType::ElectricalConnection);
+    electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionCharacteristicListData));
     features.push_back(electricalConnectionFeature);
 
     return features;

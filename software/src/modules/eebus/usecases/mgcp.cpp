@@ -119,12 +119,7 @@ MessageReturn MgcpUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 
 NodeManagementDetailedDiscoveryEntityInformationType MgcpUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::CEM;
-    entity.description->label = "Grid Connection Point";
-
-    return entity;
+    return build_entity_info(EntityTypeEnumType::CEM, "Grid Connection Point");
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> MgcpUsecase::get_detailed_discovery_feature_information() const
@@ -132,62 +127,22 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> MgcpUsecase::
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
 
     // DeviceConfiguration Feature (Scenario 1: PV curtailment limit factor)
-    NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigFeature{};
-    deviceConfigFeature.description->featureAddress->entity = entity_address;
-    deviceConfigFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceConfiguration);
-    deviceConfigFeature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
-    deviceConfigFeature.description->role = RoleType::server;
-
-    FunctionPropertyType deviceConfigDescListData{};
-    deviceConfigDescListData.function = FunctionEnumType::deviceConfigurationKeyValueDescriptionListData;
-    deviceConfigDescListData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceConfigFeature.description->supportedFunction->push_back(deviceConfigDescListData);
-
-    FunctionPropertyType deviceConfigValueListData{};
-    deviceConfigValueListData.function = FunctionEnumType::deviceConfigurationKeyValueListData;
-    deviceConfigValueListData.possibleOperations->read = PossibleOperationsReadType{};
-    deviceConfigFeature.description->supportedFunction->push_back(deviceConfigValueListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigFeature = build_feature_information(FeatureTypeEnumType::DeviceConfiguration);
+    deviceConfigFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueDescriptionListData));
+    deviceConfigFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceConfigurationKeyValueListData));
     features.push_back(deviceConfigFeature);
 
     // ElectricalConnection Feature
-    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
-    electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::ElectricalConnection);
-    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
-    electricalConnectionFeature.description->role = RoleType::server;
-
-    FunctionPropertyType electricalConnectionDescriptionListData{};
-    electricalConnectionDescriptionListData.function = FunctionEnumType::electricalConnectionDescriptionListData;
-    electricalConnectionDescriptionListData.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionDescriptionListData);
-
-    FunctionPropertyType electricalConnectionParameterDescriptionListData{};
-    electricalConnectionParameterDescriptionListData.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
-    electricalConnectionParameterDescriptionListData.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionParameterDescriptionListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature = build_feature_information(FeatureTypeEnumType::ElectricalConnection);
+    electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionDescriptionListData));
+    electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionParameterDescriptionListData));
     features.push_back(electricalConnectionFeature);
 
     // Measurement Feature (Scenarios 2-7)
-    NodeManagementDetailedDiscoveryFeatureInformationType measurementFeature{};
-    measurementFeature.description->featureAddress->entity = entity_address;
-    measurementFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::Measurement);
-    measurementFeature.description->featureType = FeatureTypeEnumType::Measurement;
-    measurementFeature.description->role = RoleType::server;
-
-    FunctionPropertyType measurementDescriptionListData{};
-    measurementDescriptionListData.function = FunctionEnumType::measurementDescriptionListData;
-    measurementDescriptionListData.possibleOperations->read = PossibleOperationsReadType{};
-    measurementFeature.description->supportedFunction->push_back(measurementDescriptionListData);
-
-    FunctionPropertyType measurementConstraintsListData{};
-    measurementConstraintsListData.function = FunctionEnumType::measurementConstraintsListData;
-    measurementConstraintsListData.possibleOperations->read = PossibleOperationsReadType{};
-    measurementFeature.description->supportedFunction->push_back(measurementConstraintsListData);
-
-    FunctionPropertyType measurementListData{};
-    measurementListData.function = FunctionEnumType::measurementListData;
-    measurementListData.possibleOperations->read = PossibleOperationsReadType{};
-    measurementFeature.description->supportedFunction->push_back(measurementListData);
+    NodeManagementDetailedDiscoveryFeatureInformationType measurementFeature = build_feature_information(FeatureTypeEnumType::Measurement);
+    measurementFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::measurementDescriptionListData));
+    measurementFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::measurementConstraintsListData));
+    measurementFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::measurementListData));
     features.push_back(measurementFeature);
 
     return features;

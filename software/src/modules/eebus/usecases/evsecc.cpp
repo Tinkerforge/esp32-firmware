@@ -72,14 +72,7 @@ MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHan
 
 NodeManagementDetailedDiscoveryEntityInformationType EvseccUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EVSE;
-    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "EVSE"; // The label of the entity. This is optional but recommended.
-
-    // We focus on returning the mandatory fields.
-    return entity;
+    return build_entity_info(EntityTypeEnumType::EVSE, "EVSE");
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseccUsecase::get_detailed_discovery_feature_information() const
@@ -87,31 +80,13 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseccUsecase
     std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
 
     // The following functions are needed by the DeviceClassification Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType device_classification{};
-    device_classification.description->featureAddress->entity = entity_address;
-    device_classification.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceClassification);
-    device_classification.description->featureType = FeatureTypeEnumType::DeviceClassification;
-    device_classification.description->role = RoleType::server;
-
-    // deviceClassificationManufacturerData
-    FunctionPropertyType device_configuration_description{};
-    device_configuration_description.function = FunctionEnumType::deviceClassificationManufacturerData;
-    device_configuration_description.possibleOperations->read = PossibleOperationsReadType{};
-    device_classification.description->supportedFunction->push_back(device_configuration_description);
+    NodeManagementDetailedDiscoveryFeatureInformationType device_classification = build_feature_information(FeatureTypeEnumType::DeviceClassification);
+    device_classification.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceClassificationManufacturerData));
     features.push_back(device_classification);
 
     // The following functions are needed by the DeviceDiagnosis Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType device_diagnosis{};
-    device_diagnosis.description->featureAddress->entity = entity_address;
-    device_diagnosis.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
-    device_diagnosis.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    device_diagnosis.description->role = RoleType::server;
-
-    // deviceDiagnosisStateData
-    FunctionPropertyType device_diagnosis_state{};
-    device_diagnosis_state.function = FunctionEnumType::deviceDiagnosisStateData;
-    device_diagnosis_state.possibleOperations->read = PossibleOperationsReadType{};
-    device_diagnosis.description->supportedFunction->push_back(device_diagnosis_state);
+    NodeManagementDetailedDiscoveryFeatureInformationType device_diagnosis = build_feature_information(FeatureTypeEnumType::DeviceDiagnosis);
+    device_diagnosis.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceDiagnosisStateData));
     features.push_back(device_diagnosis);
 
     return features;

@@ -241,46 +241,16 @@ MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 
 NodeManagementDetailedDiscoveryEntityInformationType EvcsUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EVSE;
-    entity.description->label = "Charging Summary";
-
-    return entity;
+    return build_entity_info(EntityTypeEnumType::EVSE);
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvcsUsecase::get_detailed_discovery_feature_information() const
 {
-    NodeManagementDetailedDiscoveryFeatureInformationType feature{};
-
-    feature.description->featureAddress->entity = entity_address;
-    feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::Bill);
-
-    feature.description->featureType = FeatureTypeEnumType::Bill;
-    feature.description->role = RoleType::server;
-
-    // Bill description information
-    FunctionPropertyType billDescriptionList{};
-    billDescriptionList.function = FunctionEnumType::billDescriptionListData;
-    billDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(billDescriptionList);
-
-    // Bill constraints information
-    FunctionPropertyType billconstraints{};
-    billconstraints.function = FunctionEnumType::billConstraintsListData;
-    billconstraints.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(billconstraints);
-
-    // Bill list information
-    FunctionPropertyType billListData{};
-    billListData.function = FunctionEnumType::billListData;
-    billListData.possibleOperations->read = PossibleOperationsReadType{};
-    billListData.possibleOperations->write = PossibleOperationsWriteType{};
-    feature.description->supportedFunction->push_back(billListData);
-
-    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
-    features.push_back(feature);
-    return features;
+    NodeManagementDetailedDiscoveryFeatureInformationType bill_feature = build_feature_information(FeatureTypeEnumType::Bill);
+    bill_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::billDescriptionListData));
+    bill_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::billConstraintsListData));
+    bill_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::billListData, true));
+    return {bill_feature};
 }
 
 void EvcsUsecase::update_billing_data(int id, time_t start_time, time_t end_time, int energy_wh, uint32_t cost_eur_cent, int grid_energy_percent, int grid_cost_percent, int self_produced_energy_percent, int self_produced_cost_percent)

@@ -110,17 +110,10 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
 
 NodeManagementDetailedDiscoveryEntityInformationType OpevUsecase::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity{};
     if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
-        return entity;
+        return {};
     }
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::EV;
-    // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "EV"; // The label of the entity. This is optional but recommended.
-
-    // We focus on returning the mandatory fields.
-    return entity;
+    return build_entity_info(EntityTypeEnumType::EV, "EV");
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::get_detailed_discovery_feature_information() const
@@ -131,45 +124,24 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::
     }
 
     // The following functions are needed by the LoadControl Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature{};
-    loadControlFeature.description->featureAddress->entity = entity_address;
-    loadControlFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::LoadControl);
-    loadControlFeature.description->featureType = FeatureTypeEnumType::LoadControl;
-    loadControlFeature.description->role = RoleType::server;
+    NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature = build_feature_information(FeatureTypeEnumType::LoadControl);
 
     // loadControlLimitDescriptionListData
-    FunctionPropertyType loadControlDescriptionList{};
-    loadControlDescriptionList.function = FunctionEnumType::loadControlLimitDescriptionListData;
-    loadControlDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
-    loadControlFeature.description->supportedFunction->push_back(loadControlDescriptionList);
+    loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitDescriptionListData));
 
     // loadControlLimitListData
-    FunctionPropertyType loadControlLimitListData{};
-    loadControlLimitListData.function = FunctionEnumType::loadControlLimitListData;
-    loadControlLimitListData.possibleOperations->read = PossibleOperationsReadType{};
-    loadControlLimitListData.possibleOperations->write = PossibleOperationsWriteType{};
+    loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitListData, true));
 
-    loadControlFeature.description->supportedFunction->push_back(loadControlLimitListData);
     features.push_back(loadControlFeature);
 
     // The following functions are needed by the ElectricalConnection Feature Type
-    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
-    electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::ElectricalConnection);
-    electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
-    electricalConnectionFeature.description->role = RoleType::server;
+    NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature = build_feature_information(FeatureTypeEnumType::ElectricalConnection);
 
     // electricalConnectionParameterDescriptionListData
-    FunctionPropertyType electricalConnectionDescriptionList{};
-    electricalConnectionDescriptionList.function = FunctionEnumType::electricalConnectionParameterDescriptionListData;
-    electricalConnectionDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionDescriptionList);
+    electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionParameterDescriptionListData));
 
     // electricalConnectionPermittedValueSetListData
-    FunctionPropertyType electricalConnectionPermittedValueSetList{};
-    electricalConnectionPermittedValueSetList.function = FunctionEnumType::electricalConnectionPermittedValueSetListData;
-    electricalConnectionPermittedValueSetList.possibleOperations->read = PossibleOperationsReadType{};
-    electricalConnectionFeature.description->supportedFunction->push_back(electricalConnectionPermittedValueSetList);
+    electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionPermittedValueSetListData));
 
     features.push_back(electricalConnectionFeature);
 

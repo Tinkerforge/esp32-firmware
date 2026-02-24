@@ -372,73 +372,50 @@ MessageReturn NodeManagementEntity::handle_binding(HeaderType &header, SpineData
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
-    NodeManagementDetailedDiscoveryEntityInformationType entity = {};
-    entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = EntityTypeEnumType::DeviceInformation;
-    entity.description->label = "Node Management";
-
-    return entity;
+    return build_entity_info(EntityTypeEnumType::DeviceInformation, "Node Management");
 }
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagementEntity::get_detailed_discovery_feature_information() const
 {
-    NodeManagementDetailedDiscoveryFeatureInformationType feature = {};
-    feature.description->featureAddress->entity = entity_address;
-    feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::NodeManagement);
-    feature.description->featureType = FeatureTypeEnumType::NodeManagement;
-    feature.description->role = RoleType::special;
+    NodeManagementDetailedDiscoveryFeatureInformationType node_management_feature = build_feature_information(FeatureTypeEnumType::NodeManagement, RoleType::special);
 
     // Basic Usecase information
-    FunctionPropertyType useCaseData = {};
-    useCaseData.function = FunctionEnumType::nodeManagementUseCaseData;
-    useCaseData.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(useCaseData);
+    node_management_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::nodeManagementUseCaseData));
 
     // Detailed discovery information
-    FunctionPropertyType detailedDiscoveryData = {};
-    detailedDiscoveryData.function = FunctionEnumType::nodeManagementDetailedDiscoveryData;
-    detailedDiscoveryData.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(detailedDiscoveryData);
+    node_management_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::nodeManagementDetailedDiscoveryData));
 
     // Information about current bindings
-    FunctionPropertyType nodemanagementBindingData = {};
-    nodemanagementBindingData.function = FunctionEnumType::nodeManagementBindingData;
-    nodemanagementBindingData.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(nodemanagementBindingData);
+    node_management_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::nodeManagementBindingData));
 
     // Binding delete calls
     FunctionPropertyType nodemanagementBindingDelete = {};
     nodemanagementBindingDelete.function = FunctionEnumType::nodeManagementBindingDeleteCall;
     nodemanagementBindingDelete.possibleOperations.emplace();
-    feature.description->supportedFunction->push_back(nodemanagementBindingDelete);
+    node_management_feature.description->supportedFunction->push_back(nodemanagementBindingDelete);
 
     // Binding request calls
     FunctionPropertyType nodemanagementBindingRequest = {};
     nodemanagementBindingRequest.function = FunctionEnumType::nodeManagementBindingRequestCall;
     nodemanagementBindingRequest.possibleOperations.emplace();
-    feature.description->supportedFunction->push_back(nodemanagementBindingRequest);
+    node_management_feature.description->supportedFunction->push_back(nodemanagementBindingRequest);
 
     // Information about current Subscriptions
-    FunctionPropertyType nodemanagemntSubscriptionData{};
-    nodemanagemntSubscriptionData.function = FunctionEnumType::nodeManagementSubscriptionData;
-    nodemanagemntSubscriptionData.possibleOperations->read = PossibleOperationsReadType{};
-    feature.description->supportedFunction->push_back(nodemanagemntSubscriptionData);
+    node_management_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::nodeManagementSubscriptionData));
 
     // Subscription delete calls
     FunctionPropertyType nodemanagementSubscriptionDelete{};
     nodemanagementSubscriptionDelete.function = FunctionEnumType::nodeManagementSubscriptionDeleteCall;
     nodemanagementSubscriptionDelete.possibleOperations.emplace();
-    feature.description->supportedFunction->push_back(nodemanagementSubscriptionDelete);
+    node_management_feature.description->supportedFunction->push_back(nodemanagementSubscriptionDelete);
 
     // Subscription request calls
     FunctionPropertyType nodemanagementSubscriptionRequest{};
     nodemanagementSubscriptionRequest.function = FunctionEnumType::nodeManagementSubscriptionRequestCall;
     nodemanagementSubscriptionRequest.possibleOperations.emplace();
-    feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
+    node_management_feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
-    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
-    features.push_back(feature);
-    return features;
+    return {node_management_feature};
 }
 
 template <typename T> size_t NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, const T data, const char *function_name)

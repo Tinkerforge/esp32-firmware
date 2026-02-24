@@ -51,8 +51,6 @@ struct MessageReturn {
 // Forward declaration
 class EEBusUseCases;
 
-
-
 /**
  * @brief Base class for all EEBUS use cases.
  *
@@ -206,9 +204,9 @@ protected:
     std::vector<int> entity_address{}; ///< The entity address for this use case.
     bool entity_active = true;         ///< Whether the entity is active.
 
-    std::string usecase_actor;          ///< The actor of the use case, e.g. "ControllableSystem" or "EnergyManager".
-    std::string usecase_name;           ///< The name of the use case, e.g. "limitationOfPowerConsumption" or "evCommissioningAndConfiguration".
-    std::string usecase_version;        ///< The version of the use case, e.g. "1.0.0".
+    std::string usecase_actor;              ///< The actor of the use case, e.g. "ControllableSystem" or "EnergyManager".
+    std::string usecase_name;               ///< The name of the use case, e.g. "limitationOfPowerConsumption" or "evCommissioningAndConfiguration".
+    std::string usecase_version;            ///< The version of the use case, e.g. "1.0.0".
     std::vector<int> supported_scenarios{}; ///< The scenarios supported by this use case, e.g. {1, 2, 3, 4, 5, 6, 7, 8}.
 
     /// Map of feature types to their addresses.
@@ -234,4 +232,10 @@ protected:
         address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
         return address;
     }
+
+    NodeManagementDetailedDiscoveryEntityInformationType build_entity_info(EntityTypeEnumType type, const char *label = nullptr) const;
+
+    NodeManagementDetailedDiscoveryFeatureInformationType build_feature_information(FeatureTypeEnumType feature_type, RoleType role = RoleType::server) const;
+
+    FunctionPropertyType build_function_property(FunctionEnumType function, bool write = false, bool partial_write = false) const;
 };

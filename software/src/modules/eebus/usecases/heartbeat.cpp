@@ -117,22 +117,10 @@ NodeManagementDetailedDiscoveryEntityInformationType EebusHeartBeat::get_detaile
 
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EebusHeartBeat::get_detailed_discovery_feature_information() const
 {
-    NodeManagementDetailedDiscoveryFeatureInformationType server_feature{};
-    server_feature.description->featureAddress->entity = this->entity_address;
-    server_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::DeviceDiagnosis);
-    server_feature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
-    server_feature.description->role = RoleType::server;
+    NodeManagementDetailedDiscoveryFeatureInformationType server_feature = build_feature_information(FeatureTypeEnumType::DeviceDiagnosis, RoleType::server);
+    server_feature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::deviceDiagnosisHeartbeatData));
 
-    FunctionPropertyType heartbeat_property{};
-    heartbeat_property.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
-    heartbeat_property.possibleOperations->read = PossibleOperationsReadType{};
-    server_feature.description->supportedFunction->push_back(heartbeat_property);
-
-    NodeManagementDetailedDiscoveryFeatureInformationType client_feature{};
-    client_feature.description->featureAddress->entity = this->entity_address;
-    client_feature.description->featureAddress->feature = feature_addresses.at(FeatureTypeEnumType::Generic);
-    client_feature.description->featureType = FeatureTypeEnumType::Generic;
-    client_feature.description->role = RoleType::client;
+    NodeManagementDetailedDiscoveryFeatureInformationType client_feature = build_feature_information(FeatureTypeEnumType::Generic, RoleType::client);
 
     FunctionPropertyType generic_heartbeat_property{};
     generic_heartbeat_property.function = FunctionEnumType::deviceDiagnosisHeartbeatData;
