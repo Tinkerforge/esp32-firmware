@@ -297,7 +297,7 @@ def reset_evse():
 class Scanner:
     def __init__(self):
         # T:WARP2-CP-22KW-50;V:2.1;S:5000000001;B:2021-09;A:0;;;
-        pattern = r'^T:WARP(2|3)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
+        pattern = r'^T:WARP(2|3|4)-C(B|S|P)-(11|22)KW-(50|75|CC)(?:-PC)?;V:(\d+\.\d+);S:(5\d{9});B:(\d{4}-\d{2})(?:;A:(0|1))?;;;*$'
         self.qr_charger_code = my_input("Scan the charger QR code:")
         m = re.match(pattern, self.qr_charger_code)
 
@@ -538,7 +538,7 @@ def main(stage3, scanner):
         result["accessories_qr_code"] = scanner.qr_accessories_code
 
     global generation
-    assert scanner.qr_gen in ("2", "3")
+    assert scanner.qr_gen in ("2", "3", "4")
     generation = int(scanner.qr_gen)
 
     evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
@@ -552,7 +552,7 @@ def main(stage3, scanner):
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
-        elif scanner.qr_gen == "3":
+        elif scanner.qr_gen in ("3", "4"):
             stage3.power_on('Smart')
         else:
             stage3.power_on({"S": "Smart", "P": "Pro"}[scanner.qr_variant])
