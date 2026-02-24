@@ -89,6 +89,8 @@ public:
     ConfigRoot config;
     ConfigRoot state;
 
+    uint32_t config_generation = 0;
+
     // Both strings are read by mqtt_auto_discovery.
     String client_name;
     // Copy prefix to not access config in MQTT thread.
@@ -104,6 +106,7 @@ private:
         CallbackInThread callback_in_thread;
         bool starts_with_global_topic_prefix;
         bool subscribed;
+        bool is_automation;
     };
 
     struct MqttMessage {
@@ -116,6 +119,11 @@ private:
     micros_t *state_last_send;
 
     size_t backend_idx;
+
+    bool create_client();
+    void stop_and_destroy_client();
+    void reconfigure();
+    void subscribe_automation_triggers();
 
     esp_mqtt_client_handle_t client = nullptr;
     micros_t send_interval;

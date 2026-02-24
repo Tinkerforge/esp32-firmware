@@ -1,5 +1,6 @@
 /* esp32-firmware
- * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -52,8 +53,9 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 #endif
 
 int Mqtt::subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos) {
-    if (this->read_only)
+    if (this->read_only) {
         return ESP_OK;
+    }
     return esp_mqtt_client_subscribe_single(client, topic, qos);
 }
 
@@ -80,7 +82,7 @@ void Mqtt::pre_setup()
         {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"path", Config::Str("", 0, 64)},
         {"read_only", Config::Bool(false)}
-    }), [](Config &cfg, ConfigSource source) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
 #if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE()
         const String &global_topic_prefix = cfg.get("global_topic_prefix")->asString();
         const String &auto_discovery_prefix = mqtt_auto_discovery.config.get("auto_discovery_prefix")->asString();
@@ -88,6 +90,11 @@ void Mqtt::pre_setup()
         if (global_topic_prefix == auto_discovery_prefix)
             return "Global topic prefix cannot be the same as the MQTT auto discovery topic prefix.";
 #endif
+
+        task_scheduler.scheduleOnce([this]() {
+            this->reconfigure();
+        });
+
         return "";
     }};
 
@@ -120,10 +127,12 @@ void Mqtt::pre_setup()
 
             pos = topic.indexOf('+');
             while (pos != -1) {
-                if (pos != 0 && topic[pos - 1] != '/')
+                if (pos != 0 && topic[pos - 1] != '/') {
                     valid = false;
-                if (pos != static_cast<int>(topic.length()) - 1 && topic[pos + 1] != '/')
+                }
+                if (pos != static_cast<int>(topic.length()) - 1 && topic[pos + 1] != '/') {
                     valid = false;
+                }
                 pos = topic.indexOf('+', pos + 1);
             }
             if (!valid) {
@@ -190,7 +199,7 @@ void Mqtt::subscribe(const String &path, SubscribeCallback &&callback, Retained 
 
     bool subscribed = this->subscribe_internal(client, topic->c_str(), 0) >= 0;
 
-    this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed});
+    this->commands.push_back({*topic, std::move(callback), retained, callback_in_thread, starts_with_global_topic_prefix, subscribed, false});
 }
 
 void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
@@ -223,8 +232,9 @@ bool Mqtt::publish(const String &topic, const String &payload, bool retain)
     // ESP-MQTT does this check but we only want to allow publishing after
     // onMqttConnect was called (in the main thread!)
     // ESP-MQTT's check can asynchronously flip to connected.
-    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
+    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected) {
         return false;
+    }
 
 // enqueue uses an unbounded queue! IDF 5.3 adds a limit for the queue. Until then use publish even though it blocks the main thread.
 //#if defined(BOARD_HAS_PSRAM)
@@ -238,8 +248,9 @@ bool Mqtt::pushStateUpdate(size_t stateIdx, const String &payload, const String 
 {
     auto &last_send = this->state_last_send[stateIdx];
 
-    if (!deadline_elapsed(last_send + this->send_interval))
+    if (!deadline_elapsed(last_send + this->send_interval)) {
         return false;
+    }
 
     bool success = this->publish_with_prefix(path, payload);
 
@@ -257,21 +268,24 @@ bool Mqtt::pushRawStateUpdate(const String &payload, const String &path)
 
 IAPIBackend::WantsStateUpdate Mqtt::wantsStateUpdate(size_t stateIdx) {
     auto state = this->state.get("connection_state")->asEnum<MqttConnectionState>();
-    if (state != MqttConnectionState::Connected)
+    if (state != MqttConnectionState::Connected) {
         return IAPIBackend::WantsStateUpdate::No;
+    }
 
     auto &last_send = this->state_last_send[stateIdx];
 
-    if (!deadline_elapsed(last_send + this->send_interval))
+    if (!deadline_elapsed(last_send + this->send_interval)) {
         return IAPIBackend::WantsStateUpdate::Later;
+    }
 
     return IAPIBackend::WantsStateUpdate::AsString;
 }
 
 void Mqtt::resubscribe()
 {
-    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected)
+    if (client == nullptr || this->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::Connected) {
         return;
+    }
 
     if (!global_topic_prefix_subscribed) {
         String topic = global_topic_prefix + "/#";
@@ -279,11 +293,13 @@ void Mqtt::resubscribe()
     }
 
     for (auto &cmd : this->commands) {
-        if (cmd.starts_with_global_topic_prefix)
+        if (cmd.starts_with_global_topic_prefix) {
             continue;
+        }
 
-        if (cmd.subscribed)
+        if (cmd.subscribed) {
             continue;
+        }
 
         cmd.subscribed = this->subscribe_internal(client, cmd.topic.c_str(), 0) >= 0;
     }
@@ -365,8 +381,9 @@ void Mqtt::onMqttDisconnect()
 static bool filter_mqtt_log(const char *topic, size_t topic_len)
 {
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (topic_len >= 12 && strncmp(topic, "automation_action/", 12) == 0)
+    if (topic_len >= 12 && strncmp(topic, "automation_action/", 12) == 0) {
         return false;
+    }
 #endif
 
     return true;
@@ -383,8 +400,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     }
 
     for (auto &c : commands) {
-        if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length()))
+        if (!matchTopicFilter(topic, topic_len, c.topic.c_str(), c.topic.length())) {
             continue;
+        }
 
         if (retain && c.retained != Retained::Accept) {
             if (c.retained == Retained::IgnoreWarn) {
@@ -405,6 +423,10 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             memcpy(copy_buf + topic_len, data, data_len);
 
             task_scheduler.scheduleOnce([this, c, copy_buf, topic_len, data_len](){
+                if (this->client == nullptr) {
+                    free(copy_buf);
+                    return;
+                }
                 c.callback(copy_buf, topic_len, copy_buf + topic_len, data_len);
                 free(copy_buf);
                 esp_mqtt_client_enable_receive(client);
@@ -415,20 +437,24 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
         return;
     }
 
-    if (topic_len < global_topic_prefix.length() + 1) // + 1 because we will check for the / between the prefix and the topic.
+    if (topic_len < global_topic_prefix.length() + 1) { // + 1 because we will check for the / between the prefix and the topic.
         return;
-    if (memcmp(topic, global_topic_prefix.c_str(), global_topic_prefix.length()) != 0)
+    }
+    if (memcmp(topic, global_topic_prefix.c_str(), global_topic_prefix.length()) != 0) {
         return;
-    if (topic[global_topic_prefix.length()] != '/')
+    }
+    if (topic[global_topic_prefix.length()] != '/') {
         return;
+    }
 
     topic += global_topic_prefix.length() + 1;
     topic_len -= global_topic_prefix.length() + 1;
 
     const size_t command_size = api.commands.size();
     for (size_t i = 0; i < command_size; i++) {
-        if (!API::complete_or_prefix_match(topic, topic_len, api.commands[i]))
+        if (!API::complete_or_prefix_match(topic, topic_len, api.commands[i])) {
             continue;
+        }
 
         auto &reg = api.commands[i];
         bool is_action = reg.get_is_action();
@@ -453,9 +479,12 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
         esp_mqtt_client_disable_receive(client, 100);
         api.callCommandNonBlocking(reg, data, data_len, Language::Default, [this, reg](const String &error) {
-            if (!error.isEmpty())
+            if (!error.isEmpty()) {
                 logger.printfln("On %s: %s", reg.path, error.c_str());
-            esp_mqtt_client_enable_receive(this->client);
+            }
+            if (this->client != nullptr) {
+                esp_mqtt_client_enable_receive(this->client);
+            }
         }, std::move(suffix_path));
 
         return;
@@ -463,8 +492,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
     // Don't print error message on state topics, this could be one of our own messages.
     for (auto &reg : api.states) {
-        if (topic_len != reg.get_path_len() || memcmp(topic, reg.path, topic_len) != 0)
+        if (topic_len != reg.get_path_len() || memcmp(topic, reg.path, topic_len) != 0) {
             continue;
+        }
         return;
     }
 
@@ -472,8 +502,9 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     // The spec says:
     // It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client
     // because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-    if (!retain && filter_mqtt_log(topic, topic_len))
+    if (!retain && filter_mqtt_log(topic, topic_len)) {
         logger.printfln("Received message on unknown topic '%.*s' (data_len=%u)", static_cast<int>(topic_len), topic, data_len);
+    }
 }
 
 static const char *get_mqtt_error(esp_mqtt_connect_return_code_t rc)
@@ -505,16 +536,24 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     Mqtt *mqtt = (Mqtt *)handler_args;
     esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t)event_data;
 
+    uint32_t gen = mqtt->config_generation;
+
     switch ((esp_mqtt_event_id_t)event_id) {
         case MQTT_EVENT_CONNECTED:
-            task_scheduler.scheduleOnce([mqtt](){
+            task_scheduler.scheduleOnce([mqtt, gen](){
+                if (gen != mqtt->config_generation) {
+                    return;
+                }
                 mqtt->onMqttConnect();
             });
 
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-            task_scheduler.scheduleOnce([mqtt](){
+            task_scheduler.scheduleOnce([mqtt, gen](){
+                if (gen != mqtt->config_generation) {
+                    return;
+                }
                 mqtt->onMqttDisconnect();
             });
 
@@ -536,7 +575,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
         case MQTT_EVENT_ERROR: {
                 auto eh = *event->error_handle;
-                task_scheduler.scheduleOnce([mqtt, eh](){
+                task_scheduler.scheduleOnce([mqtt, gen, eh](){
+                    if (gen != mqtt->config_generation) {
+                        return;
+                    }
+
                     bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NotConnected;
                     auto last_error = mqtt->state.get("last_error");
                     int last_error_as_int = last_error->asInt();
@@ -639,6 +682,21 @@ void Mqtt::setup()
     client_name = this->config.get("client_name")->asString();
     read_only = this->config.get("read_only")->asBool();
 
+    // Always register as API backend. When MQTT is disabled/disconnected,
+    // wantsStateUpdate() returns No, so this causes no work.
+    this->backend_idx = api.registerBackend(this);
+
+    esp_log_level_set("MQTT_CLIENT", ESP_LOG_NONE);
+    esp_log_level_set("TRANSPORT_BASE", ESP_LOG_NONE);
+    esp_log_level_set("esp-tls", ESP_LOG_NONE);
+    esp_log_level_set("TRANSPORT", ESP_LOG_NONE);
+    esp_log_level_set("OUTBOX", ESP_LOG_NONE);
+
+    // Always start the resubscribe timer. resubscribe() checks client != nullptr.
+    task_scheduler.scheduleUncancelable([this](){
+        this->resubscribe();
+    }, 1_s, 1_s);
+
     if (!config.get("enable_mqtt")->asBool()) {
         return;
     }
@@ -648,14 +706,16 @@ void Mqtt::setup()
     automation.set_enabled(AutomationActionID::MQTT, true);
 #endif
 
-    this->backend_idx = api.registerBackend(this);
+    if (!create_client()) {
+        return;
+    }
 
-    esp_log_level_set("MQTT_CLIENT", ESP_LOG_NONE);
-    esp_log_level_set("TRANSPORT_BASE", ESP_LOG_NONE);
-    esp_log_level_set("esp-tls", ESP_LOG_NONE);
-    esp_log_level_set("TRANSPORT", ESP_LOG_NONE);
-    esp_log_level_set("OUTBOX", ESP_LOG_NONE);
+    // Set connection state here. Otherwise, it will stay "not configured" until the first connection attempt.
+    state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
+}
 
+bool Mqtt::create_client()
+{
     esp_mqtt_client_config_t mqtt_cfg = {};
 
     mqtt_cfg.broker.address.hostname = config.get("broker_host")->asEphemeralCStr();
@@ -680,15 +740,15 @@ void Mqtt::setup()
         auto cert = certs.get_cert((uint8_t)cert_id, &cert_len);
         if (cert == nullptr) {
             logger.printfln("Certificate with ID %d is not available", cert_id);
-            return;
+            return false;
         }
-        // Leak cert here: MQTT requires the buffer to live forever.
+        // TODO: Track and free on reconfigure to avoid leak.
         mqtt_cfg.broker.verification.certificate = (const char *)cert.release();
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        return;
+        return false;
 #endif
     }
     else if (encrypted) {
@@ -703,7 +763,7 @@ void Mqtt::setup()
         auto cert = certs.get_cert((uint8_t)client_cert_id, &cert_len);
         if (cert == nullptr) {
             logger.printfln("Client certificate with ID %d is not available", client_cert_id);
-            return;
+            return false;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.credentials.authentication.certificate = (const char *)cert.release();
@@ -711,7 +771,7 @@ void Mqtt::setup()
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom client certificate: certs module is not built into this firmware!");
-        return;
+        return false;
 #endif
     }
 
@@ -723,7 +783,7 @@ void Mqtt::setup()
         auto cert = certs.get_cert((uint8_t)client_key_id, &cert_len);
         if (cert == nullptr) {
             logger.printfln("Client key with ID %d is not available", client_key_id);
-            return;
+            return false;
         }
         // Leak cert here: MQTT requires the buffer to live forever.
         mqtt_cfg.credentials.authentication.key = (const char *)cert.release();
@@ -731,7 +791,7 @@ void Mqtt::setup()
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
         logger.printfln("Can't use custom client key: certs module is not built into this firmware!");
-        return;
+        return false;
 #endif
     }
 
@@ -740,21 +800,104 @@ void Mqtt::setup()
         logger.printfln("Using path %s", mqtt_cfg.broker.address.path);
     }
 
-    // Set connection state here. Otherwise, it will stay stay "not configured" until the first connection attempt.
-    state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
-
     client = esp_mqtt_client_init(&mqtt_cfg);
 
     if (client == nullptr) {
         logger.printfln("Could not create MQTT client");
-        return;
+        return false;
     }
 
     esp_mqtt_client_register_event(client, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, mqtt_event_handler, this);
+    return true;
+}
 
-    task_scheduler.scheduleUncancelable([this](){
-        this->resubscribe();
-    }, 1_s, 1_s);
+void Mqtt::stop_and_destroy_client()
+{
+    if (client == nullptr) {
+        return;
+    }
+
+#if MODULE_DEBUG_AVAILABLE()
+    if (initial_network_event_seen) {
+        debug.deregister_task("mqtt_task");
+    }
+#endif
+
+    esp_mqtt_client_stop(client);
+    esp_mqtt_client_destroy(client);
+    client = nullptr;
+    initial_network_event_seen = false;
+
+    state.get("connection_state")->updateEnum(MqttConnectionState::NotConfigured);
+}
+
+void Mqtt::subscribe_automation_triggers()
+{
+#if MODULE_AUTOMATION_AVAILABLE()
+    // Remove all existing automation trigger subscriptions.
+    commands.erase(
+        std::remove_if(commands.begin(), commands.end(), [](const MqttCommand &cmd) {
+            return cmd.is_automation;
+        }),
+        commands.end()
+    );
+
+    if (!config.get("enable_mqtt")->asBool()) {
+        return;
+    }
+
+    if (!automation.has_task_with_trigger(AutomationTriggerID::MQTT)) {
+        return;
+    }
+
+    Automation::ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
+    std::vector<String> subscribed_topics;
+
+    for (auto &conf : trigger_config) {
+        String topic = conf.second->get("topic_filter")->asString();
+        if (conf.second->get("use_prefix")->asBool()) {
+            topic = global_topic_prefix + "/automation_trigger/" + topic;
+        }
+
+        // Deduplicate topics, multiple triggers can share the same topic filter.
+        bool already_subscribed = false;
+        for (auto &existing : subscribed_topics) {
+            if (existing == topic) {
+                already_subscribed = true;
+                break;
+            }
+        }
+        if (already_subscribed) {
+            continue;
+        }
+
+        bool starts_with_prefix = topic.startsWith(global_topic_prefix);
+        bool sub_ok = false;
+        if (client != nullptr) {
+            sub_ok = this->subscribe_internal(client, topic.c_str(), 0) >= 0;
+        }
+
+        Retained retained = conf.second->get("retain")->asBool() ? Retained::Accept : Retained::IgnoreWarn;
+
+        commands.push_back({
+            topic,
+            [this](const char *tpic, size_t tpic_len, char *data, size_t data_len) {
+                MqttMessage msg;
+                msg.topic = String(tpic).substring(0, tpic_len);
+                msg.payload = String(data).substring(0, data_len);
+                msg.retained = false;
+                automation.trigger(AutomationTriggerID::MQTT, &msg, this);
+            },
+            retained,
+            CallbackInThread::Main,
+            starts_with_prefix,
+            sub_ok,
+            true  // is_automation
+        });
+
+        subscribed_topics.push_back(topic);
+    }
+#endif
 }
 
 void Mqtt::register_urls()
@@ -763,48 +906,30 @@ void Mqtt::register_urls()
     api.addState("mqtt/state", &state);
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.has_task_with_trigger(AutomationTriggerID::MQTT) && config.get("enable_mqtt")->asBool()) {
-        Automation::ConfigVec trigger_config = automation.get_configured_triggers(AutomationTriggerID::MQTT);
-        std::vector<String> subscribed_topics;
-        for (auto &conf : trigger_config) {
-            bool already_subscribed = false;
-            for (auto &new_topic : subscribed_topics) {
-                if (conf.second->get("topic_filter")->asString() == new_topic)
-                    already_subscribed = true;
-            }
-            const size_t idx = conf.first;
-            if (!already_subscribed) {
-                String topic = conf.second->get("topic_filter")->asString();
-                if (conf.second->get("use_prefix")->asBool()) {
-                    topic = config.get("global_topic_prefix")->asString() + "/automation_trigger/" + topic;
-                }
-                subscribe(topic, [this, idx](const char *tpic, size_t tpic_len, char * data, size_t data_len) {
-                    MqttMessage msg;
-                    msg.topic = String(tpic).substring(0, tpic_len);
-                    msg.payload = String(data).substring(0, data_len);
-                    msg.retained = false;
-                    if (automation.trigger(AutomationTriggerID::MQTT, &msg, this))
-                        return;
-                }, conf.second->get("retain")->asBool() ? Retained::Accept : Retained::IgnoreWarn);
-                subscribed_topics.push_back(topic);
-            }
-        }
-    }
+    subscribe_automation_triggers();
+
+    automation.register_on_config_applied([this]() {
+        this->subscribe_automation_triggers();
+    });
 #endif
 }
 
 void Mqtt::register_events()
 {
-    if (client == nullptr || !config.get("enable_mqtt")->asBool()) {
-        return;
-    }
-
+    // Always allocate state_last_send — needed by pushStateUpdate/wantsStateUpdate
+    // which are called unconditionally via the API backend.
     const size_t state_count = api.states.size();
     this->state_last_send = perm_new_array<micros_t>(state_count, IRAM);
     memset(this->state_last_send, 0, state_count * sizeof(micros_t));
 
-    // Start MQTT client here to make sure all handlers are already registered.
+    // Always register the network callback. When MQTT is initially disabled,
+    // reconfigure() will create the client and start it via esp_mqtt_client_start().
+    // The callback guards on client != nullptr for safety.
     network.on_network_connected([this](const Config *connected) {
+        if (client == nullptr) {
+            return EventResult::OK;
+        }
+
         if (connected->asBool()) {
             esp_mqtt_client_start(client);
 #if MODULE_DEBUG_AVAILABLE()
@@ -815,7 +940,7 @@ void Mqtt::register_events()
 #if MODULE_DEBUG_AVAILABLE()
             // This event will trigger during start-up and may send a 'disconnected' event in an already disconnected state.
             // The following esp_mqtt_client_stop doesn't care, but deregistering a task that doesn't exist will log a warning.
-            // Only handle 'disconnected' events if they’re not the very first event.
+            // Only handle 'disconnected' events if they're not the very first event.
             if (this->initial_network_event_seen) {
                 debug.deregister_task("mqtt_task");
             }
@@ -831,11 +956,61 @@ void Mqtt::register_events()
 
 void Mqtt::pre_reboot()
 {
-    if (client != nullptr) {
-#if MODULE_DEBUG_AVAILABLE()
-        debug.deregister_task("mqtt_task");
+    stop_and_destroy_client();
+}
+
+void Mqtt::reconfigure()
+{
+    // Invalidate any stale events from the old client that may be
+    // queued in the main thread's task scheduler.
+    ++config_generation;
+
+    stop_and_destroy_client();
+
+    // Update member variables from the (already saved) config.
+    global_topic_prefix = config.get("global_topic_prefix")->asString();
+    send_interval = seconds_t{config.get("interval")->asUint()};
+    client_name = config.get("client_name")->asString();
+    read_only = config.get("read_only")->asBool();
+
+    // Rebuild automation trigger subscriptions with the (possibly changed) prefix.
+    // This must happen before create_client() so that the new command entries
+    // exist and can be subscribed when the broker connection is established.
+    subscribe_automation_triggers();
+
+    if (!config.get("enable_mqtt")->asBool()) {
+#if MODULE_AUTOMATION_AVAILABLE()
+        automation.set_enabled(AutomationTriggerID::MQTT, false);
+        automation.set_enabled(AutomationActionID::MQTT, false);
 #endif
-        esp_mqtt_client_stop(client);
+        return;
+    }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.set_enabled(AutomationTriggerID::MQTT, true);
+    automation.set_enabled(AutomationActionID::MQTT, true);
+#endif
+
+    if (!create_client()) {
+        return;
+    }
+
+    state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
+
+    // Mark all existing (non-automation) commands as unsubscribed.
+    // The resubscribe timer or onMqttConnect will re-subscribe them.
+    global_topic_prefix_subscribed = false;
+    for (auto &cmd : commands) {
+        cmd.subscribed = false;
+    }
+
+    // Start the client immediately if the network is already up.
+    if (network.is_connected()) {
+        esp_mqtt_client_start(client);
+#if MODULE_DEBUG_AVAILABLE()
+        debug.register_task("mqtt_task", MQTT_TASK_STACK_SIZE);
+#endif
+        initial_network_event_seen = true;
     }
 }
 
