@@ -49,6 +49,10 @@ MpcUsecase::MpcUsecase()
             update_api();
         },
         1_s); // Schedule init delayed to allow other entities to initialize first
+    usecase_actor = "MonitoredUnit";
+    usecase_name = "monitoringOfPowerConsumption";
+    usecase_version = "1.0.0";
+    supported_scenarios = {1, 2, 3, 4, 5};
 }
 
 MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -82,35 +86,6 @@ MessageReturn MpcUsecase::handle_message(HeaderType &header, SpineDataTypeHandle
         }
     }
     return {false};
-}
-
-UseCaseInformationDataType MpcUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType mpc_usecase;
-    mpc_usecase.actor = "MonitoredUnit";
-
-    UseCaseSupportType mpc_usecase_support;
-    mpc_usecase_support.useCaseName = "monitoringOfPowerConsumption";
-    mpc_usecase_support.useCaseVersion = "1.0.0";
-    // Scenario 1: Monitor Power - Mandatory
-    mpc_usecase_support.scenarioSupport->push_back(1);
-    // Scenario 2: Monitor Energy - Optional
-    mpc_usecase_support.scenarioSupport->push_back(2);
-    // Scenario 3: Monitor Current - Recommend
-    mpc_usecase_support.scenarioSupport->push_back(3);
-    // Scenario 4: Monitor Voltage - Optional
-    mpc_usecase_support.scenarioSupport->push_back(4);
-    // Scenario 5: Monitor frequency - Optional
-    mpc_usecase_support.scenarioSupport->push_back(5);
-    mpc_usecase_support.useCaseDocumentSubRevision = "release";
-    mpc_usecase.useCaseSupport->push_back(mpc_usecase_support);
-
-    FeatureAddressType mpc_usecase_feature_address{};
-    mpc_usecase_feature_address.entity = entity_address;
-    mpc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    mpc_usecase.address = mpc_usecase_feature_address;
-
-    return mpc_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType MpcUsecase::get_detailed_discovery_entity_information() const

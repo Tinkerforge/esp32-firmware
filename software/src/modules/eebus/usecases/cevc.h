@@ -70,15 +70,6 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    /**
-     * @brief Builds and returns the UseCaseInformationDataType.
-     *
-     * As defined in CEVC spec 3.1.2.
-     *
-     * @return UseCaseInformationDataType with all 8 scenarios support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
-
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 

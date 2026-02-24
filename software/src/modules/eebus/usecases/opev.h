@@ -55,6 +55,8 @@
 class OpevUsecase final : public EebusUsecase
 {
 public:
+    OpevUsecase();
+
     [[nodiscard]] Usecases get_usecase_type() const override
     {
         return Usecases::OPEV;
@@ -68,15 +70,6 @@ public:
      * @return MessageReturn with handling status and response info
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
-
-    /**
-     * @brief Builds and returns the use case information.
-     *
-     * As defined in EEBus UC TS - Overload Protection V1.0.1b section 3.1.2.
-     *
-     * @return UseCaseInformationDataType with scenarios 1-3 support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
 
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {

@@ -56,6 +56,11 @@ MgcpUsecase::MgcpUsecase()
             update_api();
         },
         1_s); // Schedule init delayed to allow other entities to initialize first
+
+    usecase_actor = "GridConnectionPoint";
+    usecase_name = "monitoringOfGridConnectionPoint";
+    usecase_version = "1.0.0";
+    supported_scenarios = {1, 2, 3, 4, 6, 7};
 }
 
 MessageReturn MgcpUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
@@ -110,39 +115,6 @@ MessageReturn MgcpUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
         }
     }
     return {false};
-}
-
-UseCaseInformationDataType MgcpUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType mgcp_usecase;
-    mgcp_usecase.actor = "GridConnectionPoint";
-
-    UseCaseSupportType mgcp_usecase_support;
-    mgcp_usecase_support.useCaseName = "monitoringOfGridConnectionPoint";
-    mgcp_usecase_support.useCaseVersion = "1.0.0";
-    // Scenario 1: Monitor PV feed-in power limitation factor (Optional)
-    mgcp_usecase_support.scenarioSupport->push_back(1);
-    // Scenario 2: Monitor momentary power (Mandatory)
-    mgcp_usecase_support.scenarioSupport->push_back(2);
-    // Scenario 3: Monitor total feed-in energy (Mandatory)
-    mgcp_usecase_support.scenarioSupport->push_back(3);
-    // Scenario 4: Monitor total consumed energy (Mandatory)
-    mgcp_usecase_support.scenarioSupport->push_back(4);
-    // Scenario 5: Monitor momentary current (Recommended)
-    mgcp_usecase_support.scenarioSupport->push_back(5);
-    // Scenario 6: Monitor voltage (Optional)
-    mgcp_usecase_support.scenarioSupport->push_back(6);
-    // Scenario 7: Monitor frequency (Optional)
-    mgcp_usecase_support.scenarioSupport->push_back(7);
-    mgcp_usecase_support.useCaseDocumentSubRevision = "release";
-    mgcp_usecase.useCaseSupport->push_back(mgcp_usecase_support);
-
-    FeatureAddressType mgcp_usecase_feature_address{};
-    mgcp_usecase_feature_address.entity = entity_address;
-    mgcp_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    mgcp_usecase.address = mgcp_usecase_feature_address;
-
-    return mgcp_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType MgcpUsecase::get_detailed_discovery_entity_information() const

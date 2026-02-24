@@ -42,25 +42,10 @@
 EvcsUsecase::EvcsUsecase()
 {
     update_api();
-}
-
-UseCaseInformationDataType EvcsUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType evcs_usecase;
-    evcs_usecase.actor = "EVSE"; // Actor can be EVSE or Energy Broker; we implement EVSE role
-
-    UseCaseSupportType evcs_usecase_support;
-    evcs_usecase_support.useCaseName = "evChargingSummary";
-    evcs_usecase_support.useCaseVersion = "1.0.1";
-    evcs_usecase_support.scenarioSupport->push_back(1); // Scenario 1 (2.3.1): Charging summary exchange
-    evcs_usecase_support.useCaseDocumentSubRevision = "release";
-    evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
-
-    FeatureAddressType evcs_usecase_feature_address;
-    evcs_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    evcs_usecase_feature_address.entity = entity_address;
-    evcs_usecase.address = evcs_usecase_feature_address;
-    return evcs_usecase;
+    usecase_actor = "EVSE";
+    usecase_name = "evChargingSummary";
+    usecase_version = "1.0.1";
+    supported_scenarios = {1};
 }
 
 MessageReturn EvcsUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)

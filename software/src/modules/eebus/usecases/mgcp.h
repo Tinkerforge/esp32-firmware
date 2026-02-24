@@ -74,15 +74,6 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    /**
-     * @brief Builds and returns the use case information.
-     *
-     * As defined in MGCP spec 3.1.2.
-     *
-     * @return UseCaseInformationDataType with scenarios 1-7 support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
-
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::DeviceConfiguration, FeatureTypeEnumType::Measurement, FeatureTypeEnumType::ElectricalConnection};

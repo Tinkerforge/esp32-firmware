@@ -53,28 +53,10 @@ LoadPowerLimitUsecase::LoadPowerLimitUsecase(const LoadPowerLimitConfig &config)
             update_api();
         },
         1_s); // Schedule all the init stuff a bit delayed to allow other entities to initialize first
-}
-
-UseCaseInformationDataType LoadPowerLimitUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType usecase;
-    usecase.actor = "ControllableSystem";
-
-    UseCaseSupportType usecase_support;
-    usecase_support.useCaseName = config_.usecase_name;
-    usecase_support.useCaseVersion = "1.0.0";
-    usecase_support.scenarioSupport->push_back(1);
-    usecase_support.scenarioSupport->push_back(2);
-    usecase_support.scenarioSupport->push_back(3);
-    usecase_support.scenarioSupport->push_back(4);
-    usecase_support.useCaseDocumentSubRevision = "release";
-    usecase.useCaseSupport->push_back(usecase_support);
-
-    FeatureAddressType usecase_feature_address;
-    usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    usecase_feature_address.entity = entity_address;
-    usecase.address = usecase_feature_address;
-    return usecase;
+    usecase_actor = "ControllableSystem";
+    usecase_name = config_.usecase_name;
+    usecase_version = "1.0.0";
+    supported_scenarios = {1, 2, 3, 4};
 }
 
 MessageReturn LoadPowerLimitUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)

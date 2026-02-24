@@ -25,6 +25,29 @@
 #if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
 
 /**
+ * @brief Configuration struct for LoadPowerLimitUsecase parameterization.
+ *
+ * Used to differentiate between LPC (power consumption) and LPP (power production)
+ * usecases. Both share the same base implementation but with different parameters.
+ */
+struct LoadPowerLimitConfig {
+    Usecases usecase_type;                                              ///< LPC or LPP
+    const char *usecase_name;                                           ///< "limitationOfPowerConsumption" or "limitationOfPowerProduction"
+    const char *api_key;                                                ///< "power_consumption_limitation" or "power_production_limitation"
+    EnergyDirectionEnumType energy_direction;                           ///< consume or produce
+    ElectricalConnectionCharacteristicTypeEnumType characteristic_type; ///< powerConsumptionMax or powerProductionMax
+    DeviceConfigurationKeyNameEnumType failsafe_key_name;               ///< failsafeConsumptionActivePowerLimit or failsafeProductionActivePowerLimit
+    bool limit_is_positive;                                             ///< true for LPC (power > 0), false for LPP (power < 0)
+    // ID offsets from EVSEEntity
+    uint8_t loadcontrol_limit_id_offset;
+    uint8_t measurement_id_offset;
+    uint8_t device_config_key_id_offset;
+    uint8_t electrical_connection_id_offset;
+    uint8_t electrical_connection_characteristic_id_offset;
+    uint8_t electrical_connection_parameter_id_offset;
+};
+
+/**
  * @brief Base class for Load Power Limit usecases (LPC and LPP).
  *
  * Implements the common logic for Limitation of Power Consumption and
@@ -60,15 +83,6 @@ class LoadPowerLimitUsecase : public EebusUsecase
 public:
     explicit LoadPowerLimitUsecase(const LoadPowerLimitConfig &config);
     ~LoadPowerLimitUsecase() override;
-
-    /**
-     * @brief Builds and returns the UseCaseInformationDataType.
-     *
-     * Uses config to determine usecase name.
-     *
-     * @return UseCaseInformationDataType with all 4 scenarios support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
 
     /**
      * @brief Handles a message for the usecase.

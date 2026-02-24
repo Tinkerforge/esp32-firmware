@@ -91,11 +91,6 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    UseCaseInformationDataType get_usecase_information() override
-    {
-        return {};
-    }
-
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::DeviceDiagnosis, FeatureTypeEnumType::Generic}; // Generic is the client feature needed for reads

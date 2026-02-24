@@ -45,12 +45,6 @@ bool NodeManagementEntity::check_is_bound(FeatureAddressType &sending_feature, F
     return false;
 }
 
-UseCaseInformationDataType NodeManagementEntity::get_usecase_information()
-{
-    return {};
-    // This should never be used as the NodeManagementUsecase has no usecase information
-}
-
 MessageReturn NodeManagementEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     if (header.addressDestination->feature.get() != 0)

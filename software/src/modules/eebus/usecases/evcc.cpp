@@ -48,27 +48,12 @@ EvccUsecase::EvccUsecase()
 {
     entity_active = false; // Disable entity until an EV is connected
     ev_connected = false;
-}
 
-UseCaseInformationDataType EvccUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType evcc_usecase;
-    evcc_usecase.actor = "EV";
-
-    UseCaseSupportType evcc_usecase_support;
-    evcc_usecase_support.useCaseName = "evCommissioningAndConfiguration";
-    evcc_usecase_support.useCaseVersion = "1.0.1";
+    usecase_actor = "EV";
+    usecase_name = "evCommissioningAndConfiguration";
+    usecase_version = "1.0.1";
     // All 8 scenarios supported (see spec chapter 2.3)
-    evcc_usecase_support.scenarioSupport->insert(evcc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
-
-    evcc_usecase_support.useCaseDocumentSubRevision = "release";
-    evcc_usecase.useCaseSupport->push_back(evcc_usecase_support);
-
-    FeatureAddressType evcc_usecase_feature_address;
-    evcc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    evcc_usecase_feature_address.entity = entity_address;
-    evcc_usecase.address = evcc_usecase_feature_address;
-    return evcc_usecase;
+    supported_scenarios = {1, 2, 3, 4, 5, 6, 7, 8};
 }
 
 MessageReturn EvccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)

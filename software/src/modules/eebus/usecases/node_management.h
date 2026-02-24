@@ -54,8 +54,6 @@ public:
      */
     bool check_is_bound(FeatureAddressType &sending_feature, FeatureAddressType &target_feature) const;
 
-    UseCaseInformationDataType get_usecase_information() override;
-
     /**
      * @brief Handles a message for the NodeManagement usecase.
      * @param header SPINE header containing commandclassifier and targeted entity info

@@ -76,15 +76,6 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    /**
-     * @brief Builds and returns the UseCaseInformationDataType.
-     *
-     * As defined in EEBus UC TS - Monitoring of Power Consumption V1.0.0 3.1.2.
-     *
-     * @return UseCaseInformationDataType with all 5 scenarios support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
-
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
         return {FeatureTypeEnumType::ElectricalConnection, FeatureTypeEnumType::Measurement};

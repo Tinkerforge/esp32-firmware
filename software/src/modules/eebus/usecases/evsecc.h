@@ -62,15 +62,6 @@ public:
      */
     MessageReturn handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) override;
 
-    /**
-     * @brief Builds and returns the use case information.
-     *
-     * As defined in EEBus UC TS - EVSE Commissioning and Configuration V1.0.1 section 3.1.2.
-     *
-     * @return UseCaseInformationDataType with scenarios 1 and 2 support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
-
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 

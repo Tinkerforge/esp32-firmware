@@ -37,6 +37,29 @@ void EebusUsecase::send_full_read(AddressFeatureType sending_feature, FeatureAdd
     dst.createNestedObject(function_name);
     eebus.usecases->send_spine_message(receiver, sender, message.as<JsonVariantConst>(), CmdClassifierType::read, true);
 }
+UseCaseInformationDataType EebusUsecase::get_usecase_information() const
+{
+    if (usecase_actor.empty() || usecase_name.empty() || usecase_version.empty() || supported_scenarios.empty()) {
+        return {};
+    }
+    UseCaseInformationDataType evcc_usecase;
+    evcc_usecase.actor = usecase_actor;
+
+    UseCaseSupportType evcc_usecase_support;
+    evcc_usecase_support.useCaseName = usecase_name;
+    evcc_usecase_support.useCaseVersion = usecase_version;
+    // All 8 scenarios supported (see spec chapter 2.3)
+    evcc_usecase_support.scenarioSupport = supported_scenarios;
+
+    evcc_usecase_support.useCaseDocumentSubRevision = "release";
+    evcc_usecase.useCaseSupport->push_back(evcc_usecase_support);
+
+    FeatureAddressType evcc_usecase_feature_address;
+    evcc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    evcc_usecase_feature_address.entity = entity_address;
+    evcc_usecase.address = evcc_usecase_feature_address;
+    return evcc_usecase;
+}
 
 void EebusUsecase::set_feature_address(AddressFeatureType feature_address, FeatureTypeEnumType feature_type)
 {

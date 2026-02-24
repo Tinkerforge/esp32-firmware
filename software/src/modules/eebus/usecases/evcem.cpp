@@ -40,7 +40,13 @@
 //   3 (3.2.1.2.1.3): Energy measurement (total charged)
 // ==============================================================================
 
-EvcemUsecase::EvcemUsecase() = default;
+EvcemUsecase::EvcemUsecase()
+{
+    usecase_actor = "EV";
+    usecase_name = "measurementOfElectricityDuringEvCharging";
+    usecase_version = "1.0.1";
+        supported_scenarios = {1, 2, 3};
+};
 
 MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -84,26 +90,6 @@ MessageReturn EvcemUsecase::handle_message(HeaderType &header, SpineDataTypeHand
         default:;
     }
     return {false};
-}
-
-UseCaseInformationDataType EvcemUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType evcm_usecase;
-    evcm_usecase.actor = "EV";
-
-    UseCaseSupportType evcm_usecase_support;
-    evcm_usecase_support.useCaseName = "measurementOfElectricityDuringEvCharging";
-    evcm_usecase_support.useCaseVersion = "1.0.1";
-    evcm_usecase_support.scenarioSupport->insert(evcm_usecase_support.scenarioSupport->end(), {1, 2, 3});
-
-    evcm_usecase_support.useCaseDocumentSubRevision = "release";
-    evcm_usecase.useCaseSupport->push_back(evcm_usecase_support);
-
-    FeatureAddressType evcm_usecase_feature_address;
-    evcm_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    evcm_usecase_feature_address.entity = entity_address;
-    evcm_usecase.address = evcm_usecase_feature_address;
-    return evcm_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType EvcemUsecase::get_detailed_discovery_entity_information() const

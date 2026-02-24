@@ -37,7 +37,13 @@
 //   2 (2.3.2, 3.4.2): EVSE error state
 // ==============================================================================
 
-EvseccUsecase::EvseccUsecase() = default;
+EvseccUsecase::EvseccUsecase()
+{
+    usecase_actor = "EVSE";
+    usecase_name = "evseCommissioningAndConfiguration";
+    usecase_version = "1.0.1";
+    supported_scenarios = {1, 2};
+};
 
 MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -62,26 +68,6 @@ MessageReturn EvseccUsecase::handle_message(HeaderType &header, SpineDataTypeHan
         }
     }
     return {false};
-}
-
-UseCaseInformationDataType EvseccUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType evse_usecase;
-    evse_usecase.actor = "EVSE";
-
-    UseCaseSupportType evse_usecase_support;
-    evse_usecase_support.useCaseName = "evseCommissioningAndConfiguration";
-    evse_usecase_support.useCaseVersion = "1.0.1";
-    evse_usecase_support.scenarioSupport->push_back(1);
-    evse_usecase_support.scenarioSupport->push_back(2);
-    evse_usecase_support.useCaseDocumentSubRevision = "release";
-    evse_usecase.useCaseSupport->push_back(evse_usecase_support);
-
-    FeatureAddressType evcs_usecase_feature_address;
-    evcs_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    evcs_usecase_feature_address.entity = entity_address;
-    evse_usecase.address = evcs_usecase_feature_address;
-    return evse_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType EvseccUsecase::get_detailed_discovery_entity_information() const

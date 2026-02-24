@@ -42,15 +42,6 @@ public:
     EvcsUsecase();
 
     /**
-     * @brief Builds and returns the use case information.
-     *
-     * As defined in EEBus UC TS - EV Charging Summary V1.0.1 section 3.1.2.
-     *
-     * @return UseCaseInformationDataType with scenario 1 support
-     */
-    UseCaseInformationDataType get_usecase_information() override;
-
-    /**
      * @brief Handles a message for the EVCS use case.
      * @param header SPINE header with commandclassifier and targeted entity info
      * @param data The actual function call and data of the message

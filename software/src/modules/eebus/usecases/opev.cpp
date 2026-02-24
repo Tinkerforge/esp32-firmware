@@ -45,6 +45,14 @@ extern EEBus eebus;
 // Features: LoadControl, ElectricalConnection
 // ==============================================================================
 
+OpevUsecase::OpevUsecase()
+{
+    usecase_actor = "EV";
+    usecase_name = "overloadProtectionByEvChargingCurrentCurtailment";
+    usecase_version = "1.0.1";
+    supported_scenarios = {1, 2, 3};
+}
+
 MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     AddressFeatureType feature_address = header.addressDestination->feature.get();
@@ -98,30 +106,6 @@ MessageReturn OpevUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
         default:;
     }
     return {false};
-}
-
-UseCaseInformationDataType OpevUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType opev_usecase;
-    opev_usecase.actor = "EV";
-
-    UseCaseSupportType opev_usecase_support;
-    opev_usecase_support.useCaseName = "overloadProtectionByEvChargingCurrentCurtailment";
-    opev_usecase_support.useCaseVersion = "1.0.1";
-    // Scenario 1 (3.4.1): EV provides limitations and writes current limit
-    opev_usecase_support.scenarioSupport->push_back(1);
-    // Scenario 2 (3.4.2): EG sends heartbeat
-    opev_usecase_support.scenarioSupport->push_back(2);
-    // Scenario 3 (3.4.3): EG sends error state
-    opev_usecase_support.scenarioSupport->push_back(3);
-    opev_usecase_support.useCaseDocumentSubRevision = "release";
-    opev_usecase.useCaseSupport->push_back(opev_usecase_support);
-
-    FeatureAddressType opev_usecase_feature_address;
-    opev_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    opev_usecase_feature_address.entity = entity_address;
-    opev_usecase.address = opev_usecase_feature_address;
-    return opev_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType OpevUsecase::get_detailed_discovery_entity_information() const

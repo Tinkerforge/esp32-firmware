@@ -46,7 +46,13 @@
 //   8 (3.4.8): Energy Broker error state - Via DeviceDiagnosis - COMPLETE
 // ==============================================================================
 
-CevcUsecase::CevcUsecase() = default;
+CevcUsecase::CevcUsecase()
+{
+    usecase_actor = "EV";
+    usecase_name = "coordinatedEvCharging";
+    usecase_version = "1.0.1";
+    supported_scenarios = {1, 2, 3, 4, 5, 6, 7, 8};
+}
 
 MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
@@ -134,25 +140,6 @@ MessageReturn CevcUsecase::handle_message(HeaderType &header, SpineDataTypeHandl
             break;
     }
     return {false};
-}
-
-UseCaseInformationDataType CevcUsecase::get_usecase_information()
-{
-    UseCaseInformationDataType cevc_usecase;
-    cevc_usecase.actor = "EV";
-
-    UseCaseSupportType cevc_usecase_support;
-    cevc_usecase_support.useCaseName = "coordinatedEvCharging";
-    cevc_usecase_support.useCaseVersion = "1.0.1";
-    cevc_usecase_support.scenarioSupport->insert(cevc_usecase_support.scenarioSupport->end(), {1, 2, 3, 4, 5, 6, 7, 8});
-    cevc_usecase_support.useCaseDocumentSubRevision = "release";
-    cevc_usecase.useCaseSupport->push_back(cevc_usecase_support);
-
-    FeatureAddressType cevc_usecase_feature_address;
-    cevc_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    cevc_usecase_feature_address.entity = entity_address;
-    cevc_usecase.address = cevc_usecase_feature_address;
-    return cevc_usecase;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType CevcUsecase::get_detailed_discovery_entity_information() const

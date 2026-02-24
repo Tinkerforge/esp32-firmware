@@ -46,7 +46,7 @@
 
 //#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
-//#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
+#define EEBUS_DEV_TEST_ENABLE // Enable to test certain features that would otherwise require external hardware or an EV
 
 // Forward declarations (so we don't have to include spine_types.h here)
 class EEBusUseCases;
