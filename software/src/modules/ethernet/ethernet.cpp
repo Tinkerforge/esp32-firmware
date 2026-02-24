@@ -87,9 +87,11 @@ void Ethernet::pre_setup()
         if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        task_scheduler.scheduleOnce([this]() {
-            this->apply_config();
-        });
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+        }
 
         return "";
     }};
