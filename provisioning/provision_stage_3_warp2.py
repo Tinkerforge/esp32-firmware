@@ -437,7 +437,6 @@ class Stage3:
         self.devices = {}
 
         for stack_position, positions in [('0', {'0': ['A', 'B', 'C', 'D'], '1': ['A', 'B', 'C', 'D'], '2': ['A', 'B', 'C', 'D'], '3': ['A', 'B']}),
-                                          ('1', {'0': ['A']}),
                                           ('2', {'0': ['A', 'B', 'C', 'D']})]:
             for brick_position, bricklet_positions in positions.items():
                 full_position = stack_position + brick_position
