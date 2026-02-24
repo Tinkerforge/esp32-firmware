@@ -81,6 +81,7 @@ private:
     uint32_t power_import_index = 0;
     size_t   obis_value_positions[METERS_SMA_SPEEDWIRE_OBIS_COUNT];
     bool     values_parsed = false;
+    bool     polling_started = false;
     NetworkUDP udp;
 
     size_t trace_buffer_index;

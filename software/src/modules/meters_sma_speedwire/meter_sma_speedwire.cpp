@@ -190,19 +190,22 @@ void MeterSMASpeedwire::register_events()
         uint16_t port = 9522;
 
         if (!udp.beginMulticast({group}, port)) {
-            logger.printfln_meter("Couldn't join multicast group %s:%u", group, port);
+            logger.printfln_meter("Couldn't %s multicast group %s:%u", polling_started ? "rejoin" : "join", group, port);
             return EventResult::OK; // Try again on next connected event.
         }
 
-        logger.printfln_meter("Joined multicast group %s:%u", group, port);
+        logger.printfln_meter("%sed multicast group %s:%u", polling_started ? "rejoin" : "join", group, port);
 
         // Tested Speedwire products send one packet per second.
         // Poll every 250ms to reduce latency and packet backlog in case of more than one SpeedWire sender on the network.
-        task_scheduler.scheduleUncancelable([this]() {
-            parse_packet();
-        }, 250_ms);
+        if (!polling_started) {
+            polling_started = true;
+            task_scheduler.scheduleUncancelable([this]() {
+                parse_packet();
+            }, 250_ms);
+        }
 
-        return EventResult::Deregister;
+        return EventResult::OK; // Stay registered to re-join multicast when network interfaces change.
     });
 }
 
