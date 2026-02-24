@@ -1941,7 +1941,7 @@ static void upload_charge_logs_task(void *arg)
             });
 
             if (!sm_started) {
-                logger.printfln("Failed to start charge log send for monthly upload user %d", user_idx);
+                logger.printfln("Failed to start charge log send for monthly upload user %d. The management connection may not be established or another send operation is in progress.", user_idx);
                 continue;
             }
 
@@ -1956,8 +1956,10 @@ static void upload_charge_logs_task(void *arg)
                     success = true;
                     break;
                 } else if (state == ChargeLogSendState::Error) {
-                    logger.printfln("Monthly charge log upload for user %d failed (error %u)",
-                                    user_idx, static_cast<uint8_t>(charge_tracker.charge_log_send_ctx.error_code));
+                    logger.printfln("Monthly charge log upload for user %d failed with error code %u (%s)",
+                                    user_idx,
+                                    static_cast<uint8_t>(charge_tracker.charge_log_send_ctx.error_code),
+                                    get_charge_log_send_error_name(charge_tracker.charge_log_send_ctx.error_code));
                     break;
                 }
                 vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -1970,7 +1972,7 @@ static void upload_charge_logs_task(void *arg)
                 });
                 logger.printfln("Monthly charge log upload for user %d completed successfully", user_idx);
             } else if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS >= SEND_TIMEOUT_MS) {
-                logger.printfln("Monthly charge log upload for user %d timed out", user_idx);
+                logger.printfln("Monthly charge log upload for user %d timed out after 5 minutes. Check the remote access connection stability.", user_idx);
             }
 
 #if MODULE_WATCHDOG_AVAILABLE()
@@ -2016,7 +2018,7 @@ static void charge_log_send_tcp_task(void *arg)
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
         charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
-            push_upload_result_error(upload_args->cookie, "Failed to create TCP socket");
+            push_upload_result_error(upload_args->cookie, "Failed to create TCP socket for charge log upload. Check network configuration.");
         }
         cleanup_and_delete_task();
         return;
@@ -2035,7 +2037,7 @@ static void charge_log_send_tcp_task(void *arg)
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
         charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
-            push_upload_result_error(upload_args->cookie, "Failed to bind TCP socket");
+            push_upload_result_error(upload_args->cookie, "Failed to bind TCP socket for charge log upload. The local network interface may not be ready.");
         }
         cleanup_and_delete_task();
         return;
@@ -2060,7 +2062,7 @@ static void charge_log_send_tcp_task(void *arg)
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
         charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
-            push_upload_result_error(upload_args->cookie, "Failed to connect TCP socket");
+            push_upload_result_error(upload_args->cookie, "Failed to connect to management server for charge log upload. Verify the remote access connection is active.");
         }
         cleanup_and_delete_task();
         return;
@@ -2132,7 +2134,7 @@ static void charge_log_send_tcp_task(void *arg)
         charge_tracker.charge_log_send_ctx.error_code = ChargeLogSendError::ServerErrorAfterDataSend;
         charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::Error;
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
-            push_upload_result_error(upload_args->cookie, "TCP send error during data transfer");
+            push_upload_result_error(upload_args->cookie, "Connection lost while transmitting charge log data. Please try again.");
         }
         cleanup_and_delete_task();
         return;
@@ -2158,7 +2160,7 @@ void ChargeTracker::upload_charge_logs()
     args->end_timestamp_min = 0;
     args->generation_lock = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
     if (args->generation_lock == nullptr) {
-        logger.printfln("Could not acquire charge log generation lock for remote upload");
+        logger.printfln("Could not acquire charge log generation lock for remote upload. Another charge log generation (PDF/CSV download or upload) is already in progress.");
         delete args;
         return;
     }
@@ -2166,7 +2168,7 @@ void ChargeTracker::upload_charge_logs()
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
 
     if (ret != pdPASS_safe) {
-        logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+        logger.printfln("ChargeLogUpload task could not be created (insufficient system resources): %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
         delete args;
     }
 }
@@ -2178,7 +2180,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     if (!remote_access.parse_uuid_string(remote_access_user_uuid.c_str(), user_uuid)) {
         logger.printfln("Invalid remote access user UUID: %s", remote_access_user_uuid.c_str());
         if (cookie != 0) {
-            push_upload_result_error(cookie, "Invalid remote access user UUID");
+            push_upload_result_error(cookie, "Invalid remote access user UUID. Check the remote access user configuration.");
         }
         return;
     }
@@ -2203,7 +2205,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
         logger.printfln("Failed to initiate charge log send state machine");
         // If the state machine couldn't be started, notify and return
         if (cookie != 0) {
-            push_upload_result_error(cookie, "Failed to start charge log send");
+            push_upload_result_error(cookie, "Failed to start charge log upload. The management connection may not be established or another upload is already in progress.");
         }
         return;
     }
@@ -2232,7 +2234,7 @@ bool ChargeTracker::send_metadata_from_ctx()
     const size_t meta_total = sizeof(management_packet_header) + 16 + sizeof(uint16_t) + sizeof(uint16_t) + 2 + 1 + filename_len + display_name_len;
     auto meta_buf = heap_alloc_array<uint8_t>(meta_total);
     if (!meta_buf) {
-        logger.printfln("Cannot send charge log: out of memory for metadata");
+        logger.printfln("Cannot send charge log: out of memory while allocating metadata buffer (%zu bytes)", meta_total);
         return false;
     }
 
@@ -2254,7 +2256,7 @@ bool ChargeTracker::send_metadata_from_ctx()
     );
 
     if (written == 0) {
-        logger.printfln("Cannot send charge log: metadata buffer too small");
+        logger.printfln("Cannot send charge log: metadata buffer too small (needed %zu bytes, wrote 0)", meta_total);
         return false;
     }
 
@@ -2277,14 +2279,14 @@ bool ChargeTracker::start_charge_log_send_sm(
     const uint8_t config_hash[32])
 {
     if (!remote_access.is_mgmt_connected()) {
-        logger.printfln("Cannot send charge log: management connection not established");
+        logger.printfln("Cannot send charge log: management connection to remote access server is not established. Ensure remote access is enabled and connected.");
         return false;
     }
 
     if (charge_log_send_ctx.state != ChargeLogSendState::Idle
         && charge_log_send_ctx.state != ChargeLogSendState::Done
         && charge_log_send_ctx.state != ChargeLogSendState::Error) {
-        logger.printfln("Cannot send charge log: state machine already active (state %u)",
+        logger.printfln("Cannot send charge log: another charge log send operation is already active (state %u). Wait for the current operation to complete.",
                         static_cast<uint8_t>(charge_log_send_ctx.state));
         return false;
     }
@@ -2303,7 +2305,7 @@ bool ChargeTracker::start_charge_log_send_sm(
         case Language::German:  lang_str = "de"; break;
         case Language::English: lang_str = "en"; break;
         default:
-            logger.printfln("Cannot send charge log: unsupported language");
+            logger.printfln("Cannot send charge log: unsupported language value. Only German and English are supported.");
             return false;
     }
     charge_log_send_ctx.lang[0] = static_cast<uint8_t>(lang_str[0]);
@@ -2382,7 +2384,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
 
                 if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
                     char err_msg[128];
-                    snprintf(err_msg, sizeof(err_msg), "Charge log request rejected: %s", reason_str);
+                    snprintf(err_msg, sizeof(err_msg), "Charge log upload request rejected by server: %s. Please try again later.", reason_str);
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
@@ -2419,7 +2421,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                                 get_nack_reason_name(nack_reason));
                 if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
                     char err_msg[128];
-                    snprintf(err_msg, sizeof(err_msg), "Charge log metadata rejected: %s", get_nack_reason_name(nack_reason));
+                    snprintf(err_msg, sizeof(err_msg), "Charge log metadata rejected by server: %s. Verify the remote access configuration.", get_nack_reason_name(nack_reason));
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
@@ -2432,7 +2434,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
         case ChargeLogSendState::OpeningConnection: {
             if (type == PacketType::Ack) {
                 if (remote_upload_request == nullptr) {
-                    logger.printfln("Cannot send charge log: no upload request available");
+                    logger.printfln("Cannot send charge log: upload request context is missing. This is an internal error.");
                     charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
                     charge_log_send_ctx.state = ChargeLogSendState::Error;
                     return true;
@@ -2453,7 +2455,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
                     charge_log_send_ctx.state = ChargeLogSendState::Error;
                     if (remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
-                        push_upload_result_error(remote_upload_request->cookie, "Failed to start charge log send task");
+                        push_upload_result_error(remote_upload_request->cookie, "Failed to start charge log upload task: insufficient system resources. Try again after restarting the device.");
                     }
                     remote_upload_request.reset();
                     pending_generation_lock.reset();
@@ -2467,11 +2469,11 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                 charge_log_send_ctx.nack_reason = nack_reason;
                 charge_log_send_ctx.error_code = ChargeLogSendError::ConnectionOpenFailed;
                 charge_log_send_ctx.state = ChargeLogSendState::Error;
-                logger.printfln("Failed to open connection (reason: %s)",
+                logger.printfln("Failed to open TCP connection for charge log upload (reason: %s)",
                                 get_nack_reason_name(nack_reason));
                 if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
                     char err_msg[128];
-                    snprintf(err_msg, sizeof(err_msg), "Failed to open connection: %s", get_nack_reason_name(nack_reason));
+                    snprintf(err_msg, sizeof(err_msg), "Server refused to open data connection for charge log upload: %s. Please try again later.", get_nack_reason_name(nack_reason));
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
@@ -2493,11 +2495,11 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                 charge_log_send_ctx.nack_reason = nack_reason;
                 charge_log_send_ctx.error_code = ChargeLogSendError::ServerErrorAfterDataSend;
                 charge_log_send_ctx.state = ChargeLogSendState::Error;
-                logger.printfln("Server reported error after charge log data send (reason: %s)",
+                logger.printfln("Server reported error after charge log data was sent (reason: %s)",
                                 get_nack_reason_name(nack_reason));
                 if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
                     char err_msg[128];
-                    snprintf(err_msg, sizeof(err_msg), "Server error after data send: %s", get_nack_reason_name(nack_reason));
+                    snprintf(err_msg, sizeof(err_msg), "Server rejected the charge log after data transfer: %s. The upload may need to be retried.", get_nack_reason_name(nack_reason));
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
