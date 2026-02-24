@@ -13,8 +13,6 @@ import tkinter as tk
 import typing
 import subprocess
 
-import cv2 # sudo pip3 install openvc-python
-
 from provisioning.tinkerforge.ip_connection import IPConnection
 from provisioning.tinkerforge.device_factory import create_device
 from provisioning.tinkerforge.brick_master import BrickMaster
@@ -61,7 +59,6 @@ PHASE_SWITCH_SETTLE_DURATION = 10.0 # seconds
 
 STACK_MASTER_UIDS = {
     '0': '61SMKP',
-    '1': '6jEhrp',
     '2': '6DY5kB',
 }
 
@@ -84,8 +81,6 @@ EXPECTED_DEVICE_IDENTIFIERS = {
     '03': BrickMaster.DEVICE_IDENTIFIER,
     '03A': BrickletIndustrialDualRelay.DEVICE_IDENTIFIER,
     '03B': BrickletPiezoSpeakerV2.DEVICE_IDENTIFIER,
-    '10': BrickMaster.DEVICE_IDENTIFIER,
-    '10A': BrickletServoV2.DEVICE_IDENTIFIER,
     '20': BrickMaster.DEVICE_IDENTIFIER,
     '20A': BrickletLEDStripV2.DEVICE_IDENTIFIER,
     '20B': BrickletNFC.DEVICE_IDENTIFIER,
@@ -380,84 +375,6 @@ class Stage3:
             time.sleep(0.1)
 
             current_position = self.try_action(servo, lambda device: device.get_current_position(channel))
-
-    # internal
-    def click_meter_run_button(self):
-        servo = '10A'
-        channel = 0
-
-        try:
-            self.set_servo_position(servo, channel, 4000)
-
-            if not self.try_action(servo, lambda device: device.get_enabled(channel)):
-                self.try_action(servo, lambda device: device.set_enable(channel, True))
-
-            self.set_servo_position(servo, channel, 7300)
-            time.sleep(0.1)
-            self.set_servo_position(servo, channel, 4000)
-            time.sleep(0.1)
-        except Exception as e:
-            fatal_error('Could not click meter run button: {0}'.format(e))
-
-    # internal
-    def click_meter_back_button(self):
-        servo = '10A'
-        channel = 1
-
-        try:
-            self.set_servo_position(servo, channel, 3000)
-
-            if not self.try_action(servo, lambda device: device.get_enabled(channel)):
-                self.try_action(servo, lambda device: device.set_enable(channel, True))
-
-            self.set_servo_position(servo, channel, 6200)
-            time.sleep(0.1)
-            self.set_servo_position(servo, channel, 3000)
-            time.sleep(0.1)
-        except Exception as e:
-            fatal_error('Could not click meter back button: {0}'.format(e))
-
-    # internal
-    def read_meter_qr_code(self, timeout=5, allow_no_detection=False):
-        text = ''
-        timestamp = time.monotonic()
-        error = None
-
-        for _ in range(5):
-            error = None
-
-            try:
-                capture = cv2.VideoCapture(0)
-            except Exception as e:
-                error = str(e)
-                continue
-
-            try:
-                decoder = cv2.QRCodeDetector()
-
-                while len(text) == 0:
-                    _, frame = capture.read()
-                    text, _, _ = decoder.detectAndDecode(frame)
-
-                    if timeout == None or timestamp + timeout < time.monotonic():
-                        break
-
-                    time.sleep(0.1)
-            except Exception as e:
-                error = str(e)
-                continue
-            finally:
-                capture.release()
-
-            if len(text) > 0:
-                break
-
-            time.sleep(0.1)
-
-        if not allow_no_detection and len(text) == 0:
-            fatal_error('Could not read QR code: {0}'.format(error))
-
-        return text
 
     # internal
     def is_front_panel_led_blue(self):
@@ -1188,8 +1105,6 @@ def main():
     add_button('Meter State Type2 L1', lambda: stage3.change_meter_state('Type2-L1'))
     add_button('Meter State Type2 L2', lambda: stage3.change_meter_state('Type2-L2'))
     add_button('Meter State Type2 L3', lambda: stage3.change_meter_state('Type2-L3'))
-    add_button('Meter Run Button', lambda: stage3.click_meter_run_button())
-    add_button('Meter Back Button', lambda: stage3.click_meter_back_button())
 
     root.mainloop()
 
