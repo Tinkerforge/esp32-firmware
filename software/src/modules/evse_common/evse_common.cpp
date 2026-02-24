@@ -380,6 +380,27 @@ bool EvseCommon::has_triggered(const Config *conf, void *data)
     }
     return false;
 }
+
+void EvseCommon::handle_external_current_wd_task()
+{
+    bool need = automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd);
+
+    if (need && wd_trigger_task_id == 0) {
+        wd_trigger_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            static bool was_triggered = false;
+            const bool elapsed = deadline_elapsed(last_external_update + 30_s);
+            if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
+                automation.trigger(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, this);
+                was_triggered = true;
+            } else if (!elapsed) {
+                was_triggered = false;
+            }
+        }, 1_s, 1_s);
+    } else if (!need && wd_trigger_task_id != 0) {
+        task_scheduler.cancel(wd_trigger_task_id);
+        wd_trigger_task_id = 0;
+    }
+}
 #endif
 void EvseCommon::setup_evse()
 {
@@ -793,18 +814,21 @@ void EvseCommon::register_urls()
     backend->post_register_urls();
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.has_task_with_trigger(AutomationTriggerID::EVSEExternalCurrentWd)) {
-        task_scheduler.scheduleUncancelable([this](){
-            static bool was_triggered = false;
-            const bool elapsed = deadline_elapsed(last_external_update + 30_s);
-            if (external_enabled.get("enabled")->asBool() && elapsed && !was_triggered) {
-                automation.trigger(AutomationTriggerID::EVSEExternalCurrentWd, nullptr, this);
-                was_triggered = true;
-            } else if (!elapsed) {
-                was_triggered = false;
+    handle_external_current_wd_task();
+
+    automation.register_on_config_applied([this]() {
+        handle_external_current_wd_task();
+
+        // If no SetCurrent action exists anymore, deactivate the automation slot.
+        if (!automation.has_task_with_action(AutomationActionID::SetCurrent)) {
+            bool slot_enabled = false;
+            backend->get_charging_slot(CHARGING_SLOT_AUTOMATION, nullptr, &slot_enabled, nullptr);
+            if (slot_enabled) {
+                logger.printfln("Clearing leftover limit from automation slot");
+                backend->set_charging_slot(CHARGING_SLOT_AUTOMATION, 32000, false, true);
             }
-        }, 1_s, 1_s);
-    }
+        }
+    });
 
     api.addState("evse/automation_current", &automation_current);
     api.addCommand("evse/automation_current_update", &automation_current_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
@@ -818,19 +842,17 @@ void EvseCommon::register_urls()
 void EvseCommon::register_events()
 {
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (automation.has_task_with_trigger(AutomationTriggerID::ChargerState)) {
-        event.registerEvent("evse/state", {}, [this](const Config *cfg) {
-            // we need this since not only iec state changes trigger this api event.
-            static uint32_t last_state = 0;
-            uint32_t state_now = cfg->get("charger_state")->asUint();
-            uint32_t states[2] = {last_state, state_now};
-            if (last_state != state_now) {
-                automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
-                last_state = state_now;
-            }
-            return EventResult::OK;
-        });
-    }
+    event.registerEvent("evse/state", {}, [this](const Config *cfg) {
+        // we need this since not only iec state changes trigger this api event.
+        static uint32_t last_state = 0;
+        uint32_t state_now = cfg->get("charger_state")->asUint();
+        uint32_t states[2] = {last_state, state_now};
+        if (last_state != state_now) {
+            automation.trigger(AutomationTriggerID::ChargerState, (void *)states, this);
+            last_state = state_now;
+        }
+        return EventResult::OK;
+    });
 
     if (!automation.has_task_with_action(AutomationActionID::SetCurrent)) {
         bool slot_enabled = false;

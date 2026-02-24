@@ -237,8 +237,6 @@ static bool trigger_needs_reboot(AutomationTriggerID id)
 {
     switch (id) {
         case AutomationTriggerID::MQTT:
-        case AutomationTriggerID::ChargerState:
-        case AutomationTriggerID::EVSEExternalCurrentWd:
             return true;
         default:
             return false;
@@ -248,7 +246,6 @@ static bool trigger_needs_reboot(AutomationTriggerID id)
 static bool action_needs_reboot(AutomationActionID id)
 {
     switch (id) {
-        case AutomationActionID::SetCurrent:
         case AutomationActionID::PMBlockCharge:
         case AutomationActionID::PMLimitMaxCurrent:
             return true;

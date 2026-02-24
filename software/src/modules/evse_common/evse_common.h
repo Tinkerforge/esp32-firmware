@@ -241,6 +241,11 @@ private:
     void send_cm_client_update();
 
     bool use_imexsum = false;
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    uint64_t wd_trigger_task_id = 0;
+    void handle_external_current_wd_task();
+#endif
 };
 
 #include "module_available_end.h"
