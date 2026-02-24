@@ -67,6 +67,7 @@ private:
     int8_t key_id;
 
     bool connected = false;
+    uint8_t connected_interface_mask = 0;
 
     bool ethernet_connected = false;
     bool wifi_sta_connected = false;

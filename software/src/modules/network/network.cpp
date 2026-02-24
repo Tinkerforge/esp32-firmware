@@ -192,9 +192,21 @@ void Network::register_events()
 
 void Network::update_connected()
 {
-    connected = ethernet_connected || wifi_sta_connected || wifi_ap_sta_count > 0;
+    uint8_t new_mask = (ethernet_connected ? 1 : 0)
+                     | (wifi_sta_connected ? 2 : 0)
+                     | ((wifi_ap_sta_count > 0) ? 4 : 0);
 
-    if (state.get("connected")->updateBool(connected)) {
+    connected = (new_mask != 0);
+    bool value_changed   = state.get("connected")->updateBool(connected);
+    bool interface_added = connected && !value_changed && ((new_mask & ~connected_interface_mask) != 0);
+
+    if (interface_added) {
+        state.get("connected")->set_updated(0xFF);
+    }
+
+    connected_interface_mask = new_mask;
+
+    if (value_changed || interface_added) {
         if (connected) {
             char connections_str[24];
             StringWriter str{connections_str, ARRAY_SIZE(connections_str)};
