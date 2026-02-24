@@ -109,14 +109,16 @@ public:
     bool handle_charge_log_send_packet(PacketType type, NackReason nack_reason);
 
     // Initiates the charge log send state machine.
-    // Stores the metadata context and sends RequestChargeLogSend.
+    // Stores the metadata context and sends RequestChargeLogSend with a config hash.
+    // config_hash: SHA-256 hash of the generation config + month (32 bytes).
     // Returns true if the request was sent successfully.
     bool start_charge_log_send_sm(const char *filename, size_t filename_len,
                                   const char *display_name, size_t display_name_len,
                                   const uint8_t user_uuid[16],
                                   Language language,
-                                  bool is_monthly_email = false);
-                                
+                                  bool is_monthly_email,
+                                  const uint8_t config_hash[32]);
+
     int generate_pdf(std::function<int(const void *buffer, size_t len)> &&callback, int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, Language language, const char *letterhead, int letterhead_lines, WebServerRequest *request);
 
 #endif
@@ -133,6 +135,8 @@ public:
     std::mutex pdf_mutex;
 
     ChargeLogSendContext charge_log_send_ctx;
+    std::unique_ptr<RemoteUploadRequest> remote_upload_request;
+    std::unique_ptr<ChargeLogGenerationLockHelper> pending_generation_lock;
 
 private:
     bool repair_last(float, const char *);
@@ -146,8 +150,6 @@ private:
 
     std::vector<ChargeWithLocation> oldest_charges_per_directory;
     uint32_t total_charge_log_files;
-
-    std::unique_ptr<RemoteUploadRequest> remote_upload_request;
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     // Sends the MetadataForChargeLog packet using data stored in charge_log_send_ctx.

@@ -26,6 +26,7 @@
 #include <stdlib_noniso.h>
 #include <algorithm>
 #include <lwip/sockets.h>
+#include <mbedtls/sha256.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -110,6 +111,51 @@ static int read_letterhead_lines(char *letterhead) {
         }
     }
     return letterhead_lines;
+}
+
+// Compute a SHA-256 hash over the charge log generation config fields + the month.
+// The hash is used by the backend for deduplication of charge log uploads.
+static void compute_charge_log_hash(
+    uint8_t out_hash[32],
+    FileType file_type,
+    Language language,
+    const char *letterhead,
+    int user_filter,
+    int device_filter,
+    CSVFlavor csv_delimiter,
+    uint32_t start_timestamp_min,
+    uint32_t end_timestamp_min)
+{
+    const size_t letterhead_len = letterhead ? strlen(letterhead) : 0;
+    const size_t fixed_size = 1 + 1 + 1 + 1 + 1 + sizeof(uint32_t) + sizeof(uint32_t); // 13 bytes
+    const size_t total_size = fixed_size + letterhead_len;
+
+    uint8_t stack_buf[64];
+    uint8_t *buf;
+    std::unique_ptr<uint8_t[]> heap_buf;
+    if (total_size <= sizeof(stack_buf)) {
+        buf = stack_buf;
+    } else {
+        heap_buf.reset(new uint8_t[total_size]);
+        buf = heap_buf.get();
+    }
+
+    size_t offset = 0;
+    buf[offset++] = static_cast<uint8_t>(file_type);
+    buf[offset++] = static_cast<uint8_t>(language);
+    buf[offset++] = static_cast<uint8_t>(static_cast<int8_t>(user_filter));
+    buf[offset++] = static_cast<uint8_t>(static_cast<int8_t>(device_filter));
+    buf[offset++] = static_cast<uint8_t>(csv_delimiter);
+    memcpy(buf + offset, &start_timestamp_min, sizeof(start_timestamp_min));
+    offset += sizeof(start_timestamp_min);
+    memcpy(buf + offset, &end_timestamp_min, sizeof(end_timestamp_min));
+    offset += sizeof(end_timestamp_min);
+    if (letterhead_len > 0) {
+        memcpy(buf + offset, letterhead, letterhead_len);
+        offset += letterhead_len;
+    }
+
+    mbedtls_sha256(buf, offset, out_hash, 0); // 0 = SHA-256
 }
 
 String chargeRecordFilename(uint32_t i, const char *directory)
@@ -2056,15 +2102,104 @@ static void upload_charge_logs_task(void *arg)
             upload_request->user_filter = upload_args->user_filter;
             upload_request->remote_access_user_uuid = user_uuid;
 
-            // TODO: Implement state-driven upload mechanism integration
-            // charge_tracker.start_charge_log_send_sm(...);
+            // Read config parameters for this user
+            task_scheduler.await([&upload_request, user_idx]() {
+                Config::Wrap charge_log_send = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
+                upload_request->language = charge_log_send->get("language")->asEnum<Language>();
+                upload_request->file_type = charge_log_send->get("file_type")->asEnum<FileType>();
+                upload_request->csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
+                upload_request->user_filter = charge_log_send->get("user_filter")->asInt();
+                upload_request->device_filter = charge_log_send->get("device_filter")->asInt();
+
+                if (upload_request->file_type == FileType::PDF) {
+                    const String &letterhead_string = charge_log_send->get("letterhead")->asString();
+                    const size_t letterhead_terminated_length = letterhead_string.length() + 1;
+                    upload_request->letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+                    strncpy(upload_request->letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+                }
+            });
+
+            // Parse user UUID
+            uint8_t parsed_uuid[16] = {0};
+            if (!remote_access.parse_uuid_string(user_uuid.c_str(), parsed_uuid)) {
+                logger.printfln("Invalid remote access user UUID for monthly upload: %s", user_uuid.c_str());
+                continue;
+            }
+
+            // Build filename and get display name
+            String filename;
+            String display_name;
+            task_scheduler.await([&filename, &display_name, &upload_request]() {
+                display_name = device_name.display_name.get("display_name")->asString();
+                filename = build_filename(((time_t)upload_request->start_timestamp_min) * 60, ((time_t)upload_request->end_timestamp_min) * 60, upload_request->file_type, upload_request->language);
+            });
+
+            // Compute config hash before moving upload_request
+            uint8_t config_hash[32];
+            compute_charge_log_hash(config_hash,
+                upload_request->file_type,
+                upload_request->language,
+                upload_request->letterhead ? upload_request->letterhead.get() : nullptr,
+                upload_request->user_filter,
+                upload_request->device_filter,
+                upload_request->csv_delimiter,
+                upload_request->start_timestamp_min,
+                upload_request->end_timestamp_min);
+
+            // Initiate the management connection state machine for monthly email
+            bool sm_started = false;
+            task_scheduler.await([&sm_started, &filename, &display_name, &parsed_uuid, &upload_request, &config_hash]() {
+                charge_tracker.remote_upload_request = std::move(upload_request);
+                sm_started = charge_tracker.start_charge_log_send_sm(
+                    filename.c_str(), filename.length(),
+                    display_name.c_str(), display_name.length(),
+                    parsed_uuid, charge_tracker.remote_upload_request->language, true,
+                    config_hash);
+
+                if (!sm_started) {
+                    charge_tracker.remote_upload_request = nullptr;
+                }
+            });
+
+            if (!sm_started) {
+                logger.printfln("Failed to start charge log send for monthly upload user %d", user_idx);
+                continue;
+            }
+
+            // Wait for the state machine to complete (timeout after 5 minutes)
+            constexpr uint32_t SEND_TIMEOUT_MS = 5 * 60 * 1000;
+            const TickType_t start_tick = xTaskGetTickCount();
+            bool success = false;
+
+            while ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS < SEND_TIMEOUT_MS) {
+                ChargeLogSendState state = charge_tracker.charge_log_send_ctx.state;
+                if (state == ChargeLogSendState::Done) {
+                    success = true;
+                    break;
+                } else if (state == ChargeLogSendState::Error) {
+                    logger.printfln("Monthly charge log upload for user %d failed (error %u)",
+                                    user_idx, static_cast<uint8_t>(charge_tracker.charge_log_send_ctx.error_code));
+                    break;
+                }
+                vTaskDelay(500 / portTICK_PERIOD_MS);
+            }
+
+            if (success) {
+                task_scheduler.await([user_idx]() {
+                    charge_tracker.config.get("remote_upload_configs")->get(user_idx)->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+                    API::writeConfig("charge_tracker/config", &charge_tracker.config);
+                });
+                logger.printfln("Monthly charge log upload for user %d completed successfully", user_idx);
+            } else if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS >= SEND_TIMEOUT_MS) {
+                logger.printfln("Monthly charge log upload for user %d timed out", user_idx);
+            }
+
 #if MODULE_WATCHDOG_AVAILABLE()
             watchdog.reset(wd_handle);
 #endif
         }
     } else {
-        // TODO: Implement state-driven upload mechanism integration
-        // charge_tracker.start_charge_log_send_sm(...);
+        esp_system_abort("BUG! The manual upload should be handled by start_charge_log_upload_for_user");
 #if MODULE_WATCHDOG_AVAILABLE()
         watchdog.reset(wd_handle);
 #endif
@@ -2087,6 +2222,15 @@ static void charge_log_send_tcp_task(void *arg)
         return;
     }
 
+    // Helper: destructors are not called after vTaskDelete, so we must release upload_args explicitly.
+    auto cleanup_and_delete_task = [&upload_args]() {
+        if (charge_tracker.charge_log_send_ctx.state == ChargeLogSendState::Error) {
+            charge_tracker.pending_generation_lock.reset();
+        }
+        upload_args = nullptr;
+        vTaskDelete(NULL);
+    };
+
     int tcp_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_sock < 0) {
         logger.printfln("Failed to create TCP socket for charge log: %s (%i)", strerror(errno), errno);
@@ -2095,7 +2239,7 @@ static void charge_log_send_tcp_task(void *arg)
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             push_upload_result_error(upload_args->cookie, "Failed to create TCP socket");
         }
-        vTaskDelete(NULL);
+        cleanup_and_delete_task();
         return;
     }
 
@@ -2114,7 +2258,7 @@ static void charge_log_send_tcp_task(void *arg)
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             push_upload_result_error(upload_args->cookie, "Failed to bind TCP socket");
         }
-        vTaskDelete(NULL);
+        cleanup_and_delete_task();
         return;
     }
 
@@ -2139,7 +2283,7 @@ static void charge_log_send_tcp_task(void *arg)
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             push_upload_result_error(upload_args->cookie, "Failed to connect TCP socket");
         }
-        vTaskDelete(NULL);
+        cleanup_and_delete_task();
         return;
     }
 
@@ -2152,17 +2296,16 @@ static void charge_log_send_tcp_task(void *arg)
             return -1;
         }
 
-        logger.printfln("Sending chunk of size %u to TCP socket", len);
         const uint8_t *data = static_cast<const uint8_t *>(buf);
-        size_t total_sent = 0;
-        while (total_sent < len) {
-            int sent = send(tcp_sock, data + total_sent, len - total_sent, 0);
+        size_t chunk_sent = 0;
+        while (chunk_sent < len) {
+            int sent = send(tcp_sock, data + chunk_sent, len - chunk_sent, 0);
             if (sent <= 0) {
                 logger.printfln("TCP send error: %s (%i)", strerror(errno), errno);
                 send_error = true;
                 return -1;
             }
-            total_sent += sent;
+            chunk_sent += sent;
         }
         return 0;
     };
@@ -2212,16 +2355,15 @@ static void charge_log_send_tcp_task(void *arg)
         if (upload_args->use_format_overrides && upload_args->cookie != 0) {
             push_upload_result_error(upload_args->cookie, "TCP send error during data transfer");
         }
-        vTaskDelete(NULL);
+        cleanup_and_delete_task();
         return;
     }
 
-    shutdown(tcp_sock, SHUT_WR);
     close(tcp_sock);
     charge_tracker.charge_log_send_ctx.tcp_sock = -1;
     charge_tracker.charge_log_send_ctx.state = ChargeLogSendState::WaitingForFinalAck;
 
-    vTaskDelete(NULL);
+    cleanup_and_delete_task();
     return;
 }
 
@@ -2263,25 +2405,22 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     }
 
     // Build filename for the charge log
-    time_t t_now = time(nullptr);
-    char filename_buf[128];
-    StringWriter filename_writer(filename_buf, sizeof(filename_buf));
-
-    tm local_time;
-    localtime_r(&t_now, &local_time);
-
-    filename_writer.printf("charge-log-%04d-%02d-%02d",
-                           1900 + local_time.tm_year,
-                           1 + local_time.tm_mon,
-                           local_time.tm_mday);
-
-    String filename = filename_writer.toString();
+    String filename = build_filename(((time_t)start_timestamp_min) * 60, ((time_t)end_timestamp_min) * 60, file_type, language);
     String display_name = device_name.display_name.get("display_name")->asString();
+
+    // Compute config hash for deduplication
+    uint8_t config_hash[32];
+    compute_charge_log_hash(config_hash,
+        file_type, language,
+        letterhead ? letterhead.get() : nullptr,
+        user_filter, device_filter,
+        csv_delimiter,
+        start_timestamp_min, end_timestamp_min);
 
     // Initiate the charge log send state machine
     if (!start_charge_log_send_sm(filename.c_str(), filename.length(),
                                    display_name.c_str(), display_name.length(),
-                                   user_uuid, language, false)) {
+                                   user_uuid, language, false, config_hash)) {
         logger.printfln("Failed to initiate charge log send state machine");
         // If the state machine couldn't be started, notify and return
         if (cookie != 0) {
@@ -2302,8 +2441,8 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
     remote_upload_request->csv_delimiter = csv_delimiter;
     remote_upload_request->use_format_overrides = true;
     remote_upload_request->letterhead = std::move(letterhead);
-    remote_upload_request->generation_lock = std::move(generation_lock);
     remote_upload_request->remote_access_user_uuid = remote_access_user_uuid;
+    pending_generation_lock = std::move(generation_lock);
 }
 
 bool ChargeTracker::send_metadata_from_ctx()
@@ -2355,7 +2494,8 @@ bool ChargeTracker::start_charge_log_send_sm(
     const char *display_name, size_t display_name_len,
     const uint8_t user_uuid[16],
     Language language,
-    bool is_monthly_email)
+    bool is_monthly_email,
+    const uint8_t config_hash[32])
 {
     if (!remote_access.is_mgmt_connected()) {
         logger.printfln("Cannot send charge log: management connection not established");
@@ -2390,15 +2530,16 @@ bool ChargeTracker::start_charge_log_send_sm(
     charge_log_send_ctx.lang[0] = static_cast<uint8_t>(lang_str[0]);
     charge_log_send_ctx.lang[1] = static_cast<uint8_t>(lang_str[1]);
 
-    // Send RequestChargeLogSend
-    management_packet_header request_header;
-    request_header.magic = 0x1234;
-    request_header.length = 0;
-    request_header.seq_num = 0;
-    request_header.version = 1;
-    request_header.type = PacketType::RequestChargeLogSend;
+    // Send RequestChargeLogSend with config hash
+    request_charge_log_send_packet request_pkt;
+    request_pkt.header.magic = 0x1234;
+    request_pkt.header.length = sizeof(request_pkt.hash);
+    request_pkt.header.seq_num = 0;
+    request_pkt.header.version = 1;
+    request_pkt.header.type = PacketType::RequestChargeLogSend;
+    memcpy(request_pkt.hash, config_hash, 32);
 
-    int ret = remote_access.send_to_mgmt_server(&request_header, sizeof(request_header));
+    int ret = remote_access.send_to_mgmt_server(&request_pkt, sizeof(request_pkt));
     if (ret < 0) {
         logger.printfln("Failed to send charge log request: %s (%i)", strerror(errno), errno);
         charge_log_send_ctx.state = ChargeLogSendState::Error;
@@ -2406,7 +2547,7 @@ bool ChargeTracker::start_charge_log_send_sm(
         return false;
     }
 
-    logger.printfln("Sent RequestChargeLogSend packet");
+    logger.printfln("Sent RequestChargeLogSend packet with config hash");
     charge_log_send_ctx.state = ChargeLogSendState::RequestSent;
     return true;
 }
@@ -2431,6 +2572,22 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
     switch (charge_log_send_ctx.state) {
         case ChargeLogSendState::RequestSent: {
             if (type == PacketType::Nack) {
+                if (nack_reason == NackReason::AlreadySent) {
+                    logger.printfln("Charge log already sent, updating last_upload_timestamp_min");
+                    if (remote_upload_request && !remote_upload_request->use_format_overrides && remote_upload_request->config_index >= 0) {
+                        int8_t cfg_idx = remote_upload_request->config_index;
+                        config.get("remote_upload_configs")->get(static_cast<uint8_t>(cfg_idx))->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+                        API::writeConfig("charge_tracker/config", &config);
+                    }
+                    if (remote_upload_request && remote_upload_request->use_format_overrides && remote_upload_request->cookie != 0) {
+                        push_upload_result_success(remote_upload_request->cookie);
+                    }
+                    charge_log_send_ctx.state = ChargeLogSendState::Done;
+                    remote_upload_request.reset();
+                    pending_generation_lock.reset();
+                    return true;
+                }
+
                 charge_log_send_ctx.nack_reason = nack_reason;
                 charge_log_send_ctx.error_code = ChargeLogSendError::RequestRejected;
                 charge_log_send_ctx.state = ChargeLogSendState::Error;
@@ -2450,6 +2607,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
+                pending_generation_lock.reset();
                 return true;
             }
 
@@ -2458,6 +2616,8 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                 if (!send_metadata_from_ctx()) {
                     charge_log_send_ctx.error_code = ChargeLogSendError::SendMetadataFailed;
                     charge_log_send_ctx.state = ChargeLogSendState::Error;
+                    remote_upload_request.reset();
+                    pending_generation_lock.reset();
                     return true;
                 }
                 charge_log_send_ctx.state = ChargeLogSendState::MetadataSent;
@@ -2484,6 +2644,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
+                pending_generation_lock.reset();
                 return true;
             }
             return false;
@@ -2497,8 +2658,6 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     charge_log_send_ctx.state = ChargeLogSendState::Error;
                     return true;
                 }
-
-                logger.printfln("Here!!!!");
 
                 RemoteUploadRequest *args = remote_upload_request.get();
                 const BaseType_t ret = xTaskCreatePinnedToCore(
@@ -2518,6 +2677,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                         push_upload_result_error(remote_upload_request->cookie, "Failed to start charge log send task");
                     }
                     remote_upload_request.reset();
+                    pending_generation_lock.reset();
                     return true;
                 }
 
@@ -2536,6 +2696,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
+                pending_generation_lock.reset();
                 return true;
             }
             return false;
@@ -2545,6 +2706,8 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
             if (type == PacketType::Ack) {
                 charge_log_send_ctx.state = ChargeLogSendState::Done;
                 logger.printfln("Charge log send completed successfully");
+                remote_upload_request.reset();
+                pending_generation_lock.reset();
                 return true;
             }
             if (type == PacketType::Nack) {
@@ -2559,6 +2722,7 @@ bool ChargeTracker::handle_charge_log_send_packet(PacketType type, NackReason na
                     push_upload_result_error(remote_upload_request->cookie, err_msg);
                 }
                 remote_upload_request.reset();
+                pending_generation_lock.reset();
                 return true;
             }
             return false;
@@ -2971,6 +3135,20 @@ static bool should_include_directory_for_device_filter(int device_filter, const 
 
 ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count)
 {
+    // Get configured users for filtering deleted users
+    // Do this before acquiring the mutex to avoid deadlocks during the main task
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    auto await_result = task_scheduler.await([configured_users]() mutable {
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+    });
+    if (await_result == TaskScheduler::AwaitResult::Timeout) {
+        logger.printfln("Failed to get configured users: Task timed out");
+        *out_count = 0;
+        return nullptr;
+    }
+
     std::lock_guard<std::mutex> lock{records_mutex};
 
     const size_t max_records_per_file = CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE;
@@ -3038,20 +3216,6 @@ ExportCharge *ChargeTracker::getFilteredCharges(int user_filter, int device_filt
     }
 
     size_t charge_count = 0;
-
-    // Get configured users for filtering deleted users
-    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-    auto await_result = task_scheduler.await([configured_users]() mutable {
-        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-        }
-    });
-    if (await_result == TaskScheduler::AwaitResult::Timeout) {
-        logger.printfln("Failed to get configured users: Task timed out");
-        free_any(charges);
-        *out_count = 0;
-        return nullptr;
-    }
 
     // Helper lambda to read charges from a directory
     auto read_directory_charges = [this, &charges, &charge_count, max_charges, user_filter, start_timestamp_min, end_timestamp_min, configured_users](const char *directory) {

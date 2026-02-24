@@ -95,6 +95,13 @@ struct [[gnu::packed]] nack_packet {
     NackReason reason;
 };
 
+// Request to send charge log packet with configuration hash
+// hash: SHA-256 hash of the configuration and month used to send (32 bytes binary)
+struct [[gnu::packed]] request_charge_log_send_packet {
+    management_packet_header header;
+    uint8_t hash[32];  // SHA-256 hash (32 bytes binary, includes month)
+};
+
 // Charge log metadata packet from backend/src/udp_server/packet.rs
 // This is a variable-length packet with the following structure:
 // - header: management_packet_header (8 bytes)
