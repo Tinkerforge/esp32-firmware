@@ -742,8 +742,9 @@ bool Mqtt::create_client()
             logger.printfln("Certificate with ID %d is not available", cert_id);
             return false;
         }
-        // TODO: Track and free on reconfigure to avoid leak.
-        mqtt_cfg.broker.verification.certificate = (const char *)cert.release();
+        // Track the buffer so it can be freed in stop_and_destroy_client().
+        broker_cert_buf = cert.release();
+        mqtt_cfg.broker.verification.certificate = (const char *)broker_cert_buf;
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -765,8 +766,9 @@ bool Mqtt::create_client()
             logger.printfln("Client certificate with ID %d is not available", client_cert_id);
             return false;
         }
-        // Leak cert here: MQTT requires the buffer to live forever.
-        mqtt_cfg.credentials.authentication.certificate = (const char *)cert.release();
+        // Track the buffer so it can be freed in stop_and_destroy_client().
+        client_cert_buf = cert.release();
+        mqtt_cfg.credentials.authentication.certificate = (const char *)client_cert_buf;
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -785,8 +787,9 @@ bool Mqtt::create_client()
             logger.printfln("Client key with ID %d is not available", client_key_id);
             return false;
         }
-        // Leak cert here: MQTT requires the buffer to live forever.
-        mqtt_cfg.credentials.authentication.key = (const char *)cert.release();
+        // Track the buffer so it can be freed in stop_and_destroy_client().
+        client_key_buf = cert.release();
+        mqtt_cfg.credentials.authentication.key = (const char *)client_key_buf;
 #else
         // defense in depth: it should not be possible to arrive here because in case
         // that the certs module is not available the cert_id should always be -1
@@ -827,6 +830,15 @@ void Mqtt::stop_and_destroy_client()
     esp_mqtt_client_destroy(client);
     client = nullptr;
     initial_network_event_seen = false;
+
+    // Free certificate/key buffers that were allocated in create_client().
+    // Must happen after esp_mqtt_client_destroy() since the client references them.
+    delete[] broker_cert_buf;
+    broker_cert_buf = nullptr;
+    delete[] client_cert_buf;
+    client_cert_buf = nullptr;
+    delete[] client_key_buf;
+    client_key_buf = nullptr;
 
     state.get("connection_state")->updateEnum(MqttConnectionState::NotConfigured);
 }
