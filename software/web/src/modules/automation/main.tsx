@@ -63,13 +63,6 @@ const TRIGGERS_REQUIRING_REBOOT: Set<number> = new Set([
 ]);
 
 const ACTIONS_REQUIRING_REBOOT: Set<number> = new Set([
-    // PMBlockCharge (15): The power manager is force-enabled at boot (power_manager.cpp)
-    // if this action exists. Adding at runtime with PM disabled means the action won't work.
-    AutomationActionID.PMBlockCharge,
-
-    // PMLimitMaxCurrent (14): Same as PMBlockCharge - the power manager is only
-    // force-enabled at boot time if this action type is present.
-    AutomationActionID.PMLimitMaxCurrent,
 ]);
 
 function configNeedsReboot(tasks: Task[]): boolean {

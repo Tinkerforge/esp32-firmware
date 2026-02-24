@@ -141,11 +141,11 @@ void Automation::setup()
                 }
             }
 
-            // Only apply the config live if the set of reboot-requiring trigger/action
+            // Only apply the config live if the set of reboot-requiring trigger
             // types hasn't changed since boot. If the same types are present, boot-time
             // initialization already happened and live-apply is safe.
             auto new_types = get_reboot_types(cfg);
-            if ((new_types.actions == this->boot_reboot_types.actions) && (new_types.triggers == this->boot_reboot_types.triggers)) {
+            if (new_types.triggers == this->boot_reboot_types.triggers) {
                 task_scheduler.scheduleOnce([this]() {
                     this->apply_config();
                 });
@@ -243,31 +243,15 @@ static bool trigger_needs_reboot(AutomationTriggerID id)
     }
 }
 
-static bool action_needs_reboot(AutomationActionID id)
-{
-    switch (id) {
-        case AutomationActionID::PMBlockCharge:
-        case AutomationActionID::PMLimitMaxCurrent:
-            return true;
-        default:
-            return false;
-    }
-}
 
 Automation::RebootTypeSet Automation::get_reboot_types(const Config &cfg)
 {
-    RebootTypeSet set = {0, 0};
+    RebootTypeSet set = {0};
     for (const Config &task : cfg.get("tasks")) {
         const Config *trigger = static_cast<const Config *>(task.get("trigger"));
         AutomationTriggerID tid = trigger->getTag<AutomationTriggerID>();
         if (trigger_needs_reboot(tid)) {
             set.triggers |= 1u << static_cast<uint8_t>(tid);
-        }
-
-        const Config *action = static_cast<const Config *>(task.get("action"));
-        AutomationActionID aid = action->getTag<AutomationActionID>();
-        if (action_needs_reboot(aid)) {
-            set.actions |= 1u << static_cast<uint8_t>(aid);
         }
     }
     return set;

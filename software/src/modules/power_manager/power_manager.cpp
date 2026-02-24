@@ -514,6 +514,22 @@ void PowerManager::register_urls()
             state.get("external_control")->updateUint(ext_state);
         }, 1_s, 1_s);
     }
+
+#if MODULE_AUTOMATION_AVAILABLE()
+    automation.register_on_config_applied([this]() {
+        if (!config.get("enabled")->asBool()) {
+            return;
+        }
+
+        if (!automation.has_task_with_action(AutomationActionID::PMLimitMaxCurrent)) {
+            reset_max_current_limit();
+        }
+
+        if (!automation.has_task_with_action(AutomationActionID::PMBlockCharge)) {
+            charging_blocked.combined = 0;
+        }
+    });
+#endif
 }
 
 void PowerManager::register_phase_switcher_backend(PhaseSwitcherBackend *backend)

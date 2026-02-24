@@ -75,10 +75,9 @@ private:
 
     struct RebootTypeSet {
         uint32_t triggers;
-        uint32_t actions;
     };
     static RebootTypeSet get_reboot_types(const Config &cfg);
-    RebootTypeSet boot_reboot_types = {0, 0};
+    RebootTypeSet boot_reboot_types = {0};
 
     Config config_tasks_prototype;
     Config state_actions_prototype;
