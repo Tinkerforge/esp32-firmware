@@ -32,7 +32,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void loop() override;
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;
@@ -60,6 +59,5 @@ private:
     eth_runtime *runtime_data = nullptr;
     bool eth_started = false;
 
-    micros_t reconnect_deadline = 0_us;
-    micros_t reconnect_connection_start = 0_us;
+    uint64_t reconnect_task_id = 0;
 };

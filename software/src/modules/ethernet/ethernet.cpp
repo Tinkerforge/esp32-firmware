@@ -219,7 +219,7 @@ void Ethernet::setup()
 
             task_scheduler.scheduleOnce([this, link_speed, full_duplex]() {
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("link_speed" )->updateUint(link_speed);
+                state.get("link_speed")->updateUint(link_speed);
                 state.get("full_duplex")->updateBool(full_duplex);
 
 #if MODULE_WIFI_AVAILABLE()
@@ -265,8 +265,13 @@ void Ethernet::setup()
                     // network.cpp (which fires on_network_connected(false), making modules release
                     // old connections).
                     state.get("connection_state")->updateEnum(EthernetState::Connecting);
-                    this->reconnect_deadline = calculate_deadline(1_s);
-                    this->reconnect_connection_start = now;
+                    task_scheduler.cancel(this->reconnect_task_id);
+                    this->reconnect_task_id = task_scheduler.scheduleOnce(
+                        [this, now]() {
+                            state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
+                            state.get("connection_start")->updateUptime(now);
+                        },
+                        1000_ms);
                 } else {
                     state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                     state.get("connection_start")->updateUptime(now);
@@ -296,7 +301,7 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, now]() {
-                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
+                task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
@@ -314,7 +319,7 @@ void Ethernet::setup()
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now]() {
-                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
+                task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
@@ -335,7 +340,7 @@ void Ethernet::setup()
                 : EthernetState::NotConfigured;
 
             task_scheduler.scheduleOnce([this, now_ms]() {
-                this->reconnect_deadline = 0_us; // Cancel pending IP-change reconnect
+                task_scheduler.cancel(this->reconnect_task_id); // Cancel pending IP-change reconnect
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("connection_end")->updateUint(now_ms);
             });
@@ -351,15 +356,6 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
-}
-
-void Ethernet::loop()
-{
-    if (reconnect_deadline != 0_us && deadline_elapsed(reconnect_deadline)) {
-        reconnect_deadline = 0_us;
-        state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-        state.get("connection_start")->updateUptime(this->reconnect_connection_start);
-    }
 }
 
 EthernetState Ethernet::get_connection_state() const
