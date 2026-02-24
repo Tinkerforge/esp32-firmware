@@ -227,6 +227,10 @@ void Automation::apply_config()
     }
 
     handle_cron_task();
+
+    for (const auto &callback : on_config_applied_callbacks) {
+        callback();
+    }
 }
 
 static bool trigger_needs_reboot(AutomationTriggerID id)
@@ -458,6 +462,11 @@ bool Automation::has_task_with_action(AutomationActionID number)
         }
     }
     return false;
+}
+
+void Automation::register_on_config_applied(std::function<void()> &&callback)
+{
+    on_config_applied_callbacks.push_back(std::move(callback));
 }
 
 Automation::ConfigVec Automation::get_configured_triggers(AutomationTriggerID number)

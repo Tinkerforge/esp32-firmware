@@ -67,6 +67,8 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
     ConfigVec get_configured_triggers(AutomationTriggerID number);
 
+    void register_on_config_applied(std::function<void()> &&callback);
+
 private:
     void apply_config();
     void handle_cron_task();
@@ -93,4 +95,5 @@ private:
 
     std::vector<uint64_t> pending_delayed_tasks;
     uint64_t cron_task_id = 0;
+    std::vector<std::function<void()>> on_config_applied_callbacks;
 };
