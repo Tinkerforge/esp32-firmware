@@ -9,7 +9,13 @@ let x = {
             "not_configured": "Deaktiviert",
             "not_connected": "Getrennt",
             "connected": "Verbunden",
-            "error": "Fehler"
+            "error": "Fehler",
+            "broker": "Broker",
+            "topic_prefix": "Topic-Präfix",
+            "disabled": "Deaktiviert",
+            "no_topic_prefix": "Keins",
+            "connected_since": "Verbunden seit",
+            "disconnected_since": "Getrennt seit"
         },
         "navbar": {
             "mqtt": "MQTT"

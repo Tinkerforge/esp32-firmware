@@ -22,5 +22,7 @@ export interface auto_discovery_config {
 
 export interface state {
     connection_state: number;
+    connection_start: number;
+    connection_end: number;
     last_error: number;
 }

@@ -24,7 +24,6 @@ import * as util from "../../ts/util";
 import { h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
@@ -91,9 +90,64 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
         let cert_state = API.get_unchecked('certs/state');
         let certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name]) as [string, string][];
 
+        const mqtt_state = API.get("mqtt/state");
+        const saved_config = API.get("mqtt/config");
+        const uptime = API.get("info/keep_alive").uptime;
+        const is_connected = mqtt_state.connection_state === MqttConnectionState.Connected;
+        const is_error = mqtt_state.connection_state === MqttConnectionState.Error;
+
+        // Show "connected since" or "disconnected since" duration
+        let connection_duration = "";
+        if (is_connected && mqtt_state.connection_start > 0) {
+            connection_duration = util.format_timespan_ms(uptime - mqtt_state.connection_start);
+        } else if (!is_connected && mqtt_state.connection_end > 0) {
+            connection_duration = util.format_timespan_ms(uptime - mqtt_state.connection_end);
+        }
+
+        let broker_str = saved_config.broker_host;
+        if (saved_config.broker_port > 0) {
+            broker_str += ":" + saved_config.broker_port;
+        }
+
         return (
-            <SubPage name="mqtt">
-                <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+            <SubPage name="mqtt" title={__("mqtt.content.mqtt")}>
+                <SubPage.Status>
+                    <FormRow label={__("mqtt.status.connection")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={mqtt_state.connection_state}
+                            items={[
+                                ["primary", __("mqtt.status.not_configured")],
+                                ["danger",  __("mqtt.status.not_connected")],
+                                ["success", __("mqtt.status.connected")],
+                                ["danger",  __("mqtt.status.error") + (is_error ? " (" + mqtt_state.last_error + ")" : "")],
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.status.broker")}>
+                        <InputText value={saved_config.enable_mqtt ? broker_str : __("mqtt.status.disabled")} />
+                    </FormRow>
+
+                    <FormRow label={__("mqtt.status.topic_prefix")}>
+                        <InputText value={saved_config.global_topic_prefix || __("mqtt.status.no_topic_prefix")} />
+                    </FormRow>
+
+                    {saved_config.enable_mqtt && connection_duration.length > 0 &&
+                        <FormRow label={is_connected ? __("mqtt.status.connected_since") : __("mqtt.status.disconnected_since")}>
+                            <InputText value={connection_duration} />
+                        </FormRow>
+                    }
+                </SubPage.Status>
+
+                <SubPage.Config
+                    id="mqtt_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
+
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
                         <Switch desc={__("mqtt.content.enable_mqtt_desc")()}
                                 checked={state.enable_mqtt}
@@ -255,7 +309,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
                                 />
                     </FormRow>
 {/*#endif*/}
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         );
     }
