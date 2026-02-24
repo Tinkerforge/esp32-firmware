@@ -85,7 +85,7 @@ let wallet_icon = <svg width="24" height="24" fill="none" stroke="currentColor" 
 
 let wallbox_icon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="feather feather-type2"><path d="M23 10.846c0 6.022-4.925 10.904-11 10.904S1 16.868 1 10.846c0-1.506.308-2.94.864-4.244C2.143 5.95 2.88 4.75 2.88 4.75h18.243s.736 1.2 1.014 1.852c.556 1.304.864 2.738.864 4.244z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="8.5" r="1.5"/><circle cx="15" cy="8.5" r="1.5"/><circle cx="9" cy="16.75" r="2"/><circle cx="15" cy="16.75" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>
 
-function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number}) {
+function TrackedCharge(props: {charge: Charge, users: API.getType['users/config']['users'], electricity_price: number, local_device_name: string}) {
     const display_name = useMemo(
         () => {
             let result = __("charge_tracker.script.unknown_user");
@@ -103,6 +103,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
     );
 
     let have_charge_cost = props.electricity_price > 0 && props.charge.energy_charged != null;
+    let show_charger_name = props.charge.charger_name && props.charge.charger_name !== '' && props.charge.charger_name !== props.local_device_name;
 
     return <ListGroupItem>
         <div class="row justify-content-end">
@@ -116,7 +117,7 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <span class="ps-2"><BatteryCharging/></span>
             </div>
         </div>
-        <div class={"row justify-content-end" + ((props.charge.charger_name && props.charge.charger_name !== '') || (props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost   ? "" : " mb-n2")}>
+        <div class={"row justify-content-end" + (show_charger_name || have_charge_cost ? "" : " mb-n2")}>
             <div class="col-auto pe-2 mb-2">
                 <span class="pe-2"><Calendar/></span>
                 <span style={{verticalAlign: "middle"}}>{util.timestamp_min_to_date(props.charge.timestamp_minutes, __("charge_tracker.script.unknown_charge_start"))}</span>
@@ -127,16 +128,11 @@ function TrackedCharge(props: {charge: Charge, users: API.getType['users/config'
                 <span class="ps-2"><Clock/></span>
             </div>
         </div>
-        {(props.charge.charger_name && props.charge.charger_name !== '') || have_charge_cost ?
+        {show_charger_name || have_charge_cost ?
             <div class="row justify-content-end mb-n2">
-                {props.charge.charger_name && props.charge.charger_name !== '' ?
+                {show_charger_name ?
                     <div class="col-auto pe-2 mb-2">
                         <span class="pe-2">{wallbox_icon}</span>
-                        <span style="vertical-align: middle;">{props.charge.charger_name}</span>
-                    </div> : undefined}
-                {props.charge.charger_name && props.charge.charger_name !== '' ?
-                    <div class="col-auto pr-2 mb-2">
-                        <span class="pr-2">{wallbox_icon}</span>
                         <span style={{verticalAlign: "middle"}}>{props.charge.charger_name}</span>
                     </div> : undefined}
                 <div class="col px-0" />
@@ -262,8 +258,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
     get_last_charges(charges: Readonly<Charge[]>, price: number) {
         let users_config = API.get('users/config');
+        let local_device_name = API.get('info/display_name').display_name;
 
-        return charges.map(c => <TrackedCharge charge={c} users={users_config.users} electricity_price={price}/>)
+        return charges.map(c => <TrackedCharge charge={c} users={users_config.users} electricity_price={price} local_device_name={local_device_name}/>)
                       .reverse();
     }
 
@@ -884,6 +881,7 @@ export class ChargeTrackerStatus extends Component {
                     <TrackedCharge charge={charge}
                                     users={users}
                                     electricity_price={electricity_price}
+                                    local_device_name={API.get('info/display_name').display_name}
                                     />
                 </ListGroup>
             </FormRow>;
@@ -896,6 +894,7 @@ export class ChargeTrackerStatus extends Component {
                         <TrackedCharge charge={c}
                                         users={users}
                                         electricity_price={electricity_price}
+                                        local_device_name={API.get('info/display_name').display_name}
                                         />
                     ).reverse()}
                 </ListGroup>
