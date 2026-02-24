@@ -134,7 +134,6 @@ let x = {
             "last_run": "Run",
             "never": "Not since reboot",
             "not_yet_triggered": "Not yet triggered",
-            "needs_reboot": "Needs reboot",
             "delay": "Delay",
             "add_rule_title": "Add rule",
             "add_rule_message": /*SFN*/(have: number, max: number) => `${have} of ${max} rules configured`/*NF*/,
@@ -144,8 +143,7 @@ let x = {
             "preview": "Preview"
         },
         "script": {
-            "save_failed": "Failed to save automation settings.",
-            "reboot_content_changed": "automation settings"
+            "save_failed": "Failed to save automation settings."
         }
     }
 }

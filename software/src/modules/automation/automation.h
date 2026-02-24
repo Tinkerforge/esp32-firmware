@@ -73,12 +73,6 @@ private:
     void apply_config();
     void handle_cron_task();
 
-    struct RebootTypeSet {
-        uint32_t triggers;
-    };
-    static RebootTypeSet get_reboot_types(const Config &cfg);
-    RebootTypeSet boot_reboot_types = {0};
-
     Config config_tasks_prototype;
     Config state_actions_prototype;
     Config state_triggers_prototype;

@@ -130,7 +130,6 @@ let x = {
             "action": "Aktion",
             "last_run": "Ausführung",
             "never": "Nicht seit Neustart",
-            "needs_reboot": "Benötigt Neustart",
             "not_yet_triggered": "Noch nicht ausgelöst",
             "delay": "Verzögerung",
             "add_rule_title": "Regel hinzufügen",
@@ -141,8 +140,7 @@ let x = {
             "preview": "Vorschau"
         },
         "script": {
-            "save_failed": "Speichern der Automatisierungs-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Automatisierungs-Einstellungen"
+            "save_failed": "Speichern der Automatisierungs-Einstellungen fehlgeschlagen."
         }
     }
 }

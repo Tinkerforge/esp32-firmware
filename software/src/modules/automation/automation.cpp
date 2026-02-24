@@ -141,22 +141,15 @@ void Automation::setup()
                 }
             }
 
-            // Only apply the config live if the set of reboot-requiring trigger
-            // types hasn't changed since boot. If the same types are present, boot-time
-            // initialization already happened and live-apply is safe.
-            auto new_types = get_reboot_types(cfg);
-            if (new_types.triggers == this->boot_reboot_types.triggers) {
-                task_scheduler.scheduleOnce([this]() {
-                    this->apply_config();
-                });
-            }
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
 
             return "";
         }
     };
 
     api.restorePersistentConfig("automation/config", &config);
-    boot_reboot_types = get_reboot_types(config);
     config_in_use = config;
 
     const size_t task_count = config.get("tasks")->count();
@@ -231,30 +224,6 @@ void Automation::apply_config()
     for (const auto &callback : on_config_applied_callbacks) {
         callback();
     }
-}
-
-static bool trigger_needs_reboot(AutomationTriggerID id)
-{
-    switch (id) {
-        case AutomationTriggerID::MQTT:
-            return true;
-        default:
-            return false;
-    }
-}
-
-
-Automation::RebootTypeSet Automation::get_reboot_types(const Config &cfg)
-{
-    RebootTypeSet set = {0};
-    for (const Config &task : cfg.get("tasks")) {
-        const Config *trigger = static_cast<const Config *>(task.get("trigger"));
-        AutomationTriggerID tid = trigger->getTag<AutomationTriggerID>();
-        if (trigger_needs_reboot(tid)) {
-            set.triggers |= 1u << static_cast<uint8_t>(tid);
-        }
-    }
-    return set;
 }
 
 void Automation::register_action(AutomationActionID id, const Config &cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
