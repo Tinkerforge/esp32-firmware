@@ -148,23 +148,6 @@ void Ethernet::setup()
 
     runtime_data->was_connected = false;
 
-    const bool enable = config.get("enable_ethernet")->asBool();
-
-    if (enable) {
-        ip4_addr_t subnet_tmp;
-        ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
-        ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
-        ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
-        ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
-        ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
-        runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
-
-        runtime_data->connection_state = EthernetState::NotConnected;
-        state.get("connection_state")->updateEnum(runtime_data->connection_state);
-    } else {
-        runtime_data->connection_state = EthernetState::NotConfigured;
-    }
-
     Network.begin();
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
@@ -359,31 +342,7 @@ void Ethernet::setup()
 
     ETH.setTaskStackSize(2304);
 
-    if (enable) {
-        runtime_data->last_connected = now_us();
-        eth_started = true;
-        const uint32_t gen = ++eth_begin_generation;
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-
-    // pdPASS expands to an old-style cast that is also useless
-    #pragma GCC diagnostic ignored "-Wold-style-cast"
-    #pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-
-        const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, reinterpret_cast<void *>(gen), uxTaskPriorityGet(nullptr) + 1, nullptr, 1); // Priority of current task + 1
-        if (ret != pdPASS) {
-            logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-            if (!ETH.begin()) {
-                logger.printfln("Start failed. PHY broken?");
-            }
-        }
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-    }
+    apply_config();
 }
 
 void Ethernet::register_urls()
@@ -476,5 +435,8 @@ void Ethernet::apply_config()
         // The config is already saved; setup() will skip ETH.begin() on next boot.
         // The frontend enforces the reboot via a modal dialog.
         logger.printfln("Ethernet disabled in config. Reboot required to take effect.");
+    } else {
+        // Not enabled and not started (initial boot with ethernet disabled).
+        runtime_data->connection_state = EthernetState::NotConfigured;
     }
 }
