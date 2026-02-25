@@ -143,6 +143,14 @@ export interface usecases {
         voltage_phase_3_v: number;
         frequency_mhz: number;
     };
+    overload_protection_by_ev_charging_current_curtailment: {
+        limit_active: boolean;
+        limit_phase_1_milliamps: number;
+        limit_phase_2_milliamps: number;
+        limit_phase_3_milliamps: number;
+        limit_milliamps_min: number;
+        limit_milliamps_max: number;
+    };
 
 }
 

@@ -653,6 +653,37 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 });
                             }
 
+                            // Overload Protection by EV Charging Current Curtailment (OPEV)
+                            if (state.usecases.usecases_supported && state.usecases.usecases_supported.lastIndexOf(Usecases.OPEV) > -1) {
+                                const opev = state.usecases.overload_protection_by_ev_charging_current_curtailment;
+                                rows.push({
+                                    hideRemoveButton: true,
+                                    columnValues: ["OPEV (Overload Protection)"],
+                                    extraValue: <>
+                                        <FormRow label="Limit Active" small>
+                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <InputText class="form-control-sm" value={opev.limit_active ? __("eebus.content.yes") : __("eebus.content.no")} />
+                                            </div></div>
+                                        </FormRow>
+                                        <PhaseRow label="Current Limit" label_muted="L1, L2, L3" values={[
+                                            opev.limit_phase_1_milliamps,
+                                            opev.limit_phase_2_milliamps,
+                                            opev.limit_phase_3_milliamps
+                                        ]} unit="mA" />
+                                        <FormRow label="Min Limit" small>
+                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <OutputFloat value={opev.limit_milliamps_min} digits={0} scale={0} unit="mA" small />
+                                            </div></div>
+                                        </FormRow>
+                                        <FormRow label="Max Limit" small>
+                                            <div class="row gx-2 gy-1"><div class="col-sm-4">
+                                                <OutputFloat value={opev.limit_milliamps_max} digits={0} scale={0} unit="mA" small />
+                                            </div></div>
+                                        </FormRow>
+                                    </>
+                                });
+                            }
+
                             return rows;
                         })()}
                     />
