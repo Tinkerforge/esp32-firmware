@@ -62,11 +62,18 @@ extern const char local_uid_str[32];
 
 static bool repair_logic(Charge *);
 
+#if OPTIONS_PRODUCT_ID_IS_WARP()
+static uint32_t get_charge_log_file_limit()
+{
+    return 30;
+}
+#else
 static uint32_t get_charge_log_file_limit()
 {
     size_t managed_chargers = charge_manager.get_charger_count();
     return std::max(30, static_cast<int>(managed_chargers * 2));
 }
+#endif
 
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
@@ -87,7 +94,12 @@ static_assert(MAX_CONFIGURED_CHARGELOG_USERS <= 255, "MAX_CONFIGURED_CHARGELOG_U
 // Define static member variable for ChargeLogGenerationLockHelper
 std::atomic<GenerationState> ChargeLogGenerationLockHelper::generation_lock_state{GenerationState::Ready};
 
+#if OPTIONS_PRODUCT_ID_IS_WARP()
 #define CHARGE_RECORD_FILE_COUNT 30
+#else
+#define CHARGE_RECORD_FILE_COUNT 128
+#endif
+
 #define CHARGE_RECORD_MAX_FILE_SIZE 4096
 
 #define CHARGE_RECORD_LAST_CHARGES_SIZE 30
