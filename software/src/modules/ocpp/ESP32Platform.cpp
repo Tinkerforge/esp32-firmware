@@ -908,3 +908,8 @@ void platform_update_config_state(ConfigKey key,
     ocpp.configuration.get(config_keys[(size_t) key])->updateString(value);
 }
 #endif
+
+bool platform_supports_signed_meter_values(void *ctx, int32_t connectorId) {
+    // We will use an eFuse later to identify "Eichrect"-conforming chargers. For now, accept all WARP4 hardware.
+    return OPTIONS_PRODUCT_ID_IS_WARP4();
+}
