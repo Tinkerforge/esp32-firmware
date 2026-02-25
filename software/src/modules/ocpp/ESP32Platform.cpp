@@ -428,7 +428,7 @@ static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMea
 
     for (size_t mvidx = 0; mvidx < ARRAY_SIZE(mvid_to_measurand); ++mvidx) {
         const auto entry = mvid_to_measurand[mvidx];
-        if (entry.measurand == SampledValueMeasurand::NONE)
+        if (entry.measurand == SampledValueMeasurand::NONE_)
             continue;
 
         if (entry.measurand != m || entry.phase != p)
@@ -454,9 +454,9 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
 
     for (size_t i = 0; i < len; ++i) {
         auto measurand = measurands[i];
-        auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
+        auto phase = phases == nullptr ? SampledValuePhase::NONE_ : phases[i];
 
-        if (phase != SampledValuePhase::NONE) {
+        if (phase != SampledValuePhase::NONE_) {
             if (platform_supports_measurand(connector_id, measurand, phase, meter_cache)) {
                 ++result;
                 continue;
@@ -466,7 +466,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
         // If no phase value is requested, check first whether phase values are available.
         // If this is the case, only use those.
         bool supports_phase_values = false;
-        for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
+        for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE_; ++p) {
             if (platform_supports_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache)) {
                 ++result;
                 supports_phase_values = true;
@@ -477,7 +477,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache)) {
+        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE_, meter_cache)) {
             ++result;
         }
     }
@@ -486,7 +486,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
 }
 
 // Only used for custom values. "Normal" meter values identified by MVID use another lookup-table. See mvid_to_measurand.cpp
-const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
+const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE_ + 1] {
     SampledValueUnit::K_WH, /*ENERGY_ACTIVE_EXPORT_REGISTER*/
     SampledValueUnit::K_WH, /*ENERGY_ACTIVE_IMPORT_REGISTER*/
     SampledValueUnit::K_WH, /*ENERGY_REACTIVE_EXPORT_REGISTER*/
@@ -505,11 +505,11 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
     SampledValueUnit::A, /*CURRENT_EXPORT*/
     SampledValueUnit::A, /*CURRENT_OFFERED*/
     SampledValueUnit::V, /*VOLTAGE*/
-    SampledValueUnit::NONE, /*FREQUENCY*/
+    SampledValueUnit::NONE_, /*FREQUENCY*/
     SampledValueUnit::CELCIUS, /*TEMPERATURE*/
     SampledValueUnit::PERCENT, /*SO_C*/
-    SampledValueUnit::NONE, /*RPM*/
-    SampledValueUnit::NONE, /*NONE*/
+    SampledValueUnit::NONE_, /*RPM*/
+    SampledValueUnit::NONE_, /*NONE*/
 };
 
 void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index, PlatformMeterCache *meter_cache) {
@@ -566,9 +566,9 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
 
     for (size_t i = 0; i < len; ++i) {
         auto measurand = measurands[i];
-        auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
+        auto phase = phases == nullptr ? SampledValuePhase::NONE_ : phases[i];
 
-        if (phase != SampledValuePhase::NONE) {
+        if (phase != SampledValuePhase::NONE_) {
             MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase, meter_cache);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
@@ -587,7 +587,7 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
         // If no phase value is requested, check first whether phase values are available.
         // If this is the case, only use those.
         bool supports_phase_values = false;
-        for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
+        for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE_; ++p) {
             MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
@@ -608,13 +608,13 @@ static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMea
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache);
+        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE_, meter_cache);
         if (mvid != MeterValueID::NotSupported) {
             if (written >= result_len)
                 goto done;
 
             mvids[written] = mvid;
-            result[written] = SupportedMeasurand{measurand, SampledValuePhase::NONE, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
+            result[written] = SupportedMeasurand{measurand, SampledValuePhase::NONE_, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
             if (mvid > MeterValueID::_max)
                 add_custom_value_to_cache(measurand, phase, written, meter_cache);
 

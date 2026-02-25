@@ -7,7 +7,7 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 6,Voltage,,L3 L1,,,V,1,Voltage,L3-L1,Spannung,L3-L1,,,,VOLTAGE,L3_L1,
 7,Voltage,,L N Avg,,,V,1,Voltage,"⌀ L1-N, L2-N, L3-N",Spannung,"⌀ L1-N, L2-N, L3-N",,,,,,
 8,Voltage,,L L Avg,,,V,1,Voltage,"⌀ L1-L2, L2-L3, L3-L1",Spannung,"⌀ L1-L2, L2-L3, L3-L1",,,,,,
-9,Voltage,,N PE,,,V,1,Neutral voltage,,Neutralleiterspannung,,,,92.4.0,VOLTAGE,NONE,
+9,Voltage,,N PE,,,V,1,Neutral voltage,,Neutralleiterspannung,,,,92.4.0,VOLTAGE,NONE_,
 10,Voltage,,DC,,,V,1,DC voltage,,Gleichspannung,,,,,,,Für Inverter/Batterie
 11,Current,,L1,Import,,A,3,Current (draw),L1,Strom (Bezug),L1,,,,CURRENT_IMPORT,L1,Import heißt Netz → Auto; Netz → Haus; Netz → PV. Das müsste beim YTL „forward“ sein
 12,Current,,L1,Export,,A,3,Current (feed),L1,Strom (Einspeisung),L1,,,,CURRENT_EXPORT,L1,Export heißt Auto → Netz; Haus → Netz; PV → Netz. Das müsste beim YTL „reverse“ sein
@@ -29,8 +29,8 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 28,Current,,L Avg,Export,,A,3,Current (feed),"⌀ L1, L2, L3",Strom (Einspeisung),"⌀ L1, L2, L3",,,,,,
 29,Current,,L Avg,Im Ex Sum,,A,3,Current (draw plus feed),"⌀ L1, L2, L3",Strom (Bezug plus Einspeisung),"⌀ L1, L2, L3",,,,,,
 30,Current,,L Avg,Im Ex Diff,,A,3,Current (draw minus feed),"⌀ L1, L2, L3",Strom (Bezug minus Einspeisung),"⌀ L1, L2, L3",,,,,,
-31,Current,,L Sum,Import,,A,3,Current (draw),"Σ L1, L2, L3",Strom (Bezug),"Σ L1, L2, L3",,,,CURRENT_IMPORT,NONE,"L Sum-Current heißt „Three-phase Vector Sum Current“ (YTL); Also z.B. 15 A,  bei 10A L1 Import plus 5A L2 Import plus 0A L3 Import (wenn L3 gerade exportiert) "
-32,Current,,L Sum,Export,,A,3,Current (feed),"Σ L1, L2, L3",Strom (Einspeisung),"Σ L1, L2, L3",,,,CURRENT_EXPORT,NONE,
+31,Current,,L Sum,Import,,A,3,Current (draw),"Σ L1, L2, L3",Strom (Bezug),"Σ L1, L2, L3",,,,CURRENT_IMPORT,NONE_,"L Sum-Current heißt „Three-phase Vector Sum Current“ (YTL); Also z.B. 15 A,  bei 10A L1 Import plus 5A L2 Import plus 0A L3 Import (wenn L3 gerade exportiert) "
+32,Current,,L Sum,Export,,A,3,Current (feed),"Σ L1, L2, L3",Strom (Einspeisung),"Σ L1, L2, L3",,,,CURRENT_EXPORT,NONE_,
 33,Current,,L Sum,Im Ex Sum,,A,3,Current (draw plus feed),"Σ L1, L2, L3",Strom (Bezug plus Einspeisung),"Σ L1, L2, L3",,,,,,
 34,Current,,L Sum,Im Ex Diff,,A,3,Current (draw minus feed),"Σ L1, L2, L3",Strom (Bezug minus Einspeisung),"Σ L1, L2, L3",,,,,,
 35,Current,,DC,*Any,,A,3,DC current,,Gleichstrom,,,,,,,Für Inverter
@@ -69,8 +69,8 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 68,Power,Active,L Avg,Q2,,W,0,Active power (Q2),"⌀ L1, L2, L3",Wirkleistung (Q2),"⌀ L1, L2, L3",,,,,,
 69,Power,Active,L Avg,Q3,,W,0,Active power (Q3),"⌀ L1, L2, L3",Wirkleistung (Q3),"⌀ L1, L2, L3",,,,,,
 70,Power,Active,L Avg,Q4,,W,0,Active power (Q4),"⌀ L1, L2, L3",Wirkleistung (Q4),"⌀ L1, L2, L3",,,,,,
-71,Power,Active,L Sum,Import,,W,0,Active power (draw),"Σ L1, L2, L3",Wirkleistung (Bezug),"Σ L1, L2, L3",,,1.4.0,POWER_ACTIVE_IMPORT,NONE,
-72,Power,Active,L Sum,Export,,W,0,Active power (feed),"Σ L1, L2, L3",Wirkleistung (Einspeisung),"Σ L1, L2, L3",,,2.4.0,POWER_ACTIVE_EXPORT,NONE,
+71,Power,Active,L Sum,Import,,W,0,Active power (draw),"Σ L1, L2, L3",Wirkleistung (Bezug),"Σ L1, L2, L3",,,1.4.0,POWER_ACTIVE_IMPORT,NONE_,
+72,Power,Active,L Sum,Export,,W,0,Active power (feed),"Σ L1, L2, L3",Wirkleistung (Einspeisung),"Σ L1, L2, L3",,,2.4.0,POWER_ACTIVE_EXPORT,NONE_,
 73,Power,Active,L Sum,Im Ex Sum,,W,0,Active power (draw plus feed),"Σ L1, L2, L3",Wirkleistung (Bezug plus Einspeisung),"Σ L1, L2, L3",,,15.4.0,,,
 74,Power,Active,L Sum,Im Ex Diff,*Now,W,0,Active power (draw minus feed),"Σ L1, L2, L3",Wirkleistung (Bezug minus Einspeisung),"Σ L1, L2, L3",,,16.4.0,,,Kompatibel zu TotalSystemPower vom SDM72
 75,Power,Active,L Sum,Im Ex Diff,Virtual,W,0,Active power (draw minus feed),"Σ L1, L2, L3; virtual",Wirkleistung (Bezug minus Einspeisung),"Σ L1, L2, L3; virtuell",,,,,,"Virtueller Netzbezug, berechneter Wert mit Berücksichtigung der Leistung eines Batteriespeichers. Analog zu “Power Active L Sum Im Ex Diff” bei nicht vorhandenem Batteriespeicher"
@@ -110,8 +110,8 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 109,Power,Reactive,L Avg,Q2,,var,0,Reactive power (Q2),"⌀ L1, L2, L3",Blindleistung (Q2),"⌀ L1, L2, L3",,,,,,
 110,Power,Reactive,L Avg,Q3,,var,0,Reactive power (Q3),"⌀ L1, L2, L3",Blindleistung (Q3),"⌀ L1, L2, L3",,,,,,
 111,Power,Reactive,L Avg,Q4,,var,0,Reactive power (Q4),"⌀ L1, L2, L3",Blindleistung (Q4),"⌀ L1, L2, L3",,,,,,
-112,Power,Reactive,L Sum,Inductive,,var,0,Reactive power (inductive),"Σ L1, L2, L3",Blindleistung (induktiv),"Σ L1, L2, L3",,,3.4.0,POWER_REACTIVE_IMPORT,NONE,
-113,Power,Reactive,L Sum,Capacitive,,var,0,Reactive power (capacitive),"Σ L1, L2, L3",Blindleistung (kapazitiv),"Σ L1, L2, L3",,,4.4.0,POWER_REACTIVE_EXPORT,NONE,
+112,Power,Reactive,L Sum,Inductive,,var,0,Reactive power (inductive),"Σ L1, L2, L3",Blindleistung (induktiv),"Σ L1, L2, L3",,,3.4.0,POWER_REACTIVE_IMPORT,NONE_,
+113,Power,Reactive,L Sum,Capacitive,,var,0,Reactive power (capacitive),"Σ L1, L2, L3",Blindleistung (kapazitiv),"Σ L1, L2, L3",,,4.4.0,POWER_REACTIVE_EXPORT,NONE_,
 114,Power,Reactive,L Sum,Ind Cap Sum,,var,0,Reactive power (inductive plus capacitive),"Σ L1, L2, L3",Blindleistung (induktiv plus kapazitiv),"Σ L1, L2, L3",,,,,,
 115,Power,Reactive,L Sum,Ind Cap Diff,,var,0,Reactive power (inductive minus capacitive),"Σ L1, L2, L3",Blindleistung (induktiv minus kapazitiv),"Σ L1, L2, L3",,,,,,
 116,Power,Reactive,L Sum,Q1,,var,0,Reactive power (Q1),"Σ L1, L2, L3",Blindleistung (Q1),"Σ L1, L2, L3",,,5.4.0,,,
@@ -207,9 +207,9 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 206,Energy,Active,L3,Q3,Resettable,kvarh,3,Active energy (Q3),L3; since last reset,Wirkenergie (Q3; kapazitiv generatorisch),L3; seit letztem Zurücksetzen,,,,,,
 207,Energy,Active,L3,Q4,*Absolute,kvarh,3,Active energy (Q4),L3; since manufacturing,Wirkenergie (Q4; kapazitiv motorisch),L3; seit Herstellung,,,80.8.0,,,
 208,Energy,Active,L3,Q4,Resettable,kvarh,3,Active energy (Q4),L3; since last reset,Wirkenergie (Q4; kapazitiv motorisch),L3; seit letztem Zurücksetzen,,,,,,
-209,Energy,Active,L Sum,Import,*Absolute,kWh,3,Active energy (draw),"Σ L1, L2, L3; since manufacturing",Wirkenergie (Bezug),"Σ L1, L2, L3; seit Herstellung",,,1.8.0,ENERGY_ACTIVE_IMPORT_REGISTER,NONE,
+209,Energy,Active,L Sum,Import,*Absolute,kWh,3,Active energy (draw),"Σ L1, L2, L3; since manufacturing",Wirkenergie (Bezug),"Σ L1, L2, L3; seit Herstellung",,,1.8.0,ENERGY_ACTIVE_IMPORT_REGISTER,NONE_,
 210,Energy,Active,L Sum,Import,Resettable,kWh,3,Active energy (draw),"Σ L1, L2, L3; since last reset",Wirkenergie (Bezug),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
-211,Energy,Active,L Sum,Export,*Absolute,kWh,3,Active energy (feed),"Σ L1, L2, L3; since manufacturing",Wirkenergie (Einspeisung),"Σ L1, L2, L3; seit Herstellung",,,2.8.0,ENERGY_ACTIVE_EXPORT_REGISTER,NONE,
+211,Energy,Active,L Sum,Export,*Absolute,kWh,3,Active energy (feed),"Σ L1, L2, L3; since manufacturing",Wirkenergie (Einspeisung),"Σ L1, L2, L3; seit Herstellung",,,2.8.0,ENERGY_ACTIVE_EXPORT_REGISTER,NONE_,
 212,Energy,Active,L Sum,Export,Resettable,kWh,3,Active energy (feed),"Σ L1, L2, L3; since last reset",Wirkenergie (Einspeisung),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
 213,Energy,Active,L Sum,Im Ex Sum,*Absolute,kWh,3,Active energy (draw plus feed),"Σ L1, L2, L3; since manufacturing",Wirkenergie (Bezug plus Einspeisung),"Σ L1, L2, L3; seit Herstellung",,,15.8.0,,,
 214,Energy,Active,L Sum,Im Ex Sum,Resettable,kWh,3,Active energy (draw plus feed),"Σ L1, L2, L3; since last reset",Wirkenergie (Bezug plus Einspeisung),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
@@ -271,9 +271,9 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 270,Energy,Reactive,L3,Q3,Resettable,kvarh,3,Reactive energy (Q3),L3; since last reset,Blindenergie (Q3; kapazitiv generatorisch),L3; seit letztem Zurücksetzen,,,,,,
 271,Energy,Reactive,L3,Q4,*Absolute,kvarh,3,Reactive energy (Q4),L3; since manufacturing,Blindenergie (Q4; kapazitiv motorisch),L3; seit Herstellung,,,68.8.0,,,
 272,Energy,Reactive,L3,Q4,Resettable,kvarh,3,Reactive energy (Q4),L3; since last reset,Blindenergie (Q4; kapazitiv motorisch),L3; seit letztem Zurücksetzen,,,,,,
-273,Energy,Reactive,L Sum,Inductive,*Absolute,kvarh,3,Reactive energy (inductive),"Σ L1, L2, L3; since manufacturing",Blindenergie (induktiv),"Σ L1, L2, L3; seit Herstellung",,,3.8.0,ENERGY_REACTIVE_IMPORT_REGISTER,NONE,
+273,Energy,Reactive,L Sum,Inductive,*Absolute,kvarh,3,Reactive energy (inductive),"Σ L1, L2, L3; since manufacturing",Blindenergie (induktiv),"Σ L1, L2, L3; seit Herstellung",,,3.8.0,ENERGY_REACTIVE_IMPORT_REGISTER,NONE_,
 274,Energy,Reactive,L Sum,Inductive,Resettable,kvarh,3,Reactive energy (inductive),"Σ L1, L2, L3; since last reset",Blindenergie (induktiv),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
-275,Energy,Reactive,L Sum,Capacitive,*Absolute,kvarh,3,Reactive energy (capacitive),"Σ L1, L2, L3; since manufacturing",Blindenergie (kapazitiv),"Σ L1, L2, L3; seit Herstellung",,,4.8.0,ENERGY_REACTIVE_EXPORT_REGISTER,NONE,
+275,Energy,Reactive,L Sum,Capacitive,*Absolute,kvarh,3,Reactive energy (capacitive),"Σ L1, L2, L3; since manufacturing",Blindenergie (kapazitiv),"Σ L1, L2, L3; seit Herstellung",,,4.8.0,ENERGY_REACTIVE_EXPORT_REGISTER,NONE_,
 276,Energy,Reactive,L Sum,Capacitive,Resettable,kvarh,3,Reactive energy (capacitive),"Σ L1, L2, L3; since last reset",Blindenergie (kapazitiv),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
 277,Energy,Reactive,L Sum,Ind Cap Sum,*Absolute,kvarh,3,Reactive energy (inductive plus capacitive),"Σ L1, L2, L3; since manufacturing",Blindenergie (induktiv plus kapazitiv),"Σ L1, L2, L3; seit Herstellung",,,,,,
 278,Energy,Reactive,L Sum,Ind Cap Sum,Resettable,kvarh,3,Reactive energy (inductive plus capacitive),"Σ L1, L2, L3; since last reset",Blindenergie (induktiv plus kapazitiv),"Σ L1, L2, L3; seit letztem Zurücksetzen",,,,,,
@@ -354,7 +354,7 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 353,Power Factor,,L1,,Directional,,3,Power factor,L1; sign indicates the direction of the current flow,Leistungsfaktor,L1; Vorzeichen gibt Richtung des Stromflusses an,,,33.4.0,POWER_FACTOR,L1,"Zwischen -1 und +1, Vorzeichen für Stromrichtung: (-) Export, (+) Import"
 354,Power Factor,,L2,,Directional,,3,Power factor,L2; sign indicates the direction of the current flow,Leistungsfaktor,L2; Vorzeichen gibt Richtung des Stromflusses an,,,53.4.0,POWER_FACTOR,L2,"Zwischen -1 und +1, Vorzeichen für Stromrichtung: (-) Export, (+) Import"
 355,Power Factor,,L3,,Directional,,3,Power factor,L3; sign indicates the direction of the current flow,Leistungsfaktor,L3; Vorzeichen gibt Richtung des Stromflusses an,,,73.4.0,POWER_FACTOR,L3,"Zwischen -1 und +1, Vorzeichen für Stromrichtung: (-) Export, (+) Import"
-356,Power Factor,,L Sum,,Directional,,3,Power factor,"Σ L1, L2, L3; sign indicates the direction of the current flow",Leistungsfaktor,"Σ L1, L2, L3; Vorzeichen gibt Richtung des Stromflusses an",,,3.4.0,POWER_FACTOR,NONE,"Zwischen -1 und +1, Vorzeichen für Stromrichtung: (-) Export, (+) Import; Berechnet aus Gesamtwirkleistung und Gesamtblindleistung"
+356,Power Factor,,L Sum,,Directional,,3,Power factor,"Σ L1, L2, L3; sign indicates the direction of the current flow",Leistungsfaktor,"Σ L1, L2, L3; Vorzeichen gibt Richtung des Stromflusses an",,,3.4.0,POWER_FACTOR,NONE_,"Zwischen -1 und +1, Vorzeichen für Stromrichtung: (-) Export, (+) Import; Berechnet aus Gesamtwirkleistung und Gesamtblindleistung"
 357,Power Factor,,L1,,*Non Directional,,3,Power factor,L1,Leistungsfaktor,L1,,,,,,Zwischen 0 und 1
 358,Power Factor,,L2,,*Non Directional,,3,Power factor,L2,Leistungsfaktor,L2,,,,,,Zwischen 0 und 1
 359,Power Factor,,L3,,*Non Directional,,3,Power factor,L3,Leistungsfaktor,L3,,,,,,Zwischen 0 und 1
@@ -362,7 +362,7 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 361,Frequency,,L1,,,Hz,3,Frequency,L1,Frequenz,L1,,,34.4.0,FREQUENCY,L1,
 362,Frequency,,L2,,,Hz,3,Frequency,L2,Frequenz,L2,,,54.4.0,FREQUENCY,L2,
 363,Frequency,,L3,,,Hz,3,Frequency,L3,Frequenz,L3,,,74.4.0,FREQUENCY,L3,
-364,Frequency,,L Avg,,,Hz,3,Frequency,"⌀ L1, L2, L3",Frequenz,"⌀ L1, L2, L3",,,4.4.0,FREQUENCY,NONE,
+364,Frequency,,L Avg,,,Hz,3,Frequency,"⌀ L1, L2, L3",Frequenz,"⌀ L1, L2, L3",,,4.4.0,FREQUENCY,NONE_,
 365,Phase Angle,,L1,,,°,1,Phase angle,L1,Phasenwinkel,L1,,,81.7.4,,,"Verschiebung zwischen Spannung und Strom, zwischen -90 und +90"
 366,Phase Angle,,L2,,,°,1,Phase angle,L2,Phasenwinkel,L2,,,81.7.15,,,
 367,Phase Angle,,L3,,,°,1,Phase angle,L3,Phasenwinkel,L3,,,81.7.26,,,
@@ -384,8 +384,8 @@ id,measurand,submeasurand,phase,direction,kind,unit,digits,display_name_en,displ
 383,Temperature,Cabinet,,,,°C,1,Temperature,cabinet,Temperatur,Gehäuse,,,,,,
 384,Temperature,Heat Sink,,,,°C,1,Temperature,heat sink,Temperatur,Kühlkörper,,,,,,
 385,Temperature,Transformer,,,,°C,1,Temperature,transformer,Temperatur,Transformator,,,,,,
-386,Fan Speed,,,,,rpm,1,Fan speed,,Lüfterdrehzahl,,,,,RPM,NONE,
-387,State Of Charge,,,,,%,1,State of charge,,Ladestand,,,,96.6.1,SO_C,NONE,
+386,Fan Speed,,,,,rpm,1,Fan speed,,Lüfterdrehzahl,,,,,RPM,NONE_,
+387,State Of Charge,,,,,%,1,State of charge,,Ladestand,,,,96.6.1,SO_C,NONE_,
 388,Electric Charge,,,,,Ah,3,Transported electric charge,,Transportierte elektrische Ladung,,,,,,,Gibt der SDM630 aus
 389,Current,,DC,Import,,A,3,DC current (draw),,Gleichstrom (Bezug),,,,,,,Für Inverter
 390,Current,,DC,Export,,A,3,DC current (feed),,Gleichstrom (Einspeisung),,,,,,,Für Inverter
