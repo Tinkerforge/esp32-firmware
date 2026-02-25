@@ -161,7 +161,7 @@ function buildEEBusHelpText(usecases: EEBusUsecases | undefined): ComponentChild
             {__("eebus.content.enable_eebus_help_intro")}
             {usecaseItems.length > 0 && (
                 <>
-                    <p>{__("eebus.content.enable_eebus_help_usecases_intro")}</p>
+                    {__("eebus.content.enable_eebus_help_usecases_intro")}
                     <ul>{usecaseItems}</ul>
                 </>
             )}
@@ -241,6 +241,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     </FormRow>
 
                     <CollapsedSection heading={__("eebus.content.usecase_details")}>
+                        {buildEEBusHelpText(state.usecases)}
+                        <p>{__("eebus.content.eebus_detail_info")}</p>
+
                     <Table
                         columnNames={[""]}
                         rows={(() => {
@@ -258,7 +261,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <InputText class="form-control-sm" value={loadcontrolStateMap[lpc.usecase_state] ?? lpc.usecase_state} />
                                             </div></div>
                                         </FormRow>
-                                        <FormRow label="Limit Active" small>
+                                        <FormRow label="Limit Active" label_muted={__("eebus.content.usecase_value_writable")} small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <InputText class="form-control-sm"
@@ -271,7 +274,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                     </div> : undefined}
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Current Limit" small>
+                                        <FormRow label="Current Limit" label_muted={__("eebus.content.usecase_value_writable")}  small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <OutputFloat value={lpc.current_limit} digits={0} scale={0} unit="W"
@@ -279,7 +282,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </div>
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Failsafe Limit Power" small>
+                                        <FormRow label="Failsafe Limit Power" label_muted={__("eebus.content.usecase_value_writable")} small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <OutputFloat value={lpc.failsafe_limit_power_w} digits={0} scale={0}
@@ -287,7 +290,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </div>
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Failsafe Limit Duration" small>
+                                        <FormRow label="Failsafe Limit Duration" label_muted={__("eebus.content.usecase_value_writable")}  small>
                                             <div class="row gx-2 gy-1"><div class="col-sm-4">
                                                     <OutputFloat value={lpc.failsafe_limit_duration_s} digits={0}
                                                                  scale={0} unit="s" small/>
@@ -321,7 +324,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 <InputText class="form-control-sm" value={loadcontrolStateMap[lpp.usecase_state] ?? lpp.usecase_state} />
                                             </div></div>
                                         </FormRow>
-                                        <FormRow label="Limit Active" small>
+                                        <FormRow label="Limit Active" label_muted={__("eebus.content.usecase_value_writable")} small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <InputText class="form-control-sm"
@@ -334,7 +337,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                     </div> : undefined}
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Current Limit" small>
+                                        <FormRow label="Current Limit" label_muted={__("eebus.content.usecase_value_writable")}  small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <OutputFloat value={lpp.current_limit} digits={0} scale={0} unit="W"
@@ -342,7 +345,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </div>
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Failsafe Limit Power" small>
+                                        <FormRow label="Failsafe Limit Power" label_muted={__("eebus.content.usecase_value_writable")}  small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <OutputFloat value={lpp.failsafe_limit_power_w} digits={0} scale={0}
@@ -350,7 +353,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </div>
                                             </div>
                                         </FormRow>
-                                        <FormRow label="Failsafe Limit Duration" small>
+                                        <FormRow label="Failsafe Limit Duration" label_muted={__("eebus.content.usecase_value_writable")}  small>
                                             <div class="row gx-2 gy-1">
                                                 <div class="col-sm-4">
                                                     <OutputFloat value={lpp.failsafe_limit_duration_s} digits={0}
@@ -660,12 +663,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     hideRemoveButton: true,
                                     columnValues: ["OPEV (Overload Protection)"],
                                     extraValue: <>
-                                        <FormRow label="Limit Active" small>
+                                        <FormRow label="Limit Active" label_muted={__("eebus.content.usecase_value_writable")} small>
                                             <div class="row gx-2 gy-1"><div class="col-sm-4">
                                                 <InputText class="form-control-sm" value={opev.limit_active ? __("eebus.content.yes") : __("eebus.content.no")} />
                                             </div></div>
                                         </FormRow>
-                                        <PhaseRow label="Current Limit" label_muted="L1, L2, L3" values={[
+                                        <PhaseRow label="Current Limit" label_muted={["L1","L2","L3", __("eebus.content.usecase_value_writable")].filter(Boolean).join(", ")} values={[
                                             opev.limit_phase_1_milliamps,
                                             opev.limit_phase_2_milliamps,
                                             opev.limit_phase_3_milliamps

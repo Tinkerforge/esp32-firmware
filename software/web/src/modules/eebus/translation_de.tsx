@@ -5,14 +5,18 @@ let x = {
         "content": {
             "enable_eebus": "EEBUS aktivieren",
             "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
+            "eebus_detail_info": "Hier werden die Werte welche von den Usecases über EEBUS bereitgestellt oder geschrieben werden können angezeigt. Die angezeigten Werte spiegeln die jeweils neuesten EEBUS‑Kommunikationsdaten wieder. Werte welche von EEBUS Steuergeräten geschrieben werden können, sind als als solche markiert. Alle anderen Werte sind für EEBUS Geräte nur lesbar.",
             "enable_eebus_help_intro": <>
                 <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die Kommunikation
                 zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen (HEMS).</p>
             </>,
-            "enable_eebus_help_usecases_intro": "Folgende Use Cases werden unterstützt:",
-            "usecase_lpc_desc": "Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern zu begrenzen zu begrenzen.",
+            "enable_eebus_help_usecases_intro": <>
+                <p>Vom Standard werden Usecases definiert welche zur Abbildung verschiedener Funktionen von Geräten und Systemen genutzt werden können.</p>
+                <p>Folgende Use Cases werden unterstützt:</p>
+            </>,
+            "usecase_lpc_desc": "Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern (z.b. Wallboxen, Klimageräte) zu begrenzen.",
             "usecase_lpp_desc": "Begrenzung der Leistungsabgabe. Ermöglicht dem Netzbetreiber die Begrenzung der Netzeinspeisung.",
-            "usecase_mpc_desc": "Überwachung des Stromverbrauchs. Stellt Leistungs- und Energiemesswerte für externe Systeme bereit.",
+            "usecase_mpc_desc": "Überwachung des Stromverbrauchs. Überwacht die Leistungsaufnahme oder -abgabe eines Geräts.",
             "usecase_mgcp_desc": "Netzanschlusspunkt-Überwachung. Überwacht den Leistungsfluss am Netzanschlusspunkt einschließlich Einspeisung und Bezug.",
             "usecase_cevc_desc": "Koordiniertes Laden. Ermöglicht einem Energiemanager die Steuerung des Ladevorgangs basierend auf Ladeplänen und Anreizen.",
             "usecase_evcc_desc": "Fahrzeugkonfiguration. Meldet Informationen über das angeschlossene Elektrofahrzeug wie Kommunikationsstandard und Leistungsgrenzen.",
@@ -20,6 +24,7 @@ let x = {
             "usecase_evsecc_desc": "Wallbox-Status. Meldet den Betriebszustand der Ladestation und eventuelle Fehlerzustände.",
             "usecase_evcs_desc": "Ladeübersicht. Stellt Zusammenfassungen abgeschlossener Ladevorgänge mit Energiemenge und Kosten bereit.",
             "usecase_opev_desc": "Überlastschutz. Ermöglicht die Begrenzung des Ladestroms.",
+            "usecase_value_writable": "Schreibbar",
             "cert": "Zertifikat",
             "key": "Key",
             "ski": "SKI",
