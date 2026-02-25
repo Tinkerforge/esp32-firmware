@@ -31,7 +31,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#define CHARGING_SLOT_COUNT 16
+#define CHARGING_SLOT_COUNT 17
 #define CHARGING_SLOT_COUNT_SUPPORTED_BY_EVSE 20
 
 #define CHARGING_SLOT_INCOMING_CABLE 0
@@ -50,6 +50,7 @@
 #define CHARGING_SLOT_REQUIRE_METER 13
 #define CHARGING_SLOT_AUTOMATION 14
 #define CHARGING_SLOT_EEBUS 15
+#define CHARGING_SLOT_P14A_ENWG 16
 
 #define IEC_STATE_A 0
 #define IEC_STATE_B 1
@@ -165,6 +166,9 @@ public:
     void set_eebus_current(uint16_t);
     uint16_t get_eebus_current();
 
+    void set_p14a_enwg_current(uint16_t);
+    uint16_t get_p14a_enwg_current();
+
     void factory_reset();
     void reset();
 
@@ -222,6 +226,8 @@ private:
     ConfigRoot ocpp_enabled_update;
     ConfigRoot eebus_enabled;
     ConfigRoot eebus_enabled_update;
+    ConfigRoot p14a_enwg_enabled;
+    ConfigRoot p14a_enwg_enabled_update;
     ConfigRoot require_meter_enabled;
     ConfigRoot require_meter_enabled_update;
     ConfigRoot automation_current;

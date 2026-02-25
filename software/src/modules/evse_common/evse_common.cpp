@@ -123,6 +123,9 @@ void EvseCommon::pre_setup()
     eebus_enabled = enabled_cfg;
     eebus_enabled_update = eebus_enabled;
 
+    p14a_enwg_enabled = enabled_cfg;
+    p14a_enwg_enabled_update = p14a_enwg_enabled;
+
     boost_mode = enabled_cfg;
     boost_mode_update = boost_mode;
 
@@ -809,6 +812,23 @@ void EvseCommon::register_urls()
         }
     }, false);
 
+    api.addState("evse/p14a_enwg_enabled", &p14a_enwg_enabled);
+    api.addCommand("evse/p14a_enwg_enabled_update", &p14a_enwg_enabled_update, {}, [this](Language /*language*/, String &/*errmsg*/) {
+        bool enabled = p14a_enwg_enabled_update.get("enabled")->asBool();
+
+        if (enabled == p14a_enwg_enabled.get("enabled")->asBool())
+            return;
+
+        if (enabled) {
+            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
+            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, true, false);
+        }
+        else {
+            backend->set_charging_slot(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
+            apply_slot_default(CHARGING_SLOT_P14A_ENWG, 32000, false, false);
+        }
+    }, false);
+
     api.addPersistentConfig("evse/meter_config", &meter_config);
 
     backend->post_register_urls();
@@ -990,6 +1010,16 @@ void EvseCommon::set_eebus_current(uint16_t current)
 uint16_t EvseCommon::get_eebus_current()
 {
     return slots.get(CHARGING_SLOT_EEBUS)->get("max_current")->asUint();
+}
+
+void EvseCommon::set_p14a_enwg_current(uint16_t current)
+{
+    backend->set_charging_slot_max_current(CHARGING_SLOT_P14A_ENWG, current);
+}
+
+uint16_t EvseCommon::get_p14a_enwg_current()
+{
+    return slots.get(CHARGING_SLOT_P14A_ENWG)->get("max_current")->asUint();
 }
 
 void EvseCommon::factory_reset()
