@@ -1729,14 +1729,80 @@ void ChargeTracker::register_urls()
     });
 
     if (config.get("remote_upload_configs")->count() > 0) {
-        task_scheduler.scheduleUncancelable([this]() {
+        monthly_upload_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             // In case someone deletes all remote upload configs without restarting, we also stop trying to send.
             if (config.get("remote_upload_configs")->count() == 0) {
+                if (monthly_upload_user_idx >= 0) {
+                    finish_monthly_upload();
+                }
                 task_scheduler.cancel(task_scheduler.currentTaskId());
                 return;
             }
 
-            // only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month
+            // If a monthly upload is in progress, check the state machine.
+            if (monthly_upload_user_idx >= 0) {
+                ChargeLogSendState send_state = charge_log_send_ctx.state;
+
+                if (send_state == ChargeLogSendState::Done) {
+                    // Update last_upload_timestamp_min for successfully uploaded user
+                    config.get("remote_upload_configs")->get(static_cast<uint8_t>(monthly_upload_user_idx))
+                        ->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+                    API::writeConfig("charge_tracker/config", &config);
+                    logger.printfln("Monthly charge log upload for user %d completed successfully", monthly_upload_user_idx);
+
+                    // Advance to next user
+                    monthly_upload_user_idx++;
+                    while (monthly_upload_user_idx < monthly_upload_config_count) {
+                        if (try_start_monthly_upload_for_user(monthly_upload_user_idx)) {
+                            return;
+                        }
+                        monthly_upload_user_idx++;
+                    }
+                    finish_monthly_upload();
+                    return;
+                }
+
+                if (send_state == ChargeLogSendState::Error) {
+                    logger.printfln("Monthly charge log upload for user %d failed with error code %u (%s)",
+                                    monthly_upload_user_idx,
+                                    static_cast<uint8_t>(charge_log_send_ctx.error_code),
+                                    get_charge_log_send_error_name(charge_log_send_ctx.error_code));
+
+                    // Advance to next user
+                    monthly_upload_user_idx++;
+                    while (monthly_upload_user_idx < monthly_upload_config_count) {
+                        if (try_start_monthly_upload_for_user(monthly_upload_user_idx)) {
+                            return;
+                        }
+                        monthly_upload_user_idx++;
+                    }
+                    finish_monthly_upload();
+                    return;
+                }
+
+                // Check timeout (5 minutes per user)
+                if (deadline_elapsed(monthly_upload_deadline)) {
+                    logger.printfln("Monthly charge log upload for user %d timed out after 5 minutes. Check the remote access connection stability.", monthly_upload_user_idx);
+
+                    // Advance to next user
+                    monthly_upload_user_idx++;
+                    while (monthly_upload_user_idx < monthly_upload_config_count) {
+                        if (try_start_monthly_upload_for_user(monthly_upload_user_idx)) {
+                            return;
+                        }
+                        monthly_upload_user_idx++;
+                    }
+                    finish_monthly_upload();
+                    return;
+                }
+
+                // Still in progress, will check again on next tick
+                return;
+            }
+
+            // No upload in progress - check if we should start one.
+
+            // Only send when no charge is in progress. This avoids not sending a charge that started at the end of the last month.
             if (this->currentlyCharging()) {
                 return;
             }
@@ -1747,10 +1813,7 @@ void ChargeTracker::register_urls()
                 return;
             }
 
-            tm now;
-            localtime_r(&tv.tv_sec, &now);
-
-            uint32_t earliest_send = 0;
+            uint32_t earliest_send = UINT32_MAX;
             for (const Config &cfg : config.get("remote_upload_configs")) {
                 const uint32_t last_send_minutes = cfg.get("last_upload_timestamp_min")->asUint();
                 if (earliest_send > last_send_minutes) {
@@ -1763,11 +1826,60 @@ void ChargeTracker::register_urls()
                 return;
             }
 
-            this->upload_charge_logs();
+            // Acquire generation lock
+            auto lock = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
+            if (lock == nullptr) {
+                logger.printfln("Could not acquire charge log generation lock for remote upload. Another charge log generation (PDF/CSV download or upload) is already in progress.");
+                return;
+            }
+            pending_generation_lock = std::move(lock);
+
+            // Compute last month timestamps
+            tm last_month_start;
+            localtime_r(&tv.tv_sec, &last_month_start);
+            tm last_month_end = last_month_start;
+
+            last_month_start.tm_mday = 1;
+            if (last_month_start.tm_mon == 0) {
+                last_month_start.tm_mon = 11;
+                last_month_start.tm_year--;
+            } else {
+                last_month_start.tm_mon--;
+            }
+            last_month_start.tm_hour = 0;
+            last_month_start.tm_min = 0;
+            last_month_start.tm_sec = 0;
+            last_month_start.tm_isdst = -1;
+
+            last_month_end.tm_mday = 1;
+            last_month_end.tm_hour = 0;
+            last_month_end.tm_min = 0;
+            last_month_end.tm_sec = 0;
+            last_month_end.tm_isdst = -1;
+
+            monthly_upload_start_timestamp_min = static_cast<uint32_t>(mktime(&last_month_start)) / 60;
+            monthly_upload_end_timestamp_min = static_cast<uint32_t>(mktime(&last_month_end)) / 60;
+            monthly_upload_config_count = config.get("remote_upload_configs")->count();
+
+            // Switch to fast polling while upload is in progress
+            task_scheduler.updateDelay(monthly_upload_task_id, 1_s);
+
+            // Find first user that needs upload
+            monthly_upload_user_idx = 0;
+            while (monthly_upload_user_idx < monthly_upload_config_count) {
+                if (try_start_monthly_upload_for_user(monthly_upload_user_idx)) {
+                    return;
+                }
+                monthly_upload_user_idx++;
+            }
+
+            // No users needed upload
+            finish_monthly_upload();
         }, 10_s, 4_h);
-        // Delay one minute so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
+        // Delay so that all other start-up tasks can finish, because sending the protocols causes high load for quite some time.
         // Check only once every four hours, to avoid a stampede event at midnight on the 2nd of a month.
         // Protocols will thus be uploaded between midnight and 4:00 on the 2nd of a month.
+        // While actively uploading, the interval is decreased to 1 second.
     }
 
 #endif
@@ -1805,7 +1917,9 @@ static void push_upload_result_success(uint32_t cookie)
 
 static String build_filename(const time_t start, const time_t end, FileType file_type, Language language) {
     struct tm gen_tm;
-    time_t generation_time = time(nullptr);
+    timeval tv;
+    rtc.clock_synced(&tv);
+    time_t generation_time = tv.tv_sec;
     localtime_r(&generation_time, &gen_tm);
 
     char buf[128];
@@ -1827,185 +1941,7 @@ static String build_filename(const time_t start, const time_t end, FileType file
     return fname.toString();
 }
 
-static constexpr uint32_t UPLOAD_TASK_STACK_SIZE = 6144;
 static constexpr uint32_t CHARGE_LOG_SEND_TASK_STACK_SIZE = 6144;
-
-static void upload_charge_logs_task(void *arg)
-{
-#if MODULE_WATCHDOG_AVAILABLE()
-    int  wd_handle = watchdog.add("charge_log_upload", "Uploading charge log took longer than 5 minutes", 10_min, 30_min, false);
-#endif
-
-    std::unique_ptr<RemoteUploadRequest> upload_args{static_cast<RemoteUploadRequest *>(arg)};
-
-    if (!upload_args->use_format_overrides) {
-        const time_t t_now = time(nullptr);
-
-        tm last_month_start;
-        localtime_r(&t_now, &last_month_start);
-
-        tm last_month_end;
-        last_month_end = last_month_start;
-
-        last_month_start.tm_mday = 1;
-        if (last_month_start.tm_mon == 0) {
-            last_month_start.tm_mon = 11;
-            last_month_start.tm_year--;
-        } else {
-            last_month_start.tm_mon--;
-        }
-        last_month_start.tm_hour = 0;
-        last_month_start.tm_min = 0;
-        last_month_start.tm_sec = 0;
-        last_month_start.tm_isdst = -1;
-
-        last_month_end.tm_mday = 1;
-        last_month_end.tm_hour = 0;
-        last_month_end.tm_min = 0;
-        last_month_end.tm_sec = 0;
-        last_month_end.tm_isdst = -1;
-
-        const Config *remote_access_config = api.getState("remote_access/config");
-        for (int user_idx = 0; user_idx < upload_args->config_count; user_idx++) {
-            uint32_t last_upload;
-            String user_uuid;
-
-            task_scheduler.await([&last_upload, &user_uuid, user_idx, remote_access_config]() {
-                Config::Wrap upload_config = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
-                last_upload = upload_config->get("last_upload_timestamp_min")->asUint();
-                size_t user_id = static_cast<size_t>(upload_config->get("user_id")->asInt());
-                for (const Config &user_cfg : remote_access_config->get("users")) {
-                    if (user_cfg.get("id")->asUint8() == static_cast<uint8_t>(user_id)) {
-                        user_uuid = user_cfg.get("uuid")->asString();
-                        break;
-                    }
-                }
-            });
-
-            if (!wants_send(t_now / 60, last_upload)) {
-                continue;
-            }
-
-            auto upload_request = std::make_unique<RemoteUploadRequest>();
-            upload_request->config_index = user_idx;
-            upload_request->start_timestamp_min = static_cast<uint32_t>(mktime(&last_month_start)) / 60;
-            upload_request->end_timestamp_min = static_cast<uint32_t>(mktime(&last_month_end)) / 60;
-            upload_request->user_filter = upload_args->user_filter;
-            upload_request->remote_access_user_uuid = user_uuid;
-
-            // Read config parameters for this user
-            task_scheduler.await([&upload_request, user_idx]() {
-                Config::Wrap charge_log_send = charge_tracker.config.get("remote_upload_configs")->get(user_idx);
-                upload_request->language = charge_log_send->get("language")->asEnum<Language>();
-                upload_request->file_type = charge_log_send->get("file_type")->asEnum<FileType>();
-                upload_request->csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
-                upload_request->user_filter = charge_log_send->get("user_filter")->asInt();
-                upload_request->device_filter = charge_log_send->get("device_filter")->asInt();
-
-                if (upload_request->file_type == FileType::PDF) {
-                    const String &letterhead_string = charge_log_send->get("letterhead")->asString();
-                    const size_t letterhead_terminated_length = letterhead_string.length() + 1;
-                    upload_request->letterhead = heap_alloc_array<char>(letterhead_terminated_length);
-                    strncpy(upload_request->letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
-                }
-            });
-
-            // Parse user UUID
-            uint8_t parsed_uuid[16] = {0};
-            if (!remote_access.parse_uuid_string(user_uuid.c_str(), parsed_uuid)) {
-                logger.printfln("Invalid remote access user UUID for monthly upload: %s", user_uuid.c_str());
-                continue;
-            }
-
-            // Build filename and get display name
-            String filename;
-            String display_name;
-            task_scheduler.await([&filename, &display_name, &upload_request]() {
-                display_name = device_name.display_name.get("display_name")->asString();
-                filename = build_filename(((time_t)upload_request->start_timestamp_min) * 60, ((time_t)upload_request->end_timestamp_min) * 60, upload_request->file_type, upload_request->language);
-            });
-
-            // Compute config hash before moving upload_request
-            uint8_t config_hash[32];
-            compute_charge_log_hash(config_hash,
-                upload_request->file_type,
-                upload_request->language,
-                upload_request->letterhead ? upload_request->letterhead.get() : nullptr,
-                upload_request->user_filter,
-                upload_request->device_filter,
-                upload_request->csv_delimiter,
-                upload_request->start_timestamp_min,
-                upload_request->end_timestamp_min);
-
-            // Initiate the management connection state machine for monthly email
-            bool sm_started = false;
-            task_scheduler.await([&sm_started, &filename, &display_name, &parsed_uuid, &upload_request, &config_hash]() {
-                charge_tracker.remote_upload_request = std::move(upload_request);
-                sm_started = charge_tracker.start_charge_log_send_sm(
-                    filename.c_str(), filename.length(),
-                    display_name.c_str(), display_name.length(),
-                    parsed_uuid, charge_tracker.remote_upload_request->language, true,
-                    config_hash);
-
-                if (!sm_started) {
-                    charge_tracker.remote_upload_request = nullptr;
-                }
-            });
-
-            if (!sm_started) {
-                logger.printfln("Failed to start charge log send for monthly upload user %d. The management connection may not be established or another send operation is in progress.", user_idx);
-                continue;
-            }
-
-            // Wait for the state machine to complete (timeout after 5 minutes)
-            constexpr uint32_t SEND_TIMEOUT_MS = 5 * 60 * 1000;
-            const TickType_t start_tick = xTaskGetTickCount();
-            bool success = false;
-
-            while ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS < SEND_TIMEOUT_MS) {
-                ChargeLogSendState state = charge_tracker.charge_log_send_ctx.state;
-                if (state == ChargeLogSendState::Done) {
-                    success = true;
-                    break;
-                } else if (state == ChargeLogSendState::Error) {
-                    logger.printfln("Monthly charge log upload for user %d failed with error code %u (%s)",
-                                    user_idx,
-                                    static_cast<uint8_t>(charge_tracker.charge_log_send_ctx.error_code),
-                                    get_charge_log_send_error_name(charge_tracker.charge_log_send_ctx.error_code));
-                    break;
-                }
-                vTaskDelay(500 / portTICK_PERIOD_MS);
-            }
-
-            if (success) {
-                task_scheduler.await([user_idx]() {
-                    charge_tracker.config.get("remote_upload_configs")->get(user_idx)->get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
-                    API::writeConfig("charge_tracker/config", &charge_tracker.config);
-                });
-                logger.printfln("Monthly charge log upload for user %d completed successfully", user_idx);
-            } else if ((xTaskGetTickCount() - start_tick) * portTICK_PERIOD_MS >= SEND_TIMEOUT_MS) {
-                logger.printfln("Monthly charge log upload for user %d timed out after 5 minutes. Check the remote access connection stability.", user_idx);
-            }
-
-#if MODULE_WATCHDOG_AVAILABLE()
-            watchdog.reset(wd_handle);
-#endif
-        }
-    } else {
-        esp_system_abort("BUG! The manual upload should be handled by start_charge_log_upload_for_user");
-#if MODULE_WATCHDOG_AVAILABLE()
-        watchdog.reset(wd_handle);
-#endif
-    }
-
-#if MODULE_WATCHDOG_AVAILABLE()
-    watchdog.remove(wd_handle);
-#endif
-
-    // Decunstructors are not called after vTaskDelete, so we must release the pointer here
-    upload_args = nullptr;
-    vTaskDelete(NULL); // exit RTOS task
-}
 
 static void charge_log_send_tcp_task(void *arg)
 {
@@ -2160,29 +2096,100 @@ static void charge_log_send_tcp_task(void *arg)
     return;
 }
 
-void ChargeTracker::upload_charge_logs()
+bool ChargeTracker::try_start_monthly_upload_for_user(int user_idx)
 {
-    uint32_t remote_upload_config_count = config.get("remote_upload_configs")->count();
+    timeval tv;
+    rtc.clock_synced(&tv);
+    const time_t t_now = tv.tv_sec;
 
-    RemoteUploadRequest *args = new RemoteUploadRequest;
-    args->config_count = remote_upload_config_count;
-    args->config_index = -1; // -1 for all users
-    args->user_filter = -3; // Use config default
-    args->start_timestamp_min = 0; // Use default last month calculation
-    args->end_timestamp_min = 0;
-    args->generation_lock = ChargeLogGenerationLockHelper::try_lock(GenerationState::RemoteSend);
-    if (args->generation_lock == nullptr) {
-        logger.printfln("Could not acquire charge log generation lock for remote upload. Another charge log generation (PDF/CSV download or upload) is already in progress.");
-        delete args;
-        return;
+    Config::Wrap upload_config = config.get("remote_upload_configs")->get(user_idx);
+    uint32_t last_upload = upload_config->get("last_upload_timestamp_min")->asUint();
+
+    if (!wants_send(t_now / 60, last_upload)) {
+        return false;
     }
 
-    const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
-
-    if (ret != pdPASS_safe) {
-        logger.printfln("ChargeLogUpload task could not be created (insufficient system resources): %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-        delete args;
+    // Get user UUID from remote_access config
+    int user_id = upload_config->get("user_id")->asInt();
+    const Config *remote_access_config = api.getState("remote_access/config");
+    String user_uuid;
+    for (const Config &user_cfg : remote_access_config->get("users")) {
+        if (user_cfg.get("id")->asUint8() == static_cast<uint8_t>(user_id)) {
+            user_uuid = user_cfg.get("uuid")->asString();
+            break;
+        }
     }
+
+    // Parse user UUID
+    uint8_t parsed_uuid[16] = {0};
+    if (!remote_access.parse_uuid_string(user_uuid.c_str(), parsed_uuid)) {
+        logger.printfln("Invalid remote access user UUID for monthly upload: %s", user_uuid.c_str());
+        return false;
+    }
+
+    // Build the upload request from config
+    auto upload_request_ptr = std::make_unique<RemoteUploadRequest>();
+    upload_request_ptr->config_index = user_idx;
+    upload_request_ptr->start_timestamp_min = monthly_upload_start_timestamp_min;
+    upload_request_ptr->end_timestamp_min = monthly_upload_end_timestamp_min;
+    upload_request_ptr->remote_access_user_uuid = user_uuid;
+    upload_request_ptr->language = upload_config->get("language")->asEnum<Language>();
+    upload_request_ptr->file_type = upload_config->get("file_type")->asEnum<FileType>();
+    upload_request_ptr->csv_delimiter = upload_config->get("csv_delimiter")->asEnum<CSVFlavor>();
+    upload_request_ptr->user_filter = upload_config->get("user_filter")->asInt();
+    upload_request_ptr->device_filter = upload_config->get("device_filter")->asInt();
+
+    if (upload_request_ptr->file_type == FileType::PDF) {
+        const String &letterhead_string = upload_config->get("letterhead")->asString();
+        const size_t letterhead_terminated_length = letterhead_string.length() + 1;
+        upload_request_ptr->letterhead = heap_alloc_array<char>(letterhead_terminated_length);
+        strncpy(upload_request_ptr->letterhead.get(), letterhead_string.c_str(), letterhead_terminated_length);
+    }
+
+    // Build filename and get display name
+    String display_name = device_name.display_name.get("display_name")->asString();
+    String filename = build_filename(
+        ((time_t)upload_request_ptr->start_timestamp_min) * 60,
+        ((time_t)upload_request_ptr->end_timestamp_min) * 60,
+        upload_request_ptr->file_type,
+        upload_request_ptr->language);
+
+    // Compute config hash
+    uint8_t config_hash[32];
+    compute_charge_log_hash(config_hash,
+        upload_request_ptr->file_type,
+        upload_request_ptr->language,
+        upload_request_ptr->letterhead ? upload_request_ptr->letterhead.get() : nullptr,
+        upload_request_ptr->user_filter,
+        upload_request_ptr->device_filter,
+        upload_request_ptr->csv_delimiter,
+        upload_request_ptr->start_timestamp_min,
+        upload_request_ptr->end_timestamp_min);
+
+    // Start the state machine
+    remote_upload_request = std::move(upload_request_ptr);
+    bool sm_started = start_charge_log_send_sm(
+        filename.c_str(), filename.length(),
+        display_name.c_str(), display_name.length(),
+        parsed_uuid, remote_upload_request->language, true,
+        config_hash);
+
+    if (!sm_started) {
+        logger.printfln("Failed to start charge log send for monthly upload user %d. The management connection may not be established or another send operation is in progress.", user_idx);
+        remote_upload_request.reset();
+        return false;
+    }
+
+    monthly_upload_deadline = calculate_deadline(5_min);
+    return true;
+}
+
+void ChargeTracker::finish_monthly_upload()
+{
+    monthly_upload_user_idx = -1;
+    monthly_upload_config_count = 0;
+    pending_generation_lock.reset();
+    task_scheduler.updateDelay(monthly_upload_task_id, 4_h);
 }
 
 void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int user_filter, const int device_filter, const uint32_t start_timestamp_min, const uint32_t end_timestamp_min, const Language language, const FileType file_type, const CSVFlavor csv_delimiter, std::unique_ptr<char[]> letterhead, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock, const String &remote_access_user_uuid)

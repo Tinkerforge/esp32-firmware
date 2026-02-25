@@ -98,7 +98,6 @@ public:
     ExportCharge *getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    void upload_charge_logs();
     void start_charge_log_upload_for_user(const uint32_t cookie, const int user_filter = -2, const int device_filter = -2, const uint32_t start_timestamp_min = 0, const uint32_t end_timestamp_min = 0, const Language language = Language::German, const FileType file_type = FileType::PDF, const CSVFlavor csv_delimiter = CSVFlavor::Excel, std::unique_ptr<char[]> letterhead = nullptr, std::unique_ptr<ChargeLogGenerationLockHelper> generation_lock = nullptr, const String &remote_access_user_uuid = "");
 
     // Processes a pre-validated Ack or Nack management packet for the charge log send state machine.
@@ -152,6 +151,19 @@ private:
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
     // Sends the MetadataForChargeLog packet using data stored in charge_log_send_ctx.
     bool send_metadata_from_ctx();
+
+    // Monthly upload state machine: tries to start the send for the given user index.
+    // Returns true if the send was started successfully, false if this user should be skipped.
+    bool try_start_monthly_upload_for_user(int user_idx);
+    // Called when all users have been processed or when there's nothing to upload.
+    void finish_monthly_upload();
+
+    uint64_t monthly_upload_task_id = 0;
+    int8_t monthly_upload_user_idx = -1; // -1 = not uploading
+    uint8_t monthly_upload_config_count = 0;
+    micros_t monthly_upload_deadline = 0_us;
+    uint32_t monthly_upload_start_timestamp_min = 0;
+    uint32_t monthly_upload_end_timestamp_min = 0;
 #endif
 };
 
