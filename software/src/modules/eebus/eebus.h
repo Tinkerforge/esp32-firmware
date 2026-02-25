@@ -31,7 +31,9 @@
 #define EEBUS_MODE_EM
 #define EEBUS_DEVICE_TYPE "EnergyManagementSystem" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 #endif
-
+#ifdef DEBUG_FS_ENABLE
+#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
+#endif
 // What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
 #ifdef EEBUS_MODE_EVSE
 // To disabled a usecase simply comment the respective line
@@ -77,9 +79,7 @@
 
 //#define EEBUS_DEV_DISABLE_RESPONSE // Use this switch for
 //#define EEBUS_SHIP_AUTOCONNECT // If defined, the EEBus device will automatically connect to discovered and trusted SHIP peers. This is currently in testing
-#ifdef DEBUG_FS_ENABLE
-#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
-#endif
+
 
 // Forward declarations (so we don't have to include spine_types.h here)
 class EEBusUseCases;

@@ -247,6 +247,9 @@ ElectricalConnectionParameterDescriptionListDataType EVEntity::get_electrical_co
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     eebus.usecases->ev_commissioning_and_configuration.get_electrical_connection_parameter_description(&electrical_connection_parameter_description_list_data);
 #endif
+#ifdef EEBUS_ENABLE_OPEV_USECASE
+    eebus.usecases->overload_protection_by_ev_charging_current_curtailment.get_electrical_connection_parameter_description_list_data(&electrical_connection_parameter_description_list_data);
+#endif
     return electrical_connection_parameter_description_list_data;
 }
 

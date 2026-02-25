@@ -131,6 +131,20 @@ public:
     void update_limits(int limit_phase_1_milliamps, int limit_phase_2_milliamps, int limit_phase_3_milliamps, bool active = false);
 
     /**
+     * Updates the minimum and maximum amps that can be set.
+     * @param min_limit_milliamps
+     * @param max_limit_milliamps
+     */
+    void update_min_max_limits(int min_limit_milliamps, int max_limit_milliamps);
+
+    /**
+     * @brief Update the API state with current OPEV data.
+     *
+     * Updates the eebus/usecases API endpoint with current limit values.
+     */
+    void update_api() const;
+
+    /**
      * @brief Allow or disallow limit changes.
      * @param allowed Whether limit changes are allowed
      */
@@ -195,7 +209,7 @@ private:
     int limit_per_phase_milliamps[3] = {32000, 32000, 32000};
     bool limit_active = false;
     bool limit_changeable_allowed = true;
-    int limit_milliamps_min = 100;
+    int limit_milliamps_min = 0;
     int limit_milliamps_max = 32000;
 
     /**

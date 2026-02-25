@@ -122,27 +122,20 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> OpevUsecase::
     if (!eebus.usecases->ev_commissioning_and_configuration.is_ev_connected()) {
         return features;
     }
-
     // The following functions are needed by the LoadControl Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature = build_feature_information(FeatureTypeEnumType::LoadControl);
-
     // loadControlLimitDescriptionListData
     loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitDescriptionListData));
-
     // loadControlLimitListData
     loadControlFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::loadControlLimitListData, true));
-
     features.push_back(loadControlFeature);
 
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature = build_feature_information(FeatureTypeEnumType::ElectricalConnection);
-
     // electricalConnectionParameterDescriptionListData
     electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionParameterDescriptionListData));
-
     // electricalConnectionPermittedValueSetListData
     electricalConnectionFeature.description->supportedFunction->push_back(build_function_property(FunctionEnumType::electricalConnectionPermittedValueSetListData));
-
     features.push_back(electricalConnectionFeature);
 
     return features;
@@ -196,6 +189,7 @@ void OpevUsecase::get_load_control_limit_list_data(LoadControlLimitListDataType 
 
 void OpevUsecase::get_electrical_connection_parameter_description_list_data(ElectricalConnectionParameterDescriptionListDataType *data)
 {
+#ifndef EEBUS_ENABLE_EVCC_USECASE
     struct Entrydata {
         uint8_t param_id;
         uint8_t measure_id;
@@ -216,15 +210,25 @@ void OpevUsecase::get_electrical_connection_parameter_description_list_data(Elec
 
         data->electricalConnectionParameterDescriptionData->push_back(parameter_description);
     }
+#endif
 }
 
 void OpevUsecase::get_electrical_connection_permitted_list_data(ElectricalConnectionPermittedValueSetListDataType *data) const
 {
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
+    constexpr std::array<uint8_t, 3> ids_used{{
+        EvcemUsecase::id_z_1,
+        EvcemUsecase::id_z_2,
+        EvcemUsecase::id_z_3,
+    }};
+#else
     constexpr std::array<uint8_t, 3> ids_used{{
         id_i_1,
         id_i_2,
         id_i_3,
     }};
+#endif
+
     for (const auto &id : ids_used) {
         ElectricalConnectionPermittedValueSetDataType permittedValueSetData{};
         permittedValueSetData.electricalConnectionId = id_j_1;
@@ -275,7 +279,25 @@ void OpevUsecase::update_limits(int limit_phase_1_milliamps, int limit_phase_2_m
         logger.printfln("OPEV: New limits received: L1: %d mA, L2: %d mA, L3: %d mA, active: %s", limit_per_phase_milliamps[0], limit_per_phase_milliamps[1], limit_per_phase_milliamps[2], limit_active ? "true" : "false");
         eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::LoadControl), limit_list_data, "loadControlLimitListData");
         eebus.usecases->inform_subscribers(entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), limit_permitted_data, "electricalConnectionPermittedValueSetListData");
+        update_api();
     }
+}
+void OpevUsecase::update_min_max_limits(int min_limit_milliamps, int max_limit_milliamps)
+{
+    limit_milliamps_min = min_limit_milliamps;
+    limit_milliamps_max = max_limit_milliamps;
+    update_api();
+}
+
+void OpevUsecase::update_api() const
+{
+    auto api_entry = eebus.eebus_usecase_state.get("overload_protection_by_ev_charging_current_curtailment");
+    api_entry->get("limit_active")->updateBool(limit_active);
+    api_entry->get("limit_phase_1_milliamps")->updateInt(limit_per_phase_milliamps[0]);
+    api_entry->get("limit_phase_2_milliamps")->updateInt(limit_per_phase_milliamps[1]);
+    api_entry->get("limit_phase_3_milliamps")->updateInt(limit_per_phase_milliamps[2]);
+    api_entry->get("limit_milliamps_min")->updateInt(limit_milliamps_min);
+    api_entry->get("limit_milliamps_max")->updateInt(limit_milliamps_max);
 }
 
 bool OpevUsecase::limit_changeable() const

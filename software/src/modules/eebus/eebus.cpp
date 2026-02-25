@@ -473,6 +473,16 @@ void EEBus::pre_setup()
              // Scenario 7: Frequency
              {"frequency_mhz", Config::Int32(50000)}, // Default 50Hz in millihertz
          })},
+        {"overload_protection_by_ev_charging_current_curtailment",
+         Config::Object({
+             // Usecase Overload Protection by EV Charging Current Curtailment
+             {"limit_active", Config::Bool(false)},
+             {"limit_phase_1_milliamps", Config::Int32(32000)},
+             {"limit_phase_2_milliamps", Config::Int32(32000)},
+             {"limit_phase_3_milliamps", Config::Int32(32000)},
+             {"limit_milliamps_min", Config::Int32(0)},
+             {"limit_milliamps_max", Config::Int32(32000)},
+         })},
     });
 
     ship.pre_setup();

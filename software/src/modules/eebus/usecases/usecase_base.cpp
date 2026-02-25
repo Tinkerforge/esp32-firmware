@@ -108,8 +108,7 @@ FunctionPropertyType EebusUsecase::build_function_property(const FunctionEnumTyp
         if (partial_write) {
             function_property.possibleOperations->write->partial = ElementTagType{};
         }
-    } else {
-        function_property.possibleOperations->read = PossibleOperationsReadType{};
     }
+    function_property.possibleOperations->read = PossibleOperationsReadType{};
     return function_property;
 }
