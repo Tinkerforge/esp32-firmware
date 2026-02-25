@@ -321,7 +321,6 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
         return false;
     }
     bool triggered = false;
-    int current_rule = 1;
     for (size_t i = 0; i < config_in_use.get("tasks")->count(); ++i) {
         micros_t *last_run_timestamp = &last_run[i];
 
@@ -351,7 +350,7 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
 
             const ActionCb &cb = action_map[action_ident].callback;
             if (delay > 0_s) {
-                logger.printfln("Running rule #%d in %lu seconds", current_rule, delay.as<uint32_t>());
+                logger.printfln("Running rule #%d in %lu seconds", i + 1, delay.as<uint32_t>());
                 uint64_t task_id = task_scheduler.scheduleOnce([this, cb, action](){
                     cb(static_cast<const Config *>(action->get()));
 
@@ -367,11 +366,10 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
                 }, delay);
                 pending_delayed_tasks.push_back(task_id);
             } else {
-                logger.printfln("Running rule #%d", current_rule);
+                logger.printfln("Running rule #%d", i + 1);
                 cb(static_cast<const Config *>(action->get()));
             }
         }
-        current_rule++;
     }
     return triggered;
 }
