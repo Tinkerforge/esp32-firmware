@@ -115,15 +115,26 @@ static void update_usecases_from_charger_state(const Config *charger_state_cfg)
 #endif
 #endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
 }
+#endif // EEBUS_MODE_EVSE
 
 /**
- * Update EVSE current limit based on EEBUS power limits (LPC/OPEV).
+ * Update current limit based on EEBUS power limits (LPC/OPEV).
  * Called periodically to apply power restrictions from Energy Guard.
+ *
+ * LPC (§14a EnWG) limits are routed through p14a_enwg.
  */
-static void update_evse_limit()
+static void update_limit()
 {
     if (eebus.usecases == nullptr)
         return;
+
+#if MODULE_P14A_ENWG_AVAILABLE()
+#ifdef EEBUS_ENABLE_LPC_USECASE
+    bool lpc_active = eebus.usecases->limitation_of_power_consumption.limit_is_active();
+    int lpc_limit_w = eebus.usecases->lpc->get_current_limit_w();
+    p14a_enwg.set_eebus_limit(lpc_active, static_cast<uint32_t>(lpc_limit_w));
+#endif // EEBUS_ENABLE_LPC_USECASE
+#endif // MODULE_P14A_ENWG_AVAILABLE()
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
     const uint32_t phases = evse_common.backend->get_phases();
@@ -132,10 +143,6 @@ static void update_evse_limit()
 
     // Start with maximum current
     int limit_mA = 32000;
-
-#ifdef EEBUS_ENABLE_LPC_USECASE
-    // Apply LPC (Limitation of Power Consumption) limit
-    limit_mA = eebus.usecases->lpc->get_current_limit_w() * 1000 / 230 / phases;
 
 #ifdef EEBUS_ENABLE_OPEV_USECASE
     // OPEV (Overload Protection) takes precedence if LPC is not active
@@ -152,8 +159,6 @@ static void update_evse_limit()
         limit_mA = limit_phases[0] * 1000 / 230 / phases;
     }
 #endif // EEBUS_ENABLE_OPEV_USECASE
-#endif // EEBUS_ENABLE_LPC_USECASE
-
     // Clamp to safe operating range (6A - 32A)
     limit_mA = std::min(limit_mA, 32000);
     limit_mA = std::max(limit_mA, 6000);
@@ -162,7 +167,6 @@ static void update_evse_limit()
 #endif // MODULE_EVSE_COMMON_AVAILABLE()
 }
 
-#endif // EEBUS_MODE_EVSE
 
 // ============================================================================
 // Development testing code (only compiled when EEBUS_DEV_TEST_ENABLE is defined)
@@ -514,15 +518,13 @@ void EEBus::setup()
     logger.printfln("EEBUS: Development testing enabled - simulating use case scenarios");
 #endif
 
-    // Schedule periodic EVSE limit updates (LPC/OPEV integration)
-#ifdef EEBUS_MODE_EVSE
+    // Schedule periodic limit updates (LPC/OPEV integration)
     task_scheduler.scheduleUncancelable(
         []() {
-            update_evse_limit();
+            update_limit();
         },
         10_s, // Start after 10 seconds
         1_s); // Check every second
-#endif
 }
 
 void EEBus::register_urls()
