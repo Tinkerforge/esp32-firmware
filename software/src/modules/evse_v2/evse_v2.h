@@ -123,6 +123,16 @@ public:
     int set_enumerate_configuration(const uint16_t enumerator_h[8], const uint8_t enumerator_s[8], const uint8_t enumerator_v[8]);
     int set_enumerate_value(uint8_t value);
 
+    int set_eichrecht_gateway_identification(const char gateway_identification[41], uint8_t *ret_eichrecht_state);
+    int set_eichrecht_gateway_serial(const char gateway_serial[25], uint8_t *ret_eichrecht_state);
+    int set_eichrecht_user_assignment(bool identification_status, const uint8_t identification_flags[4], uint8_t identification_type, const char identification_data[40], uint8_t *ret_eichrecht_state);
+    int set_eichrecht_charge_point(uint8_t identification_type, const char identification[20], uint8_t *ret_eichrecht_state);
+    int set_eichrecht_transaction(char transaction, uint32_t unix_time, int16_t utc_time_offset, uint16_t signature_format, uint8_t *ret_eichrecht_state);
+    int get_eichrecht_transaction_state(char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state);
+    int get_eichrecht_public_key(uint8_t ret_public_key[64]);
+    int register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data);
+    int register_eichrecht_signature_callback(TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data);
+
 private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;

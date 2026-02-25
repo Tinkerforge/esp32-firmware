@@ -371,6 +371,51 @@ int EVSEV2::set_enumerate_value(uint8_t value) {
     return tf_evse_v2_set_enumerate_value(&device, value);
 }
 
+int EVSEV2::set_eichrecht_gateway_identification(const char gateway_identification[41], uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_set_eichrecht_gateway_identification(&device, gateway_identification, ret_eichrecht_state);
+}
+
+int EVSEV2::set_eichrecht_gateway_serial(const char gateway_serial[25], uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_set_eichrecht_gateway_serial(&device, gateway_serial, ret_eichrecht_state);
+}
+
+int EVSEV2::set_eichrecht_user_assignment(bool identification_status, const uint8_t identification_flags[4], uint8_t identification_type, const char identification_data[40], uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_set_eichrecht_user_assignment(&device, identification_status, identification_flags, identification_type, identification_data, ret_eichrecht_state);
+}
+
+int EVSEV2::set_eichrecht_charge_point(uint8_t identification_type, const char identification[20], uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_set_eichrecht_charge_point(&device, identification_type, identification, ret_eichrecht_state);
+}
+
+int EVSEV2::set_eichrecht_transaction(char transaction, uint32_t unix_time, int16_t utc_time_offset, uint16_t signature_format, uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_set_eichrecht_transaction(&device, transaction, unix_time, utc_time_offset, signature_format, ret_eichrecht_state);
+}
+
+int EVSEV2::get_eichrecht_transaction_state(char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state)
+{
+    return tf_evse_v2_get_eichrecht_transaction_state(&device, ret_transaction, ret_transaction_state, ret_transaction_inner_state, ret_measurement_status, ret_signature_status, ret_eichrecht_state);
+}
+
+int EVSEV2::get_eichrecht_public_key(uint8_t ret_public_key[64])
+{
+    return tf_evse_v2_get_eichrecht_public_key(&device, ret_public_key);
+}
+
+int EVSEV2::register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data)
+{
+    return tf_evse_v2_register_eichrecht_dataset_callback(&device, handler, message, user_data);
+}
+
+int EVSEV2::register_eichrecht_signature_callback(TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data)
+{
+    return tf_evse_v2_register_eichrecht_signature_callback(&device, handler, message, user_data);
+}
+
 static const char *debug_header_prefix =
     "STATE,"
     "iec61851_state,"
