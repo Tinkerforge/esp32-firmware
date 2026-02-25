@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-02-06.      *
+ * This file was automatically generated on 2026-02-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -3868,7 +3868,7 @@ int tf_evse_v2_set_eichrecht_transaction(TF_EVSEV2 *evse_v2, char transaction, u
     return tf_tfp_get_error(_error_code);
 }
 
-int tf_evse_v2_get_eichrecht_transaction(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state) {
+int tf_evse_v2_get_eichrecht_transaction_state(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state) {
     if (evse_v2 == NULL) {
         return TF_E_NULL;
     }
@@ -3884,7 +3884,7 @@ int tf_evse_v2_get_eichrecht_transaction(TF_EVSEV2 *evse_v2, char *ret_transacti
     }
 
     bool _response_expected = true;
-    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION, 0, _response_expected);
+    tf_tfp_prepare_send(evse_v2->tfp, TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION_STATE, 0, _response_expected);
 
     uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
 

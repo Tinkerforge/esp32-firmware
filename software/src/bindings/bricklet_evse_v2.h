@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-02-06.      *
+ * This file was automatically generated on 2026-02-25.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -341,7 +341,7 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION 57
+#define TF_EVSE_V2_FUNCTION_GET_EICHRECHT_TRANSACTION_STATE 57
 
 /**
  * \ingroup TF_EVSEV2
@@ -1275,11 +1275,6 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
-#define TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_INVALID_DATE_TIME 128
-
-/**
- * \ingroup TF_EVSEV2
- */
 #define TF_EVSE_V2_EICHRECHT_TRANSACTION_COMMAND_BEGIN 'B'
 
 /**
@@ -2070,7 +2065,7 @@ int tf_evse_v2_set_eichrecht_transaction(TF_EVSEV2 *evse_v2, char transaction, u
  *
  * TODO
  */
-int tf_evse_v2_get_eichrecht_transaction(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state);
+int tf_evse_v2_get_eichrecht_transaction_state(TF_EVSEV2 *evse_v2, char *ret_transaction, uint8_t *ret_transaction_state, uint8_t *ret_transaction_inner_state, uint16_t *ret_measurement_status, uint16_t *ret_signature_status, uint8_t *ret_eichrecht_state);
 
 /**
  * \ingroup TF_EVSEV2
