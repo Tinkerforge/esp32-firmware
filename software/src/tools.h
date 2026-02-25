@@ -179,6 +179,11 @@ constexpr size_t constexpr_strlen(const char *s) {
             : (constexpr_strlen(&s[1]) + 1);
 }
 
+template <typename T, size_t N>
+constexpr T constexpr_sum_array (T const (&a)[N], size_t i = 0U) {
+    return i < N ? (a[i] + constexpr_sum_array(a, i + 1U)) : T{};
+}
+
 template<typename T, size_t capacity_>
 struct CoolArray {
     CoolArray() {}

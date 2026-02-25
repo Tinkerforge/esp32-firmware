@@ -695,19 +695,42 @@ void platform_set_charging_phases(int32_t connectorId, uint8_t phases)
 
 #define PATH_PREFIX String("/ocpp/")
 
-size_t platform_read_file(const char *name, char *buf, size_t len)
+std::unique_ptr<char[]> platform_read_file(const char *name, size_t *length, size_t max_len)
 {
-    auto path = PATH_PREFIX + name;
-    if (!LittleFS.exists(path))
-        return 0;
+    size_t len = 0;
+    std::unique_ptr<char[]> result = nullptr;
 
+    auto path = PATH_PREFIX + name;
     File f = LittleFS.open(path);
-    size_t read = f.read((uint8_t *)buf, len);
-    // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
-    if (read > len)
-        return 0;
-    return read;
+    if (f) {
+        len = f.size();
+        if (len <= max_len) {
+            result = heap_alloc_array<char>(len + 1);
+            size_t read = f.read((uint8_t *)result.get(), len);
+            // File::read can return 2^32-1 because it returns -1 if the file is not open but the return type is size_t.
+            if (read == len) {
+                result[len] = '\0';
+            } else {
+                result = nullptr;
+                len = 0;
+            }
+        } else {
+            result = nullptr;
+            len = 0;
+        }
+    }
+
+    if (length != nullptr)
+        *length = len;
+    return result;
 }
+
+bool platform_append_file(const char *name, char *buf, size_t len)
+{
+    File f = LittleFS.open(PATH_PREFIX + name, "a", true);
+    return f.write((const uint8_t *)buf, len) == len;
+}
+
 bool platform_write_file(const char *name, char *buf, size_t len)
 {
     File f = LittleFS.open(PATH_PREFIX + name, "w", true);
@@ -809,6 +832,10 @@ const char *platform_get_charge_point_serial_number()
 const char *platform_get_firmware_version()
 {
     return build_version_full_str();
+}
+const char *platform_get_evse_firmware_version()
+{
+    return api.getState("evse/identity")->get("fw_version")->asUnsafeCStr(); // FIXME: Check if this use of the returned C string is safe or if a local copy like in platform_get_charge_point_model() is required.
 }
 const char *platform_get_iccid()
 {
@@ -912,4 +939,200 @@ void platform_update_config_state(ConfigKey key,
 bool platform_supports_signed_meter_values(void *ctx, int32_t connectorId) {
     // We will use an eFuse later to identify "Eichrect"-conforming chargers. For now, accept all WARP4 hardware.
     return OPTIONS_PRODUCT_ID_IS_WARP4();
+}
+
+static signed_meter_value_cb smv_cb = nullptr;
+static void *signed_meter_value_cb_user_data = nullptr;
+
+// Should be called by the platform when a new OCMF container is received/reassembled
+void platform_register_signed_meter_value_callback(void *ctx, signed_meter_value_cb cb, void *user_data)
+{
+    smv_cb = cb;
+    signed_meter_value_cb_user_data = user_data;
+}
+
+bool platform_txn_active(void *ctx, int32_t connectorId) {
+    uint16_t measurement_status = TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_IDLE;
+    evse_v2.get_eichrecht_transaction_state(nullptr, nullptr, nullptr, &measurement_status, nullptr, nullptr);
+    return OPTIONS_PRODUCT_ID_IS_WARP4() && measurement_status != TF_EVSE_V2_EICHRECHT_MEASUREMENT_STATUS_IDLE;
+}
+
+#if MODULE_EVSE_V2_AVAILABLE()
+
+static constexpr const char * const ocmf_chunks[] {
+    "OCMF|",
+    /*payload*/
+    "|{\"SA\":\"ECDSA-secp256r1-SHA256\",\"SE\":\"hex\",\"SM\":\"application/x-der\",\"SD\":\"", // Hard-coded for now, the Iskra meter only supports this method.
+    /*signature data*/
+    "\"}"
+};
+
+static constexpr size_t ocmf_chunk_lens[] {
+    constexpr_strlen(ocmf_chunks[0]),
+    constexpr_strlen(ocmf_chunks[1]),
+    constexpr_strlen(ocmf_chunks[2]),
+};
+
+static_assert(ARRAY_SIZE(ocmf_chunks) == ARRAY_SIZE(ocmf_chunk_lens), "length mismatch");
+
+// Iskra meter datasheet: "Maximum size of billing dataset is 1024 bytes."
+static constexpr size_t ocmf_payload_max_len = 1024;
+// Iskra meter datasheet: (8315 - 8188 + 1) = 128 registers (256 byte)
+static constexpr size_t ocmf_signature_max_len = 256;
+
+static constexpr size_t ocmf_buffer_size = constexpr_sum_array(ocmf_chunk_lens) + ocmf_payload_max_len + ocmf_signature_max_len;
+static_assert(ocmf_buffer_size < 1536, "tfocpp's Connector.cpp onSignedMeterValue assumes 1536 byte, go fix that");
+
+struct UserData {
+    char *ocmf_buf;
+    uint64_t watchdog_task_id;
+    int32_t connector_id;
+};
+
+static UserData cb_user_data;
+
+static char test_buf[512];
+
+#endif
+
+void platform_prepare_meter_for_txn(
+    void *ctx,
+    ExtOCMF *ocmf
+) {
+#if MODULE_EVSE_V2_AVAILABLE()
+    // strncpy can produce non-terminated strings.
+    // This is fine(tm) because the EVSE 2.0 firmware expects non-terminated strings and adds a null-terminator.
+    // All string parameters passed to the bindings functions/bricklet firmware work this way.
+    #define UNTERMINATED_BUFFER(buf, param, size) char buf[size]; strncpy(buf, param, size)
+
+    {
+        UNTERMINATED_BUFFER(gi, ocmf->GI, 41);
+        evse_v2.set_eichrecht_gateway_identification(gi, nullptr);
+    }
+
+    {
+        UNTERMINATED_BUFFER(gs, ocmf->GS, 25);
+        evse_v2.set_eichrecht_gateway_serial(gs, nullptr);
+    }
+
+    {
+        uint8_t if_[4]{
+            (uint8_t) ocmf->IF[0],
+            (uint8_t) ocmf->IF[1],
+            (uint8_t) ocmf->IF[2],
+            (uint8_t) ocmf->IF[3]
+        };
+
+        UNTERMINATED_BUFFER(id, ocmf->ID, 40);
+        evse_v2.set_eichrecht_user_assignment(ocmf->IS, if_, (uint8_t) ocmf->IT, id, nullptr);
+    }
+
+    {
+        UNTERMINATED_BUFFER(cpid, ocmf->CI, 20);
+        evse_v2.set_eichrecht_charge_point((uint8_t) ocmf->CT, cpid, nullptr);
+    }
+
+    #undef UNTERMINATED_BUFFER
+#endif
+}
+
+void platform_request_meter_value(void *ctx, int32_t connectorId, time_t unix_time, ExtOCMFWTF_signature_encoding signature_encoding, MeterRequest req) {
+    // release() here: Expressing the ownership through C function pointers is difficult.
+    auto ocmf_buf = heap_alloc_array<char>(ocmf_buffer_size + 1 /* null-terminator */).release();
+    auto ocmf_ptr = ocmf_buf;
+    ocmf_ptr = (char *)mempcpy(ocmf_ptr, ocmf_chunks[0], ocmf_chunk_lens[0]);
+    cb_user_data.ocmf_buf = ocmf_buf;
+    cb_user_data.connector_id = connectorId;
+
+    evse_v2.register_eichrecht_signature_callback([](struct TF_EVSEV2 *, char *ocmf_ptr_, uint16_t message_length, void *ud) {
+        logger.printfln("!!!FALLBACK!!! Received unexpected eichrecht signature");
+        logger.print_plain(ocmf_ptr_, message_length);
+        logger.printfln("\n");
+    }, test_buf, nullptr);
+
+    cb_user_data.watchdog_task_id = task_scheduler.scheduleOnce([ocmf_buf](){
+        logger.printfln("!!!FALLBACK!!! task aborting transaction!");
+        evse_v2.register_eichrecht_dataset_callback(nullptr, nullptr, nullptr);
+        evse_v2.register_eichrecht_signature_callback(nullptr, nullptr, nullptr);
+        // Re-adopt raw pointer to free it with the correct deleter.
+        std::invoke_result_t<decltype(heap_alloc_array<char>), size_t> unique_ptr_esque{ocmf_buf};
+        // TODO: notify OCPP that we failed to acquire the signed meter value
+    }, 3_s); // The Iskra meter's datasheet specifies that signing should take one second max.
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow=compatible-local" // GCC warns about lambda parameters with the same name as **not captured** outer local variables.
+    evse_v2.register_eichrecht_dataset_callback([](struct TF_EVSEV2 *, char *ocmf_ptr, uint16_t message_length, void *ud){
+#pragma GCC diagnostic pop
+        // Immediately deregister
+        evse_v2.register_eichrecht_dataset_callback(nullptr, nullptr, nullptr);
+
+        UserData *user_data = reinterpret_cast<UserData *>(ud);
+
+        ocmf_ptr += message_length;
+
+        ocmf_ptr = (char *)mempcpy(ocmf_ptr, ocmf_chunks[1], ocmf_chunk_lens[1]);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow=compatible-local" // GCC warns about lambda parameters with the same name as **not captured** outer local variables.
+        evse_v2.register_eichrecht_signature_callback([](struct TF_EVSEV2 *, char *ocmf_ptr, uint16_t message_length, void *ud) {
+            UserData *user_data = reinterpret_cast<UserData *>(ud); // Also results in a more-or-less false positive shadow warning
+#pragma GCC diagnostic pop
+            // Immediately deregister
+            evse_v2.register_eichrecht_signature_callback(nullptr, nullptr, nullptr);
+
+            // Convert binary ASN.1 to hex
+            for (int i = message_length - 1; i >= 0; --i) {
+                auto byte = ocmf_ptr[i];
+                auto hi = byte >> 4;
+                auto lo = byte & 0x0F;
+                ocmf_ptr[2 * i]     = hi < 10 ? ('0' + hi) : ('A' + hi - 10);
+                ocmf_ptr[2 * i + 1] = lo < 10 ? ('0' + lo) : ('A' + lo - 10);
+            }
+            message_length *= 2;
+
+            ocmf_ptr += message_length;
+
+            ocmf_ptr = (char *)mempcpy(ocmf_ptr, ocmf_chunks[2], ocmf_chunk_lens[2]);
+            *ocmf_ptr = '\0';
+
+            task_scheduler.cancel(user_data->watchdog_task_id);
+
+            smv_cb(user_data->connector_id, ExtSMVSignedMeterValueTypeSigningMethod::EMPTY_STRING, ExtSMVSignedMeterValueTypeEncodingMethod::OCMF, user_data->ocmf_buf, ocmf_ptr - user_data->ocmf_buf, signed_meter_value_cb_user_data);
+
+            // Re-adopt raw pointer to free it with the correct deleter.
+            std::invoke_result_t<decltype(heap_alloc_array<char>), size_t> unique_ptr_esque{user_data->ocmf_buf};
+        }, ocmf_ptr, user_data);
+
+    }, ocmf_ptr, &cb_user_data);
+
+    uint8_t eichrecht_state = 0xFF;
+
+    evse_v2.set_eichrecht_transaction((char)req, unix_time, 0, (uint16_t) signature_encoding, &eichrecht_state);
+}
+
+
+// prepend 3059301306072A8648CE3D020106082A8648CE3D03010703420004 for iskra meter!
+size_t platform_get_meter_public_key(void *ctx, int32_t connectorId, char *buf, size_t buf_size) {
+#if MODULE_EVSE_V2_AVAILABLE()
+    const uint8_t iskra_prefix[] {
+        0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86,
+        0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06, 0x08, 0x2A,
+        0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03,
+        0x42, 0x00, 0x04
+    };
+
+    constexpr size_t iskra_key_size = 64;
+
+    auto size = sizeof(iskra_prefix) + iskra_key_size;
+
+    if (buf_size < size)
+        return 0;
+
+    memcpy(buf, iskra_prefix, sizeof(iskra_prefix));
+    evse_v2.get_eichrecht_public_key(reinterpret_cast<uint8_t*>(buf + sizeof(iskra_prefix)));
+
+    return size;
+#else
+    return 0;
+#endif
 }

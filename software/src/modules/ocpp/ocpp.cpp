@@ -124,7 +124,15 @@ void Ocpp::pre_setup()
         {config_keys[(size_t)ConfigKey::ChargingScheduleAllowedChargingRateUnit], Config::Str("", 0, STR_LEN)},
         {config_keys[(size_t)ConfigKey::ChargingScheduleMaxPeriods], Config::Str("", 0, INT_LEN)},
         {config_keys[(size_t)ConfigKey::ConnectorSwitch3to1PhaseSupported], Config::Str("", 0, BOOL_LEN)},
-        {config_keys[(size_t)ConfigKey::MaxChargingProfilesInstalled], Config::Str("", 0, INT_LEN)}
+        {config_keys[(size_t)ConfigKey::MaxChargingProfilesInstalled], Config::Str("", 0, INT_LEN)},
+        {config_keys[(size_t)ConfigKey::MeterPublicKey1], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::PublicKeyWithSignedMeterValue], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::SampledDataSignReadings], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::StartTxnSampledData], Config::Str("", 0, STR_LEN)},
+        {config_keys[(size_t)ConfigKey::SampledDataSignStartedReadings], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::SampledDataSignUpdatedReadings], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::AlignedDataSignReadings], Config::Str("", 0, BOOL_LEN)},
+        {config_keys[(size_t)ConfigKey::AlignedDataSignUpdatedReadings], Config::Str("", 0, BOOL_LEN)},
     });
 #endif
 }
