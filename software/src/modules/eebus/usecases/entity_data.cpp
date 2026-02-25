@@ -19,6 +19,9 @@
 
 #include "entity_data.h"
 #include "../eebus.h"
+#include "../eebus_usecases.h"
+
+extern EEBus eebus;
 
 // ============================================================================
 // EVSEEntity Implementation

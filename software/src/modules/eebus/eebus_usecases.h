@@ -38,37 +38,6 @@ Sometimes the following references are used e.g. LPC-905, these refer to rules l
 #include "spine_types.h"
 #include "usecases.enum.h"
 
-// What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
-#ifdef EEBUS_MODE_EVSE
-// To disabled a usecase simply comment the respective line
-//#define EEBUS_ENABLE_EVCS_USECASE
-#define EEBUS_ENABLE_EVCEM_USECASE
-#define EEBUS_ENABLE_EVCC_USECASE
-#define EEBUS_ENABLE_EVSECC_USECASE
-#define EEBUS_ENABLE_LPC_USECASE
-//#define EEBUS_ENABLE_CEVC_USECASE
-#define EEBUS_ENABLE_MPC_USECASE
-//#define EEBUS_ENABLE_OPEV_USECASE
-#endif
-#ifdef EEBUS_MODE_EM
-#define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_LPC_USECASE
-#define EEBUS_ENABLE_MGCP_USECASE
-#endif
-
-#ifdef EEBUS_DEV_TEST_ENABLE
-#define EEBUS_ENABLE_EVCEM_USECASE
-#define EEBUS_ENABLE_EVCC_USECASE
-#define EEBUS_ENABLE_EVSECC_USECASE
-#define EEBUS_ENABLE_LPC_USECASE
-#define EEBUS_ENABLE_MPC_USECASE
-#define EEBUS_ENABLE_LPP_USECASE
-#define EEBUS_ENABLE_EVCS_USECASE
-#define EEBUS_ENABLE_CEVC_USECASE
-#define EEBUS_ENABLE_OPEV_USECASE
-#define EEBUS_ENABLE_MGCP_USECASE
-#endif
-
 // Configuration related to the LPC usecases
 // Disable if subscription functionalities shall not be used
 #define EEBUS_NODEMGMT_ENABLE_SUBSCRIPTIONS true
