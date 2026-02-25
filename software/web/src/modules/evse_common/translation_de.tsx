@@ -148,7 +148,8 @@ let x = {
                 12: "Energie-/Zeitlimit",
                 13: "Zählerüberwachung",
                 14: "Automatisierung",
-                15: "EEBUS"
+                15: "EEBUS",
+                16: "§14a EnWG"
             }[i];}/*NF*/,
 
             // EVSE V1 only
@@ -349,7 +350,8 @@ let x = {
                 12: "Energie-/Zeitlimit",
                 13: "Zählerüberwachung",
                 14: "Automatisierung",
-                15: "EEBUS"
+                15: "EEBUS",
+                16: "§14a EnWG"
             }[i];}/*NF*/,
 
             "reboot_content_changed": "Ladeeinstellungen",
