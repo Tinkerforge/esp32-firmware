@@ -817,6 +817,8 @@ void API::register_urls()
             TFJsonSerializer json{buf.get(), BUF_SIZE};
             json.addObject();
             json.addMemberNumber("uptime", now_us().to<millis_t>().as<int64_t>());
+            json.addMemberString("firmware", build_filename_str());
+            json.addMemberString("build_info", build_info_str());
 
             constexpr struct {
                 const char *name;

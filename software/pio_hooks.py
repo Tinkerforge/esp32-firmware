@@ -1108,7 +1108,15 @@ def main():
     build_lines.append('const char *build_timestamp_hex_str() {{ return "{:x}"; }}'.format(build_timestamp))
     build_lines.append('const char *build_version_full_str() {{ return "{}"; }}'.format(version_full_str))
     build_lines.append('const char *build_version_full_str_upper() {{ return "{}"; }}'.format(version_full_str.upper()))
-    build_lines.append('const char *build_info_str() {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
+
+    main_branch_info = ""
+    if branch_name not in ["master", "main"]:
+        main_branch_name = subprocess.run(["git", "symbolic-ref", "refs/remotes/origin/HEAD"], check=True, capture_output=True).stdout.decode("utf-8").strip().split('/')[-1]
+        # For some reason we use 15 char long commit ids above? When in Rome...
+        main_commit = subprocess.run(["git", "merge-base", "--fork-point", main_branch_name], check=True, capture_output=True).stdout.decode("utf-8").strip()[:15]
+        main_branch_info = f";{main_branch_name}@{main_commit}"
+
+    build_lines.append('const char *build_info_str() {{ return "{};{}@{}{}"; }}'.format(git_url, branch_name, git_commit_id, main_branch_info))
     build_lines.append('const char *build_filename_str() {{ return "{}"; }}'.format(firmware_basename))
     build_lines.append('const char *build_commit_id_str() {{ return "{}"; }}'.format(git_commit_id))
     build_lines.append('static_assert(sizeof(build_custom_app_desc_t) == 16, "build_custom_app_desc_t has wrong size");')
