@@ -1170,9 +1170,9 @@ void EVSEV2::update_all_data()
 
     static InputState last_shutdown_input_state = InputState::Unknown;
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
-    bool gpio_enable = gpio[5];
+    bool gpio_enable = !gpio[5];
 #elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-    bool gpio_enable = gpio[18];
+    bool gpio_enable = !gpio[18];
 #else
     #error "GPIO layout is unknown"
 #endif
@@ -1189,7 +1189,7 @@ void EVSEV2::update_all_data()
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     static InputState last_input_state = InputState::Unknown;
 
-    InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
+    InputState input_state = !gpio[16] ? InputState::Closed : InputState::Open;
     if (last_input_state != input_state) {
         // We need to schedule this since the first call of update_all_data happens before automation is initialized.
         task_scheduler.scheduleOnce([this, gpio]() {
