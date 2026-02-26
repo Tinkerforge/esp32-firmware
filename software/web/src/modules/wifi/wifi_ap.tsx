@@ -30,6 +30,7 @@ import { Button, Modal } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputSelect } from "../../ts/components/input_select";
+import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { SubPage } from "../../ts/components/sub_page";
 
 type APConfig = API.getType["wifi/ap_config"];
@@ -62,6 +63,27 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
         return (
             <SubPage name="wifi_ap" title={__("wifi.content.ap_settings")}>
                 <SubPage.Status>
+                    <FormRow label={__("wifi.content.ap_state")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={wifi_state.ap_state}
+                            items={[
+                                ["primary", __("wifi.status.disabled")],
+                                ["success", __("wifi.status.enabled")],
+                                ["success", __("wifi.status.fallback_inactive")],
+                                ["danger",  __("wifi.status.fallback_active")],
+                            ]}/>
+                    </FormRow>
+
+                    {wifi_state.ap_state != 0 &&
+                        <FormRow label={__("wifi.content.status_ap_ip")}>
+                            <InputText
+                                value={state.ip + " (/" + util.countBits(util.parseIP(state.subnet)) + ")"}
+                            />
+                        </FormRow>
+                    }
+
                     <FormRow label={__("wifi.content.ap_bssid")}>
                         <InputText
                             value={wifi_state.ap_bssid.length == 0 ? __("wifi.content.ap_bssid_none") : wifi_state.ap_bssid}

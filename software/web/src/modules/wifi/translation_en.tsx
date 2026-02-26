@@ -25,6 +25,11 @@ let x = {
             "sta_mac": "Device MAC address",
             "sta_connected_bssid": "Connected BSSID",
             "sta_connected_bssid_none": "Not connected",
+            "sta_connection": "WiFi connection",
+            "status_sta_ip": "IP address",
+            "status_sta_ip_none": "No IP address",
+            "status_sta_rssi": "Signal strength",
+            "status_sta_rssi_none": "Not connected",
             "sta_enable_sta": "WiFi connection enabled",
             "sta_enable_sta_desc": <>Automatically connects to the configured network on start-up.</>,
             "sta_ssid": "Network name (SSID)",
@@ -40,6 +45,8 @@ let x = {
             "ap_settings": "WiFi Access Point",
             "ap_bssid": "BSSID",
             "ap_bssid_none": "Access point not active",
+            "ap_state": "Access point",
+            "status_ap_ip": "IP address",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>

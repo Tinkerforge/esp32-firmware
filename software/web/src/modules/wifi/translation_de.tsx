@@ -25,6 +25,11 @@ let x = {
             "sta_mac": "Geräte-MAC-Adresse",
             "sta_connected_bssid": "Verbundene BSSID",
             "sta_connected_bssid_none": "Nicht verbunden",
+            "sta_connection": "WLAN-Verbindung",
+            "status_sta_ip": "IP-Adresse",
+            "status_sta_ip_none": "Keine IP-Adresse",
+            "status_sta_rssi": "Signalstärke",
+            "status_sta_rssi_none": "Nicht verbunden",
             "sta_enable_sta": "WLAN-Verbindung aktiviert",
             "sta_enable_sta_desc": <>{__("The_device")} verbindet sich beim Start automatisch zum konfigurierten Netzwerk.</>,
             "sta_ssid": "Netzwerkname (SSID)",
@@ -40,6 +45,8 @@ let x = {
             "ap_settings": "WLAN-Access-Point",
             "ap_bssid": "BSSID",
             "ap_bssid_none": "Access-Point nicht aktiv",
+            "ap_state": "Access Point",
+            "status_ap_ip": "IP-Adresse",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>

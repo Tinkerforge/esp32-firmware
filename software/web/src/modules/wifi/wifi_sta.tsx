@@ -27,10 +27,12 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow } from "../../ts/components/form_row";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
 import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
+import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
+import { WifiState } from "./wifi_state.enum";
 import { EapConfigID, EapConfigPEAPTTLS, EapConfigTLS } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
 import { ItemModal } from "../../ts/components/item_modal";
@@ -352,6 +354,37 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
                 <SubPage.Status>
+                    <FormRow label={__("wifi.content.sta_connection")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={wifi_state.connection_state}
+                            items={[
+                                ["primary", __("wifi.status.not_configured")],
+                                ["danger",  __("wifi.status.not_connected")],
+                                ["warning", __("wifi.status.connecting")],
+                                ["success", __("wifi.status.connected")],
+                            ]}/>
+                    </FormRow>
+
+                    {wifi_state.connection_state != WifiState.NotConfigured && <>
+                        <FormRow label={__("wifi.content.status_sta_ip")}>
+                            <InputText
+                                value={wifi_state.sta_ip != "0.0.0.0"
+                                    ? wifi_state.sta_ip + " (/" + util.countBits(util.parseIP(wifi_state.sta_subnet)) + ")"
+                                    : __("wifi.content.status_sta_ip_none")}
+                            />
+                        </FormRow>
+
+                        <FormRow label={__("wifi.content.status_sta_rssi")}>
+                            <InputText
+                                value={wifi_state.connection_state == WifiState.Connected
+                                    ? wifi_state.sta_rssi + " dBm"
+                                    : __("wifi.content.status_sta_rssi_none")}
+                            />
+                        </FormRow>
+                    </>}
+
                     <FormRow label={__("wifi.content.sta_mac")}>
                         <InputText
                             value={wifi_state.sta_mac}
