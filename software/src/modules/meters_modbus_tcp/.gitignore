@@ -1,3 +1,5 @@
 meter_modbus_tcp_specs.h
 meter_modbus_tcp_specs.cpp
 meter_modbus_tcp_virtual_meter_enums.h
+meter_modbus_tcp_is.inc
+meter_modbus_tcp_is.cpp

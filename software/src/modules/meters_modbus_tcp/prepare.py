@@ -55,6 +55,7 @@ modules = [
     janitza,
 ]
 
+table_ids = []
 table_prototypes = []
 table_typedefs = []
 table_typenames = []
@@ -66,6 +67,8 @@ virtual_meters = collections.OrderedDict()
 for module in modules:
     for table_prototype in module.table_prototypes:
         table_id = util.FlavoredName(table_prototype[0]).get()
+
+        table_ids.append(table_id)
 
         if table_prototype[1] == None:
             table_prototypes.append(f'\n    table_prototypes->push_back({{MeterModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
@@ -399,3 +402,32 @@ cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)
+
+is_inc = '// WARNING: This file is generated.\n\n'
+
+is_cpp  = '// WARNING: This file is generated.\n\n'
+is_cpp += '#include "meter_modbus_tcp.h"\n'
+
+for table_id in table_ids:
+    is_inc += f'bool is_any_{table_id.under}_meter() const;\n'
+    is_cpp += f'\nbool MeterModbusTCP::is_any_{table_id.under}_meter() const\n' \
+               '{\n' \
+              f'    return table_id == MeterModbusTCPTableID::{table_id.camel};\n' \
+               '}\n'
+
+for group, value in virtual_meters.items():
+    if len(value) == 1 and value[0][0] == None:
+        continue
+
+    for member_spec_name_default_location in value:
+        member, _, _ = member_spec_name_default_location
+
+        is_inc += f'bool is_{group.under}_{member.under}_meter() const;\n'
+        is_cpp += f'\nbool MeterModbusTCP::is_{group.under}_{member.under}_meter() const\n' \
+                   '{\n' \
+                  f'    return table_id == MeterModbusTCPTableID::{group.camel}\n' \
+                  f'        && {group.under}.virtual_meter == {group.camel}VirtualMeter::{member.camel};\n' \
+                   '}\n'
+
+tfutil.write_file_if_different('meter_modbus_tcp_is.inc', is_inc)
+tfutil.write_file_if_different('meter_modbus_tcp_is.cpp', is_cpp)

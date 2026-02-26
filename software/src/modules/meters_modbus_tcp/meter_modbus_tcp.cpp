@@ -796,252 +796,6 @@ void MeterModbusTCP::read_next()
     }
 }
 
-bool MeterModbusTCP::is_sungrow_hybrid_inverter_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
-        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Inverter;
-}
-
-bool MeterModbusTCP::is_sungrow_hybrid_inverter_grid_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
-        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Grid;
-}
-
-bool MeterModbusTCP::is_sungrow_hybrid_inverter_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
-        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_sungrow_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
-        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_sungrow_string_inverter_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowStringInverter
-        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Inverter;
-}
-
-bool MeterModbusTCP::is_sungrow_string_inverter_grid_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowStringInverter
-        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Grid;
-}
-
-bool MeterModbusTCP::is_sungrow_string_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SungrowStringInverter
-        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_victron_energy_gx_load_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx.virtual_meter == VictronEnergyGXVirtualMeter::Load;
-}
-
-bool MeterModbusTCP::is_victron_energy_gx_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx.virtual_meter == VictronEnergyGXVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::DeyeHybridInverter
-        && deye_hybrid_inverter.virtual_meter == DeyeHybridInverterVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_deye_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::DeyeHybridInverter
-        && deye_hybrid_inverter.virtual_meter == DeyeHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_alpha_ess_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::AlphaESSHybridInverter
-        && alpha_ess_hybrid_inverter.virtual_meter == AlphaESSHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
-{
-    return table_id == MeterModbusTCPTableID::ShellyProEM
-        || (table_id == MeterModbusTCPTableID::ShellyPro3EM
-            && shelly_pro_3em.device_profile == ShellyPro3EMDeviceProfile::Monophase);
-}
-
-bool MeterModbusTCP::is_goodwe_inverter_grid_meter() const
-{
-    return table_id == MeterModbusTCPTableID::GoodweInverter
-        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Grid;
-}
-
-bool MeterModbusTCP::is_goodwe_inverter_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::GoodweInverter
-        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_goodwe_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::GoodweInverter
-        && goodwe_inverter.virtual_meter == GoodweInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_solax_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SolaxHybridInverter
-        && solax_hybrid_inverter.virtual_meter == SolaxHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_fronius_gen24_plus_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FroniusGEN24Plus
-        && fronius_gen24_plus.virtual_meter == FroniusGEN24PlusVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_hailei_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::HaileiHybridInverter
-        && hailei_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_ac3_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3AC3HybridInverter
-        && fox_ess_h3_ac3_hybrid_inverter.virtual_meter == FoxESSH3AC3HybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_carlo_gavazzi_em100_or_et100() const
-{
-    return table_id == MeterModbusTCPTableID::CarloGavazziEM100
-        || table_id == MeterModbusTCPTableID::CarloGavazziET100;
-}
-
-bool MeterModbusTCP::is_carlo_gavazzi_em510() const
-{
-    return table_id == MeterModbusTCPTableID::CarloGavazziEM510;
-}
-
-bool MeterModbusTCP::is_solaredge_inverter_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SolaredgeInverter
-        && solaredge_inverter.virtual_meter == SolaredgeInverterVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_huawei_sun2000_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::HuaweiSUN2000
-        && huawei_sun2000.virtual_meter == HuaweiSUN2000VirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_huawei_sun2000_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::HuaweiSUN2000
-        && huawei_sun2000.virtual_meter == HuaweiSUN2000VirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_huawei_sun2000_smart_dongle_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::HuaweiSUN2000SmartDongle
-        && huawei_sun2000_smart_dongle.virtual_meter == HuaweiSUN2000SmartDongleVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_huawei_emma_load_meter() const
-{
-    return table_id == MeterModbusTCPTableID::HuaweiEMMA
-        && huawei_emma.virtual_meter == HuaweiEMMAVirtualMeter::Load;
-}
-
-bool MeterModbusTCP::is_solax_string_inverter_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SolaxStringInverter
-        && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::Inverter;
-}
-
-bool MeterModbusTCP::is_solax_string_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SolaxStringInverter
-        && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_1_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
-        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery1;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_2_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
-        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery2;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_battery_1_and_2_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
-        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::Battery1And2;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
-        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
-        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery1;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_2_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
-        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery2;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_battery_1_and_2_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
-        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::Battery1And2;
-}
-
-bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
-        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::PV;
-}
-
-bool MeterModbusTCP::is_sma_hybrid_inverter_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::SMAHybridInverter
-        && sma_hybrid_inverter.virtual_meter == SMAHybridInverterVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_varta_flex_grid_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VARTAFlex
-        && varta_flex.virtual_meter == VARTAFlexVirtualMeter::Grid;
-}
-
-bool MeterModbusTCP::is_varta_flex_battery_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VARTAFlex
-        && varta_flex.virtual_meter == VARTAFlexVirtualMeter::Battery;
-}
-
-bool MeterModbusTCP::is_chisage_ess_hybrid_inverter_pv_meter() const
-{
-    return table_id == MeterModbusTCPTableID::ChisageESSHybridInverter
-        && chisage_ess_hybrid_inverter.virtual_meter == ChisageESSHybridInverterVirtualMeter::PV;
-}
-
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
@@ -1309,7 +1063,7 @@ void MeterModbusTCP::parse_next()
         value *= table->specs[read_index].scale_factor;
     }
 
-    if (is_sungrow_hybrid_inverter_meter()
+    if (is_sungrow_hybrid_inverter_inverter_meter()
      && generic_read_request.start_address == SungrowHybridInverterOutputTypeAddress::OutputType) {
         if (sungrow_hybrid_inverter.output_type < 0) {
             bool success = true;
@@ -1351,7 +1105,7 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if (is_sungrow_string_inverter_meter()
+    if (is_sungrow_string_inverter_inverter_meter()
      && generic_read_request.start_address == SungrowStringInverterOutputTypeAddress::OutputType) {
         if (sungrow_string_inverter.output_type < 0) {
             bool success = true;
@@ -1729,7 +1483,7 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if (is_sungrow_hybrid_inverter_meter() || is_sungrow_string_inverter_meter()) {
+    if (is_sungrow_hybrid_inverter_inverter_meter() || is_sungrow_string_inverter_inverter_meter()) {
         if (register_start_address == SungrowHybridInverterAddress::TotalActivePower
          || register_start_address == SungrowStringInverterAddress::TotalActivePower) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
@@ -2120,7 +1874,8 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], power_sum);
         }
     }
-    else if (is_shelly_pro_xem_monophase()) {
+    else if (is_any_shelly_pro_em_meter() ||
+             (is_any_shelly_pro_3em_meter() && shelly_pro_3em.device_profile == ShellyPro3EMDeviceProfile::Monophase)) {
         if (register_start_address == ShellyEMMonophaseChannel1Address::Channel1ActivePower
          || register_start_address == ShellyEMMonophaseChannel1Address::Channel1TotalActiveEnergyPerpetualCount
          || register_start_address == ShellyEMMonophaseChannel1Address::Channel1TotalActiveReturnedEnergyPerpetualCount
@@ -2591,14 +2346,14 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], power_sum);
         }
     }
-    else if (is_carlo_gavazzi_em100_or_et100()) {
+    else if (is_any_carlo_gavazzi_em100_meter() || is_any_carlo_gavazzi_et100_meter()) {
         if (register_start_address == CarloGavazziEM100AndET100Address::W
          || register_start_address == CarloGavazziEM100AndET100Address::KWhPositiveTotal
          || register_start_address == CarloGavazziEM100AndET100Address::KWhNegativeTotal) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
-    else if (is_carlo_gavazzi_em510()) {
+    else if (is_any_carlo_gavazzi_em510_meter()) {
         if (register_start_address == CarloGavazziEM510Address::W
          || register_start_address == CarloGavazziEM510Address::KWhPositiveTotal
          || register_start_address == CarloGavazziEM510Address::KWhNegativeTotal) {
@@ -2654,7 +2409,7 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
-    else if (is_solax_string_inverter_meter()) {
+    else if (is_solax_string_inverter_inverter_meter()) {
         if (register_start_address == SolaxStringInverterAddress::OutputPower) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }

@@ -35,8 +35,6 @@
 #include "shelly_em_monophase_channel.enum.h"
 #include "shelly_em_monophase_mapping.enum.h"
 #include "carlo_gavazzi_phase.enum.h"
-#include "carlo_gavazzi_em270_virtual_meter.enum.h"
-#include "carlo_gavazzi_em280_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -91,47 +89,8 @@ private:
     bool prepare_read();
     void read_next();
     void parse_next();
-    bool is_sungrow_hybrid_inverter_meter() const;
-    bool is_sungrow_hybrid_inverter_grid_meter() const;
-    bool is_sungrow_hybrid_inverter_battery_meter() const;
-    bool is_sungrow_hybrid_inverter_pv_meter() const;
-    bool is_sungrow_string_inverter_meter() const;
-    bool is_sungrow_string_inverter_grid_meter() const;
-    bool is_sungrow_string_inverter_pv_meter() const;
-    bool is_victron_energy_gx_load_meter() const;
-    bool is_victron_energy_gx_pv_meter() const;
-    bool is_deye_hybrid_inverter_battery_meter() const;
-    bool is_deye_hybrid_inverter_pv_meter() const;
-    bool is_alpha_ess_hybrid_inverter_pv_meter() const;
-    bool is_shelly_pro_xem_monophase() const;
-    bool is_goodwe_inverter_grid_meter() const;
-    bool is_goodwe_inverter_battery_meter() const;
-    bool is_goodwe_inverter_pv_meter() const;
-    bool is_solax_hybrid_inverter_pv_meter() const;
-    bool is_fronius_gen24_plus_battery_meter() const;
-    bool is_hailei_hybrid_inverter_pv_meter() const;
-    bool is_fox_ess_h3_ac3_hybrid_inverter_pv_meter() const;
-    bool is_carlo_gavazzi_em100_or_et100() const;
-    bool is_carlo_gavazzi_em510() const;
-    bool is_solaredge_inverter_battery_meter() const;
-    bool is_huawei_sun2000_battery_meter() const;
-    bool is_huawei_sun2000_pv_meter() const;
-    bool is_huawei_sun2000_smart_dongle_battery_meter() const;
-    bool is_huawei_emma_load_meter() const;
-    bool is_solax_string_inverter_meter() const;
-    bool is_solax_string_inverter_pv_meter() const;
-    bool is_fox_ess_h3_smart_hybrid_inverter_battery_1_meter() const;
-    bool is_fox_ess_h3_smart_hybrid_inverter_battery_2_meter() const;
-    bool is_fox_ess_h3_smart_hybrid_inverter_battery_1_and_2_meter() const;
-    bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
-    bool is_fox_ess_h3_pro_hybrid_inverter_battery_1_meter() const;
-    bool is_fox_ess_h3_pro_hybrid_inverter_battery_2_meter() const;
-    bool is_fox_ess_h3_pro_hybrid_inverter_battery_1_and_2_meter() const;
-    bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
-    bool is_sma_hybrid_inverter_battery_meter() const;
-    bool is_varta_flex_grid_meter() const;
-    bool is_varta_flex_battery_meter() const;
-    bool is_chisage_ess_hybrid_inverter_pv_meter() const;
+
+#include "meter_modbus_tcp_is.inc"
 
     uint32_t slot;
     Config *state;
