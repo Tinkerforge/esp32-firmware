@@ -557,36 +557,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-
-                    <FormSeparator heading={__("heating.content.p14_enwg")} help={__("heating.content.p14_enwg_help")}/>
-                    <FormRow label={__("heating.content.p14_enwg")}>
-                        <Switch desc={__("heating.content.p14_enwg_control_enabled")}
-                                checked={state.p14enwg}
-                                onClick={this.toggle('p14enwg')}
-                        />
-                    </FormRow>
-                    <FormRow label={__("heating.content.input")}>
-                        <InputSelect
-                            items={[
-                                ["0", __("heating.content.input") + " 1"],
-                                ["1", __("heating.content.input") + " 2"],
-                                ["2", __("heating.content.input") + " 3"],
-                                ["3", __("heating.content.input") + " 4"],
-                            ]}
-                            value={state.p14enwg_input}
-                            onValue={(v) => this.setState({p14enwg_input: parseInt(v)})}
-                        />
-                    </FormRow>
-                    <FormRow label={__("heating.content.blocking_operation")}>
-                        <InputSelect
-                            items={[
-                                ["0", __("heating.content.input_active_closed")],
-                                ["1", __("heating.content.input_active_open")]
-                            ]}
-                            value={state.p14enwg_type}
-                            onValue={(v) => this.setState({p14enwg_type: parseInt(v)})}
-                        />
-                    </FormRow>
                 </SubPage.Config>
             </SubPage>
         );

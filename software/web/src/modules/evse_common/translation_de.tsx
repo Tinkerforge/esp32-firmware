@@ -185,12 +185,10 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Stromzählertyp",
-            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll. In der Standardkonfiguration der Wallbox wird auf 4200 W limitiert, wenn der Abschalteingang geschlossen ist{options.WARP_DOC_BASE_URL.length > 0 ? <span>, siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/verbrauchseinrichtung`)}>Steuerbare Verbrauchseinrichtung nach §14a EnWG</a></span> : undefined}.</p></>,
+            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll.</p><p>Um die Leistung auf 4200 W gemäß §14a EnWG zu begrenzen, verwenden Sie die <a href="#p14a_enwg">§14a-EnWG-Konfigurationsseite</a>.</p></>,
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten, wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten, wenn geschlossen",
-            "gpio_4200w_on_open": "Max. 4200 W, wenn geöffnet (§14a EnWG)",
-            "gpio_4200w_on_close": "Max. 4200 W, wenn geschlossen (§14a EnWG)",
             "not_configured": "Nicht konfiguriert",
             "active_low_blocked": "Blockiert wenn geschlossen",
             "active_low_prefix": "Limitiert Ladestrom auf ",

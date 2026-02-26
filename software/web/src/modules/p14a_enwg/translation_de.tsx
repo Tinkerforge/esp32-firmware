@@ -6,7 +6,8 @@ let x = {
             "status": "Status",
             "active": "Aktiv",
             "inactive": "Inaktiv",
-            "current_limit": "Aktuelles Limit"
+            "current_limit": "Aktuelles Limit",
+            "alert_active": /*SFN*/(limit: number) => "Leistung auf " + limit + " W begrenzt"/*NF*/
         },
         "navbar": {
             "p14a_enwg": "14a EnWG"

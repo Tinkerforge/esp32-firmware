@@ -1364,3 +1364,14 @@ bool EVSEV2::has_triggered(const Config *conf, void *data)
     return false;
 }
 #endif
+
+bool EVSEV2::is_shutdown_input_closed()
+{
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
+    return !evse_common.low_level_state.get("gpio")->get(5)->asBool();
+#elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+    return !evse_common.low_level_state.get("gpio")->get(18)->asBool();
+#else
+    #error "GPIO layout is unknown"
+#endif
+}

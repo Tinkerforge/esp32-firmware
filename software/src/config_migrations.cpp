@@ -969,6 +969,49 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
+
+#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2()
+    {
+        1, 4, 1,
+        // Changes
+        // - Migrate §14a EnWG settings from heating/config to p14a_enwg/config.
+        //   The old heating module had p14enwg, p14enwg_input, p14enwg_type fields
+        //   that directly read EM hardware inputs. These are now handled by the
+        //   dedicated p14a_enwg module.
+        [](){
+            DynamicJsonDocument heating_cfg{4096};
+            if (!read_config_file("heating/config", heating_cfg))
+                return;
+
+            if (!heating_cfg.containsKey("p14enwg"))
+                return;
+
+            bool enabled = heating_cfg["p14enwg"].as<bool>();
+            uint32_t input_index = heating_cfg["p14enwg_input"] | 0u;
+            uint32_t type = heating_cfg["p14enwg_type"] | 0u;
+
+            if (enabled) {
+                DynamicJsonDocument p14a_cfg{1024};
+                p14a_cfg.to<JsonObject>();
+                p14a_cfg["enable"] = true;
+                p14a_cfg["source"] = 0; // P14aEnwgSource::Input
+                p14a_cfg["limit"] = 4200;
+                p14a_cfg["active_on_close"] = (type == 0); // old 0 = active on close, old 1 = active on open
+                p14a_cfg["input_index"] = input_index;
+                p14a_cfg["this_charger"] = false;
+                p14a_cfg["managed_chargers"] = false;
+                p14a_cfg["heating"] = true;
+                p14a_cfg["heating_max_power"] = 4200;
+                write_config_file("p14a_enwg/config", p14a_cfg);
+            }
+
+            heating_cfg.remove("p14enwg");
+            heating_cfg.remove("p14enwg_input");
+            heating_cfg.remove("p14enwg_type");
+            write_config_file("heating/config", heating_cfg);
+        }
+    },
+#endif
 };
 
 bool prepare_migrations()

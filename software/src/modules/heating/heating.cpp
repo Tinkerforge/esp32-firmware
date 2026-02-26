@@ -198,21 +198,22 @@ bool Heating::is_active()
 
 bool Heating::is_p14enwg_active()
 {
-    return config.get("p14enwg")->asBool();
+#if MODULE_P14A_ENWG_AVAILABLE()
+    return p14a_enwg.is_heating_active();
+#else
+    return false;
+#endif
 }
 
 Heating::Status Heating::get_status()
 {
-    const bool p14enwg            = config.get("p14enwg")->asBool();
-    const uint32_t p14enwg_input  = config.get("p14enwg_input")->asUint();
-    const uint32_t p14enwg_type   = config.get("p14enwg_type")->asUint();
     const uint32_t sg_ready0_type = config.get("sgr_blocking_type")->asUint();
     const uint32_t sg_ready1_type = config.get("sgr_extended_type")->asUint();
     const bool sg_ready_output_0  = em_v2.get_sg_ready_output(0);
     const bool sg_ready_output_1  = em_v2.get_sg_ready_output(1);
     const bool sg_ready0_on       = sg_ready_output_0 == (sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     const bool sg_ready1_on       = sg_ready_output_1 == (sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
-    const bool p14_enwg_on        = p14enwg && (em_v2.get_input(p14enwg_input) == (p14enwg_type == 0));
+    const bool p14_enwg_on        = is_p14enwg_active();
 
     if(p14_enwg_on) {
         return Status::BlockingP14;
@@ -403,25 +404,10 @@ void Heating::update()
         return;
     }
 
-    // TODO: Does §14 EnWG need a smaller update interval or is it enough to check it every minute?
-    const bool     p14enwg        = config.get("p14enwg")->asBool();
-    const uint32_t p14enwg_input  = config.get("p14enwg_input")->asUint();
-    const uint32_t p14enwg_type   = config.get("p14enwg_type")->asUint();
+    const bool p14enwg_on = is_p14enwg_active();
+
     const uint32_t sg_ready0_type = config.get("sgr_blocking_type")->asUint();
     const uint32_t sg_ready1_type = config.get("sgr_extended_type")->asUint();
-
-    // Check if §14 EnWG should be turned on
-    bool p14enwg_on = false;
-    if(p14enwg) {
-        bool input_value = em_v2.get_input(p14enwg_input);
-
-        if (p14enwg_type == 0) {
-            p14enwg_on = input_value;
-        } else {
-            p14enwg_on = !input_value;
-        }
-    }
-
     // If p14enwg is triggered, we immediately set output 0 accordingly.
     // If it is not triggered it depends on the heating controller if it should be on or off.
     if (p14enwg_on) {

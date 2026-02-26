@@ -185,12 +185,10 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed.{options.WARP_DOC_BASE_URL.length > 0 ? <span> See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/verbrauchseinrichtung`)}>controllable consumption device according to §14a EnWG</a>.</span> : undefined}</p></>,
+            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled.</p><p>To limit power to 4200 W according to §14a EnWG, use the <a href="#p14a_enwg">§14a EnWG configuration page</a>.</p></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
-            "gpio_4200w_on_open": "Limit to 4200 W on open (§14a EnWG)",
-            "gpio_4200w_on_close": "Limit to 4200 W on close (§14a EnWG)",
             "not_configured": "Not configured",
             "active_low_blocked": "Blocks if closed",
             "active_low_prefix": "Limits charge current to ",

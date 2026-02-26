@@ -133,6 +133,8 @@ public:
     int register_eichrecht_dataset_callback(TF_EVSEV2_EichrechtDatasetHandler handler, char *message, void *user_data);
     int register_eichrecht_signature_callback(TF_EVSEV2_EichrechtSignatureHandler handler, char *message, void *user_data);
 
+    bool is_shutdown_input_closed();
+
 private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;

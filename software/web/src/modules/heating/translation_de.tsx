@@ -27,7 +27,6 @@ let x = {
             "dpc_high": "Blockieren für die teuersten",
             "pv_excess_control": "Bei PV-Überschuss ab",
             "pv_yield_forecast": "PV-Ertragsprognose unter",
-            "p14_enwg_control_enabled": "Aktiviert die Kontrolle der Heizung nach §14a EnWG",
             "input": "Eingang",
             "output": "Ausgang",
             "throttled_if_input": "Drosselung",
@@ -96,12 +95,6 @@ let x = {
             "h_per_x": /*SFN*/(x: number) => x == 24 ? "h/Tag" : "h/" + x + "h"/*NF*/,
             "h_per_day": "h/Tag",
             "for_the_most_expensive": "Bei den teuersten",
-            "p14_enwg": "§14a EnWG",
-            "p14_enwg_help": <>
-                <p>Ab dem 1. Januar 2024 fordert der §14a des EnWG die Steuerbarkeit von Wärmepumpen. Konkret müssen neu verbaute Wärmepumpen über eine Kommunikationsschnittstelle zum Netzbetreiber verfügen, damit dieser in Ausnahmefällen die Leistung des Geräts anpassen kann.</p>
-                <p>Die Steuerung nach §14a EnWG kann hier aktiviert werden. Dazu wird ein Eingang vom Netzbetreiber gesteuert und im Gegenzug wird über den SG-Ready-Ausgang 1 die Wärmepumpe entsprechend des Eingangs gesteuert.</p>
-                <p>Hinweis: Die Steuerung nach §14a EnWG hat Priorität gegenüber der oben konfigurierten Heizungssteuerung.</p>
-            </>,
             "control_period": "Regelzeitraum",
             "control_period_help": <>
                 <p>Der Regelzeitraum bestimmt, für welchen Zeitraum die eingestellten Steuerregeln aktiv sind.</p>

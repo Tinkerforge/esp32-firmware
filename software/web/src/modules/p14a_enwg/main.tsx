@@ -19,12 +19,11 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, Component, RefObject } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
-import { StatusSection } from "../../ts/components/status_section";
 import { FormRow } from "../../ts/components/form_row";
 import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "../../ts/components/input_select";
@@ -73,7 +72,7 @@ interface P14aEnwgState {
     p14a_state: API.getType["p14a_enwg/state"];
 }
 
-export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {status_ref?: RefObject<P14aEnwgStatus>}, P14aEnwgState> {
+export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgState> {
     constructor() {
         super('p14a_enwg/config',
              () => __("p14a_enwg.script.save_failed"));
@@ -98,7 +97,17 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {status_ref?: 
 
     override async sendSave(topic: "p14a_enwg/config", config: P14aEnwgConfig) {
         this.setState({config_enable: config.enable}); // avoid round trip time
+        if (this.state.is_charger) {
+            await API.save_unchecked('evse/p14a_enwg_enabled', {enabled: config.this_charger && config.enable}, () => __("p14a_enwg.script.save_failed"));
+        }
         await super.sendSave(topic, config);
+    }
+
+    override async sendReset(topic: "p14a_enwg/config") {
+        if (this.state.is_charger) {
+            await API.save_unchecked('evse/p14a_enwg_enabled', {enabled: false}, () => __("p14a_enwg.script.save_failed"));
+        }
+        await super.sendReset(topic);
     }
 
     render(props: {}, state: P14aEnwgState & P14aEnwgConfig) {
@@ -242,46 +251,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {status_ref?: 
     }
 }
 
-interface P14aEnwgStatusState {
-    state: API.getType["p14a_enwg/state"];
-}
-
-export class P14aEnwgStatus extends Component<{}, P14aEnwgStatusState> {
-    constructor() {
-        super();
-
-        util.addApiEventListener('p14a_enwg/state', () => {
-            this.setState({state: API.get('p14a_enwg/state')});
-        });
-    }
-
-    render(props: {}, state: P14aEnwgStatusState) {
-        if (!util.render_allowed()) {
-            return <StatusSection name="p14a_enwg" />;
-        }
-
-        let config = API.get('p14a_enwg/config');
-        if (!config.enable) {
-            return <StatusSection name="p14a_enwg" />;
-        }
-
-        return <StatusSection name="p14a_enwg">
-            <FormRow label={__("p14a_enwg.status.status")}>
-                <InputText
-                    value={state.state?.active ? __("p14a_enwg.status.active") : __("p14a_enwg.status.inactive")}
-                />
-            </FormRow>
-            {state.state?.active ?
-                <FormRow label={__("p14a_enwg.status.current_limit")}>
-                    <InputText
-                        value={state.state.limit + " W"}
-                    />
-                </FormRow>
-            : undefined}
-        </StatusSection>;
-    }
-}
-
 export function pre_init() {
 }
 
@@ -308,6 +277,21 @@ export function init() {
                 status: ModuleStatus.Ok,
                 text: () => __("p14a_enwg.status.inactive")
             };
+        }
+    });
+
+    util.addApiEventListener("p14a_enwg/state", () => {
+        const config = API.get("p14a_enwg/config");
+        const state = API.get("p14a_enwg/state");
+
+        if (config.enable && state.active) {
+            util.add_status_alert(
+                "p14a_enwg",
+                "danger",
+                () => __("p14a_enwg.content.p14a_enwg"),
+                () => __("p14a_enwg.status.alert_active")(state.limit));
+        } else {
+            util.remove_status_alert("p14a_enwg");
         }
     });
 }

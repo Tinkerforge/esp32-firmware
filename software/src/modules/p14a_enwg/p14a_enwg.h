@@ -29,20 +29,32 @@ private:
     ConfigRoot state;
     ConfigRoot control;
 
-    bool slot_enabled = false;
-
     bool eebus_active = false;
     uint32_t eebus_limit_w = 0;
 
+    uint64_t input_check_task_id = 0;
+    bool last_input_value = false;
+    uint32_t last_phases = 0;
+    uint16_t last_current_mA = 32000;
+
     void update();
+    void check_inputs();
+    void start_input_check();
+    void stop_input_check();
+    void check_evse_shutdown_input();
 
 public:
     P14aEnwg() {}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
     inline bool is_enabled() { return config.get("enable")->asBool(); }
+    bool is_heating_active();
+
+    // Returns the limit for managed chargers in W, or 0 if not active.
+    uint32_t get_managed_chargers_limit();
 
     void set_eebus_limit(bool active, uint32_t limit_w);
 };
