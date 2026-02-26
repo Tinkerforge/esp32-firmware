@@ -71,7 +71,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     constructor() {
         super('wifi/sta_config',
               () => __("wifi.script.sta_save_failed"),
-              () => __("wifi.script.sta_reboot_content_changed"), {
+              undefined, {
                 passphrase_required: false,
                 scan_show: false,
                 scan_running: false,
@@ -350,6 +350,9 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
             return <SubPage name="wifi_sta" />;
 
         const wifi_state = API.get("wifi/state");
+        const saved_config = API.get("wifi/sta_config");
+
+        const disabled_but_active = !saved_config.enable_sta && (wifi_state.connection_state != WifiState.NotConfigured);
 
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
@@ -407,6 +410,24 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
+
+                    {disabled_but_active &&
+                        <Alert variant="warning">
+                            {__("wifi.content.sta_disabled_but_active")}{" "}
+                            <a href="#" onClick={async (e) => {
+                                e.preventDefault();
+                                if (await util.async_modal_ref.current.show({
+                                        title: () => __("main.reboot_title"),
+                                        body: () => __("wifi.content.sta_reboot_body"),
+                                        no_text: () => __("main.abort"),
+                                        yes_text: () => __("main.reboot"),
+                                        no_variant: "secondary",
+                                        yes_variant: "danger",
+                                    })) {
+                                    util.reboot();
+                                }
+                            }}>{__("wifi.content.sta_restart_now")}</a>
+                        </Alert>}
 
                     <FormRow label={__("wifi.content.sta_enable_sta")}>
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}

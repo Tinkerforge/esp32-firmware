@@ -137,7 +137,7 @@ void Wifi::pre_setup()
             eap_config_prototypes,
             ARRAY_SIZE(eap_config_prototypes)
         )},
-    }), [](Config &cfg, ConfigSource source) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
         const String &phrase = cfg.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
             return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
@@ -176,6 +176,12 @@ void Wifi::pre_setup()
             if ((client_cert_id != -1 && client_key_id == -1) || (client_cert_id == -1 && client_key_id != -1)) {
                 return "Must provide both, a client certificate and a client key";
             }
+        }
+
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_sta_config();
+            });
         }
 
         return "";
@@ -391,6 +397,162 @@ void Wifi::apply_ap_config(bool defer_start)
     }
 }
 
+void Wifi::apply_sta_config(bool defer_start)
+{
+    const bool want_enabled = sta_config.get("enable_sta")->asBool();
+
+    if (want_enabled) {
+        const String &ssid = sta_config.get("ssid"      )->asString();
+        const String &pass = sta_config.get("passphrase")->asString();
+
+        const size_t ssid_len_term = ssid.length() + 1;
+        const size_t pass_len_term = pass.length() + 1;
+
+        auto *new_runtime = static_cast<sta_runtime *>(malloc_psram_or_dram(offsetof(struct sta_runtime, ssid_passphrase) + ssid_len_term + pass_len_term));
+
+        if (!new_runtime) {
+            logger.printfln("Failed to allocate memory for WiFi STA runtime data");
+            return;
+        }
+
+        ip4addr_aton(sta_config.get("ip"     )->asUnsafeCStr(), &new_runtime->ip     );
+        ip4addr_aton(sta_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
+        ip4addr_aton(sta_config.get("dns"    )->asUnsafeCStr(), &new_runtime->dns    );
+        ip4addr_aton(sta_config.get("dns2"   )->asUnsafeCStr(), &new_runtime->dns2   );
+
+        ip4_addr_t subnet;
+        ip4addr_aton(sta_config.get("subnet" )->asUnsafeCStr(), &subnet);
+        new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet) & 0x1F;
+
+        new_runtime->enable_11b = sta_config.get("enable_11b")->asBool();
+        new_runtime->bssid_lock = sta_config.get("bssid_lock")->asBool();
+
+        auto bssid_config = sta_config.get("bssid");
+        uint8_t *bssid = new_runtime->bssid;
+        for (size_t i = 0; i < ARRAY_SIZE(new_runtime->bssid); i++) {
+            bssid[i] = bssid_config->get(i)->asUint8();
+        }
+
+        memcpy(new_runtime->ssid_passphrase, ssid.c_str(), ssid_len_term);
+
+        new_runtime->passphrase_offset = static_cast<uint8_t>(ssid_len_term);
+        memcpy(new_runtime->ssid_passphrase + new_runtime->passphrase_offset, pass.c_str(), pass_len_term);
+
+        new_runtime->last_connected = 0_us;
+        new_runtime->connect_tries    = 0;
+        new_runtime->was_connected    = false;
+
+        auto eap_union = const_cast<const ConfigRoot *>(&sta_config)->get("wpa_eap_config");
+        const EapConfigID eap_config_id = eap_union->getTag<EapConfigID>();
+
+        if (eap_config_id == EapConfigID::None) {
+            new_runtime->runtime_eap = nullptr;
+        } else {
+            auto eap_config = eap_union->get();
+
+            const String &eap_identity_tmp = eap_config->get("identity")->asString();
+                  String  eap_identity;
+
+            if (eap_config_id == EapConfigID::TLS && eap_identity_tmp.isEmpty()) {
+                eap_identity = "anonymous";
+            } else {
+                eap_identity = eap_identity_tmp;
+            }
+
+            const String *eap_username;
+            const String *eap_password;
+
+            const size_t eap_identity_len_term = eap_identity.length() + 1;
+                  size_t eap_username_len_term;
+                  size_t eap_password_len_term;
+
+            if (eap_config_id == EapConfigID::PEAP_TTLS) {
+                eap_username = &eap_config->get("username")->asString();
+                eap_password = &eap_config->get("password")->asString();
+
+                eap_username_len_term = eap_username->length() + 1;
+                eap_password_len_term = eap_password->length() + 1;
+            } else {
+                eap_username = nullptr;
+                eap_password = nullptr;
+
+                eap_username_len_term = 0;
+                eap_password_len_term = 0;
+            }
+
+            eap_runtime *eap = static_cast<decltype(eap)>(malloc_psram_or_dram(offsetof(struct eap_runtime, identity_credentials) + eap_identity_len_term + eap_username_len_term + eap_password_len_term));
+            new_runtime->runtime_eap = eap;
+
+            if (!eap) {
+                logger.printfln("Failed to allocate memory for WiFi STA EAP runtime data");
+            } else {
+                memset(eap, 0, offsetof(struct eap_runtime, identity_credentials));
+
+                const int32_t ca_cert_id     = eap_config->get("ca_cert_id"    )->asInt();
+                const int32_t client_cert_id = eap_config->get("client_cert_id")->asInt();
+                const int32_t client_key_id  = eap_config->get("client_key_id" )->asInt();
+
+                if (ca_cert_id     >= 0) eap->ca_cert     = certs.get_cert(static_cast<uint8_t>(ca_cert_id),     nullptr);
+                if (client_cert_id >= 0) eap->client_cert = certs.get_cert(static_cast<uint8_t>(client_cert_id), nullptr);
+                if (client_key_id  >= 0) eap->client_key  = certs.get_cert(static_cast<uint8_t>(client_key_id),  nullptr);
+
+                eap->eap_config_id = static_cast<uint8_t>(eap_config_id);
+
+                memcpy(eap->identity_credentials, eap_identity.c_str(), eap_identity_len_term);
+
+                if (!eap_username) {
+                    eap->username_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
+                } else {
+                    eap->username_offset = static_cast<uint8_t>(eap_identity_len_term);
+                    memcpy(eap->identity_credentials + eap->username_offset, eap_username->c_str(), eap_username_len_term);
+                }
+
+                if (!eap_password) {
+                    eap->password_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
+                } else {
+                    eap->password_offset = static_cast<uint8_t>(eap_identity_len_term + eap_username_len_term);
+                    memcpy(eap->identity_credentials + eap->password_offset, eap_password->c_str(), eap_password_len_term);
+                }
+            }
+        }
+
+        const bool was_disabled = (runtime_sta == nullptr);
+
+        // Free old runtime
+        if (runtime_sta) {
+            if (runtime_sta->runtime_eap) {
+                runtime_sta->runtime_eap->~eap_runtime();
+                free(runtime_sta->runtime_eap);
+            }
+            free(runtime_sta);
+        }
+        runtime_sta = new_runtime;
+
+        if (!defer_start) {
+            if (was_disabled) {
+                // Disabled -> Enabled: Register event handlers and start connection.
+                register_sta_event_handlers();
+                start_sta_connection();
+            } else {
+                // Already enabled: Disconnect and reconnect with new config.
+                WiFi.disconnect(false, true);
+                apply_sta_config_and_connect();
+            }
+
+            // If the STA was previously disabled (no runtime_sta at boot),
+            // the connection_state update task was never scheduled.
+            if (was_disabled) {
+                task_scheduler.scheduleUncancelable([this]() {
+                    state.get("connection_state")->updateEnum(get_connection_state());
+                }, 1_s);
+            }
+        }
+    } else if (!defer_start && runtime_sta) {
+        // Enabled -> Disabled: Requires reboot.
+        logger.printfln("WiFi STA disabled in config. Reboot required to take effect.");
+    }
+}
+
 void Wifi::register_ap_event_handlers()
 {
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
@@ -432,6 +594,224 @@ void Wifi::register_ap_event_handlers()
             });
         },
         ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
+}
+
+#define DEFAULT_REASON_STRING(X) case X: return "Unknown reason (" #X ")";
+
+static const char *reason2str(uint8_t reason)
+{
+    switch (reason) {
+        case WIFI_REASON_NO_AP_FOUND:
+            return "Access point not found. Is the reception too poor or the SSID incorrect?";
+        case WIFI_REASON_AUTH_FAIL:
+            return "Authentication failed. Is the passphrase correct?";
+        case WIFI_REASON_ASSOC_FAIL:
+            return "Association failed";
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+        case WIFI_REASON_BEACON_TIMEOUT:
+            return "Reception too poor";
+
+        case WIFI_REASON_ASSOC_TOOMANY:
+            return "Too many stations: access point full";
+        case WIFI_REASON_NOT_AUTHED:
+            return "Remote disconnect";
+        case WIFI_REASON_ASSOC_LEAVE:
+            return "Local disconnect";
+
+        DEFAULT_REASON_STRING(WIFI_REASON_UNSPECIFIED)
+        DEFAULT_REASON_STRING(WIFI_REASON_AUTH_EXPIRE)
+        DEFAULT_REASON_STRING(WIFI_REASON_AUTH_LEAVE)
+        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_EXPIRE)
+        DEFAULT_REASON_STRING(WIFI_REASON_NOT_ASSOCED)
+        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_NOT_AUTHED)
+        DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_PWRCAP_BAD)
+        DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_SUPCHAN_BAD)
+        DEFAULT_REASON_STRING(WIFI_REASON_BSS_TRANSITION_DISASSOC)
+        DEFAULT_REASON_STRING(WIFI_REASON_IE_INVALID)
+        DEFAULT_REASON_STRING(WIFI_REASON_MIC_FAILURE)
+        DEFAULT_REASON_STRING(WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)
+        DEFAULT_REASON_STRING(WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT)
+        DEFAULT_REASON_STRING(WIFI_REASON_IE_IN_4WAY_DIFFERS)
+        DEFAULT_REASON_STRING(WIFI_REASON_GROUP_CIPHER_INVALID)
+        DEFAULT_REASON_STRING(WIFI_REASON_PAIRWISE_CIPHER_INVALID)
+        DEFAULT_REASON_STRING(WIFI_REASON_AKMP_INVALID)
+        DEFAULT_REASON_STRING(WIFI_REASON_UNSUPP_RSN_IE_VERSION)
+        DEFAULT_REASON_STRING(WIFI_REASON_INVALID_RSN_IE_CAP)
+        DEFAULT_REASON_STRING(WIFI_REASON_802_1X_AUTH_FAILED)
+        DEFAULT_REASON_STRING(WIFI_REASON_CIPHER_SUITE_REJECTED)
+
+        DEFAULT_REASON_STRING(WIFI_REASON_INVALID_PMKID)
+
+        DEFAULT_REASON_STRING(WIFI_REASON_CONNECTION_FAIL)
+        DEFAULT_REASON_STRING(WIFI_REASON_AP_TSF_RESET)
+        DEFAULT_REASON_STRING(WIFI_REASON_ROAMING)
+
+        default:
+            return "Unknown reason";
+    }
+}
+
+void Wifi::register_sta_event_handlers()
+{
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            uint8_t reason_code = info.wifi_sta_disconnected.reason;
+            const char *reason = reason2str(reason_code);
+            if (!this->runtime_sta->was_connected) {
+                logger.printfln("Failed to connect to WiFi: %s (%u)", reason, reason_code);
+            } else {
+                const micros_t now = now_us();
+                const uint32_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
+
+                if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
+                    String last_ip{};
+
+                    task_scheduler.await([this, &last_ip](){
+                        last_ip = state.get("sta_ip")->asString();
+                    });
+
+                    if (last_ip == "0.0.0.0") {
+                        reason = "No IP received via DHCP";
+                        reason_code = 0;
+                    }
+                }
+
+                logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %lu seconds.", reason, reason_code, connected_for_s);
+
+                task_scheduler.scheduleOnce([this, now](){
+                    state.get("connection_end")->updateUptime(now);
+                });
+            }
+
+            task_scheduler.scheduleOnce([this](){
+                state.get("sta_ip")->updateString("0.0.0.0");
+                state.get("sta_subnet")->updateString("0.0.0.0");
+                state.get("sta_bssid")->updateString("");
+            });
+
+            this->runtime_sta->was_connected = false;
+        },
+        ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            wifi_ap_record_t wifi_info;
+            char bssid_str[18];
+
+            if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
+                logger.printfln("Connected to WiFi");
+                bssid_str[0] = 0;
+            } else {
+                char buf[128];
+                StringWriter sw(buf, ARRAY_SIZE(buf));
+
+                if (wifi_info.phy_11a)       sw.puts("a+");
+                if (wifi_info.phy_11b)       sw.puts("b+");
+                if (wifi_info.phy_11g)       sw.puts("g+");
+                if (wifi_info.phy_11n)       sw.puts("n+");
+                if (wifi_info.phy_11ac)      sw.puts("ac+");
+                if (wifi_info.phy_11ax)      sw.puts("ax+");
+                sw.setLength(sw.getLength() - 1); // Remove trailing plus or space if no mode was added.
+
+                sw.printf(" ch.%hhu", wifi_info.primary);
+
+                if      (wifi_info.bandwidth == WIFI_BW_HT20)   sw.puts(" HT20");
+                else if (wifi_info.bandwidth == WIFI_BW_HT40)   sw.puts(" HT40");
+                else if (wifi_info.bandwidth == WIFI_BW80)      sw.puts(" VHT80");
+                else if (wifi_info.bandwidth == WIFI_BW160)     sw.puts(" VHT160");
+                else if (wifi_info.bandwidth == WIFI_BW80_BW80) sw.puts(" VHT80+80");
+
+                if (wifi_info.phy_lr)        sw.puts(" lr");
+                if (wifi_info.wps)           sw.puts(" WPS");
+                if (wifi_info.ftm_responder) sw.puts(" FTMr");
+                if (wifi_info.ftm_initiator) sw.puts(" FTMi");
+
+                sw.puts(" [");
+                if (wifi_info.country.cc[0] != '\0') {
+                    sw.printf("%-2.2s", wifi_info.country.cc);
+                }
+                const char oix = wifi_info.country.cc[2];
+                switch(oix) {
+                    case '\0':
+                        break;
+                    case ' ':
+                    case 'O':
+                    case 'I':
+                    case 'X':
+                        sw.putc(oix);
+                        break;
+                    default:
+                        sw.printf("%u", oix);
+                }
+
+                sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:XX:XX:XX",
+                        wifi_info.rssi,
+                        wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
+
+                snprintf(bssid_str, std::size(bssid_str), "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX", wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+
+                logger.printfln("Connected to WiFi: %s", buf);
+            }
+
+            this->runtime_sta->was_connected = true;
+
+            const micros_t now = now_us();
+            this->runtime_sta->last_connected = now;
+
+            task_scheduler.scheduleOnce([this, bssid_str, now]() {
+                state.get("sta_bssid")->updateString(bssid_str);
+                state.get("connection_start")->updateUptime(now);
+            });
+        },
+        ARDUINO_EVENT_WIFI_STA_CONNECTED);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
+            // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
+            // Make sure that the state is set to connected here,
+            // or else MQTT will never attempt to connect.
+            this->runtime_sta->was_connected = true;
+
+            const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
+            char ip_str[INET_ADDRSTRLEN];
+            tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
+            char gw_str[INET_ADDRSTRLEN];
+            tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
+            const uint32_t subnet = ip_info.netmask.addr;
+
+            logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
+
+            task_scheduler.scheduleOnce([this, ip_str, subnet](){
+                char subnet_str[INET_ADDRSTRLEN];
+                tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
+
+                state.get("sta_ip")->updateString(ip_str);
+                state.get("sta_subnet")->updateString(subnet_str);
+            });
+        },
+        ARDUINO_EVENT_WIFI_STA_GOT_IP);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            char ip6_str[INET6_ADDRSTRLEN];
+            tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
+            logger.printfln("Got IPv6 address: %s", ip6_str);
+        },
+        ARDUINO_EVENT_WIFI_STA_GOT_IP6);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            if(!this->runtime_sta->was_connected)
+                return;
+
+            this->runtime_sta->was_connected = false;
+
+            logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
+            WiFi.disconnect(false, true);
+
+            task_scheduler.scheduleOnce([this](){
+                state.get("sta_ip")->updateString("0.0.0.0");
+                state.get("sta_subnet")->updateString("0.0.0.0");
+                state.get("sta_bssid")->updateString("");
+            });
+        },
+        ARDUINO_EVENT_WIFI_STA_LOST_IP);
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -543,61 +923,6 @@ void Wifi::start_sta_connection()
     }
 }
 
-#define DEFAULT_REASON_STRING(X) case X: return "Unknown reason (" #X ")";
-
-static const char *reason2str(uint8_t reason)
-{
-    switch (reason) {
-        case WIFI_REASON_NO_AP_FOUND:
-            return "Access point not found. Is the reception too poor or the SSID incorrect?";
-        case WIFI_REASON_AUTH_FAIL:
-            return "Authentication failed. Is the passphrase correct?";
-        case WIFI_REASON_ASSOC_FAIL:
-            return "Association failed";
-        case WIFI_REASON_HANDSHAKE_TIMEOUT:
-        case WIFI_REASON_BEACON_TIMEOUT:
-            return "Reception too poor";
-
-        case WIFI_REASON_ASSOC_TOOMANY:
-            return "Too many stations: access point full";
-        case WIFI_REASON_NOT_AUTHED:
-            return "Remote disconnect";
-        case WIFI_REASON_ASSOC_LEAVE:
-            return "Local disconnect";
-
-        DEFAULT_REASON_STRING(WIFI_REASON_UNSPECIFIED)
-        DEFAULT_REASON_STRING(WIFI_REASON_AUTH_EXPIRE)
-        DEFAULT_REASON_STRING(WIFI_REASON_AUTH_LEAVE)
-        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_EXPIRE)
-        DEFAULT_REASON_STRING(WIFI_REASON_NOT_ASSOCED)
-        DEFAULT_REASON_STRING(WIFI_REASON_ASSOC_NOT_AUTHED)
-        DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_PWRCAP_BAD)
-        DEFAULT_REASON_STRING(WIFI_REASON_DISASSOC_SUPCHAN_BAD)
-        DEFAULT_REASON_STRING(WIFI_REASON_BSS_TRANSITION_DISASSOC)
-        DEFAULT_REASON_STRING(WIFI_REASON_IE_INVALID)
-        DEFAULT_REASON_STRING(WIFI_REASON_MIC_FAILURE)
-        DEFAULT_REASON_STRING(WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)
-        DEFAULT_REASON_STRING(WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT)
-        DEFAULT_REASON_STRING(WIFI_REASON_IE_IN_4WAY_DIFFERS)
-        DEFAULT_REASON_STRING(WIFI_REASON_GROUP_CIPHER_INVALID)
-        DEFAULT_REASON_STRING(WIFI_REASON_PAIRWISE_CIPHER_INVALID)
-        DEFAULT_REASON_STRING(WIFI_REASON_AKMP_INVALID)
-        DEFAULT_REASON_STRING(WIFI_REASON_UNSUPP_RSN_IE_VERSION)
-        DEFAULT_REASON_STRING(WIFI_REASON_INVALID_RSN_IE_CAP)
-        DEFAULT_REASON_STRING(WIFI_REASON_802_1X_AUTH_FAILED)
-        DEFAULT_REASON_STRING(WIFI_REASON_CIPHER_SUITE_REJECTED)
-
-        DEFAULT_REASON_STRING(WIFI_REASON_INVALID_PMKID)
-
-        DEFAULT_REASON_STRING(WIFI_REASON_CONNECTION_FAIL)
-        DEFAULT_REASON_STRING(WIFI_REASON_AP_TSF_RESET)
-        DEFAULT_REASON_STRING(WIFI_REASON_ROAMING)
-
-        default:
-            return "Unknown reason";
-    }
-}
-
 void Wifi::setup()
 {
     initialized = true;
@@ -641,280 +966,11 @@ void Wifi::setup()
     }
 
     if (sta_config.get("enable_sta")->asBool()) {
-        const String &ssid = sta_config.get("ssid"      )->asString();
-        const String &pass = sta_config.get("passphrase")->asString();
-
-        const size_t ssid_len_term = ssid.length() + 1;
-        const size_t pass_len_term = pass.length() + 1;
-
-        runtime_sta = static_cast<decltype(runtime_sta)>(malloc_psram_or_dram(offsetof(struct sta_runtime, ssid_passphrase) + ssid_len_term + pass_len_term));
-
-        if (!runtime_sta) {
-            logger.printfln("Failed to allocate memory for WiFi STA runtime data");
-        } else {
-            ip4addr_aton(sta_config.get("ip"     )->asUnsafeCStr(), &runtime_sta->ip     );
-            ip4addr_aton(sta_config.get("gateway")->asUnsafeCStr(), &runtime_sta->gateway);
-            ip4addr_aton(sta_config.get("dns"    )->asUnsafeCStr(), &runtime_sta->dns    );
-            ip4addr_aton(sta_config.get("dns2"   )->asUnsafeCStr(), &runtime_sta->dns2   );
-
-            ip4_addr_t subnet;
-            ip4addr_aton(sta_config.get("subnet" )->asUnsafeCStr(), &subnet);
-            runtime_sta->subnet_cidr = tf_ip4addr_mask2cidr(subnet) & 0x1F;
-
-            runtime_sta->enable_11b = sta_config.get("enable_11b")->asBool();
-            runtime_sta->bssid_lock = sta_config.get("bssid_lock")->asBool();
-
-            auto bssid_config = sta_config.get("bssid");
-            uint8_t *bssid = runtime_sta->bssid;
-            for (size_t i = 0; i < ARRAY_SIZE(runtime_sta->bssid); i++) {
-                bssid[i] = bssid_config->get(i)->asUint8();
-            }
-
-            memcpy(runtime_sta->ssid_passphrase, ssid.c_str(), ssid_len_term);
-
-            runtime_sta->passphrase_offset = static_cast<uint8_t>(ssid_len_term);
-            memcpy(runtime_sta->ssid_passphrase + runtime_sta->passphrase_offset, pass.c_str(), pass_len_term);
-
-            runtime_sta->last_connected = 0_us;
-            runtime_sta->connect_tries    = 0;
-            runtime_sta->was_connected    = false;
-
-            auto eap_union = const_cast<const ConfigRoot *>(&sta_config)->get("wpa_eap_config");
-            const EapConfigID eap_config_id = eap_union->getTag<EapConfigID>();
-
-            if (eap_config_id == EapConfigID::None) {
-                runtime_sta->runtime_eap = nullptr;
-            } else {
-                auto eap_config = eap_union->get();
-
-                const String &eap_identity_tmp = eap_config->get("identity")->asString();
-                      String  eap_identity;
-
-                if (eap_config_id == EapConfigID::TLS && eap_identity_tmp.isEmpty()) {
-                    eap_identity = "anonymous";
-                } else {
-                    eap_identity = eap_identity_tmp;
-                }
-
-                const String *eap_username;
-                const String *eap_password;
-
-                const size_t eap_identity_len_term = eap_identity.length() + 1;
-                      size_t eap_username_len_term;
-                      size_t eap_password_len_term;
-
-                if (eap_config_id == EapConfigID::PEAP_TTLS) {
-                    eap_username = &eap_config->get("username")->asString();
-                    eap_password = &eap_config->get("password")->asString();
-
-                    eap_username_len_term = eap_username->length() + 1;
-                    eap_password_len_term = eap_password->length() + 1;
-                } else {
-                    eap_username = nullptr;
-                    eap_password = nullptr;
-
-                    eap_username_len_term = 0;
-                    eap_password_len_term = 0;
-                }
-
-                eap_runtime *eap = static_cast<decltype(eap)>(malloc_psram_or_dram(offsetof(struct eap_runtime, identity_credentials) + eap_identity_len_term + eap_username_len_term + eap_password_len_term));
-                runtime_sta->runtime_eap = eap;
-
-                if (!eap) {
-                    logger.printfln("Failed to allocate memory for WiFi STA EAP runtime data");
-                } else {
-                    memset(eap, 0, offsetof(struct eap_runtime, identity_credentials));
-
-                    const int32_t ca_cert_id     = eap_config->get("ca_cert_id"    )->asInt();
-                    const int32_t client_cert_id = eap_config->get("client_cert_id")->asInt();
-                    const int32_t client_key_id  = eap_config->get("client_key_id" )->asInt();
-
-                    if (ca_cert_id     >= 0) eap->ca_cert     = certs.get_cert(static_cast<uint8_t>(ca_cert_id),     nullptr);
-                    if (client_cert_id >= 0) eap->client_cert = certs.get_cert(static_cast<uint8_t>(client_cert_id), nullptr);
-                    if (client_key_id  >= 0) eap->client_key  = certs.get_cert(static_cast<uint8_t>(client_key_id),  nullptr);
-
-                    eap->eap_config_id = static_cast<uint8_t>(eap_config_id);
-
-                    memcpy(eap->identity_credentials, eap_identity.c_str(), eap_identity_len_term);
-
-                    if (!eap_username) {
-                        eap->username_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
-                    } else {
-                        eap->username_offset = static_cast<uint8_t>(eap_identity_len_term);
-                        memcpy(eap->identity_credentials + eap->username_offset, eap_username->c_str(), eap_username_len_term);
-                    }
-
-                    if (!eap_password) {
-                        eap->password_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
-                    } else {
-                        eap->password_offset = static_cast<uint8_t>(eap_identity_len_term + eap_username_len_term);
-                        memcpy(eap->identity_credentials + eap->password_offset, eap_password->c_str(), eap_password_len_term);
-                    }
-                }
-            }
-        }
+        apply_sta_config(true); // Allocate runtime_sta, but don't start the connection yet.
     }
 
     if (runtime_sta) {
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                uint8_t reason_code = info.wifi_sta_disconnected.reason;
-                const char *reason = reason2str(reason_code);
-                if (!this->runtime_sta->was_connected) {
-                    logger.printfln("Failed to connect to WiFi: %s (%u)", reason, reason_code);
-                } else {
-                    const micros_t now = now_us();
-                    const uint32_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint32_t>();
-
-                    if (reason_code == WIFI_REASON_ASSOC_LEAVE && this->runtime_sta->ip.addr == 0 && connected_for_s < 30) {
-                        String last_ip{};
-
-                        task_scheduler.await([this, &last_ip](){
-                            last_ip = state.get("sta_ip")->asString();
-                        });
-
-                        if (last_ip == "0.0.0.0") {
-                            reason = "No IP received via DHCP";
-                            reason_code = 0;
-                        }
-                    }
-
-                    logger.printfln("Disconnected from WiFi: %s (%u). Was connected for %lu seconds.", reason, reason_code, connected_for_s);
-
-                    task_scheduler.scheduleOnce([this, now](){
-                        state.get("connection_end")->updateUptime(now);
-                    });
-                }
-
-                task_scheduler.scheduleOnce([this](){
-                    state.get("sta_ip")->updateString("0.0.0.0");
-                    state.get("sta_subnet")->updateString("0.0.0.0");
-                    state.get("sta_bssid")->updateString("");
-                });
-
-                this->runtime_sta->was_connected = false;
-            },
-            ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                wifi_ap_record_t wifi_info;
-                char bssid_str[18];
-
-                if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
-                    logger.printfln("Connected to WiFi");
-                    bssid_str[0] = 0;
-                } else {
-                    char buf[128];
-                    StringWriter sw(buf, ARRAY_SIZE(buf));
-
-                    if (wifi_info.phy_11a)       sw.puts("a+");
-                    if (wifi_info.phy_11b)       sw.puts("b+");
-                    if (wifi_info.phy_11g)       sw.puts("g+");
-                    if (wifi_info.phy_11n)       sw.puts("n+");
-                    if (wifi_info.phy_11ac)      sw.puts("ac+");
-                    if (wifi_info.phy_11ax)      sw.puts("ax+");
-                    sw.setLength(sw.getLength() - 1); // Remove trailing plus or space if no mode was added.
-
-                    sw.printf(" ch.%hhu", wifi_info.primary);
-
-                    if      (wifi_info.bandwidth == WIFI_BW_HT20)   sw.puts(" HT20");
-                    else if (wifi_info.bandwidth == WIFI_BW_HT40)   sw.puts(" HT40");
-                    else if (wifi_info.bandwidth == WIFI_BW80)      sw.puts(" VHT80");
-                    else if (wifi_info.bandwidth == WIFI_BW160)     sw.puts(" VHT160");
-                    else if (wifi_info.bandwidth == WIFI_BW80_BW80) sw.puts(" VHT80+80");
-
-                    if (wifi_info.phy_lr)        sw.puts(" lr");
-                    if (wifi_info.wps)           sw.puts(" WPS");
-                    if (wifi_info.ftm_responder) sw.puts(" FTMr");
-                    if (wifi_info.ftm_initiator) sw.puts(" FTMi");
-
-                    sw.puts(" [");
-                    if (wifi_info.country.cc[0] != '\0') {
-                        sw.printf("%-2.2s", wifi_info.country.cc);
-                    }
-                    const char oix = wifi_info.country.cc[2];
-                    switch(oix) {
-                        case '\0':
-                            break;
-                        case ' ':
-                        case 'O':
-                        case 'I':
-                        case 'X':
-                            sw.putc(oix);
-                            break;
-                        default:
-                            sw.printf("%u", oix);
-                    }
-
-                    sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:XX:XX:XX",
-                            wifi_info.rssi,
-                            wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
-
-                    snprintf(bssid_str, std::size(bssid_str), "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX", wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
-
-                    logger.printfln("Connected to WiFi: %s", buf);
-                }
-
-                this->runtime_sta->was_connected = true;
-
-                const micros_t now = now_us();
-                this->runtime_sta->last_connected = now;
-
-                task_scheduler.scheduleOnce([this, bssid_str, now]() {
-                    state.get("sta_bssid")->updateString(bssid_str);
-                    state.get("connection_start")->updateUptime(now);
-                });
-            },
-            ARDUINO_EVENT_WIFI_STA_CONNECTED);
-
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
-                // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
-                // Make sure that the state is set to connected here,
-                // or else MQTT will never attempt to connect.
-                this->runtime_sta->was_connected = true;
-
-                const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
-                char ip_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
-                char gw_str[INET_ADDRSTRLEN];
-                tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
-                const uint32_t subnet = ip_info.netmask.addr;
-
-                logger.printfln("Got IP address: %s/%hhu, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
-
-                task_scheduler.scheduleOnce([this, ip_str, subnet](){
-                    char subnet_str[INET_ADDRSTRLEN];
-                    tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
-
-                    state.get("sta_ip")->updateString(ip_str);
-                    state.get("sta_subnet")->updateString(subnet_str);
-                });
-            },
-            ARDUINO_EVENT_WIFI_STA_GOT_IP);
-
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                char ip6_str[INET6_ADDRSTRLEN];
-                tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
-                logger.printfln("Got IPv6 address: %s", ip6_str);
-            },
-            ARDUINO_EVENT_WIFI_STA_GOT_IP6);
-
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                if(!this->runtime_sta->was_connected)
-                    return;
-
-                this->runtime_sta->was_connected = false;
-
-                logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
-                WiFi.disconnect(false, true);
-
-                task_scheduler.scheduleOnce([this](){
-                    state.get("sta_ip")->updateString("0.0.0.0");
-                    state.get("sta_subnet")->updateString("0.0.0.0");
-                    state.get("sta_bssid")->updateString("");
-                });
-            },
-            ARDUINO_EVENT_WIFI_STA_LOST_IP);
+        register_sta_event_handlers();
     }
 
     if (runtime_ap) {

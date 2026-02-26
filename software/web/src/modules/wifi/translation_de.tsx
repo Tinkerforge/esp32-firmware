@@ -50,6 +50,9 @@ let x = {
             "ap_disabled_but_active": "Der WLAN-Access-Point wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen. Dies wird nicht empfohlen, da es dazu führen kann, dass das Gerät nicht mehr erreichbar ist.",
             "ap_restart_now": "Jetzt neustarten.",
             "ap_reboot_body": "Der WLAN-Access-Point wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
+            "sta_disabled_but_active": "Die WLAN-Verbindung wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen.",
+            "sta_restart_now": "Jetzt neustarten.",
+            "sta_reboot_body": "Die WLAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>
@@ -98,8 +101,7 @@ let x = {
             "hidden_ap": "[Versteckter AP]",
 
             "sta_save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
-            "ap_save_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
-            "sta_reboot_content_changed": "Verbindungseinstellungen"
+            "ap_save_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen."
         }
     }
 }

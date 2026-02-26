@@ -50,6 +50,9 @@ let x = {
             "ap_disabled_but_active": "The WiFi access point has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
             "ap_restart_now": "Restart now.",
             "ap_reboot_body": "The WiFi access point has been disabled. Reboot now to apply the change?",
+            "sta_disabled_but_active": "The WiFi connection has been disabled and will not be available after the next reboot.",
+            "sta_restart_now": "Restart now.",
+            "sta_reboot_body": "The WiFi connection has been disabled. Reboot now to apply the change?",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>
@@ -98,8 +101,7 @@ let x = {
             "hidden_ap": "[Hidden AP]",
 
             "sta_save_failed": "Failed to save connection settings.",
-            "ap_save_failed": "Failed to save access point settings.",
-            "sta_reboot_content_changed": "connection settings"
+            "ap_save_failed": "Failed to save access point settings."
         }
     }
 }
