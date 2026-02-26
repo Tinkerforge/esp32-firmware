@@ -55,9 +55,9 @@ void Heating::pre_setup()
         {"blocking_hours", Config::Uint(0, 0, 24)},
         {"pv_excess_control", Config::Bool(false)},
         {"pv_excess_control_threshold", Config::Uint32(0)},
-        {"p14enwg", Config::Bool(false)},
-        {"p14enwg_input", Config::Uint(0, 0, 3)},
-        {"p14enwg_type", Config::Uint(0, 0, 1)}
+        {"p14enwg", Config::Bool(false)},          // Obsolete. Now done through the §14a EnWG module.
+        {"p14enwg_input", Config::Uint(0, 0, 3)},  // Obsolete. Now done through the §14a EnWG module.
+        {"p14enwg_type", Config::Uint(0, 0, 1)}    // Obsolete. Now done through the §14a EnWG module.
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
