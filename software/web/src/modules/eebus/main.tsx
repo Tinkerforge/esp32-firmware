@@ -724,11 +724,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     .map((peer) => {
                                         return {
                                             columnValues: [
-                                                peer.model_model,
+                                                peer.model_model || peer.ip,
                                                 peer.model_brand,
                                                 peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") : __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
-                                                peer.model_model,
+                                                peer.model_model || peer.ip,
                                                 peer.model_brand,
                                                 peer.state
                                             ],
@@ -968,25 +968,25 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             value={state.add.ski}
                                             onValue={(v) => this.setState({add: {...state.add, ski: v}})}
                                             required
+                                            minlength={30}
                                         />
                                     </FormRow>
                                     <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                         <InputText
                                             value={state.add.ip}
+                                            minlength={7}
                                             maxLength={150}
                                             onValue={(v) => this.setState({add: {...state.add, ip: v}})}
+                                            required
                                         />
                                     </FormRow>
                                     <FormRow label={__("eebus.content.peer_info.device_port")}>
                                         <InputText
                                             value={state.add.port}
-                                            onValue={(v) => this.setState({add: {...state.add, port: parseInt(v)}})}
-                                        />
-                                    </FormRow>
-                                    <FormRow label={__("eebus.content.peer_info.dns_name")}>
-                                        <InputText
-                                            value={state.add.dns_name}
-                                            onValue={(v) => this.setState({add: {...state.add, dns_name: v}})}
+                                            onValue={(v) => {
+                                                const port = parseInt(v);
+                                                this.setState({add: {...state.add, port: isNaN(port) ? 4712 : port}});
+                                            }}
                                         />
                                     </FormRow>
                                     <FormRow label={__("eebus.content.peer_info.wss_path")}>
@@ -1000,6 +1000,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onAddSubmit={async () => {
                                 let peer = state.add;
                                 await API.call('eebus/add', peer);
+                                // Reset the form after successful submission
                                 this.setState({
                                     add: {
                                         ski: "",
@@ -1009,8 +1010,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         dns_name: "",
                                         wss_path: "/ship/",
                                         persistent: true
-                                    }
+                                    },
                                 });
+
                             }}
                             onAddHide={async () => {
                                 // Stop mDNS discovery interval when modal closes

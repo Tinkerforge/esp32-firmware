@@ -47,6 +47,10 @@ let x = {
             "no_peers_found": "No devices found. Ensure devices are on the same network.",
             "add_peer_manual_desc": "Or enter device details manually:",
             "already_added": "Added",
+            "ski_required": "SKI is required",
+            "ip_required": "IP address is required",
+            "ip_too_short": "IP address must be at least 7 characters (e.g. 1.1.1.1)",
+            "add_peer_failed": "Failed to add peer",
             "peer_info": {
                 "peers": "EEBUS-Peer",
                 "dns_name": "DNS Address",
