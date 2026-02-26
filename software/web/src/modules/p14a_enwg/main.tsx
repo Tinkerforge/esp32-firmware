@@ -287,7 +287,7 @@ export function init() {
         if (config.enable && state.active) {
             util.add_status_alert(
                 "p14a_enwg",
-                "danger",
+                "warning",
                 () => __("p14a_enwg.content.p14a_enwg"),
                 () => __("p14a_enwg.status.alert_active")(state.limit));
         } else {
