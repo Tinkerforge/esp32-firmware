@@ -29,8 +29,8 @@ import {SubPage} from "../../ts/components/sub_page";
 import {NavbarItem} from "../../ts/components/navbar_item";
 import {CollapsedSection} from "../../ts/components/collapsed_section";
 import {Table, TableRow} from "../../ts/components/table";
-import {Button} from "react-bootstrap";
-import {Share2} from "react-feather";
+import {Button, ListGroup, ListGroupItem} from "react-bootstrap";
+import {Share2, Plus} from "react-feather";
 import {Switch} from "../../ts/components/switch";
 import {ShipDiscoveryState} from "./ship_discovery_state.enum";
 import {NodeState} from "./node_state.enum";
@@ -189,6 +189,8 @@ interface EEBusState {
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
+    scan_interval_id: number = null;
+
     constructor() {
         super('eebus/config', () => __("eebus.script.save_failed"));
         util.addApiEventListener('eebus/state', () => {
@@ -201,6 +203,14 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         util.addApiEventListener('eebus/config', () => {
             this.setState({usecases: API.get('eebus/usecases')});
         });
+    }
+
+    async scan_services() {
+        try {
+            await API.call('eebus/scan', {});
+        } catch {
+            return;
+        }
     }
 
     override async sendSave(topic: "eebus/config", cfg: EEBusConfig) {
@@ -707,22 +717,19 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             columnNames={[
                                 __("eebus.content.peer_info.model_model"),
                                 __("eebus.content.peer_info.model_brand"),
-                                __("eebus.content.peer_info.dns_name"),
                                 __("eebus.content.peer_info.state")]}
                             rows={
                                 state.state.peers
-                                    .filter(peer => (peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1))
+                                    .filter(peer => peer.trusted && ((peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1)))
                                     .map((peer) => {
                                         return {
                                             columnValues: [
                                                 peer.model_model,
                                                 peer.model_brand,
-                                                <ExpandableAddress dns={peer.dns_name} ip={peer.ip}/>,
                                                 peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") : __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model,
                                                 peer.model_brand,
-                                                peer.dns_name,
                                                 peer.state
                                             ],
                                             editTitle: __("eebus.content.peer_info.edit_peer_title"),
@@ -748,21 +755,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                     ski: v
                                                                 }
                                                             })}
-                                                            required
+                                                            disabled
                                                         />
-                                                    </FormRow>
-                                                    <FormRow label={__("eebus.content.peer_info.device_trusted")}>
-                                                        <InputSelect items={[
-                                                            ["0", __("eebus.content.peer_info.trusted_no")],
-                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
-                                                        ]}
-                                                                     value={state.add.trusted ? "1" : "0"}
-                                                                     onValue={(v) => this.setState({
-                                                                         add: {
-                                                                             ...state.add,
-                                                                             trusted: v == "1"
-                                                                         }
-                                                                     })}/>
                                                     </FormRow>
                                                     <FormRow
                                                         label={"IP " + __("eebus.content.peer_info.device_ip") + "*"}>
@@ -774,6 +768,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                     ip: v
                                                                 }
                                                             })}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.device_port") + "*"}>
@@ -785,6 +780,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                     port: parseInt(v)
                                                                 }
                                                             })}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow
@@ -797,6 +793,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                     dns_name: v
                                                                 }
                                                             })}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.wss_path") + "*"}>
@@ -808,15 +805,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                     wss_path: v
                                                                 }
                                                             })}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.autoregister")}>
-                                                        <InputSelect items={[
-                                                            ["0", __("eebus.content.peer_info.trusted_no")],
-                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
-                                                        ]}
-                                                                     value={peer.autoregister ? "1" : "0"}
-                                                                     disabled
+                                                        <InputText
+                                                            value={peer.autoregister ? __("eebus.content.peer_info.trusted_yes") : __("eebus.content.peer_info.trusted_no")}
+                                                            disabled
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.model_type")}>
@@ -838,32 +833,18 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         />
                                                     </FormRow>
                                                     <FormRow label={__("eebus.content.peer_info.state")}>
-                                                        <InputSelect items={[
-                                                            ["0", __("eebus.content.peer_info.state_disconnected")],
-                                                            ["1", __("eebus.content.peer_info.state_discovered")],
-                                                            ["2", __("eebus.content.peer_info.state_connected")],
-                                                            ["3", __("eebus.content.peer_info.state_eebus_connected")],
-                                                            ["5", __("eebus.content.peer_info.state_loaded_from_config")]
-                                                        ]}
-                                                                     value={peer.state.toString()}
-                                                                     disabled
+                                                        <InputText
+                                                            value={
+                                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") :
+                                                                peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") :
+                                                                peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") :
+                                                                peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") :
+                                                                peer.state == NodeState.EEBUSActive ? __("eebus.content.peer_info.state_eebus_connected") :
+                                                                __("eebus.content.unknown")
+                                                            }
+                                                            disabled
                                                         />
                                                     </FormRow>
-                                                    <FormRow label={__("eebus.content.peer_info.persistent")}>
-                                                        <InputSelect items={[
-                                                            ["0", __("eebus.content.peer_info.trusted_no")],
-                                                            ["1", __("eebus.content.peer_info.trusted_yes")]
-                                                        ]}
-                                                                     value={state.add.persistent ? "1" : "0"}
-                                                                     onValue={(v) => this.setState({
-                                                                         add: {
-                                                                             ...state.add,
-                                                                             persistent: v == "1"
-                                                                         }
-                                                                     })}
-                                                        />
-                                                    </FormRow>
-                                                    *{__("eebus.content.peer_info.overwrite_notice")}
                                                 </>
                                             ],
                                             onEditSubmit: async () => {
@@ -874,7 +855,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         ski: "",
                                                         trusted: true,
                                                         ip: "",
-                                                        port: 4815,
+                                                        port: 4712,
                                                         dns_name: "",
                                                         wss_path: "/ship/",
                                                         persistent: true
@@ -890,68 +871,132 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     })
                             }
                             addEnabled={state.enable}
-                            addTitle={__("eebus.content.add_peers")}
-                            addMessage={__("eebus.content.add_peers")}
+                            addTitle={__("eebus.content.add_peer_title")}
+                            addMessage={__("eebus.content.add_peer_message")}
                             onAddShow={async () => {
                                 this.setState({
                                     add: {
                                         ski: "",
                                         trusted: true,
                                         ip: "",
-                                        port: 4815,
+                                        port: 4712,
                                         dns_name: "",
                                         wss_path: "/ship/",
                                         persistent: true
                                     }
-                                })
+                                });
+                                // Start mDNS discovery when modal opens
+                                this.scan_services();
+                                this.scan_interval_id = window.setInterval(() => this.scan_services(), 3000);
                             }}
-                            onAddGetChildren={() => [<>
-                                <FormRow label={__("eebus.content.ski")}>
-                                    <InputText
-                                        value={state.add.ski}
-                                        onValue={(v) => this.setState({add: {...state.add, ski: v}})}
-                                        required
-                                    />
-                                </FormRow>
-                                <FormRow label={__("eebus.content.peer_info.device_trusted")}>
-                                    <InputSelect items={[
-                                        ["0", __("eebus.content.peer_info.trusted_no")],
-                                        ["1", __("eebus.content.peer_info.trusted_yes")]
-                                    ]}
-                                                 value={state.add.trusted ? "1" : "0"}
-                                                 required
-                                    />
-                                </FormRow>
-                                <FormRow label={__("eebus.content.peer_info.device_ip")}>
-                                    <InputText
-                                        value={state.add.ip}
-                                        maxlength={150}
-                                        onValue={(v) => this.setState({add: {...state.add, ip: v}})}
+                            onAddGetChildren={() => {
+                                // Get all discovered peers (with valid SKI)
+                                const discoveredPeers = state.state.peers.filter(p =>
+                                    p.ski &&
+                                    p.ski.length > 0
+                                );
 
-                                    />
-                                </FormRow>
-                                <FormRow label={__("eebus.content.peer_info.device_port")}>
-                                    <InputText
-                                        value={state.add.port}
-                                        onValue={(v) => this.setState({add: {...state.add, port: parseInt(v)}})}
-
-                                    />
-                                </FormRow>
-                                <FormRow label={__("eebus.content.peer_info.dns_name")}>
-                                    <InputText
-                                        value={state.add.dns_name}
-                                        onValue={(v) => this.setState({add: {...state.add, dns_name: v}})}
-
-                                    />
-                                </FormRow>
-                                <FormRow label={__("eebus.content.peer_info.wss_path")}>
-                                    <InputText
-                                        value={state.add.wss_path}
-                                        onValue={(v) => this.setState({add: {...state.add, wss_path: v}})}
-
-                                    />
-                                </FormRow>
-                            </>]}
+                                return [<>
+                                    <FormRow label={__("eebus.content.discovered_peers")}>
+                                        <ListGroup>
+                                            {state.state.discovery_state === ShipDiscoveryState.Scanning && discoveredPeers.length === 0 ? (
+                                                <ListGroupItem className="text-muted">
+                                                    {__("eebus.content.searching_peers")}
+                                                </ListGroupItem>
+                                            ) : discoveredPeers.length === 0 ? (
+                                                <ListGroupItem className="text-muted">
+                                                    {__("eebus.content.no_peers_found")}
+                                                </ListGroupItem>
+                                            ) : (
+                                                discoveredPeers.map(peer => {
+                                                    const isTrusted = peer.trusted;
+                                                    return (
+                                                        <ListGroupItem
+                                                            key={peer.ski}
+                                                            className="p-0"
+                                                            action={!isTrusted}
+                                                            disabled={isTrusted}
+                                                            style={isTrusted ? {opacity: 0.6, cursor: "default"} : {}}
+                                                            onClick={isTrusted ? undefined : () => {
+                                                                this.setState({
+                                                                    add: {
+                                                                        ski: peer.ski,
+                                                                        trusted: true,
+                                                                        ip: peer.ip,
+                                                                        port: peer.port,
+                                                                        dns_name: peer.dns_name,
+                                                                        wss_path: peer.wss_path,
+                                                                        persistent: true
+                                                                    }
+                                                                });
+                                                            }}
+                                                        >
+                                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                                <div class="flex-grow-1 col p-2">
+                                                                    <div class="row m-0 mb-2 w-100 justify-content-between">
+                                                                        <span class="col p-0 h5 text-start mb-0">
+                                                                            {peer.model_model || peer.model_brand || __("eebus.content.unknown")}
+                                                                        </span>
+                                                                        <span class="col-auto p-0 text-end text-muted">
+                                                                            {peer.model_brand}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <span>{peer.dns_name || peer.ip || ""}</span>
+                                                                        <span class="text-muted" style={{fontSize: "0.8em"}}>
+                                                                            SKI: {peer.ski.substring(0, 16)}...
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class={"col-auto d-flex align-items-center justify-content-center px-3 align-self-stretch rounded-end " + (isTrusted ? "bg-success" : "bg-primary")}>
+                                                                    {isTrusted
+                                                                        ? <span style={{color: "white", fontSize: "0.8em"}}>{__("eebus.content.already_added")}</span>
+                                                                        : <Plus size="24" color="white"/>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </ListGroupItem>
+                                                    );
+                                                })
+                                            )}
+                                        </ListGroup>
+                                    </FormRow>
+                                    <hr/>
+                                    <p class="text-muted">{__("eebus.content.add_peer_manual_desc")}</p>
+                                    <FormRow label={__("eebus.content.ski")}>
+                                        <InputText
+                                            value={state.add.ski}
+                                            onValue={(v) => this.setState({add: {...state.add, ski: v}})}
+                                            required
+                                        />
+                                    </FormRow>
+                                    <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                        <InputText
+                                            value={state.add.ip}
+                                            maxLength={150}
+                                            onValue={(v) => this.setState({add: {...state.add, ip: v}})}
+                                        />
+                                    </FormRow>
+                                    <FormRow label={__("eebus.content.peer_info.device_port")}>
+                                        <InputText
+                                            value={state.add.port}
+                                            onValue={(v) => this.setState({add: {...state.add, port: parseInt(v)}})}
+                                        />
+                                    </FormRow>
+                                    <FormRow label={__("eebus.content.peer_info.dns_name")}>
+                                        <InputText
+                                            value={state.add.dns_name}
+                                            onValue={(v) => this.setState({add: {...state.add, dns_name: v}})}
+                                        />
+                                    </FormRow>
+                                    <FormRow label={__("eebus.content.peer_info.wss_path")}>
+                                        <InputText
+                                            value={state.add.wss_path}
+                                            onValue={(v) => this.setState({add: {...state.add, wss_path: v}})}
+                                        />
+                                    </FormRow>
+                                </>];
+                            }}
                             onAddSubmit={async () => {
                                 let peer = state.add;
                                 await API.call('eebus/add', peer);
@@ -960,33 +1005,21 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ski: "",
                                         trusted: true,
                                         ip: "",
-                                        port: 4815,
+                                        port: 4712,
                                         dns_name: "",
                                         wss_path: "/ship/",
                                         persistent: true
                                     }
                                 });
                             }}
-                        />
-                    </FormRow>
-                    <FormRow>
-                        <Button
-                            className="form-control"
-                            variant="primary"
-                            onClick={async () => {
-                                await API.call('eebus/scan', {});
-                                state.state.discovery_state = ShipDiscoveryState.Scanning;
-
+                            onAddHide={async () => {
+                                // Stop mDNS discovery interval when modal closes
+                                if (this.scan_interval_id !== null) {
+                                    window.clearInterval(this.scan_interval_id);
+                                    this.scan_interval_id = null;
+                                }
                             }}
-                            disabled={!state.enable || (state.state.discovery_state === ShipDiscoveryState.Scanning)}>
-                            {state.state.discovery_state === ShipDiscoveryState.Ready
-                                ? __("eebus.content.search_peers")
-                                : state.state.discovery_state === ShipDiscoveryState.Scanning
-                                    ? __("eebus.content.searching_peers")
-                                    : state.state.discovery_state === ShipDiscoveryState.ScanDone
-                                        ? __("eebus.content.search_completed")
-                                        : __("eebus.content.search_failed")}
-                        </Button>
+                        />
                     </FormRow>
                 </SubPage.Config>
             </SubPage>

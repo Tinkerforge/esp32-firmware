@@ -41,6 +41,12 @@ let x = {
             "search_completed": "Neue Suche",
             "search_failed": "Suche fehlgeschlagen",
             "add_peers": "Gerät Hinzufügen",
+            "add_peer_title": "EEBUS-Gerät hinzufügen",
+            "add_peer_message": "Ein neues EEBUS-Gerät zur Verbindung hinzufügen.",
+            "discovered_peers": "Gefundene Geräte",
+            "no_peers_found": "Keine Geräte gefunden. Stellen Sie sicher, dass die Geräte im selben Netzwerk sind.",
+            "add_peer_manual_desc": "Oder Gerätedetails manuell eingeben:",
+            "already_added": "Hinzugefügt",
             "peer_info": {
                 "peers": "EEBUS-Partner",
                 "dns_name": "DNS Adresse",
