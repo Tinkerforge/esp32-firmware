@@ -47,6 +47,9 @@ let x = {
             "ap_bssid_none": "Access-Point nicht aktiv",
             "ap_state": "Access Point",
             "status_ap_ip": "IP-Adresse",
+            "ap_disabled_but_active": "Der WLAN-Access-Point wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen. Dies wird nicht empfohlen, da es dazu führen kann, dass das Gerät nicht mehr erreichbar ist.",
+            "ap_restart_now": "Jetzt neustarten.",
+            "ap_reboot_body": "Der WLAN-Access-Point wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>
@@ -96,8 +99,7 @@ let x = {
 
             "sta_save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen.",
             "ap_save_failed": "Speichern der Access Point-Einstellungen fehlgeschlagen.",
-            "sta_reboot_content_changed": "Verbindungseinstellungen",
-            "ap_reboot_content_changed": "Access-Point-Einstellungen"
+            "sta_reboot_content_changed": "Verbindungseinstellungen"
         }
     }
 }

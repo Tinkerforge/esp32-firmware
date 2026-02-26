@@ -54,7 +54,7 @@ void Wifi::pre_setup()
         {"ip", Config::Str("10.0.0.1", 7, 15)},
         {"gateway", Config::Str("10.0.0.1", 7, 15)},
         {"subnet", Config::Str("255.255.255.0", 7, 15)}
-    }), [](Config &cfg, ConfigSource source) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr;
         if (!ip_addr.fromString(cfg.get("ip")->asUnsafeCStr()))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
@@ -77,6 +77,12 @@ void Wifi::pre_setup()
 
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_ap_config();
+            });
+        }
 
         return "";
     }};
@@ -310,6 +316,80 @@ void Wifi::apply_soft_ap_config_and_start()
     logger.printfln("Soft AP started");
 }
 
+void Wifi::apply_ap_config(bool defer_start)
+{
+    const bool want_enabled = ap_config.get("enable_ap")->asBool();
+
+    if (want_enabled) {
+        const String &ip   = ap_config.get("ip"        )->asString();
+        const String &ssid = ap_config.get("ssid"      )->asString();
+        const String &pass = ap_config.get("passphrase")->asString();
+
+        const size_t ip_len_term   = ip.length()   + 1;
+        const size_t ssid_len_term = ssid.length() + 1;
+        const size_t pass_len_term = pass.length() + 1;
+
+        auto *new_runtime = static_cast<ap_runtime *>(malloc_psram_or_dram(offsetof(struct ap_runtime, ip_ssid_passphrase) + ip_len_term + ssid_len_term + pass_len_term));
+
+        if (!new_runtime) {
+            logger.printfln("Failed to allocate memory for WiFi AP runtime data");
+            return;
+        }
+
+        ip4addr_aton(ap_config.get("gateway")->asUnsafeCStr(), &new_runtime->gateway);
+
+        ip4_addr_t subnet;
+        ip4addr_aton(ap_config.get("subnet")->asUnsafeCStr(), &subnet);
+        new_runtime->subnet_cidr = tf_ip4addr_mask2cidr(subnet);
+
+        new_runtime->ap_fallback_only = ap_config.get("ap_fallback_only")->asBool();
+        new_runtime->hide_ssid        = ap_config.get("hide_ssid"       )->asBool();
+        new_runtime->channel          = ap_config.get("channel"         )->asUint() & 0xF;
+
+        memcpy(new_runtime->ip_ssid_passphrase, ip.c_str(), ip_len_term);
+
+        new_runtime->ssid_offset = static_cast<uint8_t>(ip_len_term);
+        memcpy(new_runtime->ip_ssid_passphrase + new_runtime->ssid_offset, ssid.c_str(), ssid_len_term);
+
+        new_runtime->passphrase_offset = static_cast<uint8_t>(new_runtime->ssid_offset + ssid_len_term);
+        memcpy(new_runtime->ip_ssid_passphrase + new_runtime->passphrase_offset, pass.c_str(), pass_len_term);
+
+        new_runtime->soft_ap_running   = false;
+        new_runtime->scan_start_time_s = 0;
+        new_runtime->stop_soft_ap_runs = 0;
+
+        const bool was_disabled = (runtime_ap == nullptr);
+
+        if (runtime_ap && runtime_ap->soft_ap_running) {
+            WiFi.softAPdisconnect(true);
+        }
+
+        free(runtime_ap);
+        runtime_ap = new_runtime;
+
+        if (!defer_start) {
+            if (!runtime_ap->ap_fallback_only) {
+                apply_soft_ap_config_and_start();
+            } else {
+                // In fallback mode the periodic task (already scheduled in setup()) will
+                // start the AP when needed. Mark it as not running so the task picks it up.
+                runtime_ap->soft_ap_running = false;
+            }
+
+            // If the AP was previously disabled (no runtime_ap at boot),
+            // the ap_state update task was never scheduled.
+            if (was_disabled) {
+                task_scheduler.scheduleUncancelable([this]() {
+                    state.get("ap_state")->updateUint(get_ap_state());
+                }, 5_s, 5_s);
+            }
+        }
+    } else if (!defer_start && runtime_ap) {
+        // Enabled -> Disabled: requires reboot.
+        logger.printfln("WiFi AP disabled in config. Reboot required to take effect.");
+    }
+}
+
 bool Wifi::apply_sta_config_and_connect()
 {
     if (get_connection_state() == WifiState::Connected) {
@@ -513,41 +593,7 @@ void Wifi::setup()
     }
 
     if (ap_config.get("enable_ap")->asBool()) {
-        const String &ip   = ap_config.get("ip"        )->asString();
-        const String &ssid = ap_config.get("ssid"      )->asString();
-        const String &pass = ap_config.get("passphrase")->asString();
-
-        const size_t ip_len_term   = ip.length()   + 1; // Include null-termination.
-        const size_t ssid_len_term = ssid.length() + 1;
-        const size_t pass_len_term = pass.length() + 1;
-
-        runtime_ap = static_cast<decltype(runtime_ap)>(malloc_psram_or_dram(offsetof(struct ap_runtime, ip_ssid_passphrase) + ip_len_term + ssid_len_term + pass_len_term));
-
-        if (!runtime_ap) {
-            logger.printfln("Failed to allocate memory for WiFi AP runtime data");
-        } else {
-            ip4addr_aton(ap_config.get("gateway")->asUnsafeCStr(), &runtime_ap->gateway);
-
-            ip4_addr_t subnet;
-            ip4addr_aton(ap_config.get("subnet" )->asUnsafeCStr(), &subnet);
-            runtime_ap->subnet_cidr = tf_ip4addr_mask2cidr(subnet);
-
-            runtime_ap->ap_fallback_only = ap_config.get("ap_fallback_only")->asBool();
-            runtime_ap->hide_ssid        = ap_config.get("hide_ssid"       )->asBool();
-            runtime_ap->channel          = ap_config.get("channel"         )->asUint() & 0xF;
-
-            memcpy(runtime_ap->ip_ssid_passphrase, ip.c_str(), ip_len_term);
-
-            runtime_ap->ssid_offset = static_cast<uint8_t>(ip_len_term);
-            memcpy(runtime_ap->ip_ssid_passphrase + runtime_ap->ssid_offset, ssid.c_str(), ssid_len_term);
-
-            runtime_ap->passphrase_offset = static_cast<uint8_t>(runtime_ap->ssid_offset + ssid_len_term);
-            memcpy(runtime_ap->ip_ssid_passphrase + runtime_ap->passphrase_offset, pass.c_str(), pass_len_term);
-
-            runtime_ap->soft_ap_running   = false;
-            runtime_ap->scan_start_time_s = 0;
-            runtime_ap->stop_soft_ap_runs = 0;
-        }
+        apply_ap_config(true); // Allocate runtime_ap, but don't start the AP yet.
     }
 
     if (sta_config.get("enable_sta")->asBool()) {

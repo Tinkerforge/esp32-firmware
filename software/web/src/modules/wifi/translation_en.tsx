@@ -47,6 +47,9 @@ let x = {
             "ap_bssid_none": "Access point not active",
             "ap_state": "Access point",
             "status_ap_ip": "IP address",
+            "ap_disabled_but_active": "The WiFi access point has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
+            "ap_restart_now": "Restart now.",
+            "ap_reboot_body": "The WiFi access point has been disabled. Reboot now to apply the change?",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>
@@ -96,8 +99,7 @@ let x = {
 
             "sta_save_failed": "Failed to save connection settings.",
             "ap_save_failed": "Failed to save access point settings.",
-            "sta_reboot_content_changed": "connection settings",
-            "ap_reboot_content_changed": "access point settings"
+            "sta_reboot_content_changed": "connection settings"
         }
     }
 }

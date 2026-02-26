@@ -26,7 +26,7 @@ import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { FormRow } from "../../ts/components/form_row";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Alert } from "react-bootstrap";
 import { InputText } from "../../ts/components/input_text";
 import { InputPassword } from "../../ts/components/input_password";
 import { InputSelect } from "../../ts/components/input_select";
@@ -42,8 +42,7 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
     constructor() {
         super('wifi/ap_config',
-              () => __("wifi.script.ap_save_failed"),
-              () => __("wifi.script.ap_reboot_content_changed"));
+              () => __("wifi.script.ap_save_failed"));
     }
 
     override async isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid; }
@@ -59,6 +58,12 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
             return <SubPage name="wifi_ap" />;
 
         const wifi_state = API.get("wifi/state");
+        const saved_config = API.get("wifi/ap_config");
+
+        // Mismatch: config says disabled, but the interface is still active
+        // (will be turned off on next reboot).
+        const disabled_but_active = !saved_config.enable_ap
+            && wifi_state.ap_state != 0;
 
         return (
             <SubPage name="wifi_ap" title={__("wifi.content.ap_settings")}>
@@ -99,6 +104,24 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                     onSave={this.save}
                     onReset={this.reset}
                     onDirtyChange={this.setDirty}>
+
+                    {disabled_but_active &&
+                        <Alert variant="warning">
+                            {__("wifi.content.ap_disabled_but_active")}{" "}
+                            <a href="#" onClick={async (e) => {
+                                e.preventDefault();
+                                if (await util.async_modal_ref.current.show({
+                                        title: () => __("main.reboot_title"),
+                                        body: () => __("wifi.content.ap_reboot_body"),
+                                        no_text: () => __("main.abort"),
+                                        yes_text: () => __("main.reboot"),
+                                        no_variant: "secondary",
+                                        yes_variant: "danger",
+                                    })) {
+                                    util.reboot();
+                                }
+                            }}>{__("wifi.content.ap_restart_now")}</a>
+                        </Alert>}
 
                     <FormRow label={__("wifi.content.ap_enable")} help={__("wifi.content.ap_enable_help")}>
                         <InputSelect
