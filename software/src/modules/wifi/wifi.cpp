@@ -377,17 +377,61 @@ void Wifi::apply_ap_config(bool defer_start)
             }
 
             // If the AP was previously disabled (no runtime_ap at boot),
-            // the ap_state update task was never scheduled.
+            // the ap_state update task and event handlers were never set up.
             if (was_disabled) {
+                register_ap_event_handlers();
                 task_scheduler.scheduleUncancelable([this]() {
                     state.get("ap_state")->updateUint(get_ap_state());
                 }, 5_s, 5_s);
             }
         }
     } else if (!defer_start && runtime_ap) {
-        // Enabled -> Disabled: requires reboot.
+        // Enabled -> Disabled: Requires reboot.
         logger.printfln("WiFi AP disabled in config. Reboot required to take effect.");
     }
+}
+
+void Wifi::register_ap_event_handlers()
+{
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X connected to AP",
+                            info.wifi_ap_staconnected.mac[0],
+                            info.wifi_ap_staconnected.mac[1],
+                            info.wifi_ap_staconnected.mac[2],
+                            info.wifi_ap_staconnected.mac[3],
+                            info.wifi_ap_staconnected.mac[4],
+                            info.wifi_ap_staconnected.mac[5]);
+
+            task_scheduler.scheduleOnce([this]() {
+                auto ap_sta_count = state.get("ap_sta_count");
+                ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
+            });
+
+        },
+        ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+
+    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X disconnected from AP",
+                            info.wifi_ap_staconnected.mac[0],
+                            info.wifi_ap_staconnected.mac[1],
+                            info.wifi_ap_staconnected.mac[2],
+                            info.wifi_ap_staconnected.mac[3],
+                            info.wifi_ap_staconnected.mac[4],
+                            info.wifi_ap_staconnected.mac[5]);
+
+            task_scheduler.scheduleOnce([this]() {
+                auto ap_sta_count = state.get("ap_sta_count");
+                uint32_t ap_sta_count_value = ap_sta_count->asUint();
+
+                if (ap_sta_count_value == 0) {
+                    logger.printfln("Unexpected disconnect from AP, STA count was already zero");
+                }
+                else {
+                    ap_sta_count->updateUint(ap_sta_count_value - 1);
+                }
+            });
+        },
+        ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
 }
 
 bool Wifi::apply_sta_config_and_connect()
@@ -874,45 +918,7 @@ void Wifi::setup()
     }
 
     if (runtime_ap) {
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X connected to AP",
-                                info.wifi_ap_staconnected.mac[0],
-                                info.wifi_ap_staconnected.mac[1],
-                                info.wifi_ap_staconnected.mac[2],
-                                info.wifi_ap_staconnected.mac[3],
-                                info.wifi_ap_staconnected.mac[4],
-                                info.wifi_ap_staconnected.mac[5]);
-
-                task_scheduler.scheduleOnce([this]() {
-                    auto ap_sta_count = state.get("ap_sta_count");
-                    ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
-                });
-
-            },
-            ARDUINO_EVENT_WIFI_AP_STACONNECTED);
-
-        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X disconnected from AP",
-                                info.wifi_ap_staconnected.mac[0],
-                                info.wifi_ap_staconnected.mac[1],
-                                info.wifi_ap_staconnected.mac[2],
-                                info.wifi_ap_staconnected.mac[3],
-                                info.wifi_ap_staconnected.mac[4],
-                                info.wifi_ap_staconnected.mac[5]);
-
-                task_scheduler.scheduleOnce([this]() {
-                    auto ap_sta_count = state.get("ap_sta_count");
-                    uint32_t ap_sta_count_value = ap_sta_count->asUint();
-
-                    if (ap_sta_count_value == 0) {
-                        logger.printfln("Unexpected disconnect from AP, STA count was already zero");
-                    }
-                    else {
-                        ap_sta_count->updateUint(ap_sta_count_value - 1);
-                    }
-                });
-            },
-            ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
+        register_ap_event_handlers();
     }
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {

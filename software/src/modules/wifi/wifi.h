@@ -50,6 +50,7 @@ public:
 private:
     void apply_soft_ap_config_and_start();
     void apply_ap_config(bool defer_start = false);
+    void register_ap_event_handlers();
     bool apply_sta_config_and_connect();
     void start_sta_connection();
 
