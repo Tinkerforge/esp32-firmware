@@ -236,11 +236,11 @@ Erdungssystem                & {tests["rcdi_positive"]["parameters"]["Earthing_S
 
 \begin{{tabularx}}{{\textwidth}}{{p{{20mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}p{{22mm}} >{{\raggedleft\arraybackslash}}X}}
 \toprule
-     & L1                                                                & L2                                                                & L3                                                                & N                                                                & \\
+     & L1                                                                                  & L2                                                                                  & L3                                                                                  & N                                                                                  & \\
 \midrule
-Riso & {tests["riso_L1"]["results"]["Riso"].replace("Ohm", r"$\Omega$")} & {tests["riso_L2"]["results"]["Riso"].replace("Ohm", r"$\Omega$")} & {tests["riso_L3"]["results"]["Riso"].replace("Ohm", r"$\Omega$")} & {tests["riso_N"]["results"]["Riso"].replace("Ohm", r"$\Omega$")} & bestanden \\
+Riso & {tests["riso_L1"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L2"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_L3"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & {tests["riso_N"]["results"]["Riso"].replace(".", ",").replace("Ohm", r"$\Omega$")} & bestanden \\
 \midrule
-Um   & {tests["riso_L1"]["results"]["Um"]}                               & {tests["riso_L2"]["results"]["Um"]}                               & {tests["riso_L3"]["results"]["Um"]}                               & {tests["riso_N"]["results"]["Um"]}                               & \\
+Um   & {tests["riso_L1"]["results"]["Um"]}                                                 & {tests["riso_L2"]["results"]["Um"]}                                                 & {tests["riso_L3"]["results"]["Um"]}                                                 & {tests["riso_N"]["results"]["Um"]}                                                 & \\
 \bottomrule
 \end{{tabularx}}
 
