@@ -248,8 +248,8 @@ def bb_measure_rcdi(polarity):
     return bb_start_test(f'13; P131 = other; P238 = MI RCD; P239 = 30 mA / 6 mA d.c.; P441 = d.c.; P242 = TN/TT; P14 = EN 61008 / EN 61009; P166 = -; P21 = ({polarity}); P240 = d.c.')
 
 
-def bb_measure_riso(type_):
-    return bb_start_test(f'4; P4 = 500 V; P11 = {type_}; L1 = 1 MOhm')
+def bb_measure_riso(type_, limit='1 MOhm'):  # limit = '250 kOhm' or '1 MOhm'
+    return bb_start_test(f'4; P4 = 500 V; P11 = {type_}; L1 = {limit}')
 
 
 def bb_measure_rlow():

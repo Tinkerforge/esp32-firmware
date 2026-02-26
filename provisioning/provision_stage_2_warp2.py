@@ -753,7 +753,7 @@ def main(stage3, scanner):
             browser.get("http://{}/#evse".format(host))
 
         print("Performing the electrical tests")
-        result["electrical_tests"] = stage3.test_wallbox(has_phase_switch=generation >= 3)
+        result["electrical_tests"] = stage3.test_wallbox(has_phase_switch=generation >= 3, is_warp2=generation == 2)
     finally:
         if browser is not None:
             browser.quit()
@@ -769,7 +769,7 @@ def main(stage3, scanner):
             start = time.monotonic()
             try:
                 req = urllib.request.Request(f"http://{host}/charge_tracker/remove_all_charges",
-                                             data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
+                                             data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
                                              method='PUT',
                                              headers={"Content-Type": "application/json"})
                 with urllib.request.urlopen(req, timeout=1) as f:

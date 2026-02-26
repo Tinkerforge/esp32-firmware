@@ -753,7 +753,7 @@ class Stage3:
                 fatal_error(f'Energy meter measured unexpected voltage on {name}')
 
     # requires power_on
-    def test_wallbox(self, has_phase_switch):
+    def test_wallbox(self, has_phase_switch, is_warp2):
         assert self.has_evse_error_function != None
         assert self.get_iec_state_function != None
         assert self.reset_dc_fault_function != None
@@ -991,7 +991,7 @@ class Stage3:
         # step 10: test R iso L1
         print('Electrical test R iso L1')
 
-        report['riso_L1'] = blackbox.bb_measure_riso('L1/PE')._asdict()
+        report['riso_L1'] = blackbox.bb_measure_riso('L1/PE', limit='250 kOhm' if is_warp2 else '1 MOhm')._asdict()
 
         if not report['riso_L1']['passed']:
             fatal_error('Electrical test failed, see tester display for details')
