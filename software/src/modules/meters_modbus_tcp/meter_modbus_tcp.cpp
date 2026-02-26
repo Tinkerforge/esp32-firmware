@@ -665,6 +665,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = get_huawei_smart_logger_3000_table(slot, huawei_smart_logger_3000.virtual_meter);
         break;
 
+    case MeterModbusTCPTableID::SolisHybridInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
+        max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
+        solis_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<SolisHybridInverterVirtualMeter>();
+        table = get_solis_hybrid_inverter_table(slot, solis_hybrid_inverter.virtual_meter);
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -3048,6 +3055,102 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
             meters.update_value(slot, table->index[read_index + 3], power_sum);
+        }
+    }
+    else if (is_solis_hybrid_inverter_battery_meter()) {
+        if (register_start_address == SolisHybridInverterBatteryAddress::BatteryCurrent) {
+            solis_hybrid_inverter.battery_current = fabs(value);
+        }
+        else if (register_start_address == SolisHybridInverterBatteryAddress::BatteryCurrentDirection) {
+            solis_hybrid_inverter.battery_current_direction = c16.u;
+
+            float current_signed = solis_hybrid_inverter.battery_current;
+
+            if (solis_hybrid_inverter.battery_current_direction != 0) { // 0 = charge, 1 = discharge
+                current_signed = zero_safe_negation(current_signed);
+            }
+
+            meters.update_value(slot, table->index[read_index + 1], current_signed);
+        }
+        else if (register_start_address == SolisHybridInverterBatteryAddress::BatteryPower) {
+            float power_signed = fabs(value);
+
+            if (solis_hybrid_inverter.battery_current_direction != 0) { // 0 = charge, 1 = discharge
+                power_signed = zero_safe_negation(power_signed);
+            }
+
+            meters.update_value(slot, table->index[read_index + 1], power_signed);
+        }
+    }
+    else if (is_solis_hybrid_inverter_load_meter()) {
+        if (register_start_address == SolisHybridInverterLoadAddress::HouseLoadPower) {
+            solis_hybrid_inverter.house_load_power = value;
+        }
+        else if (register_start_address == SolisHybridInverterLoadAddress::BackupLoadPower) {
+            float power = solis_hybrid_inverter.house_load_power + value;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
+            meters.update_value(slot, table->index[read_index + 2], power);
+        }
+    }
+    else if (is_solis_hybrid_inverter_pv_meter()) {
+        if (register_start_address == SolisHybridInverterPVAddress::DCVoltage1) {
+            solis_hybrid_inverter.dc_voltage_1 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCCurrent1) {
+            solis_hybrid_inverter.dc_current_1 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCVoltage2) {
+            solis_hybrid_inverter.dc_voltage_2 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCCurrent2) {
+            solis_hybrid_inverter.dc_current_2 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCVoltage3) {
+            solis_hybrid_inverter.dc_voltage_3 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCCurrent3) {
+            solis_hybrid_inverter.dc_current_3 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCVoltage4) {
+            solis_hybrid_inverter.dc_voltage_4 = value;
+        }
+        else if (register_start_address == SolisHybridInverterPVAddress::DCCurrent4) {
+            solis_hybrid_inverter.dc_current_4 = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(solis_hybrid_inverter.dc_current_1)) {
+                voltage_sum += solis_hybrid_inverter.dc_voltage_1;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solis_hybrid_inverter.dc_current_2)) {
+                voltage_sum += solis_hybrid_inverter.dc_voltage_2;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solis_hybrid_inverter.dc_current_3)) {
+                voltage_sum += solis_hybrid_inverter.dc_voltage_3;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solis_hybrid_inverter.dc_current_4)) {
+                voltage_sum += solis_hybrid_inverter.dc_voltage_4;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = solis_hybrid_inverter.dc_current_1
+                              + solis_hybrid_inverter.dc_current_2
+                              + solis_hybrid_inverter.dc_current_3
+                              + solis_hybrid_inverter.dc_current_4;
+
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
         }
     }
 

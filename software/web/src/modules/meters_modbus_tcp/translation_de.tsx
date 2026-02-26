@@ -65,6 +65,7 @@ let x = {
             "table_chisage_ess_hybrid_inverter": "Chisage ESS Hybrid-Wechselrichter",
             "table_janitza": "Janitza (UMG-Serie)",
             "table_huawei_smart_logger_3000": "Huawei Smart Logger 3000",
+            "table_solis_hybrid_inverter": "Solis Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",

@@ -480,6 +480,22 @@ private:
         struct {
             HuaweiSmartLogger3000VirtualMeter virtual_meter;
         } huawei_smart_logger_3000;
+
+        // Solis hybrid inverter
+        struct {
+            SolisHybridInverterVirtualMeter virtual_meter;
+            float battery_current;
+            uint16_t battery_current_direction;
+            float house_load_power;
+            float dc_voltage_1;
+            float dc_current_1;
+            float dc_voltage_2;
+            float dc_current_2;
+            float dc_voltage_3;
+            float dc_current_3;
+            float dc_voltage_4;
+            float dc_current_4;
+        } solis_hybrid_inverter;
     };
 };
 

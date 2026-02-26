@@ -317,6 +317,7 @@ export function pre_init() {
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SolaxStringInverter.toString(), __("meters_modbus_tcp.content.table_solax_string_inverter")],
+                                [MeterModbusTCPTableID.SolisHybridInverter.toString(), __("meters_modbus_tcp.content.table_solis_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
 //#ifn OPTIONS_PRODUCT_ID_IS_ELTAKO
@@ -392,7 +393,8 @@ export function pre_init() {
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
                   || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.Janitza
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSmartLogger3000)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSmartLogger3000
+                  || config[1].table[0] == MeterModbusTCPTableID.SolisHybridInverter)) {
                     let default_device_address = get_default_device_address(config[1].table[0]);
 
                     if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {

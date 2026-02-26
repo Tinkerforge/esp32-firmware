@@ -24,6 +24,7 @@ import sma
 import varta
 import chisage_ess
 import janitza
+import solis
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -53,6 +54,7 @@ modules = [
     varta,
     chisage_ess,
     janitza,
+    solis,
 ]
 
 table_ids = []
