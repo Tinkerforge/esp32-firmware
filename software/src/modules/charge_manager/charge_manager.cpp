@@ -582,6 +582,26 @@ void ChargeManager::setup()
             if (!deadline_elapsed(this->next_allocation))
                 return;
 
+#if MODULE_P14A_ENWG_AVAILABLE()
+            auto p14_limit_w = p14a_enwg.get_managed_chargers_limit();
+            // Copy old limits, we need those to be able to restore them below.
+            // If neither PV excess charging not dynamic load management are active,
+            // the limits are never written after ::setup().
+            auto limits_before = this->limits;
+            if (p14_limit_w != 0) {
+                // It is not the most effective way to evenly distribute this limit to
+                // all three phases. We could allow more charging if we would track
+                // this as a separate limit, but it is unlikely that the p14a_enwg
+                // module will ever block, so this is good enough(tm) for now.
+                auto p14_limit_mA = (int)(((double)p14_limit_w * 1000.0) / 3 / 230);
+                for (size_t p = (size_t)GridPhase::L1; p <= (size_t)GridPhase::L3; ++p) {
+                    this->limits.raw[p] = std::min(this->limits.raw[p], p14_limit_mA);
+                    this->limits.min[p] = std::min(this->limits.min[p], p14_limit_mA);
+                    this->limits.spread[p] = std::min(this->limits.spread[p], p14_limit_mA);
+                }
+            }
+#endif
+
             if (!all_chargers_seen) {
                 // This branch does not update this->next_allocation,
                 // because the task itself runs once per second.
@@ -657,6 +677,10 @@ void ChargeManager::setup()
             }
 
             this->state.get("state")->updateUint(result);
+
+#if MODULE_P14A_ENWG_AVAILABLE()
+            this->limits = limits_before;
+#endif
         }, 1_s);
 
     if (config.get("verbose")->asBool()) {
