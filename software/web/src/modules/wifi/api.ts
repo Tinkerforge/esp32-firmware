@@ -79,6 +79,7 @@ export interface state {
     sta_subnet: string;
     sta_rssi: number;
     sta_bssid: string;
+    sta_disconnect_reason: number;
 }
 
 export interface scan {

@@ -33,6 +33,7 @@ import { InputPassword } from "../../ts/components/input_password";
 import { Lock, Unlock } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { WifiState } from "./wifi_state.enum";
+import { WifiDisconnectReason } from "./wifi_disconnect_reason.enum";
 import { EapConfigID, EapConfigPEAPTTLS, EapConfigTLS } from "./api";
 import { InputSelect } from "../../ts/components/input_select";
 import { ItemModal } from "../../ts/components/item_modal";
@@ -48,6 +49,18 @@ type WifiSTAState = {
 };
 
 type WifiInfo = Exclude<API.getType['wifi/scan_results'], string>[0];
+
+function disconnect_reason_to_string(reason: number): string {
+    switch (reason) {
+        case WifiDisconnectReason.NoAPFound:      return __("wifi.content.status_sta_disconnect_reason_no_ap");
+        case WifiDisconnectReason.AuthError:      return __("wifi.content.status_sta_disconnect_reason_auth");
+        case WifiDisconnectReason.APFull:         return __("wifi.content.status_sta_disconnect_reason_ap_full");
+        case WifiDisconnectReason.NoDHCP:         return __("wifi.content.status_sta_disconnect_reason_no_dhcp");
+        case WifiDisconnectReason.PoorReception:  return __("wifi.content.status_sta_disconnect_reason_poor_reception");
+        case WifiDisconnectReason.GenericError:   return __("wifi.content.status_sta_disconnect_reason_generic");
+        default:                                  return __("wifi.content.status_sta_disconnect_reason_generic");
+    }
+}
 
 export function wifi_symbol(rssi: number, size: number = 24) {
     let opacity = 0.2;
@@ -386,6 +399,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                                     : __("wifi.content.status_sta_rssi_none")}
                             />
                         </FormRow>
+
                     </>}
 
                     <FormRow label={__("wifi.content.sta_mac")}>
@@ -401,6 +415,12 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                             style={wifi_state.sta_bssid.length == 0 ? undefined : "font-family:monospace"}
                         />
                     </FormRow>
+
+                    {wifi_state.connection_state == WifiState.NotConnected && wifi_state.sta_disconnect_reason != WifiDisconnectReason.None &&
+                        <Alert variant="danger">
+                            {disconnect_reason_to_string(wifi_state.sta_disconnect_reason)}
+                        </Alert>
+                    }
                 </SubPage.Status>
 
                 <SubPage.Config

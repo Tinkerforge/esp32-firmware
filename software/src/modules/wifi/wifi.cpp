@@ -97,7 +97,8 @@ void Wifi::pre_setup()
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(-127)},
-        {"sta_bssid", Config::Str("", 0, 17)}
+        {"sta_bssid", Config::Str("", 0, 17)},
+        {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)}
     });
 
     eap_config_prototypes[0] = {EapConfigID::None, *Config::Null()};
@@ -651,6 +652,28 @@ static const char *reason2str(uint8_t reason)
     }
 }
 
+static WifiDisconnectReason reason_code_to_enum(uint8_t reason_code)
+{
+    switch (reason_code) {
+        case 0: // Special: overridden to 0 when no DHCP IP received
+            return WifiDisconnectReason::NoDHCP;
+        case WIFI_REASON_NO_AP_FOUND:
+            return WifiDisconnectReason::NoAPFound;
+        case WIFI_REASON_AUTH_FAIL:
+        case WIFI_REASON_802_1X_AUTH_FAILED:
+        case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+        case WIFI_REASON_GROUP_KEY_UPDATE_TIMEOUT:
+            return WifiDisconnectReason::AuthError;
+        case WIFI_REASON_ASSOC_TOOMANY:
+            return WifiDisconnectReason::APFull;
+        case WIFI_REASON_HANDSHAKE_TIMEOUT:
+        case WIFI_REASON_BEACON_TIMEOUT:
+            return WifiDisconnectReason::PoorReception;
+        default:
+            return WifiDisconnectReason::GenericError;
+    }
+}
+
 void Wifi::register_sta_event_handlers()
 {
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
@@ -682,10 +705,13 @@ void Wifi::register_sta_event_handlers()
                 });
             }
 
-            task_scheduler.scheduleOnce([this](){
+            WifiDisconnectReason disconnect_reason = reason_code_to_enum(reason_code);
+
+            task_scheduler.scheduleOnce([this, disconnect_reason](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
                 state.get("sta_bssid")->updateString("");
+                state.get("sta_disconnect_reason")->updateEnum(disconnect_reason);
             });
 
             this->runtime_sta->was_connected = false;
@@ -759,6 +785,7 @@ void Wifi::register_sta_event_handlers()
             task_scheduler.scheduleOnce([this, bssid_str, now]() {
                 state.get("sta_bssid")->updateString(bssid_str);
                 state.get("connection_start")->updateUptime(now);
+                state.get("sta_disconnect_reason")->updateEnum(WifiDisconnectReason::None);
             });
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
