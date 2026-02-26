@@ -62,7 +62,7 @@ let x = {
             "rules_charge": "Laderegeln",
             "rules_discharge": "Entladeregeln",
 
-            "table_rule_enabled": "Aktiv",
+            "table_rule_enabled": "Aktiviert",
             "table_rule_desc": "Beschreibung",
             "table_rule_time": "Zeit",
             "table_rule_soc": "Ladestand",
