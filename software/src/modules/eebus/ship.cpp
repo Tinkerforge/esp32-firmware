@@ -354,7 +354,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
     update_discovery_state(ShipDiscoveryState::Scanning);
 
     eebus.trace_fmtln("discover_ship_peers start");
-    logger.printfln("EEBUS MDNS Discovery started");
 
     if (!network.is_mdns_started()) {
         logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
@@ -374,7 +373,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
         return discovery_state;
     }
     if (!results) {
-        logger.printfln("EEBUS MDNS: No results found!");
         eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
         update_discovery_state(ShipDiscoveryState::ScanDone);
         return discovery_state;
@@ -484,7 +482,6 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
         results = results->next;
     }
-    logger.printfln("EEBUS MDNS Discovery: Found %zu results", peer_handler.get_peers().size());
 
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
