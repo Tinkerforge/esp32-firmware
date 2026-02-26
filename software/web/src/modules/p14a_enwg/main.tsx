@@ -31,6 +31,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputText } from "../../ts/components/input_text";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 import { P14aEnwgSource } from "./p14a_enwg_source.enum";
+import { SourceInput } from "./api";
 
 const SIMULTANEITY_FACTORS: {[key: number]: number} = {2: 0.80, 3: 0.75, 4: 0.70, 5: 0.65, 6: 0.60, 7: 0.55, 8: 0.50};
 
@@ -98,7 +99,7 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
     override async sendSave(topic: "p14a_enwg/config", config: P14aEnwgConfig) {
         this.setState({config_enable: config.enable}); // avoid round trip time
         if (this.state.is_charger) {
-            await API.save_unchecked('evse/p14a_enwg_enabled', {enabled: config.this_charger && config.enable}, () => __("p14a_enwg.script.save_failed"));
+            await API.save_unchecked('evse/p14a_enwg_enabled', {enabled: config.limit_charger && config.enable}, () => __("p14a_enwg.script.save_failed"));
         }
         await super.sendSave(topic, config);
     }
@@ -114,7 +115,13 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
         if (!util.render_allowed())
             return <SubPage name="p14a_enwg" />;
 
-        const source_is_input = state.source === P14aEnwgSource.Input;
+        const source_tag = state.source[0];
+        const source_is_input = source_tag === P14aEnwgSource.Input;
+        const input_cfg: SourceInput[1] = source_is_input ? (state.source[1] as SourceInput[1]) : {limit_on_close: true, limit_w: 4200, input_index: 0};
+        const update_input = (x: Partial<SourceInput[1]>) => {
+            if (source_is_input)
+                this.setState({source: [P14aEnwgSource.Input, {...input_cfg, ...x}]});
+        };
         const disabled = !state.config_enable;
 
         // Source dropdown: label differs between WARP and EM
@@ -136,7 +143,7 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                         {state.p14a_state?.active ?
                             <FormRow label={__("p14a_enwg.status.current_limit")}>
                                 <InputText
-                                    value={state.p14a_state.limit + " W"}
+                                    value={state.p14a_state.limit_w + " W"}
                                 />
                             </FormRow>
                         : undefined}
@@ -159,8 +166,17 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                     <FormRow label={__("p14a_enwg.content.source")}>
                         <InputSelect
                             items={source_items}
-                            value={state.source}
-                            onValue={(v) => this.setState({source: parseInt(v)})}
+                            value={source_tag}
+                            onValue={(v) => {
+                                const tag = parseInt(v);
+                                if (tag === P14aEnwgSource.Input) {
+                                    this.setState({source: [P14aEnwgSource.Input, {limit_on_close: true, limit_w: 4200, input_index: 0}]});
+                                } else if (tag === P14aEnwgSource.EEBus) {
+                                    this.setState({source: [P14aEnwgSource.EEBus, {}]});
+                                } else {
+                                    this.setState({source: [P14aEnwgSource.API, {}]});
+                                }
+                            }}
                             disabled={disabled}
                         />
                     </FormRow>
@@ -176,19 +192,19 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                             ["2", __("p14a_enwg.content.input") + " 3"],
                                             ["3", __("p14a_enwg.content.input") + " 4"],
                                         ]}
-                                        value={state.input_index}
-                                        onValue={(v) => this.setState({input_index: parseInt(v)})}
+                                        value={input_cfg.input_index}
+                                        onValue={(v) => update_input({input_index: parseInt(v)})}
                                         disabled={disabled}
                                     />
                                 </FormRow>
                             : undefined}
                             <FormRow label={__("p14a_enwg.content.limit")} label_muted={__("p14a_enwg.content.limit_muted")} help={__("p14a_enwg.content.limit_help")}>
                                 <InputNumber
-                                    value={deviceCountFromLimit(state.limit)}
-                                    onValue={(n) => this.setState({limit: calculateP14aLimit(n)})}
+                                    value={deviceCountFromLimit(input_cfg.limit_w)}
+                                    onValue={(n) => update_input({limit_w: calculateP14aLimit(n)})}
                                     min={1}
                                     max={99}
-                                    unit={__("p14a_enwg.content.device_count_unit")(deviceCountFromLimit(state.limit), state.limit)}
+                                    unit={__("p14a_enwg.content.device_count_unit")(deviceCountFromLimit(input_cfg.limit_w), input_cfg.limit_w)}
                                     disabled={disabled}
                                 />
                             </FormRow>
@@ -198,8 +214,8 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                         ["1", __("p14a_enwg.content.active_on_close")],
                                         ["0", __("p14a_enwg.content.active_on_open")],
                                     ]}
-                                    value={state.active_on_close ? "1" : "0"}
-                                    onValue={(v) => this.setState({active_on_close: v === "1"})}
+                                    value={input_cfg.limit_on_close ? "1" : "0"}
+                                    onValue={(v) => update_input({limit_on_close: v === "1"})}
                                     disabled={disabled}
                                 />
                             </FormRow>
@@ -209,8 +225,8 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                     {state.is_charger ?
                         <FormRow label={__("p14a_enwg.content.this_charger")}>
                             <Switch desc={__("p14a_enwg.content.this_charger_desc")}
-                                checked={state.this_charger}
-                                onClick={this.toggle('this_charger')}
+                                checked={state.limit_charger}
+                                onClick={this.toggle('limit_charger')}
                                 disabled={disabled}
                             />
                         </FormRow>
@@ -218,8 +234,8 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
 
                     <FormRow label={__("p14a_enwg.content.managed_chargers")}>
                         <Switch desc={__("p14a_enwg.content.managed_chargers_desc")}
-                            checked={state.managed_chargers}
-                            onClick={this.toggle('managed_chargers')}
+                            checked={state.limit_charge_manager}
+                            onClick={this.toggle('limit_charge_manager')}
                             disabled={disabled}
                         />
                     </FormRow>
@@ -228,8 +244,8 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                         <>
                             <FormRow label={__("p14a_enwg.content.heating")}>
                                 <Switch desc={__("p14a_enwg.content.heating_desc")}
-                                    checked={state.heating}
-                                    onClick={this.toggle('heating')}
+                                    checked={state.limit_heating}
+                                    onClick={this.toggle('limit_heating')}
                                     disabled={disabled}
                                 />
                             </FormRow>
@@ -240,7 +256,7 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                                     min={0}
                                     max={50000}
                                     unit="W"
-                                    disabled={disabled || !state.heating}
+                                    disabled={disabled || !state.limit_heating}
                                 />
                             </FormRow>
                         </>
@@ -269,7 +285,7 @@ export function init() {
             if (state.active) {
                 return {
                     status: ModuleStatus.Warning,
-                    text: () => __("p14a_enwg.status.active") + " (" + state.limit + " W)"
+                    text: () => __("p14a_enwg.status.active") + " (" + state.limit_w + " W)"
                 };
             }
 
@@ -289,7 +305,7 @@ export function init() {
                 "p14a_enwg",
                 "warning",
                 () => __("p14a_enwg.content.p14a_enwg"),
-                () => __("p14a_enwg.status.alert_active")(state.limit));
+                () => __("p14a_enwg.status.alert_active")(state.limit_w));
         } else {
             util.remove_status_alert("p14a_enwg");
         }

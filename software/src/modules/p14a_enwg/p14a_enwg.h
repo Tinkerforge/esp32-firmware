@@ -21,10 +21,13 @@
 
 #include "config.h"
 #include "module.h"
+#include "p14a_enwg_source.enum.h"
 
 class P14aEnwg final : public IModule
 {
 private:
+    ConfUnionPrototype<P14aEnwgSource> source_prototypes[3];
+
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot control;

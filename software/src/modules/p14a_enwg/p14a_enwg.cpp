@@ -27,16 +27,30 @@
 
 void P14aEnwg::pre_setup()
 {
+    source_prototypes[0] = {P14aEnwgSource::Input, Config::Object({
+        {"limit_on_close", Config::Bool(true)}, // true = active when input closed, false = active when open
+        {"limit_w", Config::Uint32(4200)},      // Limit in W when triggered via input
+        {"input_index", Config::Uint(0, 0, 3)}, // EM only: which of the 4 inputs (0-3)
+    })};
+    source_prototypes[1] = {P14aEnwgSource::EEBus, *Config::Null()};
+    source_prototypes[2] = {P14aEnwgSource::API,   *Config::Null()};
+
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"source", Config::Enum(P14aEnwgSource::Input)},
-        {"limit", Config::Uint32(4200)},           // Limit in W when triggered via input
-        {"active_on_close", Config::Bool(true)},   // true = active when input closed, false = active when open
-        {"input_index", Config::Uint(0, 0, 3)},    // EM only: which of the 4 inputs (0-3)
-        {"this_charger", Config::Bool(false)},     // WARP only: apply limit to this charger
-        {"managed_chargers", Config::Bool(false)}, // Apply limit to managed chargers
-        {"heating", Config::Bool(false)},          // EM only: apply limit to heating
-        {"heating_max_power", Config::Uint32(0)},  // EM only: maximum power draw of heating in W
+        {"source", Config::Union<P14aEnwgSource>(
+            Config::Object({
+                {"limit_on_close", Config::Bool(true)},
+                {"limit_w", Config::Uint32(4200)},
+                {"input_index", Config::Uint(0, 0, 3)},
+            }),
+            P14aEnwgSource::Input,
+            source_prototypes,
+            ARRAY_SIZE(source_prototypes)
+        )},
+        {"limit_charger", Config::Bool(false)},        // Charger only: apply limit to this charger
+        {"limit_charge_manager", Config::Bool(false)}, // Apply limit to managed chargers
+        {"limit_heating", Config::Bool(false)},        // EM only: apply limit to heating
+        {"heating_max_power", Config::Uint32(0)},      // EM only: maximum power draw of heating in W
     }), [this](Config &update, ConfigSource source) -> String {
         bool was_enabled = config.get("enable")->asBool();
         bool will_enable = update.get("enable")->asBool();
@@ -56,12 +70,12 @@ void P14aEnwg::pre_setup()
 
     state = Config::Object({
         {"active", Config::Bool(false)}, // Is §14a currently triggered
-        {"limit", Config::Uint32(0)},    // Current effective limit in W (0 when not active)
+        {"limit_w", Config::Uint32(0)},  // Current effective limit in W (0 when not active)
     });
 
     control = Config::Object({
         {"active", Config::Bool(false)}, // Set §14a active via API
-        {"limit", Config::Uint32(0)},    // Power limit in W when set via API
+        {"limit_w", Config::Uint32(0)},  // Power limit in W when set via API
     });
 }
 
@@ -89,7 +103,7 @@ void P14aEnwg::register_urls()
         &control,
         {},
         [this](Language /*language*/, String & /*errmsg*/) {
-            if (config.get("source")->asEnum<P14aEnwgSource>() == P14aEnwgSource::API) {
+            if (config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::API) {
                 this->update();
             }
         },
@@ -126,10 +140,10 @@ void P14aEnwg::check_evse_shutdown_input()
     if (!config.get("enable")->asBool()) {
         logger.printfln("Migrating EVSE shutdown input §14a configuration to p14a_enwg module.");
         config.get("enable")->updateBool(true);
-        config.get("source")->updateUint(static_cast<uint8_t>(P14aEnwgSource::Input));
-        config.get("this_charger")->updateBool(true);
-        config.get("active_on_close")->updateBool(shutdown_input == 4);
-        config.get("limit")->updateUint(4200);
+        config.get("source")->changeUnionVariant<P14aEnwgSource>(P14aEnwgSource::Input);
+        config.get("source")->get()->get("limit_on_close")->updateBool(shutdown_input == 4);
+        config.get("source")->get()->get("limit_w")->updateUint(4200);
+        config.get("limit_charger")->updateBool(true);
         API::writeConfig("p14a_enwg/config", &config);
         api.callCommand("evse/p14a_enwg_enabled_update", Config::ConfUpdateObject{{
             {"enabled", true}
@@ -164,7 +178,7 @@ void P14aEnwg::check_inputs()
 #endif
 
 #if MODULE_EM_V2_AVAILABLE()
-    uint32_t input_index = config.get("input_index")->asUint();
+    uint32_t input_index = config.get("source")->get()->get("input_index")->asUint();
     input_value = em_v2.get_input(input_index);
 #endif
 
@@ -179,7 +193,7 @@ void P14aEnwg::update()
 {
     if (!is_enabled()) {
         state.get("active")->updateBool(false);
-        state.get("limit")->updateUint(0);
+        state.get("limit_w")->updateUint(0);
 #if MODULE_EVSE_COMMON_AVAILABLE()
         if (last_current_mA != 32000) {
             evse_common.set_p14a_enwg_current(32000);
@@ -189,7 +203,7 @@ void P14aEnwg::update()
         return;
     }
 
-    const P14aEnwgSource source = config.get("source")->asEnum<P14aEnwgSource>();
+    const P14aEnwgSource source = config.get("source")->getTag<P14aEnwgSource>();
 
     bool active = false;
     uint32_t limit_w = 0;
@@ -203,14 +217,14 @@ void P14aEnwg::update()
 #endif
 
 #if MODULE_EM_V2_AVAILABLE()
-            uint32_t input_index = config.get("input_index")->asUint();
+            uint32_t input_index = config.get("source")->get()->get("input_index")->asUint();
             input_value = em_v2.get_input(input_index);
 #endif
 
-            bool active_on_close = config.get("active_on_close")->asBool();
+            bool limit_on_close = config.get("source")->get()->get("limit_on_close")->asBool();
             // input_value == true means input is closed.
-            active = active_on_close ? input_value : !input_value;
-            limit_w = config.get("limit")->asUint();
+            active = limit_on_close ? input_value : !input_value;
+            limit_w = config.get("source")->get()->get("limit_w")->asUint();
             break;
         }
 
@@ -221,17 +235,17 @@ void P14aEnwg::update()
 
         case P14aEnwgSource::API:
             active = control.get("active")->asBool();
-            limit_w = control.get("limit")->asUint();
+            limit_w = control.get("limit_w")->asUint();
             break;
     }
 
     state.get("active")->updateBool(active);
-    state.get("limit")->updateUint(active ? limit_w : 0);
+    state.get("limit_w")->updateUint(active ? limit_w : 0);
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
     uint16_t new_current_mA = 32000;
 
-    if (config.get("this_charger")->asBool() && active) {
+    if (config.get("limit_charger")->asBool() && active) {
         uint32_t phases = evse_common.backend->get_phases();
         if (phases == 0) {
             phases = 3;
@@ -271,7 +285,7 @@ void P14aEnwg::stop_input_check()
 
     // Reset state when stopping
     state.get("active")->updateBool(false);
-    state.get("limit")->updateUint(0);
+    state.get("limit_w")->updateUint(0);
 
 #if MODULE_EVSE_COMMON_AVAILABLE()
     if (last_current_mA != 32000) {
@@ -286,7 +300,7 @@ void P14aEnwg::set_eebus_limit(bool active, uint32_t limit_w)
     eebus_active = active;
     eebus_limit_w = limit_w;
 
-    if (config.get("source")->asEnum<P14aEnwgSource>() == P14aEnwgSource::EEBus) {
+    if (config.get("source")->getTag<P14aEnwgSource>() == P14aEnwgSource::EEBus) {
         this->update();
     }
 }
@@ -301,9 +315,9 @@ bool P14aEnwg::is_heating_active()
 
 uint32_t P14aEnwg::get_managed_chargers_limit()
 {
-    if (!is_enabled() || !config.get("managed_chargers")->asBool() || !state.get("active")->asBool()) {
+    if (!is_enabled() || !config.get("limit_charge_manager")->asBool() || !state.get("active")->asBool()) {
         return 0;
     }
 
-    return config.get("limit")->asUint();
+    return state.get("limit_w")->asUint();
 }
