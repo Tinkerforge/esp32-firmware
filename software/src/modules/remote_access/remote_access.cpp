@@ -1079,6 +1079,12 @@ void RemoteAccess::register_events()
                 this->task_id = 0;
             }
 
+            // Cancel management polling task if running.
+            if (this->management_task_id) {
+                task_scheduler.cancel(this->management_task_id);
+                this->management_task_id = 0;
+            }
+
             // Tear down the management WireGuard tunnel so that
             // its stale lwIP netif and UDP socket don't linger.
             if (this->management != nullptr) {
@@ -1832,11 +1838,13 @@ void RemoteAccess::connect_management()
                       nullptr,
                       config.get("mtu")->asUint16());
 
-    task_scheduler.scheduleUncancelable(
-        [this]() {
-            this->run_management();
-        },
-        250_ms);
+    if (!management_task_id) {
+        management_task_id = task_scheduler.scheduleWithFixedDelay(
+            [this]() {
+                this->run_management();
+            },
+            250_ms);
+    }
 }
 
 void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)

@@ -104,6 +104,7 @@ private:
     bool management_auth_failed = false;
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
+    uint64_t management_task_id = 0;
 
     esp_ping_handle_t ping = nullptr;
     micros_t ping_start = 0_us;
