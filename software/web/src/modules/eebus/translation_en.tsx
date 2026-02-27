@@ -1,6 +1,5 @@
 /** @jsxImportSource preact */
-import {h} from "preact";
-
+import { h } from "preact";
 let x = {
     "eebus": {
         "content": {

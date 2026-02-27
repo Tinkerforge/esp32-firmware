@@ -1,6 +1,5 @@
 /** @jsxImportSource preact */
-import {h} from "preact";
-
+import { h } from "preact";
 let x = {
     "eebus": {
         "content": {
@@ -8,14 +7,11 @@ let x = {
             "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
             "eebus_detail_info": "Hier werden die Werte welche von den Usecases über EEBUS bereitgestellt oder geschrieben werden können angezeigt. Die angezeigten Werte spiegeln die jeweils neuesten EEBUS‑Kommunikationsdaten wieder. Werte welche von EEBUS Steuergeräten geschrieben werden können, sind als als solche markiert. Alle anderen Werte sind für EEBUS Geräte nur lesbar.",
             "enable_eebus_help_intro": <>
-                <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die
-                    Kommunikation
-                    zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen
-                    (HEMS).</p>
+                <p>EEBUS ist ein Kommunikationsstandard für intelligentes Energiemanagement. Er ermöglicht die Kommunikation
+                zwischen Energiegeräten wie Wallboxen, Wärmepumpen, PV-Anlagen und Energiemanagementsystemen (HEMS).</p>
             </>,
             "enable_eebus_help_usecases_intro": <>
-                <p>Vom Standard werden Usecases definiert welche zur Abbildung verschiedener Funktionen von Geräten und
-                    Systemen genutzt werden können.</p>
+                <p>Vom Standard werden Usecases definiert welche zur Abbildung verschiedener Funktionen von Geräten und Systemen genutzt werden können.</p>
                 <p>Folgende Use Cases werden unterstützt:</p>
             </>,
             "usecase_lpc_desc": "Begrenzung der Leistungsaufnahme. Wird von Steuerboxen zur Netzsteuerung gemäß §14a EnWG verwendet. Ermöglicht dem Netzbetreiber die Leistungsaufnahme von Großverbrauchern (z.b. Wallboxen, Klimageräte) zu begrenzen.",
@@ -34,11 +30,9 @@ let x = {
             "ski": "SKI",
             "ski_muted": "Subject Key Identifier dieses Geräts",
             "ski_help": <>
-                <p>Der Subject Key Identifier (SKI) ist ein eindeutiger kryptographischer Bezeichner für dieses
-                    Gerät.</p>
-                <p>Wenn dieses Gerät mit z.B. einer Steuerbox kommunizieren soll, kann es sein dass der SKI bei der
-                    Einrichtung
-                    der Steuerbox benötigt wird.</p>
+                <p>Der Subject Key Identifier (SKI) ist ein eindeutiger kryptographischer Bezeichner für dieses Gerät.</p>
+                <p>Wenn dieses Gerät mit z.B. einer Steuerbox kommunizieren soll, kann es sein dass der SKI bei der Einrichtung
+                der Steuerbox benötigt wird.</p>
             </>,
             "no_cert": "Nicht verwendet",
             "unknown": "Unbekannt",
