@@ -51,6 +51,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     master = next((e for e in enumerations if e.device_identifier == 13), None)
     evse_enum = next((e for e in enumerations if e.device_identifier == BrickletEVSEV2.DEVICE_IDENTIFIER), None)
     nfc_enum = next((e for e in enumerations if e.device_identifier == BrickletNFC.DEVICE_IDENTIFIER), None)
+    warp4_co_enum = next((e for e in enumerations if e.device_identifier == 2184), None)
 
     if evse_enum is None:
         fatal_error("No EVSE Bricklet found!")
@@ -61,8 +62,17 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     if scanner.qr_variant != "B":
         if nfc_enum is None:
             fatal_error("No NFC Bricklet found!")
-        if len(enumerations) != 2:
-            fatal_error("Unexpected number of devices! Expected 2 but got {}.".format(len(enumerations)))
+
+        if generation == 4:
+            if warp4_co_enum is None:
+                fatal_error("No WARP4-Co Bricklet found!")
+
+            expected = 3
+        else:
+            expected = 2
+
+        if len(enumerations) != expected:
+            fatal_error("Unexpected number of devices! Expected {} but got {}.".format(expected, len(enumerations)))
 
     is_basic = master is not None
 
@@ -186,13 +196,17 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
     result["diode_checked"] = True
 
-    outgoing = evse.get_charging_slot(1).max_current
-    if scanner.qr_power == "11" and outgoing != 20000:
-        fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
-    if scanner.qr_power == "22" and outgoing != 32000:
-        fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 32 A, as this is a 22 kW box.".format(outgoing / 1000))
+    if '--no-pp-resistor-check' in sys.argv:
+        print('Skipping PP resistor check')
+        result["resistor_checked"] = False
+    else:
+        outgoing = evse.get_charging_slot(1).max_current
+        if scanner.qr_power == "11" and outgoing != 20000:
+            fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 20 A, as this is a 11 kW box.".format(outgoing / 1000))
+        if scanner.qr_power == "22" and outgoing != 32000:
+            fatal_error("Wrong type 2 cable config detected: Allowed current is {} but expected 32 A, as this is a 22 kW box.".format(outgoing / 1000))
 
-    result["resistor_checked"] = True
+        result["resistor_checked"] = True
 
     if is_pro:
         meter_str = urllib.request.urlopen('http://{}/meter/live'.format(host), timeout=3).read()
@@ -229,7 +243,7 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
 def exists_evse_test_report(evse_uid):
     global generation
-    evse_version = {2: 2, 3: 3}[generation]
+    evse_version = {2: 2, 3: 3, 4: 3}[generation]
     with open(os.path.join(f"evse_v{evse_version}_test_report", "full_test_log.csv"), newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
@@ -252,8 +266,8 @@ def retry_wrapper(fn, s):
 def is_front_panel_button_pressed():
     global evse
     global generation
-    assert generation in (2, 3)
-    return retry_wrapper(lambda: evse.get_low_level_state().gpio[{2: 6, 3: 5}[generation]], "check if front panel button is pressed")
+    assert generation in (2, 3, 4)
+    return retry_wrapper(lambda: evse.get_low_level_state().gpio[{2: 6, 3: 5, 4: 5}[generation]], "check if front panel button is pressed")
 
 def get_iec_state():
     global evse
@@ -559,7 +573,7 @@ def main(stage3, scanner):
         info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
 
-        if '--no-firmware-update' in sys.args:
+        if '--no-firmware-update' in sys.argv:
             print('Skipping firmware update')
         else:
             firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
@@ -733,16 +747,20 @@ def main(stage3, scanner):
 
         run_bricklet_tests(ipcon, result, scanner, None, stage3)
 
-    print("Checking if EVSE was tested...")
-    if not exists_evse_test_report(result["evse_uid"]):
-        print("No test report found for EVSE {}. Checking for new test reports...".format(result["evse_uid"]))
-        with ChangedDirectory(os.path.join("..", "..", "wallbox")):
-            run(["git", "pull"])
+    if '--no-evse-test-report-check' in sys.argv:
+        print('Skipping EVSE test report check')
+        result["evse_test_report_found"] = False
+    else:
+        print("Checking if EVSE was tested...")
         if not exists_evse_test_report(result["evse_uid"]):
-            fatal_error("Still no test report found for EVSE {}.".format(result["evse_uid"]))
+            print("No test report found for EVSE {}. Checking for new test reports...".format(result["evse_uid"]))
+            with ChangedDirectory(os.path.join("..", "..", "wallbox")):
+                run(["git", "pull"])
+            if not exists_evse_test_report(result["evse_uid"]):
+                fatal_error("Still no test report found for EVSE {}.".format(result["evse_uid"]))
 
-    print("EVSE test report found")
-    result["evse_test_report_found"] = True
+        print("EVSE test report found")
+        result["evse_test_report_found"] = True
 
     if scanner.qr_variant == "B":
         ssid = f'warp{scanner.qr_gen}-{result["evse_uid"]}'
