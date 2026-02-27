@@ -27,6 +27,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "language.h"
+#include "tools/freertos.h"
 #include "tools/malloc.h"
 #include "tools/fs.h"
 #include "tools/printf.h"
@@ -38,21 +39,6 @@
 #include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-
-    // pdPASS expands to an old-style cast that is also useless
-    #pragma GCC diagnostic ignored "-Wold-style-cast"
-    #pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-
-static constexpr BaseType_t pdPASS_safe = pdPASS;
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-
 
 static bool repair_logic(Charge *);
 
@@ -1602,7 +1588,7 @@ void ChargeTracker::upload_charge_logs()
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, args, 1, nullptr, 0);
 
-    if (ret != pdPASS_safe) {
+    if (ret != pdPASS_nowarn) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
         delete args;
     }
@@ -1625,7 +1611,7 @@ void ChargeTracker::start_charge_log_upload_for_user(uint32_t cookie, const int 
 
     const BaseType_t ret = xTaskCreatePinnedToCore(upload_charge_logs_task, "ChargeLogUpload", UPLOAD_TASK_STACK_SIZE, task_args, 1, nullptr, 0);
 
-    if (ret != pdPASS_safe) {
+    if (ret != pdPASS_nowarn) {
         logger.printfln("ChargeLogUpload task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
     }
 }

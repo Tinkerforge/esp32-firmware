@@ -36,6 +36,7 @@
 #include "build.h"
 #include "options.h"
 #include "tools/printf.h"
+#include "tools/freertos.h"
 #include "tools/malloc.h"
 #include "tools/net.h"
 
@@ -394,23 +395,14 @@ void Ethernet::apply_config()
             eth_started = true;
             const uint32_t gen = ++eth_begin_generation;
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wold-style-cast"
-    #pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-
             const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, reinterpret_cast<void *>(gen), uxTaskPriorityGet(nullptr) + 1, nullptr, 1);
-            if (ret != pdPASS) {
+
+            if (ret != pdPASS_nowarn) {
                 logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
                 if (!ETH.begin()) {
                     logger.printfln("Start failed. PHY broken?");
                 }
             }
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
         } else {
             // Already enabled: IP/DNS change.
             // If connected or connecting, apply new IP settings immediately.

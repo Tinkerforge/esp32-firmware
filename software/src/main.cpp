@@ -29,6 +29,7 @@
 #include "bindings/hal_common.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/freertos.h"
 #include "tools/fs.h"
 #include "tools/memory.h"
 
@@ -151,14 +152,9 @@ static void pre_reboot()
             nullptr,
             1);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-        // pdPASS expands to an old-style cast that is also useless
-        if (err != pdPASS) {
+        if (err != pdPASS_nowarn) {
             task_creation_failed(err);
         }
-#pragma GCC diagnostic pop
 #endif
 
         pre_reboot_helper();
