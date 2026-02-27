@@ -22,6 +22,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/freertos.h"
 #include "tools/malloc.h"
 
 #include <sys/socket.h>
@@ -29,8 +30,10 @@
 #include <string.h>
 
 #include "mbedtls/error.h"
+#include "mbedtls/sha256.h"
 #include "mbedtls/ssl_ciphersuites.h"
 #include "mbedtls/version.h"
+#include "mbedtls/x509_crt.h"
 
 #ifndef USE_EMBEDDED_TLS_CERTS
 #include <LittleFS.h>
@@ -54,8 +57,8 @@
 // TLS 1.2: [V2G2-602] Table 7
 static const int iso15118_ciphersuites[] = {
     // TLS 1.3 cipher suites (preferred)
-    MBEDTLS_TLS1_3_AES_256_GCM_SHA384,                // [V2G20-2458]
     MBEDTLS_TLS1_3_CHACHA20_POLY1305_SHA256,          // [V2G20-2458]
+    MBEDTLS_TLS1_3_AES_256_GCM_SHA384,                // [V2G20-2458]
     // TLS 1.2 cipher suites (fallback)
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,  // [V2G2-602] IETF RFC 5289
     MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,   // [V2G2-602] IETF RFC 5289
@@ -75,10 +78,42 @@ static const int iso15118_ciphersuites[] = {
 // ephemeral key exchange. Certificate signatures remain secp521r1.
 static const uint16_t iso15118_curves[] = {
     MBEDTLS_SSL_IANA_TLS_GROUP_X25519,     // Fast ECDHE, avoids HRR with most clients
-    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,  // ISO 15118-20 primary
-    MBEDTLS_SSL_IANA_TLS_GROUP_X448,       // ISO 15118-20 alternative
+    MBEDTLS_SSL_IANA_TLS_GROUP_X448,       // ISO 15118-20 alternative, faster than secp256r1
     MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1,  // ISO 15118-2
+    MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1,  // ISO 15118-20 primary, extremely slow
     MBEDTLS_SSL_IANA_TLS_GROUP_NONE
+};
+
+// =============================================================================
+// Certificate verification profile
+// =============================================================================
+// This is a copy of the default profile, except that certificate signature
+// verification will be skipped so that it can be done manually in parallel.
+static const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_custom =
+{
+    /* Hashes from SHA-256 and above. Note that this selection
+     * should be aligned with ssl_preset_default_hashes in ssl_tls.c. */
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA256) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA384) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512),
+
+    /* Any PK alg */
+    0xFFFFFFF,
+
+    /* Curves at or above 128-bit security level. Note that this selection
+     * should be aligned with ssl_preset_default_curves in ssl_tls.c. */
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP256R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP384R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_SECP521R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_BP256R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_BP384R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_BP512R1) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_CURVE25519) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_ECP_DP_CURVE448) |
+    0,
+
+    2048, // rsa_min_bitlen doesn't matter because ISO15118 doesn't use RSA
+    1,    // skip_signature_verification
 };
 
 // =============================================================================
@@ -519,6 +554,8 @@ bool ISOTLS::setup()
     // This way TLS 1.2 stays unilateral and TLS 1.3 gets mutual auth.
     mbedtls_ssl_conf_authmode(ssl_conf, MBEDTLS_SSL_VERIFY_NONE);
 
+    mbedtls_ssl_conf_cert_profile(ssl_conf, &mbedtls_x509_crt_profile_custom);
+
     // Set random number generator
     mbedtls_ssl_conf_rng(ssl_conf, mbedtls_ctr_drbg_random, ctr_drbg);
 
@@ -682,6 +719,15 @@ void ISOTLS::end_session()
     socket_fd = -1;
 }
 
+// Don't inline error logger, keeps the buffer off the stack.
+[[gnu::noinline]]
+static void log_mbedtls_error(int error, const char *msg)
+{
+    char error_buf[128];
+    mbedtls_strerror(error, error_buf, sizeof(error_buf));
+    logger.printfln("ISOTLS: %s: -0x%04x (%s)", msg, static_cast<unsigned>(-error), error_buf);
+}
+
 bool ISOTLS::do_handshake()
 {
     if (!initialized || ssl == nullptr) {
@@ -691,67 +737,73 @@ bool ISOTLS::do_handshake()
 
     int ret = mbedtls_ssl_handshake(ssl);
 
-    if (ret == 0) {
-        // Handshake completed successfully
-        handshake_state = TlsHandshakeState::COMPLETED;
-        session_active = true;
-
-        const char *tls_version = get_tls_version_string();
-        const char *cipher = get_cipher_suite();
-        bool is_tls13 = is_tls13_active();
-
-        logger.printfln("ISOTLS: Handshake completed successfully");
-        logger.printfln("ISOTLS: TLS version: %s", tls_version ? tls_version : "unknown");
-        logger.printfln("ISOTLS: Cipher suite: %s", cipher ? cipher : "unknown");
-
-        // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
-        if (is_tls13) {
-            logger.printfln("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
-
-            // Log mutual authentication result
-            if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
-                uint32_t verify_flags = mbedtls_ssl_get_verify_result(ssl);
-                if (verify_flags == 0) {
-                    logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
-                } else {
-                    // This should not happen with VERIFY_REQUIRED (handshake would have failed),
-                    // but log it for completeness
-                    char vrfy_buf[256];
-                    mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", verify_flags);
-                    logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
-                }
-
-                // Log peer certificate subject for debugging
-                const mbedtls_x509_crt *peer_cert = mbedtls_ssl_get_peer_cert(ssl);
-                if (peer_cert != nullptr) {
-                    char subject_buf[256];
-                    mbedtls_x509_dn_gets(subject_buf, sizeof(subject_buf), &peer_cert->subject);
-                    logger.printfln("ISOTLS: EVCC certificate subject: %s", subject_buf);
-                    char issuer_buf[256];
-                    mbedtls_x509_dn_gets(issuer_buf, sizeof(issuer_buf), &peer_cert->issuer);
-                    logger.printfln("ISOTLS: EVCC certificate issuer: %s", issuer_buf);
-                } else {
-                    logger.printfln("ISOTLS: WARNING: No EVCC peer certificate available after handshake");
-                }
-            }
-        } else {
-            logger.printfln("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
-        }
-
-        return true;
-    }
-
     if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
         // Handshake in progress, need to call again
         return false;
     }
 
-    // Handshake failed
-    char error_buf[128];
-    mbedtls_strerror(ret, error_buf, sizeof(error_buf));
-    logger.printfln("ISOTLS: Handshake failed: -0x%04x (%s)", static_cast<unsigned>(-ret), error_buf);
-    handshake_state = TlsHandshakeState::FAILED;
-    return false;
+    if (verification_context != nullptr && verification_context->async_started) {
+        xQueueSemaphoreTake(verification_context->sem_handle, portMAX_DELAY_nowarn);
+        verification_context->async_started = false;
+    }
+
+    if (ret == 0) {
+        if (verification_context->intermediates_valid) {
+            // Handshake completed successfully
+            handshake_state = TlsHandshakeState::COMPLETED;
+            session_active = true;
+
+            const char *tls_version = get_tls_version_string();
+            const char *cipher = get_cipher_suite();
+
+            logger.printfln("ISOTLS: Handshake successful: %s, using %s", tls_version ? tls_version : "TLS version unknown", cipher ? cipher : "unknown cipher suite");
+
+            if (!verification_context->leaf_cert_cached) {
+                cache_leaf_cert();
+            }
+
+            // [V2G20-2356] If TLS 1.2 or lower, SECC shall not select ISO 15118-20
+            if (is_tls13_active()) {
+                logger.printfln("ISOTLS: TLS 1.3 negotiated - ISO 15118-20 allowed");
+
+                // Log mutual authentication result
+                if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
+                    uint32_t verify_flags = mbedtls_ssl_get_verify_result(ssl);
+                    if (verify_flags == 0) {
+                        logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verified successfully");
+                    } else {
+                        // This should not happen with VERIFY_REQUIRED (handshake would have failed),
+                        // but log it for completeness
+                        char vrfy_buf[256];
+                        mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", verify_flags);
+                        logger.printfln("ISOTLS: Mutual TLS: EVCC certificate verification issues:\n%s", vrfy_buf);
+                    }
+                }
+            } else {
+                logger.printfln("ISOTLS: TLS 1.2 negotiated - ISO 15118-20 NOT allowed per [V2G20-2356]");
+            }
+        } else {
+            logger.printfln("Intermediate certificate validation failed");
+            ret = MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+
+            // end_session() won't send a session close alert because the session isn't marked as active, so send an appropriate alert here.
+            mbedtls_ssl_send_alert_message(ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL, MBEDTLS_SSL_ALERT_MSG_BAD_CERT);
+        }
+    }
+
+    vQueueDelete(static_cast<QueueHandle_t>(verification_context->sem_handle));
+    free(verification_context);
+    verification_context = nullptr;
+
+    if (ret == 0) {
+        return true;
+    } else {
+        // Handshake failed
+        log_mbedtls_error(ret, "Handshake failed");
+        handshake_state = TlsHandshakeState::FAILED;
+
+        return false;
+    }
 }
 
 ssize_t ISOTLS::read(uint8_t *data, size_t len)
@@ -775,9 +827,7 @@ ssize_t ISOTLS::read(uint8_t *data, size_t len)
         return 0; // Connection closed
     }
 
-    char error_buf[128];
-    mbedtls_strerror(ret, error_buf, sizeof(error_buf));
-    logger.printfln("ISOTLS: Read error: -0x%04x (%s)", static_cast<unsigned>(-ret), error_buf);
+    log_mbedtls_error(ret, "Read error");
     return -1;
 }
 
@@ -798,9 +848,7 @@ ssize_t ISOTLS::write(const uint8_t *data, size_t len)
         return -1;
     }
 
-    char error_buf[128];
-    mbedtls_strerror(ret, error_buf, sizeof(error_buf));
-    logger.printfln("ISOTLS: Write error: -0x%04x (%s)", static_cast<unsigned>(-ret), error_buf);
+    log_mbedtls_error(ret, "Write error");
     return -1;
 }
 
@@ -826,16 +874,205 @@ bool ISOTLS::is_tls13_active() const
         return false;
     }
 
-    const char *version = mbedtls_ssl_get_version(ssl);
-    if (version == nullptr) {
-        return false;
+    return mbedtls_ssl_get_version_number(ssl) == MBEDTLS_SSL_VERSION_TLS1_3;
+}
+
+bool ISOTLS::leaf_cert_is_cached()
+{
+    const mbedtls_x509_crt *leaf_cert = verification_context->certs[0];
+    mbedtls_sha256(leaf_cert->raw.p, leaf_cert->raw.len, verification_context->leaf_sha256, 0);
+
+    for (cert_cache_entry *entry = peer_cert_cache; entry != nullptr; entry = entry->next) {
+        if (memcmp(verification_context->leaf_sha256, entry->sha256, sizeof(entry->sha256)) == 0) {
+            entry->last_seen = now_us();
+            logger.printfln("ISOTLS: Found cached certificate of peer '%s'", entry->dn);
+
+            return true;
+        }
     }
 
-    return (strcmp(version, "TLSv1.3") == 0);
+    return false;
+}
+
+void ISOTLS::cache_leaf_cert()
+{
+    size_t entry_count = 0;
+    micros_t lru = std::numeric_limits<micros_t>::max();
+
+    cert_cache_entry **lru_entry_ptr = nullptr;
+    cert_cache_entry *lru_entry = nullptr;
+
+    cert_cache_entry **entry_ptr = &peer_cert_cache;
+    cert_cache_entry *entry = peer_cert_cache;
+
+    while (entry != nullptr) {
+        entry_count++;
+
+        if (entry->last_seen < lru) {
+            lru = entry->last_seen;
+            lru_entry_ptr = entry_ptr;
+            lru_entry = entry;
+        }
+
+        entry_ptr = &entry->next;
+        entry = entry->next;
+    }
+
+    if (entry_count < 10) {
+        // Allocate new entry
+        entry = static_cast<cert_cache_entry *>(perm_aligned_alloc_prefer(alignof(cert_cache_entry), sizeof(cert_cache_entry), RAM::PSRAM, RAM::DRAM));
+    } else {
+        // Reuse existing entry
+        *lru_entry_ptr = lru_entry->next;
+        entry = lru_entry;
+        free(entry->dn);
+    }
+
+    // Insert at the beginning
+    entry->next = peer_cert_cache;
+    peer_cert_cache = entry;
+
+    entry->last_seen = now_us();
+    memcpy(entry->sha256, verification_context->leaf_sha256, sizeof(entry->sha256));
+
+    const mbedtls_x509_crt *leaf_cert = verification_context->certs[0];
+    const mbedtls_asn1_buf &subject = leaf_cert->subject.val;
+    const size_t subject_len = subject.len;
+
+    entry->dn = static_cast<char *>(malloc_psram_or_dram(subject_len + 1));
+    memcpy(entry->dn, subject.p, subject_len);
+    entry->dn[subject_len] = 0;
+
+    logger.printfln("ISOTLS: Caching certificate of peer '%s'", entry->dn);
+}
+
+static bool cert_signature_is_valid(const mbedtls_x509_crt *child, mbedtls_x509_crt *parent)
+{
+    const int sig_result = x509_crt_check_signature(child, parent, nullptr);
+
+    if (sig_result == 0) {
+        return true;
+    }
+
+    log_mbedtls_error(sig_result, "Certificate signature check failed");
+    return false;
+}
+
+void ISOTLS::verify_intermediate_certs()
+{
+    mbedtls_x509_crt **certs = verification_context->certs;
+    bool success = true;
+
+    // Check all intermediate certificates; first is leaf, last is root
+    for (size_t i = 1; i < CERTS_MAX_VERIFY - 1; i++) {
+        mbedtls_x509_crt *child  = certs[i];
+        mbedtls_x509_crt *parent = certs[i + 1];
+
+        if (parent == nullptr) {
+            // End of chain, don't check root signature
+            break;
+        }
+
+        if (!cert_signature_is_valid(child, parent)) {
+            logger.printfln("ISOTLS: Intermediate certificate %zu failed verification", i);
+            success = false;
+            break;
+        }
+    }
+
+    verification_context->intermediates_valid = success;
+}
+
+void ISOTLS::verify_certs_task(void *ctx)
+{
+    ISOTLS *isotls = static_cast<ISOTLS *>(ctx);
+    isotls->verify_intermediate_certs();
+
+    // Wake main task
+    xSemaphoreGive_nowarn(isotls->verification_context->sem_handle);
+
+    // Exit RTOS task
+    vTaskDelete(NULL);
+}
+
+int ISOTLS::cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *flags)
+{
+    if (index < 0) {
+        return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+    }
+
+    if (static_cast<size_t>(index) > CERTS_MAX_VERIFY - 1) {
+        logger.printfln("Too many certificates in chain: %i/%zu", index + 1, CERTS_MAX_VERIFY);
+        return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+    }
+
+    // Log peer certificate issuer -> subject for debugging
+    logger.printfln("ISOTLS: EVCC certificate: %.*s -> %.*s", static_cast<int>(cert->issuer.val.len), cert->issuer.val.p, static_cast<int>(cert->subject.val.len), cert->subject.val.p);
+
+    ISOTLS *isotls = static_cast<ISOTLS *>(ctx);
+    verification_context_t *verify_ctx = isotls->verification_context;
+    verify_ctx->certs[index] = cert;
+
+    if (index > 0) {
+        // Leaf not reached, more certs to come.
+        return 0;
+    }
+
+    // Leaf reached, verify certificates.
+
+    mbedtls_x509_crt *leaf_cert = verify_ctx->certs[0];
+    mbedtls_x509_crt *ca_cert   = verify_ctx->certs[1];
+
+    if (ca_cert == nullptr) {
+        logger.printfln("ISOTLS: Rejecting self-signed peer certificate");
+        *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
+
+        return 0; // No error; verification failure is not an error
+    }
+
+    if (isotls->leaf_cert_is_cached()) {
+        verify_ctx->leaf_cert_cached = true;
+        verify_ctx->intermediates_valid = true;
+
+        return 0;
+    }
+
+    if (verify_ctx->certs[2] == nullptr) {
+        // No intermediate certificates to check
+        verify_ctx->intermediates_valid = true;
+    } else {
+        const BaseType_t ret = xTaskCreatePinnedToCore(verify_certs_task, "verify_certs", 3072, ctx, 10, nullptr, 0); // Priority above httpd but below all other core 0 tasks.
+
+        if (ret == pdPASS_nowarn) {
+            verify_ctx->async_started = true;
+        } else {
+            logger.printfln("ISOTLS: verify_certs task could not be created");
+
+            // Verify certs now. This will probably cause the peer to time out.
+            isotls->verify_intermediate_certs();
+        }
+    }
+
+    // Verify leaf certificate
+    if (!cert_signature_is_valid(leaf_cert, ca_cert)) {
+        logger.printfln("ISOTLS: Leaf certificate failed verification");
+        *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
+    }
+
+    return 0; // No error; verification failure is not an error
 }
 
 int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 {
+    size_t sni_len;
+    const unsigned char *sni = mbedtls_ssl_get_hs_sni(ssl_ctx, &sni_len);
+
+    if (sni_len > 0) {
+        logger.printfln("ISOTLS: cert_cb: EVCC thinks we are '%.*s'", static_cast<int>(sni_len), sni);
+    } else {
+        logger.printfln("ISOTLS: cert_cb: No SNI from EVCC");
+    }
+
     mbedtls_ssl_protocol_version ver = mbedtls_ssl_get_version_number(ssl_ctx);
 
     if (ver == MBEDTLS_SSL_VERSION_TLS1_3 && cert_chain_iso20 != nullptr && private_key_iso20 != nullptr) {
@@ -848,15 +1085,37 @@ int ISOTLS::select_certificate_for_handshake(mbedtls_ssl_context *ssl_ctx)
 
         // [V2G20-2400] SECC shall request EVCC certificate via CertificateRequest
         // Enable mutual authentication for TLS 1.3 (ISO 15118-20) if enabled
-        if (mutual_auth_enabled && trusted_ca_iso20 != nullptr) {
-            mbedtls_ssl_set_hs_ca_chain(ssl_ctx, trusted_ca_iso20, nullptr);
-            mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_REQUIRED);
-            logger.printfln("ISOTLS: cert_cb: Mutual TLS enabled - EVCC certificate will be verified");
-        } else if (!mutual_auth_enabled) {
+        if (mutual_auth_enabled) {
+            if (trusted_ca_iso20 != nullptr) {
+                mbedtls_ssl_set_hs_ca_chain(ssl_ctx, trusted_ca_iso20, nullptr);
+                mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_REQUIRED);
+
+                assert(verification_context == nullptr);
+
+                verification_context = static_cast<decltype(verification_context)>(heap_caps_calloc(1, sizeof(*verification_context), MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+
+                if (verification_context == nullptr) {
+                    return MBEDTLS_ERR_SSL_ALLOC_FAILED;
+                }
+
+                verification_context->sem_handle = xSemaphoreCreateBinaryStatic_nowarn(&verification_context->sem_buf);
+
+                if (verification_context->sem_handle == nullptr) {
+                    free(verification_context);
+                    verification_context = nullptr;
+
+                    return MBEDTLS_ERR_SSL_ALLOC_FAILED;
+                }
+
+                mbedtls_ssl_set_verify(ssl_ctx, &cert_verify, this);
+
+                logger.printfln("ISOTLS: cert_cb: Mutual TLS enabled - EVCC certificate will be verified");
+            } else {
+                logger.printfln("ISOTLS: cert_cb: WARNING: No trusted CAs loaded, mutual TLS disabled");
+            }
+        } else {
             mbedtls_ssl_set_hs_authmode(ssl_ctx, MBEDTLS_SSL_VERIFY_NONE);
             logger.printfln("ISOTLS: cert_cb: Mutual TLS disabled by configuration");
-        } else {
-            logger.printfln("ISOTLS: cert_cb: WARNING: No trusted CAs loaded, mutual TLS disabled");
         }
 
         return 0;

@@ -928,26 +928,6 @@ Examples:
     else:
         tls_info = ""
 
-    # Monkey-patch the SUPPORTED_APP_PROTOCOL_REQ timeout for ISO 15118-20 / TLS 1.3.
-    # The ESP32's TLS 1.3 handshake with secp521r1 takes ~5 seconds. In TLS 1.3 the
-    # client finishes its side of the handshake before the server, so the SAP request is
-    # sent while the server is still processing. The library's default 2s timeout fires
-    # before the ESP32 can respond.  We override it here (rather than editing the
-    # external library) so the upstream source stays untouched.
-    if use_tls and has_iso20:
-        _SAP_TIMEOUT = 10.0
-        # float-Enum members are immutable floats; we must create a new float
-        # instance and replace the member in all internal lookup tables.
-        # Enum.__setattr__ blocks reassignment, so we use type.__setattr__.
-        new_member = float.__new__(TimeoutsShared, _SAP_TIMEOUT)
-        new_member._name_ = "SUPPORTED_APP_PROTOCOL_REQ"
-        new_member._value_ = _SAP_TIMEOUT
-        TimeoutsShared._member_map_["SUPPORTED_APP_PROTOCOL_REQ"] = new_member
-        TimeoutsShared._value2member_map_[_SAP_TIMEOUT] = new_member
-        type.__setattr__(TimeoutsShared, "SUPPORTED_APP_PROTOCOL_REQ", new_member)
-        print(f"  Patched SUPPORTED_APP_PROTOCOL_REQ timeout to {_SAP_TIMEOUT}s "
-              "(ESP32 TLS 1.3 handshake is slow)")
-
     print(f"\nStarting EV simulator on interface {args.interface}{tls_info}...")
     print("Press Ctrl+C to stop\n")
 

@@ -22,12 +22,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/net_sockets.h"
+
+#include "TFTools/Micros.h"
 
 // =============================================================================
 // TLS Configuration for ISO 15118
@@ -132,13 +137,41 @@ public:
     int select_certificate_for_handshake(mbedtls_ssl_context *ssl);
 
 private:
+    static constexpr size_t CERTS_MAX_VERIFY = 8;
+
+    struct verification_context_t {
+        mbedtls_x509_crt *certs[CERTS_MAX_VERIFY];
+        StaticSemaphore_t sem_buf;
+        SemaphoreHandle_t sem_handle;
+        uint8_t leaf_sha256[32];
+        bool leaf_cert_cached;
+        bool async_started;
+        bool intermediates_valid;
+    };
+
+    struct cert_cache_entry {
+        micros_t last_seen;
+        uint8_t sha256[32];
+        char *dn;
+        cert_cache_entry *next;
+    };
+
     bool load_certificates();
+    bool leaf_cert_is_cached();
+    void cache_leaf_cert();
+    void verify_intermediate_certs();
+    static void verify_certs_task(void *ctx);
+    static int cert_verify(void *ctx, mbedtls_x509_crt *cert, int index, uint32_t *flags);
 
     // State
     bool initialized = false;
     bool session_active = false;
     bool mutual_auth_enabled = true; // Default: enabled per [V2G20-2400]
     TlsHandshakeState handshake_state = TlsHandshakeState::NOT_STARTED;
+
+    // Async verification
+    verification_context_t *verification_context = nullptr;
+    cert_cache_entry *peer_cert_cache = nullptr;
 
     // Socket file descriptor for current session
     int socket_fd = -1;
