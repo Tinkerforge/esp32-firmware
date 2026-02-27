@@ -367,9 +367,9 @@ const MeterValueID rs485_helper_wm3m4c_ids[] = {
     // TBD: Some values will be added here once the complete register map of WM3M4C is better understood
     MeterValueID::Temperature,
     MeterValueID::RunTime,
-    MeterValueID::EnergyActiveLSumImExSumResettable,
-    MeterValueID::EnergyActiveLSumImportResettable,
-    MeterValueID::EnergyActiveLSumExportResettable,
+    MeterValueID::EnergyActiveLSumImExSum,
+    MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::EnergyActiveLSumExport,
 };
 
 void rs485_helper_get_value_ids(uint32_t meter_type, const MeterValueID **value_ids, size_t *value_ids_len)
