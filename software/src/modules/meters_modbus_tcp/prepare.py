@@ -433,3 +433,7 @@ for group, value in virtual_meters.items():
 
 tfutil.write_file_if_different('meter_modbus_tcp_is.inc', is_inc)
 tfutil.write_file_if_different('meter_modbus_tcp_is.cpp', is_cpp)
+
+table_ids_rpl = ' || '.join([f'config[1].table[0] == MeterModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+
+tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)

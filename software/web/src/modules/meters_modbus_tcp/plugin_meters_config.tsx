@@ -344,57 +344,9 @@ export function pre_init() {
                 ];
 
                 if (util.hasValue(config[1].table)
-                 && (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SungrowStringInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SolarmaxMaxStorage
-                  || config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX
-                  || config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.AlphaESSHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.ShellyProEM
-                  || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
-                  || config[1].table[0] == MeterModbusTCPTableID.GoodweInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus
-                  || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3AC3HybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC2200
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3120
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3200
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC3220
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4200
-                  || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC4220
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM24DIN
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM24E1
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM100
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziET100
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM210
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM270
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM280
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM300
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziET300
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
-                  || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
-                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode
-                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode
-                  || config[1].table[0] == MeterModbusTCPTableID.E3DCHauskraftwerk
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM580
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.VARTAElement
-                  || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
-                  || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.Janitza
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiSmartLogger3000
-                  || config[1].table[0] == MeterModbusTCPTableID.SolisHybridInverter)) {
+                 && (
+//#replace "meter_modbus_tcp_specific_table_ids.rpl"
+                    )) {
                     let default_device_address = get_default_device_address(config[1].table[0]);
 
                     if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {

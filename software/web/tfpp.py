@@ -40,7 +40,7 @@ def parse_lines(input_path, input_lines, defines, ifs_elses):
         if m != None:
             directive = m.group(1)
             end = m.group(2)
-            m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|ifndef\s|if\s|ifn\s|else|endif|region|endregion)\s*(.*?)\s*$', directive)
+            m = re.match(r'^(replace\s|include\s|define\s|undef\s|ifdef\s|ifndef\s|if\s|ifn\s|else|endif|region|endregion)\s*(.*?)\s*$', directive)
 
             if m == None:
                 raise Exception(f'Malformed directive at {input_path}:{i + 1}: {line_rstripped}')
@@ -50,7 +50,26 @@ def parse_lines(input_path, input_lines, defines, ifs_elses):
 
             ignore_line = False
 
-            if verb == 'include':
+            if verb == 'replace':
+                m = re.match(r'^(?:"([^"]+)"|\'([^\']+)\')$', arguments)
+
+                if m == None:
+                    raise Exception(f'Malformed path in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
+
+                replace_path = input_path.parent / pathlib.Path(m.group(1))
+
+                if not any_zero(ifs_elses):
+                    if not replace_path.exists():
+                        raise Exception(f'File in #{verb} directive at {input_path}:{i + 1} is missing: {replace_path}')
+
+                    with replace_path.open(encoding='utf-8') as replace_file:
+                        replace_line = replace_file.read().strip()
+
+                        if '\n' in replace_line:
+                            raise Exception(f'File in #{verb} directive at {input_path}:{i + 1} contains more than one line: {replace_path}')
+
+                        line = f'{replace_line} {line_rstripped}\n'
+            elif verb == 'include':
                 m = re.match(r'^(?:"([^"]+)"|\'([^\']+)\')$', arguments)
 
                 if m == None:
