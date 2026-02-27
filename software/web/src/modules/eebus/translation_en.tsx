@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
-import { h } from "preact";
+import {h} from "preact";
+
 let x = {
     "eebus": {
         "content": {
@@ -8,10 +9,12 @@ let x = {
             "eebus_detail_info": "The values that are provided or which can be written by the use cases via EEBUS are displayed here. The values displayed reflect the latest EEBUS communication data. Values that can be written by EEBUS control devices are marked as such. All other values are read-only for EEBUS devices.",
             "enable_eebus_help_intro": <>
                 <p>EEBUS is a communication standard for smart energy management. It enables communication
-                between energy devices such as wallboxes, heat pumps, PV systems and energy management systems (HEMS).</p>
+                    between energy devices such as wallboxes, heat pumps, PV systems and energy management systems
+                    (HEMS).</p>
             </>,
             "enable_eebus_help_usecases_intro": <>
-                <p>The standard defines use cases which can be used to represent various functions of devices and systems. </p>
+                <p>The standard defines use cases which can be used to represent various functions of devices and
+                    systems. </p>
                 <p>The following use cases are supported:</p>
             </>,
             "usecase_lpc_desc": "Power consumption limitation. Used by control boxes for grid control according to §14a EnWG. Allows the grid operator to limit power consumption of major power-consumers (e.g. Wallboxes, HVAC systems).",
@@ -32,7 +35,7 @@ let x = {
             "ski_help": <>
                 <p>The Subject Key Identifier (SKI) is a unique cryptographic identifier for this device.</p>
                 <p>If this device needs to communicate with, for example, a "Steuerbox", the SKI may be
-                required during the setup of the Steuerbox.</p>
+                    required during the setup of the Steuerbox.</p>
             </>,
             "no_cert": "Not used",
             "unknown": "Unknown",
