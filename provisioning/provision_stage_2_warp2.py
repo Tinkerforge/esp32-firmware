@@ -541,14 +541,6 @@ def main(stage3, scanner):
     assert scanner.qr_gen in ("2", "3", "4")
     generation = int(scanner.qr_gen)
 
-    evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
-    evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
-    evse_path = os.path.join(evse_directory, evse_path)
-
-    firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
-    firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
-    firmware_path = os.path.join(firmware_directory, firmware_path)
-
     if scanner.qr_variant != "B":
         if (scanner.qr_stand != '0' and scanner.qr_stand_wiring != '0') or scanner.qr_supply_cable != 0 or scanner.qr_cee:
             stage3.power_on('CEE')
@@ -565,50 +557,56 @@ def main(stage3, scanner):
         host = ssid + ".local"
 
         info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
-
         version = [int(x) for x in info_version['firmware'].split('+')[0].split('.')]
-        latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
 
-        if version > latest_version:
-            fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
-        elif version < latest_version:
-            print("Flashed firmware {}.{}.{} is outdated! Flashing {}.{}.{}...".format(*version, *latest_version))
-
-            with open(firmware_path, "rb") as f:
-                fw = f.read()
-
-            opener = urllib.request.build_opener(ContentTypeRemover())
-            for i in range(5):
-                try:
-                    req = urllib.request.Request("http://{}/flash_firmware".format(host), fw)
-                    print(opener.open(req).read().decode())
-                    break
-                except urllib.error.HTTPError as e:
-                    print("HTTP error", e)
-                    if e.code == 423:
-                        fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
-                    else:
-                        fatal_error(e.read().decode("utf-8"))
-                except urllib.error.URLError as e:
-                    print("URL error", e)
-                    if i != 4:
-                        print("Failed to flash firmware. Retrying...")
-                        time.sleep(3)
-                    else:
-                        if isinstance(e.reason, ConnectionResetError):
-                            fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
-                        fatal_error("Can't flash firmware!")
-
-            time.sleep(3)
-            connect_to_ethernet(ssid, "firmware_update/validate")
-            factory_reset(ssid)
-
-            info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
+        if '--no-firmware-update' in sys.args:
+            print('Skipping firmware update')
         else:
-            print("Flashed firmware is up-to-date.")
+            firmware_directory = os.path.join("..", "..", "firmwares", "bricks", f"warp{scanner.qr_gen}_charger")
+            firmware_path = os.readlink(os.path.join(firmware_directory, f"brick_warp{scanner.qr_gen}_charger_firmware_latest.bin"))
+            firmware_path = os.path.join(firmware_directory, firmware_path)
+            latest_version = [int(x) for x in re.search(r"warp{gen}_charger_firmware_(\d+)_(\d+)_(\d+).bin".format(gen=scanner.qr_gen), firmware_path).groups()]
+
+            if version > latest_version:
+                fatal_error("Flashed firmware {}.{}.{} is not released yet! Latest released is {}.{}.{}".format(*version, *latest_version))
+            elif version < latest_version:
+                print("Flashed firmware {}.{}.{} is outdated! Flashing {}.{}.{}...".format(*version, *latest_version))
+
+                with open(firmware_path, "rb") as f:
+                    fw = f.read()
+
+                opener = urllib.request.build_opener(ContentTypeRemover())
+                for i in range(5):
+                    try:
+                        req = urllib.request.Request("http://{}/flash_firmware".format(host), fw)
+                        print(opener.open(req).read().decode())
+                        break
+                    except urllib.error.HTTPError as e:
+                        print("HTTP error", e)
+                        if e.code == 423:
+                            fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
+                        else:
+                            fatal_error(e.read().decode("utf-8"))
+                    except urllib.error.URLError as e:
+                        print("URL error", e)
+                        if i != 4:
+                            print("Failed to flash firmware. Retrying...")
+                            time.sleep(3)
+                        else:
+                            if isinstance(e.reason, ConnectionResetError):
+                                fatal_error("Wallbox blocked firmware update. Is the EVSE working correctly?")
+                            fatal_error("Can't flash firmware!")
+
+                time.sleep(3)
+                connect_to_ethernet(ssid, "firmware_update/validate")
+                factory_reset(ssid)
+
+                result["firmware_file"] = firmware_path.split("/")[-1]
+                info_version = json.loads(connect_to_ethernet(ssid, "info/version")[0].decode('utf-8'))
+            else:
+                print("Flashed firmware is up-to-date.")
 
         result["firmware_version"] = info_version['firmware']
-        result["firmware_file"] = firmware_path.split("/")[-1]
 
         host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
 
@@ -724,6 +722,10 @@ def main(stage3, scanner):
 
         if evse_enum is None:
             fatal_error("No EVSE Bricklet found!")
+
+        evse_directory = os.path.join("..", "..", "firmwares", "bricklets", "evse_v2")
+        evse_path = os.readlink(os.path.join(evse_directory, "bricklet_evse_v2_firmware_latest.zbin"))
+        evse_path = os.path.join(evse_directory, evse_path)
 
         print("Flashing EVSE")
         run(["python3", "comcu_flasher.py", evse_enum.uid, evse_path])
