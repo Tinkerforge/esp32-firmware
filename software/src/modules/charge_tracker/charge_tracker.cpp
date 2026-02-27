@@ -324,7 +324,7 @@ bool ChargeTracker::repair_last(float meter_start, const char *directory)
     }
 
     if (repaired)
-        this->updateLastCharges(directory /*TODO directory is ignored right know*/);
+        this->updateLastCharges();
 
     return true;
 }
@@ -1369,7 +1369,7 @@ void ChargeTracker::register_events()
         std::lock_guard<std::mutex> lock{records_mutex};
 
         // TODO: Discuss if we are able to identify charges by charger and update them selectively.
-        this->updateLastCharges(nullptr);
+        this->updateLastCharges();
 
         return EventResult::OK;
     });
@@ -2863,7 +2863,7 @@ search_done:
     return rc;
 }
 
-void ChargeTracker::updateLastCharges(const char *directory)
+void ChargeTracker::updateLastCharges()
 {
     std::vector<ChargeWithLocation> all_charges;
     all_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE * 4);
