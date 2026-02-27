@@ -93,7 +93,7 @@ public:
 
     void readNRecords(File *f, size_t records_to_read, const char *directory = nullptr);
 
-    void updateLastCharges(const char *directory);
+    void updateLastCharges();
 
     ExportCharge *getFilteredCharges(int user_filter, int device_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, size_t *out_count);
 
