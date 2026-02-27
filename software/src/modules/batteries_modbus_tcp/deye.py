@@ -3,22 +3,22 @@ table_prototypes = [
         'device_address',
         {
             'name': 'max_normal_charge_current',
-            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'type': 'Uint8',  # FIXME: add range limit to [0..185]
             'default': 50,  # A
         },
         {
             'name': 'max_normal_discharge_current',
-            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'type': 'Uint8',  # FIXME: add range limit to [0..185]
             'default': 50,  # A
         },
         {
             'name': 'force_charge_current',
-            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'type': 'Uint8',  # FIXME: add range limit to [0..185]
             'default': 25,  # A
         },
         {
             'name': 'force_discharge_current',
-            'type': 'Uint8',  # FIXME: add range limit to [1..185]
+            'type': 'Uint8',  # FIXME: add range limit to [0..185]
             'default': 25,  # A
         },
     ]),
