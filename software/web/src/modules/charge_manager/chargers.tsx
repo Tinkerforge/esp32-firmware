@@ -492,10 +492,9 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 <ListGroup>{
                                     state.scanResult.filter(s => !state.chargers.some(c => c.host == s.hostname + ".local" || c.host == s.ip))
                                         .map(s => (
-                                            <ListGroupItem key={s.hostname}
-                                                        className="p-0"
-                                                        action
-                                                        disabled={s.error != 0}
+                                             <ListGroupItem key={s.hostname}
+                                                        className={s.error != 0 ? "p-0 opacity-75" : "p-0"}
+                                                        action={s.error == 0}
                                                         onClick={s.error != 0 ? undefined : () => {
                                                             this.setState({addCharger: {host: s.hostname + ".local", name: s.display_name, rot: -1}})
                                                         }}>
