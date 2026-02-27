@@ -6,6 +6,7 @@ import alpha_ess
 import hailei
 import sungrow
 import sma
+import solis
 
 
 tfutil.create_parent_module(__file__, 'software')
@@ -19,6 +20,7 @@ modules = [
     hailei,
     sungrow,
     sma,
+    solis,
 ]
 
 table_prototypes = []

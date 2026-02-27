@@ -280,6 +280,22 @@ void BatteriesModbusTCP::register_urls()
 
             break;
 
+        case BatteryModbusTCPTableID::SolisHybridInverter:
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
+
+            load_solis_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
+
+            if (test->table == nullptr) {
+                test_printfln(test->language == Language::English
+                              ? "Unknown Solis Hybrid Inverter mode: %u"
+                              : "Unbekannter Solis Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
+                return;
+            }
+
+            break;
+
         default:
             test_printfln(test->language == Language::English
                           ? "Unknown table: %u"

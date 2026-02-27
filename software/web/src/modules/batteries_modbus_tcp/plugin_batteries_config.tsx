@@ -887,6 +887,7 @@ export function pre_init() {
                                 [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.SMAHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sma_hybrid_inverter")],
+                                [BatteryModbusTCPTableID.SolisHybridInverter.toString(), __("batteries_modbus_tcp.content.table_solis_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.SungrowHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
                                 [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
@@ -925,7 +926,8 @@ export function pre_init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter)) {
+                  || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter
+                  || config[1].table[0] == BatteryModbusTCPTableID.SolisHybridInverter)) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(
                             <FormRow>
@@ -1182,6 +1184,64 @@ export function pre_init() {
                         extra_values = {
                             max_normal_charge_power: config[1].table[1].max_normal_charge_power,
                             max_normal_discharge_power: config[1].table[1].max_normal_discharge_power,
+                            force_charge_power: config[1].table[1].force_charge_power,
+                            force_discharge_power: config[1].table[1].force_discharge_power,
+                        };
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SolisHybridInverter) {
+                        edit_children.push(
+                            <FormRow label={__("batteries_modbus_tcp.content.max_normal_charge_current")}>
+                                <InputFloat
+                                    required
+                                    digits={1}
+                                    min={0}
+                                    max={65535}
+                                    unit="A"
+                                    value={config[1].table[1].max_normal_charge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_normal_charge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.max_normal_discharge_current")}>
+                                <InputFloat
+                                    required
+                                    digits={1}
+                                    min={0}
+                                    max={65535}
+                                    unit="A"
+                                    value={config[1].table[1].max_normal_discharge_current}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {max_normal_discharge_current: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_charge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={2}
+                                    min={0}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].force_charge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_charge_power: v})}));
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries_modbus_tcp.content.force_discharge_power")}>
+                                <InputFloat
+                                    required
+                                    digits={2}
+                                    min={0}
+                                    max={65535}
+                                    unit="kW"
+                                    value={config[1].table[1].force_discharge_power}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {force_discharge_power: v})}));
+                                    }} />
+                            </FormRow>);
+
+                        extra_values = {
+                            max_normal_charge_current: config[1].table[1].max_normal_charge_current,
+                            max_normal_discharge_current: config[1].table[1].max_normal_discharge_current,
                             force_charge_power: config[1].table[1].force_charge_power,
                             force_discharge_power: config[1].table[1].force_discharge_power,
                         };
