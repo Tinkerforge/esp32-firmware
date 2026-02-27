@@ -118,7 +118,7 @@ public:
     void disable_ship();
 
     void remove(const ShipConnection &ship_connection);
-    ShipDiscoveryState discover_ship_peers();
+    void discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
     /**
@@ -138,6 +138,12 @@ public:
 private:
     static void setup_mdns();
     void setup_wss();
+
+    // MDNS
+    static void check_mdns_results_cb(mdns_search_once_t *);
+    void check_mdns_results();
+    mdns_search_once_t *mdns_scan;
+    void update_discovery_state(ShipDiscoveryState state);
 
     WebSockets web_sockets;
     Cert cert;

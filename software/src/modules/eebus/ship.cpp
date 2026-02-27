@@ -341,41 +341,21 @@ void Ship::setup_mdns()
     eebus.trace_fmtln("setup_mdns() done");
 }
 
-ShipDiscoveryState Ship::discover_ship_peers()
+void Ship::check_mdns_results_cb(mdns_search_once_t *)
 {
-    if (discovery_state == ShipDiscoveryState::Scanning) {
-        return discovery_state;
-    }
+    task_scheduler.scheduleOnce([]() {
+        eebus.ship.check_mdns_results();
+    });
+}
+void Ship::check_mdns_results()
+{
+    mdns_result_t *results;
+    auto query_results = mdns_query_async_get_results(mdns_scan,0, &results, nullptr);
 
-    auto update_discovery_state = [this](ShipDiscoveryState state) {
-        eebus.state.get("discovery_state")->updateEnum(state);
-    };
-
-    update_discovery_state(ShipDiscoveryState::Scanning);
-
-    eebus.trace_fmtln("discover_ship_peers start");
-
-    if (!network.is_mdns_started()) {
-        logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
-        eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
-        update_discovery_state(ShipDiscoveryState::Error);
-        return discovery_state;
-    }
-
-    const char *service = "_ship";
-    const char *proto = "_tcp";
-    mdns_result_t *results = NULL;
-    esp_err_t err = mdns_query_ptr(service, proto, 1000, 20, &results);
-    if (err) {
-        logger.printfln("EEBUS MDNS Query Failed.");
-        eebus.trace_fmtln("EEBUS MDNS Query Failed. Error %d", err);
-        update_discovery_state(ShipDiscoveryState::Error);
-        return discovery_state;
-    }
-    if (!results) {
+    if (!query_results) {
         eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
         update_discovery_state(ShipDiscoveryState::ScanDone);
-        return discovery_state;
+        return;
     }
     while (results) {
         String ip_address = "";
@@ -486,7 +466,36 @@ ShipDiscoveryState Ship::discover_ship_peers()
     mdns_query_results_free(results);
     update_discovery_state(ShipDiscoveryState::ScanDone);
     eebus.update_peers_state();
-    return discovery_state;
+}
+void Ship::update_discovery_state(ShipDiscoveryState state)
+{
+    eebus.state.get("discovery_state")->updateEnum(state);
+}
+
+void Ship::discover_ship_peers()
+{
+    if (discovery_state == ShipDiscoveryState::Scanning) {
+        return;
+    }
+    update_discovery_state(ShipDiscoveryState::Scanning);
+
+    eebus.trace_fmtln("discover_ship_peers start");
+
+    if (!network.is_mdns_started()) {
+        logger.printfln("EEBUS MDNS Query Failed: mDNS is disabled or failed to start");
+        eebus.trace_fmtln("EEBUS MDNS Query Failed; mDNS not started");
+        update_discovery_state(ShipDiscoveryState::Error);
+        return;
+    }
+
+    const char *service = "_ship";
+    const char *proto = "_tcp";
+    mdns_scan = mdns_query_async_new(NULL, service, proto, MDNS_TYPE_PTR, 1000, INT8_MAX, &check_mdns_results_cb);
+
+    if (!mdns_scan) {
+        logger.printfln("EEBUS MDNS Query Failed.");
+        update_discovery_state(ShipDiscoveryState::Error);
+    }
 }
 
 void Ship::print_skis(StringBuilder *sb)
