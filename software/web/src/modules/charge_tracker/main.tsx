@@ -155,7 +155,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     constructor() {
         super('charge_tracker/config',
               () => __("charge_tracker.script.save_failed"),
-              () => __("charge_tracker.script.reboot_content_changed"), {
+              undefined, {
                   user_filter: "-2",
                   file_type: "0",
                   language: null,

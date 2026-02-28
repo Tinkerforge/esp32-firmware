@@ -99,8 +99,7 @@ let x = {
             "upload_charge_log_failed": "Ladelog versenden fehlgeschlagen",
             "test_charge_log_upload_started": "Test-Ladelog-Upload gestartet",
 
-            "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Ladetracker-Einstellungen"
+            "save_failed": "Speichern der Ladetracker-Einstellungen fehlgeschlagen."
         }
     }
 }

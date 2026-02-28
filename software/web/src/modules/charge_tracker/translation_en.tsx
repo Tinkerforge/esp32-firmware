@@ -99,8 +99,7 @@ let x = {
             "upload_charge_log_failed": "Failed to send charge-log",
             "test_charge_log_upload_started": "Test charge log upload started",
 
-            "save_failed": "Failed to save the charge tracker settings.",
-            "reboot_content_changed": "Charge tracker settings"
+            "save_failed": "Failed to save the charge tracker settings."
         }
     }
 }
