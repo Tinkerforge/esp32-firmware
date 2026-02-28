@@ -42,6 +42,7 @@ private:
 
     void update();
     void check_inputs();
+    bool get_em_input();
     void start_input_check();
     void stop_input_check();
     void check_evse_shutdown_input();

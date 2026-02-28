@@ -27,10 +27,16 @@
 
 void P14aEnwg::pre_setup()
 {
+#if MODULE_EM_V1_AVAILABLE()
+    const uint32_t max_input_index = 1; // EM V1 has 2 inputs (0-1)
+#else
+    const uint32_t max_input_index = 3; // EM V2 has 4 inputs (0-3)
+#endif
+
     source_prototypes[0] = {P14aEnwgSource::Input, Config::Object({
-        {"limit_on_close", Config::Bool(true)}, // true = active when input closed, false = active when open
-        {"limit_w", Config::Uint32(4200)},      // Limit in W when triggered via input
-        {"input_index", Config::Uint(0, 0, 3)}, // EM only: which of the 4 inputs (0-3)
+        {"limit_on_close", Config::Bool(true)},               // true = active when input closed, false = active when open
+        {"limit_w", Config::Uint32(4200)},                    // Limit in W when triggered via input
+        {"input_index", Config::Uint(0, 0, max_input_index)}, // EM only: which input to use
     })};
     source_prototypes[1] = {P14aEnwgSource::EEBus, *Config::Null()};
     source_prototypes[2] = {P14aEnwgSource::API,   *Config::Null()};
@@ -41,7 +47,7 @@ void P14aEnwg::pre_setup()
             Config::Object({
                 {"limit_on_close", Config::Bool(true)},
                 {"limit_w", Config::Uint32(4200)},
-                {"input_index", Config::Uint(0, 0, 3)},
+                {"input_index", Config::Uint(0, 0, max_input_index)},
             }),
             P14aEnwgSource::Input,
             source_prototypes,
@@ -163,6 +169,22 @@ void P14aEnwg::check_evse_shutdown_input()
 #endif
 }
 
+bool P14aEnwg::get_em_input()
+{
+#if MODULE_EM_COMMON_AVAILABLE()
+    uint32_t input_index = config.get("source")->get()->get("input_index")->asUint();
+    bool inputs[4] = {};
+    size_t inputs_len = ARRAY_SIZE(inputs);
+    bool outputs[4] = {};
+    size_t outputs_len = ARRAY_SIZE(outputs);
+    em_common.get_input_output_states(inputs, &inputs_len, outputs, &outputs_len);
+    if (input_index < inputs_len) {
+        return inputs[input_index];
+    }
+#endif
+    return false;
+}
+
 void P14aEnwg::check_inputs()
 {
     if (!is_enabled()) {
@@ -177,9 +199,8 @@ void P14aEnwg::check_inputs()
     phases = evse_common.backend->get_phases();
 #endif
 
-#if MODULE_EM_V2_AVAILABLE()
-    uint32_t input_index = config.get("source")->get()->get("input_index")->asUint();
-    input_value = em_v2.get_input(input_index);
+#if MODULE_EM_COMMON_AVAILABLE()
+    input_value = get_em_input();
 #endif
 
     if (input_value != last_input_value || phases != last_phases) {
@@ -216,9 +237,8 @@ void P14aEnwg::update()
             input_value = evse_v2.is_shutdown_input_closed();
 #endif
 
-#if MODULE_EM_V2_AVAILABLE()
-            uint32_t input_index = config.get("source")->get()->get("input_index")->asUint();
-            input_value = em_v2.get_input(input_index);
+#if MODULE_EM_COMMON_AVAILABLE()
+            input_value = get_em_input();
 #endif
 
             bool limit_on_close = config.get("source")->get()->get("limit_on_close")->asBool();

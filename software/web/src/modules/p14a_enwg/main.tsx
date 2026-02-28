@@ -69,6 +69,7 @@ interface P14aEnwgState {
     is_charger: boolean;
     is_em: boolean;
     has_heating: boolean;
+    input_count: number;
     config_enable: boolean;
     p14a_state: API.getType["p14a_enwg/state"];
 }
@@ -83,6 +84,7 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                 is_em: API.hasModule("em_common"),
                 is_charger: API.hasModule("evse_common"),
                 has_heating: API.hasModule("heating"),
+                input_count: API.hasModule("em_v2") ? 4 : 2,
             });
         });
 
@@ -186,12 +188,9 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                             {state.is_em ?
                                 <FormRow label={__("p14a_enwg.content.input")}>
                                     <InputSelect
-                                        items={[
-                                            ["0", __("p14a_enwg.content.input") + " 1"],
-                                            ["1", __("p14a_enwg.content.input") + " 2"],
-                                            ["2", __("p14a_enwg.content.input") + " 3"],
-                                            ["3", __("p14a_enwg.content.input") + " 4"],
-                                        ]}
+                                        items={Array.from({length: state.input_count}, (_, i): [string, string] =>
+                                            [String(i), __("p14a_enwg.content.input") + " " + (i + 1)]
+                                        )}
                                         value={input_cfg.input_index}
                                         onValue={(v) => update_input({input_index: parseInt(v)})}
                                         disabled={disabled}
