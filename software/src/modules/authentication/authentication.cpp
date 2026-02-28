@@ -42,18 +42,19 @@ void Authentication::pre_setup()
         if (update.get("username")->asString() != this->config.get("username")->asString() && update.get("digest_hash")->asString() == this->config.get("digest_hash")->asString())
             return "To change the username the digest hash also has to be updated.";
 
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+        }
+
         return "";
     }};
 }
 
-void Authentication::setup()
+static void set_auth_handler(bool enable, String user, String digest_hash)
 {
-    api.restorePersistentConfig("authentication/config", &config);
-
-    if (config.get("enable_auth")->asBool()) {
-        String user = config.get("username")->asString(); // Create copies of possibly emphemeral Strings from config.
-        String digest_hash = config.get("digest_hash")->asString();
-
+    if (enable) {
         server.onAuthenticate_HTTPThread([user, digest_hash](WebServerRequest req) -> bool {
             String auth = req.header("Authorization");
             if (auth.isEmpty()) {
@@ -72,10 +73,57 @@ void Authentication::setup()
 
             return checkDigestAuthentication(fields, req.methodString(), user.c_str(), digest_hash.c_str(), DEFAULT_REALM, true, nullptr, nullptr, nullptr);
         });
+    } else {
+        server.onAuthenticate_HTTPThread([](WebServerRequest req) -> bool { return true; });
+    }
+}
+
+void Authentication::setup()
+{
+    api.restorePersistentConfig("authentication/config", &config);
+
+    // During setup(), httpd is not running yet (it starts in web_server's post_setup()).
+    // It's safe to call onAuthenticate_HTTPThread directly here since no HTTP requests
+    // can arrive before httpd starts.
+    set_auth_handler(
+        config.get("enable_auth")->asBool(),
+        config.get("username")->asString(),
+        config.get("digest_hash")->asString());
+
+    if (config.get("enable_auth")->asBool()) {
         logger.printfln("Web interface authentication enabled.");
     }
 
     initialized = true;
+}
+
+struct AuthArgs {
+    bool enable;
+    String user;
+    String digest_hash;
+};
+
+void Authentication::apply_config()
+{
+    bool enable = config.get("enable_auth")->asBool();
+
+    auto *args = new AuthArgs{
+        enable,
+        config.get("username")->asString(),
+        config.get("digest_hash")->asString(),
+    };
+
+    server.runInHTTPThread([](void *arg) {
+        auto *a = static_cast<AuthArgs *>(arg);
+        set_auth_handler(a->enable, std::move(a->user), std::move(a->digest_hash));
+        delete a;
+    }, args);
+
+    if (enable) {
+        logger.printfln("Web interface authentication enabled.");
+    } else {
+        logger.printfln("Web interface authentication disabled.");
+    }
 }
 
 void Authentication::register_urls()

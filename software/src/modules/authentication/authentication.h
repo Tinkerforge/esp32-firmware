@@ -31,5 +31,7 @@ public:
     void register_urls() override;
 
 private:
+    void apply_config();
+
     ConfigRoot config;
 };

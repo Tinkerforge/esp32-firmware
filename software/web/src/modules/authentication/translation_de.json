@@ -21,8 +21,7 @@
             "disable_auth_confirm": "Deaktivieren"
         },
         "script": {
-            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen.",
-            "reboot_content_changed": "Zugangsdaten"
+            "save_failed": "Speichern der Zugangsdaten fehlgeschlagen."
         }
     }
 }
