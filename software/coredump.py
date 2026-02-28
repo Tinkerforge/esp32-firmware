@@ -4,6 +4,7 @@ import base64
 import string
 import json
 import argparse
+import glob
 import os, sys
 import subprocess
 import tempfile
@@ -241,7 +242,17 @@ if __name__ == '__main__':
     group.add_argument("-c", "--coredump-elf")
     group.add_argument("path", nargs='?', default=None)
     group.add_argument("-p", "--port")
+    group.add_argument("-d", "--latest-download", action='store_true', help="Use the latest *-Debug-Report*.txt from ~/Downloads")
     args = parser.parse_args(sys.argv[1:])
+
+    if args.latest_download:
+        downloads_dir = os.path.expanduser("~/Downloads")
+        matches = glob.glob(os.path.join(downloads_dir, "*-Debug-Report*.txt"))
+        if not matches:
+            print(f"No *-Debug-Report*.txt files found in {downloads_dir}")
+            sys.exit(-1)
+        args.path = max(matches, key=os.path.getmtime)
+        print(f"Using debug report: {args.path}")
 
     if args.port:
         if len(args.port) < 6:
