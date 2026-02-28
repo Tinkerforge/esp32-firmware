@@ -20,10 +20,9 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Component, RefObject } from "preact";
-import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
+
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
@@ -75,9 +74,60 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
         if (!util.render_allowed())
             return <SubPage name="wireguard" />;
 
+        const wg_state = API.get("wireguard/state");
+        const saved_config = API.get("wireguard/config");
+        const uptime = API.get("info/keep_alive").uptime;
+        const is_connected = wg_state.state === 3;
+
+        let connection_duration = "";
+        if (is_connected && wg_state.connection_start > 0) {
+            connection_duration = util.format_timespan_ms(uptime - wg_state.connection_start);
+        } else if (!is_connected && wg_state.connection_end > 0) {
+            connection_duration = util.format_timespan_ms(uptime - wg_state.connection_end);
+        }
+
+        let peer_str = saved_config.remote_host;
+        if (saved_config.remote_port > 0) {
+            peer_str += ":" + saved_config.remote_port;
+        }
+
         return (
-            <SubPage name="wireguard">
-                <ConfigForm id="wireguard_config_form" title={__("wireguard.content.wireguard")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+            <SubPage name="wireguard" title={__("wireguard.content.wireguard")}>
+                <SubPage.Status>
+                    <FormRow label={__("wireguard.status.connection")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={wg_state.state}
+                            items={[
+                                ["primary", __("wireguard.status.not_configured")],
+                                ["warning", __("wireguard.status.waiting_for_timesync")],
+                                ["warning", __("wireguard.status.not_connected")],
+                                ["success", __("wireguard.status.connected")]
+                            ]}/>
+                    </FormRow>
+
+                    {saved_config.enable &&
+                        <FormRow label={__("wireguard.status.peer")}>
+                            <InputText value={peer_str} />
+                        </FormRow>
+                    }
+
+                    {saved_config.enable && connection_duration.length > 0 &&
+                        <FormRow label={is_connected ? __("wireguard.status.connected_since") : __("wireguard.status.disconnected_since")}>
+                            <InputText value={connection_duration} />
+                        </FormRow>
+                    }
+                </SubPage.Status>
+
+                <SubPage.Config
+                    id="wireguard_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
+
                     <FormRow label={__("wireguard.content.enable_wireguard")}>
                         <Switch desc={__("wireguard.content.enable_wireguard_desc")}
                                 checked={state.enable}
@@ -222,7 +272,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
                                      value={state.mtu}
                                      onValue={this.set("mtu")}/>
                     </FormRow>
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         )
     }

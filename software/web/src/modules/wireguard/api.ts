@@ -16,6 +16,8 @@ export interface config {
 }
 
 export interface state {
+    connection_start: number;
+    connection_end: number;
     public_key: string;
     state: number;
 }

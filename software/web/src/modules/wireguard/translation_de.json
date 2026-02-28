@@ -5,7 +5,10 @@
             "not_configured": "Deaktiviert",
             "waiting_for_timesync": "Warte auf Zeitsynchronisierung",
             "not_connected": "Verbinde",
-            "connected": "Verbunden"
+            "connected": "Verbunden",
+            "peer": "Peer",
+            "connected_since": "Verbunden seit",
+            "disconnected_since": "Getrennt seit"
         },
         "navbar": {
             "wireguard": "WireGuard"
