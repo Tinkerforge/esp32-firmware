@@ -31,8 +31,7 @@ let x = {
         "script": {
             "no_bricklets": "Keine Bricklets angeschlossen.",
             "unknown_device": "unbekanntes Gerät",
-            "save_failed": "Speichern der Proxy-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Proxy-Einstellungen"
+            "save_failed": "Speichern der Proxy-Einstellungen fehlgeschlagen."
         }
     }
 }

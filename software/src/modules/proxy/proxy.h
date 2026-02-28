@@ -32,6 +32,8 @@ public:
     void register_urls() override;
 
 private:
+    void apply_config();
+
     TF_Net net;
     Config devices_prototype;
     ConfigRoot devices;

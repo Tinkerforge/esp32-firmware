@@ -91,10 +91,17 @@ void Proxy::pre_setup()
          {"authentication_secret", Config::Str("", 0, 64)},
          {"listen_address", Config::Str("0.0.0.0", 7, 15)},
          {"listen_port", Config::Uint16(4223)}
-    }),  [](Config &cfg, ConfigSource source) -> String {
+    }),  [this](Config &cfg, ConfigSource source) -> String {
         IPAddress listen_address;
         if (!listen_address.fromString(cfg.get("listen_address")->asEphemeralCStr()))
             return "Failed to parse \"listen_address\": Expected format is dotted decimal, i.e. 10.0.0.1";
+
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+        }
+
         return "";
     }};
 }
@@ -103,19 +110,7 @@ void Proxy::setup()
 {
     api.restorePersistentConfig("proxy/config", &config);
 
-    // We have to hold the secret as a (owning) string here:
-    // config.get("authentication_secret")->asCStr() seems to
-    // still get invalidated between setup and register_urls.
-    this->auth_secret = config.get("authentication_secret")->asString();
-    const char *secret = this->auth_secret.length() == 0 ? nullptr : this->auth_secret.c_str();
-
-    int ret = tf_net_create(&net, config.get("listen_address")->asEphemeralCStr(), config.get("listen_port")->asUint(), secret);
-
-    if (ret != TF_E_OK) {
-        logger.printfln("Failed to initialize proxy: Listen address invalid?");
-    } else {
-        tf_hal_set_net(&hal, &net);
-    }
+    apply_config();
 
     uint16_t i = 0;
     char uid[7] = {0};
@@ -133,6 +128,29 @@ void Proxy::setup()
     }
 
     initialized = true;
+}
+
+void Proxy::apply_config()
+{
+    // Disconnect the net from the HAL before destroying it
+    tf_hal_set_net(&hal, nullptr);
+
+    // Destroy the old net if it was previously created
+    tf_net_destroy(&net);
+
+    // We have to hold the secret as a (owning) string here:
+    // config.get("authentication_secret")->asCStr() seems to
+    // still get invalidated between setup and register_urls.
+    this->auth_secret = config.get("authentication_secret")->asString();
+    const char *secret = this->auth_secret.length() == 0 ? nullptr : this->auth_secret.c_str();
+
+    int ret = tf_net_create(&net, config.get("listen_address")->asEphemeralCStr(), config.get("listen_port")->asUint(), secret);
+
+    if (ret != TF_E_OK) {
+        logger.printfln("Failed to initialize proxy: Listen address invalid?");
+    } else {
+        tf_hal_set_net(&hal, &net);
+    }
 }
 
 void Proxy::register_urls()
