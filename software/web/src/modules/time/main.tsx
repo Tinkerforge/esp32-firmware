@@ -23,7 +23,6 @@ import { h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
-import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import timezones from "../ntp/timezones";
 import { InputSelect } from "../../ts/components/input_select";
@@ -127,15 +126,32 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
         let date = get_rtc_date();
         let third = timezones[splt[0]][splt[1]];
 
+        const ntp_state = API.get("ntp/state");
+        const saved_config = API.get("ntp/config");
+
         return (
-            <SubPage name="time">
-                <ConfigForm id="time_config_form"
-                            title={__("time.content.time")}
-                            isModified={this.isModified()}
-                            isDirty={this.isDirty()}
-                            onSave={this.save}
-                            onReset={this.reset}
-                            onDirtyChange={this.setDirty}>
+            <SubPage name="time" title={__("time.content.time")}>
+                <SubPage.Status>
+                    <FormRow label={__("time.content.ntp")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={!saved_config.enable ? 0 : (ntp_state.synced ? 2 : 1)}
+                            items={[
+                                ["primary", __("time.status.disabled")],
+                                ["danger",  __("time.status.not_synced")],
+                                ["success", __("time.status.synced")],
+                            ]}/>
+                    </FormRow>
+                </SubPage.Status>
+
+                <SubPage.Config
+                    id="time_config_form"
+                    isModified={this.isModified()}
+                    isDirty={this.isDirty()}
+                    onSave={this.save}
+                    onReset={this.reset}
+                    onDirtyChange={this.setDirty}>
 
                     <FormRow label={__("time.content.live_date")}>
                         <OutputDatetime date={date}
@@ -210,7 +226,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
                                    value={state.server2}
                                    onValue={this.set("server2")}/>
                     </FormRow>
-                </ConfigForm>
+                </SubPage.Config>
             </SubPage>
         );
     }
