@@ -57,8 +57,7 @@ export class Time extends ConfigComponent<'ntp/config', {status_ref?: RefObject<
 
     constructor() {
         super('ntp/config',
-              () => __("time.script.save_failed"),
-              () => __("time.script.reboot_content_changed"));
+              () => __("time.script.save_failed"));
 
         util.addApiEventListener("rtc/config", () => this.setState({...API.get("rtc/config")}));
     }

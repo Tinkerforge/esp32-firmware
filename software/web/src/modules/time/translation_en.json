@@ -29,8 +29,7 @@
             "time_not_set": "Time not set"
         },
         "script": {
-            "save_failed": "Failed to save the time synchronization settings.",
-            "reboot_content_changed": "time synchronization settings"
+            "save_failed": "Failed to save the time synchronization settings."
         }
     }
 }

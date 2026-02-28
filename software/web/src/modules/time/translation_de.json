@@ -29,8 +29,7 @@
             "time_not_set": "Zeit nicht gesetzt"
         },
         "script": {
-            "save_failed": "Speichern der Systemzeit-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "Systemzeit-Einstellungen"
+            "save_failed": "Speichern der Systemzeit-Einstellungen fehlgeschlagen."
         }
     }
 }

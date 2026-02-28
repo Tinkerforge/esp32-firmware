@@ -47,4 +47,7 @@ public:
     void set_api_time(struct timeval time);
 
     void time_synced_NTPThread();
+
+private:
+    void apply_config();
 };

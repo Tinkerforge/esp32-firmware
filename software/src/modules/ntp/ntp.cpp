@@ -47,9 +47,16 @@ void NTP::pre_setup()
         {"timezone", Config::Str("Europe/Berlin", 0, 32)}, // Longest is America/Argentina/ComodRivadavia = 32 chars
         {"server", Config::Str("time.cloudflare.com", 0, 64)}, // We've applied for a vendor zone @ pool.ntp.org, however this seems to take quite a while. Use Cloudflare's public anycast servers for now.
         {"server2", Config::Str("time.google.com", 0, 64)}, // Google's public anycast servers as backup.
-    }), [](Config &conf, ConfigSource source) -> String {
+    }), [this](Config &conf, ConfigSource source) -> String {
         if (lookup_timezone(conf.get("timezone")->asEphemeralCStr()) == nullptr)
             return "Can't update config: Failed to look up timezone.";
+
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+        }
+
         return "";
     }};
 
@@ -65,6 +72,29 @@ void NTP::setup()
 
     api.restorePersistentConfig("ntp/config", &config);
 
+    // Enable network stack before setting any SNTP options.
+    // It should be safe to set SNTP options without the network stack
+    // running, but it needs to be running to send any SNTP queries anyway.
+    esp_netif_init();
+
+    apply_config();
+}
+
+void NTP::register_events()
+{
+#if MODULE_NETWORK_AVAILABLE()
+    network.on_network_connected([this](const Config *connected) {
+        if (connected->asBool() && config.get("enable")->asBool() && !esp_sntp_enabled()) {
+            esp_sntp_init();
+        }
+
+        return EventResult::OK;
+    });
+#endif
+}
+
+void NTP::apply_config()
+{
     const char *tz_name = config.get("timezone")->asUnsafeCStr();
     const char *tz_string = lookup_timezone(tz_name);
 
@@ -77,7 +107,13 @@ void NTP::setup()
     tzset();
     logger.printfln("Set timezone to %s", tz_name);
 
+    if (esp_sntp_enabled()) {
+        esp_sntp_stop();
+    }
+
     if (!config.get("enable")->asBool()) {
+        set_synced(false);
+        sync_expires_at = 0_us;
         return;
     }
 
@@ -86,15 +122,6 @@ void NTP::setup()
     ntp_server2 = config.get("server2")->asString();
 
     const bool set_servers_from_dhcp = config.get("use_dhcp")->asBool();
-
-    // Enable network stack before setting any SNTP options.
-    // It should be safe to set SNTP options without the network stack
-    // running, but it needs to be running to send any SNTP queries anyway.
-    esp_netif_init();
-
-    if (esp_sntp_enabled()) {
-        esp_sntp_stop();
-    }
 
     // As we use our own sntp_sync_time function, we do not need to register the cb function.
     // sntp_set_time_sync_notification_cb(ntp_sync_cb);
@@ -110,25 +137,17 @@ void NTP::setup()
     // client will query all servers round-robin, including unset ones.
     esp_sntp_setservername(0, ntp_server1.isEmpty() ? ntp_server2.c_str() : ntp_server1.c_str());
     esp_sntp_setservername(1, ntp_server2.isEmpty() ? ntp_server1.c_str() : ntp_server2.c_str());
-}
 
-void NTP::register_events()
-{
-    if (config.get("enable")->asBool()) {
 #if MODULE_NETWORK_AVAILABLE()
-        network.on_network_connected([this](const Config *connected) {
-            if (connected->asBool()) {
-                esp_sntp_init();
-
-                return EventResult::Deregister;
-            }
-
-            return EventResult::OK;
-        });
-#else
+    // During initial boot, the network is not yet connected.
+    // register_events() will start SNTP when the network first connects.
+    // For runtime reconfiguration, start SNTP immediately if the network is already up.
+    if (network.is_connected()) {
         esp_sntp_init();
-#endif
     }
+#else
+    esp_sntp_init();
+#endif
 }
 
 void NTP::set_synced(bool synced)
@@ -166,6 +185,10 @@ void NTP::time_synced_NTPThread() {
                 this->set_synced(false);
             }
         }, 1_h, 1_h);
+    } else {
+        task_scheduler.scheduleOnce([this]() {
+            this->set_synced(true);
+        });
     }
 
     sync_expires_at = now + 25_h;
