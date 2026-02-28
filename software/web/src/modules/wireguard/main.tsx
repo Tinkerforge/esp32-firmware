@@ -57,8 +57,7 @@ export class Wireguard extends ConfigComponent<'wireguard/config', {status_ref?:
     ipconfig_valid: boolean = true;
     constructor() {
         super('wireguard/config',
-              () => __("wireguard.script.save_failed"),
-              () => __("wireguard.script.reboot_content_changed"));
+              () => __("wireguard.script.save_failed"));
 
         this.state = {
             publicKey: "",

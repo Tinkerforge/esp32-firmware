@@ -1,5 +1,6 @@
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2026 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,7 +65,7 @@ void Wireguard::pre_setup()
         {"allowed_subnet", Config::Str("0.0.0.0", 7, 15)},
 
         {"mtu", Config::Uint16(1420)}
-    }), [](Config &cfg, ConfigSource source) -> String {
+    }), [this](Config &cfg, ConfigSource source) -> String {
         IPAddress unused;
 
         if (!unused.fromString(cfg.get("internal_ip")->asUnsafeCStr()))
@@ -101,6 +102,12 @@ void Wireguard::pre_setup()
         if (!result.isEmpty())
             return "\"preshared_key\"" + result;
 
+        if (source != ConfigSource::File) {
+            task_scheduler.scheduleOnce([this]() {
+                this->apply_config();
+            });
+        }
+
         return "";
     }};
 
@@ -114,13 +121,22 @@ void Wireguard::pre_setup()
 
 void Wireguard::start_wireguard()
 {
+    uint32_t generation = this->config_generation;
+
     // Check if hostname exists and place address in DNS cache. This avoids blocking for a long time in wg.begin().
-    dns_gethostbyname_addrtype_lwip_ctx_async(wg_data->remote_host.c_str(), [this](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+    dns_gethostbyname_addrtype_lwip_ctx_async(wg_data->remote_host.c_str(), [this, generation](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (generation != this->config_generation) {
+            return;
+        }
+
         if (data->err != ERR_OK) {
             const int eno = err_to_errno(data->err);
             logger.printfln("Failed to resolve '%s': %s (%i|%hhi)", this->wg_data->remote_host.c_str(), strerror(eno), eno, data->err);
 
-            task_scheduler.scheduleOnce([this]() {
+            task_scheduler.scheduleOnce([this, generation]() {
+                if (generation != this->config_generation) {
+                    return;
+                }
                 this->start_wireguard();
             }, 1_min);
             return;
@@ -129,7 +145,10 @@ void Wireguard::start_wireguard()
         if (data->addr_ptr == nullptr || data->addr_ptr->type != IPADDR_TYPE_V4) {
             logger.printfln("Failed to resolve '%s': Unknown host", this->wg_data->remote_host.c_str());
 
-            task_scheduler.scheduleOnce([this]() {
+            task_scheduler.scheduleOnce([this, generation]() {
+                if (generation != this->config_generation) {
+                    return;
+                }
                 this->start_wireguard();
             }, 10_min);
             return;
@@ -178,7 +197,10 @@ void Wireguard::connect_wireguard()
     if (!success) {
         logger.printfln("Failed to connect to WireGuard peer. Likely unresolved host.");
 
-        task_scheduler.scheduleOnce([this]() {
+        task_scheduler.scheduleOnce([this, gen = this->config_generation]() {
+            if (gen != this->config_generation) {
+                return;
+            }
             this->start_wireguard();
         }, 1_min);
 
@@ -189,6 +211,10 @@ void Wireguard::connect_wireguard()
 }
 
 void Wireguard::update_peer_info(uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port) {
+    if (!wg_data) {
+        return;
+    }
+
     if(state.get("state")->updateUint(up ? 3 : 2))
     {
         if (up) {
@@ -205,10 +231,24 @@ void Wireguard::update_peer_info(uint8_t peer_index, bool up, const ip_addr_t *a
     }
 }
 
-void Wireguard::setup()
+void Wireguard::apply_config()
 {
-    api.restorePersistentConfig("wireguard/config", &config);
+    // Tear down existing tunnel if running.
+    config_generation++;
 
+    if (wg_data) {
+        logger.printfln("Shutting down WireGuard tunnel.");
+        wg_data->wg.end();
+        delete wg_data;
+        wg_data = nullptr;
+    }
+
+    // Reset state.
+    state.get("state")->updateUint(0);
+    state.get("connection_start")->updateUptime(0_us);
+    state.get("connection_end")->updateUptime(0_us);
+
+    // Derive and update public key.
     const String &private_key_b64 = config.get("private_key")->asString();
     char public_key_b64[45] = {0};
 
@@ -227,10 +267,9 @@ void Wireguard::setup()
 
     state.get("public_key")->updateString(public_key_b64);
 
-    initialized = true;
-
-    if (!config.get("enable")->asBool())
+    if (!config.get("enable")->asBool()) {
         return;
+    }
 
     wg_data = new wg_data_t;
     wg_data->private_key = private_key_b64; // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
@@ -239,30 +278,22 @@ void Wireguard::setup()
     logger.printfln("WireGuard enabled. Waiting for network and time sync.");
 
     state.get("state")->updateUint(1);
-}
 
-void Wireguard::register_events()
-{
-    if (!wg_data)
-        return;
-
-#if MODULE_NETWORK_AVAILABLE()
-    network.on_network_connected([this](const Config *connected) {
-        if (!connected->asBool()) {
-            return EventResult::OK;
+    task_scheduler.scheduleWhenClockSynced([this, gen = this->config_generation]() {
+        if (gen != this->config_generation) {
+            return;
         }
-
-        task_scheduler.scheduleWhenClockSynced([this]() {
-            start_wireguard();
-        });
-
-        return EventResult::Deregister;
-    });
-#else
-    task_scheduler.scheduleWhenClockSynced([this]() {
         start_wireguard();
     });
-#endif
+}
+
+void Wireguard::setup()
+{
+    api.restorePersistentConfig("wireguard/config", &config);
+
+    apply_config();
+
+    initialized = true;
 }
 
 void Wireguard::register_urls()

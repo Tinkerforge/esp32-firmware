@@ -31,13 +31,13 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void register_events() override;
 
     bool port_used(uint32_t port);
 
     void update_peer_info(uint8_t peer_index, bool up, const ip_addr_t *addr, uint16_t port);
 
 private:
+    void apply_config();
     void start_wireguard();
     void connect_wireguard();
 
@@ -54,4 +54,5 @@ private:
     ConfigRoot state;
 
     wg_data_t *wg_data = nullptr;
+    uint32_t config_generation = 0;
 };
