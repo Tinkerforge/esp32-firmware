@@ -30,6 +30,7 @@ public:
     Wireguard(){}
     void pre_setup() override;
     void setup() override;
+    void register_events() override;
     void register_urls() override;
 
     bool port_used(uint32_t port);

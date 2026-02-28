@@ -279,12 +279,26 @@ void Wireguard::apply_config()
 
     state.get("state")->updateUint(1);
 
+#if MODULE_NETWORK_AVAILABLE()
+    // During initial boot, the network is not yet connected.
+    // register_events() will start WireGuard when the network first connects.
+    // For runtime reconfiguration, start immediately if the network is already up.
+    if (network.is_connected()) {
+        task_scheduler.scheduleWhenClockSynced([this, gen = this->config_generation]() {
+            if (gen != this->config_generation) {
+                return;
+            }
+            start_wireguard();
+        });
+    }
+#else
     task_scheduler.scheduleWhenClockSynced([this, gen = this->config_generation]() {
         if (gen != this->config_generation) {
             return;
         }
         start_wireguard();
     });
+#endif
 }
 
 void Wireguard::setup()
@@ -294,6 +308,40 @@ void Wireguard::setup()
     apply_config();
 
     initialized = true;
+}
+
+void Wireguard::register_events()
+{
+    if (!wg_data) {
+        return;
+    }
+
+#if MODULE_NETWORK_AVAILABLE()
+    network.on_network_connected([this](const Config *connected) {
+        if (!connected->asBool()) {
+            return EventResult::OK;
+        }
+        if (!wg_data) {
+            return EventResult::OK;
+        }
+
+        task_scheduler.scheduleWhenClockSynced([this, gen = this->config_generation]() {
+            if (gen != this->config_generation) {
+                return;
+            }
+            start_wireguard();
+        });
+
+        return EventResult::Deregister;
+    });
+#else
+    task_scheduler.scheduleWhenClockSynced([this, gen = this->config_generation]() {
+        if (gen != this->config_generation) {
+            return;
+        }
+        start_wireguard();
+    });
+#endif
 }
 
 void Wireguard::register_urls()
