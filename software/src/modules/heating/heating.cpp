@@ -111,6 +111,9 @@ void Heating::register_urls()
     api.addCommand("heating/reset_holding_time", Config::Null(), {}, [this](Language /*language*/, String &/*errmsg*/) {
         this->last_sg_ready_change = 0;
         this->update();
+        // Clear again: update() may have changed an SG-Ready output,
+        // which re-arms the timer via "last_sg_ready_change = now".
+        this->last_sg_ready_change = 0;
     }, true);
 
     // We dont want a persistent config since we dont want to save this across reboots.
