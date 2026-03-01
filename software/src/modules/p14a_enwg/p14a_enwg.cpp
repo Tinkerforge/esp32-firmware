@@ -330,7 +330,7 @@ void P14aEnwg::set_eebus_limit(bool active, uint32_t limit_w)
 // then it may stay active if the power limit allows it.
 bool P14aEnwg::is_heating_active()
 {
-    return is_enabled() && state.get("active")->asBool();
+    return is_enabled() && config.get("limit_heating")->asBool() && state.get("active")->asBool();
 }
 
 uint32_t P14aEnwg::get_managed_chargers_limit()
