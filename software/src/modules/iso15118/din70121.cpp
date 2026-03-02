@@ -507,6 +507,7 @@ void DIN70121::handle_cable_check_req()
     // Trigger IEC fallback here since we may not get a SessionStopReq.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         iso15118.switch_to_iec_temporary();
+        cancel_sequence_timeout(next_timeout);
     }
 }
 
@@ -525,6 +526,7 @@ void DIN70121::handle_session_stop_req()
     // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         iso15118.switch_to_iec_temporary();
+        cancel_sequence_timeout(next_timeout);
     }
 }
 

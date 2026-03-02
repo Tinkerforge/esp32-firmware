@@ -756,6 +756,7 @@ void ISO2::handle_cable_check_req()
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
         // Trigger IEC fallback since we may not get a SessionStopReq.
         iso15118.switch_to_iec_temporary();
+        cancel_sequence_timeout(next_timeout);
     }
 }
 
@@ -794,6 +795,7 @@ void ISO2::handle_session_stop_req()
         // In read_soc_only mode, switch to IEC 61851 after the session ends.
         // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
         iso15118.switch_to_iec_temporary();
+        cancel_sequence_timeout(next_timeout);
     }
 
     // Reset the socket, so the ev can reconnect when it wants to resume from the pause
