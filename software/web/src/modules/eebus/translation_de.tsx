@@ -70,6 +70,8 @@ let x = {
                 "state_disconnected": "Getrennt",
                 "state_discovered": "Entdeckt",
                 "state_loaded_from_config": "Aus Konfiguration geladen",
+                "state_awaiting_approval": "Erwartet Genehmigung",
+                "approve_connection": "Genehmigen",
                 "autoregister": "Autoregistrierung aktiv",
                 "overwrite_notice": "Diese Einstellungen werden überschrieben wenn ein EEBUS Gerät mit der SKI gefunden wird.",
                 "persistent": "In Konfiguration gespeichert",

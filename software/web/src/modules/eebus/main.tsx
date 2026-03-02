@@ -857,13 +857,18 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 __("eebus.content.peer_info.state")]}
                             rows={
                                 state.state.peers
-                                    .filter(peer => peer.trusted && ((peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1)))
+                                    .filter(peer => (peer.trusted || peer.state == NodeState.AwaitingApproval) && ((peer.dns_name && peer.dns_name.length >= 1) || (peer.ip && peer.ip.length >= 1)))
                                     .map((peer) => {
                                         return {
                                             columnValues: [
                                                 peer.model_model || peer.ip,
                                                 peer.model_brand,
-                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") : peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") : __("eebus.content.peer_info.state_eebus_connected")],
+                                                peer.state == NodeState.Disconnected ? __("eebus.content.peer_info.state_disconnected") :
+                                                    peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") :
+                                                        peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") :
+                                                            peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") :
+                                                                peer.state == NodeState.AwaitingApproval ? __("eebus.content.peer_info.state_awaiting_approval") :
+                                                                    __("eebus.content.peer_info.state_eebus_connected")],
                                             fieldValues: [
                                                 peer.model_model || peer.ip,
                                                 peer.model_brand,
@@ -977,9 +982,29 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                                         peer.state == NodeState.Connected ? __("eebus.content.peer_info.state_connected") :
                                                                             peer.state == NodeState.LoadedFromConfig ? __("eebus.content.peer_info.state_loaded_from_config") :
                                                                                 peer.state == NodeState.EEBUSActive ? __("eebus.content.peer_info.state_eebus_connected") :
-                                                                                    __("eebus.content.unknown")
+                                                                                    peer.state == NodeState.AwaitingApproval ? __("eebus.content.peer_info.state_awaiting_approval") :
+                                                                                        __("eebus.content.unknown")
                                                             }
                                                             disabled
+                                                        />
+                                                    </FormRow>
+                                                    <FormRow label={__("eebus.content.peer_info.device_trusted")}>
+                                                        <InputSelect
+                                                            items={[
+                                                                ["true", __("eebus.content.peer_info.trusted_yes")],
+                                                                ["false", __("eebus.content.peer_info.trusted_no")],
+                                                            ]}
+                                                            value={state.add.trusted ? "true" : "false"}
+                                                            onValue={(v) => {
+                                                                const trusted = v === "true";
+                                                                this.setState({
+                                                                    add: {
+                                                                        ...state.add,
+                                                                        trusted: trusted,
+                                                                        ski: peer.ski
+                                                                    }
+                                                                });
+                                                            }}
                                                         />
                                                     </FormRow>
                                                 </>
