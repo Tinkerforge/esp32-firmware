@@ -91,9 +91,6 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
     }
 
     getPhoneNfcId = (): string | null => {
-        if (!util.is_native_median_app()) {
-            return null;
-        }
         const nfc = (window as any).tinkerforge_nfc;
         if (nfc?.isSupported?.() && typeof nfc.getDeviceId === 'function') {
             return nfc.getDeviceId();
@@ -172,7 +169,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
         }
 
         // Check phone NFC status
-        const isNativeApp = util.is_native_median_app();
+        const isWarpApp = util.is_warp_app();
         const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
         const phoneNfcId = this.getPhoneNfcId();
         const phoneNfcAlreadyRegistered = phoneNfcId && state.authorized_tags.some(
@@ -330,7 +327,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
 
                 {(options.PRODUCT_ID_IS_WARP_ANY || options.PRODUCT_ID_IS_ENERGY_MANAGER || options.PRODUCT_ID_IS_ENERGY_MANAGER_V2) ?
                 <FormRow label={__("nfc.content.tap_to_unlock_add")} label_muted={phoneNfcId != null ? (__("nfc.content.tap_to_unlock_your_id") + phoneNfcId) : undefined}>
-                {!isNativeApp ?
+                {!isWarpApp ?
                     <Alert variant="info">{__("nfc.content.tap_to_unlock_no_app")}</Alert>
                 : isIOS ?
                     <Alert variant="info">{__("nfc.content.tap_to_unlock_ios")}</Alert>
