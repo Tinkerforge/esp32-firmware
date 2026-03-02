@@ -1078,6 +1078,10 @@ export function is_native_median_app(): boolean {
     return Median.isNativeApp();
 }
 
+export function is_warp_app(): boolean {
+    return /warpapp-(android|ios)/.test(navigator.userAgent);
+}
+
 export function is_date_today(date: Date): boolean {
     const today = new Date()
 
