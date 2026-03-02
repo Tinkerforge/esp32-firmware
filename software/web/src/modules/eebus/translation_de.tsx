@@ -52,7 +52,8 @@ let x = {
             "ip_too_short": "IP-Adresse muss mindestens 7 Zeichen lang sein (z.B. 1.1.1.1)",
             "add_peer_failed": "Peer konnte nicht hinzugefügt werden",
             "peer_info": {
-                "peers": "EEBUS-Partner",
+                "peers_desc": "Damit eine EEBUS Verbindung hergestellt werden kann, muss ein EEBUS Gerät zuerst hinzugefügt werden. Verbindungen von anderen Geräten werden abgelehnt.",
+                "peers": "EEBUS-Gerät",
                 "dns_name": "DNS Adresse",
                 "device_ip": "Adressen",
                 "device_port": "Port",

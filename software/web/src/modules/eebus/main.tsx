@@ -849,7 +849,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label={__("eebus.content.peer_info.peers")}>
+                    <FormRow label={__("eebus.content.peer_info.peers")} help={__("eebus.content.peer_info.peers_desc")}>
                         <Table
                             columnNames={[
                                 __("eebus.content.peer_info.model_model"),

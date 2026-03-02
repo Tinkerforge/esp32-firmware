@@ -54,7 +54,8 @@ let x = {
             "ip_too_short": "IP address must be at least 7 characters (e.g. 1.1.1.1)",
             "add_peer_failed": "Failed to add peer",
             "peer_info": {
-                "peers": "EEBUS-Peer",
+                "peers_desc": "In order to establish an EEBUS connection, an EEBUS device must first be added. Connections from other devices will be rejected.",
+                "peers": "EEBUS-Devices",
                 "dns_name": "DNS Address",
                 "device_ip": "Addresses",
                 "device_port": "Port",
