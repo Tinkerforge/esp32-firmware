@@ -41,6 +41,8 @@ interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
     showAnyAddress: boolean,
     showDhcp?: boolean,
     showDns?: boolean,
+    hideSubnet?: boolean
+    hideGateway?: boolean
     value: IPConfig
     onValue: (value: IPConfig) => void
     setValid: (valid: boolean) => void
@@ -136,25 +138,36 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                          value={!props.showAnyAddress && props.value.ip == "0.0.0.0" ? "" : props.value.ip}
                          onValue={(v) => this.onUpdate("ip", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
             </FormRow>
-            <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")}>
-                <InputIP invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
-                         moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}
-                         required={!props.showDhcp || !dhcp}
-                         value={!props.showAnyAddress && props.value.gateway == "0.0.0.0" ? "" : props.value.gateway}
-                         onValue={(v) => this.onUpdate("gateway", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
-            </FormRow>
-            <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
-                <InputSubnet className={captured_subnet_name != "" ? "is-invalid" : ""}
-                        required={!props.showDhcp || !dhcp}
-                        value={props.value.subnet}
-                        onValue={(v) => this.onUpdate("subnet", v)}
-                        minPrefixLength={props.min_subnet_prefix}
-                        maxPrefixLength={props.max_subnet_prefix}
-                        placeholder={__("component.ip_configuration.subnet_placeholder")}
-                    />
-                {captured_subnet_name != "" ? <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div> : <></>}
-            </FormRow>
         </>);
+        if(!props.hideGateway) {
+            inner = (<>
+                {inner}
+                <FormRow label={props.gateway_label ? props.gateway_label : __("component.ip_configuration.gateway")}>
+                    <InputIP
+                        invalidFeedback={gateway_out_of_subnet ? __("component.ip_configuration.gateway_out_of_subnet") : __("component.ip_configuration.gateway_invalid")}
+                        moreClasses={gateway_out_of_subnet ? ["is-invalid"] : [""]}
+                        required={!props.showDhcp || !dhcp}
+                        value={!props.showAnyAddress && props.value.gateway == "0.0.0.0" ? "" : props.value.gateway}
+                        onValue={(v) => this.onUpdate("gateway", !props.showAnyAddress && v == "" ? "0.0.0.0" : v)}/>
+                </FormRow>
+                </>)
+        }
+        if(!props.hideSubnet) {
+            inner = (<>
+                {inner}
+                <FormRow label={props.subnet_label ? props.subnet_label : __("component.ip_configuration.subnet")}>
+                    <InputSubnet className={captured_subnet_name != "" ? "is-invalid" : ""}
+                            required={!props.showDhcp || !dhcp}
+                            value={props.value.subnet}
+                            onValue={(v) => this.onUpdate("subnet", v)}
+                            minPrefixLength={props.min_subnet_prefix}
+                            maxPrefixLength={props.max_subnet_prefix}
+                            placeholder={__("component.ip_configuration.subnet_placeholder")}
+                        />
+                    {captured_subnet_name != "" ? <div class="invalid-feedback">{__("component.ip_configuration.subnet_captures_prefix") + captured_subnet_name + " (" + captured_subnet_ip + ") " + __("component.ip_configuration.subnet_captures_suffix")}</div> : <></>}
+                </FormRow>
+            </>)
+        }
 
         if (props.showDns) {
             inner = (<>
