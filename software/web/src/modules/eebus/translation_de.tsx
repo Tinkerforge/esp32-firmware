@@ -47,10 +47,6 @@ let x = {
             "no_peers_found": "Keine Geräte gefunden. Stellen Sie sicher, dass die Geräte im selben Netzwerk sind.",
             "add_peer_manual_desc": "Oder Gerätedetails manuell eingeben:",
             "already_added": "Hinzugefügt",
-            "ski_required": "SKI wird benötigt",
-            "ip_required": "IP-Adresse wird benötigt",
-            "ip_too_short": "IP-Adresse muss mindestens 7 Zeichen lang sein (z.B. 1.1.1.1)",
-            "add_peer_failed": "Peer konnte nicht hinzugefügt werden",
             "peer_info": {
                 "peers_desc": "Damit eine EEBUS Verbindung hergestellt werden kann, muss ein EEBUS Gerät zuerst hinzugefügt werden. Verbindungen von anderen Geräten werden abgelehnt.",
                 "peers": "EEBUS-Gerät",
@@ -101,7 +97,12 @@ let x = {
         },
         "script": {
             "save_failed": "Speichern der EEBUS-Einstellungen fehlgeschlagen.",
-            "reboot_content_changed": "EEBUS-Einstellungen"
+            "reboot_content_changed": "EEBUS-Einstellungen",
+            "ski_required": "SKI wird benötigt",
+            "ip_required": "IP-Adresse wird benötigt",
+            "ip_too_short": "IP-Adresse muss mindestens 7 Zeichen lang sein (z.B. 1.1.1.1)",
+            "ip_invalid": "IP-Adresse ist ungültig",
+            "add_peer_failed": "Peer konnte nicht hinzugefügt werden"
         }
     }
 }

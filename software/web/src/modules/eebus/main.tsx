@@ -39,6 +39,7 @@ import {useState} from "preact/hooks";
 import {Usecases} from "./usecases.enum";
 import {OutputFloat} from "../../ts/components/output_float";
 import {register_status_provider, ModuleStatus} from "../../ts/status_registry";
+import {IPConfiguration} from "../../ts/components/ip_configuration";
 
 const loadcontrolStateMap: { [key: number]: string } = {
     [LoadcontrolState.Startup]: "Startup",
@@ -193,10 +194,13 @@ interface EEBusState {
     config: EEBusConfig;
     config_enable: boolean;
     usecases: EEBusUsecases;
+    addPeerSkiError: string;
+    addPeerIpError: string;
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     scan_interval_id: number = null;
+    ipconfig_valid: boolean = true;  // IP configuration validation state
 
     constructor() {
         super('eebus/config', () => __("eebus.script.save_failed"));
@@ -1045,8 +1049,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         dns_name: "",
                                         wss_path: "/ship/",
                                         persistent: true
-                                    }
+                                    },
+                                    addPeerSkiError: "",
+                                    addPeerIpError: ""
                                 });
+                                // Reset IP validation state
+                                this.ipconfig_valid = true;
                                 // Start mDNS discovery when modal opens
                                 this.scan_services();
                                 this.scan_interval_id = window.setInterval(() => this.scan_services(), 3000);
@@ -1135,20 +1143,32 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     <FormRow label={__("eebus.content.ski")}>
                                         <InputText
                                             value={state.add.ski}
-                                            onValue={(v) => this.setState({add: {...state.add, ski: v}})}
+                                            onValue={(v) => this.setState({add: {...state.add, ski: v}, addPeerSkiError: ""})}
                                             required
                                             minlength={30}
+                                            class={state.addPeerSkiError ? "is-invalid" : ""}
+                                            invalidFeedback={state.addPeerSkiError}
                                         />
                                     </FormRow>
-                                    <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                     <IPConfiguration
+                                        showAnyAddress={false}
+                                        hideGateway={true}
+                                        hideSubnet={true}
+                                        value={{ip: state.add.ip, gateway:"", subnet: ""}}
+                                        onValue={(v) => this.setState({add: {...state.add, ip: v.ip}, addPeerIpError: ""})}
+                                        setValid={(v) => this.ipconfig_valid = v}
+
+                                    />
+                                        {/*
+                                         <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                         <InputText
                                             value={state.add.ip}
                                             minlength={7}
                                             maxLength={150}
                                             onValue={(v) => this.setState({add: {...state.add, ip: v}})}
                                             required
-                                        />
-                                    </FormRow>
+                                            </FormRow>
+                                        />*/}
                                     <FormRow label={__("eebus.content.peer_info.device_port")}>
                                         <InputText
                                             value={state.add.port}
@@ -1167,20 +1187,39 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 </>];
                             }}
                             onAddSubmit={async () => {
-                                let peer = state.add;
-                                await API.call('eebus/add', peer);
-                                // Reset the form after successful submission
-                                this.setState({
-                                    add: {
-                                        ski: "",
-                                        trusted: true,
-                                        ip: "",
-                                        port: 4712,
-                                        dns_name: "",
-                                        wss_path: "/ship/",
-                                        persistent: true
-                                    },
-                                });
+                                // Validate SKI
+                                if (state.add.ski.trim().length === 0) {
+                                    this.setState({addPeerSkiError: __("eebus.script.ski_required")});
+                                    return;
+                                }
+
+                                // Validate IP using IPConfiguration component's validation
+                                if (!this.ipconfig_valid) {
+                                    this.setState({addPeerIpError: __("eebus.script.ip_invalid")});
+                                    return;
+                                }
+
+                                try {
+                                    let peer = state.add;
+                                    await API.call('eebus/add', peer);
+                                    // Reset the form after successful submission
+                                    this.setState({
+                                        add: {
+                                            ski: "",
+                                            trusted: true,
+                                            ip: "",
+                                            port: 4712,
+                                            dns_name: "",
+                                            wss_path: "/ship/",
+                                            persistent: true
+                                        },
+                                        addPeerSkiError: "",
+                                        addPeerIpError: ""
+                                    });
+                                } catch (error) {
+                                    // Display API error on SKI field
+                                    this.setState({addPeerSkiError: __("eebus.script.add_peer_failed")});
+                                }
 
                             }}
                             onAddHide={async () => {
