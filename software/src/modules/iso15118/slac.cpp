@@ -244,9 +244,58 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
 // ISO 15118-3 A.9.1.2 Table A.2
 void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_request)
 {
-    // Assume that the ethernet link has died when we get a CM_SLAC_PARM.REQ
-    // TODO: Should we do it like this?
-    //       We have to test this when several WARP Charger are used in parallel.
+    // State guard: Only accept CM_SLAC_PARM.REQ in appropriate states.
+    // Without this guard, a crosstalk CM_SLAC_PARM.REQ from a neighboring EV
+    // can overwrite our tracked PEV mid-matching or tear down an established link.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+    switch (state) {
+        case SLACState::WaitForSlacParamRequest:
+            // Normal case: idle and waiting for a new SLAC session. Accept any EV.
+            break;
+
+        case SLACState::WaitForStartAttenCharIndication:
+        case SLACState::WaitForMNBCSound:
+        case SLACState::WaitForAttenChar:
+        case SLACState::WaitForSlacMatch:
+            // Active matching in progress. Per [V2G3-A09-16], the same EV may
+            // retry CM_SLAC_PARM.REQ (e.g. if it didn't receive our CNF).
+            // Accept retries from the same PEV, ignore crosstalk from others.
+            if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+                logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
+                    cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
+                    cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
+                    cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
+                    get_slac_state_name(state));
+                return;
+            }
+            // Same EV retrying: fall through and restart the SLAC process for this EV.
+            break;
+
+        case SLACState::WaitForSDP:
+        case SLACState::LinkDetected:
+            // Link is established or being established.
+            // If the same EV is restarting SLAC, it means it considers the link dead.
+            // Accept and restart the SLAC process. Reject crosstalk from different EVs.
+            if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+                logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
+                    cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
+                    cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
+                    cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
+                    get_slac_state_name(state));
+                return;
+            }
+            logger.printfln("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
+            break;
+
+        default:
+            // Modem init states — shouldn't normally receive SLAC messages here.
+            logger.printfln("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
+            return;
+    }
+#pragma GCC diagnostic pop
+
+    // If we had a previous link (e.g. same EV retrying), tear it down now.
     iso15118.qca700x.link_down();
 
     // This is the first time we see the MAC and run_id of the PEV, we save it
@@ -279,6 +328,11 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
 // ISO 15118-3 A.9.2.2 Table A.4
 void SLAC::handle_cm_start_atten_char_indication(const CM_StartAttenCharIndication &cm_start_atten_char_indication)
 {
+    if (state != SLACState::WaitForStartAttenCharIndication && state != SLACState::WaitForMNBCSound) {
+        logger.printfln("CM_START_ATTEN_CHAR.IND ignored in state %s", get_slac_state_name(state));
+        return;
+    }
+
     if (cm_start_atten_char_indication.application_type != 0x00) {
         logger.printfln("CM_START_ATTEN_CHAR.IND application_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-41]
@@ -320,6 +374,11 @@ void SLAC::handle_cm_start_atten_char_indication(const CM_StartAttenCharIndicati
 // ISO 15118-3 A.9.2.2 Table A.4
 void SLAC::handle_cm_mnbc_sound_indication(const CM_MNBCSoundIndication &cm_mnbc_sound_indication)
 {
+    if (state != SLACState::WaitForMNBCSound) {
+        // Ignore sounds outside the sounding phase (e.g. crosstalk from neighboring EV).
+        return;
+    }
+
     // The sound indication is send three times by the EV.
     // There does not seem to be any requirement to check the sound indications for anything (ISO 15118-3 A.9.2.3.3).
     api_state.get("received_sounds")->updateUint(api_state.get("received_sounds")->asUint() + 1);
@@ -330,6 +389,11 @@ void SLAC::handle_cm_mnbc_sound_indication(const CM_MNBCSoundIndication &cm_mnbc
 // ISO 15118-3 A.9.2.2 Table A.4
 void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &cm_atten_profile_indication)
 {
+    if (state != SLACState::WaitForMNBCSound) {
+        // Ignore attenuation profiles outside the sounding phase.
+        return;
+    }
+
     if (memcmp(cm_atten_profile_indication.pev_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
         logger.printfln("CM_ATTEN_PROFILE.IND pev_mac mismatch");
         // Ignore profile indication from other EVs
@@ -378,6 +442,11 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
 // ISO 15118-3 A.9.2.2 Table A.4
 void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_char_response)
 {
+    if (state != SLACState::WaitForAttenChar) {
+        logger.printfln("CM_ATTEN_CHAR.RSP ignored in state %s", get_slac_state_name(state));
+        return;
+    }
+
     if (cm_atten_char_response.application_type != 0x00) {
         logger.printfln("CM_ATTEN_CHAR.RSP application_type mismatch");
         // ISO 15118-3 A.9.2.3.3 [V2G3-A09-47]
@@ -462,6 +531,11 @@ void SLAC::handle_cm_validate_request(const CM_ValidateRequest &cm_validate_requ
 // ISO 15118-3 A.9.4.2 Table A.7
 void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request)
 {
+    if (state != SLACState::WaitForSlacMatch) {
+        logger.printfln("CM_SLAC_MATCH.REQ ignored in state %s", get_slac_state_name(state));
+        return;
+    }
+
     if (memcmp(pev_mac, cm_slac_match_request.header.source_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
         logger.printfln("CM_SLAC_MATCH.REQ source_mac mismatch");
         // ISO 15118-3 A.9.3.3 [V2G3-A09-98]
