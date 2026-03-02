@@ -148,15 +148,16 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
     if (closing_scheduled)
         return;
     closing_scheduled = true;
-    if (reason.length() > 0)
+    /*if (reason.length() > 0)
         logger.printfln("Close requested for SHIP Connection: %s", reason.c_str());
     else {
         logger.printfln("Close requested for SHIP Connection");
-    }
+    }*/
     task_scheduler.cancel(timeout_task);
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    task_scheduler.cancel(hello_trust_check_timer);
     task_scheduler.cancel(protocol_handshake_timer);
 
     peer_node->state = NodeState::Disconnected;
@@ -168,7 +169,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms, const String &reaso
                 if (ws_client != nullptr) {
                     ws_client->setCtx(nullptr);
                     // Remove ourselves from the client context before closing the connection.
-                    ws_client->close_HTTPThread();
+                    ws_client->close_async();
                 }
             } else if (role == Role::Client) {
                 tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS));
@@ -571,12 +572,15 @@ void ShipConnection::state_sme_connection_data_preparation()
 
 void ShipConnection::state_sme_hello()
 {
-    // Initialize
+    // SHIP 13.4.4.1.2: Check trust status to determine if we're ready or pending
+    ConnectionHelloPhase::Type phase = hello_check_trust_status();
+
+    // Initialize our hello phase based on trust check result
     this_hello_phase = {
-        .phase = ConnectionHelloPhase::Type::Ready, // TODO: Figure out if we are ready
+        .phase = phase,
         .waiting = 0,
         .waiting_valid = false,
-        .prolongation_request = 0,
+        .prolongation_request = phase == ConnectionHelloPhase::Type::Pending, // If we're pending we expect a prolongation request to keep waiting
         .prolongation_request_valid = false,
     };
 
@@ -649,6 +653,46 @@ void ShipConnection::hello_decide_prolongation()
     }
 }
 
+ShipConnection::ConnectionHelloPhase::Type ShipConnection::hello_check_trust_status()
+{
+    // SHIP 13.4.4.1.2: Check if we trust the peer to determine hello phase
+    // If trusted, we're ready to proceed; otherwise enter pending state awaiting user approval
+    if (peer_node->trusted) {
+        eebus.trace_fmtln("Peer %s is trusted, proceeding with ready phase", peer_node->node_name().c_str());
+        return ConnectionHelloPhase::Type::Ready;
+    } else {
+        eebus.trace_fmtln("Peer %s is NOT trusted, entering pending state awaiting approval", peer_node->node_name().c_str());
+        logger.printfln("Peer %s is not trusted. Please approve the connection in the UI to proceed.", peer_node->node_name().c_str());
+        // Set peer state to AwaitingApproval so it appears in the UI for user to approve
+        peer_node->state = NodeState::AwaitingApproval;
+        eebus.update_peers_state();
+        return ConnectionHelloPhase::Type::Aborted; // TODO: For now we close the connection if the peers is not trusted. In the future maybe handle this differently.
+    }
+}
+
+void ShipConnection::hello_start_trust_check_timer()
+{
+    // Cancel any existing trust check timer
+    task_scheduler.cancel(hello_trust_check_timer);
+
+    // Schedule a periodic timer to re-check trust status while in pending state
+    hello_trust_check_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            // Re-check trust status
+            if (peer_node->trusted) {
+                eebus.trace_fmtln("Peer %s trust status changed to trusted, transitioning to ready", peer_node->node_name().c_str());
+                // Update our hello phase to ready
+                this_hello_phase.phase = ConnectionHelloPhase::Type::Ready;
+                // Transition to ready state
+                set_and_schedule_state(ShipConnectionState::SmeHelloReadyInit);
+            } else {
+                // Still not trusted, schedule another check
+                hello_start_trust_check_timer();
+            }
+        },
+        SHIP_CONNECTION_TRUST_CHECK_INTERVAL);
+}
+
 void ShipConnection::state_sme_hello_ready_init()
 {
     // 13.4.4.1.3 "Update Message"
@@ -701,6 +745,8 @@ void ShipConnection::state_sme_hello_pending_init()
     hello_set_wait_for_ready_timer(ShipConnectionState::SmeHelloPendingTimeout);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
+    // Start periodic timer to re-check trust status (user may approve via UI)
+    hello_start_trust_check_timer();
     hello_send_sme_update();
     set_state(ShipConnectionState::SmeHelloPendingListen);
 }
@@ -780,7 +826,7 @@ void ShipConnection::state_sme_hello_pending_timeout()
         hello_send_sme_update();
 
         uint64_t waiting_time = peer_hello_phase.waiting_valid ? peer_hello_phase.waiting : SHIP_CONNECTION_SME_INIT_TIMEOUT.as<uint64_t>();
-        // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough and saves a bit of calculation time
+        // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough
 
         hello_send_prolongation_reply_timer = task_scheduler.scheduleOnce(
             [this]() {
@@ -801,6 +847,7 @@ void ShipConnection::state_sme_hello_ok()
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    task_scheduler.cancel(hello_trust_check_timer);
     if (role == Role::Client) {
         set_and_schedule_state(ShipConnectionState::SmeProtocolHandshakeClientInit);
     } else {
@@ -814,6 +861,7 @@ void ShipConnection::state_sme_hello_abort()
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    task_scheduler.cancel(hello_trust_check_timer);
     ConnectionHelloType abort_msg = {
         .phase = ConnectionHelloPhase::Type::Aborted,
         .waiting = 0,

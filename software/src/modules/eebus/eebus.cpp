@@ -167,7 +167,6 @@ static void update_limit()
 #endif // MODULE_EVSE_COMMON_AVAILABLE()
 }
 
-
 // ============================================================================
 // Development testing code (only compiled when EEBUS_DEV_TEST_ENABLE is defined)
 // ============================================================================
@@ -275,6 +274,38 @@ static void run_eebus_usecase_tests()
 }
 
 #endif // EEBUS_DEV_TEST_ENABLE
+
+
+static constexpr MeterValueID mvids[] = {
+    MeterValueID::CurrentL1ImExDiff,
+    MeterValueID::CurrentL2ImExDiff,
+    MeterValueID::CurrentL3ImExDiff,
+    MeterValueID::PowerActiveL1ImExDiff,
+    MeterValueID::PowerActiveL2ImExDiff,
+    MeterValueID::PowerActiveL3ImExDiff,
+    MeterValueID::PowerActiveLSumImExDiff,
+    MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::EnergyActiveLSumExport,
+    MeterValueID::VoltageL1N,
+    MeterValueID::VoltageL2N,
+    MeterValueID::VoltageL3N,
+    MeterValueID::VoltageL1L2,
+    MeterValueID::VoltageL2L3,
+    MeterValueID::VoltageL3L1,
+    MeterValueID::FrequencyLAvg,
+};
+
+template <typename T> struct MeterValues {
+    T currents[3];
+    T powers[3];
+    T total_power;
+    T energy_import;
+    T energy_export;
+    T voltages[3];
+    T phase_voltages[3];
+    T frequency;
+};
+static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
 
 void EEBus::pre_setup()
 {
@@ -640,36 +671,6 @@ void EEBus::register_urls()
     toggle_module();
 }
 
-static constexpr MeterValueID mvids[] = {
-    MeterValueID::CurrentL1ImExDiff,
-    MeterValueID::CurrentL2ImExDiff,
-    MeterValueID::CurrentL3ImExDiff,
-    MeterValueID::PowerActiveL1ImExDiff,
-    MeterValueID::PowerActiveL2ImExDiff,
-    MeterValueID::PowerActiveL3ImExDiff,
-    MeterValueID::PowerActiveLSumImExDiff,
-    MeterValueID::EnergyActiveLSumImport,
-    MeterValueID::EnergyActiveLSumExport,
-    MeterValueID::VoltageL1N,
-    MeterValueID::VoltageL2N,
-    MeterValueID::VoltageL3N,
-    MeterValueID::VoltageL1L2,
-    MeterValueID::VoltageL2L3,
-    MeterValueID::VoltageL3L1,
-    MeterValueID::FrequencyLAvg,
-};
-
-template <typename T> struct MeterValues {
-    T currents[3];
-    T powers[3];
-    T total_power;
-    T energy_import;
-    T energy_export;
-    T voltages[3];
-    T phase_voltages[3];
-    T frequency;
-};
-static_assert(ARRAY_SIZE(mvids) == (sizeof(MeterValues<int>) / sizeof(int)));
 
 // ============================================================================
 // Event Registration
@@ -885,7 +886,7 @@ void EEBus::update_peers_state()
 
 void EEBus::update_peers_config()
 {
-    // Only save persistent peers to config (to reduce EEPROM wear)
+    // Only save persistent peers to config to reduce EEPROM wear
     config.get("peers")->removeAll();
     auto peers = ship.peer_handler.get_peers();
     for (const std::shared_ptr<ShipNode> &node : peers) {
@@ -905,6 +906,7 @@ void EEBus::update_peers_config()
         peer->get("model_model")->updateString(node->txt_model);
         peer->get("model_type")->updateString(node->txt_type);
     }
+    api.writeConfig("eebus/config", &config);
 }
 
 void EEBus::sync_persistent_peer_to_config(const std::shared_ptr<ShipNode> &node)

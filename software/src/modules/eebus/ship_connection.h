@@ -41,6 +41,7 @@
 #define SHIP_CONNECTION_SME_T_hello_prolong_thr_inc 30_s
 #define SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap 15_s
 #define SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT 10_s
+#define SHIP_CONNECTION_TRUST_CHECK_INTERVAL 10_s // Interval to re-check trust status while in pending state
 
 // Buffers
 #define SHIP_CONNECTION_MAX_JSON_SIZE (8192 * 2)
@@ -52,7 +53,7 @@
 
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
-struct ShipNode;      // Forward declaration to avoid circular dependency
+struct ShipNode;       // Forward declaration to avoid circular dependency
 
 //static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
 
@@ -60,10 +61,10 @@ class ShipConnection
 {
 public:
     enum class WebsocketMode : uint8_t {
-        HttpThreadCb = 0, // Signal that we are in a HTTP thread callback
+        HttpThreadCb = 0,    // Signal that we are in a HTTP thread callback
         HttpThreadCbSuccess, // Signal that we are in a HTTP thread callback and the operation was successful
-        HttpThreadCbFail, // Signal that we are in a HTTP thread callback and the operation failed
-        TaskScheduler, // Signal that we are in the task scheduler context. This is the default and should be set after the callback is handled.
+        HttpThreadCbFail,    // Signal that we are in a HTTP thread callback and the operation failed
+        TaskScheduler,       // Signal that we are in the task scheduler context. This is the default and should be set after the callback is handled.
     };
 
     // SHIP 13.4.1
@@ -319,6 +320,7 @@ public:
     uint64_t hello_wait_for_ready_timestamp = 0; // To calculate the waiting part in messages
     uint64_t hello_send_prolongation_request_timer = 0;
     uint64_t hello_send_prolongation_reply_timer = 0;
+    uint64_t hello_trust_check_timer = 0; // Timer to periodically re-check trust status while in pending state
 
     /// @brief Which timer expired. 1=wait_for_ready, 2=prolongation_request, 3=prolongation_reply
     uint8_t hello_timer_expiry = 0;
@@ -333,6 +335,13 @@ public:
     void hello_set_wait_for_ready_timer(ShipConnectionState target);
 
     void hello_decide_prolongation();
+
+    /// @brief Check the trust status of the peer and return the appropriate hello phase
+    /// @return ConnectionHelloPhase::Type::Ready if peer is trusted, Pending if not trusted
+    ConnectionHelloPhase::Type hello_check_trust_status();
+
+    /// @brief Start a periodic timer to re-check trust status while in pending state
+    void hello_start_trust_check_timer();
 
     //--------------------------------------------------------------------------------
     // Protocol Handshake Specific stuff

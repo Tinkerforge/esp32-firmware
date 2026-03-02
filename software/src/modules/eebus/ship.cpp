@@ -456,7 +456,7 @@ void Ship::check_mdns_results()
         for (const String &ip : ip_addresses) {
             peer_handler.update_ip_by_ski(txt_ski, ip);
         }
-        if (peer->state != NodeState::Connected) {
+        if (peer->state == NodeState::Disconnected) {
             peer->state = NodeState::Discovered;
         }
 
