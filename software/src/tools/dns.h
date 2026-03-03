@@ -44,6 +44,11 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                u8_t dns_addrtype);
 
+// Dual-stack (IPv4+IPv6) DNS resolution wrapper.
+[[gnu::nonnull]]
+void dns_gethostbyname_dualstack_lwip_ctx_async(const char *host,
+                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback);
+
 [[gnu::nonnull]]
 void dns_removehostbyaddr_safe(const ip_addr_t *addr);
 
