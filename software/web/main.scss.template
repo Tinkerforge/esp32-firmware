@@ -398,6 +398,21 @@ a:not(:hover) {
     transform: rotate(90deg);
 }
 
+.sub-page-status-transition {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s ease;
+
+    > div {
+        overflow: clip;
+        min-height: 0;
+    }
+
+    &.show {
+        grid-template-rows: 1fr;
+    }
+}
+
 @include media-breakpoint-up(lg) {
     .evse-v2-padding-fix-lg {
         padding-right: 0;

@@ -31,6 +31,7 @@ interface SubPageStatusProps {
     header?: ComponentChildren;
     headerTitleColClass?: string;
     headerChildrenColClass?: string;
+    collapsed?: boolean;
     children?: ComponentChildren;
 }
 
@@ -99,25 +100,34 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
     const hasStatus = statusProps !== null;
     const hasConfig = configProps !== null;
 
+    const isCollapsed = statusProps?.collapsed ?? false;
+
     let content: ComponentChildren;
 
     if (hasStatus && hasConfig) {
-        // New pattern: Status at top, then ConfigForm with small
+        // When collapsed: Looks like config-only (page title + save/reset in header)
+        // When expanded: PageHeader with title at top, status content slides in, then small ConfigForm with "Settings".
+        // Uses a CSS grid transition (grid-template-rows: 0fr -> 1fr) insead of bootstrap collapse. With the bootstrap
+        // collapse, the title will always jump around.
         content = (
             <>
-                <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
-                    {statusProps.header}
-                </PageHeader>
-                {statusChildren}
+                <div class={`sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
+                    <div>
+                        <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
+                            {statusProps.header}
+                        </PageHeader>
+                        {statusChildren}
+                    </div>
+                </div>
                 <ConfigForm
                     id={configProps.id}
-                    title={__("component.sub_page.settings")}
+                    title={isCollapsed ? props.title : __("component.sub_page.settings")}
                     isModified={configProps.isModified}
                     isDirty={configProps.isDirty}
                     onSave={configProps.onSave}
                     onReset={configProps.onReset}
                     onDirtyChange={configProps.onDirtyChange}
-                    small
+                    small={!isCollapsed}
                 >
                     {configChildren}
                 </ConfigForm>
@@ -131,7 +141,11 @@ const SubPage: SubPageComponent = (props: SubPageProps) => {
                 <PageHeader title={props.title} titleColClass={statusProps.headerTitleColClass} childrenColClass={statusProps.headerChildrenColClass}>
                     {statusProps.header}
                 </PageHeader>
-                {statusChildren}
+                <div class={`sub-page-status-transition ${!isCollapsed ? 'show' : ''}`}>
+                    <div>
+                        {statusChildren}
+                    </div>
+                </div>
                 {otherChildren}
             </>
         );

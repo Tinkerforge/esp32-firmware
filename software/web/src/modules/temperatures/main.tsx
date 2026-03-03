@@ -229,8 +229,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
 
         return (
             <SubPage name="temperatures" title={__("temperatures.content.temperatures")}>
-                {state.enable &&
-                    <SubPage.Status>
+                <SubPage.Status collapsed={!state.enable}>
                         {is_weather_service && !is_configured ? (
                             <FormRow>
                                 <InputText value={__("temperatures.content.not_configured")} />
@@ -344,7 +343,6 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                             </>
                         )}
                     </SubPage.Status>
-                }
                 <SubPage.Config id="temperatures_config_form"
                             isModified={false}
                             isDirty={this.isDirty()}

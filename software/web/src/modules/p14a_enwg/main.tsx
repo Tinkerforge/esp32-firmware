@@ -135,8 +135,7 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
 
         return (
             <SubPage name="p14a_enwg" title={__("p14a_enwg.content.p14a_enwg")}>
-                {state.config_enable &&
-                    <SubPage.Status>
+                <SubPage.Status collapsed={!state.config_enable}>
                         <FormRow label={__("p14a_enwg.status.status")}>
                             <InputText
                                 value={state.p14a_state?.active ? __("p14a_enwg.status.active") : __("p14a_enwg.status.inactive")}
@@ -150,7 +149,6 @@ export class P14aEnwg extends ConfigComponent<'p14a_enwg/config', {}, P14aEnwgSt
                             </FormRow>
                         : undefined}
                     </SubPage.Status>
-                }
 
                 <SubPage.Config id="p14a_enwg_config_form"
                                 isModified={false}

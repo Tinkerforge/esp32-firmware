@@ -427,8 +427,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
 
         return (
             <SubPage name="day_ahead_prices" title={__("day_ahead_prices.content.day_ahead_prices")}>
-                {dap.config_enable &&
-                    <SubPage.Status>
+                <SubPage.Status collapsed={!dap.config_enable}>
                         <div class="pb-3">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
@@ -486,7 +485,6 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             </div>
                         </FormRow>
                     </SubPage.Status>
-                }
                 <SubPage.Config
                     id="day_ahead_prices_config_form"
                     isModified={false}

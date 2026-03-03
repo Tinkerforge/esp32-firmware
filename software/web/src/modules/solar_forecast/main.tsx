@@ -400,8 +400,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
         return (
             <SubPage name="solar_forecast" title={__("solar_forecast.content.solar_forecast")}>
-                {state.config_enable &&
-                    <SubPage.Status>
+                <SubPage.Status collapsed={!state.config_enable}>
                         <div class="pb-3">
                             <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                                 <UplotLoader
@@ -465,7 +464,6 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             </div>
                         </FormRow>
                     </SubPage.Status>
-                }
                 <SubPage.Config
                     id="plane_configs_config_form"
                     isModified={false}

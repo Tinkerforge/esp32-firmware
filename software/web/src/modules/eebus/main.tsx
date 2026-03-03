@@ -255,8 +255,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
         return (
             <SubPage name="eebus" title="EEBUS">
-                {state.config_enable &&
-                    <SubPage.Status>
+                <SubPage.Status collapsed={!state.config_enable}>
                         <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")}
                                  help={__("eebus.content.ski_help")}>
                             <InputText value={ski}/>
@@ -843,7 +842,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             />
                         </CollapsedSection>
                     </SubPage.Status>
-                }
 
                 <SubPage.Config id="eebus_config_form" isModified={this.isModified()} isDirty={this.isDirty()}
                                 onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
