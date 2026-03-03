@@ -161,10 +161,47 @@ IPAddress tf_sockaddr_storage2IPAddress(struct sockaddr_storage *addr, socklen_t
 IPAddress tf_local_address_of_sockfd(int sockfd);
 IPAddress tf_peer_address_of_sockfd(int sockfd);
 
+// IPv4 subnet functions
 bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check);
 bool is_valid_subnet_mask(const IPAddress &subnet);
 
 [[gnu::const]] extern uint8_t tf_ip4addr_mask2cidr(const ip4_addr_t subnet);
 [[gnu::const]] extern ip4_addr_t tf_ip4addr_cidr2mask(uint32_t cidr);
+
+// IPv6 prefix/subnet functions
+
+// Check if two IPv6 addresses share the same prefix of the given length (0-128).
+bool is_in_subnet_ip6(const ip6_addr_t &addr_a, const ip6_addr_t &addr_b, uint8_t prefix_len);
+
+// Check if an IPv6 prefix length is valid (0-128).
+[[gnu::const]] extern bool is_valid_ip6_prefix_len(uint8_t prefix_len);
+
+// Convert an IPv6 prefix length (0-128) to a 128-bit mask stored in an ip6_addr_t.
+[[gnu::const]] extern ip6_addr_t tf_ip6addr_cidr2mask(uint8_t prefix_len);
+
+// Convert a contiguous 128-bit mask in an ip6_addr_t to a prefix length (0-128).
+// Returns 0 if the mask is not a valid contiguous prefix mask.
+extern uint8_t tf_ip6addr_mask2cidr(const ip6_addr_t &mask);
+
+// Dual-stack helpers
+
+// Try to parse a string as an IPv4 or IPv6 address.
+// Returns the IP type (IPv4 or IPv6) if parsing succeeded.
+IPType tf_parse_ip_address(const char *str, ip_addr_t *out);
+
+// Convert an lwIP ip_addr_t to an Arduino IPAddress. Handles both IPv4 and IPv6.
+IPAddress tf_ip_addr_to_IPAddress(const ip_addr_t *addr);
+
+// Check whether an IPAddress is IPv6.
+extern inline bool tf_ip_is_v6(const IPAddress &addr)
+{
+    return addr.type() == IPv6;
+}
+
+// Check whether an IPAddress is IPv4.
+extern inline bool tf_ip_is_v4(const IPAddress &addr)
+{
+    return addr.type() == IPv4;
+}
 
 void poke_localhost();
