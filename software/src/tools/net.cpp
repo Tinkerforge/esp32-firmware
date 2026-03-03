@@ -117,6 +117,137 @@ ip4_addr_t tf_ip4addr_cidr2mask(uint32_t cidr)
     return mask;
 }
 
+// IPv6 prefix/subnet functions
+
+bool is_in_subnet_ip6(const ip6_addr_t &addr_a, const ip6_addr_t &addr_b, uint8_t prefix_len)
+{
+    if (prefix_len > 128) {
+        return false;
+    }
+
+    // Compare full 32-bit words first
+    uint8_t full_words = prefix_len / 32;
+    for (uint8_t i = 0; i < full_words; i++) {
+        if (addr_a.addr[i] != addr_b.addr[i]) {
+            return false;
+        }
+    }
+
+    // Compare remaining bits in the partial word
+    uint8_t remaining_bits = prefix_len % 32;
+    if (remaining_bits > 0 && full_words < 4) {
+        uint32_t mask_word = htonl(~0ul << (32 - remaining_bits));
+        if ((addr_a.addr[full_words] & mask_word) != (addr_b.addr[full_words] & mask_word)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool is_valid_ip6_prefix_len(uint8_t prefix_len)
+{
+    return prefix_len <= 128;
+}
+
+ip6_addr_t tf_ip6addr_cidr2mask(uint8_t prefix_len)
+{
+    ip6_addr_t mask;
+
+    if (prefix_len > 128) {
+        prefix_len = 128;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (prefix_len >= 32) {
+            mask.addr[i] = ~0ul;
+            prefix_len -= 32;
+        } else if (prefix_len > 0) {
+            mask.addr[i] = htonl(~0ul << (32 - prefix_len));
+            prefix_len = 0;
+        } else {
+            mask.addr[i] = 0;
+        }
+    }
+
+    return mask;
+}
+
+uint8_t tf_ip6addr_mask2cidr(const ip6_addr_t &mask)
+{
+    uint8_t cidr = 0;
+
+    for (int i = 0; i < 4; i++) {
+        uint32_t w = ntohl(mask.addr[i]);
+
+        if (w == 0xFFFFFFFF) {
+            cidr += 32;
+            continue;
+        }
+
+        // Count leading ones in this word
+        if (w == 0) {
+            break;
+        }
+
+        // Check that the mask is contiguous: after the first zero, all bits must be zero
+        uint32_t inverted = ~w;
+        if (((inverted + 1) & inverted) != 0) {
+            return 0; // Not a valid contiguous prefix mask
+        }
+
+        cidr += static_cast<uint8_t>(__builtin_clz(~w));
+
+        // All remaining words must be zero for a valid contiguous mask
+        for (int j = i + 1; j < 4; j++) {
+            if (mask.addr[j] != 0) {
+                return 0; // Not a valid contiguous prefix mask
+            }
+        }
+        break;
+    }
+
+    return cidr;
+}
+
+IPType tf_parse_ip_address(const char *str, ip_addr_t *out)
+{
+
+    ip_addr_t tmp;
+    ip_addr_t *dest = (out != nullptr) ? out : &tmp;
+
+    // Try IPv4 first (most common case)
+    if (ip4addr_aton(str, &dest->u_addr.ip4)) {
+        dest->type = IPADDR_TYPE_V4;
+        return IPv4;
+    }
+
+#if CONFIG_LWIP_IPV6
+    // Try IPv6
+    if (ip6addr_aton(str, &dest->u_addr.ip6)) {
+        dest->type = IPADDR_TYPE_V6;
+        return IPv6;
+    }
+#endif
+
+    return IPv4;
+}
+
+IPAddress tf_ip_addr_to_IPAddress(const ip_addr_t *addr)
+{
+    if (addr == nullptr) {
+        return IPAddress();
+    }
+
+#if CONFIG_LWIP_IPV6
+    if (addr->type == IPADDR_TYPE_V6) {
+        return IPAddress(IPType::IPv6, reinterpret_cast<const uint8_t *>(addr->u_addr.ip6.addr));
+    }
+#endif
+
+    return IPAddress(addr->u_addr.ip4.addr);
+}
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
 
