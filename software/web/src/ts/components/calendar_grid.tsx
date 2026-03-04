@@ -28,17 +28,17 @@ const CALENDAR_TOTAL_SLOTS = CALENDAR_DAYS * CALENDAR_SLOTS_PER_DAY;
 function price_to_color(price: number): string {
     if (price === 0) return "var(--bs-secondary-bg)";
     if (price < 0) {
-        // Negative prices: light blue -> deep blue, mapped over -5000..0 (-5..0 ct/kWh)
-        const p = Math.min(Math.max(-price, 0), 5000);
-        const ratio = p / 5000;
+        // Negative prices: light blue -> deep blue, mapped over -500..0 (-5..0 ct/kWh)
+        const p = Math.min(Math.max(-price, 0), 500);
+        const ratio = p / 500;
         const r = Math.round((1 - ratio) * 100);
         const g = Math.round((1 - ratio) * 160 + ratio * 80);
         const b = Math.round((1 - ratio) * 220 + ratio * 255);
         return `rgb(${r},${g},${b})`;
     }
-    // Positive prices: green -> yellow -> red, mapped over 0..50000 (0..50 ct/kWh)
-    const p = Math.min(Math.max(price, 0), 50000);
-    const ratio = p / 50000;
+    // Positive prices: green -> yellow -> red, mapped over 0..5000 (0..50 ct/kWh)
+    const p = Math.min(Math.max(price, 0), 5000);
+    const ratio = p / 5000;
     if (ratio < 0.5) {
         // green to yellow
         const r = Math.round(ratio * 2 * 255);
@@ -387,7 +387,7 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                                             style={`background: ${bg}; padding: 0; height: 20px; min-width: 4px; border: 1px solid var(--bs-border-color);${ro ? "" : " cursor: crosshair;"}`
                                                    + box_shadow
                                                    + (selected ? " opacity: 0.85;" : "")}
-                                            title={`${this.get_day_name(day)} ${hour_str}:${min_str} - ${(price / 1000).toFixed(2)} ${this.props.unit}`}
+                                            title={`${this.get_day_name(day)} ${hour_str}:${min_str} - ${(price / 100).toFixed(2)} ${this.props.unit}`}
                                             onMouseDown={ro ? undefined : (e: MouseEvent) => this.on_cell_mouse_down(day, slot, e)}
                                             onMouseEnter={ro ? undefined : () => this.on_cell_mouse_enter(day, slot)}
                                             onTouchStart={ro ? undefined : (e: TouchEvent) => this.on_cell_touch_start(day, slot, e)}
@@ -453,10 +453,10 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                 </FormRow>}
                 {/* Legend */}
                 <div class="mt-2 d-flex align-items-center" style="font-size: 0.75em; gap: 6px; flex-wrap: wrap;">
-                    {[-5000, 0, 5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000].map((price) =>
+                    {[-500, 0, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000].map((price) =>
                         <div key={price} class="d-flex align-items-center" style="gap: 2px;">
                             <div style={`width: 14px; height: 12px; background: ${price_to_color(price)}; border: 1px solid var(--bs-border-color);`} />
-                            <span>{price / 1000}</span>
+                            <span>{price / 100}</span>
                         </div>
                     )}
                     <span>{this.props.unit}</span>
@@ -478,7 +478,7 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                             ? `${this.get_day_name(day_min)} ${fmt_time(slot_min)}-${end_time}`
                             : `${this.get_day_name(day_min)} ${fmt_time(slot_min)} - ${this.get_day_name(day_max)} ${end_time}`;
                         const sorted = Array.from(unique_prices).sort((a, b) => a - b);
-                        const price_str = sorted.map((p) => (p / 1000).toFixed(2)).join(", ");
+                        const price_str = sorted.map((p) => (p / 100).toFixed(2)).join(", ");
                         return (
                             <div class="mt-1" style="font-size: 0.8em;">
                                 <strong>{this.props.selection_label}:</strong> {range}: {price_str} {this.props.unit}

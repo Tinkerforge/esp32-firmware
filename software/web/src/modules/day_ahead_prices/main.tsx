@@ -184,7 +184,7 @@ function get_calendar_price_for_timestamp(timestamp_seconds: number): number {
     const slot = date.getHours() * 4 + Math.floor(date.getMinutes() / 15);
     const index = wday * 96 + slot;
     if (index >= 0 && index < calendar.prices.length) {
-        return calendar.prices[index];
+        return calendar.prices[index] * 10; // Convert ct/100 to ct/1000
     }
     return 0;
 }

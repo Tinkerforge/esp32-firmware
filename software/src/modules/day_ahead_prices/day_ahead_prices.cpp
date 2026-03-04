@@ -169,7 +169,7 @@ void DayAheadPrices::pre_setup()
 
     // Calendar: 7 days (Mon-Sun) x 96 quarter-hours = 672 price slots
     calendar = ConfigRoot{Config::Object({
-        {"prices", Config::Array({}, Config::get_prototype_int32_0(), DAY_AHEAD_PRICE_CALENDAR_SLOTS, DAY_AHEAD_PRICE_CALENDAR_SLOTS)}
+        {"prices", Config::Array({}, Config::get_prototype_int16_0(), DAY_AHEAD_PRICE_CALENDAR_SLOTS, DAY_AHEAD_PRICE_CALENDAR_SLOTS)}
     }), [this](Config &update, ConfigSource source) -> String {
         // Reset cached weekday so update_calendar() regenerates prices
         calendar_last_generated_wday = -1;
@@ -1392,8 +1392,9 @@ void DayAheadPrices::update_calendar()
     int8_t tomorrow_wday = (wday + 1) % 7;
     int32_t cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY * 2];
     for (size_t slot = 0; slot < DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY; slot++) {
-        cal_today_tomorrow[slot] = cal_prices->get(wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt();
-        cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot] = cal_prices->get(tomorrow_wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt();
+        // Calendar prices are stored in ct/100, convert to ct/1000 for combining with DAP prices
+        cal_today_tomorrow[slot] = cal_prices->get(wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
+        cal_today_tomorrow[DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot] = cal_prices->get(tomorrow_wday * DAY_AHEAD_PRICE_CALENDAR_SLOTS_PER_DAY + slot)->asInt() * 10;
     }
 
     auto p = prices.get("prices");
