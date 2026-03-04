@@ -340,12 +340,24 @@ static const size_t SCRATCH_BUFSIZE = 2048;
 [[gnu::noinline]]
 esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, const WebServerHandler *handler)
 {
-    size_t remaining = req->content_len;
-    size_t offset = 0;
-    uint8_t scratch_buf[SCRATCH_BUFSIZE];
+    struct {
+        const WebServerHandler *handler;
+        WebServerRequest *request;
 
-    while (remaining > 0) {
-        const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(scratch_buf), std::min(remaining, SCRATCH_BUFSIZE));
+        size_t remaining;
+        size_t offset;
+        size_t received;
+        uint8_t scratch_buf[SCRATCH_BUFSIZE];
+    } closure;
+
+    closure.handler = handler;
+    closure.request = request;
+
+    closure.remaining = req->content_len;
+    closure.offset    = 0;
+
+    while (closure.remaining > 0) {
+        const int recv_err = httpd_req_recv(req, reinterpret_cast<char *>(closure.scratch_buf), std::min(closure.remaining, SCRATCH_BUFSIZE));
         // Retry if timeout occurred
         if (recv_err == HTTPD_SOCK_ERR_TIMEOUT) {
             continue;
@@ -355,8 +367,8 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
             int error_code = errno;
 
             if (handler->callbackInMainThread) {
-                const auto await_result = task_scheduler.await([handler, request, error_code]() {
-                    handler->uploadErrorCallback(*request, error_code);
+                const auto await_result = task_scheduler.await([&closure, error_code]() {
+                    closure.handler->uploadErrorCallback(*closure.request, error_code);
                 });
                 assert(await_result == TaskScheduler::AwaitResult::Done);
             }
@@ -367,23 +379,25 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
             return ESP_FAIL;
         }
 
-        const size_t received = static_cast<size_t>(recv_err);
-        remaining -= received;
+        closure.received = static_cast<size_t>(recv_err);
+        closure.remaining -= closure.received;
+
         bool result = false;
+
         if (handler->callbackInMainThread) {
-            const auto await_result = task_scheduler.await([handler, request, offset, &scratch_buf, received, remaining, &result]() {
-                result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);
+            const auto await_result = task_scheduler.await([&closure, &result]() {
+                result = closure.handler->uploadCallback(*closure.request, "not implemented", closure.offset, closure.scratch_buf, closure.received, closure.remaining);
             });
             assert(await_result == TaskScheduler::AwaitResult::Done);
         } else {
-            result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);
+            result = handler->uploadCallback(*request, "not implemented", closure.offset, closure.scratch_buf, closure.received, closure.remaining);
         }
 
         if (!result) {
             return ESP_FAIL;
         }
 
-        offset += received;
+        closure.offset += closure.received;
     }
 
     return ESP_OK;
@@ -474,18 +488,25 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
                 }
                 return ESP_FAIL;
             } else {
-                // This is really a request were there are 0 bytes to receive. Call the upload handler once.
-                bool result = false;
+                // This is really a request with 0 bytes to receive. Call the upload handler once.
+                struct {
+                    WebServerRequest *req;
+                    bool result;
+                } rq;
+
+                rq.result = false;
+
                 if (handler->callbackInMainThread) {
-                    const auto await_result = task_scheduler.await([handler, &request, &result]() {
-                        result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
+                    rq.req = &request;
+                    const auto await_result = task_scheduler.await([handler, &rq]() {
+                        rq.result = handler->uploadCallback(*rq.req, "not implemented", 0, nullptr, 0, 0);
                     });
                     assert(await_result == TaskScheduler::AwaitResult::Done);
                 } else {
-                    result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
+                    rq.result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
                 }
 
-                if (!result) {
+                if (!rq.result) {
                     return ESP_FAIL;
                 }
             }
