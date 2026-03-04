@@ -43,6 +43,7 @@
 #include "event_log_prefix.h"
 #include "tools.h"
 #include "tools/dns.h"
+#include "tools/net.h"
 
 #include "gcc_warnings.h"
 
@@ -2241,8 +2242,15 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
 int RemoteAccess::start_ping() {
     const char *host = config.get("relay_host")->asEphemeralCStr();
 
-    dns_gethostbyname_addrtype_lwip_ctx_async(host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
-        PingArgs *ping_args = new PingArgs();
+    dns_gethostbyname_addrtype_lwip_ctx_async(
+        host,
+        [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+            if (data->err != ERR_OK || data->addr_ptr == nullptr) {
+                logger.printfln("Failed to resolve '%s' for ping: %s", host, data->addr_ptr == nullptr ? "Unknown host" : "DNS error");
+                return;
+            }
+
+            PingArgs *ping_args = new PingArgs();
 
         esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
         ping_config.target_addr = data->addr;
