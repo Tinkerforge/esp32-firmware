@@ -67,7 +67,7 @@ private:
     struct ap_runtime {
         uint32_t scan_start_time_s; // This overflows after an uptime of 68 years, which seems unlikely enough.
 
-        ip4_addr_t gateway;
+        ip_addr_t gateway;
         uint8_t subnet_cidr;
 
         uint8_t ssid_offset;
@@ -99,10 +99,10 @@ private:
         micros_t last_connected;
         eap_runtime *runtime_eap;
 
-        ip4_addr_t ip;
-        ip4_addr_t gateway;
-        ip4_addr_t dns;
-        ip4_addr_t dns2;
+        ip_addr_t ip;
+        ip_addr_t gateway;
+        ip_addr_t dns;
+        ip_addr_t dns2;
 
         uint8_t bssid[6];
 
