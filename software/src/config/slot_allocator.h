@@ -91,9 +91,10 @@ template<> struct SlotConfig<Config::ConfArray> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+// Use 16 blocks per superblock because the usage spread is so large.
 template<> struct SlotConfig<Config::ConfObject> {
     static constexpr const size_t slots_per_superblock  = 2048;
-    static constexpr const size_t slots_per_block       =  256;
+    static constexpr const size_t slots_per_block       =  128;
     static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
 
     static_assert(slots_per_superblock % slots_per_block == 0);
@@ -118,9 +119,11 @@ template<> struct SlotConfig<Config::ConfUint53> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+// The charge management uses 320 Config::Uptime when 64 chargers are configured.
+// Use 12 blocks per superblock because the usage spread is so large.
 template<> struct SlotConfig<Config::ConfInt52> {
-    static constexpr const size_t slots_per_superblock  = 128;
-    static constexpr const size_t slots_per_block       =  16;
+    static constexpr const size_t slots_per_superblock  = 384;
+    static constexpr const size_t slots_per_block       =  32;
     static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;
 
     static_assert(slots_per_superblock % slots_per_block == 0);
