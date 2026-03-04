@@ -232,6 +232,16 @@ IPType tf_parse_ip_address(const char *str, ip_addr_t *out)
 
     return IPv4;
 }
+uint8_t tf_ipaddr_mask2cidr(const ip_addr_t &mask)
+{
+    if (mask.type == IPADDR_TYPE_V4) {
+        return tf_ip4addr_mask2cidr(mask.u_addr.ip4);
+    }
+    if (mask.type == IPADDR_TYPE_V6) {
+        return tf_ip6addr_mask2cidr(mask.u_addr.ip6);
+    }
+    return 0;
+}
 
 IPAddress tf_ip_addr_to_IPAddress(const ip_addr_t *addr)
 {
@@ -249,11 +259,11 @@ IPAddress tf_ip_addr_to_IPAddress(const ip_addr_t *addr)
 }
 
 #if defined(__GNUC__)
-    #pragma GCC diagnostic push
+#pragma GCC diagnostic push
 
-    // IPADDR_LOOPBACK expands to an old-style cast that is also useless
-    #pragma GCC diagnostic ignored "-Wold-style-cast"
-    #pragma GCC diagnostic ignored "-Wuseless-cast"
+// IPADDR_LOOPBACK expands to an old-style cast that is also useless
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
 static esp_err_t poke_localhost_fn(void * /*ctx*/)
@@ -273,7 +283,7 @@ static esp_err_t poke_localhost_fn(void * /*ctx*/)
             dst_addr.u_addr.ip4.addr = htonl(IPADDR_LOOPBACK);
 
             errno = 0;
-            err_t err = udp_sendto(l_udp_pcb,p, &dst_addr, 9);
+            err_t err = udp_sendto(l_udp_pcb, p, &dst_addr, 9);
             if (err != ERR_OK) {
                 logger.printfln("udp_sendto failed: %i | %s (%i)", err, strerror(errno), errno);
             }
@@ -286,7 +296,7 @@ static esp_err_t poke_localhost_fn(void * /*ctx*/)
 }
 
 #if defined(__GNUC__)
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 void poke_localhost()
