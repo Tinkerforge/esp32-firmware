@@ -189,6 +189,10 @@ extern uint8_t tf_ip6addr_mask2cidr(const ip6_addr_t &mask);
 // Returns the IP type (IPv4 or IPv6) if parsing succeeded.
 IPType tf_parse_ip_address(const char *str, ip_addr_t *out);
 
+// Convert a contiguous ipv4 or ipv6 mask in an ip_addr_t to a prefix length (0-128).
+// Returns 0 if the mask is not a valid contiguous prefix mask.
+extern uint8_t tf_ipaddr_mask2cidr(const ip_addr_t &mask);
+
 // Convert an lwIP ip_addr_t to an Arduino IPAddress. Handles both IPv4 and IPv6.
 IPAddress tf_ip_addr_to_IPAddress(const ip_addr_t *addr);
 
