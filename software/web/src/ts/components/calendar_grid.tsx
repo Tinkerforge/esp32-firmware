@@ -20,6 +20,7 @@
 import { Component, Fragment, h } from "preact";
 import { Button } from "react-bootstrap";
 import { FormRow } from "./form_row";
+import { InputFloat } from "./input_float";
 
 const CALENDAR_SLOTS_PER_DAY = 96;
 const CALENDAR_DAYS = 7;
@@ -73,7 +74,7 @@ interface CalendarGridState {
     sel_end_slot: number;
     selecting: boolean;
     has_selection: boolean;
-    price_input: string;
+    price_input: number;
     is_mobile: boolean;
 }
 
@@ -88,7 +89,7 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
             sel_end_slot: -1,
             selecting: false,
             has_selection: false,
-            price_input: "",
+            price_input: 0,
             is_mobile: window.innerWidth < (props.split_below || 768),
         };
     }
@@ -294,11 +295,7 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
     }
 
     apply_price() {
-        const val = parseFloat(this.state.price_input.replace(",", "."));
-        if (isNaN(val)) return;
-        // Convert ct/kWh to ct/1000 per kWh
-        const price_internal = Math.round(val * 1000);
-        this.set_selected_price(price_internal);
+        this.set_selected_price(this.state.price_input);
     }
 
     set_selected_price(price: number) {
@@ -437,18 +434,22 @@ export class CalendarGrid extends Component<CalendarGridProps, CalendarGridState
                     : grids
                 }
                 {!ro && <FormRow label={this.props.label} label_muted={this.props.label_muted} class="mt-3">
-                    <div class="input-group">
-                        <input
-                            type="text"
-                            class="form-control"
-                            value={this.state.price_input}
-                            onInput={(e) => this.setState({price_input: (e.target as HTMLInputElement).value})}
-                            onKeyDown={(e) => { if (e.key === "Enter") this.apply_price(); }}
-                        />
-                        <span class="input-group-text">{this.props.unit}</span>
-                        <Button variant="primary" disabled={!this.state.has_selection} onClick={() => this.apply_price()}>
-                            {this.props.apply_label}
-                        </Button>
+                    <div class="row g-2">
+                        <div class="col">
+                            <InputFloat
+                                value={this.state.price_input}
+                                onValue={(v) => this.setState({price_input: v})}
+                                digits={2}
+                                min={-32768}
+                                max={32767}
+                                unit={this.props.unit}
+                            />
+                        </div>
+                        <div class="col-auto">
+                            <Button variant="primary" disabled={!this.state.has_selection} onClick={() => this.apply_price()}>
+                                {this.props.apply_label}
+                            </Button>
+                        </div>
                     </div>
                 </FormRow>}
                 {/* Legend */}
