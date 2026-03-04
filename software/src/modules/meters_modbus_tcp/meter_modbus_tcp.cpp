@@ -2390,7 +2390,7 @@ void MeterModbusTCP::parse_next()
             solaredge_inverter.battery_1_state_of_charge = value;
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2AverageTemperature) {
-            value = nan_safe_sum(solaredge_inverter.battery_1_temperature, value);
+            value = nan_safe_avg(solaredge_inverter.battery_1_temperature, value);
         }
         else if (register_start_address == SolaredgeInverterBatteryAddress::Battery2InstantaneousVoltage) {
             value = nan_safe_avg(solaredge_inverter.battery_1_voltage, value);
