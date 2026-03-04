@@ -355,10 +355,10 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
             int error_code = errno;
 
             if (handler->callbackInMainThread) {
-                auto result = task_scheduler.await([handler, request, error_code](){handler->uploadErrorCallback(*request, error_code);});
-                if (result != TaskScheduler::AwaitResult::Done) {
-                    return ESP_FAIL;
-                }
+                const auto await_result = task_scheduler.await([handler, request, error_code]() {
+                    handler->uploadErrorCallback(*request, error_code);
+                });
+                assert(await_result == TaskScheduler::AwaitResult::Done);
             }
             else {
                 handler->uploadErrorCallback(*request, error_code);
@@ -371,10 +371,10 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
         remaining -= received;
         bool result = false;
         if (handler->callbackInMainThread) {
-            auto await_result = task_scheduler.await([handler, request, offset, &scratch_buf, received, remaining, &result]{result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);});
-            if (await_result != TaskScheduler::AwaitResult::Done) {
-                return ESP_FAIL;
-            }
+            const auto await_result = task_scheduler.await([handler, request, offset, &scratch_buf, received, remaining, &result]() {
+                result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);
+            });
+            assert(await_result == TaskScheduler::AwaitResult::Done);
         } else {
             result = handler->uploadCallback(*request, "not implemented", offset, scratch_buf, received, remaining);
         }
@@ -415,10 +415,10 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
         const IPAddress local_address = request.getLocalAddress();
 
-        // If this times out, it will probably unpredictably overwrite something on the stack.
-        task_scheduler.await([&local_address, &auth_by_remote_access]() {
+        const auto await_result = task_scheduler.await([&local_address, &auth_by_remote_access]() {
             auth_by_remote_access = remote_access.is_connected_local_ip(local_address);
         });
+        assert(await_result == TaskScheduler::AwaitResult::Done);
 #endif
 
         if (!auth_by_remote_access) {
@@ -464,7 +464,10 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
             if (request.header("Content-Length").isEmpty()) {
                 // Probably a chunked encoding. Not supported.
                 if (handler->callbackInMainThread) {
-                    task_scheduler.await([handler, &request](){handler->uploadErrorCallback(request, EBADMSG);});
+                    const auto await_result = task_scheduler.await([handler, &request]() {
+                        handler->uploadErrorCallback(request, EBADMSG);
+                    });
+                    assert(await_result == TaskScheduler::AwaitResult::Done);
                 }
                 else {
                     handler->uploadErrorCallback(request, EBADMSG);
@@ -474,7 +477,10 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
                 // This is really a request were there are 0 bytes to receive. Call the upload handler once.
                 bool result = false;
                 if (handler->callbackInMainThread) {
-                    task_scheduler.await([handler, &request, &result]{result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);});
+                    const auto await_result = task_scheduler.await([handler, &request, &result]() {
+                        result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
+                    });
+                    assert(await_result == TaskScheduler::AwaitResult::Done);
                 } else {
                     result = handler->uploadCallback(request, "not implemented", 0, nullptr, 0, 0);
                 }
@@ -502,10 +508,11 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
             .error = ESP_ERR_NOT_FINISHED,
         };
 
-        task_scheduler.await([handler, &rq]() {
+        const auto await_result = task_scheduler.await([handler, &rq]() {
             const WebServerRequestReturnProtect ret = handler->callback(*rq.req);
             rq.error = ret.error;
         });
+        assert(await_result == TaskScheduler::AwaitResult::Done);
 
         return rq.error;
     } else {
