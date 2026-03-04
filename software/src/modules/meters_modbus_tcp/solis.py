@@ -64,7 +64,7 @@ specs = [
             },
             {
                 'name': 'Reactive power [var]',
-                'value_id': 'PowerReactiveLSumIndCapSum',  # FIXME: sign?
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: sign?
                 'start_address': 33081,
                 'value_type': 'S32BE',
             },
@@ -262,6 +262,7 @@ specs = [
                 'value_id': 'VALUE_ID_META',
                 'start_address': 33134,
                 'value_type': 'S16',  # value is acutually unsigned
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Battery current direction',
