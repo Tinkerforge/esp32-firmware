@@ -16,6 +16,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
 #include "temperatures.h"
 
 #include <math.h>
@@ -36,8 +37,8 @@ void Temperatures::pre_setup()
         {"enable", Config::Bool(false)},
         {"source", Config::Enum(TemperatureSource::WeatherService)},
         {"api_url", Config::Str(OPTIONS_TEMPERATURES_API_URL(), 0, 64)},
-        {"lat", Config::Int32(0)}, // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
-        {"lon", Config::Int32(0)}, // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
+        {"lat", Config::Int(0, -900000, 900000)}, // Latitude in 1/10000 degrees (e.g., 519035 = 51.9035°)
+        {"long", Config::Int(0, -1800000, 1800000)}, // Longitude in 1/10000 degrees (e.g., 86720 = 8.6720°)
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &api_url = update.get("api_url")->asString();
@@ -51,7 +52,7 @@ void Temperatures::pre_setup()
             (update.get("source")->asEnum<TemperatureSource>() != config.get("source")->asEnum<TemperatureSource>()) ||
             (update.get("api_url")->asString()                 != config.get("api_url")->asString()) ||
             (update.get("lat")->asInt()                        != config.get("lat")->asInt()) ||
-            (update.get("lon")->asInt()                        != config.get("lon")->asInt()) ||
+            (update.get("long")->asInt()                       != config.get("long")->asInt()) ||
             (update.get("cert_id")->asInt()                    != config.get("cert_id")->asInt())) {
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
@@ -114,7 +115,7 @@ void Temperatures::setup()
 
 void Temperatures::register_urls()
 {
-    api.addPersistentConfig("temperatures/config", &config);
+    api.addPersistentConfig("temperatures/config", &config, {}, {"lat", "long"});
     api.addState("temperatures/state",             &state);
     api.addState("temperatures/temperatures",      &temperatures);
 
@@ -228,7 +229,7 @@ void Temperatures::update()
     }
 
     // Check if lat/lon are configured (non-zero)
-    if (config.get("lat")->asInt() == 0 && config.get("lon")->asInt() == 0) {
+    if (config.get("lat")->asInt() == 0 && config.get("long")->asInt() == 0) {
         logger.printfln("Latitude and longitude not configured");
         download_state = TEMPERATURES_DOWNLOAD_STATE_ERROR;
         state.get("next_check")->updateUint(rtc.timestamp_minutes() + (RETRY_INTERVAL / 1_min).as<uint32_t>());
@@ -533,7 +534,7 @@ String Temperatures::get_api_url_with_path()
     // Convert lat/lon from 1/10000 degrees to decimal string
     // e.g., 519035 -> 51.9035
     const int32_t lat = config.get("lat")->asInt();
-    const int32_t lon = config.get("lon")->asInt();
+    const int32_t lon = config.get("long")->asInt();
 
     char lat_str[16];
     snprintf(lat_str, sizeof(lat_str), "%s%ld.%04ld", lat < 0 ? "-" : "", labs(lat) / 10000, labs(lat) % 10000);

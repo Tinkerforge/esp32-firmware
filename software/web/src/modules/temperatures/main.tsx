@@ -221,7 +221,7 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
             return <SubPage name="temperatures" />;
         }
 
-        const is_configured = state.lat !== 0 || state.lon !== 0;
+        const is_configured = (state.lat !== 0) || (state.long !== 0);
         const is_weather_service = state.source == TemperatureSource.WeatherService;
 
         const temps = state.temperatures;
@@ -385,8 +385,8 @@ export class Temperatures extends ConfigComponent<"temperatures/config", {}, Tem
                         <InputFloat
                             required
                             unit="°"
-                            value={state.lon}
-                            onValue={(v) => this.setState({lon: v})}
+                            value={state.long}
+                            onValue={(v) => this.setState({long: v})}
                             digits={4}
                             min={-1800000}
                             max={1800000}

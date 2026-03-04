@@ -3,7 +3,7 @@ export interface config {
     source: number;
     api_url: string;
     lat: number;
-    lon: number;
+    long: number;
     cert_id: number;
 }
 
