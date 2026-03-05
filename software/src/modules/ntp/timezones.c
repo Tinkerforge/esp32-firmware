@@ -1,5 +1,5 @@
 /*
-2025c;2025-12-17T13:52:52.354905+00:00
+2026a;2026-03-05T14:20:18.978706+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -1016,7 +1016,7 @@ static const TableValue Europe_vals[] = {
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
-    {true, {"EET-2EEST,M3.5.0,M10.5.0/3"}},
+    {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"IST-1GMT0,M10.5.0,M3.5.0/1"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
@@ -1056,7 +1056,7 @@ static const TableValue Europe_vals[] = {
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
-    {true, {"EET-2EEST,M3.5.0,M10.5.0/3"}},
+    {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"<+04>-4"}},
     {true, {"EET-2EEST,M3.5.0/3,M10.5.0/4"}},
     {true, {"CET-1CEST,M3.5.0,M10.5.0/3"}},
