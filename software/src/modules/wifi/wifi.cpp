@@ -51,9 +51,9 @@ void Wifi::pre_setup()
         {"hide_ssid", Config::Bool(false)},
         {"passphrase", Config::Str("", 8, 64)}, // Blank passphrase will be replaced with default passphrase in setup. | FIXME: check if there are only ASCII characters or hex digits (for PSK) here.
         {"channel", Config::Uint(0, 0, 13)},
-        {"ip", Config::Str("10.0.0.1", 7, 15)},
-        {"gateway", Config::Str("10.0.0.1", 7, 15)},
-        {"subnet", Config::Str("255.255.255.0", 7, 15)}
+        {"ip", Config::Str("10.0.0.1", 7, 45)},
+        {"gateway", Config::Str("10.0.0.1", 7, 45)},
+        {"subnet", Config::Str("255.255.255.0", 7, 45)}
     }), [this](Config &update, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr;
         if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
@@ -63,20 +63,23 @@ void Wifi::pre_setup()
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
         if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+            return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g. 255.255.255.0) or IPv6 (e.g. ffff:ffff:ffff:ffff::)";
 
-        if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+        // TODO: Add IPv6 validation (prefix length, subnet checks, etc.)
+        if (tf_ip_is_v4(ip_addr)) {
+            if (!is_valid_subnet_mask(subnet_mask))
+                return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
-        uint8_t cidr = WiFiGenericClass::calculateSubnetCIDR(subnet_mask);
-        if (cidr < 24 || cidr > 30)
-            return "Invalid subnet mask passed: Subnet mask must be at least /30 and not bigger than /24.";
+            uint8_t cidr = WiFiGenericClass::calculateSubnetCIDR(subnet_mask);
+            if (cidr < 24 || cidr > 30)
+                return "Invalid subnet mask passed: Subnet mask must be at least /30 and not bigger than /24.";
 
-        if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
+            if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
+                return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
 
-        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+            if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+                return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+        }
 
         if (!update.get("enable_ap")->asBool()) {
             bool other = sta_config.get("enable_sta")->asBool();
@@ -126,8 +129,10 @@ void Wifi::pre_setup()
         {"ap_bssid", Config::Str("", 0, 17)},
         {"ap_sta_count", Config::Uint8(0)},
         {"sta_mac", Config::Str("", 0, 17)},
-        {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
-        {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"sta_ip", Config::Str("0.0.0.0", 7, 45)},
+        {"sta_subnet", Config::Str("0.0.0.0", 7, 45)},
+        {"sta_ip6_link_local", Config::Str("", 0, 45)},
+        {"sta_ip6_global", Config::Str("", 0, 45)},
         {"sta_rssi", Config::Int8(-127)},
         {"sta_bssid", Config::Str("", 0, 17)},
         {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)},
@@ -161,11 +166,11 @@ void Wifi::pre_setup()
         {"bssid_lock", Config::Bool(false)},
         {"enable_11b", Config::Bool(false)},
         {"passphrase", Config::Str("", 0, 64)},
-        {"ip", Config::Str("0.0.0.0", 7, 15)},
-        {"gateway", Config::Str("0.0.0.0", 7, 15)},
-        {"subnet", Config::Str("0.0.0.0", 7, 15)},
-        {"dns", Config::Str("0.0.0.0", 7, 15)},
-        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+        {"ip", Config::Str("0.0.0.0", 7, 45)},
+        {"gateway", Config::Str("0.0.0.0", 7, 45)},
+        {"subnet", Config::Str("0.0.0.0", 7, 45)},
+        {"dns", Config::Str("0.0.0.0", 7, 45)},
+        {"dns2", Config::Str("0.0.0.0", 7, 45)},
         {"wpa_eap_config", Config::Union<EapConfigID>(
             *Config::Null(),
             EapConfigID::None,
@@ -178,31 +183,34 @@ void Wifi::pre_setup()
             return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
         // Fixme: Check if only hex if exactly 64 bytes long: then it's a PSK instead of a passphrase.
 
-        IPAddress ip_addr, subnet_mask, gateway_addr, unused;
+        IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
 
         if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return "Failed to parse \"ip\": Expected format is dotted decimal (e.g. 10.0.0.1) or IPv6 (e.g. fd00::1)";
 
         if (!gateway_addr.fromString(update.get("gateway")->asUnsafeCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return "Failed to parse \"gateway\": Expected format is dotted decimal (e.g. 10.0.0.1) or IPv6 (e.g. fd00::1)";
 
         if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+            return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g. 255.255.255.0) or IPv6 (e.g. ffff:ffff:ffff:ffff::)";
 
-        if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+        // TODO: Add IPv6 validation (prefix length, subnet checks, etc.)
+        if (tf_ip_is_v4(ip_addr)) {
+            if (!is_valid_subnet_mask(subnet_mask))
+                return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
-        if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi STA interface.";
+            if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
+                return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi STA interface.";
 
-        if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+            if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+                return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+        }
 
-        if (!unused.fromString(update.get("dns")->asUnsafeCStr()))
-            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+        if (!dns1.fromString(update.get("dns")->asUnsafeCStr()))
+            return "Failed to parse \"dns\": Expected format is dotted decimal (e.g. 10.0.0.1) or IPv6 (e.g. fd00::1)";
 
-        if (!unused.fromString(update.get("dns2")->asUnsafeCStr()))
-            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+        if (!dns2.fromString(update.get("dns2")->asUnsafeCStr()))
+            return "Failed to parse \"dns2\": Expected format is dotted decimal (e.g. 10.0.0.1) or IPv6 (e.g. fd00::1)";
 
         if (update.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::PEAP_TTLS) {
             int client_cert_id = update.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
@@ -376,6 +384,7 @@ void Wifi::apply_soft_ap_config_and_start()
     if (!WiFi.softAPConfig(ip, {tf_ip_addr_to_IPAddress(&runtime_ap->gateway)}, subnet)) {
         logger.printfln("softAPConfig failed");
     }
+
     WiFi.setSleep(false);
 
     uint8_t bssid[6];
@@ -814,6 +823,8 @@ void Wifi::register_sta_event_handlers()
             task_scheduler.scheduleOnce([this, disconnect_reason](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
+                state.get("sta_ip6_link_local")->updateString("");
+                state.get("sta_ip6_global")->updateString("");
                 state.get("sta_bssid")->updateString("");
                 state.get("sta_disconnect_reason")->updateEnum(disconnect_reason);
             });
@@ -924,6 +935,18 @@ void Wifi::register_sta_event_handlers()
             char ip6_str[INET6_ADDRSTRLEN];
             tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
             logger.printfln("Got IPv6 address: %s", ip6_str);
+
+            // Distinguish link-local (fe80::/10) from global addresses
+            const uint8_t *addr_bytes = reinterpret_cast<const uint8_t *>(&info.got_ip6.ip6_info.ip.addr);
+            bool is_link_local = (addr_bytes[0] == 0xfe) && ((addr_bytes[1] & 0xc0) == 0x80);
+
+            task_scheduler.scheduleOnce([this, ip6_str = String(ip6_str), is_link_local]() {
+                if (is_link_local) {
+                    state.get("sta_ip6_link_local")->updateString(ip6_str);
+                } else {
+                    state.get("sta_ip6_global")->updateString(ip6_str);
+                }
+            });
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
@@ -939,6 +962,8 @@ void Wifi::register_sta_event_handlers()
             task_scheduler.scheduleOnce([this](){
                 state.get("sta_ip")->updateString("0.0.0.0");
                 state.get("sta_subnet")->updateString("0.0.0.0");
+                state.get("sta_ip6_link_local")->updateString("");
+                state.get("sta_ip6_global")->updateString("");
                 state.get("sta_bssid")->updateString("");
             });
         },
@@ -959,13 +984,19 @@ bool Wifi::apply_sta_config_and_connect()
     if (runtime_sta->ip.type == 0) {
         WiFi.STA.config(static_cast<uint32_t>(0), static_cast<uint32_t>(0), static_cast<uint32_t>(0));
     } else {
-        const ip4_addr_t subnet = tf_ip4addr_cidr2mask(runtime_sta->subnet_cidr);
+        // WiFi.STA.config() only supports IPv4
+        if (runtime_sta->ip.type == IPv4) {
+            const ip4_addr_t subnet = tf_ip4addr_cidr2mask(runtime_sta->subnet_cidr);
 
-        WiFi.STA.config(&runtime_sta->ip     ,
-                        &runtime_sta->gateway,
-                        {subnet.addr              },
-                        &runtime_sta->dns    ,
-                        &runtime_sta->dns2   );
+            WiFi.STA.config(&runtime_sta->ip, &runtime_sta->gateway, subnet.addr, &runtime_sta->dns, &runtime_sta->dns2);
+        } else if (runtime_sta->ip.type == IPv6) {
+            const ip6_addr_t subnet = tf_ip6addr_cidr2mask(runtime_sta->subnet_cidr);
+            ip_addr_t ip_t{};
+            ip_t.type = IPADDR_TYPE_V6;
+            ip_t.u_addr.ip6 = subnet;
+
+            WiFi.STA.config(&runtime_sta->ip, &runtime_sta->gateway, &ip_t, &runtime_sta->dns, &runtime_sta->dns2);
+        }
     }
 
     const char *ssid = runtime_sta->ssid_passphrase;
