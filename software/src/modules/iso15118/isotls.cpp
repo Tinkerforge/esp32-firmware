@@ -791,9 +791,11 @@ bool ISOTLS::do_handshake()
         }
     }
 
-    vQueueDelete(static_cast<QueueHandle_t>(verification_context->sem_handle));
-    free(verification_context);
-    verification_context = nullptr;
+    if (verification_context != nullptr) {
+        vQueueDelete(static_cast<QueueHandle_t>(verification_context->sem_handle));
+        free(verification_context);
+        verification_context = nullptr;
+    }
 
     if (ret == 0) {
         return true;
