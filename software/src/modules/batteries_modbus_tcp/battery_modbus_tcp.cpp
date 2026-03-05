@@ -200,7 +200,7 @@ static void last_table_writer_step(BatteryModbusTCP::TableWriter *writer, bool s
             table_writer_logfln(writer, false,
                                 writer->language == Language::English
                                 ? "Setting mode \"%s\" (repeat %zu)"
-                                : "Setze Modus \"%s\" (Wiederholdung %zu)",
+                                : "Setze Modus \"%s\" (Wiederholung %zu)",
                                 get_battery_mode_display_name(writer->mode, writer->language), writer->repeat_count);
             next_table_writer_step(writer);
         }, delay);
