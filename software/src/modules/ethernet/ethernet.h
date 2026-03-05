@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <lwip/ip4_addr.h>
+#include <lwip/ip_addr.h>
 
 #include "module.h"
 #include "config.h"
