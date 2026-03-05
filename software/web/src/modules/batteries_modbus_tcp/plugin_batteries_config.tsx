@@ -922,14 +922,9 @@ export function pre_init() {
                 let battery_mode_items = battery_mode_order.map(mode => [mode, battery_mode_names[mode]]);
 
                 if (util.hasValue(config[1].table)
-                 && (config[1].table[0] == BatteryModbusTCPTableID.VictronEnergyGX
-                  || config[1].table[0] == BatteryModbusTCPTableID.DeyeHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.AlphaESSHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SolisHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode)) {
+                 && (
+//#replace "battery_modbus_tcp_specific_table_ids.rpl"
+                    )) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(
                             <FormRow>

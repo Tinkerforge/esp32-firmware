@@ -25,6 +25,7 @@ modules = [
     sax_power,
 ]
 
+table_ids = []
 table_prototypes = []
 test_table_prototypes = []
 table_typedefs = []
@@ -40,6 +41,8 @@ all_modes = {}
 for module in modules:
     for table_prototype in module.table_prototypes:
         table_id = util.FlavoredName(table_prototype[0]).get()
+
+        table_ids.append(table_id)
 
         if table_prototype[1] == None:
             table_prototypes.append(f'\n    table_prototypes->push_back({{BatteryModbusTCPTableID::{table_id.camel}, *Config::Null()}});')
@@ -512,3 +515,7 @@ cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('battery_modbus_tcp_specs.cpp', cpp)
+
+table_ids_rpl = ' || '.join([f'config[1].table[0] == BatteryModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+
+tfutil.write_file_if_different('../../../web/src/modules/batteries_modbus_tcp/battery_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
