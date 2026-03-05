@@ -215,7 +215,7 @@ static void check_slot_accounting()
             }
 
             for (size_t slot_i = 0; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
-                auto abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::blocks_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
+                const size_t abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
                 if (!ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     ConfigT::slotDebugHook(block + slot_i, abs_slot_idx);
                     used_slots++;
@@ -266,7 +266,7 @@ static void check_slot_accounting()
                     return;
                 }
 
-                auto abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::blocks_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
+                const size_t abs_slot_idx = superblock_idx * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
                 if (ConfigT::slotEmpty(block + slot_i, abs_slot_idx)) {
                     if (slot_i != last_idx) {
                         logger.printfln("First free slot mismatch. Expected %zu but found %zu in block %zu for %s.", last_idx, slot_i, block_i, ConfigT::variantName);
