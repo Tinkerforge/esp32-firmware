@@ -7,6 +7,7 @@ import hailei
 import sungrow
 import sma
 import solis
+import sax_power
 
 
 tfutil.create_parent_module(__file__, 'software')
@@ -21,6 +22,7 @@ modules = [
     sungrow,
     sma,
     solis,
+    sax_power,
 ]
 
 table_prototypes = []

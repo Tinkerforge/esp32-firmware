@@ -393,7 +393,8 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
 
                 free(buffer_to_free);
                 next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
-            });
+            },
+            writer->transaction_id_mask);
         }
         else {
             ++writer->index;
@@ -402,13 +403,15 @@ static void next_table_writer_step(BatteryModbusTCP::TableWriter *writer)
             free(buffer_to_free);
             next_table_writer_step(writer); // FIXME: maybe add a little delay between writes to avoid bursts?
         }
-    });
+    },
+    writer->transaction_id_mask);
 }
 
 BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t slot,
                                                                      bool test,
                                                                      TFModbusTCPSharedClient *client,
                                                                      uint8_t device_address,
+                                                                     uint16_t transaction_id_mask,
                                                                      uint16_t repeat_interval, // seconds
                                                                      BatteryMode mode,
                                                                      TableSpec *table,
@@ -427,6 +430,7 @@ BatteryModbusTCP::TableWriter *BatteryModbusTCP::create_table_writer(uint32_t sl
     writer->slot = slot;
     writer->client = client;
     writer->device_address = device_address;
+    writer->transaction_id_mask = transaction_id_mask;
     writer->repeat_interval = repeat_interval;
     writer->mode = mode;
     writer->table = table;
@@ -507,6 +511,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::Custom:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         repeat_interval = table_config->get("repeat_interval")->asUint16();
         battery_modes_config = static_cast<const Config *>(table_config->get("battery_modes"));
 
@@ -518,37 +523,50 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     case BatteryModbusTCPTableID::VictronEnergyGX:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_victron_energy_gx_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::DeyeHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_deye_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::AlphaESSHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_alpha_ess_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::HaileiHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_hailei_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::SungrowHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_sungrow_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::SMAHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_sma_hybrid_inverter_tables(tables, &repeat_interval, table_config);
         break;
 
     case BatteryModbusTCPTableID::SolisHybridInverter:
         device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT16_MAX;
         load_solis_hybrid_inverter_tables(tables, &repeat_interval, table_config);
+        break;
+
+    case BatteryModbusTCPTableID::SAXPowerHomeBasicMode:
+        device_address = table_config->get("device_address")->asUint8();
+        transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
+        load_sax_power_home_basic_mode_tables(tables, &repeat_interval);
         break;
 
     default:
@@ -668,7 +686,8 @@ void BatteryModbusTCP::update_active_mode()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
-        active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client), device_address, repeat_interval, active_mode, table,
+        active_writer = create_table_writer(slot, false, static_cast<TFModbusTCPSharedClient *>(connected_client),
+                                            device_address, transaction_id_mask, repeat_interval, active_mode, table,
         [this](bool error, const char *fmt, va_list args) {
             if (!error) {
                 return;

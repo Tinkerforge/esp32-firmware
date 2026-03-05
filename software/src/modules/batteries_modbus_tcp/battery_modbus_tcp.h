@@ -53,11 +53,12 @@ public:
         Language language;
         uint64_t task_id = 0;
         uint32_t slot;
-        TFModbusTCPSharedClient *client = nullptr;
-        uint8_t device_address = 0;
-        BatteryMode mode = BatteryMode::None;
+        TFModbusTCPSharedClient *client;
+        uint8_t device_address;
+        uint16_t transaction_id_mask;
         uint16_t repeat_interval; // seconds
-        TableSpec *table = nullptr;
+        BatteryMode mode;
+        TableSpec *table;
         size_t repeat_count = 0;
         size_t index = 0;
         TableWriterVLogFLnFunction vlogfln;
@@ -69,9 +70,10 @@ public:
 
     static void load_custom_table(TableSpec **table_ptr, const Config *config);
     static void free_table(TableSpec *table);
-    static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address, uint16_t repeat_interval /*seconds*/,
-                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln, TableWriterFinishedFunction &&finished,
-                                            Language language = Language::English);
+    static TableWriter *create_table_writer(uint32_t slot, bool test, TFModbusTCPSharedClient *client, uint8_t device_address,
+                                            uint16_t transaction_id_mask, uint16_t repeat_interval /*seconds*/,
+                                            BatteryMode mode, TableSpec *table, TableWriterVLogFLnFunction &&vlogfln,
+                                            TableWriterFinishedFunction &&finished, Language language = Language::English);
     static void destroy_table_writer(TableWriter *writer);
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
@@ -100,6 +102,7 @@ private:
     // FIXME: might be allocated. leaking if allocated, because as of right now battery instances don't get destroyed
     TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     uint8_t device_address;
+    uint16_t transaction_id_mask;
     uint16_t repeat_interval; // seconds
     BatteryMode requested_mode = BatteryMode::None;
     bool paused = false;

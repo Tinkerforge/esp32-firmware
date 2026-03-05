@@ -90,6 +90,7 @@ private:
         uint32_t cookie;
         BatteryMode mode;
         uint8_t device_address;
+        uint16_t transaction_id_mask;
         uint16_t repeat_interval; // seconds
         BatteryModbusTCP::TableSpec *table;
         BatteryModbusTCP::TableWriter *writer;

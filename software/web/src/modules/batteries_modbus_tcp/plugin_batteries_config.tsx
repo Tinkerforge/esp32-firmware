@@ -886,6 +886,7 @@ export function pre_init() {
                                 [BatteryModbusTCPTableID.AlphaESSHybridInverter.toString(), __("batteries_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
+                                [BatteryModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("batteries_modbus_tcp.content.table_sax_power_home_basic_mode")],
                                 [BatteryModbusTCPTableID.SMAHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sma_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.SolisHybridInverter.toString(), __("batteries_modbus_tcp.content.table_solis_hybrid_inverter")],
                                 [BatteryModbusTCPTableID.SungrowHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sungrow_hybrid_inverter")],
@@ -927,11 +928,21 @@ export function pre_init() {
                   || config[1].table[0] == BatteryModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SungrowHybridInverter
                   || config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter
-                  || config[1].table[0] == BatteryModbusTCPTableID.SolisHybridInverter)) {
+                  || config[1].table[0] == BatteryModbusTCPTableID.SolisHybridInverter
+                  || config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode)) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(
                             <FormRow>
                                 <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sma_forecast_based_charging_warning")}</Alert>
+                            </FormRow>);
+                    }
+                    else if (config[1].table[0] == BatteryModbusTCPTableID.SAXPowerHomeBasicMode) {
+                        edit_children.push(
+                            <FormRow>
+                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_register_warning")}</Alert>
+                            </FormRow>,
+                            <FormRow>
+                                <Alert variant="warning" className="mb-0">{__("batteries_modbus_tcp.content.sax_power_home_basic_mode_force_warning")}</Alert>
                             </FormRow>);
                     }
 

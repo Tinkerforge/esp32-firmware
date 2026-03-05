@@ -173,6 +173,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::Custom:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
 
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
@@ -187,6 +188,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::VictronEnergyGX:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_victron_energy_gx_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -203,6 +205,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::DeyeHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -219,6 +222,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::AlphaESSHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -235,6 +239,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::HaileiHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -251,6 +256,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::SungrowHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -267,6 +273,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::SMAHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_sma_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -283,6 +290,7 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::SolisHybridInverter:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT16_MAX;
 
             load_solis_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
 
@@ -290,6 +298,23 @@ void BatteriesModbusTCP::register_urls()
                 test_printfln(test->language == Language::English
                               ? "Unknown Solis Hybrid Inverter mode: %u"
                               : "Unbekannter Solis Hybrid-Wechselrichter Modus: %u",
+                              static_cast<uint8_t>(test->mode));
+                return;
+            }
+
+            break;
+
+        case BatteryModbusTCPTableID::SAXPowerHomeBasicMode:
+            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
+            test->device_address = table_config->get("device_address")->asUint8();
+            test->transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
+
+            load_sax_power_home_basic_mode_table(&test->table, &test->repeat_interval, test->mode);
+
+            if (test->table == nullptr) {
+                test_printfln(test->language == Language::English
+                              ? "Unknown SAX Power Home (Basic Mode) mode: %u"
+                              : "Unbekannter SAX Power Home (Basic Mode) Modus: %u",
                               static_cast<uint8_t>(test->mode));
                 return;
             }
@@ -471,7 +496,8 @@ void BatteriesModbusTCP::loop()
     #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 #endif
         test->writer = BatteryModbusTCP::create_table_writer(test->slot, true, static_cast<TFModbusTCPSharedClient *>(test->client),
-                                                             test->device_address, test->repeat_interval, test->mode, test->table,
+                                                             test->device_address, test->transaction_id_mask, test->repeat_interval,
+                                                             test->mode, test->table,
         [this](bool error, const char *fmt, va_list args) {
             test_vprintfln(fmt, args);
         },
