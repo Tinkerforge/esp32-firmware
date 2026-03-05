@@ -66,6 +66,8 @@ private:
     void handle_authorization_req();
     void handle_charge_parameter_discovery_req();
     void handle_cable_check_req();
+    void handle_pre_charge_req();
+    void handle_current_demand_req();
     void handle_power_delivery_req();
     void handle_charging_status_req();
     void handle_session_stop_req();
