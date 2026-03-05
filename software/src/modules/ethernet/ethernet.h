@@ -21,9 +21,9 @@
 
 #include <lwip/ip_addr.h>
 
-#include "module.h"
 #include "config.h"
 #include "ethernet_state.enum.h"
+#include "module.h"
 
 class Ethernet final : public IModule
 {
@@ -43,10 +43,10 @@ private:
 
     struct eth_runtime {
         micros_t last_connected;
-        ip4_addr_t ip;
-        ip4_addr_t gateway;
-        ip4_addr_t dns;
-        ip4_addr_t dns2;
+        ip_addr_t ip;
+        ip_addr_t gateway;
+        ip_addr_t dns;
+        ip_addr_t dns2;
         uint8_t subnet_cidr;
 
         EthernetState connection_state;
