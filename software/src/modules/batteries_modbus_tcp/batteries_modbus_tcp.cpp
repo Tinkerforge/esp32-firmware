@@ -153,10 +153,9 @@ void BatteriesModbusTCP::register_urls()
             return;
         }
 
-        test = new Test;
-
         test_printfln(language == Language::English ? "Starting test" : "Starte Test");
 
+        test = new Test;
         test->language = language;
         test->slot = test_config.get("slot")->asUint();
         test->host = test_config.get("host")->asString();
@@ -164,6 +163,10 @@ void BatteriesModbusTCP::register_urls()
         test->cookie = test_config.get("cookie")->asUint();
         test->last_keep_alive = now_us();
         test->state = TestState::Done;
+
+        if (table_id == BatteryModbusTCPTableID::SAXPowerHomeBasicMode) {
+            test->transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
+        }
 
         switch (table_id) {
         case BatteryModbusTCPTableID::None:
@@ -173,7 +176,6 @@ void BatteriesModbusTCP::register_urls()
         case BatteryModbusTCPTableID::Custom:
             test->mode = table_config->get("mode")->asEnum<BatteryMode>();
             test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
             test->repeat_interval = table_config->get("repeat_interval")->asUint16();
 
             BatteryModbusTCP::load_custom_table(&test->table, table_config);
@@ -185,147 +187,10 @@ void BatteriesModbusTCP::register_urls()
 
             break;
 
-        case BatteryModbusTCPTableID::VictronEnergyGX:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_victron_energy_gx_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Victron Energy GX mode: %u"
-                              : "Unbekannter Victron Energy GX Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::DeyeHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_deye_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Deye Hybrid Inverter mode: %u"
-                              : "Unbekannter Deye Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::AlphaESSHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_alpha_ess_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Alpha ESS Hybrid Inverter mode: %u"
-                              : "Unbekannter Alpha ESS Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::HaileiHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_hailei_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Hailei Hybrid Inverter mode: %u"
-                              : "Unbekannter Hailei Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::SungrowHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_sungrow_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Sungrow Hybrid Inverter mode: %u"
-                              : "Unbekannter Sungrow Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::SMAHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_sma_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown SMA Hybrid Inverter mode: %u"
-                              : "Unbekannter SMA Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::SolisHybridInverter:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT16_MAX;
-
-            load_solis_hybrid_inverter_table(&test->table, &test->repeat_interval, test->mode, table_config);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown Solis Hybrid Inverter mode: %u"
-                              : "Unbekannter Solis Hybrid-Wechselrichter Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
-
-        case BatteryModbusTCPTableID::SAXPowerHomeBasicMode:
-            test->mode = table_config->get("mode")->asEnum<BatteryMode>();
-            test->device_address = table_config->get("device_address")->asUint8();
-            test->transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
-
-            load_sax_power_home_basic_mode_table(&test->table, &test->repeat_interval, test->mode);
-
-            if (test->table == nullptr) {
-                test_printfln(test->language == Language::English
-                              ? "Unknown SAX Power Home (Basic Mode) mode: %u"
-                              : "Unbekannter SAX Power Home (Basic Mode) Modus: %u",
-                              static_cast<uint8_t>(test->mode));
-                return;
-            }
-
-            break;
+#include "batteries_modbus_tcp_test.inc"
 
         default:
-            test_printfln(test->language == Language::English
-                          ? "Unknown table: %u"
-                          : "Unbekannte Tabelle: %u",
-                          static_cast<uint8_t>(table_id));
+            test_printfln(test->language == Language::English ? "Unknown table: %u" : "Unbekannte Tabelle: %u", static_cast<uint8_t>(table_id));
             return;
         }
 

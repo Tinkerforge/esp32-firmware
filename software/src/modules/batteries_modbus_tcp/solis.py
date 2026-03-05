@@ -3,6 +3,13 @@
 # user would not need to specify the max_normal_dis/charge_current values. but
 # during testing 43130/43131 did not have an effect.
 
+display_names = [
+    ('Solis Hybrid Inverter', {
+        'en': 'Solis hybrid inverter',
+        'de': 'Solis Hybrid-Wechselrichter',
+    })
+]
+
 table_prototypes = [
     ('Solis Hybrid Inverter', [
         'device_address',

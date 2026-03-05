@@ -27,6 +27,13 @@
 # it is not possible to realize full battery control. Therefore, the best that can
 # be done right now it normal and block and to degrade force to normal.
 
+display_names = [
+    ('SAX Power Home Basic Mode', {
+        'en': 'SAX Power Home (basic mode)',
+        'de': 'SAX Power Home (Basic Mode)',
+    })
+]
+
 table_prototypes = [
     ('SAX Power Home Basic Mode', [
         'device_address',

@@ -1,3 +1,10 @@
+display_names = [
+    ('Sungrow Hybrid Inverter', {
+        'en': 'Sungrow hybrid inverter (SH series)',
+        'de': 'Sungrow Hybrid-Wechselrichter (SH-Serie)',
+    })
+]
+
 table_prototypes = [
     ('Sungrow Hybrid Inverter', [
         'device_address',

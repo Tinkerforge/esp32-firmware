@@ -102,7 +102,7 @@ private:
     // FIXME: might be allocated. leaking if allocated, because as of right now battery instances don't get destroyed
     TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     uint8_t device_address;
-    uint16_t transaction_id_mask;
+    uint16_t transaction_id_mask = UINT16_MAX;
     uint16_t repeat_interval; // seconds
     BatteryMode requested_mode = BatteryMode::None;
     bool paused = false;

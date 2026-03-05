@@ -1,3 +1,10 @@
+display_names = [
+    ('Deye Hybrid Inverter', {
+        'en': 'Deye hybrid inverter',
+        'de': 'Deye Hybrid-Wechselrichter',
+    })
+]
+
 table_prototypes = [
     ('Deye Hybrid Inverter', [
         'device_address',

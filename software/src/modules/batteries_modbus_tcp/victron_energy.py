@@ -1,5 +1,12 @@
 # https://www.victronenergy.com/live/ess:ess_mode_2_and_3
 
+display_names = [
+    ('Victron Energy GX', {
+        'en': 'Victron Energy GX',
+        'de': 'Victron Energy GX',
+    })
+]
+
 table_prototypes = [
     ('Victron Energy GX', [
         'device_address',

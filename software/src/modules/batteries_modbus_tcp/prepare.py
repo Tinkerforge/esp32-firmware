@@ -25,9 +25,11 @@ modules = [
     sax_power,
 ]
 
+display_names = {}
 table_ids = []
 table_prototypes = []
 test_table_prototypes = []
+standard_table_members = {}
 table_typedefs = []
 table_typenames = []
 table_news = []
@@ -39,6 +41,9 @@ all_table_prototypes = {}
 all_modes = {}
 
 for module in modules:
+    for display_name in module.display_names:
+        display_names[display_name[0]] = display_name[1]
+
     for table_prototype in module.table_prototypes:
         table_id = util.FlavoredName(table_prototype[0]).get()
 
@@ -63,6 +68,7 @@ for module in modules:
 
                 if member_name == 'device_address':
                     member_prototype = f'Config::Uint8(DefaultDeviceAddress::{table_id.camel})'
+                    standard_table_members.setdefault(table_id.space, []).append(member_name)
                 elif isinstance(member, dict):
                     member_prototype = f"Config::{member['type']}({member['default']})"
                 else:
@@ -138,6 +144,8 @@ for module in modules:
 
 specs_h = []
 specs_cpp = []
+setup_inc = []
+test_inc = []
 
 specs_h.append('namespace DefaultDeviceAddress {')
 specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
@@ -418,6 +426,38 @@ for group, modes in all_modes.items():
     specs_cpp.append(f'    *repeat_interval_ptr = {repeat_intervals[group.space]};\n'
                       '}')
 
+    setup_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n')
+
+    for member_name in standard_table_members.get(group.space, []):
+        if member_name == 'device_address':
+            setup_inc.append('        device_address = table_config->get("device_address")->asUint8();\n')
+        else:
+            print(f'Error: Table prototype {group.space} has unknown member {member_name}')
+            sys.exit(1)
+
+    setup_inc.append(f'        load_{group.under}_tables(tables, &repeat_interval{", table_config" if has_any_mapping else ""});\n'
+                      '        break;\n\n')
+
+    test_inc.append(f'    case BatteryModbusTCPTableID::{group.camel}:\n'
+                     '        test->mode = table_config->get("mode")->asEnum<BatteryMode>();\n')
+
+    for member_name in standard_table_members.get(group.space, []):
+        if member_name == 'device_address':
+            test_inc.append('        test->device_address = table_config->get("device_address")->asUint8();\n')
+        else:
+            print(f'Error: Table prototype {group.space} has unknown member {member_name}')
+            sys.exit(1)
+
+    test_inc.append(f'\n        load_{group.under}_table(&test->table, &test->repeat_interval, test->mode{", table_config" if has_any_mapping else ""});\n\n'
+                     '        if (test->table == nullptr) {\n'
+                     '            test_printfln(test->language == Language::English\n'
+                    f'                          ? "Unknown {display_names[group.space]["en"]} mode: %u"\n'
+                    f'                          : "Unbekannter {display_names[group.space]["de"]} Modus: %u",\n'
+                     '                          static_cast<uint8_t>(test->mode));\n'
+                     '            return;\n'
+                     '        }\n\n'
+                     '        break;\n\n')
+
 ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
@@ -515,6 +555,10 @@ cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
 tfutil.write_file_if_different('battery_modbus_tcp_specs.cpp', cpp)
+
+tfutil.write_file_if_different('battery_modbus_tcp_setup.inc', ''.join(setup_inc))
+
+tfutil.write_file_if_different('batteries_modbus_tcp_test.inc', ''.join(test_inc))
 
 table_ids_rpl = ' || '.join([f'config[1].table[0] == BatteryModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
 

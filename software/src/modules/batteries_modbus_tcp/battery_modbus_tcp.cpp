@@ -504,6 +504,10 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
     const Config *battery_modes_config;
 
+    if (table_id == BatteryModbusTCPTableID::SAXPowerHomeBasicMode) {
+        transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
+    }
+
     switch (table_id) {
     case BatteryModbusTCPTableID::None:
         logger.printfln_battery("No table selected");
@@ -521,53 +525,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-    case BatteryModbusTCPTableID::VictronEnergyGX:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_victron_energy_gx_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::DeyeHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_deye_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::AlphaESSHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_alpha_ess_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::HaileiHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_hailei_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::SungrowHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_sungrow_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::SMAHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_sma_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::SolisHybridInverter:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT16_MAX;
-        load_solis_hybrid_inverter_tables(tables, &repeat_interval, table_config);
-        break;
-
-    case BatteryModbusTCPTableID::SAXPowerHomeBasicMode:
-        device_address = table_config->get("device_address")->asUint8();
-        transaction_id_mask = UINT8_MAX; // SAX Power has a bug that the first byte of the Modbus/TCP transaction ID is always 0 in a write response
-        load_sax_power_home_basic_mode_tables(tables, &repeat_interval);
-        break;
+#include "battery_modbus_tcp_setup.inc"
 
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
