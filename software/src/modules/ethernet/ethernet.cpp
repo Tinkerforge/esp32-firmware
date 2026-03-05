@@ -54,55 +54,59 @@ void Ethernet::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable_ethernet", Config::Bool(true)},
-        {"ip", Config::Str("0.0.0.0", 7, 15)},
-        {"gateway", Config::Str("0.0.0.0", 7, 15)},
-        {"subnet", Config::Str("0.0.0.0", 7, 15)},
-        {"dns", Config::Str("0.0.0.0", 7, 15)},
-        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+        {"ip", Config::Str("0.0.0.0", 7, 45)},
+        {"gateway", Config::Str("0.0.0.0", 7, 45)},
+        {"subnet", Config::Str("0.0.0.0", 7, 45)},
+        {"dns", Config::Str("0.0.0.0", 7, 45)},
+        {"dns2", Config::Str("0.0.0.0", 7, 45)},
     }),
     [this](Config &cfg, ConfigSource source) -> String {
-        IPAddress ip_addr, subnet_mask, gateway_addr, unused;
+        IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
 
-        if (!ip_addr.fromString(cfg.get("ip")->asEphemeralCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+                            if (!ip_addr.fromString(cfg.get("ip")->asEphemeralCStr()))
+                                return "Failed to parse \"ip\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-        if (!gateway_addr.fromString(cfg.get("gateway")->asEphemeralCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+                            if (!gateway_addr.fromString(cfg.get("gateway")->asEphemeralCStr()))
+                                return "Failed to parse \"gateway\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-        if (!subnet_mask.fromString(cfg.get("subnet")->asEphemeralCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+                            if (!subnet_mask.fromString(cfg.get("subnet")->asEphemeralCStr()))
+                                return "Failed to parse \"subnet\": Expected format is dotted decimal (e.g., 255.255.255.0) or IPv6 prefix length (e.g., 64)";
 
-        if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+                            // Only validate IPv4 constraints
+                            if (tf_ip_is_v4(ip_addr)) {
+                                if (!is_valid_subnet_mask(subnet_mask))
+                                    return "Invalid subnet mask passed: Expected format is 255.255.255.0";
 
-        if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
+                                if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
+                                    return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
 
-        if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+                                if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
+                                    return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+                            }
+                            // TODO: Add IPv6-specific validation when needed
 
-        if (!unused.fromString(cfg.get("dns")->asEphemeralCStr()))
-            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+                            if (!dns1.fromString(cfg.get("dns")->asEphemeralCStr()))
+                                return "Failed to parse \"dns\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-        if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
-            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+                            if (!dns2.fromString(cfg.get("dns2")->asEphemeralCStr()))
+                                return "Failed to parse \"dns2\": Expected format is dotted decimal (e.g., 10.0.0.1) or IPv6 (e.g., 2001:db8::1)";
 
-        if (source != ConfigSource::File) {
-            task_scheduler.scheduleOnce([this]() {
-                this->apply_config();
-            });
-        }
+                            if (source != ConfigSource::File) {
+                                task_scheduler.scheduleOnce([this]() {
+                                    this->apply_config();
+                                });
+                            }
 
-        return "";
-    }};
+                            return "";
+                        }};
 
     state = Config::Object({
         {"connection_state", Config::Enum(EthernetState::NotConfigured)},
         {"connection_start", Config::Uptime()},
         {"connection_end", Config::Uptime()},
         {"mac", Config::Str("", 0, 17)},
-        {"ip", Config::Str("0.0.0.0", 7, 15)},
-        {"subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"ip", Config::Str("0.0.0.0", 7, 45)},
+        {"subnet", Config::Str("0.0.0.0", 7, 45)},
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)}
     });
@@ -199,12 +203,18 @@ void Ethernet::setup()
                 delay(40);
             }
 
-            if (this->runtime_data->ip.addr != 0) {
-                ETH.config({this->runtime_data->ip.addr     },
-                           {this->runtime_data->gateway.addr},
-                           {tf_ip4addr_cidr2mask(this->runtime_data->subnet_cidr).addr},
-                           {this->runtime_data->dns.addr    },
-                           {this->runtime_data->dns2.addr   });
+        // TODO: IPv6 static configuration requires ESP-IDF esp_netif API instead of Arduino ETH.config()
+        // Only apply IPv4 static config via Arduino API
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+            if (IP_IS_V4(&this->runtime_data->ip) && !ip_addr_isany(&this->runtime_data->ip)) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+                ETH.config({this->runtime_data->ip.u_addr.ip4.addr}, {this->runtime_data->gateway.u_addr.ip4.addr}, {tf_ip4addr_cidr2mask(this->runtime_data->subnet_cidr).addr}, {this->runtime_data->dns.u_addr.ip4.addr}, {this->runtime_data->dns2.u_addr.ip4.addr});
             } else {
                 ETH.config();
             }
@@ -282,19 +292,40 @@ void Ethernet::setup()
 
     Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             char ip6_str[INET6_ADDRSTRLEN];
-            tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
+            tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&info.got_ip6.ip6_info.ip), ip6_str, ARRAY_SIZE(ip6_str));
             logger.printfln("Got IPv6 address: %s", ip6_str);
+
+            // Distinguish between link-local and global addresses
+            const uint8_t *addr_bytes = reinterpret_cast<const uint8_t *>(info.got_ip6.ip6_info.ip.addr);
+            bool is_link_local = (addr_bytes[0] == 0xfe) && ((addr_bytes[1] & 0xc0) == 0x80);
+
+            task_scheduler.scheduleOnce([this, ip6_str_copy = String(ip6_str), is_link_local]() {
+                if (is_link_local) {
+                    state.get("ip6_link_local")->updateString(ip6_str_copy);
+                } else {
+                    state.get("ip6_global")->updateString(ip6_str_copy);
+                }
+            });
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
 
-    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+    Network.onEvent(
+        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
             auto now = now_us();
 
-            // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
-            if (this->runtime_data->ip.addr == 0) {
+        // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+            if (ip_addr_isany(&this->runtime_data->ip)) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
                 ETH.config();
             }
 
@@ -305,6 +336,8 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
+                state.get("ip6_link_local")->updateString("");
+                state.get("ip6_global")->updateString("");
                 state.get("connection_end")->updateUptime(now);
             });
         },
@@ -323,6 +356,8 @@ void Ethernet::setup()
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
+                state.get("ip6_link_local")->updateString("");
+                state.get("ip6_global")->updateString("");
                 state.get("connection_end")->updateUptime(now);
             });
         },
@@ -377,13 +412,13 @@ void Ethernet::apply_config()
 
     if (want_enabled) {
         // Parse new IP settings from config.
-        ip4_addr_t subnet_tmp;
-        ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
-        ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
-        ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
-        ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
-        ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
-        runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
+        ip_addr_t subnet_tmp;
+        ipaddr_aton(config.get("ip")->asUnsafeCStr(), &runtime_data->ip);
+        ipaddr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
+        ipaddr_aton(config.get("dns")->asUnsafeCStr(), &runtime_data->dns);
+        ipaddr_aton(config.get("dns2")->asUnsafeCStr(), &runtime_data->dns2);
+        ipaddr_aton(config.get("subnet")->asUnsafeCStr(), &subnet_tmp);
+        runtime_data->subnet_cidr = tf_ipaddr_mask2cidr(subnet_tmp);
 
         if (!eth_started) {
             // Disabled -> Enabled: start the interface.
@@ -415,14 +450,23 @@ void Ethernet::apply_config()
             // Already enabled: IP/DNS change.
             // If connected or connecting, apply new IP settings immediately.
             // Otherwise the ETH_CONNECTED handler will pick up the new runtime_data values.
-            if (runtime_data->connection_state == EthernetState::Connected
-             || runtime_data->connection_state == EthernetState::Connecting) {
-                if (runtime_data->ip.addr != 0) {
-                    ETH.config({runtime_data->ip.addr     },
-                               {runtime_data->gateway.addr},
-                               {tf_ip4addr_cidr2mask(runtime_data->subnet_cidr).addr},
-                               {runtime_data->dns.addr    },
-                               {runtime_data->dns2.addr   });
+            if (runtime_data->connection_state == EthernetState::Connected || runtime_data->connection_state == EthernetState::Connecting) {
+                // TODO: IPv6 static configuration requires ESP-IDF esp_netif API instead of Arduino ETH.config()
+                // Only apply IPv4 static config via Arduino API
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+                if (IP_IS_V4(&runtime_data->ip) && !ip_addr_isany(&runtime_data->ip)) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+                    ETH.config({runtime_data->ip.u_addr.ip4.addr},
+                      {runtime_data->gateway.u_addr.ip4.addr},
+                        {tf_ip4addr_cidr2mask(runtime_data->subnet_cidr).addr},
+                         {runtime_data->dns.u_addr.ip4.addr},
+                         {runtime_data->dns2.u_addr.ip4.addr});
                 } else {
                     ETH.config();
                 }
