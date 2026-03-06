@@ -202,6 +202,7 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
             if (ws_pkt.payload != small_payload_buffer) {
                 free(ws_pkt.payload);
             }
+            ws_pkt.payload = nullptr;
             return ret;
         }
     }
@@ -226,19 +227,25 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (frame_type == HTTPD_WS_TYPE_TEXT) {
-        // If it was a TEXT message print it
+        // If it was a TEXT frame, pass it to the text data handler.
         if (ws_pkt.len == 0) {
             logger.printfln("Ignoring zero-length text frame");
         } else {
             ws_pkt.payload[ws_pkt.len] = 0;
-            logger.printfln("Ignoring received packet with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
-            // FIXME: input handling
+            WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
+            if (ws->on_text_data_received_fn != nullptr) {
+                ws->on_text_data_received_fn(client, &ws_pkt);
+            } else {
+                logger.printfln("Ignoring received text frame with message: \"%.20s\" (web sockets are unidirectional for now)", ws_pkt.payload);
+            }
         }
     } else if (frame_type == HTTPD_WS_TYPE_BINARY) {
         // If it was a binary data frame, pass it to the binary data handler.
         WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         if (ws->on_binary_data_received_fn != nullptr) {
             ws->on_binary_data_received_fn(client, &ws_pkt);
+        } else {
+            logger.printfln("Ignoring received binary frame containing %zu bytes", ws_pkt.len);
         }
     } else if (frame_type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
@@ -257,9 +264,14 @@ esp_err_t WebSockets::ws_handler(httpd_req_t *req)
         logger.printfln("Received unexpected frame type=%u final=%i len=%zu", static_cast<unsigned>(ws_pkt.type), ws_pkt.final, ws_pkt.len);
     }
 
-    if (ws_pkt.payload != nullptr && ws_pkt.payload != small_payload_buffer) {
-        free(ws_pkt.payload);
+    if (ws_pkt.payload != nullptr) {
+        if (ws_pkt.payload != small_payload_buffer) {
+            free(ws_pkt.payload);
+        }
+
+        ws_pkt.payload = nullptr;
     }
+
     return ESP_OK;
 }
 
@@ -852,6 +864,11 @@ void WebSockets::onDisconnect_HTTPThread(std::function<void(WebSocketsClient *cl
 void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(WebSocketsClient *client, httpd_ws_frame_t *ws_pkt)> &&fn)
 {
     on_binary_data_received_fn = std::move(fn);
+}
+
+void WebSockets::onTextDataReceived_HTTPThread(std::function<void(WebSocketsClient *client, httpd_ws_frame_t *ws_pkt)> &&fn)
+{
+    on_text_data_received_fn = std::move(fn);
 }
 
 void WebSockets::pre_reboot() {

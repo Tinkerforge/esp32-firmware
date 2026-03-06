@@ -66,6 +66,7 @@ public:
     void onConnect_HTTPThread(std::function<bool(WebSocketsClient *client)> &&fn);
     void onDisconnect_HTTPThread(std::function<void(WebSocketsClient *client, bool clean_close)> &&fn);
     void onBinaryDataReceived_HTTPThread(std::function<void(WebSocketsClient *, httpd_ws_frame_t *ws_pkt)> &&fn);
+    void onTextDataReceived_HTTPThread(std::function<void(WebSocketsClient *, httpd_ws_frame_t *ws_pkt)> &&fn);
 
     void notify_unclean_close(struct sock_db *session);
 
@@ -120,6 +121,7 @@ private:
     std::function<bool(WebSocketsClient *client)> on_client_connect_fn;
     std::function<void(WebSocketsClient *client, bool clean_close)> on_client_disconnect_fn;
     std::function<void(WebSocketsClient *client, httpd_ws_frame_t *ws_pkt)> on_binary_data_received_fn;
+    std::function<void(WebSocketsClient *client, httpd_ws_frame_t *ws_pkt)> on_text_data_received_fn;
 
     ConfigRoot state;
 
