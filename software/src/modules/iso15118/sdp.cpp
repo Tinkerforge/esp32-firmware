@@ -34,6 +34,10 @@
 
 #include "gcc_warnings.h"
 
+// For now we will tell the EV that we don't support TLS.
+// Will be enabled as soon as we get signed iso15118-20 certificates.
+static constexpr bool SDP_ALLOW_TLS = false;
+
 // IPv6 all-nodes multicast address (ff02::1) in network byte order
 // ff02::1 = ff02:0000:0000:0000:0000:0000:0000:0001
 #define IN6ADDR_ALLNODES_INIT {{{PP_HTONL(0xff020000UL), 0, 0, PP_HTONL(0x00000001UL)}}}
@@ -206,9 +210,13 @@ void SDP::handle_socket()
         // Otherwise respond with no security.
         uint8_t response_security = SDP_SECURITY_NO_TLS;
         if (request->security == SDP_SECURITY_TLS) {
-            response_security = SDP_SECURITY_TLS;
-            iso15118.common.tls_requested_by_ev = true;
-            iso15118.trace("SDP: TLS negotiated - will use TLS for V2G connection");
+            if(SDP_ALLOW_TLS) { // Check if TLS support is activated or not
+                response_security = SDP_SECURITY_TLS;
+                iso15118.common.tls_requested_by_ev = true;
+            } else {
+                response_security = SDP_SECURITY_NO_TLS;
+                iso15118.common.tls_requested_by_ev = false;
+            }
         } else {
             iso15118.common.tls_requested_by_ev = false;
         }
