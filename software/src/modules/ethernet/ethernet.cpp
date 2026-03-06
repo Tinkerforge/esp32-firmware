@@ -59,6 +59,7 @@ void Ethernet::pre_setup()
         {"subnet", Config::Str("0.0.0.0", 7, 45)},
         {"dns", Config::Str("0.0.0.0", 7, 45)},
         {"dns2", Config::Str("0.0.0.0", 7, 45)},
+        {"enable_ipv6", Config::Bool(false)}
     }),
     [this](Config &cfg, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr, dns1, dns2;
@@ -108,7 +109,9 @@ void Ethernet::pre_setup()
         {"ip", Config::Str("0.0.0.0", 7, 45)},
         {"subnet", Config::Str("0.0.0.0", 7, 45)},
         {"full_duplex", Config::Bool(false)},
-        {"link_speed", Config::Uint8(0)}
+        {"link_speed", Config::Uint8(0)},
+        {"ip6_link_local", Config::Str("::", 0, 45)},
+        {"ip6_global", Config::Str("::", 0, 45)}
     });
 }
 
@@ -382,6 +385,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_STOP);
 
+    ETH.enableIPv6(true);
     ETH.setTaskStackSize(2304);
 
     apply_config();
