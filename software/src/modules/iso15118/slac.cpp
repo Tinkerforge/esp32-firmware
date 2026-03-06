@@ -245,6 +245,14 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
 // ISO 15118-3 A.9.1.2 Table A.2
 void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_request)
 {
+    // CP state guard: reject SLAC if no EV is physically connected.
+    // Per [V2G3-M06-11], SLAC matching requires a prior transition from State A to Bx/Cx/Dx.
+    uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
+    if (iec_state == 0) { // State A
+        logger.printfln("CM_SLAC_PARM.REQ ignored: no EV connected (IEC 61851 State A)");
+        return;
+    }
+
     // State guard: Only accept CM_SLAC_PARM.REQ in appropriate states.
     // Without this guard, a crosstalk CM_SLAC_PARM.REQ from a neighboring EV
     // can overwrite our tracked PEV mid-matching or tear down an established link.
@@ -264,10 +272,10 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             // Accept retries from the same PEV, ignore crosstalk from others.
             if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
                 logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) during active matching in state %s",
-                    cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
-                    cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
-                    cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
-                    get_slac_state_name(state));
+                                cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
+                                cm_slac_parm_request.header.source_mac[2], cm_slac_parm_request.header.source_mac[3],
+                                cm_slac_parm_request.header.source_mac[4], cm_slac_parm_request.header.source_mac[5],
+                                get_slac_state_name(state));
                 return;
             }
             // Same EV retrying: fall through and restart the SLAC process for this EV.
@@ -549,12 +557,24 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         return;
     }
 
-    CM_SLACMatchConfirmation cm_slac_match_confirmation;
+    // Defense in depth: verify the EV chose *this* EVSE.
+    // The CM_SLAC_MATCH.REQ contains the EVSE MAC the EV selected.
+    // Per [V2G3-A09-98], if it doesn't match our MAC, reject.
+    if (memcmp(evse_mac, cm_slac_match_request.evse_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
+        logger.printfln("CM_SLAC_MATCH.REQ evse_mac mismatch: EV chose different EVSE (%02x:%02x:%02x:%02x:%02x:%02x, ours %02x:%02x:%02x:%02x:%02x:%02x)",
+            cm_slac_match_request.evse_mac[0], cm_slac_match_request.evse_mac[1],
+            cm_slac_match_request.evse_mac[2], cm_slac_match_request.evse_mac[3],
+            cm_slac_match_request.evse_mac[4], cm_slac_match_request.evse_mac[5],
+            evse_mac[0], evse_mac[1], evse_mac[2], evse_mac[3], evse_mac[4], evse_mac[5]);
+        return;
+    }
+
+    CM_SLACMatchConfirmation cm_slac_match_confirmation = {};
     fill_header(&cm_slac_match_confirmation.header, pev_mac, evse_mac, SLAC_MMTYPE_CM_SLAC_MATCH | SLAC_MMTYPE_MODE_CONFIRMATION);
     memcpy(cm_slac_match_confirmation.pev_id, cm_slac_match_request.pev_id, SLAC_STATION_ID_LENGTH);
     memcpy(cm_slac_match_confirmation.pev_mac, cm_slac_match_request.pev_mac, SLAC_MAC_ADDRESS_LENGTH);
     memcpy(cm_slac_match_confirmation.evse_id, cm_slac_match_request.evse_id, SLAC_STATION_ID_LENGTH);
-    memcpy(cm_slac_match_confirmation.evse_mac, cm_slac_match_request.evse_mac, SLAC_MAC_ADDRESS_LENGTH);
+    memcpy(cm_slac_match_confirmation.evse_mac, evse_mac, SLAC_MAC_ADDRESS_LENGTH);
     memcpy(cm_slac_match_confirmation.run_id, cm_slac_match_request.run_id, SLAC_RUN_ID_LENGTH);
     memcpy(cm_slac_match_confirmation.nid, nid, SLAC_NID_LENGTH);
     memcpy(cm_slac_match_confirmation.nmk, nmk, SLAC_NMK_LENGTH);
