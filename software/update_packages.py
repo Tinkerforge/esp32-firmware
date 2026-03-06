@@ -117,7 +117,7 @@ for name in sorted(os.listdir('packages')):
             print(f'Error while downloading {zip_url} using {command_title}')
             sys.exit(1)
 
-    os.rename(zip_path + '.tmp', zip_path)
+    os.replace(zip_path + '.tmp', zip_path)
 
     print('Unpacking {0}'.format(name))
 

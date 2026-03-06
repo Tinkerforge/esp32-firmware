@@ -48,7 +48,7 @@ def main():
         f.write(flash_rodata[index_html_data_offset:index_html_data_offset + index_html_data_length])
         f.flush()
 
-    os.rename(args.index_html_file + '.tmp', args.index_html_file)
+    os.replace(args.index_html_file + '.tmp', args.index_html_file)
 
 
 if __name__ == '__main__':
