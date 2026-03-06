@@ -540,7 +540,7 @@ void SLAC::handle_cm_validate_request(const CM_ValidateRequest &cm_validate_requ
 // ISO 15118-3 A.9.4.2 Table A.7
 void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match_request)
 {
-    if (state != SLACState::WaitForSlacMatch) {
+    if ((state != SLACState::WaitForSlacMatch) && (state != SLACState::WaitForSDP)) {
         logger.printfln("CM_SLAC_MATCH.REQ ignored in state %s", get_slac_state_name(state));
         return;
     }
@@ -583,6 +583,15 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     log_cm_slac_match_request(cm_slac_match_request);
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
+
+    // If we're already in WaitForSDP, this is a retry from the EV that didn't receive
+    // (or couldn't process) our original CNF. We re-sent the CNF above and reset the
+    // timeout to give the EV a fresh window to join the PLC network.
+    if (state == SLACState::WaitForSDP) {
+        logger.printfln("CM_SLAC_MATCH.REQ retry in WaitForSDP, re-sent CNF");
+        next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
+        return;
+    }
 
     // Add PEV MAC to seen list once SLAC is done
     iso15118.common.add_seen_mac_address(pev_mac);
