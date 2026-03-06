@@ -77,6 +77,7 @@ public:
 
     // Session ID (8 bytes for ISO 20)
     uint8_t session_id[ISO20_SESSION_ID_LENGTH];
+    uint64_t next_timeout = 0;
 
 private:
     void dispatch_common_messages();
@@ -107,7 +108,6 @@ private:
     void trace_ac_request_response();
 
     ISO20State state = ISO20State::Idle;
-    uint64_t next_timeout = 0;
     bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 
     // [V2G20-1821] EV declares asymmetric capability by sending _L2/_L3 in AC_ChargeParameterDiscoveryReq.

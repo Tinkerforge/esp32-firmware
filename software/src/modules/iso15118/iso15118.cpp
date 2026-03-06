@@ -197,6 +197,33 @@ void ISO15118::register_urls()
     }
 }
 
+void ISO15118::register_events()
+{
+    // When the EV physically disconnects, clean up everything
+    event.registerEvent("evse/state", {"charger_state"}, [this](const Config *charger_state) {
+        if (iec_temporary_active && charger_state->asUint() == 0) {
+            logger.printfln("ISO15118: EV disconnected (State A), cleaning up");
+            // TODO: Maybe save the starting SoC (before) and ending SoC here.
+            //       We could show it in the UI for the last charging session or similar.
+            common.clear_ev_data();
+            common.reset_active_socket();
+            qca700x.link_down();
+            slac.state = SLACState::ModemReset;
+            iso2.reset_dc_soc_done();
+            iec_temporary_active = false;
+
+            // Cancel any pending E/F reset task.
+            if (ef_reset_task != 0) {
+                task_scheduler.cancel(ef_reset_task);
+                ef_reset_task = 0;
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            }
+            ef_retry_count = 0;
+        }
+        return EventResult::OK;
+    });
+}
+
 void ISO15118::state_machines_loop()
 {
     // QCA700x SPI polling must always run (hardware communication)
@@ -262,6 +289,12 @@ void ISO15118::state_machines_loop()
         if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
             logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
             common.reset_active_socket();
+
+            // If the EV closes the socket unexpectedly, we still go to IEC temporary mode.
+            if (!iec_temporary_active && is_read_soc_only()) {
+                logger.printfln("ISO15118: EV closed TCP after shutdown/FAILED, applying PWM");
+                switch_to_iec_temporary();
+            }
         } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
             common.handle_socket();
         }
@@ -272,18 +305,60 @@ void ISO15118::switch_to_iec_temporary()
 {
     logger.printfln("Switching to IEC 61851 temporary mode");
 
-    // Switch EVSE to IEC 61851 temporary mode
-    // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect
+    // Switch EVSE to IEC 61851 temporary mode.
+    // The EVSE will handle charging via PWM and automatically revert to ISO 15118 on EV disconnect.
     evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
 
-    // Bring down PLC link since we no longer need it
-    qca700x.link_down();
+    // Mark that we're in IEC temporary mode waiting for EV disconnect.
+    iec_temporary_active = true;
 
-    // Reset SLAC state to be ready for next connection
-    slac.state = SLACState::ModemReset;
+    // Schedule E/F reset
+    ef_retry_count = 0;
+    if (ef_reset_task != 0) {
+        task_scheduler.cancel(ef_reset_task);
+    }
+    // TODO: ef_reset is currently turned off.
+    //       The EVSE Bricklet needs additional support for this. Currently this can
+    //       collide with the CP disconnect that the Bricklet uses to try to wake up the EV.
+    // ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15000_ms);
+}
 
-    // Reset DC SoC session tracking for next EV connection
-    iso2.reset_dc_soc_done();
+void ISO15118::check_ef_reset()
+{
+    ef_reset_task = 0;
+
+    if (!iec_temporary_active) {
+        return; // EV disconnected or mode changed, nothing to do
+    }
+
+    uint32_t charger_state = evse_common.get_state().get("charger_state")->asUint();
+    if (charger_state >= 3) {
+        logger.printfln("ISO15118: EV charging (charger_state %lu), E/F reset not needed", charger_state);
+        return; // EV already charging
+    }
+    if (charger_state == 0) {
+        return; // EV disconnected (race with event handler)
+    }
+
+    if (ef_retry_count >= 3) { // C_sequ_retry = 3 per ISO 15118-3 Table 3
+        logger.printfln("ISO15118: E/F reset retries exhausted (%u), giving up", ef_retry_count);
+        return;
+    }
+
+    ef_retry_count++;
+    logger.printfln("ISO15118: EV still in State B after IEC temporary switch, triggering E/F reset (attempt %u/3)", ef_retry_count);
+
+    // Set 0% duty cycle on CP (-12V), which signals State E/F to the EV.
+    // Per ISO 15118-3 Table 3: T_step_EF >= 4 seconds, C_sequ_retry = 3.
+    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+
+    // After 4 seconds, switch back to IEC temporary mode and schedule another check
+    ef_reset_task = task_scheduler.scheduleOnce([this]() {
+        evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_TEMPORARY, 1000);
+
+        // Give the EV 15 seconds to start charging before retrying
+        ef_reset_task = task_scheduler.scheduleOnce([this]() { check_ef_reset(); }, 15000_ms);
+    }, 4000_ms);
 }
 
 void ISO15118::ensure_state_machine_running()

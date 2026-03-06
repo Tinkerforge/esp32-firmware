@@ -419,7 +419,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Finished.
             logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             res->ResponseCode = iso2_responseCodeType_OK;
-            res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+            res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
 
             // Mandatory: DC_EVSEChargeParameter with EVSE_Shutdown status
             res->DC_EVSEChargeParameter_isUsed = 1;
@@ -428,7 +428,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
             res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
             res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_StopCharging;
-            res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 5;
+            res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
             res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Shutdown;
 
             res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
@@ -475,6 +475,8 @@ void ISO2::handle_charge_parameter_discovery_req()
 
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
+
+            iso15118.switch_to_iec_temporary();
             return;
         }
 
@@ -885,7 +887,9 @@ void ISO2::handle_session_stop_req()
 
     if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
         // DC SoC session is complete. Mark it done and prepare for the AC charging session.
-        // Keep PLC link alive — only close TCP so EV can reconnect for AC.
+        // Keep PLC link alive: This is not yet tested well and some EVs have already shown
+        // to just not wanting to re-connect after the "fake" DC charging session is finished.
+        // If we ever use this, there is probably some additional wake-up needed.
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle; // Reset state machine for next session

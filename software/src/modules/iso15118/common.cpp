@@ -241,9 +241,6 @@ void Common::handle_socket()
 
 void Common::reset_active_socket()
 {
-    // Notify meters module that session ended
-    clear_ev_data();
-
     // Close TLS session if active
     tls.end_session();
     tls_requested_by_ev = false;

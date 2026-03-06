@@ -54,6 +54,7 @@ public:
     ConfigRoot api_state;
     struct iso2_exiDocument *iso2DocDec = nullptr;
     struct iso2_exiDocument *iso2DocEnc = nullptr;
+    uint64_t next_timeout = 0;
 
 private:
     void dispatch_messages();
@@ -76,7 +77,6 @@ private:
     void trace_request_response();
 
     ISO2State state = ISO2State::Idle;
-    uint64_t next_timeout = 0;
     bool pause_active = false;
     bool soc_read = false;    // Set after first SoC reading in read_soc_only mode
     bool dc_soc_done = false; // Set after DC SoC session completes (for charge_via_iso15118 + read_soc)

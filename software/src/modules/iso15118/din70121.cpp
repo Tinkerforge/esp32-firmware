@@ -357,6 +357,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
         iso15118.common.send_exi(Common::ExiType::Din);
         state = DIN70121State::ChargeParameterDiscovery;
+
+        // Switch to IEC 61851 temporary mode and cancel the V2G sequence timeout.
+        iso15118.switch_to_iec_temporary();
         return;
     }
 

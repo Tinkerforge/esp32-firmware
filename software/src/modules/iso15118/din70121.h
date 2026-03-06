@@ -52,6 +52,7 @@ public:
 
     struct din_exiDocument *dinDocDec = nullptr;
     struct din_exiDocument *dinDocEnc = nullptr;
+    uint64_t next_timeout = 0;
 
 private:
     void dispatch_messages();
@@ -70,6 +71,5 @@ private:
     void trace_request_response();
 
     DIN70121State state = DIN70121State::Idle;
-    uint64_t next_timeout = 0;
     bool soc_read = false;  // Set after first SoC reading in read_soc_only mode
 };

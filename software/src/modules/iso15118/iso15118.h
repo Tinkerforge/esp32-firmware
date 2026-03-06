@@ -68,6 +68,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
     void state_machines_loop();
     [[gnu::format(__printf__, 2, 3)]] void trace(const char *fmt, ...);
     void trace_packet(const uint8_t *packet, const size_t packet_size);
@@ -96,6 +97,11 @@ public:
 
     // Switch to IEC 61851 temporary mode (EVSE controls charging, reverts to ISO15118 on disconnect)
     void switch_to_iec_temporary();
+
+    bool iec_temporary_active = false;
+    uint64_t ef_reset_task = 0;
+    uint8_t ef_retry_count = 0;
+    void check_ef_reset();
 
     // Ensure the state machine task is running (schedules it if not already running)
     void ensure_state_machine_running();

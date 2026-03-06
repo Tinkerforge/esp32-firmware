@@ -298,7 +298,6 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
             break;
 
         default:
-            // Modem init states — shouldn't normally receive SLAC messages here.
             logger.printfln("CM_SLAC_PARM.REQ ignored: modem not ready in state %s", get_slac_state_name(state));
             return;
     }

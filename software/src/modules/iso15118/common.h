@@ -176,7 +176,6 @@ public:
     int get_active_socket() const { return active_socket; }
     int get_listen_socket() const { return listen_socket; }
 
-    // TLS state - set by SDP when EV requests TLS
     bool tls_requested_by_ev = false;   // EV requested TLS in SDP
 
 private:
@@ -216,24 +215,14 @@ static inline ScaledPower encode_milliwatts(uint32_t milliwatts)
     return {static_cast<int16_t>(milliwatts), exponent};
 }
 
-
-// Some general constants that are used across all three protocols:
-
-// Nominal line-to-neutral voltage (V)
-static constexpr uint16_t V2G_NOMINAL_VOLTAGE_V    = 230;
-
-// Nominal grid frequency (Hz)
-static constexpr uint8_t  V2G_NOMINAL_FREQUENCY_HZ = 50;
-
-// Seconds in one day — used for schedule duration in DIN/ISO2
-static constexpr uint32_t SECONDS_PER_DAY = 86400;
-
 // ServiceID for EV Charging (DIN Table 105, ISO2 Table 105, ISO20 Table 203)
 static constexpr uint16_t V2G_SERVICE_ID_CHARGING = 1;
 
-// SAScheduleTupleID — we offer exactly one schedule tuple (DIN/ISO2)
+// SAScheduleTupleID: We always only offer one schedule tuple (DIN/ISO2)
 static constexpr uint16_t V2G_SA_SCHEDULE_TUPLE_ID = 1;
-
+static constexpr uint16_t V2G_NOMINAL_VOLTAGE_V    = 230;
+static constexpr uint8_t  V2G_NOMINAL_FREQUENCY_HZ = 50;
+static constexpr uint32_t SECONDS_PER_DAY = 86400;
 
 // These values are advertised to the EV to initiate a DC session
 // purely for reading the EV's State of Charge.

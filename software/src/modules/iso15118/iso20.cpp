@@ -837,7 +837,7 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
     } else {
         // Symmetric mode: base element = sum of all phases per [V2G20-1817].
         // Phase multiplier is determined by the selected ParameterSet (1=ThreePhase, 2=SinglePhase),
-        // NOT by get_charging_information().three_phase — the ParameterSet is the contract with the EV.
+        // NOT by get_charging_information().three_phase, the ParameterSet is the contract with the EV.
         // [V2G20-1817] For ThreePhase, when _L2/_L3 are not present, the base element represents the
         //              sum of all three lines. An even distribution across all three phases shall be applied.
         // [V2G20-1815] For SinglePhase, only the base element (L1) shall be used.
