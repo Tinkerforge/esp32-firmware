@@ -171,15 +171,16 @@ void SLAC::handle_modem_initialization(void)
     // Modem verified. Enable frame processing in QCA700x state machine
     iso15118.qca700x.set_modem_detected(true);
 
-    // Use QCA700x MAC adress for EVSE (it is derived from ethernet MAC)
+    // At his point we know that the modem works.
+    // We can set up the netif for l2tap communication.
+    // setup_netif() derives and sets qca700x.mac.
+    iso15118.qca700x.setup_netif();
+
+    // Use QCA700x MAC address for EVSE (it is derived from ethernet MAC)
     memcpy(evse_mac, iso15118.qca700x.mac, SLAC_MAC_ADDRESS_LENGTH);
     for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
         api_state.get("evse_mac")->get(i)->updateUint(evse_mac[i]);
     }
-
-    // At his point we know that the modem works.
-    // Set we can set up the netif for l2tap communication.
-    iso15118.qca700x.setup_netif();
 
     // Flush any garbage data that might be in the modem's buffer after initialization
     // The QCA700X can have stale data from previous sessions or initialization
