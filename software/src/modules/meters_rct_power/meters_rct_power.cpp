@@ -21,8 +21,8 @@
 
 #include "module_dependencies.h"
 #include "meter_rct_power.h"
-#include "virtual_meter.enum.h"
-#include "modules/meters/meter_location.enum.h"
+#include "generated/virtual_meter.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 

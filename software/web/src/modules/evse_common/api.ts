@@ -1,4 +1,4 @@
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 //APIPath:evse/
 
 interface Slot {

@@ -3,7 +3,7 @@
 #define MQTT_DISCOVERY_TOPIC_COUNT ({{{topic_count}}})
 #define MQTT_DISCOVERY_MAX_JSON_LENGTH ({{{max_json_len}}})
 
-#include "mqtt_discovery_type.enum.h"
+#include "generated/mqtt_discovery_type.enum.h"
 
 struct MqttDiscoveryTopicInfo {
     const char * const feature;

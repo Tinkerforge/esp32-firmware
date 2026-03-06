@@ -34,7 +34,7 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { MeterValueID } from "../meters/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { get_managed_chargers } from "../charge_manager/chargers";
-import { TileType } from "./tile_type.enum";
+import { TileType } from "./generated/tile_type.enum";
 
 const FRONT_PANEL_TILES = 6;
 

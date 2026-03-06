@@ -21,7 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "modules/meters/meter_location.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 #include "tools/float.h"
 
 static const MeterValueID inverter_value_ids[] = {

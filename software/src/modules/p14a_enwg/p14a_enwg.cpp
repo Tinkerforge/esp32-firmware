@@ -23,7 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "p14a_enwg_source.enum.h"
+#include "generated/p14a_enwg_source.enum.h"
 
 void P14aEnwg::pre_setup()
 {

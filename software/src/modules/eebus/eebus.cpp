@@ -22,10 +22,10 @@
 #include "eebus_usecases.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "node_state.enum.h"
+#include "generated/node_state.enum.h"
 #include "ship.h"
-#include "ship_connection_state.enum.h"
-#include "ship_discovery_state.enum.h"
+#include "generated/ship_connection_state.enum.h"
+#include "generated/ship_discovery_state.enum.h"
 #include <LittleFS.h>
 #include <TFJson.h>
 

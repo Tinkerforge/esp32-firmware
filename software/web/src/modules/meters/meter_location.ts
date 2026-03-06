@@ -18,7 +18,7 @@
  */
 
 import { __ } from "../../ts/translation";
-import { MeterLocation } from "./meter_location.enum";
+import { MeterLocation } from "./generated/meter_location.enum";
 
 export function translate_meter_location(location: MeterLocation): string {
     switch (location) {

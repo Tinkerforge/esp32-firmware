@@ -35,19 +35,19 @@ import { EcoChart } from "modules/eco/main";
 //#endif
 import { Button, Collapse } from "react-bootstrap";
 
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 import { ChargeModeButtons } from "modules/cm_networking/charge_mode_buttons";
 import { InputSelect } from "ts/components/input_select";
-import { ZeroPhaseDecisionTag } from "./zero_phase_decision_tag.enum";
-import { ZeroPhaseDecision } from "./zero_phase_decision.union";
-import { OnePhaseDecision } from "./one_phase_decision.union";
-import { OnePhaseDecisionTag } from "./one_phase_decision_tag.enum";
-import { ThreePhaseDecision } from "./three_phase_decision.union";
-import { ThreePhaseDecisionTag } from "./three_phase_decision_tag.enum";
-import { CurrentDecision } from "./current_decision.union";
-import { CurrentDecisionTag } from "./current_decision_tag.enum";
-import { CASState } from "./cas_state.enum";
-import { CASError } from "./cas_error.enum";
+import { ZeroPhaseDecisionTag } from "./generated/zero_phase_decision_tag.enum";
+import { ZeroPhaseDecision } from "./generated/zero_phase_decision.union";
+import { OnePhaseDecision } from "./generated/one_phase_decision.union";
+import { OnePhaseDecisionTag } from "./generated/one_phase_decision_tag.enum";
+import { ThreePhaseDecision } from "./generated/three_phase_decision.union";
+import { ThreePhaseDecisionTag } from "./generated/three_phase_decision_tag.enum";
+import { CurrentDecision } from "./generated/current_decision.union";
+import { CurrentDecisionTag } from "./generated/current_decision_tag.enum";
+import { CASState } from "./generated/cas_state.enum";
+import { CASError } from "./generated/cas_error.enum";
 import { FormSeparator } from "ts/components/form_separator";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 

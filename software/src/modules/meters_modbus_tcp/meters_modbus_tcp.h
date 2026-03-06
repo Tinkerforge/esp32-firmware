@@ -25,7 +25,7 @@
 #include "module.h"
 #include "modules/meters/imeter_generator.h"
 #include "config.h"
-#include "meter_modbus_tcp_table_id.enum.h"
+#include "generated/meter_modbus_tcp_table_id.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

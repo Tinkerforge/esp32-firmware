@@ -33,8 +33,8 @@
 #include "rollback_timing.h"
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
-#include "check_state.enum.h"
-#include "install_origin.enum.h"
+#include "generated/check_state.enum.h"
+#include "generated/install_origin.enum.h"
 
 #include "gcc_warnings.h"
 

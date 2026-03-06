@@ -320,9 +320,9 @@ specs_ts.append('    }\n\n'
 
 ts  = '// WARNING: This file is generated.\n\n'
 ts += 'import { __ } from "../../ts/translation";\n'
-ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
-ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n'
-ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
+ts += 'import { MeterModbusTCPTableID } from "./generated/meter_modbus_tcp_table_id.enum";\n'
+ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum";\n'
+ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./generated/{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
@@ -372,7 +372,7 @@ tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
-h += '\n'.join([f'#include "{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+h += '\n'.join([f'#include "generated/{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
 
 tfutil.write_file_if_different('meter_modbus_tcp_virtual_meter_enums.h', h)
 
@@ -380,7 +380,7 @@ h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
 h += '#include "config.h"\n'
 h += '#include "meter_modbus_tcp.h"\n'
-h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
+h += '#include "generated/meter_modbus_tcp_table_id.enum.h"\n\n'
 h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
 h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
 h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'

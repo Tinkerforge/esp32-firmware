@@ -37,7 +37,7 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
-import { ForecastSource } from "./forecast_source.enum";
+import { ForecastSource } from "./generated/forecast_source.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function minus1_to_nan(val: number) {

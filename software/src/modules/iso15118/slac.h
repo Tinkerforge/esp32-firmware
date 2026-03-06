@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "slac_state.enum.h"
+#include "generated/slac_state.enum.h"
 
 #define SLAC_ETHERNET_FRAME_LENGTH_MAX 1518
 

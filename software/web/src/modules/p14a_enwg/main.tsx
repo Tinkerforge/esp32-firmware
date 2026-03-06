@@ -30,7 +30,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputText } from "../../ts/components/input_text";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
-import { P14aEnwgSource } from "./p14a_enwg_source.enum";
+import { P14aEnwgSource } from "./generated/p14a_enwg_source.enum";
 import { SourceInput } from "./api";
 
 const SIMULTANEITY_FACTORS: {[key: number]: number} = {2: 0.80, 3: 0.75, 4: 0.70, 5: 0.65, 6: 0.60, 7: 0.55, 8: 0.50};

@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "sdp_state.enum.h"
+#include "generated/sdp_state.enum.h"
 
 // ISO 15118-2:2014 port definitions
 // Table 15: V2G_UDP_SDP_SERVER - UDP port for SDP discovery

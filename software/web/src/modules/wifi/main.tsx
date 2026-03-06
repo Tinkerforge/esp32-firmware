@@ -30,7 +30,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { Wifi } from "react-feather";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
-import { WifiState } from "./wifi_state.enum";
+import { WifiState } from "./generated/wifi_state.enum";
 
 export function WifiSTANavbar() {
     return <NavbarItem name="wifi_sta" module="wifi" title={__("wifi.navbar.wifi_sta")} symbol={<Wifi />} />;

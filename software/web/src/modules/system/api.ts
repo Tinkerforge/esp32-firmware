@@ -1,5 +1,5 @@
 import { Language } from "../../ts/language";
-import { ColorScheme } from "./color_scheme.enum";
+import { ColorScheme } from "./generated/color_scheme.enum";
 
 export interface i18n_config {
     language: Language;

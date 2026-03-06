@@ -33,7 +33,7 @@
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
 
-#include "cas_error.enum.h"
+#include "generated/cas_error.enum.h"
 
 //#include "gcc_warnings.h"
 

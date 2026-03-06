@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "departure.enum.h"
+#include "generated/departure.enum.h"
 
 #include "modules/cm_networking/cm_networking_defs.h"
 

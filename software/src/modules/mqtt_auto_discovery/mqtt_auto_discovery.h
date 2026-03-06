@@ -23,7 +23,7 @@
 #include "config.h"
 #include "mqtt_discovery_topics.h"
 #include "cool_string.h"
-#include "mqtt_auto_discovery_mode.enum.h"
+#include "generated/mqtt_auto_discovery_mode.enum.h"
 
 class MqttAutoDiscovery final : public IModule
 {

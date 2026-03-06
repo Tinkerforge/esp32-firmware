@@ -433,23 +433,25 @@ def find_frontend_plugins(host_module_name, plugin_name):
     return plugins
 
 #region enum generator
+
 @dataclass
 class EnumValue:
     name: NameFlavors
     number: int
-    comment: str
+    comment: str = ''
 
 def generate_enum(source_file_name: str,
                   backend_module: NameFlavors,
                   enum_name: NameFlavors,
                   underlying_type: str,
                   values: list[EnumValue],
-                  comment: str | None,
-                  require_stable_api: bool):
+                  comment: str | None = None,
+                  require_stable_api: bool = True):
+    root_dir = os.path.split(os.path.realpath(__file__))[0]
     mod_path = os.path.join('src', 'modules', backend_module.under)
 
     enum_values = [f'    {v.name.camel} = {v.number},{v.comment}\n' for v in values]
-    enum_cases= [f'    case {enum_name.camel}::{v.name.camel}: return "{v.name.space}";\n' for v in values]
+    enum_cases = [f'    case {enum_name.camel}::{v.name.camel}: return "{v.name.space}";\n' for v in values]
     value_number_min_name = min(values, key=lambda v: v.number).name
     value_number_max_name = max(values, key=lambda v: v.number).name
 
@@ -457,7 +459,7 @@ def generate_enum(source_file_name: str,
 
     if require_stable_api:
         try:
-            with open(os.path.join(mod_path, source_file_name + '.previous'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(root_dir, mod_path, 'generated', source_file_name + '.previous'), 'r', encoding='utf-8') as f:
                 enum_previous_raw_values = json.loads(f.read())
         except FileNotFoundError:
             enum_previous_raw_values = None
@@ -468,10 +470,10 @@ def generate_enum(source_file_name: str,
                     print(f'Error: Invalid change to value "{value_name}" in enum file "{source_file_name}" in backend {mod_path}')
                     sys.exit(1)
 
-        tfutil.write_file_if_different(os.path.join(mod_path, source_file_name + '.previous'), json.dumps(enum_raw_values))
+        write_generated_file(os.path.join(root_dir, mod_path, 'generated', source_file_name + '.previous'), json.dumps(enum_raw_values))
 
     enum_header = ""
-    enum_header += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    enum_header += f'// WARNING: This file is generated from "{source_file_name}" in backend {mod_path} by pio_hooks.py\n\n'
     enum_header += '#include <stdint.h>\n\n'
     enum_header += '#pragma once\n\n'
     if comment:
@@ -485,10 +487,10 @@ def generate_enum(source_file_name: str,
     enum_header += f'#define {enum_name.upper}_COUNT {len(values)}\n\n'
     enum_header += f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n'
 
-    tfutil.write_file_if_different(os.path.join(mod_path, enum_name.under + '.enum.h'), enum_header)
+    write_generated_file(os.path.join(root_dir, mod_path, 'generated', enum_name.under + '.enum.h'), enum_header)
 
     enum_source = ""
-    enum_source += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    enum_source += f'// WARNING: This file is generated from "{source_file_name}" in backend {mod_path} by pio_hooks.py\n\n'
     enum_source += f'#include "{enum_name.under}.enum.h"\n\n'
     enum_source += f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n'
     enum_source += '{\n'
@@ -498,10 +500,10 @@ def generate_enum(source_file_name: str,
     enum_source += '    }\n'
     enum_source += '}\n'
 
-    tfutil.write_file_if_different(os.path.join(mod_path, enum_name.under + '.enum.cpp'), enum_source)
+    write_generated_file(os.path.join(root_dir, mod_path, 'generated', enum_name.under + '.enum.cpp'), enum_source)
 
     frontend_source = ""
-    frontend_source += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    frontend_source += f'// WARNING: This file is generated from "{source_file_name}" in backend {mod_path} by pio_hooks.py\n\n'
     frontend_source += f'export const enum {enum_name.camel} {{\n'
     frontend_source += ''.join(enum_values)
     frontend_source += '\n'
@@ -509,9 +511,10 @@ def generate_enum(source_file_name: str,
     frontend_source += f'    _max = {value_number_max_name.camel},\n'
     frontend_source += '}\n'
 
-    frontend_mod_path = os.path.join('web', 'src', 'modules', backend_module.under)
-    if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
-        tfutil.write_file_if_different(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), frontend_source)
+    frontend_mod_path = os.path.join(root_dir, 'web', 'src', 'modules', backend_module.under)
+
+    write_generated_file(os.path.join(frontend_mod_path, 'generated', enum_name.under + '.enum.ts'), frontend_source)
+
 #endregion
 
 #region union generator
@@ -709,19 +712,22 @@ export type {self.name.camel} =
             module_name,
             FlavoredName(self.name.space + " Tag").get(),
             'uint8_t',
-            [EnumValue(v.name, i, '') for i, v in enumerate(self.variants)],
+            [EnumValue(v.name, i) for i, v in enumerate(self.variants)],
             None,
             self.require_stable_api)
 
+        root_dir = os.path.split(os.path.realpath(__file__))[0]
+
         # Generate backend union definition and implementation
-        with tfutil.ChangedDirectory(os.path.join('src', 'modules', module_name.under)):
-            tfutil.write_file_if_different(self.name.under + ".union.h", self.get_struct())
-            tfutil.write_file_if_different(self.name.under + ".union.cpp", self.get_impl())
+        backend_mod_path = os.path.join(root_dir, 'src', 'modules', module_name.under)
+
+        write_generated_file(os.path.join(backend_mod_path, 'generated', self.name.under + ".union.h"), self.get_struct())
+        write_generated_file(os.path.join(backend_mod_path, 'generated', self.name.under + ".union.cpp"), self.get_impl())
 
         # Generate frontend API type for union
-        frontend_mod_path = os.path.join('web', 'src', 'modules', module_name.under)
-        if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
-            tfutil.write_file_if_different(os.path.join(frontend_mod_path, self.name.under + '.union.ts'), self.get_ts_type())
+        frontend_mod_path = os.path.join(root_dir, 'web', 'src', 'modules', module_name.under)
+
+        write_generated_file(os.path.join(frontend_mod_path, 'generated', self.name.under + '.union.ts'), self.get_ts_type())
 
 #endregion
 
@@ -734,3 +740,15 @@ def import_from_path(module_name, file_path):
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
+
+def write_generated_file(path, content):
+    root_dir = os.path.split(os.path.realpath(__file__))[0]
+    path_dir = os.path.split(path)[0]
+
+    if len(path_dir) > 0:
+        os.makedirs(path_dir, exist_ok=True)
+
+    tfutil.write_file_if_different(path, content)
+
+    with open(os.path.join(root_dir, 'generated_files'), 'a', encoding='utf-8') as f:
+        f.write(os.path.relpath(os.path.realpath(path), root_dir) + '\n')

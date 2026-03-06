@@ -20,7 +20,7 @@
 
 import { h } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
-import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
+import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";

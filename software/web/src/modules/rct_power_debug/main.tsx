@@ -36,7 +36,7 @@ import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 //#if MODULE_METERS_AVAILABLE
-import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
 //#endif
 

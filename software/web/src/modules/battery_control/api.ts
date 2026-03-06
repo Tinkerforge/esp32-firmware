@@ -1,5 +1,5 @@
 import { RuleConfig } from "./types";
-import { BatteryMode } from "../batteries/battery_mode.enum";
+import { BatteryMode } from "../batteries/generated/battery_mode.enum";
 
 export interface config {
     cheap_tariff_quarters: number;

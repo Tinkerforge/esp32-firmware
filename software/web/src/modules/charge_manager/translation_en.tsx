@@ -3,8 +3,8 @@ import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 import { toLocaleFixed } from "../../ts/util";
-import { CASState } from "modules/charge_manager/cas_state.enum";
-import { CASError } from "modules/charge_manager/cas_error.enum";
+import { CASState } from "modules/charge_manager/generated/cas_state.enum";
+import { CASError } from "modules/charge_manager/generated/cas_error.enum";
 let x = {
     "charge_manager": {
         "status": {

@@ -1,4 +1,4 @@
-import {Usecases} from "./usecases.enum";
+import {Usecases} from "./generated/usecases.enum";
 
 interface Peer {
     ip: string;

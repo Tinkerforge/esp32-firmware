@@ -28,7 +28,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
-#include "control_period.enum.h"
+#include "generated/control_period.enum.h"
 
 static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
 static constexpr auto MAX_STARTUP_DELAY = 1_min;

@@ -20,7 +20,7 @@
 
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationActionID } from "../automation/automation_action_id.enum";
+import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputFloat } from "../../ts/components/input_float";
@@ -29,7 +29,7 @@ import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { Collapse } from "react-bootstrap";
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 
 export type EvseAutomationAction = [
     AutomationActionID.SetCurrent,

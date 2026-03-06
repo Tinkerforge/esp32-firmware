@@ -20,12 +20,12 @@
 import { h, ComponentChildren } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
-import { MeterClassID } from "../meters/meter_class_id.enum";
-import { MeterLocation } from "../meters/meter_location.enum";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
+import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { MeterConfig } from "../meters/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";
-import { EVDataProtocol } from "./ev_data_protocol.enum";
+import { EVDataProtocol } from "./generated/ev_data_protocol.enum";
 import * as API from "../../ts/api";
 
 export type ISO15118MetersConfig = [

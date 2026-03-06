@@ -158,8 +158,8 @@ presets = [
 ]
 
 inc = '// WARNING: This file is generated\n\n'
-inc += '#include "../meters/meter_value_id.h"\n'
-inc += '#include "../meters/meter_location.enum.h"\n\n'
+inc += '#include "modules/meters/meter_value_id.h"\n'
+inc += '#include "modules/meters/generated/meter_location.enum.h"\n\n'
 
 for preset in presets:
     if preset[1] == 'Unknown':
@@ -204,7 +204,7 @@ tfutil.write_file_if_different('presets.inc', inc)
 
 ts = '// WARNING: This file is generated\n\n'
 ts += 'import { MeterValueID } from "../meters/meter_value_id"\n'
-ts += 'import { MeterLocation } from "../meters/meter_location.enum"\n\n'
+ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum"\n\n'
 ts += 'export const PRESET_VALUE_IDS: {[key: string]: MeterValueID[]} = {\n'
 
 for preset in presets:

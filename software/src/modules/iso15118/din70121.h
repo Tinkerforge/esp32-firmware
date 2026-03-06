@@ -25,7 +25,7 @@
 #include "lwip/sockets.h"
 
 #include "sdp.h"
-#include "din70121_state.enum.h"
+#include "generated/din70121_state.enum.h"
 
 #include "cbv2g/common/exi_bitstream.h"
 #include "cbv2g/din/din_msgDefDecoder.h"

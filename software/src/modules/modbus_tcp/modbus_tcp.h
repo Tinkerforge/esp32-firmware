@@ -26,7 +26,7 @@
 
 #include <TFTools/Option.h>
 
-#include "register_table.enum.h"
+#include "generated/register_table.enum.h"
 
 class ModbusTCP final : public IModule
 {

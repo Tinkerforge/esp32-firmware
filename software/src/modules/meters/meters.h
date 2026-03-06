@@ -26,7 +26,7 @@
 #include "options.h"
 #include "imeter.h"
 #include "imeter_generator.h"
-#include "meter_location.enum.h"
+#include "generated/meter_location.enum.h"
 #include "meter_value_availability.h"
 #include "value_history.h"
 #include "meter_value_id.h"

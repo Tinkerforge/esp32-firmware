@@ -19,11 +19,11 @@
 
 #include "meters_iso15118.h"
 #include "meter_iso15118.h"
-#include "ev_data_protocol.enum.h"
+#include "generated/ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "modules/meters/meter_location.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 #include "modules/iso15118/common.h"
 
 #include "gcc_warnings.h"

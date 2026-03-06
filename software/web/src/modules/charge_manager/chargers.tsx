@@ -34,7 +34,7 @@ import { Plus } from "react-feather";
 import { SubPage } from "../../ts/components/sub_page";
 import { Table } from "../../ts/components/table";
 import type { ChargeManagerStatus } from "./main";
-import { CMPhaseRotation } from "./cm_phase_rotation.enum";
+import { CMPhaseRotation } from "./generated/cm_phase_rotation.enum";
 import { InputFloat } from "../../ts/components/input_float";
 
 type ChargeManagerConfig = API.getType["charge_manager/config"];

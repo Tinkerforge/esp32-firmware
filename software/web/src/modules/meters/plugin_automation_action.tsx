@@ -23,7 +23,7 @@ import * as options from "../../options";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, PreInitResult } from "../automation/types";
-import { AutomationActionID } from "../automation/automation_action_id.enum";
+import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { FormRow } from "../../ts/components/form_row";
 import { InputSelect } from "../../ts/components/input_select";
 

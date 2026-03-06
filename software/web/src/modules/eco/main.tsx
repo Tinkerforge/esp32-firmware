@@ -38,9 +38,9 @@ import { Button, Collapse, InputGroup } from "react-bootstrap";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min, get_price_from_index_as_15min } from "../day_ahead_prices/main";
-import { Departure } from "./departure.enum";
-import { Resolution } from "../day_ahead_prices/resolution.enum";
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { Departure } from "./generated/departure.enum";
+import { Resolution } from "../day_ahead_prices/generated/resolution.enum";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 
 export function EcoNavbar() {
     return (

@@ -1,11 +1,11 @@
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
-import { ZeroPhaseDecision } from "./zero_phase_decision.union";
-import { OnePhaseDecision } from "./one_phase_decision.union";
-import { ThreePhaseDecision } from "./three_phase_decision.union";
-import { CurrentDecision } from "./current_decision.union";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
+import { ZeroPhaseDecision } from "./generated/zero_phase_decision.union";
+import { OnePhaseDecision } from "./generated/one_phase_decision.union";
+import { ThreePhaseDecision } from "./generated/three_phase_decision.union";
+import { CurrentDecision } from "./generated/current_decision.union";
 
-import { CASState } from "./cas_state.enum";
-import { CASError } from "./cas_error.enum";
+import { CASState } from "./generated/cas_state.enum";
+import { CASError } from "./generated/cas_error.enum";
 
 type ChargerState = {
     /** state */

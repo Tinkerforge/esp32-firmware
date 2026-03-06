@@ -1,4 +1,4 @@
-import { P14aEnwgSource } from "./p14a_enwg_source.enum";
+import { P14aEnwgSource } from "./generated/p14a_enwg_source.enum";
 
 export type SourceInput = [
     P14aEnwgSource.Input,

@@ -459,7 +459,7 @@ for group, modes in all_modes.items():
                      '        break;\n\n')
 
 ts  = '// WARNING: This file is generated.\n\n'
-ts += 'import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";\n\n'
+ts += 'import { BatteryModbusTCPTableID } from "./generated/battery_modbus_tcp_table_id.enum";\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'

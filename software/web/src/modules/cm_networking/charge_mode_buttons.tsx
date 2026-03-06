@@ -22,7 +22,7 @@ import { __ } from "../../ts/translation";
 import { h } from "preact";
 import { Button } from "react-bootstrap";
 import { CheckCircle, Circle } from "react-feather";
-import { ConfigChargeMode } from "./config_charge_mode.enum";
+import { ConfigChargeMode } from "./generated/config_charge_mode.enum";
 
 /*
 selected disabled   variant   clickable   symbol

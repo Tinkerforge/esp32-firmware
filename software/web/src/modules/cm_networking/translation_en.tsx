@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
-import { ConfigChargeMode } from "modules/cm_networking/config_charge_mode.enum";
+import { ConfigChargeMode } from "modules/cm_networking/generated/config_charge_mode.enum";
 let x = {
     "cm_networking": {
         "status": {

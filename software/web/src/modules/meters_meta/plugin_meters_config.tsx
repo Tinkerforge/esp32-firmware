@@ -22,8 +22,8 @@ import * as util from "../../ts/util";
 import * as options from "../../options";
 import { __ } from "../../ts/translation";
 
-import { MeterClassID } from "../meters/meter_class_id.enum";
-import { MeterLocation } from "../meters/meter_location.enum";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
+import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig  } from "../meters/types";
 

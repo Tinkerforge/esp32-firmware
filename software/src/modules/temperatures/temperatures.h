@@ -26,7 +26,7 @@
 #include "module.h"
 #include "config.h"
 #include "module_available.h"
-#include "temperature_source.enum.h"
+#include "generated/temperature_source.enum.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"

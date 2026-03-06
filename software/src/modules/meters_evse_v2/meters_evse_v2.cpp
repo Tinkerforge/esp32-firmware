@@ -23,7 +23,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
-#include "modules/meters/meter_location.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 
 #include "gcc_warnings.h"
 

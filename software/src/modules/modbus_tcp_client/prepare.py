@@ -4,6 +4,7 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
+
 def make_modbus_value_type(register_count, is_signed, is_float, register_order_is_le):
     assert 1 <= register_count <= 4, register_count
 
@@ -12,26 +13,21 @@ def make_modbus_value_type(register_count, is_signed, is_float, register_order_i
 
 
 modbus_value_types = [
-    ('None',  0),
-    ('U16',   make_modbus_value_type(1, False, False, False)),
-    ('S16',   make_modbus_value_type(1, True,  False, False)),
-    ('U32BE', make_modbus_value_type(2, False, False, False)),
-    ('U32LE', make_modbus_value_type(2, False, False, True)),
-    ('S32BE', make_modbus_value_type(2, True,  False, False)),
-    ('S32LE', make_modbus_value_type(2, True,  False, True)),
-    ('F32BE', make_modbus_value_type(2, True,  True,  False)),
-    ('F32LE', make_modbus_value_type(2, True,  True,  True)),
-    ('U64BE', make_modbus_value_type(4, False, False, False)),
-    ('U64LE', make_modbus_value_type(4, False, False, True)),
-    ('S64BE', make_modbus_value_type(4, True,  False, False)),
-    ('S64LE', make_modbus_value_type(4, True,  False, True)),
-    ('F64BE', make_modbus_value_type(4, True,  True,  False)),
-    ('F64LE', make_modbus_value_type(4, True,  True,  True)),
+    util.EnumValue(util.FlavoredName('None').get(),  0),
+    util.EnumValue(util.FlavoredName('U16').get(),   make_modbus_value_type(1, False, False, False)),
+    util.EnumValue(util.FlavoredName('S16').get(),   make_modbus_value_type(1, True,  False, False)),
+    util.EnumValue(util.FlavoredName('U32BE').get(), make_modbus_value_type(2, False, False, False)),
+    util.EnumValue(util.FlavoredName('U32LE').get(), make_modbus_value_type(2, False, False, True)),
+    util.EnumValue(util.FlavoredName('S32BE').get(), make_modbus_value_type(2, True,  False, False)),
+    util.EnumValue(util.FlavoredName('S32LE').get(), make_modbus_value_type(2, True,  False, True)),
+    util.EnumValue(util.FlavoredName('F32BE').get(), make_modbus_value_type(2, True,  True,  False)),
+    util.EnumValue(util.FlavoredName('F32LE').get(), make_modbus_value_type(2, True,  True,  True)),
+    util.EnumValue(util.FlavoredName('U64BE').get(), make_modbus_value_type(4, False, False, False)),
+    util.EnumValue(util.FlavoredName('U64LE').get(), make_modbus_value_type(4, False, False, True)),
+    util.EnumValue(util.FlavoredName('S64BE').get(), make_modbus_value_type(4, True,  False, False)),
+    util.EnumValue(util.FlavoredName('S64LE').get(), make_modbus_value_type(4, True,  False, True)),
+    util.EnumValue(util.FlavoredName('F64BE').get(), make_modbus_value_type(4, True,  True,  False)),
+    util.EnumValue(util.FlavoredName('F64LE').get(), make_modbus_value_type(4, True,  True,  True)),
 ]
 
-enum = '# WARNING: This file is generated\n'
-
-for item in modbus_value_types:
-    enum += f'{item[0]} = {item[1]}\n'
-
-tfutil.write_file_if_different('Modbus Value Type.uint8.enum', enum)
+util.generate_enum('Modbus Value Type.uint8.enum', util.FlavoredName('Modbus TCP Client').get(), util.FlavoredName('Modbus Value Type').get(), 'uint8_t', modbus_value_types)

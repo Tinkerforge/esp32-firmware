@@ -31,9 +31,9 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Progress } from "../../ts/components/progress";
 import { StatusSection } from "../../ts/components/status_section";
 import { Upload } from "react-feather";
-import { CheckState } from "./check_state.enum";
-import { InstallOrigin } from "./install_origin.enum";
-import { InstallState } from "./install_state.enum";
+import { CheckState } from "./generated/check_state.enum";
+import { InstallOrigin } from "./generated/install_origin.enum";
+import { InstallState } from "./generated/install_state.enum";
 
 export function FirmwareUpdateNavbar() {
     return <NavbarItem name="firmware_update" module="firmware_update" title={__("firmware_update.navbar.firmware_update")} symbol={<Upload />} />;

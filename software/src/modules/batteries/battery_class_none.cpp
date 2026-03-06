@@ -19,7 +19,7 @@
 
 #include "battery_class_none.h"
 
-#include "battery_class_id.enum.h"
+#include "generated/battery_class_id.enum.h"
 
 #include "gcc_warnings.h"
 

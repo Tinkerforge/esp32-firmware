@@ -25,7 +25,7 @@
 #include "config.h"
 #include "language.h"
 #include "chunked_response.h"
-#include "csv_flavor.enum.h"
+#include "generated/csv_flavor.enum.h"
 #include "charge_tracker_defs.h"
 #include "tools/string_builder.h"
 

@@ -32,7 +32,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
 import { Language } from "../../ts/language";
-import { ColorScheme } from "./color_scheme.enum";
+import { ColorScheme } from "./generated/color_scheme.enum";
 
 export function applyTheme(color_scheme: number) {
     let effectiveTheme: string;

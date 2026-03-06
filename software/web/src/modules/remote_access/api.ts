@@ -1,4 +1,4 @@
-import { RegistrationState } from "./registration_state.enum";
+import { RegistrationState } from "./generated/registration_state.enum";
 
 export interface config {
     enable: boolean,

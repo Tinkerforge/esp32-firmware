@@ -32,7 +32,7 @@ import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
-import { TemperatureSource } from "./temperature_source.enum";
+import { TemperatureSource } from "./generated/temperature_source.enum";
 
 const INT16_MAX = 32767;
 const INT16_MIN = -32768;

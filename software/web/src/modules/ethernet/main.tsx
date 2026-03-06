@@ -32,7 +32,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
-import { EthernetState } from "./ethernet_state.enum";
+import { EthernetState } from "./generated/ethernet_state.enum";
 
 export function EthernetNavbar() {
     return (

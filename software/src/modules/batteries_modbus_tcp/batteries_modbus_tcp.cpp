@@ -27,7 +27,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "battery_modbus_tcp_specs.h"
-#include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
+#include "modules/modbus_tcp_client/generated/modbus_register_address_mode.enum.h"
 #include "tools/printf.h"
 
 #include "gcc_warnings.h"

@@ -36,9 +36,9 @@ import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
 import { Button, Modal } from "react-bootstrap";
 import { CalendarGrid } from "../../ts/components/calendar_grid";
-import { Resolution } from "./resolution.enum";
-import { Region } from "./region.enum";
-import { PriceSource } from "./price_source.enum";
+import { Resolution } from "./generated/resolution.enum";
+import { Region } from "./generated/region.enum";
+import { PriceSource } from "./generated/price_source.enum";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
 
 function get_timestamp_today_00_00_in_seconds() {

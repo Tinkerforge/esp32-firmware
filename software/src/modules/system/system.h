@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "color_scheme.enum.h"
+#include "generated/color_scheme.enum.h"
 
 class System final : public IModule
 {

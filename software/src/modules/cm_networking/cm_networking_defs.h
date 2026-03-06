@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "client_error.enum.h"
-#include "config_charge_mode.enum.h"
+#include "generated/client_error.enum.h"
+#include "generated/config_charge_mode.enum.h"
 
 #if defined(BOARD_HAS_PSRAM)
 #define MAX_CONTROLLED_CHARGERS 64

@@ -1,4 +1,4 @@
-import { TileType } from "./tile_type.enum";
+import { TileType } from "./generated/tile_type.enum";
 
 type TileTypeEmpty = [TileType.Empty, null];
 type TileTypeCharger = [TileType.Charger, number];

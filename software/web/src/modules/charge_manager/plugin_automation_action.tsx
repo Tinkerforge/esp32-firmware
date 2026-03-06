@@ -21,7 +21,7 @@
 import { h } from "preact";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { AutomationActionID } from "../automation/automation_action_id.enum";
+import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 import { AutomationAction, PreInitResult } from "../automation/types";
 import { InputFloat } from "../../ts/components/input_float";
 import { FormRow } from "../../ts/components/form_row";

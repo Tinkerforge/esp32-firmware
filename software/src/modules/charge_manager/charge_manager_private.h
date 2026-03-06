@@ -10,13 +10,13 @@
 
 #define DISTRIBUTION_LOG_LEN 2048
 
-#include "cas_state.enum.h"
-#include "cas_error.enum.h"
+#include "generated/cas_state.enum.h"
+#include "generated/cas_error.enum.h"
 
-#include "zero_phase_decision.union.h"
-#include "one_phase_decision.union.h"
-#include "three_phase_decision.union.h"
-#include "current_decision.union.h"
+#include "generated/zero_phase_decision.union.h"
+#include "generated/one_phase_decision.union.h"
+#include "generated/three_phase_decision.union.h"
+#include "generated/current_decision.union.h"
 
 struct ChargerDecision {
     ZeroPhaseDecision zero;

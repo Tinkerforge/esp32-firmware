@@ -28,7 +28,7 @@
 #include <TFJson.h>
 
 #include "cert.h"
-#include "transport_mode.enum.h"
+#include "generated/transport_mode.enum.h"
 
 #include "module.h"
 #include "tools/malloc.h"

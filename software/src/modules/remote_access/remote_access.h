@@ -28,7 +28,7 @@
 #include "config.h"
 #include "async_https_client.h"
 #include "ping/ping_sock.h"
-#include "registration_state.enum.h"
+#include "generated/registration_state.enum.h"
 
 #define MAX_USER_CONNECTIONS 5
 

@@ -25,9 +25,9 @@
 #include "module.h"
 #include "modules/web_server/cert.h"
 #include "modules/ws/web_sockets.h"
-#include "node_state.enum.h"
+#include "generated/node_state.enum.h"
 #include "ship_connection.h"
-#include "ship_discovery_state.enum.h"
+#include "generated/ship_discovery_state.enum.h"
 #include "tools/string_builder.h"
 #include <TFJson.h>
 #include <vector>

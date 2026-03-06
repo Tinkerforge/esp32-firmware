@@ -33,9 +33,9 @@
 #include "tools/printf.h"
 #include "pdf_charge_log.h"
 #include "csv_charge_log.h"
-#include "file_type.enum.h"
-#include "csv_flavor.enum.h"
-#include "generation_state.enum.h"
+#include "generated/file_type.enum.h"
+#include "generated/csv_flavor.enum.h"
+#include "generated/generation_state.enum.h"
 #include "charge_tracker_defs.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512

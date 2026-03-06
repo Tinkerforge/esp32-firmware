@@ -21,7 +21,7 @@
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, PreInitResult } from "../automation/types";
-import { AutomationActionID } from "../automation/automation_action_id.enum";
+import { AutomationActionID } from "../automation/generated/automation_action_id.enum";
 
 export type ChargeTrackerResetAutomationAction = [
     AutomationActionID.ChargeTrackerReset,

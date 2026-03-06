@@ -20,7 +20,7 @@
 #pragma once
 
 #include "imodel_parser.h"
-#include "dc_port_type.enum.h"
+#include "generated/dc_port_type.enum.h"
 
 class MetersSunSpecParser714 : public IMetersSunSpecParser
 {

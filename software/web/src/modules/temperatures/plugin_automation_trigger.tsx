@@ -19,7 +19,7 @@
 
 import { h, ComponentChildren } from "preact";
 import { __ } from "../../ts/translation";
-import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
+import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { FormRow } from "../../ts/components/form_row";
 import { InputFloat } from "../../ts/components/input_float";

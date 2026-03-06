@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_location.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 #include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "config.h"

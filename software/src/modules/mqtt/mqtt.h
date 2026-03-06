@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/api/api.h"
 #include "tools/allocator.h"
-#include "mqtt_connection_state.enum.h"
+#include "generated/mqtt_connection_state.enum.h"
 #include "module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()

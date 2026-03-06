@@ -31,7 +31,7 @@
 #include "tools/semantic_version.h"
 #include "async_https_client.h"
 #include "signature_verify.embedded.h"
-#include "install_state.enum.h"
+#include "generated/install_state.enum.h"
 
 struct TFJsonSerializer;
 

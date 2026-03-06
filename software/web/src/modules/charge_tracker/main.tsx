@@ -40,9 +40,9 @@ import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List, Send, Mail } from "react-feather";
-import { CSVFlavor } from "./csv_flavor.enum";
+import { CSVFlavor } from "./generated/csv_flavor.enum";
 import { Language } from "../../ts/language";
-import { GenerationState } from "./generation_state.enum";
+import { GenerationState } from "./generated/generation_state.enum";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;

@@ -566,23 +566,7 @@ def repair_firmware_update_dir():
 def repair_meters_modbus_tcp_dir():
     path = os.path.abspath("src/modules/meters_modbus_tcp")
 
-    for filename in ["modbus_register_type.enum.cpp",
-                     "modbus_register_type.enum.h",
-                     "modbus_register_address_mode.enum.cpp",
-                     "modbus_register_address_mode.enum.h",
-                     "Modbus Value Type.uint8.enum",
-                     "modbus_value_type.enum.cpp",
-                     "modbus_value_type.enum.h"]:
-        try:
-            os.remove(os.path.join(path, filename))
-        except FileNotFoundError:
-            pass
-
-    path = os.path.abspath("web/src/modules/meters_modbus_tcp")
-
-    for filename in ["modbus_register_type.enum.ts",
-                     "modbus_register_address_mode.enum.ts",
-                     "modbus_value_type.enum.ts"]:
+    for filename in ["Modbus Value Type.uint8.enum"]:
         try:
             os.remove(os.path.join(path, filename))
         except FileNotFoundError:
@@ -598,32 +582,33 @@ def repair_meters_sun_spec_dir():
         except FileNotFoundError:
             pass
 
+def repair_modbus_tcp_client_dir():
+    path = os.path.abspath("src/modules/modbus_tcp_client")
+
+    for filename in ["Modbus Value Type.uint8.enum"]:
+        try:
+            os.remove(os.path.join(path, filename))
+        except FileNotFoundError:
+            pass
+
 def remove_orphaned_enum_files():
-    prefix_paths = []
-
-    for path in glob.glob("src/modules/*/*.enum"):
-        path_parts = os.path.split(path)
-        filename_parts = path_parts[-1].split('.')
-
-        prefix_paths.append(os.path.join(path_parts[0], f'{util.FlavoredName(filename_parts[0]).get().under}.enum'))
-
-    for path in glob.glob("src/modules/*/*.enum.cpp") + \
+    for path in glob.glob("src/modules/*/*.enum.previous") + \
+                glob.glob("src/modules/*/*.enum.cpp") + \
                 glob.glob("src/modules/*/*.enum.h") + \
                 glob.glob("web/src/modules/*/*.enum.ts"):
-        to_be_removed = False
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
 
-        if path.endswith(".cpp"):
-            to_be_removed = path[:-4] not in prefix_paths
-        elif path.endswith(".h"):
-            to_be_removed = path[:-2] not in prefix_paths
-        elif path.endswith(".ts"):
-            to_be_removed = path[4:-3] not in prefix_paths
-
-        if to_be_removed:
-            try:
-                os.remove(path)
-            except FileNotFoundError:
-                pass
+def remove_orphaned_union_files():
+    for path in glob.glob("src/modules/*/*.union.cpp") + \
+                glob.glob("src/modules/*/*.union.h") + \
+                glob.glob("web/src/modules/*/*.union.ts"):
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
 
 def find_module_space(modules, name_space):
     index = 0
@@ -814,9 +799,47 @@ def build_web(js_source_map, css_source_map, no_minify):
             'index.html'
         ], shell=sys.platform == 'win32')
 
+def remove_all_generated_files():
+    try:
+        with open('generated_files', 'r', encoding='utf-8') as f:
+            generated_files = set(f.read().strip().split('\n'))
+    except FileNotFoundError:
+        return
+
+    for generated_file in generated_files + glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*'):
+        try:
+            os.remove(generated_file)
+        except FileNotFoundError:
+            pass
+
+    try:
+        os.remove('generated_files')
+    except FileNotFoundError:
+        pass
+
+def remove_stale_generated_files():
+    try:
+        with open('generated_files', 'r', encoding='utf-8') as f:
+            generated_files = set(f.read().strip().split('\n'))
+    except FileNotFoundError:
+        generated_files = set()
+
+    for generated_file in glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*'):
+        if generated_file not in generated_files:
+            try:
+                os.remove(generated_file)
+            except FileNotFoundError:
+                pass
+
 def main():
     if env.IsCleanTarget():
+        remove_all_generated_files()
         return
+
+    try:
+        os.remove('generated_files')
+    except FileNotFoundError:
+        pass
 
     # Enable this for class_size script
     #env.Append(CXXFLAGS=["-fdump-lang-class"])
@@ -825,7 +848,9 @@ def main():
     repair_firmware_update_dir()
     repair_meters_modbus_tcp_dir()
     repair_meters_sun_spec_dir()
+    repair_modbus_tcp_client_dir()
     remove_orphaned_enum_files()
+    remove_orphaned_union_files()
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
@@ -1290,17 +1315,6 @@ def main():
 
         excluded_backend_modules.remove(backend_module.under)
 
-        if os.path.exists(os.path.join(mod_path, "prepare.py")):
-            util.log('Preparing backend module:', backend_module.space)
-
-            environ = dict(os.environ)
-            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
-            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
-            environ['PLATFORMIO_METADATA'] = metadata
-
-            with tfutil.ChangedDirectory(mod_path):
-                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
-
     del deduplicated_modules
 
     for root, dirs, files in os.walk('src', followlinks=True):
@@ -1577,15 +1591,22 @@ def main():
 
     del deduplicated_modules
 
-    # API
-    api_imports = []
-    api_config_map_entries = []
-    api_cache_entries = []
-    module_counter = 0
-    exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
-    exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
-    api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
+    # Prepare backend modules
+    for backend_module in backend_modules:
+        mod_path = os.path.join('src', 'modules', backend_module.under)
 
+        if os.path.exists(os.path.join(mod_path, "prepare.py")):
+            util.log('Preparing backend module:', backend_module.space)
+
+            environ = dict(os.environ)
+            environ['PLATFORMIO_PROJECT_DIR'] = env.subst('$PROJECT_DIR')
+            environ['PLATFORMIO_BUILD_DIR'] = env.subst('$BUILD_DIR')
+            environ['PLATFORMIO_METADATA'] = metadata
+
+            with tfutil.ChangedDirectory(mod_path):
+                check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+
+    # Prepare frontend modules
     for frontend_module in frontend_modules:
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
@@ -1599,6 +1620,18 @@ def main():
 
             with tfutil.ChangedDirectory(mod_path):
                 check_call([env.subst('$PYTHONEXE'), "-u", "prepare.py"], env=environ)
+
+    # API
+    api_imports = []
+    api_config_map_entries = []
+    api_cache_entries = []
+    module_counter = 0
+    exported_interface_pattern = re.compile("export interface ([A-Za-z0-9$_]+)")
+    exported_type_pattern = re.compile("export type ([A-Za-z0-9$_]+)")
+    api_path_pattern = re.compile("//APIPath:([^\n]*)\n")
+
+    for frontend_module in frontend_modules:
+        mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
 
         if os.path.exists(os.path.join(mod_path, 'main.ts')) or os.path.exists(os.path.join(mod_path, 'main.tsx')):
             main_ts_entries.append(frontend_module.under)
@@ -1938,7 +1971,7 @@ def main():
 
                         enum_values.append(util.EnumValue(value_name, value_number, value_comment))
 
-                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments), require_stable_api=True)
+                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments))
 
     # Generate unions
     for backend_module in backend_modules:
@@ -1962,6 +1995,8 @@ def main():
                 spec: util.Union = util.import_from_path(f"{backend_module.under}_{union_name.under}", os.path.join(mod_path, filename)).spec
                 spec.generate(backend_module)
 
+    remove_stale_generated_files()
+
     # Preprocessing web interface
     util.log('Preprocessing web interface')
 
@@ -1983,7 +2018,7 @@ def main():
         print("Stopping build after prepare")
         sys.exit(0)
 
-    # Generate web interface
+    # Build web interface
     util.log('Checking web interface dependencies')
 
     node_modules_src_paths = ['web/package-lock.json']

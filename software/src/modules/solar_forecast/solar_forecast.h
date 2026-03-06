@@ -28,7 +28,7 @@
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
-#include "forecast_source.enum.h"
+#include "generated/forecast_source.enum.h"
 
 #define SOLAR_FORECAST_MAX_JSON_LENGTH 8192
 #define SOLAR_FORECAST_MAX_ARDUINO_JSON_BUFFER_SIZE 8192

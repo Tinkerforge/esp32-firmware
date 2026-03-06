@@ -21,7 +21,7 @@
 
 #include "../spine_connection.h"
 #include "../spine_types.h"
-#include "../usecases.enum.h"
+#include "../generated/usecases.enum.h"
 #include "config.h"
 #include "usecase_helpers.h"
 #include <map>

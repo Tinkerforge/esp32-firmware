@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "module.h"
-#include "p14a_enwg_source.enum.h"
+#include "generated/p14a_enwg_source.enum.h"
 
 class P14aEnwg final : public IModule
 {

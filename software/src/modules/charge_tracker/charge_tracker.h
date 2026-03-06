@@ -27,9 +27,9 @@
 #include "csv_charge_log.h"
 #include "module_available.h"
 #include "charge_tracker_defs.h"
-#include "file_type.enum.h"
-#include "csv_flavor.enum.h"
-#include "generation_state.enum.h"
+#include "generated/file_type.enum.h"
+#include "generated/csv_flavor.enum.h"
+#include "generated/generation_state.enum.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 struct RemoteUploadRequest;

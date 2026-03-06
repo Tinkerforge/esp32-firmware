@@ -20,7 +20,7 @@
 
 import { __ } from "../../ts/translation";
 import { AutomationTrigger, PreInitResult } from "../automation/types";
-import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
+import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { ComponentChildren } from "preact";
 
 export type ChargeLimitsAutomationTrigger = [

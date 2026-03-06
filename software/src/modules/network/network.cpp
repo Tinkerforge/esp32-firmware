@@ -32,11 +32,11 @@
 #include "unsafe_ports.h"
 
 #if MODULE_ETHERNET_AVAILABLE()
-#include "modules/ethernet/ethernet_state.enum.h"
+#include "modules/ethernet/generated/ethernet_state.enum.h"
 #endif
 
 #if MODULE_WIFI_AVAILABLE()
-#include "modules/wifi/wifi_state.enum.h"
+#include "modules/wifi/generated/wifi_state.enum.h"
 #endif
 
 #if !MODULE_CERTS_AVAILABLE()

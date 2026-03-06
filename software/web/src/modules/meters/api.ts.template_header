@@ -1,4 +1,4 @@
-import { MeterClassID } from "./meter_class_id.enum";
+import { MeterClassID } from "./generated/meter_class_id.enum";
 {{{imports}}}
 
 type MeterConfig =

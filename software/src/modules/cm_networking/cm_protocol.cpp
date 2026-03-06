@@ -29,7 +29,7 @@
 #include "tools.h"
 #include "tools/net.h"
 #include "modules/meters/meter_defs.h"
-#include "client_error.enum.h"
+#include "generated/client_error.enum.h"
 
 static const char *get_charger_name(uint8_t idx)
 {

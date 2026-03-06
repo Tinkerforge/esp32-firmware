@@ -27,7 +27,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/ws/web_sockets.h"
-#include "ship_connection_state.enum.h"
+#include "generated/ship_connection_state.enum.h"
 //#include "ship_types.h"
 #include "TFJson.h"
 //#include "spine_connection.h"

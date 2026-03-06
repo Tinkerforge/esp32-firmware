@@ -32,7 +32,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { FormSeparator } from "../../ts/components/form_separator";
-import { MeterLocation } from "../meters/meter_location.enum";
+import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { translate_meter_location } from "../meters/meter_location";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapperB, UplotData, UplotPath } from "../../ts/components/uplot_wrapper_2nd";

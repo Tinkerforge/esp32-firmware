@@ -23,7 +23,7 @@
 #include <WString.h>
 
 #include "config.h"
-#include "meter_class_id.enum.h"
+#include "generated/meter_class_id.enum.h"
 
 #define printfln_meter(fmt, ...) printfln("Meter %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)
 

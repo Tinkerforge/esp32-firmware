@@ -32,7 +32,7 @@
 
 #include "common.h"
 #include "sdp.h"  // For V2GTPPayloadType
-#include "iso20_state.enum.h"
+#include "generated/iso20_state.enum.h"
 
 #define ISO20_SECC_SEQUENCE_TIMEOUT 60_s
 #define ISO20_SESSION_ID_LENGTH 8

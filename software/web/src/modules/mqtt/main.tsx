@@ -35,12 +35,12 @@ import { SubPage } from "../../ts/components/sub_page";
 import { Collapse } from "react-bootstrap";
 import { NavbarItem } from "../../ts/components/navbar_item";
 //#if MODULE_MQTT_AUTO_DISCOVERY_AVAILABLE
-import { MqttAutoDiscoveryMode } from "../mqtt_auto_discovery/mqtt_auto_discovery_mode.enum";
+import { MqttAutoDiscoveryMode } from "../mqtt_auto_discovery/generated/mqtt_auto_discovery_mode.enum";
 //#endif
 import { StatusSection } from "../../ts/components/status_section";
 import { Rss } from "react-feather";
 import { register_status_provider, ModuleStatus } from "../../ts/status_registry";
-import { MqttConnectionState } from "./mqtt_connection_state.enum";
+import { MqttConnectionState } from "./generated/mqtt_connection_state.enum";
 
 export function MqttNavbar() {
     return <NavbarItem name="mqtt" module="mqtt" title={__("mqtt.navbar.mqtt")} symbol={<Rss />} />;

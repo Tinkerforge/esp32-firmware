@@ -31,12 +31,12 @@
 #include "build.h"
 #include "options.h"
 #include "tools.h"
-#include "cm_phase_rotation.enum.h"
-#include "zero_phase_decision.union.h"
-#include "one_phase_decision.union.h"
-#include "three_phase_decision.union.h"
-#include "current_decision.union.h"
-#include "modules/cm_networking/client_error.enum.h"
+#include "generated/cm_phase_rotation.enum.h"
+#include "generated/zero_phase_decision.union.h"
+#include "generated/one_phase_decision.union.h"
+#include "generated/three_phase_decision.union.h"
+#include "generated/current_decision.union.h"
+#include "modules/cm_networking/generated/client_error.enum.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 

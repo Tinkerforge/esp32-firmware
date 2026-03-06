@@ -142,7 +142,7 @@ for model_spec in model_specs:
 h = '// WARNING: This file is generated.\n\n'
 h += '#include <stdint.h>\n'
 h += '#include <stdlib.h>\n\n'
-h += '#include "modules/meters/meter_location.enum.h"\n\n'
+h += '#include "modules/meters/generated/meter_location.enum.h"\n\n'
 h += '#pragma once\n\n'
 h += 'enum class SunSpecModelID : uint16_t {\n'
 h += ''.join(enum_values)
@@ -172,7 +172,7 @@ for lang in translation_values:
     })
 
 ts = '// WARNING: This file is generated.\n\n'
-ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n\n'
+ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum";\n\n'
 ts += 'export const SUN_SPEC_MODEL_INFOS: {model_id: number, is_meter_like: boolean, is_supported: boolean}[] = [\n'
 ts += ''.join(model_infos)
 ts += '];\n\n'

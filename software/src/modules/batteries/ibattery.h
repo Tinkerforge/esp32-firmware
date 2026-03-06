@@ -22,8 +22,8 @@
 #include <WString.h>
 #include <stdint.h>
 
-#include "battery_class_id.enum.h"
-#include "battery_mode.enum.h"
+#include "generated/battery_class_id.enum.h"
+#include "generated/battery_mode.enum.h"
 #include "config.h"
 
 #define printfln_battery(fmt, ...) printfln("Battery %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)

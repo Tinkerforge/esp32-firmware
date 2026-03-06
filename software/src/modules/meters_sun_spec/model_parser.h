@@ -25,7 +25,7 @@
 
 #include "modules/meters/meter_value_id.h"
 #include "imodel_parser.h"
-#include "dc_port_type.enum.h"
+#include "generated/dc_port_type.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

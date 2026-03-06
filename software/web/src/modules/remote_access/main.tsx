@@ -36,7 +36,7 @@ import { InputHost } from "../../ts/components/input_host";
 import { __ } from "../../ts/translation";
 import "./wireguard";
 import { add_user, config_update, register, config, } from "./api";
-import { RegistrationState } from "./registration_state.enum";
+import { RegistrationState } from "./generated/registration_state.enum";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";

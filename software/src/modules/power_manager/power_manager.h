@@ -23,7 +23,7 @@
 #include "module.h"
 #include "config.h"
 #include "phase_switcher_back-end.h"
-#include "battery_priority.enum.h"
+#include "generated/battery_priority.enum.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/charge_manager/current_limits.h"
 #include "module_available.h"
@@ -32,7 +32,7 @@
 #include "modules/automation/automation_backend.h"
 #endif
 
-#include "modules/cm_networking/config_charge_mode.enum.h"
+#include "modules/cm_networking/generated/config_charge_mode.enum.h"
 
 #define PM_TASK_DELAY_MS                    500
 

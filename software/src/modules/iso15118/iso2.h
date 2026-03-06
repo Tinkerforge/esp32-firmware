@@ -27,7 +27,7 @@
 #include "cbv2g/iso_2/iso2_msgDefEncoder.h"
 
 #include "common.h"
-#include "iso2_state.enum.h"
+#include "generated/iso2_state.enum.h"
 
 #define ISO2_SECC_SEQUENCE_TIMEOUT 60_s
 

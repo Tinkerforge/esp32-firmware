@@ -36,14 +36,14 @@ import { InputText } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
-import { BatteryClassID } from "./battery_class_id.enum";
+import { BatteryClassID } from "./generated/battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
 //#if MODULE_BATTERY_CONTROL_AVAILABLE
-import { BatteryMode } from "./battery_mode.enum";
+import { BatteryMode } from "./generated/battery_mode.enum";
 import { RuleConfig } from "../battery_control/types";
-import { RuleAction } from "../battery_control/rule_action.enum";
-import { RuleCondition } from "../battery_control/rule_condition.enum";
-import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
+import { RuleAction } from "../battery_control/generated/rule_action.enum";
+import { RuleCondition } from "../battery_control/generated/rule_condition.enum";
+import { ScheduleRuleCondition } from "../battery_control/generated/schedule_rule_condition.enum";
 //#endif
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index } from "../day_ahead_prices/main";

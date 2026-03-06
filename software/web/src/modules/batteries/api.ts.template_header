@@ -1,4 +1,4 @@
-import { BatteryClassID } from "./battery_class_id.enum";
+import { BatteryClassID } from "./generated/battery_class_id.enum";
 {{{imports}}}
 
 export interface config {

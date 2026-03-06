@@ -18,9 +18,9 @@
  */
 #include "day_ahead_prices.h"
 
-#include "price_source.enum.h"
-#include "region.enum.h"
-#include "resolution.enum.h"
+#include "generated/price_source.enum.h"
+#include "generated/region.enum.h"
+#include "generated/resolution.enum.h"
 
 #include <math.h>
 #include <time.h>

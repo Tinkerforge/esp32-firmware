@@ -18,7 +18,7 @@
  */
 
 #include "meter_iso15118.h"
-#include "ev_data_protocol.enum.h"
+#include "generated/ev_data_protocol.enum.h"
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"

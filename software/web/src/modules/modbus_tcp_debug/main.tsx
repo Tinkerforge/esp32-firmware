@@ -35,14 +35,14 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
-import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
-import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
+import { ModbusFunctionCode } from "../modbus_tcp_client/generated/modbus_function_code.enum";
+import { ModbusRegisterAddressMode } from "../modbus_tcp_client/generated/modbus_register_address_mode.enum";
 //#if MODULE_METERS_AVAILABLE
-import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterConfig } from "../meters/types";
 //#endif
 //#if MODULE_METERS_MODBUS_TCP_AVAILABLE
-import { MeterModbusTCPTableID } from "../meters_modbus_tcp/meter_modbus_tcp_table_id.enum";
+import { MeterModbusTCPTableID } from "../meters_modbus_tcp/generated/meter_modbus_tcp_table_id.enum";
 //#endif
 
 export function ModbusTCPDebugNavbar() {

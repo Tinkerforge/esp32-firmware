@@ -23,7 +23,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "ethernet_state.enum.h"
+#include "generated/ethernet_state.enum.h"
 
 class Ethernet final : public IModule
 {

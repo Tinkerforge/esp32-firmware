@@ -21,7 +21,7 @@
 import { h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { __ } from "../../ts/translation";
-import { AutomationTriggerID } from "../automation/automation_trigger_id.enum";
+import { AutomationTriggerID } from "../automation/generated/automation_trigger_id.enum";
 import { AutomationTrigger, PreInitResult } from "../automation/types";
 import { InputText } from "../../ts/components/input_text";
 import { FormRow } from "../../ts/components/form_row";

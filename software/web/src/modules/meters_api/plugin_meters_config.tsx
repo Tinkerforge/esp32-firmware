@@ -21,8 +21,8 @@ import * as options from "../../options";
 import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
-import { MeterClassID } from "../meters/meter_class_id.enum";
-import { MeterLocation } from "../meters/meter_location.enum";
+import { MeterClassID } from "../meters/generated/meter_class_id.enum";
+import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/meter_value_id";
 import { MeterConfig } from "../meters/types";

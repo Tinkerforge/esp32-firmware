@@ -1,11 +1,11 @@
 //#include "module_available.inc"
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
-import { FileType } from "./file_type.enum";
-import { CSVFlavor } from "./csv_flavor.enum";
+import { FileType } from "./generated/file_type.enum";
+import { CSVFlavor } from "./generated/csv_flavor.enum";
 //#endif
 import { Language } from "../../ts/language";
-import { GenerationState } from "./generation_state.enum";
+import { GenerationState } from "./generated/generation_state.enum";
 
 interface Charge {
     timestamp_minutes: number;

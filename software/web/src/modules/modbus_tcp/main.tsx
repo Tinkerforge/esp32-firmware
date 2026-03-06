@@ -30,7 +30,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
-import { RegisterTable } from "./register_table.enum";
+import { RegisterTable } from "./generated/register_table.enum";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { NavbarItem } from "../../ts/components/navbar_item";
 //#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE
