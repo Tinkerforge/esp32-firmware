@@ -256,6 +256,9 @@ void Common::reset_active_socket()
     iso15118.set_poll_fd(FDS_ACTIVE_INDEX, -1);
     state = CommonState::Idle;
     exi_in_use = ExiType::AppHand;
+    cancel_sequence_timeout(iso15118.iso2.next_timeout);
+    cancel_sequence_timeout(iso15118.din70121.next_timeout);
+    cancel_sequence_timeout(iso15118.iso20.next_timeout);
 }
 
 void Common::prepare_din_header(struct din_MessageHeaderType *header)
