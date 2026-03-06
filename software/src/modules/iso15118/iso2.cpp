@@ -278,14 +278,6 @@ void ISO2::handle_service_discovery_req()
     // No other services then charging
     res->ServiceList_isUsed = 0;
 
-    // Available energy transfer modes (add DC to be able to read SoC)
-#if 0
-    res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[0] = iso2_EnergyTransferModeType_DC_extended;
-    res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[1] = iso2_EnergyTransferModeType_AC_single_phase_core;
-    res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.array[2] = iso2_EnergyTransferModeType_AC_three_phase_core;
-    res->ChargeService.SupportedEnergyTransferMode.EnergyTransferMode.arrayLen = 3;
-#endif
-
     const bool charge_via_iso15118 = iso15118.config.get("charge_via_iso15118")->asBool();
     const bool read_soc = iso15118.config.get("read_soc")->asBool();
 
