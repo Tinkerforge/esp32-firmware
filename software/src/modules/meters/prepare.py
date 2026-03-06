@@ -1,3 +1,4 @@
+import os
 import sys
 import csv
 import json
@@ -69,6 +70,14 @@ def update_value_id_tree(sub_tree, sub_id):
 
 tree_paths = []
 
+# Read build target information for conditional value ID filtering
+metadata_json = os.getenv('PLATFORMIO_METADATA')
+if metadata_json is not None:
+    metadata = json.loads(metadata_json)
+    product_id = metadata.get('product_id', None)
+else:
+    product_id = None
+
 measurands = ['None']
 measurand_map = []
 submeasurands = ['None']
@@ -113,8 +122,13 @@ with open('meter_value_id.csv', newline='', encoding='utf-8') as f:
 
         id_ = row['id']
 
-        if int(id_) != last_id + 1:
-            print(f"meter_value_id.csv is not sorted by ID! Expected {last_id + 1}, got {id_}")
+        # Filter rows by build target
+        targets = (row.get('targets') or '').strip()
+        if targets and product_id is not None and product_id not in [t.strip() for t in targets.split(';')]:
+            continue
+
+        if int(id_) <= last_id:
+            print(f"meter_value_id.csv is not sorted by ID! Expected > {last_id}, got {id_}")
             sys.exit(1)
         last_id = int(id_)
 
