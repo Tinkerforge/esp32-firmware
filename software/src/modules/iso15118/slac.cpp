@@ -726,8 +726,14 @@ void SLAC::state_machine_loop()
         return;
     }
 
-    // Check for WaitForSDP → LinkDetected transition
-    // When we receive an IPv6 packet (SDP), the link is established
+    // In ModemDisabled state the PLC modem is held in hardware reset.
+    if (state == SLACState::ModemDisabled) {
+        api_state.get("state")->updateEnum(state);
+        return;
+    }
+
+    // Check for WaitForSDP to LinkDetected transition.
+    // When we receive an IPv6 packet (SDP), the link is established.
     if (state == SLACState::WaitForSDP) {
         if (iso15118.qca700x.check_and_clear_ipv6_received()) {
             logger.printfln("IPv6/SDP packet received, link established");
