@@ -28,6 +28,12 @@ import Median from "median-js-bridge";
 
 export const IPV4_ADDRESS_PATTERN = "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)";
 
+export const IPV6_ADDRESS_PATTERN = "(?:(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}|(?:[A-Fa-f0-9]{1,4}:){1,7}:|(?:[A-Fa-f0-9]{1,4}:){1,6}:[A-Fa-f0-9]{1,4}|(?:[A-Fa-f0-9]{1,4}:){1,5}(?::[A-Fa-f0-9]{1,4}){1,2}|(?:[A-Fa-f0-9]{1,4}:){1,4}(?::[A-Fa-f0-9]{1,4}){1,3}|(?:[A-Fa-f0-9]{1,4}:){1,3}(?::[A-Fa-f0-9]{1,4}){1,4}|(?:[A-Fa-f0-9]{1,4}:){1,2}(?::[A-Fa-f0-9]{1,4}){1,5}|[A-Fa-f0-9]{1,4}:(?:(?::[A-Fa-f0-9]{1,4}){1,6})|:(?:(?::[A-Fa-f0-9]{1,4}){1,7}|:)|(?:[A-Fa-f0-9]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|[1-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|[1-9]?[0-9])){3})";
+
+// CIDR patterns - IP address followed by /prefix
+export const IPV4_CIDR_PATTERN = "(?:" + IPV4_ADDRESS_PATTERN + ")\\/(?:3[0-2]|[12]?[0-9])";
+export const IPV6_CIDR_PATTERN = "(?:" + IPV6_ADDRESS_PATTERN + ")\\/(?:12[0-8]|1[01][0-9]|[1-9]?[0-9])";
+
 export const UINT16_PATTERN = "(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0)";
 
 export function reboot() {
@@ -608,6 +614,43 @@ export function countBits(x: number) {
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
     x = ((x + (x >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
     return x;
+}
+
+/**
+ * Parse IP address with optional CIDR notation (e.g., "192.168.1.100/24" or "2001:db8::1/64")
+ * Returns {ip, prefix} or null if invalid
+ */
+export function parseCIDR(ipWithCidr: string): {ip: string, prefix: string} | null {
+    const cidrMatch = ipWithCidr.match(/^(.+?)\/(\d+)$/);
+    if (!cidrMatch) {
+        return null;
+    }
+    
+    const ip = cidrMatch[1];
+    const prefixLen = parseInt(cidrMatch[2], 10);
+    
+    // Validate prefix length based on IP version
+    const isIPv6 = ip.includes(':');
+    if (isIPv6) {
+        if (prefixLen < 0 || prefixLen > 128) {
+            return null;
+        }
+        return {ip, prefix: '/' + prefixLen};
+    } else {
+        if (prefixLen < 0 || prefixLen > 32) {
+            return null;
+        }
+        // Convert CIDR to subnet mask for IPv4
+        const mask = prefixLen === 32 ? 0xFFFFFFFF : ~(0xFFFFFFFF >>> prefixLen);
+        return {ip, prefix: unparseIP(mask >>> 0)};
+    }
+}
+
+/**
+ * Check if a string contains CIDR notation
+ */
+export function hasCIDR(ipString: string): boolean {
+    return /^.+\/\d+$/.test(ipString);
 }
 
 export function downloadToFile(content: BlobPart, filename: string, contentType: string) {
