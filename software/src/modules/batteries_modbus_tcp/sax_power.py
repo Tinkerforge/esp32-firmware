@@ -37,6 +37,16 @@ display_names = [
 table_prototypes = [
     ('SAX Power Home Basic Mode', [
         'device_address',
+        {
+            'name': 'max_normal_charge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..4600]
+            'default': 4600,
+        },
+        {
+            'name': 'max_normal_discharge_power',
+            'type': 'Uint16',  # FIXME: add range limit to [0..4600]
+            'default': 3500,  # W, default to 3500, as this is the upper limit in certain countries
+        },
     ]),
 ]
 
@@ -82,16 +92,18 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -105,8 +117,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
@@ -128,8 +141,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
@@ -159,8 +173,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -182,8 +197,9 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    4600,  # maximum
+                    None,
                 ],
+                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
