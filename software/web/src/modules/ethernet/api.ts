@@ -5,6 +5,14 @@ export interface config {
     subnet: string;
     dns: string;
     dns2: string;
+    ipv6: {
+        ip: string;
+        gateway: string;
+        subnet: string;
+        dns?: string;
+        dns2?: string;
+    }
+    enable_ipv6: boolean;
 }
 
 export interface state {
@@ -13,6 +21,7 @@ export interface state {
     connection_end: number;
     mac: string;
     ip: string;
+    ip6: string;
     subnet: string;
     full_duplex: boolean;
     link_speed: number;

@@ -18,6 +18,7 @@ let x = {
             "mac": "MAC-Adresse",
             "mac_none": "LAN-Verbindung nicht aktiv",
             "status_ip": "IP-Adresse",
+            "status_ipv6": "IPv6-Adresse",
             "status_ip_none": "Keine IP-Adresse",
             "status_link": "Verbindung",
             "status_link_none": "Keine Verbindung",
@@ -31,7 +32,8 @@ let x = {
             "reboot_body": "Die LAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "reboot_with_lan_disabled": "Neustart mit deaktiviertem LAN",
             "cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung oder den WLAN-Access-Point.",
-            "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist."
+            "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist.",
+            "ipv6_switch": "IPv6 aktivieren"
         },
         "script": {
             "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen."

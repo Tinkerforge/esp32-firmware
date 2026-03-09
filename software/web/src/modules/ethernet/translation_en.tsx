@@ -18,6 +18,7 @@ let x = {
             "mac": "MAC address",
             "mac_none": "LAN connection not active",
             "status_ip": "IP address",
+            "status_ipv6": "IPv6 address",
             "status_ip_none": "No IP address",
             "status_link": "Link",
             "status_link_none": "No link",
@@ -31,7 +32,8 @@ let x = {
             "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?",
             "reboot_with_lan_disabled": "Reboot with LAN disabled",
             "cannot_disable": "At least one network interface must remain enabled. Enable WiFi connection or WiFi access point first.",
-            "cannot_disable_no_wifi": "LAN connection cannot be disabled because no other network interface is available."
+            "cannot_disable_no_wifi": "LAN connection cannot be disabled because no other network interface is available.",
+            "ipv6_switch": "Enable IPv6"
         },
         "script": {
             "save_failed": "Failed to save connection settings."
