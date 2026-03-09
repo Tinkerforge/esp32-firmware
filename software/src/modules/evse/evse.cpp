@@ -25,7 +25,7 @@
 #include "bindings/hal_common.h"
 #include "tools.h"
 #include "tools/string_builder.h"
-#include "generated/generated/evse_bricklet_firmware_bin.embedded.h"
+#include "generated/evse_bricklet_firmware_bin.embedded.h"
 
 extern TF_HAL hal;
 

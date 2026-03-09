@@ -27,7 +27,7 @@
 #include "bindings/errors.h"
 #include "tools.h"
 #include "tools/malloc.h"
-#include "flash_map_xz.embedded.h"
+#include "generated/flash_map_xz.embedded.h"
 #include "generated/warp_front_panel_bricklet_firmware_bin.embedded.h"
 #include "sprite_defines.h"
 #include "font_defines.h"
