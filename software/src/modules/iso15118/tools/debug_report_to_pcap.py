@@ -2,6 +2,9 @@
 
 import sys
 import os
+import json
+import re
+from datetime import datetime, timezone
 import scapy.layers.l2
 import scapy.utils
 
@@ -9,6 +12,27 @@ QCA700X_ETHERNET_FRAME_MIN_SIZE = 60
 QCA700X_RECV_HEADER_SIZE     = (4+4+2+2)
 QCA700X_RECV_FOOTER_SIZE     = 2
 QCA700X_RECV_BUFFER_MIN_SIZE = (QCA700X_ETHERNET_FRAME_MIN_SIZE + QCA700X_RECV_HEADER_SIZE + QCA700X_RECV_FOOTER_SIZE)
+
+def get_boot_epoch(data):
+    # Extract uptime (ms) from the first JSON key in the report
+    m = re.search(r'"uptime":(\d+)', data)
+    if not m:
+        return None
+    uptime_ms = int(m.group(1))
+
+    # Extract rtc/time
+    m = re.search(r'"rtc/time":\s*(\{[^}]+\})', data)
+    if not m:
+        return None
+    try:
+        rtc = json.loads(m.group(1))
+        rtc_dt = datetime(rtc['year'], rtc['month'], rtc['day'],
+                          rtc['hour'], rtc['minute'], rtc['second'],
+                          tzinfo=timezone.utc)
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return None
+
+    return rtc_dt.timestamp() - uptime_ms / 1000.0
 
 def main(filepath):
     filename = os.path.basename(filepath)
@@ -18,6 +42,12 @@ def main(filepath):
 
     with open(filepath, "r") as f:
         data = f.read()
+        # Note: This assumes that there has not yet been a uptime-overflow
+        boot_epoch = get_boot_epoch(data)
+        if boot_epoch is None:
+            print("Could not determine RTC/uptime from debug report, using uptime-only timestamps.")
+            boot_epoch = 0
+
         iso_data = data.split('__begin_iso15118_ll__\n')[1].split('__end_iso15118_ll__')[0]
         qca_list = []
         for line in iso_data.splitlines():
@@ -47,7 +77,7 @@ def main(filepath):
                     qca_list = []
 
                 packet = scapy.layers.l2.Ether(bytearray(qca_list_packet))
-                packet.time = int(t)/1000.0
+                packet.time = boot_epoch + int(t)/1000.0
                 packet_list.append(packet)
 
     scapy.utils.wrpcap(pcap_filename, packet_list)
