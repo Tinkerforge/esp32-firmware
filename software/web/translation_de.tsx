@@ -35,6 +35,7 @@ let x = {
         "ip_configuration": {
             "ip_configuration": "IP-Konfiguration",
             "dhcp": "Automatisch (DHCP)",
+            "dhcpv6": "Automatisch (DHCPv6/SLAAC)",
             "static": "Statisch",
 
             "static_ip": "IP-Adresse",
