@@ -874,7 +874,6 @@ def remove_all_generated_files():
         if os.path.split(generated_file)[-1] == '__pycache__':
             continue
 
-        print('REMOVING', generated_file)
         try:
             os.remove(generated_file)
         except FileNotFoundError:
@@ -897,13 +896,10 @@ def remove_stale_generated_files():
             continue
 
         if generated_file not in generated_files:
-            print('REMOVING', generated_file)
             try:
                 os.remove(generated_file)
             except FileNotFoundError:
                 pass
-        else:
-            print('KEEPING', generated_file)
 
 def main():
     if env.IsCleanTarget():
