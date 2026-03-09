@@ -52,8 +52,8 @@ public:
 
 private:
     struct control_rule {
-        uint32_t      time_start_s; // in seconds since midnight
-        uint32_t      time_end_s;   // in seconds since midnight
+        int32_t       time_start_s; // in seconds since midnight
+        int32_t       time_end_s;   // in seconds since midnight
         int32_t       price_th;     // in ct/1000
         int32_t       forecast_th;  // in Wh
         uint8_t       soc_th;       // in percent
@@ -74,7 +74,7 @@ private:
     void evaluate_tariff_schedule();
     void update_solar_forecast(int localtime_hour_now, const Config *state);
     void schedule_evaluation();
-    RuleAction evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s, uint8_t *active_rule_out);
+    RuleAction evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, int32_t time_since_midnight_s, uint8_t *active_rule_out);
     void evaluate_all_rules();
     void set_mode(BatteryMode new_mode);
     void fast_charge_update();

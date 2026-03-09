@@ -113,10 +113,6 @@ void BatteryControl::setup()
         }
     }
 
-    if (max_used_batteries == 0) {
-        return;
-    }
-
     void *ptr = malloc(sizeof(*data));
 
     if (ptr == nullptr) {
@@ -354,7 +350,7 @@ void BatteryControl::register_events()
         task_scheduler.scheduleWallClock([this]() {
             this->data->evaluation_must_check_rules = true;
             this->schedule_evaluation();
-        }, 1_min, 0_ms, false);
+        }, 1_min, 0_ms, true);
     }
 
     // When there are no rules, set to normal mode right away. Otherwise, perform a fallback-check after two minutes.
@@ -397,8 +393,8 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         rule->forecast_th   = rule_config->get("forecast_th"  )->asUint16() * 1000;     // kWh -> Wh
         rule->schedule_cond = rule_config->get("schedule_cond")->asEnum<ScheduleRuleCondition>();
         rule->time_cond     = rule_config->get("time_cond"    )->asEnum<RuleCondition>();
-        rule->time_start_s  = rule_config->get("time_start"   )->asUint16() * 60UL;
-        rule->time_end_s    = rule_config->get("time_end"     )->asUint16() * 60UL;
+        rule->time_start_s  = rule_config->get("time_start"   )->asUint16() * 60;
+        rule->time_end_s    = rule_config->get("time_end"     )->asUint16() * 60;
         rule->fast_chg_cond = rule_config->get("fast_chg_cond")->asEnum<RuleCondition>();
         rule->action        = rule_config->get("action"       )->asEnum<RuleAction>();
         rule->index         = static_cast<uint8_t>(i);
@@ -679,13 +675,19 @@ static bool schedule_rule_condition_failed(const ScheduleRuleCondition cond, con
     return value != 0; // 0 = neither cheap nor expensive
 }
 
-static bool time_rule_condition_failed(const RuleCondition cond, const uint32_t time_start_s, const uint32_t time_end_s, uint32_t time_since_midnight_s)
+static bool time_rule_condition_failed(const RuleCondition cond, const int32_t time_start_s, const int32_t time_end_s, int32_t time_since_midnight_s)
 {
     if (cond == RuleCondition::Ignore) {
         return false;
     }
 
-    const bool inside_time_window = time_start_s <= time_since_midnight_s && time_since_midnight_s < time_end_s; // not <= end
+    if (time_since_midnight_s < 0) {
+        return true;
+    }
+
+    const bool inside_time_window = time_start_s <= time_end_s ?
+        time_start_s <= time_since_midnight_s && time_since_midnight_s < time_end_s : // window within a day
+        time_since_midnight_s < time_end_s || time_start_s <= time_since_midnight_s;  // window crosses midnight
 
     if (cond == RuleCondition::BelowOrNo) {
         return inside_time_window; // intentionally inverted
@@ -695,7 +697,7 @@ static bool time_rule_condition_failed(const RuleCondition cond, const uint32_t 
     return !inside_time_window; // intentionally negated
 }
 
-RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, uint32_t time_since_midnight_s, uint8_t *active_rule_out)
+RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name, int32_t time_since_midnight_s, uint8_t *active_rule_out)
 {
     for (size_t i = 0; i < rules_count; i++) {
         const control_rule *rule = rules + i;
@@ -718,16 +720,16 @@ RuleAction BatteryControl::evaluate_rules(const control_rule *rules, size_t rule
 
 void BatteryControl::evaluate_all_rules()
 {
-    uint32_t time_since_midnight_s;
+    struct timeval tv_utc;
+    int32_t time_since_midnight_s;
 
-    if (data->have_time_rule) {
-        const time_t time_utc = time(nullptr);
+    if (data->have_time_rule && rtc.clock_synced(&tv_utc)) {
         struct tm tm_local;
-        localtime_r(&time_utc, &tm_local);
+        localtime_r(&tv_utc.tv_sec, &tm_local);
 
-        time_since_midnight_s = static_cast<uint32_t>((tm_local.tm_hour * 60 + tm_local.tm_min) * 60 + tm_local.tm_sec);
+        time_since_midnight_s = (tm_local.tm_hour * 60 + tm_local.tm_min) * 60 + tm_local.tm_sec;
     } else {
-        time_since_midnight_s = 0;
+        time_since_midnight_s = -1;
     }
 
     RuleAction charge_action;
