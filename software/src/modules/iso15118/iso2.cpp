@@ -467,8 +467,6 @@ void ISO2::handle_charge_parameter_discovery_req()
 
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
-
-            iso15118.switch_to_iec_temporary();
             return;
         }
 
@@ -751,8 +749,7 @@ void ISO2::handle_cable_check_req()
         state = ISO2State::Idle;
         logger.printfln("ISO2: DC SoC session complete (via CableCheck), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        // Trigger IEC fallback since we may not get a SessionStopReq.
-        iso15118.switch_to_iec_temporary();
+        // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
     }
 }
@@ -792,7 +789,7 @@ void ISO2::handle_pre_charge_req()
         state = ISO2State::Idle;
         logger.printfln("ISO2: DC SoC session complete (via PreCharge FAILED), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        iso15118.switch_to_iec_temporary();
+        // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
     }
 }
@@ -848,7 +845,7 @@ void ISO2::handle_current_demand_req()
         state = ISO2State::Idle;
         logger.printfln("ISO2: DC SoC session complete (via CurrentDemand FAILED), waiting for AC session");
     } else if (iso15118.is_read_soc_only() || charge_via_iso15118) {
-        iso15118.switch_to_iec_temporary();
+        // Cancel sequence timeout since we may not get a SessionStopReq.
         cancel_sequence_timeout(next_timeout);
     }
 }
@@ -887,10 +884,32 @@ void ISO2::handle_session_stop_req()
         state = ISO2State::Idle; // Reset state machine for next session
         logger.printfln("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
-        // In read_soc_only mode, switch to IEC 61851 after the session ends.
-        // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
-        iso15118.switch_to_iec_temporary();
+        // In read_soc_only mode, begin IEC transition after the session ends.
+        // CP goes to 100% immediately, then switches to IEC
+        // temporary mode with actual PWM.
+        iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
+
+        // Schedule PLC modem shutdown. This gives the EV time
+        // to receive and ACK the SessionStopRes before we kill the modem.
+        // If the EV closes the TCP connection earlier (detected via POLLHUP),
+        // the timer is cancelled and the modem is killed immediately.
+        if (iso15118.plc_modem_off_task != 0) {
+            task_scheduler.cancel(iso15118.plc_modem_off_task);
+        }
+        iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
+            logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
+            iso15118.disable_plc_modem();
+        }, 5000_ms);
+
+        // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the
+        // poll loop can detect POLLHUP when the EV closes the connection, which
+        // triggers early modem shutdown.
+        // We can under no circumstance close the socket ourself before the ISO 15118
+        // communication was finished from the perspective of the EV. As far as i can
+        // tell if we close the socket on any MEB EV, it will not reconnect via ISO 15118
+        // and not react to PWM changes anymore until re-plugged.
+        return;
     }
 
     // Reset the socket, so the ev can reconnect when it wants to resume from the pause

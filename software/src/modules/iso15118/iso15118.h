@@ -103,6 +103,12 @@ public:
     uint8_t ef_retry_count = 0;
     void check_ef_reset();
 
+    uint64_t plc_modem_off_task = 0;
+    void disable_plc_modem();
+
+    uint64_t iec_switch_task = 0;
+    void begin_iec_transition();
+
     // Ensure the state machine task is running (schedules it if not already running)
     void ensure_state_machine_running();
 

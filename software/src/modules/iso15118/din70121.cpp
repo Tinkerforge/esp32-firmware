@@ -357,9 +357,6 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
         iso15118.common.send_exi(Common::ExiType::Din);
         state = DIN70121State::ChargeParameterDiscovery;
-
-        // Switch to IEC 61851 temporary mode and cancel the V2G sequence timeout.
-        iso15118.switch_to_iec_temporary();
         return;
     }
 
@@ -507,9 +504,8 @@ void DIN70121::handle_cable_check_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::CableCheck;
 
-    // Trigger IEC fallback here since we may not get a SessionStopReq.
+    // Cancel sequence timeout since we may not get a SessionStopReq.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        iso15118.switch_to_iec_temporary();
         cancel_sequence_timeout(next_timeout);
     }
 }
@@ -524,11 +520,11 @@ void DIN70121::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::SessionStop;
 
-    // In read_soc_only mode or charge_via_iso15118 mode, switch to IEC 61851 after session ends.
-    // DIN 70121 is DC-only, so we can't do AC charging via DIN.
-    // The EVSE will control charging via PWM and revert to ISO 15118 on EV disconnect.
+    // In read_soc_only mode  or charge_via_iso15118 mode, begin IEC transition after
+    // the session ends. CP goes to 100% immediately, then switches to IEC
+    // temporary mode with actual PWM.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
-        iso15118.switch_to_iec_temporary();
+        iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
     }
 }

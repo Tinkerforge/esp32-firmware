@@ -17,11 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// The ISO15118 class is the coordinator for all of the different versions and layers of the ISO 15118 standard.
+// ============================================================================
+// Overview
+// ============================================================================
+//
+// The ISO15118 class is the coordinator for all of the different versions and
+// layers of the ISO 15118 standard.
 // It coordinates between the following protocols:
 // * SPI/QCA700x (Low level SPI communication with the QCA700x modem),
-// * SLAC (Signal-Level-Attenuation-Characterization) as described in ISO 15118-3,
-// * IPv6/ICMPv6/NDP (Neighbor Discorver Protoocol with Neighbor Solicitation/Advertisement),
+// * SLAC (Signal-Level-Attenuation-Characterization) as described in
+//   ISO 15118-3,
+// * IPv6/ICMPv6/NDP (Neighbor Discorver Protoocol with Neighbor
+//   Solicitation/Advertisement),
 // * IPv6/UDP/SDP (SECC Discovery Protocol),
 // * IPv6/TCP/DIN-SPEC-70121,
 // * IPv6/TCP/ISO-15118-2,
@@ -32,8 +39,103 @@
 // * fingerprint the EV for authentication,
 // * read SOC from the EV and
 // * if it will be implemented by EVs, allow for bi-directional charging.
-// To read the necessary data we may start a DC charge and end it again immediatily or similar, depending on the standards that the EV supports.
-// The actual charging will mostly still be done through IEC 61851-1 (PWM on CP).
+//
+// Details for the three supported modes below.
+// ============================================================================
+
+
+// ============================================================================
+// Autocharge only (autocharge=true, read_soc/charge_via_iso15118=false)
+// ============================================================================
+// TBD (only SLAC)
+// ============================================================================
+
+
+// ============================================================================
+// SoC Reading Mode (read_soc=true, charge_via_iso15118=false)
+// ============================================================================
+//
+// The EV's State of Charge (SoC) is only transmitted during DC charging
+// sessions in ISO 15118-2 / DIN 70121.
+// To read the SoC anyway, we initiate a "fake" DC session: we negotiate DC
+// parameters long enough for the EV to report its SoC, then shut the session
+// down before any actual DC power transfer begins. Afterwards, charging
+// continues via IEC 61851 PWM.
+//
+// V2G Message Flow
+// ----------------
+//   1. SLAC, SDP, TCP connection  -> normal ISO 15118 link setup
+//   2. SessionSetupReq/Res        -> new session established
+//   3. ServiceDiscoveryReq/Res    -> we offer DC_extended as the energy
+//                                    transfer mode
+//   4. PaymentServiceSelectionReq/Res
+//   5. AuthorizationReq/Res       -> EVSEProcessing=Finished
+//   6. ChargeParameterDiscoveryReq (1st)
+//      - The EV includes DC_EVChargeParameter with its current EVRESSSOC.
+//      - We extract and store the SoC (+ energy capacity if available).
+//      - We respond with EVSEProcessing=Ongoing and EVSE_Ready.
+//        This keeps the session alive without advancing to CableCheck.
+//   7. ChargeParameterDiscoveryReq (2nd)
+//      - soc_read is now true. We respond with EVSE_Shutdown and
+//        EVSEProcessing=Ongoing to signal the EV to end the session.
+//   8. SessionStopReq/Res         -> The EV terminates itself.
+//
+//   If the EV ignores the shutdown signal and proceeds to CableCheck,
+//   PreCharge, or CurrentDemand, each of those handlers responds with
+//   ResponseCode=FAILED per [V2G2-539] to force session termination.
+//
+// Transition to IEC 61851 (after SessionStop or EVSE_Shutdown)
+// ------------------------------------------------------------
+// After SessionStopRes is sent, the charger transitions from ISO 15118
+// signaling to IEC 61851 PWM-based charging. This is a two-phase process:
+//
+//   Phase 1 (0-2s):  CP is set to 100% duty cycle. This gives the EV a
+//                    clean break from the 5% ISO 15118 signal. Some EVs
+//                    (e.g. Cupra Born, ID.Buzz and probably all other MEB
+//                    platform EVs) require seeing a steady-state CP before
+//                    they accept a new PWM signal.
+//   Phase 2 (>2s):   CP switches to IEC 61851 temporary mode with actual
+//                    PWM. The EVSE Bricklet controls charging from here and
+//                    automatically reverts to ISO 15118 mode when the EV
+//                    disconnects.
+//
+// PLC Modem Shutdown (after socket close)
+// ---------------------------------------
+// The PLC modem is not killed immediately. Some EVs will refuse to react to
+// PWM changes or reconnect via ISO 15118 if the TCP socket or PLC link
+// disappears too early.
+//
+// The approach:
+//   - The TCP socket is intentionally left open after SessionStopRes.
+//   - A timer is scheduled to disable the PLC modem.
+//   - If the EV closes TCP early (this is the expected path),
+//     the timer is cancelled and the modem is disabled immediately.
+//   - On EV physical disconnect (State A), all pending timers are cancelled,
+//     the modem is re-enabled, and CP is reset to 5% for the next EV.
+//
+// Real-world EV behaviors
+// -----------------------
+// For now we were able to observe two distinct behaviors:
+//    1. EV closes TCP connection immediately after EVSE_Shutdown response
+//    2. EV does not react on *any* EVSE failure responses and keeps the
+//       session alive.
+//
+// The former will close the socket on the second ChargeParameterDiscoveryReq
+// and cleanly transition to IEC 61851 mode. For the latter we rely on the
+// internal timeout that is triggered after ~10s of receiving the "ongoing"
+// ChargeParameterDiscoveryRes in a loop. After that the EV will give up
+// and send a SessionStopReq, after which we can transition to IEC 61851 mode.
+// ============================================================================
+
+
+// ============================================================================
+// Charge via ISO 15118-20 (charge_via_iso15118=true)
+// ============================================================================
+// TBD: Will only be available for EVs that support ISO 15118-20,
+//      In this mode it will be possible to read SoC and charge directly
+//      through ISO 15118 without switching to IEC 61851 at all.
+//      This will (if the EV supports it) also allow bidirectional charging.
+// ============================================================================
 
 #include "iso15118.h"
 
@@ -127,6 +229,7 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
+                evse_v2.set_plc_modem(true);
                 evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             } else {
                 // TODO: Close sockets and set is_setup = false
@@ -190,6 +293,11 @@ void ISO15118::register_urls()
 
     // Enable ISO15118 on the EVSE Bricklet
     if (is_enabled()) {
+        // Ensure PLC modem is enabled. If only the ESP32 restarted while the
+        // EVSE Bricklet kept running with the modem in hardware reset (from a
+        // previous set_plc_modem(false) after SessionStop), the modem would
+        // stay disabled forever.
+        evse_v2.set_plc_modem(true);
         evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
         state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
             this->state_machines_loop();
@@ -209,14 +317,33 @@ void ISO15118::register_events()
             common.reset_active_socket();
             qca700x.link_down();
             slac.state = SLACState::ModemReset;
+            slac.api_state.get("modem_initialization_tries")->updateUint(0);
             iso2.reset_dc_soc_done();
             iec_temporary_active = false;
+
+            // Cancel any pending delayed modem-off task. The delayed shutdown is no longer needed.
+            if (plc_modem_off_task != 0) {
+                task_scheduler.cancel(plc_modem_off_task);
+                plc_modem_off_task = 0;
+            }
+
+            // Cancel any pending IEC switch task.
+            if (iec_switch_task != 0) {
+                task_scheduler.cancel(iec_switch_task);
+                iec_switch_task = 0;
+            }
+
+            // Re-enable PLC modem. The modem needs to be ready for the next EV.
+            evse_v2.set_plc_modem(true);
+
+            // Reset CP back to 5% duty. This assumes that we are in some
+            // ISO15118 mode, since iec_temporary_active was set.
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
 
             // Cancel any pending E/F reset task.
             if (ef_reset_task != 0) {
                 task_scheduler.cancel(ef_reset_task);
                 ef_reset_task = 0;
-                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             }
             ef_retry_count = 0;
         }
@@ -290,10 +417,19 @@ void ISO15118::state_machines_loop()
             logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
             common.reset_active_socket();
 
-            // If the EV closes the socket unexpectedly, we still go to IEC temporary mode.
+            // If we're waiting for the EV to close TCP after SessionStop,
+            // cancel the delayed timer and kill the modem immediately.
+            if (plc_modem_off_task != 0) {
+                logger.printfln("ISO15118: EV closed TCP, cancelling 5s timer, killing modem now");
+                task_scheduler.cancel(plc_modem_off_task);
+                disable_plc_modem();
+            }
+
+            // If the EV closes the socket unexpectedly (e.g. after FAILED response),
+            // begin IEC transition.
             if (!iec_temporary_active && is_read_soc_only()) {
-                logger.printfln("ISO15118: EV closed TCP after shutdown/FAILED, applying PWM");
-                switch_to_iec_temporary();
+                logger.printfln("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
+                begin_iec_transition();
             }
         } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
             common.handle_socket();
@@ -369,6 +505,43 @@ void ISO15118::ensure_state_machine_running()
         }, 20_ms, 20_ms);
     }
     is_setup = true;
+}
+
+void ISO15118::disable_plc_modem()
+{
+    plc_modem_off_task = 0;
+
+    logger.printfln("ISO15118: Disabling PLC modem");
+    evse_v2.set_plc_modem(false);
+    slac.state = SLACState::ModemDisabled;
+
+    // Close the active socket if it's still open.
+    if (fds[FDS_ACTIVE_INDEX].fd >= 0) {
+        common.reset_active_socket();
+    }
+}
+
+void ISO15118::begin_iec_transition()
+{
+    logger.printfln("ISO15118: Stopping PWM (100%% duty) before IEC transition");
+
+    // Set CP to 100% duty. This gives the EV a clean break from the ISO 15118 signal
+    // before we offer IEC 61851 PWM charging. Some EVs (e.g. Cupra Born and ID.Buzz)
+    // won't accept a PWM unless they see 100% duty cycle first.
+    evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
+
+    // Mark that the IEC transition is in progress so the State A handler
+    // knows to clean up if the EV disconnects during the delay.
+    iec_temporary_active = true;
+
+    // After 2 seconds, switch to IEC temporary mode.
+    if (iec_switch_task != 0) {
+        task_scheduler.cancel(iec_switch_task);
+    }
+    iec_switch_task = task_scheduler.scheduleOnce([this]() {
+        iec_switch_task = 0;
+        switch_to_iec_temporary();
+    }, 2000_ms);
 }
 
 // We will want to upgrade the ChargingInformation struct in the future.
