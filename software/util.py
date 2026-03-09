@@ -760,4 +760,4 @@ def write_generated_file(path, content):
         tfutil.write_file_if_different(path, content)
 
     with open(os.path.join(root_dir, 'generated_files'), 'a', encoding='utf-8') as f:
-        f.write(os.path.relpath(os.path.realpath(path), root_dir) + '\n')
+        f.write(os.path.relpath(os.path.abspath(path), root_dir) + '\n')
