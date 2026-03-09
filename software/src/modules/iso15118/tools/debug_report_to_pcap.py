@@ -28,6 +28,9 @@ def main(filepath):
             #       and the next packet is a send-buffer it will append the send buffer to
             #       the recv-buffer. We can only fix this by adding a r/w flag to the debug data
 
+            if len(qca_list) < 8:
+                continue
+
             minimum = QCA700X_RECV_BUFFER_MIN_SIZE
             if not (qca_list[4] == 0xaa and qca_list[5] == 0xaa and qca_list[6] == 0xaa and qca_list[7] == 0xaa):
                 minimum = 60
