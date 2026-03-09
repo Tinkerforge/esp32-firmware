@@ -215,7 +215,9 @@ void SLAC::handle_cm_set_key_request(void)
     iso15118.qca700x.write_burst(data, sizeof(cm_set_key_request));
 
     log_cm_set_key_request(cm_set_key_request);
-    next_timeout = now_us() + 100_ms; // This is internal communication with the modem, there is not timing defined in the spec. 100ms seems reasonable.
+    // Internal communication with the modem, no spec-defined timing.
+    // After a cold boot the modem can somtimes take ~180ms to respond.
+    next_timeout = now_us() + 500_ms;
     state = SLACState::WaitForCMSetKeyConfirmation;
 }
 
