@@ -45,13 +45,14 @@ type EthernetConfig = API.getType['ethernet/config'];
 
 export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: RefObject<EthernetStatus>}> {
     ipconfig_valid: boolean = true;
+    ip6config_valid: boolean = true;
 
     constructor() {
         super('ethernet/config',
               () => __("ethernet.script.save_failed"));
     }
 
-    override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
+    override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid && this.ip6config_valid; }
 
     override async transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
@@ -95,6 +96,16 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                     : __("ethernet.content.status_ip_none")}
                             />
                         </FormRow>
+                        {state.enable_ipv6 &&
+                        <FormRow label={__("ethernet.content.status_ipv6")}>
+                            <InputText
+                                value={eth_state.ip6 != "::"
+                                    ? eth_state.ip6
+                                    : __("ethernet.content.status_ip_none")}
+                            />
+                        </FormRow>
+                        }
+
 
                         <FormRow label={__("ethernet.content.status_link")}>
                             <InputText
@@ -146,30 +157,45 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                                 checked={state.enable_ethernet}
                                 onClick={this.toggle('enable_ethernet')}/>
                     </FormRow>
-
-                    <IPConfiguration
-                        showAnyAddress
-                        showDhcp
-                        showDns
-                        onValue={(v) => this.setState(v)}
-                        value={state}
-                        setValid={(v) => this.ipconfig_valid = v}
-                        forbidNetwork={[
-                                {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
-                            ].concat(
-                                !API.hasModule("wifi") ? [] :
-                                [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
-                                subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
-                                name: __("component.ip_configuration.wifi_ap")}]
-                            ).concat(
-                                !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
-                                [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
-                                subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
-                                name: __("component.ip_configuration.wireguard")}]
-                            )
-                        }
-                        />
-
+                    <FormRow label={"IPv4"}>
+                        <IPConfiguration
+                            showAnyAddress
+                            showDhcp
+                            showDns
+                            onValue={(v) => this.setState(v)}
+                            value={state}
+                            setValid={(v) => this.ipconfig_valid = v}
+                            forbidNetwork={[
+                                    {ip: util.parseIP("127.0.0.1"), subnet: util.parseIP("255.0.0.0"), name: "localhost"}
+                                ].concat(
+                                    !API.hasModule("wifi") ? [] :
+                                    [{ip: util.parseIP(API.get_unchecked("wifi/ap_config").ip),
+                                    subnet: util.parseIP(API.get_unchecked("wifi/ap_config").subnet),
+                                    name: __("component.ip_configuration.wifi_ap")}]
+                                ).concat(
+                                    !API.hasModule("wireguard") || API.get_unchecked("wireguard/config").internal_ip == "0.0.0.0" ? [] :
+                                    [{ip: util.parseIP(API.get_unchecked("wireguard/config").internal_ip),
+                                    subnet: util.parseIP(API.get_unchecked("wireguard/config").internal_subnet),
+                                    name: __("component.ip_configuration.wireguard")}]
+                                )
+                            }
+                            />
+                    </FormRow>
+                    <FormRow label={"IPv6"}>
+                        <Switch desc={__("ethernet.content.ipv6_switch")}
+                                checked={state.enable_ipv6}
+                                onClick={this.toggle('enable_ipv6')}/>
+                        {state.enable_ipv6 &&
+                        <IPConfiguration
+                            showAnyAddress
+                            showDhcp
+                            showDns
+                            ipv6={true}
+                            onValue={(v) => this.setState({ipv6: v})}
+                            value={state.ipv6}
+                            setValid={(v) => this.ip6config_valid = v}
+                        />}
+                    </FormRow>
                 </SubPage.Config>
             </SubPage>
         );

@@ -16,6 +16,7 @@
             "mac": "MAC address",
             "mac_none": "LAN connection not active",
             "status_ip": "IP address",
+            "status_ipv6": "IPv6 address",
             "status_ip_none": "No IP address",
             "status_link": "Link",
             "status_link_none": "No link",
@@ -25,7 +26,8 @@
             "enable_desc": "Automatically connects to the configured network on start-up.",
             "disabled_but_active": "The LAN connection has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
             "restart_now": "Restart now.",
-            "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?"
+            "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?",
+            "ipv6_switch": "Enable IPv6"
         },
         "script": {
             "save_failed": "Failed to save connection settings."
