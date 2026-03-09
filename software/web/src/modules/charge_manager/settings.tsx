@@ -31,7 +31,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { Switch } from "../../ts/components/switch";
 import { InputNumber } from "../../ts/components/input_number";
 import { SubPage } from "../../ts/components/sub_page";
-import { MeterValueID } from "../meters/meter_value_id";
+import { MeterValueID } from "../meters/generated/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import type { ChargeManagerStatus } from "./main"
 import { FormSeparator } from "../../ts/components/form_separator";

@@ -20,7 +20,7 @@
 #include "uptime_tracker.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "rollback_timing.h"
 
 #define MAX_UPTIMES 10

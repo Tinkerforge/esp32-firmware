@@ -155,7 +155,7 @@ h += '};\n\n'
 h += 'extern const SunSpecModelSpec sun_spec_model_specs[];\n\n'
 h += 'extern const size_t sun_spec_model_specs_length;\n'
 
-tfutil.write_file_if_different('sun_spec_model_specs.h', h)
+util.write_generated_file('generated/sun_spec_model_specs.h', h)
 
 cpp = '// WARNING: This file is generated.\n\n'
 cpp += '#include "sun_spec_model_specs.h"\n\n'
@@ -164,7 +164,7 @@ cpp += ''.join(spec_values)
 cpp += '};\n\n'
 cpp += f'const size_t sun_spec_model_specs_length = {len(model_specs)};\n'
 
-tfutil.write_file_if_different('sun_spec_model_specs.cpp', cpp)
+util.write_generated_file('generated/sun_spec_model_specs.cpp', cpp)
 
 for lang in translation_values:
     tfutil.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
@@ -172,7 +172,7 @@ for lang in translation_values:
     })
 
 ts = '// WARNING: This file is generated.\n\n'
-ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum";\n\n'
+ts += 'import { MeterLocation } from "../../meters/generated/meter_location.enum";\n\n'
 ts += 'export const SUN_SPEC_MODEL_INFOS: {model_id: number, is_meter_like: boolean, is_supported: boolean}[] = [\n'
 ts += ''.join(model_infos)
 ts += '];\n\n'
@@ -186,4 +186,4 @@ ts += 'export const SUN_SPEC_MODEL_IS_SUPPORTED: {[model_id: number]: boolean} =
 ts += ''.join(model_is_supported)
 ts += '};\n'
 
-tfutil.write_file_if_different('../../../web/src/modules/meters_sun_spec/sun_spec_model_specs.ts', ts)
+util.write_generated_file('../../../web/src/modules/meters_sun_spec/generated/sun_spec_model_specs.ts', ts)

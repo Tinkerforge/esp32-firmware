@@ -20,13 +20,12 @@
 #include "evse.h"
 
 #include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
 #include "bindings/errors.h"
 #include "bindings/hal_common.h"
 #include "tools.h"
 #include "tools/string_builder.h"
-#include "evse_bricklet_firmware_bin.embedded.h"
-
-#include "module_dependencies.h"
+#include "generated/generated/evse_bricklet_firmware_bin.embedded.h"
 
 extern TF_HAL hal;
 

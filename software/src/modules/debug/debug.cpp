@@ -38,7 +38,7 @@ extern "C" {
 
 #include "event_log_prefix.h"
 #include "config/slot_allocator.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/backtrace.h"
 #include "tools/string_builder.h"
 #include "tools/memory.h"
@@ -46,7 +46,7 @@ extern "C" {
 #include "tools/printf.h"
 
 #ifdef DEBUG_FS_ENABLE
-#include "embedded_bootloader.embedded.h"
+#include "generated/embedded_bootloader.embedded.h"
 #endif
 
 #include "gcc_warnings.h"

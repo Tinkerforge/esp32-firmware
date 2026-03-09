@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "imodel_parser.h"
 #include "generated/dc_port_type.enum.h"
 

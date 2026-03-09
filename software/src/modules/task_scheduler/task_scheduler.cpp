@@ -22,7 +22,7 @@
 #include <algorithm>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 static uint64_t last_task_id = 0;
 

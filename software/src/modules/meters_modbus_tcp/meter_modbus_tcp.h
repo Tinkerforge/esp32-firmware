@@ -24,13 +24,13 @@
 
 #include "config.h"
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 #include "modules/modbus_tcp_client/generated/modbus_register_type.enum.h"
 #include "modules/modbus_tcp_client/generated/modbus_value_type.enum.h"
 #include "generated/meter_modbus_tcp_table_id.enum.h"
-#include "meter_modbus_tcp_virtual_meter_enums.h"
+#include "generated/meter_modbus_tcp_virtual_meter_enums.h"
 #include "generated/shelly_pro_3em_device_profile.enum.h"
 #include "generated/shelly_em_monophase_channel.enum.h"
 #include "generated/shelly_em_monophase_mapping.enum.h"
@@ -90,7 +90,7 @@ private:
     void read_next();
     void parse_next();
 
-#include "meter_modbus_tcp_is.inc"
+#include "generated/meter_modbus_tcp_is.inc"
 
     uint32_t slot;
     Config *state;

@@ -26,8 +26,8 @@
 #include <float.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
-#include "meter_modbus_tcp_specs.h"
+#include "generated/module_dependencies.h"
+#include "generated/meter_modbus_tcp_specs.h"
 #include "tools/float.h"
 #include "tools/sun_spec.h"
 

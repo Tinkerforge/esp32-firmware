@@ -23,7 +23,7 @@
 #include <NetworkUdp.h>
 
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

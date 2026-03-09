@@ -37,7 +37,7 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "tools/printf.h"

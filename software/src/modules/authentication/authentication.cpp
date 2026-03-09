@@ -20,7 +20,7 @@
 #include "authentication.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "digest_auth.h"
 
 #include "gcc_warnings.h"

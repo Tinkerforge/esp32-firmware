@@ -1,4 +1,4 @@
-//#include "module_available.inc"
+//#include "generated/module_available.inc"
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
 import { FileType } from "./generated/file_type.enum";

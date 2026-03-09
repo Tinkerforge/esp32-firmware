@@ -23,12 +23,12 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "meter_sun_spec.h"
 #include "tools/printf.h"
-#include "sun_spec_model_specs.h"
+#include "generated/sun_spec_model_specs.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "generated/dc_port_type.enum.h"
 

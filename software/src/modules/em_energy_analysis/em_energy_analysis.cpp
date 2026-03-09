@@ -25,7 +25,7 @@
 
 #include "modules/em_common/bricklet_bindings_constants.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "modules/charge_manager/charge_manager_private.h"
 #include "tools/hexdump.h"
 

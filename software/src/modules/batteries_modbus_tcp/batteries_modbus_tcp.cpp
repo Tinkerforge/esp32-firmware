@@ -25,8 +25,8 @@
 
 #include "battery_modbus_tcp.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
-#include "battery_modbus_tcp_specs.h"
+#include "generated/module_dependencies.h"
+#include "generated/battery_modbus_tcp_specs.h"
 #include "modules/modbus_tcp_client/generated/modbus_register_address_mode.enum.h"
 #include "tools/printf.h"
 
@@ -187,7 +187,7 @@ void BatteriesModbusTCP::register_urls()
 
             break;
 
-#include "batteries_modbus_tcp_test.inc"
+#include "generated/batteries_modbus_tcp_test.inc"
 
         default:
             test_printfln(test->language == Language::English ? "Unknown table: %u" : "Unbekannte Tabelle: %u", static_cast<uint8_t>(table_id));

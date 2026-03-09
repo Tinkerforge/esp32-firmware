@@ -20,7 +20,7 @@
 #define EVENT_LOG_PREFIX "em_phaseswitcher"
 
 #include "em_phase_switcher.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include "event_log_prefix.h"
 #include "tools/malloc.h"

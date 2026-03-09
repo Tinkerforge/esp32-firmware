@@ -9,7 +9,6 @@ from software import util
 
 build_dir = os.environ['PLATFORMIO_BUILD_DIR']
 bootloader_path = f"{build_dir}{os.sep}bootloader.bin"
-
 bootloader_data = b''
 
 try:
@@ -18,4 +17,4 @@ try:
 except FileNotFoundError:
     print("bootloader.bin not found. Re-run build when done.", file=sys.stderr)
 
-util.embed_data_with_digest(bootloader_data, '.', 'embedded_bootloader', 'uint8_t', 'size_t')
+util.embed_data_with_digest(bootloader_data, 'generated', 'embedded_bootloader', 'uint8_t', 'size_t')

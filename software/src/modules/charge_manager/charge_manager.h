@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -210,4 +210,4 @@ private:
     std::array<uint8_t, 2> supported_charge_mode_bitmask;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

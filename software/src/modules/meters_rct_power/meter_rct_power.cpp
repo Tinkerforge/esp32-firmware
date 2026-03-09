@@ -20,7 +20,7 @@
 #include "meter_rct_power.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "modules/meters/generated/meter_location.enum.h"
 #include "tools/float.h"
 

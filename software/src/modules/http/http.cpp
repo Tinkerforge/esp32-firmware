@@ -20,7 +20,7 @@
 #include "http.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 
 class HTTPChunkedResponse : public IBaseChunkedResponse

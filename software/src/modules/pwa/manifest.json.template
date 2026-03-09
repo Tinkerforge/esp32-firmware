@@ -5,13 +5,13 @@
     "scope": "/",
     "icons": [
         {
-            "src": "{{{small_icon}}}",
+            "src": "data:image/png;base64,{{{small_icon}}}",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable any"
         },
         {
-            "src": "{{{big_icon}}}",
+            "src": "data:image/png;base64,{{{big_icon}}}",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable any"

@@ -19,7 +19,7 @@
 
 #include "sdm72dm_defs.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 static const RegRead sdm72dm_slow[]{};
 

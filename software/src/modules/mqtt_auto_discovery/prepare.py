@@ -206,11 +206,15 @@ topics = [topic_template.format(
             )
           for x in entities]
 
-tfutil.specialize_template("mqtt_discovery_topics.cpp.template", "mqtt_discovery_topics.cpp", {
+cpp = tfutil.specialize_template("mqtt_discovery_topics.cpp.template", None, {
     "{{{topics}}}": ",\n".join(topics),
-    })
+})
 
-tfutil.specialize_template("mqtt_discovery_topics.h.template", "mqtt_discovery_topics.h", {
+util.write_generated_file("generated/mqtt_discovery_topics.cpp", cpp)
+
+h = tfutil.specialize_template("mqtt_discovery_topics.h.template", None, {
     "{{{topic_count}}}": str(len(topics)),
     "{{{max_json_len}}}": str(max([x.get_json_len() for x in entities]))
-    })
+})
+
+util.write_generated_file("generated/mqtt_discovery_topics.h", h)

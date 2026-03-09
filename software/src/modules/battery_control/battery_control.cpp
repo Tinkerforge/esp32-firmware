@@ -20,7 +20,7 @@
 #define TRACE_LOG_PREFIX nullptr
 
 #include "battery_control.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include "event_log_prefix.h"
 #include "tools.h"

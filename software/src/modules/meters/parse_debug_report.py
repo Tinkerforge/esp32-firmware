@@ -6,7 +6,7 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'software')
 
-from software.src.modules.meters.meter_value_id import MeterValueID
+from software.src.modules.meters.generated.meter_value_id import MeterValueID
 
 
 def main():

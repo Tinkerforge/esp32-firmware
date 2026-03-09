@@ -319,10 +319,10 @@ specs_ts.append('    }\n\n'
                 '}')
 
 ts  = '// WARNING: This file is generated.\n\n'
-ts += 'import { __ } from "../../ts/translation";\n'
-ts += 'import { MeterModbusTCPTableID } from "./generated/meter_modbus_tcp_table_id.enum";\n'
-ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum";\n'
-ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./generated/{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
+ts += 'import { __ } from "../../../ts/translation";\n'
+ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n'
+ts += 'import { MeterLocation } from "../../meters/generated/meter_location.enum";\n'
+ts += '\n'.join([f'import {{ {group.camel}VirtualMeter }} from "./{group.under}_virtual_meter.enum";' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
@@ -368,26 +368,26 @@ ts += '    }\n'
 ts += '}\n\n'
 ts += '\n\n'.join(specs_ts).replace('\r\n', '') + '\n'
 
-tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
+util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specs.ts', ts)
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
-h += '\n'.join([f'#include "generated/{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
+h += '\n'.join([f'#include "{group.under}_virtual_meter.enum.h"' for group, value in virtual_meters.items() if len(value) > 1 or value[0][0] != None]) + '\n'
 
-tfutil.write_file_if_different('meter_modbus_tcp_virtual_meter_enums.h', h)
+util.write_generated_file('generated/meter_modbus_tcp_virtual_meter_enums.h', h)
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#pragma once\n\n'
 h += '#include "config.h"\n'
-h += '#include "meter_modbus_tcp.h"\n'
-h += '#include "generated/meter_modbus_tcp_table_id.enum.h"\n\n'
+h += '#include "../meter_modbus_tcp.h"\n'
+h += '#include "meter_modbus_tcp_table_id.enum.h"\n\n'
 h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
 h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
 h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'
 h += 'void get_meter_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<MeterModbusTCPTableID>> *table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
-tfutil.write_file_if_different('meter_modbus_tcp_specs.h', h)
+util.write_generated_file('generated/meter_modbus_tcp_specs.h', h)
 
 cpp  = '// WARNING: This file is generated.\n\n'
 cpp += '#define EVENT_LOG_PREFIX "meters_mbtcp"\n'
@@ -403,12 +403,12 @@ cpp += '\n'.join(table_prototypes).rstrip() + '\n'
 cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
-tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)
+util.write_generated_file('generated/meter_modbus_tcp_specs.cpp', cpp)
 
 is_inc = '// WARNING: This file is generated.\n\n'
 
 is_cpp  = '// WARNING: This file is generated.\n\n'
-is_cpp += '#include "meter_modbus_tcp.h"\n'
+is_cpp += '#include "../meter_modbus_tcp.h"\n'
 
 for table_id in table_ids:
     is_inc += f'bool is_any_{table_id.under}_meter() const;\n'
@@ -431,9 +431,9 @@ for group, value in virtual_meters.items():
                   f'        && {group.under}.virtual_meter == {group.camel}VirtualMeter::{member.camel};\n' \
                    '}\n'
 
-tfutil.write_file_if_different('meter_modbus_tcp_is.inc', is_inc)
-tfutil.write_file_if_different('meter_modbus_tcp_is.cpp', is_cpp)
+util.write_generated_file('generated/meter_modbus_tcp_is.inc', is_inc)
+util.write_generated_file('generated/meter_modbus_tcp_is.cpp', is_cpp)
 
 table_ids_rpl = ' || '.join([f'config[1].table[0] == MeterModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
 
-tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
+util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)

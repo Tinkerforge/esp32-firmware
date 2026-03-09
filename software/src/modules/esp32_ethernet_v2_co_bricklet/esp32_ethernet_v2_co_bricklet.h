@@ -25,7 +25,7 @@
 #include "modules/rtc/rtc.h"
 #include "options.h"
 
-#include "module_available.h"
+#include "generated/module_available.h"
 
 class ESP32EthernetV2CoBricklet final : public DeviceModule<TF_WARPESP32EthernetV2Co,
                                               tf_warp_esp32_ethernet_v2_co_create,
@@ -54,4 +54,4 @@ public:
     ConfigRoot state;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

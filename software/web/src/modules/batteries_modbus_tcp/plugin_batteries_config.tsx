@@ -27,7 +27,7 @@ import { BatteryClassID } from "../batteries/generated/battery_class_id.enum";
 import { BatteryConfig } from "../batteries/types";
 import { BatteryMode } from "../batteries/generated/battery_mode.enum";
 import { BatteryModbusTCPTableID } from "./generated/battery_modbus_tcp_table_id.enum";
-import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./battery_modbus_tcp_specs";
+import { TableConfigCustom, TableConfig, RegisterTable, RegisterBlock, get_default_device_address, new_table_config, import_table_config } from "./generated/battery_modbus_tcp_specs";
 import { ModbusFunctionCode } from "../modbus_tcp_client/generated/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/generated/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
@@ -923,7 +923,7 @@ export function pre_init() {
 
                 if (util.hasValue(config[1].table)
                  && (
-//#replace "battery_modbus_tcp_specific_table_ids.rpl"
+//#replace "generated/battery_modbus_tcp_specific_table_ids.rpl"
                     )) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(

@@ -44,9 +44,11 @@ formats = 'fmt(' + '),\n        fmt('.join(debug_log_variables) + '),'
 header  = '    "' + ',"\n    "'.join([re.sub(r'[^.]+\.', '', v).replace('[', '_').replace(']', '') for v in debug_log_variables]) + '"'
 data    = ',\n               '.join(filter(None, debug_log_variables))
 
-tfutil.specialize_template("energy_manager_debug.cpp.template", "energy_manager_debug.cpp", {
+cpp = tfutil.specialize_template("energy_manager_debug.cpp.template", None, {
     "{{{varcount}}}": str(len(debug_log_variables)),
     "{{{formats}}}": formats,
     "{{{header}}}": header,
     "{{{data}}}": data,
 })
+
+util.write_generated_file("generated/energy_manager_debug.cpp", cpp)

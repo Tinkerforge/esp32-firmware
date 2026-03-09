@@ -20,7 +20,7 @@
 #include "proxy.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "bindings/display_names.h"
 #include "bindings/errors.h"
 #include "bindings/hal_common.h"

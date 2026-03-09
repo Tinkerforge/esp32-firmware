@@ -20,7 +20,7 @@
 #include "debug_mode.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include "iso15118.h"
 #include "slac.h"

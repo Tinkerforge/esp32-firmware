@@ -21,7 +21,7 @@
 
 #include "em_v1.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include "gcc_warnings.h"
 

@@ -158,7 +158,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
     all_optional_modules_upper = []
 
     if os.path.exists(info_path):
-        config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
+        config = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
         config.read(info_path)
         if config.has_section('Dependencies'):
             has_dependencies = True
@@ -302,9 +302,9 @@ def generate_backend_module_dependencies_header(info_path, header_path_prefix, b
             dependencies_h_content += '#include "config.h"\n'
             dependencies_h_content += 'extern Config modules;\n'
 
-        tfutil.write_file_if_different(header_path_prefix + 'available.h', available_h_content)
-        tfutil.write_file_if_different(header_path_prefix + 'dependencies.h', dependencies_h_content)
-        tfutil.write_file_if_different(header_path_prefix + 'available_end.h', available_end_h_content)
+        util.write_generated_file(header_path_prefix + 'available.h', available_h_content)
+        util.write_generated_file(header_path_prefix + 'dependencies.h', dependencies_h_content)
+        util.write_generated_file(header_path_prefix + 'available_end.h', available_end_h_content)
     else:
         try:
             os.remove(header_path_prefix + 'available.h')
@@ -327,7 +327,7 @@ def generate_frontend_module_available_file(info_path, file_path_prefix, fronten
         if defines:
             available_inc_content += '\n' + defines
 
-        tfutil.write_file_if_different(file_path_prefix + 'available.inc', available_inc_content)
+        util.write_generated_file(file_path_prefix + 'available.inc', available_inc_content)
     else:
         try:
             os.remove(file_path_prefix + 'available.inc')
@@ -539,57 +539,121 @@ def hyphenate_translation(translation, parent_key=None, lang=None):
 
     return {key: (hyphenate(value, key, lang if lang is not None else key) if isinstance(value, str) else hyphenate_translation(value, parent_key + [key], lang if lang is not None else key)) for key, value in translation.items()}
 
-def repair_rtc_dir():
-    path = os.path.abspath("src/modules/rtc")
+def remove_files(path, filenames):
+    path = os.path.abspath(path)
 
-    for filename in ["real_time_clock_v2_bricklet_firmware_bin.digest",
-                     "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp",
-                     "real_time_clock_v2_bricklet_firmware_bin.embedded.h"]:
+    for filename in filenames:
         try:
             os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
-def repair_firmware_update_dir():
-    path = os.path.abspath("src/modules/firmware_update")
+def remove_old_generated_files():
+    remove_files("src/modules/meters_modbus_tcp", [
+        "Modbus Value Type.uint8.enum",
+        "meter_modbus_tcp_specs.h",
+        "meter_modbus_tcp_specs.cpp",
+        "meter_modbus_tcp_virtual_meter_enums.h",
+        "meter_modbus_tcp_is.inc",
+        "meter_modbus_tcp_is.cpp",
+    ])
 
-    for filename in ["recovery_html.digest",
-                     "recovery_html.embedded.cpp",
-                     "recovery_html.embedded.h",
-                     "signature_public_key.embedded.cpp",
-                     "signature_public_key.embedded.h"]:
+    remove_files("web/src/modules/meters_modbus_tcp", [
+        "meter_modbus_tcp_specs.ts",
+        "meter_modbus_tcp_specific_table_ids.rpl",
+    ])
+
+    remove_files("src/modules/meters_sun_spec", [
+        "sun_spec_model_id.cpp",
+        "sun_spec_model_id.h",
+        "sun_spec_model_specs.h",
+        "sun_spec_model_specs.cpp",
+    ])
+
+    remove_files("web/src/modules/meters_sun_spec", [
+        "sun_spec_model_specs.ts",
+    ])
+
+    remove_files("src/modules/modbus_tcp_client", [
+        "Modbus Value Type.uint8.enum",
+    ])
+
+    remove_files("src/modules/batteries_modbus_tcp", [
+        "battery_modbus_tcp_specs.h",
+        "battery_modbus_tcp_specs.cpp",
+        "battery_modbus_tcp_setup.inc",
+        "batteries_modbus_tcp_test.inc",
+    ])
+
+    remove_files("web/src/modules/meters_batteries_modbus_tcpun_spec", [
+        "battery_modbus_tcp_specs.ts",
+        "battery_modbus_tcp_specific_table_ids.rpl",
+    ])
+
+    remove_files("src/modules/meters_api", [
+        "presets.inc",
+    ])
+
+    remove_files("web/src/modules/meters_api", [
+        "presets.ts",
+    ])
+
+    remove_files("src/modules/meters", [
+        "meter_value_id.h",
+        "meter_value_id.cpp",
+        "meter_value_id.py",
+        "meter_value_imexdiff.cpp",
+    ])
+
+    remove_files("web/src/modules/meters", [
+        "meter_value_id.ts",
+    ])
+
+    remove_files("src/modules/pwa", [
+        "manifest.json",
+    ])
+
+    remove_files("src/modules/ocpp", [
+        "mvid_to_measurand.h",
+        "mvid_to_measurand.cpp",
+    ])
+
+    remove_files("src/modules/mqtt_auto_discovery", [
+        "mqtt_discovery_topics.h",
+        "mqtt_discovery_topics.cpp",
+    ])
+
+    remove_files("src/modules/em_v1", [
+        "energy_manager_debug.cpp",
+    ])
+
+    remove_files("src/modules/em_v2", [
+        "energy_manager_debug.cpp",
+    ])
+
+    remove_files("src/modules/power_manager", [
+        "power_manager_debug.cpp",
+    ])
+
+    remove_files("src/modules/network", [
+        "unsafe_ports.cpp",
+    ])
+
+    for path in glob.glob("src/modules/*/module.cpp") + \
+                glob.glob("src/modules/*/module_dependencies.h") + \
+                glob.glob("src/modules/*/module_available.h") + \
+                glob.glob("src/modules/*/module_available_end.h") + \
+                glob.glob("src/modules/*/*.digest") + \
+                glob.glob("src/modules/*/*.embedded.h") + \
+                glob.glob("src/modules/*/*.embedded.cpp") + \
+                glob.glob("web/src/modules/*/module_available.inc") + \
+                glob.glob("web/src/modules/*/*.digest") + \
+                glob.glob("web/src/modules/*/*.embedded.ts"):
         try:
-            os.remove(os.path.join(path, filename))
+            os.remove(path)
         except FileNotFoundError:
             pass
 
-def repair_meters_modbus_tcp_dir():
-    path = os.path.abspath("src/modules/meters_modbus_tcp")
-
-    for filename in ["Modbus Value Type.uint8.enum"]:
-        try:
-            os.remove(os.path.join(path, filename))
-        except FileNotFoundError:
-            pass
-
-def repair_meters_sun_spec_dir():
-    path = os.path.abspath("src/modules/meters_sun_spec")
-
-    for filename in ["sun_spec_model_id.cpp",
-                     "sun_spec_model_id.h"]:
-        try:
-            os.remove(os.path.join(path, filename))
-        except FileNotFoundError:
-            pass
-
-def repair_modbus_tcp_client_dir():
-    path = os.path.abspath("src/modules/modbus_tcp_client")
-
-    for filename in ["Modbus Value Type.uint8.enum"]:
-        try:
-            os.remove(os.path.join(path, filename))
-        except FileNotFoundError:
-            pass
 
 def remove_orphaned_enum_files():
     for path in glob.glob("src/modules/*/*.enum.previous") + \
@@ -806,7 +870,11 @@ def remove_all_generated_files():
     except FileNotFoundError:
         return
 
-    for generated_file in generated_files + glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*'):
+    for generated_file in sorted(generated_files + glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
+        if os.path.split(generated_file)[-1] == '__pycache__':
+            continue
+
+        print('REMOVING', generated_file)
         try:
             os.remove(generated_file)
         except FileNotFoundError:
@@ -824,12 +892,18 @@ def remove_stale_generated_files():
     except FileNotFoundError:
         generated_files = set()
 
-    for generated_file in glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*'):
+    for generated_file in sorted(glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
+        if os.path.split(generated_file)[-1] == '__pycache__':
+            continue
+
         if generated_file not in generated_files:
+            print('REMOVING', generated_file)
             try:
                 os.remove(generated_file)
             except FileNotFoundError:
                 pass
+        else:
+            print('KEEPING', generated_file)
 
 def main():
     if env.IsCleanTarget():
@@ -844,11 +918,7 @@ def main():
     # Enable this for class_size script
     #env.Append(CXXFLAGS=["-fdump-lang-class"])
 
-    repair_rtc_dir()
-    repair_firmware_update_dir()
-    repair_meters_modbus_tcp_dir()
-    repair_meters_sun_spec_dir()
-    repair_modbus_tcp_client_dir()
+    remove_old_generated_files()
     remove_orphaned_enum_files()
     remove_orphaned_union_files()
 
@@ -1365,7 +1435,7 @@ def main():
         if not os.path.exists(info_path):
             print(f'Warning: {backend_module.under} has no module.ini file')
         else:
-            config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
+            config = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
             config.read(info_path)
 
             if config.has_section('Common'):
@@ -1383,26 +1453,28 @@ def main():
 
         backend_module_instance_names[backend_module.space] = instance_name
 
-        with open(os.path.join(mod_path, 'module.cpp'), 'w', encoding='utf-8') as f:
-            f.write(f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n')
-            f.write(f'#include "{backend_module.under}.h"\n\n')
-            f.write(f'{backend_module.camel} {instance_name};\n\n')
-            f.write('// Enforce that all back-end modules implement the IModule interface. If you receive\n')
-            f.write("// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n")
-            f.write('// have to add the IModule interface to your back-end module\'s class declaration:\n')
-            f.write('//\n')
-            f.write('// class MyModule final : public IModule\n')
-            f.write('// {\n')
-            f.write('//     // content here\n')
-            f.write('// }\n')
-            # To get global constants that are usable in other compilation units, they must be
-            # declared extern. Otherwise, they will be optimized away before reaching the linker.
-            f.write(f'extern IModule *const {backend_module.under}_imodule = &{instance_name};\n')
+        module_cpp  = f'// WARNING: This file is generated from "{info_path}" by pio_hooks.py\n\n'
+        module_cpp += f'#include "../{backend_module.under}.h"\n\n'
+        module_cpp += f'{backend_module.camel} {instance_name};\n\n'
+        module_cpp += '// Enforce that all back-end modules implement the IModule interface. If you receive\n'
+        module_cpp += "// an error like \"cannot convert 'MyModule*' to 'IModule*' in initialization\", you\n"
+        module_cpp += '// have to add the IModule interface to your back-end module\'s class declaration:\n'
+        module_cpp += '//\n'
+        module_cpp += '// class MyModule final : public IModule\n'
+        module_cpp += '// {\n'
+        module_cpp += '//     // content here\n'
+        module_cpp += '// }\n'
+
+        # To get global constants that are usable in other compilation units, they must be
+        # declared extern. Otherwise, they will be optimized away before reaching the linker.
+        module_cpp += f'extern IModule *const {backend_module.under}_imodule = &{instance_name};\n'
+
+        util.write_generated_file(os.path.join(mod_path, 'generated', 'module.cpp'), module_cpp)
 
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
-        header_path_prefix = os.path.join(mod_path, 'module_')
+        header_path_prefix = os.path.join(mod_path, 'generated', 'module_')
 
         generate_backend_module_dependencies_header(info_path, header_path_prefix, backend_module, backend_modules, all_backend_modules_upper, backend_module_instance_names)
 
@@ -1585,7 +1657,7 @@ def main():
 
         mod_path = os.path.join('web', 'src', 'modules', frontend_module.under)
         info_path = os.path.join(mod_path, 'module.ini')
-        file_path_prefix = os.path.join(mod_path, 'module_')
+        file_path_prefix = os.path.join(mod_path, 'generated', 'module_')
 
         generate_frontend_module_available_file(info_path, file_path_prefix, frontend_module, frontend_modules, all_frontend_modules_upper)
 

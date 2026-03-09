@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools.h"
 #include "bindings/errors.h"
 #include "bindings/bricklet_rotary_poti_v2.h"

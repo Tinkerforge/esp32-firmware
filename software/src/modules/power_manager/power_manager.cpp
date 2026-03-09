@@ -22,7 +22,7 @@
 #include <type_traits>
 
 #include "power_manager.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include "event_log_prefix.h"
 #include "options.h"

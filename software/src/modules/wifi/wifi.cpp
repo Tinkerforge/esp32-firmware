@@ -19,7 +19,7 @@
 
 #include "wifi.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include <WiFi.h>
 #include <esp_wifi.h>

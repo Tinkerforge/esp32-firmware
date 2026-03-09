@@ -21,7 +21,7 @@
 
 #include <LittleFS.h>
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 
 struct [[gnu::packed]] ChargeStart {

@@ -9,7 +9,6 @@ import sma
 import solis
 import sax_power
 
-
 tfutil.create_parent_module(__file__, 'software')
 
 from software import util
@@ -459,7 +458,7 @@ for group, modes in all_modes.items():
                      '        break;\n\n')
 
 ts  = '// WARNING: This file is generated.\n\n'
-ts += 'import { BatteryModbusTCPTableID } from "./generated/battery_modbus_tcp_table_id.enum";\n\n'
+ts += 'import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";\n\n'
 ts += 'export const enum DefaultDeviceAddress {\n'
 ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
 ts += '}\n\n'
@@ -528,16 +527,16 @@ ts += '    }\n\n'
 ts += '    return table_out;\n'
 ts += '}\n'
 
-tfutil.write_file_if_different('../../../web/src/modules/batteries_modbus_tcp/battery_modbus_tcp_specs.ts', ts)
+util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generated/battery_modbus_tcp_specs.ts', ts)
 
 h  = '// WARNING: This file is generated.\n\n'
 h += '#include "config.h"\n'
-h += '#include "battery_modbus_tcp.h"\n\n'
+h += '#include "../battery_modbus_tcp.h"\n\n'
 h += 'void get_battery_modbus_tcp_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *table_prototypes);\n\n'
 h += 'void get_battery_modbus_tcp_test_table_prototypes(std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> *test_table_prototypes);\n\n'
 h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
 
-tfutil.write_file_if_different('battery_modbus_tcp_specs.h', h)
+util.write_generated_file('generated/battery_modbus_tcp_specs.h', h)
 
 cpp  = '// WARNING: This file is generated.\n\n'
 cpp += '#include "battery_modbus_tcp_specs.h"\n\n'
@@ -554,12 +553,12 @@ cpp += '\n'.join(test_table_prototypes) + '\n'
 cpp += '}\n\n'
 cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
 
-tfutil.write_file_if_different('battery_modbus_tcp_specs.cpp', cpp)
+util.write_generated_file('generated/battery_modbus_tcp_specs.cpp', cpp)
 
-tfutil.write_file_if_different('battery_modbus_tcp_setup.inc', ''.join(setup_inc))
+util.write_generated_file('generated/battery_modbus_tcp_setup.inc', ''.join(setup_inc))
 
-tfutil.write_file_if_different('batteries_modbus_tcp_test.inc', ''.join(test_inc))
+util.write_generated_file('generated/batteries_modbus_tcp_test.inc', ''.join(test_inc))
 
 table_ids_rpl = ' || '.join([f'config[1].table[0] == BatteryModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
 
-tfutil.write_file_if_different('../../../web/src/modules/batteries_modbus_tcp/battery_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
+util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generated/battery_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)

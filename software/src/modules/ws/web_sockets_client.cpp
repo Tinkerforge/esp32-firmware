@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "web_sockets.h"
 #include "web_sockets_client.h"
 

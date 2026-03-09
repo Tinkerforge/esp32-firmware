@@ -19,7 +19,7 @@
 
 #include "meters_rct_power.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "meter_rct_power.h"
 #include "generated/virtual_meter.enum.h"
 #include "modules/meters/generated/meter_location.enum.h"

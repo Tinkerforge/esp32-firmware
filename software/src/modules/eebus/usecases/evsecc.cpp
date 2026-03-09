@@ -23,7 +23,7 @@
 
 #ifdef EEBUS_ENABLE_EVSECC_USECASE
 
-#include "../module_dependencies.h"
+#include "../generated/module_dependencies.h"
 #include "entity_data.h"
 #include "evsecc.h"
 #include "usecase_helpers.h"

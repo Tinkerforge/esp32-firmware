@@ -1,6 +1,6 @@
 // WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
 
-#include "em_v2.h"
+#include "../em_v2.h"
 
 #include "module_dependencies.h"
 #include "tools.h"

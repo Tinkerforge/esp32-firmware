@@ -22,11 +22,11 @@
 #include "meters_modbus_tcp.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "meter_modbus_tcp.h"
-#include "meter_modbus_tcp_specs.h"
-#include "modules/meters/meter_value_id.h"
+#include "generated/meter_modbus_tcp_specs.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "modules/modbus_tcp_client/generated/modbus_register_address_mode.enum.h"
 
 #include "gcc_warnings.h"

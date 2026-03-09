@@ -19,7 +19,7 @@
 
 #include "meters_sma_speedwire.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "meter_sma_speedwire.h"
 #include "modules/meters/generated/meter_location.enum.h"
 

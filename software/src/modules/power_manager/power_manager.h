@@ -26,7 +26,7 @@
 #include "generated/battery_priority.enum.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/charge_manager/current_limits.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -232,4 +232,4 @@ private:
     size_t trace_header_length;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

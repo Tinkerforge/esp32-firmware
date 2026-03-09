@@ -19,7 +19,7 @@
 
 #include "meters_mqtt_mirror.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "meter_mqtt_mirror.h"
 #include "modules/meters/generated/meter_location.enum.h"
 

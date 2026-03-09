@@ -20,10 +20,10 @@
 #include "meters.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "meter_class_none.h"
-#include "meter_value_imexdiff.h"
+#include "generated/meter_value_imexdiff.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 #include "tools/float.h"

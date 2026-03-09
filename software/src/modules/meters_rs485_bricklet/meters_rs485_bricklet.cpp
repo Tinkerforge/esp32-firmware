@@ -22,10 +22,10 @@
 #include "meters_rs485_bricklet.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "modules/meters/generated/meter_location.enum.h"
-#include "rs485_bricklet_firmware_bin.embedded.h"
+#include "generated/rs485_bricklet_firmware_bin.embedded.h"
 
 //#include "gcc_warnings.h"
 

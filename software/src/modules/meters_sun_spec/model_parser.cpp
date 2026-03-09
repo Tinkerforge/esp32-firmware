@@ -23,7 +23,7 @@
 #include <string.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "model_parser_160.h"
 #include "model_parser_714.h"

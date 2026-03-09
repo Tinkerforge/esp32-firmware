@@ -20,7 +20,7 @@
 #include "csv_charge_log.h"
 #include "charge_tracker.h"
 #include "pdfgen.h" // for pdf_utf8_to_pdfencoding
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/string_builder.h"
 #include "tools/malloc.h"
 #include "event_log_prefix.h"

@@ -21,12 +21,11 @@
 
 #include "bindings/errors.h"
 #include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "tools.h"
-#include "warp_energy_manager_v2_bricklet_firmware_bin.embedded.h"
-
-#include "module_dependencies.h"
+#include "generated/warp_energy_manager_v2_bricklet_firmware_bin.embedded.h"
 
 #include "gcc_warnings.h"
 

@@ -33,7 +33,7 @@ import { OutputFloat } from "../../ts/components/output_float";
 import { SubPage } from "../../ts/components/sub_page";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotWrapperA, UplotData } from "../../ts/components/uplot_wrapper";
-import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./meter_value_id";
+import { MeterValueID, METER_VALUE_IDS, METER_VALUE_INFOS, METER_VALUE_ORDER } from "./generated/meter_value_id";
 import { MeterClassID } from "./generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { MeterConfig, MeterConfigPlugin } from "./types";

@@ -23,7 +23,7 @@
 
 #ifdef EEBUS_ENABLE_MPC_USECASE
 
-#include "../module_dependencies.h"
+#include "../generated/module_dependencies.h"
 #include "mpc.h"
 #include "usecase_helpers.h"
 

@@ -24,7 +24,7 @@
 #include <mbedtls/base64.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "modules/charge_manager/charge_manager_private.h"
 

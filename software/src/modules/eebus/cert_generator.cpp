@@ -20,7 +20,7 @@
  #include "cert_generator.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 [[gnu::noinline]]
 static bool fill_ship_cert(mbedtls_x509write_cert *mbed_cert)

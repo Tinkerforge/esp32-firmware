@@ -27,7 +27,7 @@
 #define ETH_PHY_POWER 5
 #define ETH_CLK_MODE  ETH_CLOCK_GPIO0_IN
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include <ETH.h>
 

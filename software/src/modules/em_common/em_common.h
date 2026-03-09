@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "module_available.h"
+#include "generated/module_available.h"
 #include "structs.h"
 
 #include "config.h"
@@ -244,4 +244,4 @@ private:
     bool     bricklet_reachable = true;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

@@ -19,7 +19,7 @@
 
 #include "value_history.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "tools.h"
 #include "tools/string_builder.h"

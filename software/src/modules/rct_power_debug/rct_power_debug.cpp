@@ -23,7 +23,7 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "modules/network_lib/generic_tcp_client_connector_base.h"
 
 #include "gcc_warnings.h"

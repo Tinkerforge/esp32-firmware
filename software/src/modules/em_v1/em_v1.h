@@ -26,7 +26,7 @@
 #include "modules/em_common/structs.h"
 #include "modules/debug_protocol/debug_protocol_backend.h"
 #include "em_rgb_led.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -143,4 +143,4 @@ private:
     bool     contactor_installed      = false;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

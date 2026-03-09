@@ -23,7 +23,7 @@
 #include "config.h"
 #include "modules/evse_common/evse_common.h"
 #include "bindings/bricklet_evse_v2.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -155,4 +155,4 @@ private:
     ConfigRoot phase_switch_wait_time_update;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

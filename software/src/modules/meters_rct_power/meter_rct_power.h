@@ -24,7 +24,7 @@
 #include <TFRCTPowerClientPool.h>
 
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "modules/network_lib/generic_tcp_client_pool_connector.h"
 #include "generated/virtual_meter.enum.h"
 

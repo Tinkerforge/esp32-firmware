@@ -24,7 +24,7 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/hexdump.h"
 #include "modules/network_lib/generic_tcp_client_connector_base.h"
 #include "modules/modbus_tcp_client/generated/modbus_function_code.enum.h"

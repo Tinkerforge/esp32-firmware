@@ -34,7 +34,7 @@ import { Switch          } from "../../ts/components/switch";
 import { SubPage         } from "../../ts/components/sub_page";
 import { MeterClassID    } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation   } from "../meters/generated/meter_location.enum";
-import { MeterValueID    } from "../meters/meter_value_id";
+import { MeterValueID    } from "../meters/generated/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryPriority } from "./generated/battery_priority.enum";
 import { StatusSection } from "../../ts/components/status_section";

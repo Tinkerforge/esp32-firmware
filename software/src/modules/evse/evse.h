@@ -96,4 +96,4 @@ protected:
     ConfigRoot user_calibration;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

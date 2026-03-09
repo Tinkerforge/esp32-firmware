@@ -23,7 +23,7 @@
 
 #ifdef EEBUS_ENABLE_OPEV_USECASE
 
-#include "../module_dependencies.h"
+#include "../generated/module_dependencies.h"
 #include "entity_data.h"
 #include "event_log_prefix.h"
 #include "opev.h"

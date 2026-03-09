@@ -31,7 +31,7 @@ import { Monitor } from "react-feather";
 import { Collapse } from "react-bootstrap";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormSeparator } from "../../ts/components/form_separator";
-import { MeterValueID } from "../meters/meter_value_id";
+import { MeterValueID } from "../meters/generated/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { get_managed_chargers } from "../charge_manager/chargers";
 import { TileType } from "./generated/tile_type.enum";

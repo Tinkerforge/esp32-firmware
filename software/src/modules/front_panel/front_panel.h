@@ -23,7 +23,7 @@
 #include "config.h"
 #include "build.h"
 #include "bindings/bricklet_warp_front_panel.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 #include "tools/libxz/xz.h"
 #include "generated/tile_type.enum.h"
 
@@ -121,4 +121,4 @@ private:
     bool flash_update_in_progress = false;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

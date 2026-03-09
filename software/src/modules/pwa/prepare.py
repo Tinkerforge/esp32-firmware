@@ -29,18 +29,10 @@ with open(branding_mod_path / 'pre.scss', 'r', encoding='utf-8') as f:
     if color.endswith(';'):
         color = color[:-1]
 
-with open('manifest.json.template', 'r', encoding='utf-8') as f:
-    content = f.read()
-
-content = content.replace(" ", "").replace("\n", "").replace("maskableany", "maskable any")
-
-tfutil.write_file_if_different('manifest.json', content)
-
-tfutil.specialize_template('manifest.json', 'manifest.json', {
+content = tfutil.specialize_template('manifest.json.template', None, {
     '{{{theme_color}}}': color,
-    '{{{small_icon}}}': 'data:image/png;base64, ' + icon_small,
-    '{{{big_icon}}}': 'data:image/png;base64, ' + icon_big,
-})
+    '{{{small_icon}}}': icon_small,
+    '{{{big_icon}}}': icon_big,
+}).replace(" ", "").replace("\n", "").replace("maskableany", "maskable any").strip()
 
-with open('manifest.json', 'rb') as f:
-    util.embed_data_with_digest(f.read(), '.', 'manifest', 'char', 'ssize_t')
+util.embed_data_with_digest(content.encode('utf-8'), 'generated', 'manifest', 'char', 'ssize_t')

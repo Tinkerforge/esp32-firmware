@@ -27,7 +27,7 @@
 #include <stdio.h> // For snprintf
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/printf.h"
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "current_allocator_private.h"

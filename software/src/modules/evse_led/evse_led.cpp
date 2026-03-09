@@ -19,7 +19,7 @@
 
 #include "evse_led.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 void EvseLed::pre_setup()
 {

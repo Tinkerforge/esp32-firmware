@@ -25,7 +25,7 @@
 #include <cmath>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools.h"
 #include "tools/net.h"
 #include "modules/meters/meter_defs.h"

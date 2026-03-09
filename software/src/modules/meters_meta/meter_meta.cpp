@@ -22,10 +22,10 @@
 #include <vector>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "meters_meta.h"
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "tools.h"
 
 #include "gcc_warnings.h"

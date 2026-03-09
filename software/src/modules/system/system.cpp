@@ -24,9 +24,9 @@
 #include <esp_system.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "language.h"
-#include "./recovery_html.embedded.h"
+#include "generated/recovery_html.embedded.h"
 
 extern int8_t green_led_pin;
 

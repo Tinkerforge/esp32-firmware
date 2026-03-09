@@ -23,7 +23,7 @@
 #include <esp_sntp.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "timezone_translation.h"
 
 #include "gcc_warnings.h"

@@ -24,7 +24,7 @@
 #define TRACE_LOG_PREFIX nullptr
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "musl_libc_timegm.h"
 

@@ -32,14 +32,14 @@
 #define TRACE_LOG_PREFIX nullptr
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "tools/tf_websocket_client.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 
-#include "mvid_to_measurand.h"
+#include "generated/mvid_to_measurand.h"
 
 static bool feature_evse = false;
 static bool feature_phase_switch = false;

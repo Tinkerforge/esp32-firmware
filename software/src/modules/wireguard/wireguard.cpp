@@ -22,7 +22,7 @@
 #include <mbedtls/base64.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/dns.h"
 
 static String check_key(const String &key, bool enable)

@@ -19,7 +19,7 @@
 
 #include "charge_limits.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools.h"
 
 // This is here so I stop commiting changes meant for debugging

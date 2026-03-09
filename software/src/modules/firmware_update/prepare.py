@@ -87,7 +87,7 @@ h += 'extern const char *signature_publisher;\n\n'
 h += 'extern const unsigned char signature_sodium_public_key_data[];\n\n'
 h += f'#define signature_sodium_public_key_length {len(sodium_public_key)}\n'
 
-tfutil.write_file_if_different('signature_verify.embedded.h', h)
+util.write_generated_file('generated/signature_verify.h', h)
 
 cpp = '// WARNING: This file is generated\n\n'
 cpp += f'const char *signature_publisher = "{publisher_literal}";\n\n'
@@ -104,4 +104,4 @@ while len(b) != 0:
 
 cpp += '};\n'
 
-tfutil.write_file_if_different('signature_verify.embedded.cpp', cpp)
+util.write_generated_file('generated/signature_verify.cpp', cpp)

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { underconstruction_gif } from "./underconstruction_gif.embedded";
+import { underconstruction_gif } from "./generated/underconstruction_gif.embedded";
 
 export function pre_init() {
 }

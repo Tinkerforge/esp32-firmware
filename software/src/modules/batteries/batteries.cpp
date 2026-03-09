@@ -24,7 +24,7 @@
 #include "options.h"
 #include "battery_class_none.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 static BatteryGeneratorNone battery_generator_none;
 

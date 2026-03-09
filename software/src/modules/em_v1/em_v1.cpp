@@ -20,10 +20,10 @@
 #include "em_v1.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "bindings/errors.h"
 #include "tools.h"
-#include "warp_energy_manager_bricklet_firmware_bin.embedded.h"
+#include "generated/warp_energy_manager_bricklet_firmware_bin.embedded.h"
 
 #include "gcc_warnings.h"
 

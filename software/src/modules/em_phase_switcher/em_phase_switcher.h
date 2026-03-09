@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #include "config.h"
 #include "module.h"
@@ -84,4 +84,4 @@ private:
     uint8_t external_phase_override = 0;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

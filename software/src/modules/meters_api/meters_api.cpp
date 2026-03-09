@@ -19,7 +19,7 @@
 
 #include "meters_api.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "options.h"
 #include "meter_api.h"
 #include "modules/meters/generated/meter_location.enum.h"

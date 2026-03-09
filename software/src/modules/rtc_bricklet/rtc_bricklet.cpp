@@ -22,9 +22,9 @@
 #include <ctime>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
-#include "real_time_clock_v2_bricklet_firmware_bin.embedded.h"
+#include "generated/real_time_clock_v2_bricklet_firmware_bin.embedded.h"
 
 #include "gcc_warnings.h"
 

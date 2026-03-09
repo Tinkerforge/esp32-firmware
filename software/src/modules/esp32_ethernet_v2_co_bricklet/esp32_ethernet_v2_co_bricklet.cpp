@@ -17,20 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "esp32_eth_v2_co"
+
 #include "esp32_ethernet_v2_co_bricklet.h"
 
 #include <ctime>
 
-#define EVENT_LOG_PREFIX "esp32_eth_v2_co"
 #include "event_log_prefix.h"
+#include "generated/module_dependencies.h"
 #include "bindings/errors.h"
 #include "build.h"
 #include "musl_libc_timegm.h"
-
-#include "warp_esp32_ethernet_v2_co_bricklet_firmware_bin.embedded.h"
-
-#include "module_dependencies.h"
-
+#include "generated/warp_esp32_ethernet_v2_co_bricklet_firmware_bin.embedded.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push

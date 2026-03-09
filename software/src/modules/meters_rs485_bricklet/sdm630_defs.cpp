@@ -19,7 +19,7 @@
 
 #include "sdm630_defs.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "modules/meters/rs485_helpers.h"
 
 static const RegRead sdm630_slow[] {

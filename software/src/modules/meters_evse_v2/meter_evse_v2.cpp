@@ -20,8 +20,8 @@
 #include "meter_evse_v2.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
-#include "modules/meters/meter_value_id.h"
+#include "generated/module_dependencies.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "modules/meters/rs485_helpers.h"
 #include "tools.h"
 

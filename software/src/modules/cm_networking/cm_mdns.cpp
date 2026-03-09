@@ -26,7 +26,7 @@
 
 #include "mdns.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools/dns.h"
 #include "tools/net.h"
 #include "cool_string.h"

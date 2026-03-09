@@ -26,7 +26,7 @@
 #include "modules/em_common/em_common.h"
 #include "modules/em_common/structs.h"
 
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -123,4 +123,4 @@ private:
     ConfigRoot outputs_update;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

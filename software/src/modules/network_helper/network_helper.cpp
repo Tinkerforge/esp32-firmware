@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "network_helper.h"
 
 void NetworkHelper::register_urls()

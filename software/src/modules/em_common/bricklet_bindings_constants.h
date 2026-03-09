@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_EM_V1_AVAILABLE()
 #include "bindings/bricklet_warp_energy_manager.h"
@@ -49,4 +49,4 @@
 
 #endif
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

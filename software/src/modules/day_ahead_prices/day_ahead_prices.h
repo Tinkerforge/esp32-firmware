@@ -28,7 +28,7 @@
 #include "async_https_client.h"
 #include "module.h"
 #include "config.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -171,4 +171,4 @@ public:
 #endif
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

@@ -29,7 +29,7 @@
 #include "generated/meter_location.enum.h"
 #include "meter_value_availability.h"
 #include "value_history.h"
-#include "meter_value_id.h"
+#include "generated/meter_value_id.h"
 #include "tools.h"
 
 #define METERS_MAX_FILTER_VALUES 7

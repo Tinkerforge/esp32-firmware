@@ -26,7 +26,7 @@
 #include "modules/api/api.h"
 #include "tools/allocator.h"
 #include "generated/mqtt_connection_state.enum.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 
 #if MODULE_AUTOMATION_AVAILABLE()
 #include "modules/automation/automation_backend.h"
@@ -142,4 +142,4 @@ private:
     int subscribe_internal(esp_mqtt_client_handle_t client, const char *topic, int qos);
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

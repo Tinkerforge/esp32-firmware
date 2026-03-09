@@ -25,7 +25,7 @@
 #include "../web_server/web_server.h"
 #include "async_https_client.h"
 #include "csv_charge_log.h"
-#include "module_available.h"
+#include "generated/module_available.h"
 #include "charge_tracker_defs.h"
 #include "generated/file_type.enum.h"
 #include "generated/csv_flavor.enum.h"
@@ -149,4 +149,4 @@ class ChargeLogGenerationLockHelper {
         static std::atomic<GenerationState> generation_lock_state;
 };
 
-#include "module_available_end.h"
+#include "generated/module_available_end.h"

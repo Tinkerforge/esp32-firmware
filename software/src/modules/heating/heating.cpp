@@ -25,7 +25,7 @@
 #include <type_traits>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "generated/control_period.enum.h"

@@ -19,7 +19,7 @@
 
 #include "remote_access.h"
 
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 
 #include <LittleFS.h>
 #include <TFJson.h>

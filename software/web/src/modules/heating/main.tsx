@@ -32,7 +32,7 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Thermometer } from "react-feather";
 import { InputSelect } from "../../ts/components/input_select";
-import { MeterValueID    } from "../meters/meter_value_id";
+import { MeterValueID    } from "../meters/generated/meter_value_id";
 import { get_noninternal_meter_slots, NoninternalMeterSelector } from "../power_manager/main";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";

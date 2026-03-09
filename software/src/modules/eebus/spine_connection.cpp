@@ -22,7 +22,7 @@
 #include "eebus.h"
 #include "eebus_usecases.h"
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "ship_types.h"
 #include "tools.h"
 

@@ -24,14 +24,14 @@ import * as util from "../../ts/util";
 import { MeterClassID } from "../meters/generated/meter_class_id.enum";
 import { MeterLocation } from "../meters/generated/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
-import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/meter_value_id";
+import { MeterValueID, MeterValueTreeType, METER_VALUE_INFOS, METER_VALUE_TREE } from "../meters/generated/meter_value_id";
 import { MeterConfig } from "../meters/types";
 import { Table, TableRow } from "../../ts/components/table";
 import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
-import { PRESET_VALUE_IDS, PRESET_DEFAULT_LOCATIONS } from "./presets";
+import { PRESET_VALUE_IDS, PRESET_DEFAULT_LOCATIONS } from "./generated/presets";
 
 export type APIMetersConfig = [
     MeterClassID.API,

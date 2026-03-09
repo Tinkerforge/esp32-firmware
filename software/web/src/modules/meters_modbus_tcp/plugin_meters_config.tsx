@@ -29,7 +29,7 @@ import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID } from "./generated/meter_modbus_tcp_table_id.enum";
-import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config, get_virtual_meter_items, get_default_location } from "./meter_modbus_tcp_specs";
+import { TableConfig, TableConfigCustom, Register, get_default_device_address, new_table_config, get_virtual_meter_items, get_default_location } from "./generated/meter_modbus_tcp_specs";
 import { ModbusRegisterType } from "../modbus_tcp_client/generated/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/generated/modbus_register_address_mode.enum";
 import { ModbusValueType } from "../modbus_tcp_client/generated/modbus_value_type.enum";
@@ -345,7 +345,7 @@ export function pre_init() {
 
                 if (util.hasValue(config[1].table)
                  && (
-//#replace "meter_modbus_tcp_specific_table_ids.rpl"
+//#replace "generated/meter_modbus_tcp_specific_table_ids.rpl"
                     )) {
                     let default_device_address = get_default_device_address(config[1].table[0]);
 

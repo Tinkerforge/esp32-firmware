@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "modules/meters/imeter.h"
-#include "modules/meters/meter_value_id.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "generated/ev_data_protocol.enum.h"
 
 #define METER_ISO15118_VALUE_COUNT 13

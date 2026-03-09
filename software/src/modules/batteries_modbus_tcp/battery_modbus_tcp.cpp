@@ -24,8 +24,8 @@
 #include <TFModbusTCPClient.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
-#include "battery_modbus_tcp_specs.h"
+#include "generated/module_dependencies.h"
+#include "generated/battery_modbus_tcp_specs.h"
 #include "tools/memory.h"
 
 #include "gcc_warnings.h"
@@ -525,7 +525,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
         break;
 
-#include "battery_modbus_tcp_setup.inc"
+#include "generated/battery_modbus_tcp_setup.inc"
 
     default:
         logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));

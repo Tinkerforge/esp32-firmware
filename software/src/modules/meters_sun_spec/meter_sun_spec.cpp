@@ -20,8 +20,8 @@
 #include "meter_sun_spec.h"
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
-#include "sun_spec_model_specs.h"
+#include "generated/module_dependencies.h"
+#include "generated/sun_spec_model_specs.h"
 #include "models/model_001.h"
 #include "tools/semantic_version.h"
 #include "tools/hexdump.h"

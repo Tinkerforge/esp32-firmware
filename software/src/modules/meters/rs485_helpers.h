@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "meter_value_id.h"
+#include "generated/meter_value_id.h"
 
 #include <cstddef>
 #include <cstdint>

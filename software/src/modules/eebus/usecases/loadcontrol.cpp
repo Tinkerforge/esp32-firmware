@@ -23,7 +23,7 @@
 
 #if defined(EEBUS_ENABLE_LPC_USECASE) || defined(EEBUS_ENABLE_LPP_USECASE)
 
-#include "../module_dependencies.h"
+#include "../generated/module_dependencies.h"
 #include "entity_data.h"
 #include "event_log_prefix.h"
 #include "loadcontrol.h"

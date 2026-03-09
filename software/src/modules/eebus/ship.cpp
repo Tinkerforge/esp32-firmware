@@ -25,7 +25,7 @@
 #include "event_log_prefix.h"
 
 #include "cert_generator.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "tools.h"
 #include "tools/hexdump.h"
 #include "tools/net.h"

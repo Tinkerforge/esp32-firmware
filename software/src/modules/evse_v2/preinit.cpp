@@ -22,7 +22,7 @@
 #include <LittleFS.h>
 
 #include "event_log_prefix.h"
-#include "module_dependencies.h"
+#include "generated/module_dependencies.h"
 #include "bindings/hal_common.h"
 #include "bindings/bricklet_evse_v2.h"
 #include "tools.h"

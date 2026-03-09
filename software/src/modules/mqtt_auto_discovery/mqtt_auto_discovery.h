@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "mqtt_discovery_topics.h"
+#include "generated/mqtt_discovery_topics.h"
 #include "cool_string.h"
 #include "generated/mqtt_auto_discovery_mode.enum.h"
 

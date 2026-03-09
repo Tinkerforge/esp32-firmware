@@ -19,10 +19,10 @@
 
 #include "meter_api.h"
 
-#include "module_dependencies.h"
-#include "modules/meters/meter_value_id.h"
+#include "generated/module_dependencies.h"
+#include "modules/meters/generated/meter_value_id.h"
 #include "modules/meters/generated/meter_location.enum.h"
-#include "presets.inc"
+#include "generated/presets.inc"
 
 #include "gcc_warnings.h"
 

@@ -3,7 +3,7 @@ import tinkerforge_util as tfutil
 tfutil.create_parent_module(__file__, 'software')
 
 from software import util
-from software.src.modules.meters.meter_value_id import MeterValueID
+from software.src.modules.meters.generated.meter_value_id import MeterValueID
 
 presets = [
     ('none', 'Unknown', [
@@ -158,7 +158,7 @@ presets = [
 ]
 
 inc = '// WARNING: This file is generated\n\n'
-inc += '#include "modules/meters/meter_value_id.h"\n'
+inc += '#include "modules/meters/generated/meter_value_id.h"\n'
 inc += '#include "modules/meters/generated/meter_location.enum.h"\n\n'
 
 for preset in presets:
@@ -200,11 +200,11 @@ for preset in presets:
 
 inc += '};\n'
 
-tfutil.write_file_if_different('presets.inc', inc)
+util.write_generated_file('generated/presets.inc', inc)
 
 ts = '// WARNING: This file is generated\n\n'
-ts += 'import { MeterValueID } from "../meters/meter_value_id"\n'
-ts += 'import { MeterLocation } from "../meters/generated/meter_location.enum"\n\n'
+ts += 'import { MeterValueID } from "../../meters/generated/meter_value_id"\n'
+ts += 'import { MeterLocation } from "../../meters/generated/meter_location.enum"\n\n'
 ts += 'export const PRESET_VALUE_IDS: {[key: string]: MeterValueID[]} = {\n'
 
 for preset in presets:
@@ -223,4 +223,4 @@ for preset in presets:
 
 ts += '};\n'
 
-tfutil.write_file_if_different('../../../web/src/modules/meters_api/presets.ts', ts)
+util.write_generated_file('../../../web/src/modules/meters_api/generated/presets.ts', ts)

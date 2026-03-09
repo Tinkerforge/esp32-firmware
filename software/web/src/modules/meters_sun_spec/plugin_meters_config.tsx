@@ -36,7 +36,7 @@ import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { Download } from 'react-feather';
-import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
+import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./generated/sun_spec_model_specs";
 
 const SCAN_CONTINUE_INTERVAL = 3000; // milliseconds
 const SCAN_LOG_INTERVAL = 250; // milliseconds

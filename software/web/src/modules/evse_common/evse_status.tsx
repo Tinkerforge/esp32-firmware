@@ -18,7 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//#include "module_available.inc"
+//#include "generated/module_available.inc"
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
