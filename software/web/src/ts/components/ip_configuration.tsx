@@ -175,7 +175,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, IPConfigura
 
         let ip_invalid_feedback = "";
         if (ipv6Mode && ipv6_ip_invalid) {
-            ip_invalid_feedback = __("component.ip_configuration.static_ip_invalid");
+            ip_invalid_feedback = __("component.ip_configuration.static_ipv6_invalid");
         } else if (ip_is_broadcast_addr) {
             ip_invalid_feedback = __("component.ip_configuration.ip_is_broadcast");
         } else if (ip_is_network_addr) {
@@ -268,8 +268,8 @@ export class IPConfiguration extends Component<IPConfigurationProps, IPConfigura
                                         ip: ipv6Mode ? "::" : "0.0.0.0",
                                         gateway: ipv6Mode ? "::" : "0.0.0.0",
                                         subnet: ipv6Mode ? "::" : "0.0.0.0",
-                                        dns: "",
-                                        dns2: ""
+                                        dns: ipv6Mode ? "::" : "0.0.0.0",
+                                        dns2: ipv6Mode ? "::" : "0.0.0.0"
                                     });
                                 else {
                                     props.onValue({
