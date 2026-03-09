@@ -23,23 +23,53 @@ import { useId, useContext } from "preact/hooks";
 import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
+type IpVersion = "v4" | "v6";
+
 interface InputIPProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
     idContext?: Context<string>
     onValue: (value: string) => void
     invalidFeedback: ComponentChildren
     moreClasses?: string[]
+    ipVersion?: IpVersion
+    allowCidr?: boolean
 }
 
 export function InputIP(props: InputIPProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
+    const ipv6 = props.ipVersion === "v6";
+    const allowCidr = props.allowCidr === true;
+    
+    // Adjust lengths and patterns based on CIDR support
+    const minLength = ipv6 ? 2 : 7;
+    let maxLength = ipv6 ? 45 : 15;
+    let size = ipv6 ? 45 : 15;
+    
+    // If CIDR is allowed, increase max length to accommodate "/128" or "/32"
+    if (allowCidr) {
+        maxLength = ipv6 ? 49 : 18;  // IPv6: "xxxx:.../128" (45+4), IPv4: "xxx.xxx.../32" (15+3)
+        size = ipv6 ? 49 : 18;
+    }
+    
+    // Build pattern - allow either plain IP or IP with CIDR if allowCidr is true
+    let pattern: string;
+    if (allowCidr) {
+        if (ipv6) {
+            pattern = `^(?:${util.IPV6_ADDRESS_PATTERN}|${util.IPV6_CIDR_PATTERN})$`;
+        } else {
+            pattern = `^(?:${util.IPV4_ADDRESS_PATTERN}|${util.IPV4_CIDR_PATTERN})$`;
+        }
+    } else {
+        pattern = `^${ipv6 ? util.IPV6_ADDRESS_PATTERN : util.IPV4_ADDRESS_PATTERN}$`;
+    }
+    
     return (<>
         <input class={"form-control" + (props.moreClasses? " " + props.moreClasses.join(" ") : "")}
                id={id}
                type="text"
-               minLength={7}
-               maxLength={15}
-               size={15}
-               pattern={`^${util.IPV4_ADDRESS_PATTERN}$`}
+               minLength={minLength}
+               maxLength={maxLength}
+               size={size}
+               pattern={pattern}
                onInput={(e) => props.onValue((e.target as HTMLInputElement).value)}
                {...props}/>
         <div class="invalid-feedback">{props.invalidFeedback}</div>

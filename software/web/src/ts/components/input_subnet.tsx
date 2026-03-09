@@ -27,19 +27,33 @@ export interface InputSubnetProps extends Omit<InputSelectProps, "items"> {
     idContext?: Context<string>
     minPrefixLength?: number;
     maxPrefixLength?: number;
+    ipVersion?: "v4" | "v6";
 }
 
 export function InputSubnet(props: InputSubnetProps) {
-    let {minPrefixLength = 8, maxPrefixLength = 31, ...rest} = props;
+    let {minPrefixLength = 8, maxPrefixLength = 31, ipVersion = "v4", ...rest} = props;
+
+    if (ipVersion === "v6") {
+        if (props.minPrefixLength === undefined)
+            minPrefixLength = 0;
+        if (props.maxPrefixLength === undefined)
+            maxPrefixLength = 128;
+    }
 
     const items = useMemo(() => {
             let result: [string, string][] = [];
-            for(let i = maxPrefixLength; i >= minPrefixLength; --i) {
-                let x = i == 32 ? 0xFFFFFFFF : ~(0xFFFFFFFF >>> (i));
-                result.push([unparseIP(x), "/" + i + " (" + unparseIP(x) + ")"]);
+            if (ipVersion === "v6") {
+                for (let i = maxPrefixLength; i >= minPrefixLength; --i) {
+                    result.push(["/" + i, "/" + i]);
+                }
+            } else {
+                for(let i = maxPrefixLength; i >= minPrefixLength; --i) {
+                    let x = i == 32 ? 0xFFFFFFFF : ~(0xFFFFFFFF >>> (i));
+                    result.push([unparseIP(x), "/" + i + " (" + unparseIP(x) + ")"]);
+                }
             }
             return result;
-        }, [minPrefixLength, maxPrefixLength]);
+        }, [ipVersion, minPrefixLength, maxPrefixLength]);
 
     return (
         <InputSelect items={items}
