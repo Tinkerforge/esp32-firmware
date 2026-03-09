@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2026-02-25.      *
+ * This file was automatically generated on 2026-03-09.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -377,6 +377,16 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_GET_PHASE_SWITCH_WAIT_TIME 66
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_PLC_MODEM 67
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_PLC_MODEM 68
 
 /**
  * \ingroup TF_EVSEV2
@@ -2115,6 +2125,20 @@ int tf_evse_v2_set_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t phase_swit
  * TODO
  */
 int tf_evse_v2_get_phase_switch_wait_time(TF_EVSEV2 *evse_v2, uint8_t *ret_phase_switch_wait_time);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_plc_modem(TF_EVSEV2 *evse_v2, bool plc_modem_enabled);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_plc_modem(TF_EVSEV2 *evse_v2, bool *ret_plc_modem_enabled);
 
 /**
  * \ingroup TF_EVSEV2
