@@ -55,11 +55,18 @@ void Ethernet::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable_ethernet", Config::Bool(true)},
-        {"ip", Config::Str("0.0.0.0", 7, 45)},
-        {"gateway", Config::Str("0.0.0.0", 7, 45)},
-        {"subnet", Config::Str("0.0.0.0", 7, 45)},
-        {"dns", Config::Str("0.0.0.0", 7, 45)},
-        {"dns2", Config::Str("0.0.0.0", 7, 45)},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"dns", Config::Str("0.0.0.0", 7, 15)},
+        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+        {"ipv6", Config::Object({
+            {"ip", Config::Str("::", 2, 45)},
+            {"gateway", Config::Str("::", 2, 45)},
+            {"subnet", Config::Str("::", 2, 45)},
+            {"dns", Config::Str("::", 2, 45)},
+            {"dns2", Config::Str("::", 2, 45)},
+        })},
         {"enable_ipv6", Config::Bool(false)}
     }),
     [this](Config &update, ConfigSource source) -> String {
@@ -131,7 +138,8 @@ void Ethernet::pre_setup()
         {"connection_start", Config::Uptime()},
         {"connection_end", Config::Uptime()},
         {"mac", Config::Str("", 0, 17)},
-        {"ip", Config::Str("0.0.0.0", 7, 45)},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"ip6", Config::Str("::", 2, 45)},
         {"subnet", Config::Str("0.0.0.0", 7, 45)},
         {"ip6_link_local", Config::Str("::", 0, 45)},
         {"ip6_global", Config::Str("::", 0, 45)},
@@ -334,6 +342,7 @@ void Ethernet::setup()
                 } else {
                     state.get("ip6_global")->updateString(ip6_str_copy);
                 }
+                state.get("ip6")->updateString(ip6_str_copy);
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
