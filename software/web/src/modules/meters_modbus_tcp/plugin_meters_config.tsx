@@ -296,6 +296,7 @@ export function pre_init() {
                                 [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
                                 [MeterModbusTCPTableID.GoodweInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_inverter")],
+                                [MeterModbusTCPTableID.GrowattHybridInverter.toString(), __("meters_modbus_tcp.content.table_growatt_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HuaweiEMMA.toString(), __("meters_modbus_tcp.content.table_huawei_emma")],
                                 [MeterModbusTCPTableID.HuaweiSmartLogger3000.toString(), __("meters_modbus_tcp.content.table_huawei_smart_logger_3000")],

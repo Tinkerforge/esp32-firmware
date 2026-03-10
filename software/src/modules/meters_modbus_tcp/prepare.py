@@ -25,6 +25,7 @@ import varta
 import chisage_ess
 import janitza
 import solis
+import growatt
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -55,6 +56,7 @@ modules = [
     chisage_ess,
     janitza,
     solis,
+    growatt,
 ]
 
 display_names = {}
@@ -195,7 +197,7 @@ for spec in specs:
                 start_address = value['start_address']
 
             if start_address != 'START_ADDRESS_VIRTUAL':
-                address_name_words = value['name'].split('|', 1)[-1].split('[')[0].replace('+', ' ').replace('-', ' ').replace('/', ' ').replace('.', ' ').replace(',', ' ').split(' ')
+                address_name_words = ''.join([x for x in value['name'].split('|', 1)[-1].split('[')[0] if (x >= 'A' and x <= 'Z') or (x >= 'a' and x <= 'z') or (x >= '0' and x <= '9') or x == '_' or x == ' ']).split(' ')
                 address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
                 value_addresses.append(f'    {address_name} = {start_address},')

@@ -672,6 +672,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = get_solis_hybrid_inverter_table(slot, solis_hybrid_inverter.virtual_meter);
         break;
 
+    case MeterModbusTCPTableID::GrowattHybridInverter:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
+        growatt_hybrid_inverter.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<GrowattHybridInverterVirtualMeter>();
+        table = get_growatt_hybrid_inverter_table(slot, growatt_hybrid_inverter.virtual_meter);
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -3121,21 +3127,25 @@ void MeterModbusTCP::parse_next()
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
+            // Use current != 0 as indicator to avoid phantom voltage
             if (!is_exactly_zero(solis_hybrid_inverter.dc_current_1)) {
                 voltage_sum += solis_hybrid_inverter.dc_voltage_1;
                 ++voltage_count;
             }
 
+            // Use current != 0 as indicator to avoid phantom voltage
             if (!is_exactly_zero(solis_hybrid_inverter.dc_current_2)) {
                 voltage_sum += solis_hybrid_inverter.dc_voltage_2;
                 ++voltage_count;
             }
 
+            // Use current != 0 as indicator to avoid phantom voltage
             if (!is_exactly_zero(solis_hybrid_inverter.dc_current_3)) {
                 voltage_sum += solis_hybrid_inverter.dc_voltage_3;
                 ++voltage_count;
             }
 
+            // Use current != 0 as indicator to avoid phantom voltage
             if (!is_exactly_zero(solis_hybrid_inverter.dc_current_4)) {
                 voltage_sum += solis_hybrid_inverter.dc_voltage_4;
                 ++voltage_count;
@@ -3148,6 +3158,95 @@ void MeterModbusTCP::parse_next()
                               + solis_hybrid_inverter.dc_current_3
                               + solis_hybrid_inverter.dc_current_4;
 
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+        }
+    }
+    else if (is_growatt_hybrid_inverter_grid_meter()) {
+        if (register_start_address == GrowattHybridInverterGridAddress::PtouserTotalTotalForwardPower) {
+            growatt_hybrid_inverter.grid_forward_power = value;
+        }
+        else if (register_start_address == GrowattHybridInverterGridAddress::PtogridTotalTotalReversePower) {
+            growatt_hybrid_inverter.grid_reverse_power = value;
+
+            float grid_power = growatt_hybrid_inverter.grid_forward_power
+                             - growatt_hybrid_inverter.grid_reverse_power;
+
+            meters.update_value(slot, table->index[read_index + 1], grid_power);
+        }
+    }
+    else if (is_growatt_hybrid_inverter_battery_meter()) {
+        if (register_start_address == GrowattHybridInverterBatteryAddress::PdischrDischargePower) {
+            growatt_hybrid_inverter.batter_discharge_power = value;
+        }
+        else if (register_start_address == GrowattHybridInverterBatteryAddress::PchrChargePower) {
+            growatt_hybrid_inverter.batter_charge_power = value;
+
+            float batter_power = growatt_hybrid_inverter.batter_charge_power
+                               - growatt_hybrid_inverter.batter_discharge_power;
+
+            meters.update_value(slot, table->index[read_index + 1], batter_power);
+        }
+    }
+    else if (is_growatt_hybrid_inverter_load_meter()) {
+        if (register_start_address == GrowattHybridInverterLoadAddress::PtoloadTotalTotalLoadPower) {
+            meters.update_value(slot, table->index[read_index + 1], value);
+        }
+    }
+    else if (is_growatt_hybrid_inverter_pv_meter()) {
+        if (register_start_address == GrowattHybridInverterPVAddress::Vpv1PV1Voltage) {
+            growatt_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Ipv1PV1InputCurrent) {
+            growatt_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Vpv2PV2Voltage) {
+            growatt_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Ipv2PV2InputCurrent) {
+            growatt_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Vpv3PV3Voltage) {
+            growatt_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Ipv3PV3InputCurrent) {
+            growatt_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Vpv4PV4Voltage) {
+            growatt_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == GrowattHybridInverterPVAddress::Ipv4PV4InputCurrent) {
+            growatt_hybrid_inverter.pv4_current = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(growatt_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += growatt_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(growatt_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += growatt_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(growatt_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += growatt_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(growatt_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += growatt_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = growatt_hybrid_inverter.pv1_current
+                              + growatt_hybrid_inverter.pv2_current
+                              + growatt_hybrid_inverter.pv3_current
+                              + growatt_hybrid_inverter.pv4_current;
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);

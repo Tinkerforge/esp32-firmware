@@ -496,6 +496,23 @@ private:
             float dc_voltage_4;
             float dc_current_4;
         } solis_hybrid_inverter;
+
+        // Growatt hybrid inverter
+        struct {
+            GrowattHybridInverterVirtualMeter virtual_meter;
+            float grid_forward_power;
+            float grid_reverse_power;
+            float batter_discharge_power;
+            float batter_charge_power;
+            float pv1_voltage;
+            float pv1_current;
+            float pv2_voltage;
+            float pv2_current;
+            float pv3_voltage;
+            float pv3_current;
+            float pv4_voltage;
+            float pv4_current;
+        } growatt_hybrid_inverter;
     };
 };
 

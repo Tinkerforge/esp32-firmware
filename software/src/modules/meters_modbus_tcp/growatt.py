@@ -1,0 +1,439 @@
+display_names = [
+    ('Growatt Hybrid Inverter', {
+        'en': 'Growatt hybrid inverter (TL-X and TL-XH series)',
+        'de': 'Growatt Hybrid-Wechselrichter (TL-X- und TL-XH-Serie)',
+    }),
+]
+
+table_prototypes = [
+    ('Growatt Hybrid Inverter', ['device_address', 'virtual_meter']),
+]
+
+default_device_addresses = [
+    ('Growatt Hybrid Inverter', 1),
+]
+
+specs = [
+    {
+        'name': 'Growatt Hybrid Inverter',
+        'virtual_meter': ('Growatt Hybrid Inverter', 'Inverter'),
+        'default_location': 'Inverter',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Qac: Reactive power [0.1 var]',
+                'value_id': 'PowerReactiveLSumIndCapSum',  # FIXME: sign?
+                'start_address': 3021,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pac: Output power [0.1 W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 3023,
+                'value_type': 'S32BE',
+                'scale_factor': -0.1,
+            },
+            {
+                'name': 'Fac: Grid frequency [0.01 Hz]',
+                'value_id': 'FrequencyLAvg',
+                'start_address': 3025,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Vac1: Three/single phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 3026,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Iac1: Three/single phase grid output current [0.1 A]',
+                'value_id': 'CurrentL1ImExSum',
+                'start_address': 3027,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pac1: Three/single phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
+                'value_id': 'PowerApparentL1ImExSum',  # FIXME: sign?
+                'start_address': 3028,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vac2: Three phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 3030,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Iac2: Three phase grid output current [0.1 A]',
+                'value_id': 'CurrentL2ImExSum',
+                'start_address': 3031,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pac2: Three phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
+                'value_id': 'PowerApparentL2ImExSum',  # FIXME: sign?
+                'start_address': 3032,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vac3: Three phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 3034,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Iac3: Three phase grid output current [0.1 A]',
+                'value_id': 'CurrentL3ImExSum',
+                'start_address': 3035,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pac3: Three phase grid output power [0.1 VA]',  # FIXME: really VA? or W?
+                'value_id': 'PowerApparentL3ImExSum',  # FIXME: sign?
+                'start_address': 3036,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vac_RS: Three phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL1L2',
+                'start_address': 3038,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vac_ST: Three phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL2L3',
+                'start_address': 3039,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vac_TR: Three phase grid voltage [0.1 V]',
+                'value_id': 'VoltageL3L1',
+                'start_address': 3040,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Eac total: Total generate energy [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 3051,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Temp1: Inverter temperature [0.1 °C]',
+                'value_id': 'Temperature',
+                'start_address': 3093,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'IPF [0..20000]',
+                'value_id': 'PowerFactorLSumDirectional',
+                'start_address': 3100,
+                'value_type': 'U16',
+                'offset': -10000.0,
+                'scale_factor': -0.0001,
+            },
+        ],
+    },
+    {
+        'name': 'Growatt Hybrid Inverter Grid',  # FIXME: untested
+        'virtual_meter': ('Growatt Hybrid Inverter', 'Grid'),
+        'default_location': 'Grid',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Ptouser total: Total forward power [0.1 W]',
+                'value_id': 'PowerActiveLSumImport',
+                'start_address': 3041,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ptogrid total: Total reverse power [0.1 W]',
+                'value_id': 'PowerActiveLSumExport',
+                'start_address': 3043,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Total power signed [0.1 W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Etouser_total: Total energy to user [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 3069,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Etogrid_total: Total energy to grid [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 3073,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Power factor [0.0001]',
+                'value_id': 'PowerFactorLSum',
+                'start_address': 3161,
+                'value_type': 'U16',
+                'scale_factor': 0.0001,
+            },
+        ],
+    },
+    {
+        'name': 'Growatt Hybrid Inverter Battery',  # FIXME: untested
+        'virtual_meter': ('Growatt Hybrid Inverter', 'Battery'),
+        'default_location': 'Battery',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Edischr_total: Total discharge energy [0.1 kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 3127,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Echr_total: Charge energy total [0.1 kWh]',
+                'value_id': 'EnergyDCCharge',
+                'start_address': 3131,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vbat: Battery voltage [0.01 V]',
+                'value_id': 'VoltageDC',
+                'start_address': 3169,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Ibat: Battery current [0.1 A]',
+                'value_id': 'CurrentDCChaDisDiff',  # FIXME: sign?
+                'start_address': 3170,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'SOC: State of charge Capacity [%]',
+                'value_id': 'StateOfCharge',
+                'start_address': 3171,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'TempA: Temperture A [0.1 °C]',
+                'value_id': 'Temperature',
+                'start_address': 3176,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pdischr: Discharge power [0.1 W]',
+                'value_id': 'PowerDCDischarge',
+                'start_address': 3178,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Pchr: Charge power [0.1 W]',
+                'value_id': 'PowerDCCharge',
+                'start_address': 3180,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery power signed [0.1 W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
+    {
+        'name': 'Growatt Hybrid Inverter Load',
+        'virtual_meter': ('Growatt Hybrid Inverter', 'Load'),
+        'default_location': 'Load',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Ptoload total: Total load power [0.1 W]',
+                'value_id': 'PowerActiveLSumImport',
+                'start_address': 3045,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Total load power signed [0.1 W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Eload_total: Total energy of user load [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 3077,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
+    {
+        'name': 'Growatt Hybrid Inverter PV',
+        'virtual_meter': ('Growatt Hybrid Inverter', 'PV'),
+        'default_location': 'PV',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Ppv: PV total power [0.1 W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 3001,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vpv1: PV1 voltage [0.1 V]',
+                'value_id': 'VoltagePV1',
+                'start_address': 3003,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ipv1: PV1 input current [0.1 A]',
+                'value_id': 'CurrentPV1Export',
+                'start_address': 3004,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ppv1: PV1 power [0.1 W]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 3005,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vpv2: PV2 voltage [0.1 V]',
+                'value_id': 'VoltagePV2',
+                'start_address': 3007,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ipv2: PV2 input current [0.1 A]',
+                'value_id': 'CurrentPV2Export',
+                'start_address': 3008,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ppv2: PV2 power [0.1 W]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 3009,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vpv3: PV3 voltage [0.1 V]',
+                'value_id': 'VoltagePV3',
+                'start_address': 3011,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ipv3: PV3 input current [0.1 A]',
+                'value_id': 'CurrentPV3Export',
+                'start_address': 3012,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ppv3: PV3 power [0.1 W]',
+                'value_id': 'PowerPV3Export',
+                'start_address': 3013,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Vpv4: PV4 voltage [0.1 V]',
+                'value_id': 'VoltagePV4',
+                'start_address': 3015,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Ipv4: PV4 input current [0.1 A]',
+                'value_id': 'CurrentPV4Export',
+                'start_address': 3016,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Average PV voltage [0.1 V]',
+                'value_id': 'VoltagePVAvg',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV current [0.1 A]',
+                'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Ppv4: PV4 power [0.1 W]',
+                'value_id': 'PowerPV4Export',
+                'start_address': 3017,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Epv_total: PV energy total [0.1 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 3053,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Epv1_total: PV1 energy total [0.1 kWh]',
+                'value_id': 'EnergyPV1Export',
+                'start_address': 3057,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Epv2_total: PV2 energy total [0.1 kWh]',
+                'value_id': 'EnergyPV2Export',
+                'start_address': 3061,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Epv3_total: PV3 energy total [0.1 kWh]',
+                'value_id': 'EnergyPV3Export',
+                'start_address': 3065,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Epv4_total: PV4 energy total [0.1 kWh]',
+                'value_id': 'EnergyPV4Export',
+                'start_address': 3081,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
+]
