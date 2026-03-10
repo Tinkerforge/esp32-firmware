@@ -585,7 +585,7 @@ def remove_old_generated_files():
         "batteries_modbus_tcp_test.inc",
     ])
 
-    remove_files("web/src/modules/meters_batteries_modbus_tcpun_spec", [
+    remove_files("web/src/modules/batteries_modbus_tcp", [
         "battery_modbus_tcp_specs.ts",
         "battery_modbus_tcp_specific_table_ids.rpl",
     ])
