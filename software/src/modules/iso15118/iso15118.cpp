@@ -47,7 +47,33 @@
 // ============================================================================
 // Autocharge only (autocharge=true, read_soc/charge_via_iso15118=false)
 // ============================================================================
-// TBD (only SLAC)
+//
+// In autocharge mode, the EVSE performs SLAC to identify the EV by its PLC
+// MAC address, then immediately switches to IEC 61851 PWM-based charging
+// without doing SDP or any V2G communication.
+//
+// SLAC Flow
+// ---------
+//   1. EV plugs in, sees 5% CP duty (digital communication mode)
+//   2. Full SLAC process runs (CM_SLAC_PARM, attenuation characterization,
+//      CM_SLAC_MATCH.REQ) to verify the EV is physically connected (not
+//      crosstalk from a neighboring charger)
+//   3. PEV MAC is captured from the validated SLAC exchange
+//   4. CM_SLAC_MATCH.CNF is NOT sent: confirming the match would cause the
+//      EV to join the PLC network and attempt SDP/V2G, which times out
+//      (~90-100s) before falling back to IEC. By not confirming, the EV's
+//      TT_MATCH_RESPONSE (200ms) expirese.
+//
+// Transition to IEC 61851 (after SLAC)
+// -------------------------------------
+//   Phase 1 (0-2s):  CP is set to 100% duty cycle (begin_iec_transition).
+//   Phase 2 (>2s):   CP switches to IEC 61851 temporary mode with PWM.
+//
+// PLC Modem Shutdown (immediate)
+// ------------------------------
+// The PLC modem is disabled immediately after SLAC completes. Unlike the
+// SoC reading mode, there is no TCP socket or pending V2G response that the
+// EV needs to receive.
 // ============================================================================
 
 

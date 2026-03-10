@@ -286,8 +286,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
         case SLACState::WaitForSDP:
         case SLACState::LinkDetected:
             // Link is established or being established.
-            // If the same EV is restarting SLAC, it means it considers the link dead.
-            // Accept and restart the SLAC process. Reject crosstalk from different EVs.
+            // Reject crosstalk from different EVs.
             if (memcmp(cm_slac_parm_request.header.source_mac, pev_mac, SLAC_MAC_ADDRESS_LENGTH) != 0) {
                 logger.printfln("CM_SLAC_PARM.REQ ignored: different EV (%02x:%02x:%02x:%02x:%02x:%02x) while link established in state %s",
                     cm_slac_parm_request.header.source_mac[0], cm_slac_parm_request.header.source_mac[1],
@@ -296,6 +295,14 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
                     get_slac_state_name(state));
                 return;
             }
+            // In autocharge mode, the EV retries SLAC because we didn't send
+            // CM_SLAC_MATCH.CNF. Ignore these retries.
+            if (iso15118.iec_temporary_active) {
+                logger.printfln("CM_SLAC_PARM.REQ ignored: IEC transition already active in state %s", get_slac_state_name(state));
+                return;
+            }
+            // Same EV restarting SLAC without IEC transition active means it
+            // considers the link dead. Accept and restart the SLAC process.
             logger.printfln("CM_SLAC_PARM.REQ from same EV in state %s: restarting SLAC", get_slac_state_name(state));
             break;
 
@@ -570,6 +577,30 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
         return;
     }
 
+    log_cm_slac_match_request(cm_slac_match_request);
+
+    iso15118.common.add_seen_mac_address(pev_mac);
+
+    // In autocharge-only mode, we have all the data we need (PEV MAC) from SLAC.
+    // Do NOT send CM_SLAC_MATCH.CNF: if we confirm the match, the EV joins the PLC
+    // network and tries SDP/V2G, which times out after ~90-100s before falling back to IEC.
+    // By not confirming, the EV's TT_MATCH_RESPONSE expires immediately after 200ms.
+    if (iso15118.is_autocharge_only()) {
+        logger.printfln("Autocharge-only mode: SLAC complete, NOT sending CM_SLAC_MATCH.CNF");
+        next_timeout = {};
+        state = SLACState::LinkDetected;  // Mark SLAC as done
+
+        // Use begin_iec_transition() for a clean PWM restart:
+        // CP goes to 100% (no PWM) immediately, then after 2s switches to IEC temporary mode.
+        iso15118.begin_iec_transition();
+
+        // Disable PLC modem immediately. The modem is no longer needed since we're
+        // skipping SDP/V2G entirely in autocharge-only mode.
+        iso15118.disable_plc_modem();
+
+        return;
+    }
+
     CM_SLACMatchConfirmation cm_slac_match_confirmation = {};
     fill_header(&cm_slac_match_confirmation.header, pev_mac, evse_mac, SLAC_MMTYPE_CM_SLAC_MATCH | SLAC_MMTYPE_MODE_CONFIRMATION);
     memcpy(cm_slac_match_confirmation.pev_id, cm_slac_match_request.pev_id, SLAC_STATION_ID_LENGTH);
@@ -582,7 +613,6 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     iso15118.qca700x.write_burst(reinterpret_cast<const uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
 
-    log_cm_slac_match_request(cm_slac_match_request);
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
 
     // If we're already in WaitForSDP, this is a retry from the EV that didn't receive
@@ -591,19 +621,6 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     if (state == SLACState::WaitForSDP) {
         logger.printfln("CM_SLAC_MATCH.REQ retry in WaitForSDP, re-sent CNF");
         next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
-        return;
-    }
-
-    // Add PEV MAC to seen list once SLAC is done
-    iso15118.common.add_seen_mac_address(pev_mac);
-
-    // Check if we're in autocharge-only mode
-    // In this case, we have all the data we need (PEV MAC) and can switch to IEC 61851 temporary mode
-    if (iso15118.is_autocharge_only()) {
-        logger.printfln("Autocharge-only mode: SLAC complete, switching to IEC 61851 temporary mode");
-        next_timeout = {};
-        state = SLACState::LinkDetected;  // Mark SLAC as done
-        iso15118.switch_to_iec_temporary();
         return;
     }
 
