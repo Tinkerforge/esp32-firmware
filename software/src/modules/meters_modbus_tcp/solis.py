@@ -268,7 +268,7 @@ specs = [
                 'name': 'Battery current [0.1 A]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 33134,
-                'value_type': 'S16',  # value is acutually unsigned
+                'value_type': 'S16',  # value is actually unsigned
                 'scale_factor': 0.1,
             },
             {
@@ -292,7 +292,7 @@ specs = [
                 'name': 'Battery power [W]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 33149,
-                'value_type': 'S32BE',  # value is acutually unsigned
+                'value_type': 'S32BE',  # value is actually unsigned
             },
             {
                 'name': 'Battery power signed [W]',
