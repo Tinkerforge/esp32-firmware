@@ -388,6 +388,8 @@ public:
 
     uint8_t evse_mac[SLAC_MAC_ADDRESS_LENGTH] = {0};
 
+    void reset_slac_init_retry_count() { slac_init_retry_count = 0; }
+
 private:
     void fill_header_v0(SLAC_HomeplugMessageHeaderV0 *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
     void fill_header(SLAC_HomeplugMessageHeader *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
@@ -415,6 +417,9 @@ private:
     void handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &cm_qualcomm_host_action_indication);
 
     Option<micros_t> next_timeout = {};
+
+    // Retry counter for the SLAC init E/F sequence per [V2G3-M06-07].
+    uint8_t slac_init_retry_count = 0;
 
     // for CM_ATTEN_PROFILE.IND
     uint16_t aag_list[SLAC_AAG_LIST_LENGTH] = {0};

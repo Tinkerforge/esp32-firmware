@@ -234,11 +234,11 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
         api_state.get("evse_mac_modem")->get(i)->updateUint(cm_set_key_confirmation.header.source_mac[i]);
     }
 
-    // There is no timeout here, we indefinitely wait for the CM_SLAC_PARAM.REQ from the EV
-    // TODO 1: How much power does this draw? We could turn the modem off by default and only turn it on when we detect the EV (i.e. EVSE changes from state A to B)
-    // TODO 2: According to [V2G3 M06-07] we should change to state E/F after the EVSE changes from state A to B and there is no CM_SLAC_PARAM.REQ from the EV.
-    //         This is not implemented yet.
+    // No timeout set here: the modem may initialize before any EV is connected.
+    // The TT_EVSE_SLAC_init timeout is started in state_machine_loop() once
+    // an EV is detected (IEC state != A). See [V2G3-M06-07].
     next_timeout = {};
+    slac_init_retry_count = 0;
 
     state = SLACState::WaitForSlacParamRequest;
     log_cm_set_key_confirmation(cm_set_key_confirmation);
@@ -263,6 +263,15 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     switch (state) {
         case SLACState::WaitForSlacParamRequest:
             // Normal case: idle and waiting for a new SLAC session. Accept any EV.
+            break;
+
+        case SLACState::SlacInitEF:
+            // EV sent CM_SLAC_PARM.REQ during the E/F retry cycle.
+            // This is an ISO EV that was slow to start SLAC. Restore 5% duty
+            // and accept the request.
+            logger.printfln("CM_SLAC_PARM.REQ received during E/F retry, restoring 5%% duty");
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            slac_init_retry_count = 0;
             break;
 
         case SLACState::WaitForStartAttenCharIndication:
@@ -751,6 +760,33 @@ void SLAC::state_machine_loop()
         return;
     }
 
+    // Per [V2G3-M06-07]: When waiting for CM_SLAC_PARM.REQ with no active
+    // timeout, start the TT_EVSE_SLAC_init timer once an EV is physically
+    // connected (IEC 61851 state != A). This ensures we don't timeout while
+    // no EV is present, but do fall back to IEC for non-ISO EVs.
+    if (state == SLACState::WaitForSlacParamRequest && next_timeout.is_none()) {
+        uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
+        if (iec_state != 0) { // Not State A: EV is connected
+            logger.printfln("SLAC: EV connected (IEC state %lu), starting TT_EVSE_SLAC_init timeout (50s)",
+                            iec_state);
+            next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT_MAX;
+        }
+    }
+
+    // If the EV disconnects during the SLAC init E/F retry cycle, abort the
+    // cycle and return to idle (WaitForSlacParamRequest with no timeout).
+    if ((state == SLACState::SlacInitEF ||
+        (state == SLACState::WaitForSlacParamRequest && next_timeout.is_some()))) {
+        uint32_t iec_state = evse_common.get_state().get("iec61851_state")->asUint();
+        if (iec_state == 0) { // State A: EV disconnected
+            logger.printfln("SLAC: EV disconnected during SLAC init retry cycle, resetting");
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            next_timeout = {};
+            slac_init_retry_count = 0;
+            state = SLACState::WaitForSlacParamRequest;
+        }
+    }
+
     // Check for WaitForSDP to LinkDetected transition.
     // When we receive an IPv6 packet (SDP), the link is established.
     if (state == SLACState::WaitForSDP) {
@@ -819,10 +855,35 @@ void SLAC::state_machine_loop()
         } else if (state == SLACState::WaitForCMQualcommOpAttrResponse) {
             next_timeout = {};
             state = SLACState::WaitForSlacParamRequest;
+        } else if (state == SLACState::WaitForSlacParamRequest) {
+            // TT_EVSE_SLAC_init expired: no CM_SLAC_PARM.REQ received from EV.
+            // Per [V2G3-M06-07]: cycle through State E/F for T_step_EF, then
+            // retry up to C_SEQU_RETRY times before falling back to IEC.
+            slac_init_retry_count++;
+            if (slac_init_retry_count > SLAC_C_SEQU_RETRY) {
+                logger.printfln("SLAC: TT_EVSE_SLAC_init retries exhausted (%u/%u), falling back to IEC",
+                                static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(SLAC_C_SEQU_RETRY));
+                next_timeout = {};
+                state = SLACState::SlacInitFailed;
+
+                // Trigger IEC 61851 fallback for non-ISO EVs.
+                iso15118.begin_iec_transition();
+                iso15118.disable_plc_modem();
+            } else {
+                logger.printfln("SLAC: TT_EVSE_SLAC_init expired, entering State E/F (attempt %u/%u)",
+                                static_cast<unsigned>(slac_init_retry_count), static_cast<unsigned>(SLAC_C_SEQU_RETRY));
+                // Set CP to 0% duty cycle (-12V = State E/F)
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 0);
+                next_timeout = now_us() + SLAC_T_STEP_EF;
+                state = SLACState::SlacInitEF;
+            }
+        } else if (state == SLACState::SlacInitEF) {
+            // T_step_EF expired: return to 5% duty and restart TT_EVSE_SLAC_init.
+            logger.printfln("SLAC: T_step_EF expired, returning to 5%% duty cycle");
+            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+            next_timeout = now_us() + SLAC_TT_EVSE_SLAC_INIT_MAX;
+            state = SLACState::WaitForSlacParamRequest;
         } else {
-            // TODO: I think the EVSE should change to state E/F and then back to 5% in case of a timeout.
-            //       Maybe we can just do the 5% -> E/F -> 5% thing in handle_mode_reset?
-            //       Otherwise it maybe makes more sense for us to let the upper layers decide what to do if SLAC process fails.
             handle_modem_reset();
         }
     }

@@ -163,6 +163,37 @@
 //      This will (if the EV supports it) also allow bidirectional charging.
 // ============================================================================
 
+
+// ============================================================================
+// Fallback for EVs without ISO 15118 support
+// ============================================================================
+//
+// When the EVSE is in any ISO 15118 mode, CP is set to 5% duty cycle to
+// signal digital communication capability. If the EV does not support
+// ISO 15118 (no PLC modem), it will never send CM_SLAC_PARM.REQ and
+// would be stuck on 5% indefinitely.
+//
+// Per ISO 15118-3 [V2G3-M06-07], we implement the following fallback:
+//
+//   1. After EV connects (IEC State A -> B), start TT_EVSE_SLAC_init
+//      timer (50s, SLAC_TT_EVSE_SLAC_INIT_MAX).
+//   2. If no CM_SLAC_PARM.REQ is received within TT_EVSE_SLAC_init:
+//      a. Set CP to State E/F (0% duty, -12V) for T_step_EF (4s).
+//      b. Return to 5% duty cycle and restart TT_EVSE_SLAC_init.
+//      c. Repeat up to C_SEQU_RETRY (2) times.
+//   3. After all retries exhausted: switch to IEC 61851 temporary mode
+//      via begin_iec_transition() and disable PLC modem.
+//
+// Timeline for non-ISO EV:
+//   t=0s    EV plugs in, timeout starts (50s)
+//   t=50s   Timeout #1: CP -> E/F for 4s, then back to 5%
+//   t=104s  Timeout #2: CP -> E/F for 4s, then back to 5%
+//   t=158s  Timeout #3: retries exhausted -> IEC fallback
+//   t=160s  CP -> IEC 61851 PWM, non-ISO EV can charge
+//
+// This is crazy long... but not much we can do about it.
+// ============================================================================
+
 #include "iso15118.h"
 
 #include <time.h>
@@ -372,6 +403,7 @@ void ISO15118::register_events()
                 ef_reset_task = 0;
             }
             ef_retry_count = 0;
+            slac.reset_slac_init_retry_count();
         }
         return EventResult::OK;
     });
