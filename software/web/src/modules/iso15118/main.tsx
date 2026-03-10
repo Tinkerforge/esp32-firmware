@@ -132,6 +132,9 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
             14: "Wait For Slac Match",
             15: "Wait For SDP",
             16: "Link Detected",
+            17: "Modem Disabled",
+            18: "SLAC Init E/F",
+            19: "SLAC Init Failed",
         };
 
         const din70121_state_names: {[key: number]: string} = {
@@ -144,6 +147,9 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
             6: "Charge Parameter Discovery",
             7: "Session Stop",
             8: "Cable Check",
+            9: "Power Delivery",
+            10: "Pre Charge",
+            11: "Current Demand",
         };
 
         const iso2_state_names: {[key: number]: string} = {

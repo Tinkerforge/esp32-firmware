@@ -67,7 +67,10 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     cancel_sequence_timeout(next_timeout);
 
     int ret = decode_din_exiDocument(exi, dinDocDec);
-    logger.printfln("DIN70121: decode_din_exiDocument: %d", ret);
+    if (ret != 0) {
+        logger.printfln("DIN70121: Could not decode EXI document: %d", ret);
+        return;
+    }
 
     dispatch_messages();
 
@@ -107,6 +110,12 @@ void DIN70121::dispatch_messages()
     V2G_DISPATCH("DIN70121", body, ChargeParameterDiscoveryReq, handle_charge_parameter_discovery_req);
     V2G_DISPATCH("DIN70121", body, SessionStopReq,              handle_session_stop_req);
     V2G_DISPATCH("DIN70121", body, CableCheckReq,               handle_cable_check_req);
+    V2G_DISPATCH("DIN70121", body, PowerDeliveryReq,            handle_power_delivery_req);
+
+    // We handle PreChargeReq and CurrentDemandReq to respond with FAILED + EVSE_Shutdown
+    // as safety nets when an EV ignores our shutdown signals, matching ISO2 behavior.
+    V2G_DISPATCH("DIN70121", body, PreChargeReq,                handle_pre_charge_req);
+    V2G_DISPATCH("DIN70121", body, CurrentDemandReq,            handle_current_demand_req);
 
     // Not yet implemented
 
@@ -114,13 +123,10 @@ void DIN70121::dispatch_messages()
     // We will not support them.
     V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
     V2G_NOT_IMPL("DIN70121", body, PaymentDetailsReq);
-    V2G_NOT_IMPL("DIN70121", body, PowerDeliveryReq);
     V2G_NOT_IMPL("DIN70121", body, ChargingStatusReq);
     V2G_NOT_IMPL("DIN70121", body, MeteringReceiptReq);
     V2G_NOT_IMPL("DIN70121", body, CertificateUpdateReq);
     V2G_NOT_IMPL("DIN70121", body, CertificateInstallationReq);
-    V2G_NOT_IMPL("DIN70121", body, PreChargeReq);
-    V2G_NOT_IMPL("DIN70121", body, CurrentDemandReq);
     V2G_NOT_IMPL("DIN70121", body, WeldingDetectionReq);
 }
 
@@ -135,6 +141,10 @@ void DIN70121::send_failed_unknown_session()
         || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ServicePaymentSelection,  din_responseCodeType_FAILED_UnknownSession))
         || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ContractAuthentication,   din_responseCodeType_FAILED_UnknownSession))
         || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, ChargeParameterDiscovery, din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PowerDelivery,            din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CableCheck,               din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, PreCharge,                din_responseCodeType_FAILED_UnknownSession))
+        || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, CurrentDemand,            din_responseCodeType_FAILED_UnknownSession))
         || (V2G_SEND_FAILED_SESSION(body_dec, body_enc, SessionStop,              din_responseCodeType_FAILED_UnknownSession))
     ) {
         iso15118.common.send_exi(Common::ExiType::Din);
@@ -294,13 +304,12 @@ void DIN70121::handle_charge_parameter_discovery_req()
     //
     // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Finished.
     // Per [V2G-DC-650], the EV will send SessionStopReq when they see EVSE_Shutdown.
-    // In testing we found that a EV simulator evsim doesn't check EVSEStatusCode in
-    // ChargeParameterDiscovery ant proceeds to CableCheckReq, which we handle with a non-READY
-    // status to terminate the session.
+    // EVs that don't react on this will go into an Ongoing-Loop that finishes after a few seconds
+    // with a timeout. After timeouts the EVs that we used for testing send a StopReq.
     if ((iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) && soc_read) {
         logger.printfln("DIN70121: SoC already read, sending EVSE_Shutdown to end session");
         res->ResponseCode = din_responseCodeType_OK;
-        res->EVSEProcessing = din_EVSEProcessingType_Finished;
+        res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
 
         // Mandatory fields: DC_EVSEChargeParameter with valid DC_EVSEStatus and limits
         // must be present for a valid ChargeParameterDiscoveryRes EXI encoding.
@@ -488,8 +497,12 @@ void DIN70121::handle_cable_check_req()
 
     // We will reach CableCheck in the SoC-read-only flow when the EV doesn't check
     // EVSEStatusCode in ChargeParameterDiscoveryRes.
-    // We respond with EVSE_Shutdown + Invalid isolation so the CableCheck handler
-    // in the EV has to stop the state machine
+    // [V2G-DC-891] If the SECC wants to stop the process, it shall send CableCheckRes with:
+    //   ResponseCode = OK, EVSEProcessing = Finished, EVSEStatusCode = EVSE_Shutdown,
+    //   EVSENotification = None, EVSEIsolationStatus = Invalid/valid/warning/fault.
+    // Note: DIN uses OK here (not FAILED). FAILED is only for isolation faults per [V2G-DC-890].
+    // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
+    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
     res->ResponseCode = din_responseCodeType_OK;
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
 
@@ -510,6 +523,113 @@ void DIN70121::handle_cable_check_req()
     }
 }
 
+void DIN70121::handle_power_delivery_req()
+{
+    din_PowerDeliveryReqType *req = &dinDocDec->V2G_Message.Body.PowerDeliveryReq;
+    din_PowerDeliveryResType *res = &dinDocEnc->V2G_Message.Body.PowerDeliveryRes;
+
+    if (req->DC_EVPowerDeliveryParameter_isUsed) {
+        api_state.get("soc")->updateInt(req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVRESSSOC);
+    }
+
+    dinDocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed = 1;
+    res->ResponseCode = din_responseCodeType_OK;
+
+    // DIN 70121 is DC-only; include DC_EVSEStatus with EVSE_Shutdown so
+    // the EV proceeds to SessionStopReq for a clean session teardown.
+    res->DC_EVSEStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
+    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
+    res->DC_EVSEStatus.NotificationMaxDelay = 0;
+    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+    res->AC_EVSEStatus_isUsed = 0;
+    res->EVSEStatus_isUsed = 0;
+
+    logger.printfln("DIN70121: PowerDeliveryReq (ReadyToChargeState=%d), responding OK with EVSE_Shutdown",
+                     req->ReadyToChargeState);
+
+    iso15118.common.send_exi(Common::ExiType::Din);
+    state = DIN70121State::PowerDelivery;
+}
+
+void DIN70121::handle_pre_charge_req()
+{
+    din_PreChargeResType *res = &dinDocEnc->V2G_Message.Body.PreChargeRes;
+
+    dinDocEnc->V2G_Message.Body.PreChargeRes_isUsed = 1;
+
+    // Safety net: The EV sent PreChargeReq despite our shutdown signals in
+    // ChargeParameterDiscoveryRes and CableCheckRes. This is non-compliant EV behavior.
+    // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
+    res->ResponseCode = din_responseCodeType_FAILED;
+
+    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
+    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
+    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
+    res->DC_EVSEStatus.NotificationMaxDelay = 0;
+    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+    res->EVSEPresentVoltage.Unit = din_unitSymbolType_V;
+    res->EVSEPresentVoltage.Unit_isUsed = 1;
+    res->EVSEPresentVoltage.Value = 0;
+    res->EVSEPresentVoltage.Multiplier = 0;
+
+    logger.printfln("DIN70121: PreChargeReq received in SoC-read flow, sending FAILED to terminate");
+
+    iso15118.common.send_exi(Common::ExiType::Din);
+
+    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
+        cancel_sequence_timeout(next_timeout);
+    }
+}
+
+void DIN70121::handle_current_demand_req()
+{
+    din_CurrentDemandResType *res = &dinDocEnc->V2G_Message.Body.CurrentDemandRes;
+
+    dinDocEnc->V2G_Message.Body.CurrentDemandRes_isUsed = 1;
+
+    // Safety net: The EV should never reach CurrentDemand in a SoC-read-only flow.
+    // [V2G-DC-901] On Finished + FAILED, the EVCC shall stop the charging session.
+    res->ResponseCode = din_responseCodeType_FAILED;
+
+    res->DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
+    res->DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
+    // [V2G-DC-500] EVSENotification shall always be "None" for DC charging per DIN.
+    res->DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
+    res->DC_EVSEStatus.NotificationMaxDelay = 0;
+    res->DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Shutdown;
+
+    res->EVSEPresentVoltage.Unit = din_unitSymbolType_V;
+    res->EVSEPresentVoltage.Unit_isUsed = 1;
+    res->EVSEPresentVoltage.Value = 0;
+    res->EVSEPresentVoltage.Multiplier = 0;
+
+    res->EVSEPresentCurrent.Unit = din_unitSymbolType_A;
+    res->EVSEPresentCurrent.Unit_isUsed = 1;
+    res->EVSEPresentCurrent.Value = 0;
+    res->EVSEPresentCurrent.Multiplier = 0;
+
+    res->EVSECurrentLimitAchieved = 0;
+    res->EVSEVoltageLimitAchieved = 0;
+    res->EVSEPowerLimitAchieved = 0;
+
+    res->EVSEMaximumVoltageLimit_isUsed = 0;
+    res->EVSEMaximumCurrentLimit_isUsed = 0;
+    res->EVSEMaximumPowerLimit_isUsed = 0;
+
+    logger.printfln("DIN70121: CurrentDemandReq received in SoC-read flow, sending FAILED to terminate");
+
+    iso15118.common.send_exi(Common::ExiType::Din);
+
+    if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
+        cancel_sequence_timeout(next_timeout);
+    }
+}
+
 void DIN70121::handle_session_stop_req()
 {
     din_SessionStopResType *res = &dinDocEnc->V2G_Message.Body.SessionStopRes;
@@ -520,12 +640,30 @@ void DIN70121::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::SessionStop;
 
-    // In read_soc_only mode  or charge_via_iso15118 mode, begin IEC transition after
+    // In read_soc_only mode or charge_via_iso15118 mode, begin IEC transition after
     // the session ends. CP goes to 100% immediately, then switches to IEC
     // temporary mode with actual PWM.
+    // DIN 70121 is DC-only, so we always need to fall back to IEC after the session.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
+
+        // Schedule PLC modem shutdown. This gives the EV time
+        // to receive and ACK the SessionStopRes before we kill the modem.
+        // If the EV closes the TCP connection earlier (detected via POLLHUP),
+        // the timer is cancelled and the modem is killed immediately.
+        if (iso15118.plc_modem_off_task != 0) {
+            task_scheduler.cancel(iso15118.plc_modem_off_task);
+        }
+        iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
+            logger.printfln("DIN70121: 5s modem-off timer fired, EV did not close TCP in time");
+            iso15118.disable_plc_modem();
+        }, 5000_ms);
+
+        // Do NOT call reset_active_socket() here. Leave the socket open so the
+        // poll loop can detect POLLHUP when the EV closes the connection, which
+        // triggers early modem shutdown.
+        return;
     }
 }
 
@@ -638,6 +776,46 @@ void DIN70121::trace_request_response()
         iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
         iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
         iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+    } else if (dinDocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
+        din_PowerDeliveryReqType *req = &dinDocDec->V2G_Message.Body.PowerDeliveryReq;
+
+        trace_header(&dinDocDec->V2G_Message.Header, "PowerDelivery Request");
+        iso15118.trace(" Body");
+        iso15118.trace("  PowerDeliveryReq");
+        iso15118.trace("   ReadyToChargeState: %d", req->ReadyToChargeState);
+        iso15118.trace("   DC_EVPowerDeliveryParameter_isUsed: %d", req->DC_EVPowerDeliveryParameter_isUsed);
+        if (req->DC_EVPowerDeliveryParameter_isUsed) {
+            iso15118.trace("    DC_EVStatus.EVRESSSOC: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVRESSSOC);
+            iso15118.trace("    DC_EVStatus.EVReady: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVReady);
+            iso15118.trace("    DC_EVStatus.EVErrorCode: %d", req->DC_EVPowerDeliveryParameter.DC_EVStatus.EVErrorCode);
+        }
+    } else if (dinDocDec->V2G_Message.Body.PreChargeReq_isUsed) {
+        din_PreChargeReqType *req = &dinDocDec->V2G_Message.Body.PreChargeReq;
+
+        trace_header(&dinDocDec->V2G_Message.Header, "PreCharge Request");
+        iso15118.trace(" Body");
+        iso15118.trace("  PreChargeReq");
+        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+        iso15118.trace("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
+        iso15118.trace("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
+        iso15118.trace("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
+        iso15118.trace("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
+    } else if (dinDocDec->V2G_Message.Body.CurrentDemandReq_isUsed) {
+        din_CurrentDemandReqType *req = &dinDocDec->V2G_Message.Body.CurrentDemandReq;
+
+        trace_header(&dinDocDec->V2G_Message.Header, "CurrentDemand Request");
+        iso15118.trace(" Body");
+        iso15118.trace("  CurrentDemandReq");
+        iso15118.trace("   DC_EVStatus.EVRESSSOC: %d", req->DC_EVStatus.EVRESSSOC);
+        iso15118.trace("   DC_EVStatus.EVReady: %d", req->DC_EVStatus.EVReady);
+        iso15118.trace("   DC_EVStatus.EVErrorCode: %d", req->DC_EVStatus.EVErrorCode);
+        iso15118.trace("   EVTargetVoltage.Value: %d", req->EVTargetVoltage.Value);
+        iso15118.trace("   EVTargetVoltage.Multiplier: %d", req->EVTargetVoltage.Multiplier);
+        iso15118.trace("   EVTargetCurrent.Value: %d", req->EVTargetCurrent.Value);
+        iso15118.trace("   EVTargetCurrent.Multiplier: %d", req->EVTargetCurrent.Multiplier);
+        iso15118.trace("   ChargingComplete: %d", req->ChargingComplete);
     } else if (dinDocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         trace_header(&dinDocDec->V2G_Message.Header, "SessionStop Request");
         iso15118.trace(" Body");
@@ -723,6 +901,43 @@ void DIN70121::trace_request_response()
         iso15118.trace("   DC_EVSEStatus.EVSEIsolationStatus_isUsed: %d", res->DC_EVSEStatus.EVSEIsolationStatus_isUsed);
         iso15118.trace("   DC_EVSEStatus.EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
         iso15118.trace("   DC_EVSEStatus.EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+    } else if (dinDocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed) {
+        din_PowerDeliveryResType *res = &dinDocEnc->V2G_Message.Body.PowerDeliveryRes;
+
+        trace_header(&dinDocEnc->V2G_Message.Header, "PowerDelivery Response");
+        iso15118.trace(" Body");
+        iso15118.trace("  PowerDeliveryRes");
+        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        iso15118.trace("   DC_EVSEStatus_isUsed: %d", res->DC_EVSEStatus_isUsed);
+        if (res->DC_EVSEStatus_isUsed) {
+            iso15118.trace("   DC_EVSEStatus.EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+            iso15118.trace("   DC_EVSEStatus.EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+            iso15118.trace("   DC_EVSEStatus.EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        }
+    } else if (dinDocEnc->V2G_Message.Body.PreChargeRes_isUsed) {
+        din_PreChargeResType *res = &dinDocEnc->V2G_Message.Body.PreChargeRes;
+
+        trace_header(&dinDocEnc->V2G_Message.Header, "PreCharge Response");
+        iso15118.trace(" Body");
+        iso15118.trace("  PreChargeRes");
+        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        iso15118.trace("   DC_EVSEStatus.EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+        iso15118.trace("   DC_EVSEStatus.EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+        iso15118.trace("   DC_EVSEStatus.EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        iso15118.trace("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
+        iso15118.trace("   EVSEPresentVoltage.Multiplier: %d", res->EVSEPresentVoltage.Multiplier);
+    } else if (dinDocEnc->V2G_Message.Body.CurrentDemandRes_isUsed) {
+        din_CurrentDemandResType *res = &dinDocEnc->V2G_Message.Body.CurrentDemandRes;
+
+        trace_header(&dinDocEnc->V2G_Message.Header, "CurrentDemand Response");
+        iso15118.trace(" Body");
+        iso15118.trace("  CurrentDemandRes");
+        iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        iso15118.trace("   DC_EVSEStatus.EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
+        iso15118.trace("   DC_EVSEStatus.EVSEStatusCode: %d", res->DC_EVSEStatus.EVSEStatusCode);
+        iso15118.trace("   DC_EVSEStatus.EVSENotification: %d", res->DC_EVSEStatus.EVSENotification);
+        iso15118.trace("   EVSEPresentVoltage.Value: %d", res->EVSEPresentVoltage.Value);
+        iso15118.trace("   EVSEPresentCurrent.Value: %d", res->EVSEPresentCurrent.Value);
     } else if (dinDocEnc->V2G_Message.Body.SessionStopRes_isUsed) {
         din_SessionStopResType *res = &dinDocEnc->V2G_Message.Body.SessionStopRes;
 
