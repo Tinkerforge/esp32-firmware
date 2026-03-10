@@ -1,3 +1,10 @@
+display_names = [
+    ('Eastron SDM630 TCP', {
+        'en': 'Eastron SDM630 TCP',
+        'de': 'Eastron SDM630 TCP',
+    }),
+]
+
 table_prototypes = [
     ('Eastron SDM630 TCP', ['device_address']),
 ]

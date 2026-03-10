@@ -57,6 +57,7 @@ modules = [
     solis,
 ]
 
+display_names = {}
 table_ids = []
 table_prototypes = []
 table_typedefs = []
@@ -65,8 +66,17 @@ table_news = []
 default_device_addresses = []
 specs = []
 virtual_meters = collections.OrderedDict()
+translation_tables = {}
 
 for module in modules:
+    for display_name in module.display_names:
+        display_names[display_name[0]] = display_name[1]
+
+        table_id = util.FlavoredName(display_name[0]).get()
+
+        for lang in display_name[1]:
+            translation_tables.setdefault(lang, []).append(f'"table_{table_id.under}": "{display_name[1][lang]}"')
+
     for table_prototype in module.table_prototypes:
         table_id = util.FlavoredName(table_prototype[0]).get()
 
@@ -437,3 +447,8 @@ util.write_generated_file('generated/meter_modbus_tcp_is.cpp', is_cpp)
 table_ids_rpl = ' || '.join([f'config[1].table[0] == MeterModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
 
 util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
+
+for lang in translation_tables:
+    tfutil.specialize_template(f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx', {
+        '{{{tables}}}': ',\n            '.join(translation_tables[lang]),
+    })

@@ -1,3 +1,18 @@
+display_names = [
+    ('Fox ESS H3 AC3 Hybrid Inverter', {
+        'en': 'Fox ESS H3/AC3 hybrid inverter',
+        'de': 'Fox ESS H3/AC3 Hybrid-Wechselrichter',
+    }),
+    ('Fox ESS H3 Smart Hybrid Inverter', {
+        'en': 'Fox ESS H3 Smart hybrid inverter',
+        'de': 'Fox ESS H3 Smart Hybrid-Wechselrichter',
+    }),
+    ('Fox ESS H3 Pro Hybrid Inverter', {
+        'en': 'Fox ESS H3 Pro hybrid inverter',
+        'de': 'Fox ESS H3 Pro Hybrid-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Fox ESS H3 AC3 Hybrid Inverter', ['device_address', 'virtual_meter']),
     ('Fox ESS H3 Smart Hybrid Inverter', ['device_address', 'virtual_meter']),

@@ -1,3 +1,10 @@
+display_names = [
+    ('Victron Energy GX', {
+        'en': 'Victron Energy GX',
+        'de': 'Victron Energy GX',
+    }),
+]
+
 table_prototypes = [
     ('Victron Energy GX', ['device_address', 'virtual_meter']),
 ]

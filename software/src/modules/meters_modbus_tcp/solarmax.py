@@ -1,3 +1,10 @@
+display_names = [
+    ('Solarmax Max Storage', {
+        'en': 'Solarmax Max.Storage',
+        'de': 'Solarmax Max.Storage',
+    }),
+]
+
 table_prototypes = [
     ('Solarmax Max Storage', ['device_address', 'virtual_meter']),
 ]

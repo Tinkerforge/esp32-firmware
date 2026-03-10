@@ -1,3 +1,14 @@
+display_names = [
+    ('SAX Power Home Basic Mode', {
+        'en': 'SAX Power Home (basic mode)',
+        'de': 'SAX Power Home (Basic Mode)',
+    }),
+    ('SAX Power Home Extended Mode', {
+        'en': 'SAX Power Home (extended mode)',
+        'de': 'SAX Power Home (Extended Mode)',
+    }),
+]
+
 table_prototypes = [
     ('SAX Power Home Basic Mode', ['device_address', 'virtual_meter']),
     ('SAX Power Home Extended Mode', ['device_address', 'virtual_meter']),

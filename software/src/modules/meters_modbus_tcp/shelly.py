@@ -1,3 +1,14 @@
+display_names = [
+    ('Shelly Pro EM', {
+        'en': 'Shelly Pro EM',
+        'de': 'Shelly Pro EM',
+    }),
+    ('Shelly Pro 3EM', {
+        'en': 'Shelly Pro 3EM',
+        'de': 'Shelly Pro 3EM',
+    }),
+]
+
 table_prototypes = [
     ('Shelly Pro EM', [
         'device_address',

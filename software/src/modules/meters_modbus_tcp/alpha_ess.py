@@ -1,5 +1,12 @@
 # This is the same register table as Hailei
 
+display_names = [
+    ('Alpha ESS Hybrid Inverter', {
+        'en': 'Alpha ESS hybrid inverter',
+        'de': 'Alpha ESS Hybrid-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Alpha ESS Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]

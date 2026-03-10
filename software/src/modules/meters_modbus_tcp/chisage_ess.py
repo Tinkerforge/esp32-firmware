@@ -1,3 +1,10 @@
+display_names = [
+    ('Chisage ESS Hybrid Inverter', {
+        'en': 'Chisage ESS hybrid inverter',
+        'de': 'Chisage ESS Hybrid-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Chisage ESS Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]

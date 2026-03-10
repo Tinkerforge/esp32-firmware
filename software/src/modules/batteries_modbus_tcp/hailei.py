@@ -4,7 +4,7 @@ display_names = [
     ('Hailei Hybrid Inverter', {
         'en': 'Hailei hybrid inverter (TPH series)',
         'de': 'Hailei Hybrid-Wechselrichter (TPH-Serie)',
-    })
+    }),
 ]
 
 table_prototypes = [

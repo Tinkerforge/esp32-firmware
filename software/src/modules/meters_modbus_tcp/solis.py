@@ -1,3 +1,10 @@
+display_names = [
+    ('Solis Hybrid Inverter', {
+        'en': 'Solis hybrid inverter',
+        'de': 'Solis Hybrid-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Solis Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]

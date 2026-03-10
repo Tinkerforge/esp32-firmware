@@ -1,3 +1,30 @@
+display_names = [
+    ('Siemens PAC2200', {
+        'en': 'Siemens PAC2200',
+        'de': 'Siemens PAC2200',
+    }),
+    ('Siemens PAC3120', {
+        'en': 'Siemens PAC3120',
+        'de': 'Siemens PAC3120',
+    }),
+    ('Siemens PAC3200', {
+        'en': 'Siemens PAC3200',
+        'de': 'Siemens PAC3200',
+    }),
+    ('Siemens PAC3220', {
+        'en': 'Siemens PAC3220',
+        'de': 'Siemens PAC3220',
+    }),
+    ('Siemens PAC4200', {
+        'en': 'Siemens PAC4200',
+        'de': 'Siemens PAC4200',
+    }),
+    ('Siemens PAC4220', {
+        'en': 'Siemens PAC4220',
+        'de': 'Siemens PAC4220',
+    }),
+]
+
 table_prototypes = [
     ('Siemens PAC2200', ['device_address']),
     ('Siemens PAC3120', ['device_address']),

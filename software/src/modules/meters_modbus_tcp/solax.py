@@ -1,3 +1,14 @@
+display_names = [
+    ('Solax Hybrid Inverter', {
+        'en': 'Solax hybrid inverter',
+        'de': 'Solax Hybrid-Wechselrichter',
+    }),
+    ('Solax String Inverter', {
+        'en': 'Solax string inverter',
+        'de': 'Solax String-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Solax Hybrid Inverter', ['device_address', 'virtual_meter']),
     ('Solax String Inverter', ['device_address', 'virtual_meter']),

@@ -1,3 +1,14 @@
+display_names = [
+    ('Sungrow Hybrid Inverter', {
+        'en': 'Sungrow hybrid inverter (SH series)',
+        'de': 'Sungrow Hybrid-Wechselrichter (SH-Serie)',
+    }),
+    ('Sungrow String Inverter', {
+        'en': 'Sungrow string inverter (SG series)',
+        'de': 'Sungrow String-Wechselrichter (SG-Serie)',
+    }),
+]
+
 table_prototypes = [
     ('Sungrow Hybrid Inverter', ['device_address', 'virtual_meter']),
     ('Sungrow String Inverter', ['device_address', 'virtual_meter']),

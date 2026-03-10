@@ -1,3 +1,14 @@
+display_names = [
+    ('VARTA Element', {
+        'en': 'VARTA element / one / pulse / link',
+        'de': 'VARTA element / one / pulse / link',
+    }),
+    ('VARTA Flex', {
+        'en': 'VARTA pulse neo / flex storage',
+        'de': 'VARTA pulse neo / flex storage',
+    }),
+]
+
 table_prototypes = [
     ('VARTA Element', ['device_address', 'virtual_meter']),
     ('VARTA Flex', ['device_address', 'virtual_meter']),

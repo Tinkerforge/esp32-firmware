@@ -1,3 +1,10 @@
+display_names = [
+    ('SMA Hybrid Inverter', {
+        'en': 'SMA hybrid inverter',
+        'de': 'SMA Hybrid-Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('SMA Hybrid Inverter', ['device_address', 'virtual_meter']),
 ]

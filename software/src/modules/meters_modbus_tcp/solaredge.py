@@ -1,3 +1,10 @@
+display_names = [
+    ('Solaredge Inverter', {
+        'en': 'SolarEdge inverter',
+        'de': 'SolarEdge Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Solaredge Inverter', ['device_address', 'virtual_meter']),
 ]

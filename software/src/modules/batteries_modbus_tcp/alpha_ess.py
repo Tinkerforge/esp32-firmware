@@ -4,7 +4,7 @@ display_names = [
     ('Alpha ESS Hybrid Inverter', {
         'en': 'Alpha ESS hybrid inverter',
         'de': 'Alpha ESS Hybrid-Wechselrichter',
-    })
+    }),
 ]
 
 table_prototypes = [

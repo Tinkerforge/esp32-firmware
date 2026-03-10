@@ -2,6 +2,13 @@
 
 from copy import deepcopy
 
+display_names = [
+    ('Fronius GEN24 Plus', {
+        'en': 'Fronius GEN24 Plus',
+        'de': 'Fronius GEN24 Plus',
+    }),
+]
+
 table_prototypes = [
     ('Fronius GEN24 Plus', ['device_address', 'virtual_meter']),
 ]

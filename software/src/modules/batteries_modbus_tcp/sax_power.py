@@ -31,7 +31,7 @@ display_names = [
     ('SAX Power Home Basic Mode', {
         'en': 'SAX Power Home (basic mode)',
         'de': 'SAX Power Home (Basic Mode)',
-    })
+    }),
 ]
 
 table_prototypes = [

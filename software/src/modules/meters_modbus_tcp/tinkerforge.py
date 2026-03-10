@@ -1,6 +1,13 @@
 def index_to_address(index):
     return 2100 + 2 * index
 
+display_names = [
+    ('Tinkerforge WARP Charger', {
+        'en': 'Tinkerforge WARP Charger',
+        'de': 'Tinkerforge WARP Charger',
+    }),
+]
+
 table_prototypes = [
     ('Tinkerforge WARP Charger', None),
 ]

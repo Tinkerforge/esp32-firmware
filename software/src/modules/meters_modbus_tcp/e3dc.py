@@ -1,3 +1,10 @@
+display_names = [
+    ('E3DC Hauskraftwerk', {
+        'en': 'E3/DC Hauskraftwerk',
+        'de': 'E3/DC Hauskraftwerk',
+    }),
+]
+
 table_prototypes = [
     ('E3DC Hauskraftwerk', ['device_address', 'virtual_meter']),
 ]

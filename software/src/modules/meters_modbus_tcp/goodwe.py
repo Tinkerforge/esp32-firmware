@@ -1,3 +1,10 @@
+display_names = [
+    ('Goodwe Inverter', {
+        'en': 'GoodWe inverter',
+        'de': 'GoodWe Wechselrichter',
+    }),
+]
+
 table_prototypes = [
     ('Goodwe Inverter', ['device_address', 'virtual_meter']),
 ]

@@ -7,7 +7,7 @@ display_names = [
     ('Solis Hybrid Inverter', {
         'en': 'Solis hybrid inverter',
         'de': 'Solis Hybrid-Wechselrichter',
-    })
+    }),
 ]
 
 table_prototypes = [

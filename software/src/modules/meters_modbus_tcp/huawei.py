@@ -1,3 +1,22 @@
+display_names = [
+    ('Huawei SUN2000', {
+        'en': 'Huawei SUN2000',
+        'de': 'Huawei SUN2000',
+    }),
+    ('Huawei SUN2000 Smart Dongle', {
+        'en': 'Huawei SUN2000 (Smart Dongle)',
+        'de': 'Huawei SUN2000 (Smart Dongle)',
+    }),
+    ('Huawei EMMA', {
+        'en': 'Huawei EMMA',
+        'de': 'Huawei EMMA',
+    }),
+    ('Huawei Smart Logger 3000', {
+        'en': 'Huawei Smart Logger 3000',
+        'de': 'Huawei Smart Logger 3000',
+    }),
+]
+
 table_prototypes = [
     ('Huawei SUN2000', ['device_address', 'virtual_meter']),
     ('Huawei SUN2000 Smart Dongle', ['device_address', 'virtual_meter']),

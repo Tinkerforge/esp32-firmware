@@ -1,3 +1,58 @@
+display_names = [
+    ('Carlo Gavazzi EM24 DIN', {
+        'en': 'Carlo Gavazzi EM24-DIN',
+        'de': 'Carlo Gavazzi EM24-DIN',
+    }),
+    ('Carlo Gavazzi EM24 E1', {
+        'en': 'Carlo Gavazzi EM24-E1',
+        'de': 'Carlo Gavazzi EM24-E1',
+    }),
+    ('Carlo Gavazzi EM100', {
+        'en': 'Carlo Gavazzi EM100 / EM111 / EM112',
+        'de': 'Carlo Gavazzi EM100 / EM111 / EM112',
+    }),
+    ('Carlo Gavazzi ET100', {
+        'en': 'Carlo Gavazzi ET100 / ET111 / ET112',
+        'de': 'Carlo Gavazzi ET100 / ET111 / ET112',
+    }),
+    ('Carlo Gavazzi EM210', {
+        'en': 'Carlo Gavazzi EM210',
+        'de': 'Carlo Gavazzi EM210',
+    }),
+    ('Carlo Gavazzi EM270', {
+        'en': 'Carlo Gavazzi EM270',
+        'de': 'Carlo Gavazzi EM270',
+    }),
+    ('Carlo Gavazzi EM280', {
+        'en': 'Carlo Gavazzi EM280',
+        'de': 'Carlo Gavazzi EM280',
+    }),
+    ('Carlo Gavazzi EM300', {
+        'en': 'Carlo Gavazzi EM300 / EM330 / EM340',
+        'de': 'Carlo Gavazzi EM300 / EM330 / EM340',
+    }),
+    ('Carlo Gavazzi ET300', {
+        'en': 'Carlo Gavazzi ET300 / ET330 / ET340',
+        'de': 'Carlo Gavazzi ET300 / ET330 / ET340',
+    }),
+    ('Carlo Gavazzi EM510', {
+        'en': 'Carlo Gavazzi EM510 / EM511',
+        'de': 'Carlo Gavazzi EM510 / EM511',
+    }),
+    ('Carlo Gavazzi EM530', {
+        'en': 'Carlo Gavazzi EM530',
+        'de': 'Carlo Gavazzi EM530',
+    }),
+    ('Carlo Gavazzi EM540', {
+        'en': 'Carlo Gavazzi EM540',
+        'de': 'Carlo Gavazzi EM540',
+    }),
+    ('Carlo Gavazzi EM580', {
+        'en': 'Carlo Gavazzi EM580',
+        'de': 'Carlo Gavazzi EM580',
+    }),
+]
+
 table_prototypes = [
     ('Carlo Gavazzi EM24 DIN', ['device_address']),
     ('Carlo Gavazzi EM24 E1', ['device_address']),

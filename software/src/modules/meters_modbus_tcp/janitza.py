@@ -1,3 +1,10 @@
+display_names = [
+    ('Janitza', {
+        'en': 'Janitza (UMG series)',
+        'de': 'Janitza (UMG-Serie)',
+    }),
+]
+
 table_prototypes = [
     ('Janitza', ['device_address']),
 ]
