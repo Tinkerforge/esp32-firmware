@@ -34,8 +34,7 @@
 // When true and both charge_via_iso15118 and read_soc are enabled, run a DC session
 // first to read the EV's SoC, then restart as an AC session for actual charging.
 // Set to false to skip the DC SoC reading and go directly to AC charging.
-// This is an expirimental feature. If this doesn't work with all of the EVs we
-// we have access too, we will not offer this.
+// This is an experimental feature. If this doesn't work with all EVs we have access to, we will not offer this.
 static constexpr bool ISO2_DC_SOC_BEFORE_AC = true;
 
 inline float physical_value_to_float(const iso2_PhysicalValueType *value)

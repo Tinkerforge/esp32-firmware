@@ -171,7 +171,7 @@ void SLAC::handle_modem_initialization(void)
     // Modem verified. Enable frame processing in QCA700x state machine
     iso15118.qca700x.set_modem_detected(true);
 
-    // At his point we know that the modem works.
+    // At this point we know that the modem works.
     // We can set up the netif for l2tap communication.
     // setup_netif() derives and sets qca700x.mac.
     iso15118.qca700x.setup_netif();
@@ -182,13 +182,10 @@ void SLAC::handle_modem_initialization(void)
         api_state.get("evse_mac")->get(i)->updateUint(evse_mac[i]);
     }
 
-    // Flush any garbage data that might be in the modem's buffer after initialization
-    // The QCA700X can have stale data from previous sessions or initialization
+    // Flush stale data from the modem's buffer after initialization.
     iso15118.qca700x.flush_all_buffers();
 
-    // Initialize buffer for l2tap communication once we know that the modem is available
-    // If the modem is never used, the buffer is not allocated
-    // Buffer only needs to hold max Ethernet frame size since l2tap delivers complete frames
+    // Allocate l2tap buffer lazily (max Ethernet frame size). Only allocated if modem is available.
     if (buffer == nullptr) {
         buffer = static_cast<uint8_t *>(calloc_psram_or_dram(SLAC_ETHERNET_FRAME_LENGTH_MAX + 1, sizeof(uint8_t)));
     }
@@ -216,7 +213,7 @@ void SLAC::handle_cm_set_key_request(void)
 
     log_cm_set_key_request(cm_set_key_request);
     // Internal communication with the modem, no spec-defined timing.
-    // After a cold boot the modem can somtimes take ~180ms to respond.
+    // After a cold boot the modem can sometimes take ~180ms to respond.
     next_timeout = now_us() + 500_ms;
     state = SLACState::WaitForCMSetKeyConfirmation;
 }
@@ -405,7 +402,7 @@ void SLAC::handle_cm_mnbc_sound_indication(const CM_MNBCSoundIndication &cm_mnbc
         return;
     }
 
-    // The sound indication is send three times by the EV.
+    // The sound indication is sent three times by the EV.
     // There does not seem to be any requirement to check the sound indications for anything (ISO 15118-3 A.9.2.3.3).
     api_state.get("received_sounds")->updateUint(api_state.get("received_sounds")->asUint() + 1);
 
@@ -441,8 +438,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
     const uint8_t received_aag_lists = static_cast<uint8_t>(api_state.get("received_aag_lists")->asUint8() + 1);
     api_state.get("received_aag_lists")->updateUint(received_aag_lists);
     if (received_aag_lists == indication_num_sounds) {
-        // We have received all 10 attenuation profiles
-        // We can now calculate the average attenuation profile and send the CM_ATTEN_CHAR.IND to the EV
+        // All 10 attenuation profiles received. Calculate average and send CM_ATTEN_CHAR.IND to EV.
 
         CM_AttenCharIndication cm_atten_char_indication;
         fill_header(&cm_atten_char_indication.header, pev_mac, evse_mac, SLAC_MMTYPE_CM_ATTEN_CHAR | SLAC_MMTYPE_MODE_INDICATION);
@@ -503,7 +499,7 @@ void SLAC::handle_cm_atten_char_response(const CM_AttenCharResponse &cm_atten_ch
         return;
     }
 
-    logger.printfln("SLAC process sucessful");
+    logger.printfln("SLAC process successful");
     next_timeout = now_us() + SLAC_TT_EVSE_MATCH_SESSION;
     state = SLACState::WaitForSlacMatch;
 
@@ -629,18 +625,18 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     // timeout to give the EV a fresh window to join the PLC network.
     if (state == SLACState::WaitForSDP) {
         logger.printfln("CM_SLAC_MATCH.REQ retry in WaitForSDP, re-sent CNF");
-        next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
+        next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFICATION_MAX;
         return;
     }
 
-    // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
-    next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
+    // SLAC complete. Wait for "Link detected" (first IPv6/SDP packet from EV).
+    next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFICATION_MAX;
     state = SLACState::WaitForSDP;
 
     // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
     task_scheduler.scheduleOnce([] {
         iso15118.qca700x.link_up();
-    }, SLAC_TP_LINK_READY_NOTIFCATION_MIN);
+    }, SLAC_TP_LINK_READY_NOTIFICATION_MIN);
 }
 
 void SLAC::handle_cm_qualcomm_get_sw_request()
@@ -805,8 +801,7 @@ void SLAC::state_machine_loop()
         case SLACState::ModemInitialization: handle_modem_initialization(); break;
         case SLACState::CMSetKeyRequest:     handle_cm_set_key_request();   break;
 
-        // Handle some Qualcomm QCA700x specific requests
-        // These will probably not be part of a final release firmware, but we can use them for testing stuff
+        // Handle Qualcomm QCA700x specific requests (debug/testing, may be removed in release).
         case SLACState::CMQualcommGetSwRequest:      handle_cm_qualcomm_get_sw_request();      break;
         case SLACState::CMQualcommLinkStatusRequest: handle_cm_qualcomm_link_status_request(); break;
         case SLACState::CMQualcommOpAttrRequest:     handle_cm_qualcomm_op_attr_request();     break;

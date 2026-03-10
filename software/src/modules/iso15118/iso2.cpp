@@ -48,9 +48,7 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
         state = ISO2State::BitstreamReceived;
     }
 
-    // We alloc the iso2 buffers the very first time they are used.
-    // This way it is not allocated if ISO15118 is not used.
-    // If it is used once we can assume that it will be used all the time, so it stays allocated.
+    // Lazy-alloc ISO2 buffers on first use; they stay allocated for the session lifetime.
     if (iso2DocDec == nullptr) {
         iso2DocDec = static_cast<struct iso2_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso2_exiDocument)));
     }
@@ -73,17 +71,12 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
 
     api_state.get("state")->updateEnum(state);
 
-    // [V2G2-443] The SECC shall stop waiting for a request message and stop monitoring the
-    //            V2G_SECC_Sequence_Timer when V2G_SECC_Sequence_Timer is equal or larger than
-    //            V2G_SECC_Sequence_Timeout and no request message was received. It shall then stop the
-    //            V2G Communication Session.
+    // [V2G2-443] Timeout: stop session if no request received within V2G_SECC_Sequence_Timeout.
     if (!pause_active) {
         schedule_sequence_timeout(next_timeout, ISO2_SECC_SEQUENCE_TIMEOUT, "ISO2");
-    // [V2G2-725] If the SECC received the message SessionStopReq with parameter ChargingSession equal to
-    //            "Pause" it shall pause the Data-Link (D-LINK_PAUSE.request()) after sending the message
-    //            SessionStopRes and continue with [V2G2-721].
+    // [V2G2-725] Pause: D-LINK_PAUSE.request() after SessionStopRes.
     } else {
-        // No timeout in case auf pausing by EVCC
+        // No timeout in case of pausing by EVCC
         // We just wait for new SLAC or new SDP message
         cancel_sequence_timeout(next_timeout);
     }
@@ -124,8 +117,7 @@ void ISO2::dispatch_messages()
     V2G_DISPATCH("ISO2", body, PreChargeReq,     handle_pre_charge_req);
     V2G_DISPATCH("ISO2", body, CurrentDemandReq, handle_current_demand_req);
 
-    // This can return VAS (Value Added Services).
-    // As far as i can tell this is not used in practice.
+    // VAS (Value Added Services). Not used in practice.
     V2G_NOT_IMPL("ISO2", body, ServiceDetailReq);
 
     // These are for Plug&Charge. In practice PnC is mostly
@@ -177,13 +169,8 @@ void ISO2::handle_session_setup_req()
         api_state.get("evcc_id")->add()->updateUint(req->EVCCID.bytes[i]);
     }
 
-    // [V2G2-750] When receiving the SessionSetupReq with the parameter SessionID equal to zero (0), the
-    //            SECC shall generate a new (not stored) SessionID value different from zero (0) and return this
-    //            value in the SessionSetupRes message header.
-    // [V2G2-753] If an EVCC chooses to resume a charging session by sending a SesstionSetupReq with a
-    //            message header including the SessionID value from the previously paused V2G
-    //            Communication Session, the SECC shall compare this value to the value stored from the
-    //            preceding V2G Communication Session.
+    // [V2G2-750] SessionID=0 -> generate new SessionID.
+    // [V2G2-753] SessionID matches stored -> resume session.
     SessionIdResult result = check_session_id(
         iso2DocDec->V2G_Message.Header.SessionID.bytes,
         iso2DocDec->V2G_Message.Header.SessionID.bytesLen,
@@ -192,18 +179,10 @@ void ISO2::handle_session_setup_req()
     );
 
     if (result == SessionIdResult::NewSession) {
-        // [V2G2-462] The message 'SessionSetupRes' shall contain the specific ResponseCode
-        //            'OK_NewSessionEstablished' if processing of the SessionSetupReq message was successful
-        //            and a different SessionID is contained in the response message than the SessionID in the
-        //            request message.
+        // [V2G2-462] Different SessionID -> OK_NewSessionEstablished.
         res->ResponseCode = iso2_responseCodeType_OK_NewSessionEstablished;
     } else {
-        // [V2G2-754] If the SessionID value received in the current SessionSetupReq is equal to the value stored
-        //            from the preceding V2G Communication Session, the SECC shall confirm the continuation of
-        //            the charging session by sending a SessionSetupRes message including the stored SessionID
-        //            value and indicating the resumed V2G Communication Session with the ResponseCode set to
-        //            "OK_OldSessionJoined" (refer also to [V2G2-463] for selecting the appropriate response
-        //            code).
+        // [V2G2-754] Same SessionID -> OK_OldSessionJoined.
         res->ResponseCode = iso2_responseCodeType_OK_OldSessionJoined;
     }
 
@@ -213,20 +192,15 @@ void ISO2::handle_session_setup_req()
 
     iso2DocEnc->V2G_Message.Body.SessionSetupRes_isUsed = 1;
 
-    // The EVSEID shall match the following structure (the notation corresponds to the augmented Backus-Naur
-    // Form (ABNF) as defined in IETF RFC 5234):
-    // <EVSEID> = <Country Code> <S> <EVSE Operator ID> <S> <ID Type> <Power Outlet ID>
+    // EVSEID format: <Country Code> <S> <EVSE Operator ID> <S> <ID Type> <Power Outlet ID>
 
     // If an SECC cannot provide such ID data, the value of the EVSEID is set to zero ("ZZ00000").
     strcpy(res->EVSEID.characters, "ZZ00000");
     res->EVSEID.charactersLen = strlen("ZZ00000");
     // ^ note: This is completely different to EVSEID syntax in DIN SPEC 70121
 
-    // Timestamp of the current SECC time. Format is “Unix Time Stamp”.
-    // This message element may be used by the
-    // EVCC to decide whether a specific contract
-    // certificate can be used for contract based
-    // charging during the current communication session.
+    // [V2G2-567] Timestamp of the current SECC time (Unix Time Stamp).
+    // Used by the EVCC to decide whether a contract certificate is valid.
     timeval now;
     if (!rtc.clock_synced(&now)) {
         now.tv_sec = 0;
@@ -339,8 +313,8 @@ void ISO2::handle_authorization_req()
 
     iso2DocEnc->V2G_Message.Body.AuthorizationRes_isUsed = 1;
 
-    // Set Authorisation to Finished here.
-    // We want to go on ChargeParameteryDiscovery to read the SoC and then use Ongoing.
+    // Set Authorization to Finished here.
+    // We want to go on ChargeParameterDiscovery to read the SoC and then use Ongoing.
     res->ResponseCode = iso2_responseCodeType_OK;
     res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Iso2);
@@ -407,8 +381,9 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     if (dc_soc_session) {
         if (soc_read) {
-            // SoC already read. Send OK + Finished + EVSE_Shutdown to end the session.
-            // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Finished.
+            // SoC already read. Send OK + Ongoing + EVSE_Shutdown to end the session.
+            // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out after ~10s,
+            // after which the EV sends SessionStopReq.
             logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             res->ResponseCode = iso2_responseCodeType_OK;
             res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
@@ -450,7 +425,7 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
             res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
-            // SAScheduleList is required when EVSEProcessing=Finished
+            // SAScheduleList is included for EV compatibility even though EVSEProcessing=Ongoing.
             res->SAScheduleList_isUsed = 1;
             res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
             res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = 0;
@@ -485,7 +460,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
         res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
 
-        // EVSE_Ready here seems to work, maybe test iso2_DC_EVSEStatusCodeType_EVSE_IsolationMonitoringActive if other EVs send StopRequest after this.
+        // EVSE_Ready: The EVSE is ready for charging.
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Ready;
 
         res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = iso2_unitSymbolType_A;
@@ -512,7 +487,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE;
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
 
-        // Optinal charge parameters
+        // Optional charge parameters
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
@@ -535,18 +510,12 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
 
-        // Includes several tuples of schedules from secondary actors. The SECC shall
-        // only omit the parameter 'SAScheduleList' in case EVSEProcessing is set to 'Ongoing'
+        // SAScheduleList: Required when EVSEProcessing=Finished.
         res->SAScheduleList_isUsed = 1;
 
-        // [V2G2-297] The first SAScheduleTuple element in the SAScheduleListType shall be defined as default SASchedule.
-        // [V2G2-298] If the EVCC is not capable of comparing different SAScheduleTuple elements or comparison
-        // fails, the EVCC shall choose the default SAScheduleTuple according to [V2G2-297].
+        // [V2G2-297] First SAScheduleTuple is the default. [V2G2-298] EVCC uses default if comparison fails.
 
-        // PMax: Defines maximum amount of power for a time interval to be drawn from the EVSE power
-        //       outlet the vehicle is connected to. This value represents the total power over all selected phases.
-        // V2G2-315] The PMax element shall define the maximum amount of power to be drawn from the EVSE
-        //           power outlet when the element of type PMaxScheduleEntryType is active.
+        // [V2G2-315] PMax: Total maximum power over all phases for this time interval.
 
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = pmax.value;
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = pmax.exponent;
@@ -556,21 +525,17 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = SECONDS_PER_DAY; // One day
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1;
 
-        // [V2G2-328] The value of the start element shall be defined in seconds from NOW.
-        // [V2G2-329] The value of the start element shall simultaneously define the start time of this interval and the
-        //            stop time of the previous interval.
+        // [V2G2-328] Start: seconds from NOW. [V2G2-329] Also defines stop time of previous interval.
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
 
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0; // no content
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
 
-        // [V2G2-300] The SAScheduleTupleID element shall be unique within all SAScheduleTuple elements in the
-        //            SAScheduleListType and uniquely identifies a tuple of PMaxSchedule and SalesTariff elements
-        //            during the entire charging session.
-        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID; // [V2G2-773] 1-255 OK, 0 not allowed
+        // [V2G2-300] Must be unique within the session. [V2G2-773] 1-255 OK, 0 not allowed
+        res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
 
-        // SalesTariff: Optional: Encapsulating element describing all relevant details for one SalesTariff from the secondary actor
+        // SalesTariff: Optional
         res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
         res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
 
@@ -580,17 +545,12 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->AC_EVSEChargeParameter.AC_EVSEStatus.NotificationMaxDelay = 0;
         res->AC_EVSEChargeParameter.AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
 
-        // Maximum allowed line current restriction set by the EVSE per phase. If the PWM
-        // ratio is set to 5% ratio then this is the only line current restriction processed by
-        // the EVCC. Otherwise the EVCC applies the smaller current constraint from the
-        // EVSEMaxCurrent value and the PWM ratio information.
+        // Max allowed line current per phase. With 5% CP, this is the sole current constraint.
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = static_cast<int16_t>(ci.current_ma); // e.g. 6123mA -> 6123
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = -3;    // 6123 * 10^-3 = 6.123A (1mA resolution)
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 
-        // Line voltage supported by the EVSE. This is the voltage measured between
-        // one phases and neutral. If the EVSE supports multiple phase charging the EV
-        // might easily calculate the voltage between phases.
+        // Nominal phase-to-neutral voltage.
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Value = V2G_NOMINAL_VOLTAGE_V;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier = 0;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit = iso2_unitSymbolType_V;
@@ -610,9 +570,7 @@ void ISO2::handle_power_delivery_req()
     }
 
     #if 0
-    // Optional:
-    // Allows an EV to reserve a specific charging profile for the current
-    // charging session (i.e. maximum amount of power drawn over time).
+    // Optional: EV-requested charging profile (max power over time).
     if (req->ChargingProfile_isUsed) {
         req->ChargingProfile.ProfileEntry.array[0].ChargingProfileEntryMaxNumberOfPhasesInUse;
         req->ChargingProfile.ProfileEntry.array[0].ChargingProfileEntryMaxNumberOfPhasesInUse_isUsed;
@@ -628,8 +586,8 @@ void ISO2::handle_power_delivery_req()
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
             break;
         case iso2_chargeProgressType_Stop:
-            // Go to 100% PWM to signal to the ev that we accepted the stop,
-            // but we need to go back to 5% PWM, so the ev can resume charging
+            // Go to 100% PWM to signal to the EV that we accepted the stop,
+            // but we need to go back to 5% PWM, so the EV can resume charging
             // if it wants to.
             // TODO: The timing here is unclear, are 5 seconds OK?
             evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 1000);
@@ -643,9 +601,7 @@ void ISO2::handle_power_delivery_req()
             break;
     }
 
-    // Unique identifier within a charging session for a SAScheduleTuple
-    // element. An SAID remains a unique identifier for one schedule throughout
-    // a charging session.
+    // Verify SAScheduleTupleID matches what we offered.
     if (req->SAScheduleTupleID != V2G_SA_SCHEDULE_TUPLE_ID) {
         logger.printfln("ISO2: Unexpected SAScheduleTupleID %d", req->SAScheduleTupleID);
     }
@@ -654,20 +610,9 @@ void ISO2::handle_power_delivery_req()
     iso2DocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed = 1;
     res->ResponseCode = iso2_responseCodeType_OK;
 
-    // Indicates the current status of the Residual Current Device (RCD). If RCD is equal to true,
-    // the RCD has detected an error. If RCD is equal to false, the RCD has not detected an error. This
-    // status flag is for informational purpose only.
-    res->AC_EVSEStatus.RCD = 0;
-
-    // The SECC uses the NotificationMaxDelay element in the EVSEStatus to indicate the time
-    // until it expects the EVCC to react on the action request indicated in EVSENotification.
+    res->AC_EVSEStatus.RCD = 0; // No RCD error detected (informational only)
     res->AC_EVSEStatus.NotificationMaxDelay = 0;
-
-    // This value is used by the SECC to influence the behaviour of the EVCC. The EVSENotification
-    // contains an action that the SECC wants the EVCC to perform. The requested action is
-    // expected by the EVCC until the time provided in NotificationMaxDelay. If the target time is not in
-    // the future, the EVCC is expected to perform the action immediately.
-    res->AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None; // We can request stop and renegotiation here.
+    res->AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None; // Can request stop/renegotiation here
     res->AC_EVSEStatus_isUsed = 1;
 
     res->DC_EVSEStatus_isUsed = 0;
@@ -876,24 +821,18 @@ void ISO2::handle_session_stop_req()
 
     if (ISO2_DC_SOC_BEFORE_AC && charge_via_iso15118 && read_soc && !dc_soc_done && current_session_is_dc) {
         // DC SoC session is complete. Mark it done and prepare for the AC charging session.
-        // Keep PLC link alive: This is not yet tested well and some EVs have already shown
-        // to just not wanting to re-connect after the "fake" DC charging session is finished.
-        // If we ever use this, there is probably some additional wake-up needed.
+        // Keep PLC link alive: Not well-tested; some EVs refuse to reconnect after
+        // the fake DC session. May need additional wake-up logic if ever enabled.
         dc_soc_done = true;
         soc_read = false;
         state = ISO2State::Idle; // Reset state machine for next session
         logger.printfln("ISO2: DC SoC session complete, waiting for AC session");
     } else if (iso15118.is_read_soc_only()) {
-        // In read_soc_only mode, begin IEC transition after the session ends.
-        // CP goes to 100% immediately, then switches to IEC
-        // temporary mode with actual PWM.
+        // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
         iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
 
-        // Schedule PLC modem shutdown. This gives the EV time
-        // to receive and ACK the SessionStopRes before we kill the modem.
-        // If the EV closes the TCP connection earlier (detected via POLLHUP),
-        // the timer is cancelled and the modem is killed immediately.
+        // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
         if (iso15118.plc_modem_off_task != 0) {
             task_scheduler.cancel(iso15118.plc_modem_off_task);
         }
@@ -905,15 +844,15 @@ void ISO2::handle_session_stop_req()
         // Hint: Do NOT call reset_active_socket() here. Leave the socket open so the
         // poll loop can detect POLLHUP when the EV closes the connection, which
         // triggers early modem shutdown.
-        // We can under no circumstance close the socket ourself before the ISO 15118
-        // communication was finished from the perspective of the EV. As far as i can
+        // We can under no circumstance close the socket ourselves before the ISO 15118
+        // communication was finished from the perspective of the EV. As far as I can
         // tell if we close the socket on any MEB EV, it will not reconnect via ISO 15118
         // and not react to PWM changes anymore until re-plugged.
         return;
     }
 
-    // Reset the socket, so the ev can reconnect when it wants to resume from the pause
-    // If the ev wants to terminate we reset the active socket anyway.
+    // Reset the socket, so the EV can reconnect when it wants to resume from the pause.
+    // If the EV wants to terminate we reset the active socket anyway.
     // Reset after data has been sent.
     iso15118.common.reset_active_socket();
 }

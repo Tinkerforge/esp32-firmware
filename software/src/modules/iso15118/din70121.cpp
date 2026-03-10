@@ -52,9 +52,7 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
         state = DIN70121State::BitstreamReceived;
     }
 
-    // We alloc the din buffers the very first time they are used.
-    // This way it is not allocated if ISO15118 is not used.
-    // If it is used once we can assume that it will be used all the time, so it stays allocated.
+    // Lazy-alloc DIN buffers on first use; they stay allocated for the session lifetime.
     if (dinDocDec == nullptr) {
         dinDocDec = static_cast<struct din_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct din_exiDocument)));
     }
@@ -91,7 +89,7 @@ void DIN70121::dispatch_messages()
     V2G_DISPATCH("DIN70121", body, SessionSetupReq, handle_session_setup_req);
     if (body.SessionSetupReq_isUsed) return;
 
-    // [V2G-DC-xxx] All messages after SessionSetup require session ID validation.
+    // All messages after SessionSetup require session ID validation.
     // If the SessionID received does not match the previously communicated SessionID,
     // the SECC shall respond with FAILED_UnknownSession.
     if (!validate_session_id(dinDocDec->V2G_Message.Header.SessionID.bytes,
@@ -119,7 +117,7 @@ void DIN70121::dispatch_messages()
 
     // Not yet implemented
 
-    // All of these can only be used in the context of DC charging (we only use DIN70121 to obtain the current SoC).
+    // Not needed for our SoC-read-only flow.
     // We will not support them.
     V2G_NOT_IMPL("DIN70121", body, ServiceDetailReq);
     V2G_NOT_IMPL("DIN70121", body, PaymentDetailsReq);
@@ -168,18 +166,9 @@ void DIN70121::handle_session_setup_req()
         api_state.get("evcc_id")->add()->updateUint(req->EVCCID.bytes[i]);
     }
 
-    // [V2G-DC-993] When receiving the SessionSetupReq with the parameter SessionID equal to zero (0), the
-    //              SECC shall generate a new (not stored) SessionID value different from zero (0) and return
-    //              this value in the SessionSetupRes message header.
-    // [V2G-DC-872] If the SECC receives a SessionSetupReq including a SessionID value which is not equal
-    //              to zero (0) and not equal to the SessionID value stored from the preceding V2G commu-
-    //              nication session, it shall send a SessionID value in the SessionSetupRes message that is
-    //              unequal to "0" and unequal to the SessionID value stored from the preceding V2G com-
-    //              munication session and indicate the new V2G communication session with the Respon-
-    //              seCode set to "OK_NewSessionEstablished" (refer also to [V2G-DC-393] for applicability
-    //              of this response code).
-    // [V2G-DC-934] If the SessionID is checked during the V2G communication session, the EVCC shall first
-    //              compare the length and then the actual value.
+    // [V2G-DC-993] SessionID=0 -> generate new SessionID.
+    // [V2G-DC-872] SessionID mismatch -> new session with OK_NewSessionEstablished.
+    // [V2G-DC-934] EVCC compares length first, then value.
     SessionIdResult result = check_session_id(
         dinDocDec->V2G_Message.Header.SessionID.bytes,
         dinDocDec->V2G_Message.Header.SessionID.bytesLen,
@@ -270,7 +259,7 @@ void DIN70121::handle_contract_authentication_req()
     dinDocEnc->V2G_Message.Body.ContractAuthenticationRes_isUsed = 1;
 
     // Set Authorisation to Finished here.
-    // We want to go on ChargeParameteryDiscovery to read the SoC and then use Ongoing.
+    // We want to go on ChargeParameterDiscovery to read the SoC and then use Ongoing.
     res->ResponseCode = din_responseCodeType_OK;
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Din);
@@ -302,10 +291,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // Also applies when charge_via_iso15118 is set: DIN 70121 is DC-only, so we can't do
     // AC charging via DIN. Read SoC if configured, then end session to fall back to IEC 61851.
     //
-    // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Finished.
-    // Per [V2G-DC-650], the EV will send SessionStopReq when they see EVSE_Shutdown.
-    // EVs that don't react on this will go into an Ongoing-Loop that finishes after a few seconds
-    // with a timeout. After timeouts the EVs that we used for testing send a StopReq.
+    // We use ResponseCode=OK with EVSEStatusCode=EVSE_Shutdown + EVSEProcessing=Ongoing.
+    // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out after ~10s
+    // (per [V2G-DC-864]), after which the EV sends SessionStopReq or PowerDeliveryReq(Stop).
     if ((iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) && soc_read) {
         logger.printfln("DIN70121: SoC already read, sending EVSE_Shutdown to end session");
         res->ResponseCode = din_responseCodeType_OK;
@@ -374,32 +362,17 @@ void DIN70121::handle_charge_parameter_discovery_req()
     }
 
     // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
-    // to be able to continously read the SoC.
+    // to be able to continuously read the SoC.
 
     dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
-    // [V2G-DC-493] After the EVCC has successfully processed a received ChargeParameterDiscoveryRes
-    // message with ResponseCode equal to “OK” and EVSEProcessing equal to“Ongoing”, the EVCC shall
-    // ignore the values of SAScheduleList and DC_EVSEChargeParameter contained in this
-    // ChargeParameterDiscoveryRes message, and shall send another ChargeParameterDiscoveryReq
-    // message and shall then wait for a ChargeParameterDiscoveryRes message. This following ChargeParameterDiscoveryReq message,
-    // if any, may contain different values for the contained parameters than the preceding ChargeParameterDiscoveryReq message.
+    // [V2G-DC-493] On OK + Ongoing, the EVCC ignores schedule/params and resends ChargeParameterDiscoveryReq.
 
 
-    // Get EV to send ChargeParameterDiscoveryReq again by using EVSE_IsolationMonitoringActive with EVSEProcessingType_Ongoing
-    // See DIN/TS:70121:2024 [V2G-DC-966]
+    // Get EV to send ChargeParameterDiscoveryReq again by using EVSE_Ready with EVSEProcessingType_Ongoing
     res->ResponseCode = din_responseCodeType_OK;
 
-    // [V2G-DC-863] If the EVCC receives a V2G response message with parameter EVSEProcessing equal to
-    // ’Ongoing’ for the first time in a response message it shall start the timer V2G_EVCC_Ongo-
-    // ing_Timer and wait for parameter EVSEProcessing equal to ’Finished’.
-
-    // [V2G-DC-864] If [V2G-DC-863] applies, the EVCC shall stop the V2G communication session when
-    // V2G_EVCC_Ongoing_Timer is equal or larger than V2G_EVCC_Ongoing_Timeout and no
-    // parameter EVSEProcessing equal to ’Finished’ has been received.
-
-    // [V2G-DC-1004] If [V2G-DC-863] applies, when the EVCC receives parameter EVSEProcessing equal to
-    // ’Finished’, it shall stop the V2G_EVCC_Ongoing_Timer and end monitoring it.
+    // [V2G-DC-863/864/1004] Ongoing starts a timer (~10s). If never Finished, EV stops the session.
 
     // TODO: Does [V2G-DC-863] + [V2G-DC-864] mean that we can only delay with EVSEProcessingType_Ongoing once?
     res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
@@ -412,8 +385,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
     res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
 
-    // EVSE_IsolationMonitoringActive: After the charging station has confirmed HV isolation internally, it will remain in this state until the cable isolation integrity is checked
-    // TODO: Try EVSEReady instead?
+    // EVSE_Ready: The EVSE is ready for charging.
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Ready;
 
     // Mandatory charge parameters
@@ -446,11 +418,11 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = DC_SOC_MAX_POWER_VALUE; // 20000W * 10^1 = 200kW
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = DC_SOC_MAX_POWER_EXP;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1; // Mandatory according to the list?
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1;
 
     res->DC_EVSEChargeParameter_isUsed = 1;
 
-    // Optinal charge parameters
+    // Optional charge parameters
     res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
     res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
@@ -640,18 +612,13 @@ void DIN70121::handle_session_stop_req()
     iso15118.common.send_exi(Common::ExiType::Din);
     state = DIN70121State::SessionStop;
 
-    // In read_soc_only mode or charge_via_iso15118 mode, begin IEC transition after
-    // the session ends. CP goes to 100% immediately, then switches to IEC
-    // temporary mode with actual PWM.
-    // DIN 70121 is DC-only, so we always need to fall back to IEC after the session.
+    // Begin IEC transition: 100% CP -> 2s delay -> IEC temporary mode.
+    // DIN 70121 is DC-only, so we always fall back to IEC.
     if (iso15118.is_read_soc_only() || iso15118.config.get("charge_via_iso15118")->asBool()) {
         iso15118.begin_iec_transition();
         cancel_sequence_timeout(next_timeout);
 
-        // Schedule PLC modem shutdown. This gives the EV time
-        // to receive and ACK the SessionStopRes before we kill the modem.
-        // If the EV closes the TCP connection earlier (detected via POLLHUP),
-        // the timer is cancelled and the modem is killed immediately.
+        // Schedule delayed PLC modem shutdown. If the EV closes TCP early (POLLHUP), the modem is killed immediately.
         if (iso15118.plc_modem_off_task != 0) {
             task_scheduler.cancel(iso15118.plc_modem_off_task);
         }

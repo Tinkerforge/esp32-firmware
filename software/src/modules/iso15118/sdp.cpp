@@ -34,8 +34,7 @@
 
 #include "gcc_warnings.h"
 
-// For now we will tell the EV that we don't support TLS.
-// Will be enabled as soon as we get signed iso15118-20 certificates.
+// TLS is implemented (isotls.cpp) but disabled until we have production certificates.
 static constexpr bool SDP_ALLOW_TLS = false;
 
 // IPv6 all-nodes multicast address (ff02::1) in network byte order
@@ -206,7 +205,7 @@ void SDP::handle_socket()
         }
 
         // Determine security mode for response
-        // TLS is always supported. If the EV requests TLS (security=0x00), respond with TLS.
+        // If SDP_ALLOW_TLS is true and the EV requests TLS (security=0x00), respond with TLS.
         // Otherwise respond with no security.
         uint8_t response_security = SDP_SECURITY_NO_TLS;
         if (request->security == SDP_SECURITY_TLS) {

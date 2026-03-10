@@ -56,9 +56,7 @@ void ISO20::handle_bitstream(exi_bitstream *exi, V2GTPPayloadType payload_type)
     }
 
     // Handle common messages
-    // We alloc the iso20 buffers the very first time they are used.
-    // This way it is not allocated if ISO15118-20 is not used.
-    // If it is used once we can assume that it will be used all the time, so it stays allocated.
+    // Lazy-alloc ISO 15118-20 buffers on first use. Stays allocated once used.
     if (iso20DocDec == nullptr) {
         iso20DocDec = static_cast<struct iso20_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct iso20_exiDocument)));
     }

@@ -19,7 +19,7 @@
 
 // SLAC implementation for HomePlug PLC according to ISO 15118-3:2016
 
-// Some parts that were not clear from the spec are loosly based
+// Some parts that were not clear from the spec are loosely based
 // on the libslac and pyPLC open source implementations:
 // * https://github.com/uhi22/pyPLC
 // * https://github.com/EVerest/libslac
@@ -84,8 +84,8 @@
 #define SLAC_TP_EV_MATCH_SESSION             500_ms
 #define SLAC_TP_EV_SLAC_INIT                  10_s
 #define SLAC_TP_EVSE_AVG_ATTEN_CALC          100_ms
-#define SLAC_TP_LINK_READY_NOTIFCATION_MIN   200_ms
-#define SLAC_TP_LINK_READY_NOTIFCATION_MAX  1000_ms
+#define SLAC_TP_LINK_READY_NOTIFICATION_MIN  200_ms
+#define SLAC_TP_LINK_READY_NOTIFICATION_MAX 1000_ms
 #define SLAC_TP_MATCH_RESPONSE               100_ms
 #define SLAC_TP_MATCH_SEQUENCE               100_ms
 #define SLAC_TT_AMP_AMP_EXCHANGE             200_ms
@@ -98,7 +98,7 @@
 #define SLAC_TT_MATCH_RESPONSE               200_ms
 #define SLAC_TT_MATCH_SEQUENCE               400_ms
 #define SLAC_TT_MATCHING_REPETITION           10_s
-#define SLAC_TT_MACHTING_RATE                400_ms
+#define SLAC_TT_MATCHING_RATE                400_ms
 
 // Constants and Timings (in ms) ISO 15118-3 8 [V2G3-M08-01] Table 3
 #define SLAC_C_CONN_MAX_MATCH           3
@@ -140,9 +140,7 @@ struct [[gnu::packed]] SLAC_HomeplugMessageHeader {
     uint8_t  mm_version;
     uint16_t mm_type;
 
-    // Fragmentation management number information and message sequence number.
-    // Hint: If mm_version is 0, the fmni and fmsn are not present.
-    //       It is 0 in the vendor specific qualcomm messages.
+    // Fragmentation management info. Not present if mm_version is 0 (as in Qualcomm vendor-specific messages).
     uint8_t fmni;
     uint8_t fmsn;
 };
@@ -152,7 +150,7 @@ struct [[gnu::packed]] CM_SLACParmRequest {
     SLAC_HomeplugMessageHeader header;
     uint8_t application_type;           // fixed to 0x00, indicating 'pev-evse matching'
     uint8_t security_type;              // fixed to 0x00, indicating 'no security'
-    uint8_t run_id[SLAC_RUN_ID_LENGTH]; // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH]; // identifier for a matching run
     // cipher fields are missing, because we restrict to security_type = 0x00
 };
 
@@ -178,7 +176,7 @@ struct [[gnu::packed]] CM_StartAttenCharIndication {
     uint8_t timeout;                                 // corresponds to TT_EVSE_match_MNBC
     uint8_t resp_type;                               // fixed to 0x01, indicating 'other gp station'
     uint8_t forwarding_sta[SLAC_MAC_ADDRESS_LENGTH]; // ev host mac address
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];              // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];              // identifier for a matching run
 };
 
 struct [[gnu::packed]] CM_AttenCharIndication{
@@ -186,7 +184,7 @@ struct [[gnu::packed]] CM_AttenCharIndication{
     uint8_t application_type = 0x00;                      // fixed to 0x00, indicating 'pev-evse matching'
     uint8_t security_type = 0x00;                         // fixed to 0x00, indicating 'no security'
     uint8_t source_address[SLAC_MAC_ADDRESS_LENGTH];      // mac address of EV host, which initiates matching
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];                   // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];                   // identifier for a matching run
     uint8_t source_id[SLAC_STATION_ID_LENGTH] = {0};      // always all 0
     uint8_t resp_id[SLAC_STATION_ID_LENGTH] = {0};        // always all 0
     uint8_t num_sounds;                                   // number of sounds used for attenuation profile
@@ -201,7 +199,7 @@ struct [[gnu::packed]] CM_AttenCharResponse {
     uint8_t application_type;                        // fixed to 0x00, indicating 'pev-evse matching'
     uint8_t security_type;                           // fixed to 0x00, indicating 'no security'
     uint8_t source_address[SLAC_MAC_ADDRESS_LENGTH]; // mac address of EV host, which initiates matching
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];              // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];              // identifier for a matching run
     uint8_t source_id[SLAC_STATION_ID_LENGTH];       // unique id of the station, that sent the m-sounds
     uint8_t resp_id[SLAC_STATION_ID_LENGTH];         // unique id of the station, that is sending this message
     uint8_t result;                                  // fixed to 0x00, indicates successful SLAC process
@@ -213,12 +211,12 @@ struct [[gnu::packed]] CM_MNBCSoundIndication {
     uint8_t security_type;                     // fixed to 0x00, indicating 'no security'
     uint8_t sender_id[SLAC_STATION_ID_LENGTH]; // fixed to 0x00
     uint8_t remaining_sound_count;             // count of remaining sound messages
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];        // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];        // identifier for a matching run
     uint8_t _reserved[8];                      // note: this is to pad the run_id, which is defined to be 16 bytes for this message
     uint8_t random[16];                        // random value
 };
 
-// note: this message doesn't seem to part of hpgp, it is defined in ISO15118-3
+// Note: This message doesn't seem to be part of HPGP, it is defined in ISO 15118-3.
 struct [[gnu::packed]] CM_AttenProfileIndication {
     SLAC_HomeplugMessageHeader header;
     uint8_t pev_mac[SLAC_MAC_ADDRESS_LENGTH]; // mac address of the EV host
@@ -236,7 +234,7 @@ struct [[gnu::packed]] CM_SLACMatchRequest {
     uint8_t pev_mac[SLAC_MAC_ADDRESS_LENGTH];  // mac address of the EV host
     uint8_t evse_id[SLAC_STATION_ID_LENGTH];   // EVSE id
     uint8_t evse_mac[SLAC_MAC_ADDRESS_LENGTH]; // mac address of the EVSE
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];        // indentifier for a matching run
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];        // identifier for a matching run
     uint8_t _reserved[8];                      // note: this is to pad the run_id, which is defined to be 16 bytes for this message
 };
 
@@ -249,8 +247,8 @@ struct [[gnu::packed]] CM_SLACMatchConfirmation {
     uint8_t pev_mac[SLAC_MAC_ADDRESS_LENGTH];   // mac address of the EV host
     uint8_t evse_id[SLAC_STATION_ID_LENGTH];    // EVSE id
     uint8_t evse_mac[SLAC_MAC_ADDRESS_LENGTH];  // mac address of the EVSE
-    uint8_t run_id[SLAC_RUN_ID_LENGTH];         // indentifier for a matching run
-    uint8_t _rerserved[8];                      // note: this is to pad the run_id, which is defined to be 16 bytes for this message
+    uint8_t run_id[SLAC_RUN_ID_LENGTH];         // identifier for a matching run
+    uint8_t _reserved[8];                       // note: this is to pad the run_id, which is defined to be 16 bytes for this message
     uint8_t nid[SLAC_NID_LENGTH];               // network id derived from the nmk
     uint8_t _reserved2;                         // note: this is to pad the nid, which is defined to be 8 bytes for this message
     uint8_t nmk[SLAC_NMK_LENGTH];               // private nmk of the EVSE

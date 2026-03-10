@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Common functions that are shared between DIN-SPEC-70121, ISO-151118-2 and ISO-15118-20
+// Common functions that are shared between DIN-SPEC-70121, ISO-15118-2 and ISO-15118-20
 
 #include "common.h"
 #include <esp_random.h>
@@ -373,9 +373,7 @@ void Common::decode(uint8_t *data, const size_t length)
     exi_bitstream_init(&exi, &data[sizeof(V2GTP_Header)], length - sizeof(V2GTP_Header), 0, nullptr);
 
     if (exi_in_use == ExiType::AppHand) {
-        // We alloc the appHand buffers the very first time they are used.
-        // This way it is not allocated if ISO15118 is not used.
-        // If it is used once we can assume that it will be used all the time, so it stays allocated.
+        // Lazy-alloc appHand buffers on first use; they stay allocated for the session lifetime.
         if (appHandDec == nullptr) {
             appHandDec = static_cast<struct appHand_exiDocument*>(calloc_psram_or_dram(1, sizeof(struct appHand_exiDocument)));
         }
@@ -422,8 +420,8 @@ void Common::handle_supported_app_protocol_req()
     uint8_t iso20_schema_id    = UINT8_MAX;
     uint8_t iso20_index        = 0;
 
-    // TODO: Differentiate between iso:151118:2:2010 and iso:151118:2:2013
-    //       iso:151118:2:2010 is the same as din:70121?
+    // TODO: Differentiate between iso:15118:2:2010 and iso:15118:2:2013
+    //       iso:15118:2:2010 is the same as din:70121?
     for(uint8_t i = 0; i < static_cast<uint8_t>(req->AppProtocol.arrayLen); i++) {
         if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, ":din:70121:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
             din70121_schema_id = req->AppProtocol.array[i].SchemaID;
@@ -446,9 +444,7 @@ void Common::handle_supported_app_protocol_req()
         api_state.get("protocol")->updateString("-");
         return;
     } else {
-        // Priority: ISO 15118-2 > DIN 70121 > ISO 15118-20
-        // ISO 15118-2 is preferred as it is more widely supported.
-        // ISO 15118-20 is currently for testing only and selected if neither ISO 2 nor DIN 70121 is available.
+        // Priority: ISO2 > DIN > ISO20. ISO20 is currently testing-only.
         uint8_t schema_id = 0;
         uint8_t index     = 0;
         if (iso2_schema_id != UINT8_MAX) {

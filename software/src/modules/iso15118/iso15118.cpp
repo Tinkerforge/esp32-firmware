@@ -27,7 +27,7 @@
 // * SPI/QCA700x (Low level SPI communication with the QCA700x modem),
 // * SLAC (Signal-Level-Attenuation-Characterization) as described in
 //   ISO 15118-3,
-// * IPv6/ICMPv6/NDP (Neighbor Discorver Protoocol with Neighbor
+// * IPv6/ICMPv6/NDP (Neighbor Discovery Protocol with Neighbor
 //   Solicitation/Advertisement),
 // * IPv6/UDP/SDP (SECC Discovery Protocol),
 // * IPv6/TCP/DIN-SPEC-70121,
@@ -37,7 +37,7 @@
 // The EXI message encoding/decoding is based on libcbv2g.
 // The objective is to *robustly* be able to
 // * fingerprint the EV for authentication,
-// * read SOC from the EV and
+// * read SoC from the EV and
 // * if it will be implemented by EVs, allow for bi-directional charging.
 //
 // Details for the three supported modes below.
@@ -62,7 +62,7 @@
 //   4. CM_SLAC_MATCH.CNF is NOT sent: confirming the match would cause the
 //      EV to join the PLC network and attempt SDP/V2G, which times out
 //      (~90-100s) before falling back to IEC. By not confirming, the EV's
-//      TT_MATCH_RESPONSE (200ms) expirese.
+//      TT_MATCH_RESPONSE (200ms) expires.
 //
 // Transition to IEC 61851 (after SLAC)
 // -------------------------------------
@@ -378,7 +378,7 @@ void ISO15118::register_events()
             iso2.reset_dc_soc_done();
             iec_temporary_active = false;
 
-            // Cancel any pending delayed modem-off task. The delayed shutdown is no longer needed.
+            // Cancel any pending delayed modem-off task.
             if (plc_modem_off_task != 0) {
                 task_scheduler.cancel(plc_modem_off_task);
                 plc_modem_off_task = 0;
@@ -390,7 +390,7 @@ void ISO15118::register_events()
                 iec_switch_task = 0;
             }
 
-            // Re-enable PLC modem. The modem needs to be ready for the next EV.
+            // Re-enable PLC modem for the next EV.
             evse_v2.set_plc_modem(true);
 
             // Reset CP back to 5% duty. This assumes that we are in some
@@ -602,10 +602,7 @@ void ISO15118::begin_iec_transition()
     }, 2000_ms);
 }
 
-// We will want to upgrade the ChargingInformation struct in the future.
-// Depending on the protocol version we actually want to set power instead of current.
-// Also depending on the EV capabilities we are able to set arbitrary power **per phase**.
-// For now, we keep it backwards-compatible and just read the charging information from the EVSE.
+// TODO: Upgrade to per-phase power control based on protocol version and EV capabilities.
 ChargingInformation ISO15118::get_charging_information() const
 {
     // In debug mode there is no EVSE connected, so we return the values

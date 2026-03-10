@@ -299,7 +299,7 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length,
         return -4;
     }
 
-    // We  have enough data: Check EOF (end of frame)
+    // We have enough data: Check EOF (end of frame)
     // EOF is at packet_length + 2 and packet_length + 3 (i.e., total_frame_length - 2 and - 1)
     if ((data[total_frame_length - 2] != 0x55) || (data[total_frame_length - 1] != 0x55)) {
         logger.printfln("QCA700x: Footer mismatch at offset %d (found 0x%02x 0x%02x)",
@@ -490,7 +490,7 @@ void QCA700x::link_up()
 void QCA700x::link_down()
 {
     if (netif == nullptr) {
-        logger.printfln("QCA700x: link_up called but netif is not initialized");
+        logger.printfln("QCA700x: link_down called but netif is not initialized");
         return;
     }
 
