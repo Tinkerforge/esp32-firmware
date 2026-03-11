@@ -28,7 +28,9 @@
 class Ethernet final : public IModule
 {
 public:
-    Ethernet(){}
+    Ethernet()
+    {
+    }
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
@@ -40,14 +42,24 @@ public:
 
 private:
     void apply_config();
+    void apply_ip_to_interface();
 
     struct eth_runtime {
         micros_t last_connected;
-        ip_addr_t ip;
-        ip_addr_t gateway;
-        ip_addr_t dns;
-        ip_addr_t dns2;
-        uint8_t subnet_cidr;
+
+        // IPv4 config (from top-level fields). ip4 == 0.0.0.0 means DHCP.
+        ip4_addr_t ip4;
+        ip4_addr_t gateway4;
+        ip4_addr_t dns4;
+        ip4_addr_t dns24;
+        uint8_t subnet4_cidr;
+
+        // IPv6 config (from ipv6 sub-object). ip6 == :: means SLAAC/auto.
+        ip6_addr_t ip6;
+        ip6_addr_t gateway6;
+        ip6_addr_t dns6;
+        ip6_addr_t dns26;
+        uint8_t subnet6_prefix_len;
 
         EthernetState connection_state;
         bool was_connected;
@@ -60,4 +72,6 @@ private:
     bool eth_started = false;
 
     uint64_t reconnect_task_id = 0;
+
+    bool ipv6_enable = false;
 };
