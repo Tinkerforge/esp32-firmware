@@ -1274,11 +1274,21 @@ void MeterModbusTCP::parse_next()
         if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery1Mode) {
             if (goodwe_inverter.battery_1_mode < 0) {
                 goodwe_inverter.battery_1_mode = c16.u;
+
+                if (goodwe_inverter.battery_1_mode == UINT16_MAX) {
+                    // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
+                    goodwe_inverter.battery_1_mode = 0;
+                }
             }
         }
         else if (generic_read_request.start_address == GoodweInverterBatteryModesAddress::Battery2Mode) {
             if (goodwe_inverter.battery_2_mode < 0) {
                 goodwe_inverter.battery_2_mode = c16.u;
+
+                if (goodwe_inverter.battery_2_mode == UINT16_MAX) {
+                    // The undocumented value 65535 has been observed in the wild. Treat it as "no battery"
+                    goodwe_inverter.battery_2_mode = 0;
+                }
 
                 bool success = true;
 
