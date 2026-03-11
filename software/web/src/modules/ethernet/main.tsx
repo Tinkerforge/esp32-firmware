@@ -104,13 +104,19 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                             />
                         </FormRow>
                         {state.enable_ipv6 &&
-                        <FormRow label={__("ethernet.content.status_ipv6")}>
-                            <InputText
-                                value={eth_state.ip6 != "::"
-                                    ? eth_state.ip6
-                                    : __("ethernet.content.status_ip_none")}
-                            />
-                        </FormRow>
+                            <FormRow label={__("ethernet.content.status_ipv6")}>
+                                <InputText
+                                    value={(() => {
+                                        const gl = eth_state?.ip6_global && eth_state.ip6_global !== "::" ? eth_state.ip6_global : null;
+                                        const ll = eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::" ? eth_state.ip6_link_local : null;
+
+                                        if (gl && ll) return `${gl} (global), ${ll} (link-local)`;
+                                        if (gl) return `${gl} (global)`;
+                                        if (ll) return `${ll} (link-local)`;
+                                        return __("ethernet.content.status_ip_none");
+                                    })()}
+                                />
+                            </FormRow>
                         }
 
 
