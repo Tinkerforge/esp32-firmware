@@ -471,16 +471,34 @@ void ISO15118::state_machines_loop()
 
     // Handle active DIN/ISO2/ISO20 TCP connection
     if (fds[FDS_ACTIVE_INDEX].fd >= 0) {
+        bool connection_closed = false;
+
         if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & (POLLERR | POLLHUP | POLLNVAL)) {
             logger.printfln("ISO15118: TCP active socket error (revents=0x%x), closing", static_cast<unsigned>(fds[FDS_ACTIVE_INDEX].revents));
             common.reset_active_socket();
+            connection_closed = true;
+        } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
+            common.handle_socket();
 
+            // A clean TCP close (FIN) triggers POLLIN with recv()=0, not POLLHUP.
+            // If handle_socket() detected this and closed the fd, handle it the same
+            // as the POLLHUP/POLLERR path.
+            if (fds[FDS_ACTIVE_INDEX].fd < 0) {
+                connection_closed = true;
+            }
+        }
+
+        if (connection_closed) {
             // If we're waiting for the EV to close TCP after SessionStop,
-            // cancel the delayed timer and kill the modem immediately.
+            // cancel the 5s safety timer and schedule modem shutdown after a short
+            // delay. The 200ms gives the TCP stack time to complete the FIN/ACK
+            // exchange before we kill the PLC link.
             if (plc_modem_off_task != 0) {
-                logger.printfln("ISO15118: EV closed TCP, cancelling 5s timer, killing modem now");
+                logger.printfln("ISO15118: EV closed TCP, cancelling 5s timer, disabling modem in 200ms");
                 task_scheduler.cancel(plc_modem_off_task);
-                disable_plc_modem();
+                plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
+                    disable_plc_modem();
+                }, 200_ms);
             }
 
             // If the EV closes the socket unexpectedly (e.g. after FAILED response),
@@ -489,8 +507,6 @@ void ISO15118::state_machines_loop()
                 logger.printfln("ISO15118: EV closed TCP after shutdown/FAILED, beginning IEC transition");
                 begin_iec_transition();
             }
-        } else if (static_cast<unsigned short>(fds[FDS_ACTIVE_INDEX].revents) & POLLIN) {
-            common.handle_socket();
         }
     }
 }
