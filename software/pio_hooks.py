@@ -887,11 +887,13 @@ def remove_all_generated_files():
 def remove_stale_generated_files():
     try:
         with open('generated_files', 'r', encoding='utf-8') as f:
-            generated_files = set(f.read().strip().split('\n'))
+            generated_files = set(f.read().replace('\\', '/').strip().split('\n'))
     except FileNotFoundError:
         generated_files = set()
 
     for generated_file in sorted(glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
+        generated_file = generated_file.replace('\\', '/')
+
         if os.path.split(generated_file)[-1] == '__pycache__':
             continue
 
