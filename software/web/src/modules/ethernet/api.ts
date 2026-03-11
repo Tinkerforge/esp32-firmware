@@ -21,9 +21,10 @@ export interface state {
     connection_end: number;
     mac: string;
     ip: string;
-    ip6: string;
     subnet: string;
     full_duplex: boolean;
     link_speed: number;
     disable_countdown: number;
+    ip6_link_local: string;
+    ip6_global: string;
 }
