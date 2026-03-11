@@ -193,12 +193,8 @@ void ISO2::handle_session_setup_req()
 
     iso2DocEnc->V2G_Message.Body.SessionSetupRes_isUsed = 1;
 
-    // EVSEID format: <Country Code> <S> <EVSE Operator ID> <S> <ID Type> <Power Outlet ID>
-
-    // If an SECC cannot provide such ID data, the value of the EVSEID is set to zero ("ZZ00000").
-    strcpy(res->EVSEID.characters, "ZZ00000");
-    res->EVSEID.charactersLen = strlen("ZZ00000");
-    // ^ note: This is completely different to EVSEID syntax in DIN SPEC 70121
+    strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+    res->EVSEID.charactersLen = iso15118.evseid_iso_len;
 
     // [V2G2-567] Timestamp of the current SECC time (Unix Time Stamp).
     // Used by the EVCC to decide whether a contract certificate is valid.
@@ -661,8 +657,8 @@ void ISO2::handle_charging_status_req()
     res->AC_EVSEStatus.NotificationMaxDelay = 0;
     res->AC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
 
-    strcpy(res->EVSEID.characters, "ZZ00000");
-    res->EVSEID.charactersLen = strlen("ZZ00000");
+    strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+    res->EVSEID.charactersLen = iso15118.evseid_iso_len;
 
     res->SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
 
@@ -800,8 +796,8 @@ void ISO2::handle_current_demand_req()
     res->EVSEMaximumCurrentLimit_isUsed = 0;
     res->EVSEMaximumPowerLimit_isUsed = 0;
 
-    strcpy(res->EVSEID.characters, "ZZ00000");
-    res->EVSEID.charactersLen = strlen("ZZ00000");
+    strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+    res->EVSEID.charactersLen = iso15118.evseid_iso_len;
     res->SAScheduleTupleID = V2G_SA_SCHEDULE_TUPLE_ID;
     res->MeterInfo_isUsed = 0;
     res->ReceiptRequired_isUsed = 0;

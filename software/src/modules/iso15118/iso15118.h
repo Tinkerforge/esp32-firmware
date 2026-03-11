@@ -123,4 +123,10 @@ public:
     ISO2 iso2;
     ISO20 iso20;
     DebugMode debug_mode;
+
+    char evseid_iso[14];
+    uint16_t evseid_iso_len;
+
+    uint8_t evseid_din[16];
+    uint16_t evseid_din_len;
 };

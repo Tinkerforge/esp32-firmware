@@ -188,12 +188,8 @@ void DIN70121::handle_session_setup_req()
 
     dinDocEnc->V2G_Message.Body.SessionSetupRes_isUsed = 1;
 
-    // EVSEID needs to be according to DIN SPEC 91286, it can be 0x00 if not available
-    // Example EVSEID according to DIN SPEC 91286: +49*810*000*438
-
-    // [V2G-DC-876] If the SECC wants to send zero, it shall send the EVSEID as single hexBinary value: ʺ0x00ʺ.
-    res->EVSEID.bytes[0] = 0;
-    res->EVSEID.bytesLen = 1;
+    memcpy(res->EVSEID.bytes, iso15118.evseid_din, iso15118.evseid_din_len);
+    res->EVSEID.bytesLen = iso15118.evseid_din_len;
 
     // [V2G-DC-878] An EVCC shall not expect a transmitted timestamp to be correct or a timestamp to be sent at all.
     // An EVSE may not send the timestamp.

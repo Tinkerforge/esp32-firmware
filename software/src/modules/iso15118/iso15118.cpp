@@ -213,6 +213,51 @@
 
 #include "gcc_warnings.h"
 
+extern uint32_t local_uid_num;
+
+// RFC 4648 Base32 alphabet: A-Z (0-25), 2-7 (26-31)
+static const char base32_alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+// Encode a uint32_t into 7 base32 characters (ceil(32/5) = 7).
+// The top 3 bits of the first character are always 0.
+static void encode_iso_evseid(uint32_t value, char *out)
+{
+    for (int i = 6; i >= 0; i--) {
+        out[i] = base32_alphabet[value & 0x1F];
+        value >>= 5;
+    }
+    out[7] = '\0';
+}
+
+// Convert a DIN SPEC 91286 character to its nibble representation.
+// '0'-'9' -> 0x0-0x9, '*' -> 0xA, invalid -> 0xF
+static uint8_t din_char_to_nibble(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return static_cast<uint8_t>(c - '0');
+    }
+    if (c == '*') {
+        return 0xA;
+    }
+    return 0xF;
+}
+
+// Encode a DIN SPEC 91286 EVSEID string into nibble-packed bytes.
+// Each character maps to one nibble, two nibbles per byte (high nibble first).
+// If the string has odd length, the last byte's low nibble is set to 0xF.
+static uint16_t encode_din_evseid(const char *str, uint8_t *out, size_t out_size)
+{
+    size_t len = strlen(str);
+    uint16_t byte_count = 0;
+
+    for (size_t i = 0; i < len && byte_count < out_size; i += 2) {
+        uint8_t high = din_char_to_nibble(str[i]);
+        uint8_t low = (i + 1 < len) ? din_char_to_nibble(str[i + 1]) : 0xF;
+        out[byte_count++] = static_cast<uint8_t>((high << 4) | low);
+    }
+
+    return byte_count;
+}
 
 void ISO15118::trace_packet(const uint8_t *packet, const size_t packet_size)
 {
@@ -322,6 +367,28 @@ void ISO15118::setup()
     }
 
     api.restorePersistentConfig("iso15118/config", &config);
+
+    // Generate EVSEID for ISO 15118-2 / ISO 15118-20
+    // Format: "DEWRPE" + base32(local_uid_num)
+    // "DE" = country code (Germany), "WRP" = EVSE operator ID, "E" = ID type (EVSE)
+    // base32 encoding uses RFC 4648 alphabet (A-Z, 2-7) for an unambiguous 7-char outlet ID.
+    strcpy(evseid_iso, "DEWRPE");
+    encode_iso_evseid(local_uid_num, evseid_iso + 6);
+    evseid_iso_len = 13;
+
+    // Generate EVSEID for DIN 70121
+    // Format: "49*000*" + decimal(local_uid_num), nibble-encoded per DIN SPEC 91286
+    // "49" = numeric country code (Germany), "000" = operator ID
+    // Each character maps to one nibble: '0'-'9' -> 0x0-0x9, '*' -> 0xA
+    char din_str[32];
+    int din_str_len = snprintf(din_str, sizeof(din_str), "49*000*%lu", local_uid_num);
+    // Ensure even number of nibbles for clean byte packing
+    if (din_str_len % 2 != 0) {
+        snprintf(din_str, sizeof(din_str), "49*000*0%lu", local_uid_num);
+    }
+    evseid_din_len = encode_din_evseid(din_str, evseid_din, sizeof(evseid_din));
+
+    logger.printfln("ISO15118: EVSEID ISO: %s, DIN: %s", evseid_iso, din_str);
 
     initialized = true;
 

@@ -240,10 +240,8 @@ void ISO20::handle_session_setup_req()
     iso20DocEnc->SessionSetupRes_isUsed = 1;
     prepare_header(&res->Header);
 
-    // [V2G20-192] The SECC and the EVCC shall use the format for EVSEID as defined in Annex C.
-    //             If an SECC cannot provide such ID data, the value of the EVSEID is set to "ZZ00000".
-    strcpy(res->EVSEID.characters, "ZZ00000");
-    res->EVSEID.charactersLen = strlen("ZZ00000");
+    strncpy(res->EVSEID.characters, iso15118.evseid_iso, iso15118.evseid_iso_len);
+    res->EVSEID.charactersLen = iso15118.evseid_iso_len;
 
     iso15118.common.send_exi(Common::ExiType::Iso20);
     state = ISO20State::SessionSetup;
