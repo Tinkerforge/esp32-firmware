@@ -197,6 +197,10 @@ for spec in specs:
                 start_address = value['start_address']
 
             if start_address != 'START_ADDRESS_VIRTUAL':
+                if start_address < 0 or start_address > 65535:
+                    print(f'Error: Value {spec_name.space} / {value["name"]} has invalid start address {start_address}')
+                    sys.exit(1)
+
                 address_name_words = ''.join([x for x in value['name'].split('|', 1)[-1].split('[')[0] if (x >= 'A' and x <= 'Z') or (x >= 'a' and x <= 'z') or (x >= '0' and x <= '9') or x == '_' or x == ' ']).split(' ')
                 address_name = ''.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
