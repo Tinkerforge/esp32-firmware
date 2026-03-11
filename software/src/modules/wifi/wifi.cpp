@@ -54,40 +54,58 @@ void Wifi::pre_setup()
         {"ip", Config::Str("10.0.0.1", 7, 15)},
         {"gateway", Config::Str("10.0.0.1", 7, 15)},
         {"subnet", Config::Str("255.255.255.0", 7, 15)}
-    }), [this](Config &update, ConfigSource source) -> String {
+    }), [this](Config &update, ConfigSource source, Language language) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr;
         if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"ip\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!gateway_addr.fromString(update.get("gateway")->asUnsafeCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"gateway\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+            return language == Language::English
+                ? "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0"
+                : "\"subnet\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+            return language == Language::English
+                ? "Invalid subnet mask passed: Expected format is 255.255.255.0"
+                : "Ungültige Subnetzmaske: Erwartetes Format ist 255.255.255.0";
 
         uint8_t cidr = WiFiGenericClass::calculateSubnetCIDR(subnet_mask);
         if (cidr < 24 || cidr > 30)
-            return "Invalid subnet mask passed: Subnet mask must be at least /30 and not bigger than /24.";
+            return language == Language::English
+                ? "Invalid subnet mask passed: Subnet mask must be at least /30 and not bigger than /24."
+                : "Ungültige Subnetzmaske: Subnetzmaske muss mindestens /30 und darf nicht größer als /24 sein.";
 
         if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP.";
+            return language == Language::English
+                ? "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi AP."
+                : "Ungültige IP oder Subnetzmaske: Diese Konfiguration würde localhost (127.0.0.1) über den WLAN AP routen.";
 
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+            return language == Language::English
+                ? "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask."
+                : "Ungültige IP, Subnetzmaske oder Gateway: IP und Gateway befinden sich laut Subnetzmaske nicht im selben Netzwerk.";
 
         if (!update.get("enable_ap")->asBool()) {
             bool other = sta_config.get("enable_sta")->asBool();
 #if MODULE_ETHERNET_AVAILABLE()
             other = other || ethernet.is_enabled_in_config();
             if (!other) {
-                return "Cannot disable WiFi AP: No other network interface is enabled. Enable WiFi STA or Ethernet first.";
+                return language == Language::English
+                    ? "Cannot disable WiFi Access Point: No other network interface is enabled. Enable WiFi or Ethernet first."
+                    : "WLAN Access Point kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WLAN oder Ethernet aktivieren.";
             }
 #else
             if (!other) {
-                return "Cannot disable WiFi AP: No other network interface is enabled. Enable WiFi STA first.";
+                return language == Language::English
+                    ? "Cannot disable WiFi Access Point: No other network interface is enabled. Enable WiFi first."
+                    : "WLAN Access Point kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WLAN aktivieren.";
             }
 #endif
         }
@@ -172,44 +190,64 @@ void Wifi::pre_setup()
             eap_config_prototypes,
             ARRAY_SIZE(eap_config_prototypes)
         )},
-    }), [this](Config &update, ConfigSource source) -> String {
+    }), [this](Config &update, ConfigSource source, Language language) -> String {
         const String &phrase = update.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
-            return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
+            return language == Language::English
+                ? "Passphrase too short. Must be at least 8 characters, or zero if open network."
+                : "Passphrase zu kurz. Muss mindestens 8 Zeichen lang sein, oder leer für ein offenes Netzwerk.";
         // Fixme: Check if only hex if exactly 64 bytes long: then it's a PSK instead of a passphrase.
 
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
         if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"ip\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!gateway_addr.fromString(update.get("gateway")->asUnsafeCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"gateway\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+            return language == Language::English
+                ? "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0"
+                : "\"subnet\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+            return language == Language::English
+                ? "Invalid subnet mask passed: Expected format is 255.255.255.0"
+                : "Ungültige Subnetzmaske: Erwartetes Format ist 255.255.255.0";
 
         if (ip_addr != IPAddress(0,0,0,0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127,0,0,1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi STA interface.";
+            return language == Language::English
+                ? "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the WiFi interface."
+                : "Ungültige IP oder Subnetzmaske: Diese Konfiguration würde localhost (127.0.0.1) über die WiFi-Schnittstelle routen.";
 
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+            return language == Language::English
+                ? "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask."
+                : "Ungültige IP, Subnetzmaske oder Gateway: IP und Gateway befinden sich laut Subnetzmaske nicht im selben Netzwerk.";
 
         if (!unused.fromString(update.get("dns")->asUnsafeCStr()))
-            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"dns\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!unused.fromString(update.get("dns2")->asUnsafeCStr()))
-            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"dns2\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (update.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::PEAP_TTLS) {
             int client_cert_id = update.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
             int client_key_id  = update.get("wpa_eap_config")->get()->get("client_key_id")->asInt();
 
             if ((client_cert_id != -1 && client_key_id == -1) || (client_cert_id == -1 && client_key_id != -1)) {
-                return "Must provide both, a client certificate and a client key";
+                return language == Language::English
+                    ? "Must provide both, a client certificate and a client key"
+                    : "Es müssen sowohl ein Client-Zertifikat als auch ein Client-Schlüssel angegeben werden";
             }
         }
 
@@ -218,11 +256,15 @@ void Wifi::pre_setup()
 #if MODULE_ETHERNET_AVAILABLE()
             other = other || ethernet.is_enabled_in_config();
             if (!other) {
-                return "Cannot disable WiFi STA: No other network interface is enabled. Enable WiFi AP or Ethernet first.";
+                return language == Language::English
+                    ? "Cannot disable WiFi: No other network interface is enabled. Enable WiFi Access Point or Ethernet first."
+                    : "WLAN kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WLAN Access Point oder Ethernet aktivieren.";
             }
 #else
             if (!other) {
-                return "Cannot disable WiFi STA: No other network interface is enabled. Enable WiFi AP first.";
+                return language == Language::English
+                    ? "Cannot disable WiFi: No other network interface is enabled. Enable WiFi Access Point first."
+                    : "WLAN kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WLAN Access Point aktivieren.";
             }
 #endif
         }
