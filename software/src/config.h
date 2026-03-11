@@ -31,6 +31,7 @@
 #pragma GCC diagnostic pop
 
 #include "cool_string.h"
+#include "language.h"
 #include "tools.h"
 
 struct Config;
@@ -1210,7 +1211,8 @@ static_assert(sizeof(Config) == 4, "Config size unexpected!");
 
 struct ConfigRoot : public Config {
 public:
-    using Validator = std::function<String(Config &, ConfigSource)>;
+    using Validator  = std::function<String(Config &, ConfigSource)>;
+    using ValidatorL = std::function<String(Config &, ConfigSource, Language)>;
 
     ConfigRoot();
 
@@ -1218,14 +1220,16 @@ public:
 
     ConfigRoot(Config cfg, Validator &&validator);
 
+    ConfigRoot(Config cfg, ValidatorL &&validator);
+
 private:
-    Validator *validator;
+    ValidatorL *validator;
 
     // Require alignment of validator to be at least two:
     // We want to store permit_null_updates in the lowest bit of the pointer
     // (yes, this is cursed!)
     // to save 4 bytes of memory per ConfigRoot.
-    static_assert(alignof(Validator) > 1, "Validator not at least 2 byte aligned!");
+    static_assert(alignof(ValidatorL) > 1, "ValidatorL not at least 2 byte aligned!");
 
 public:
     void set_permit_null_updates(bool permit_null_updates);
@@ -1237,14 +1241,14 @@ public:
 
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode
-    String update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
-    String get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
+    String get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
 
-    String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
-    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
+    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
     String update(const Config::ConfUpdate *val);
 
-    String validate(ConfigSource source);
+    String validate(ConfigSource source, Language language = Language::Default);
 
 #ifdef DEBUG_FS_ENABLE
     void print_api_info(StringWriter &sw);
@@ -1252,10 +1256,10 @@ public:
 
 private:
     template<typename T>
-    String update_from_visitor(T visitor, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String update_from_visitor(T visitor, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
 
     template<typename T>
-    String get_updated_copy(T visitor, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String get_updated_copy(T visitor, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0, Language language = Language::Default);
 };
 
 template<typename T>

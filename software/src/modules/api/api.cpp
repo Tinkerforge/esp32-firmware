@@ -386,8 +386,12 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_
         return;
     }
 
+    if (language == Language::Default) {
+        language = default_language;
+    }
+
     if (payload_len != 0 || !reg.config->is_null()) {
-        String message = reg.config->update_from_cstr(payload, payload_len);
+        String message = reg.config->update_from_cstr(payload, payload_len, nullptr, 0, language);
 
         if (!message.isEmpty()) {
             OwnershipGuard ownership_guard(response_ownership, response_owner_id);
@@ -404,10 +408,6 @@ void API::callResponse(ResponseRegistration &reg, char *payload, size_t payload_
 
             return;
         }
-    }
-
-    if (language == Language::Default) {
-        language = default_language;
     }
 
     reg.callback(language, response, response_ownership, response_owner_id);
@@ -945,7 +945,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t payload_
             }
 
             if (payload != nullptr) {
-                result = reg.config->update_from_cstr(payload, payload_len, config_path, config_path_len);
+                result = reg.config->update_from_cstr(payload, payload_len, config_path, config_path_len, language);
                 if (!result.isEmpty())
                     return;
             } else if (config_path_len > 0) {
@@ -1006,7 +1006,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
             }
 
             if (payload_copy != nullptr) {
-                result = reg.config->update_from_cstr(payload_copy, payload_len, path.data(), path.size());
+                result = reg.config->update_from_cstr(payload_copy, payload_len, path.data(), path.size(), language);
                 if (!result.isEmpty()) {
                     return;
                 }

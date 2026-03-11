@@ -29,7 +29,11 @@ ConfigRoot::ConfigRoot() : validator(nullptr) {}
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, Validator &&validator_) : Config(cfg), validator(perm_new<Validator>(DRAM, std::move(validator_))) {}
+ConfigRoot::ConfigRoot(Config cfg, Validator &&validator_) : Config(cfg), validator(perm_new<ValidatorL>(DRAM, [v = std::move(validator_)](Config &c, ConfigSource s, Language) {
+    return v(c, s);
+})) {}
+
+ConfigRoot::ConfigRoot(Config cfg, ValidatorL &&validator_) : Config(cfg), validator(perm_new<ValidatorL>(DRAM, std::move(validator_))) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {
@@ -45,11 +49,11 @@ String ConfigRoot::update_from_file(File &&file)
 
 // Intentionally take a non-const char * here:
 // This allows ArduinoJson to deserialize in zero-copy mode
-String ConfigRoot::update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::update_from_cstr(char *payload, size_t payload_len, const Config::Key *config_path, size_t config_path_len, Language language)
 {
     ASSERT_MAIN_THREAD();
     Config copy;
-    String err = this->get_updated_copy(payload, payload_len, &copy, ConfigSource::API, config_path, config_path_len);
+    String err = this->get_updated_copy(payload, payload_len, &copy, ConfigSource::API, config_path, config_path_len, language);
     if (!err.isEmpty())
         return err;
 
@@ -94,7 +98,7 @@ static String get_updated_copy_error(DeserializationError error, size_t payload_
     return String(buf, sw.getLength());
 }
 
-String ConfigRoot::get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::get_updated_copy(char *payload, size_t payload_len, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len, Language language)
 {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, payload, payload_len);
@@ -103,13 +107,13 @@ String ConfigRoot::get_updated_copy(char *payload, size_t payload_len, Config *o
         return get_updated_copy_error(error, payload_len);
     }
 
-    return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source, config_path, config_path_len);
+    return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source, config_path, config_path_len, language);
 }
 
-String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source, const Config::Key *config_path, size_t config_path_len, Language language)
 {
     Config copy;
-    String err = this->get_updated_copy(root, force_same_keys, &copy, source, config_path, config_path_len);
+    String err = this->get_updated_copy(root, force_same_keys, &copy, source, config_path, config_path_len, language);
     if (!err.isEmpty())
         return err;
 
@@ -117,16 +121,16 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, Conf
     return "";
 }
 
-String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
+String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len, Language language)
 {
-    String result = this->get_updated_copy(from_json{root, force_same_keys, this->get_permit_null_updates(), true}, out_config, source, config_path, config_path_len);
+    String result = this->get_updated_copy(from_json{root, force_same_keys, this->get_permit_null_updates(), true}, out_config, source, config_path, config_path_len, language);
     // The from_json visitor can report multiple errors with newlines at the end of each line. Remove the last newline.
     result.trim();
     return result;
 }
 
 template<typename T>
-String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len) {
+String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len, Language language) {
     ASSERT_MAIN_THREAD();
     *out_config = *this;
     Config *sub_config = out_config->walk(config_path, config_path_len);
@@ -145,10 +149,10 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
     if (!err.isEmpty())
         return err;
 
-    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
+    auto *validator_ = reinterpret_cast<ConfigRoot::ValidatorL *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
 
     if (validator_ != nullptr) {
-        err = (*validator_)(*out_config, source);
+        err = (*validator_)(*out_config, source, language);
         if (!err.isEmpty())
             return err;
     }
@@ -156,11 +160,11 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
 }
 
 template<typename T>
-String ConfigRoot::update_from_visitor(T visitor, ConfigSource source, const Config::Key *config_path, size_t config_path_len) {
+String ConfigRoot::update_from_visitor(T visitor, ConfigSource source, const Config::Key *config_path, size_t config_path_len, Language language) {
     ASSERT_MAIN_THREAD();
     Config copy;
 
-    String err = this->get_updated_copy(visitor, &copy, source, config_path, config_path_len);
+    String err = this->get_updated_copy(visitor, &copy, source, config_path, config_path_len, language);
     if (!err.isEmpty())
         return err;
 
@@ -174,13 +178,13 @@ String ConfigRoot::update(const Config::ConfUpdate *val)
     return this->update_from_visitor(from_update{val}, ConfigSource::Code);
 }
 
-String ConfigRoot::validate(ConfigSource source)
+String ConfigRoot::validate(ConfigSource source, Language language)
 {
     ASSERT_MAIN_THREAD();
-    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
+    auto *validator_ = reinterpret_cast<ConfigRoot::ValidatorL *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
 
     if (validator_ != nullptr) {
-        return (*validator_)(*this, source);
+        return (*validator_)(*this, source, language);
     }
     return "";
 }
@@ -195,9 +199,9 @@ void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
     // Store permit_null_updates == true as 0 and == false as 1
     // so that the default value is permitted.
     if (permit_null_updates)
-        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
+        this->validator = reinterpret_cast<ConfigRoot::ValidatorL *>(reinterpret_cast<uintptr_t>(this->validator) & (~0x01u));
     else
-        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<uintptr_t>(this->validator) | 0x01u);
+        this->validator = reinterpret_cast<ConfigRoot::ValidatorL *>(reinterpret_cast<uintptr_t>(this->validator) | 0x01u);
 }
 
 bool ConfigRoot::get_permit_null_updates() {
