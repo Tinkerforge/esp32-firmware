@@ -250,7 +250,7 @@ specs = [
             {
                 'name': 'Active Energy Total Buy T [0.01 kWh]',
                 'value_id': 'EnergyActiveL3Import',
-                'start_address': 361016,
+                'start_address': 36116,
                 'value_type': 'U64BE',
                 'scale_factor': 0.01,
                 'variants': ['64bit Energy'],
