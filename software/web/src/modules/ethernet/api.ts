@@ -16,4 +16,5 @@ export interface state {
     subnet: string;
     full_duplex: boolean;
     link_speed: number;
+    disable_countdown: number;
 }

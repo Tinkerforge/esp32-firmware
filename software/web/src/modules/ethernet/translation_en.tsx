@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "ethernet": {
         "status": {
             "ethernet_connection": "LAN connection",
@@ -24,8 +26,10 @@
             "enable": "LAN connection enabled",
             "enable_desc": "Automatically connects to the configured network on start-up.",
             "disabled_but_active": "The LAN connection has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
-            "restart_now": "Restart now.",
-            "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?"
+            "disabled_auto_revert": /*SFN*/(seconds: number) => `The setting will be automatically reverted in ${seconds} seconds.`/*NF*/,
+            "reboot_now": "Reboot now.",
+            "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?",
+            "reboot_with_lan_disabled": "Reboot with LAN disabled"
         },
         "script": {
             "save_failed": "Failed to save connection settings."

@@ -125,20 +125,24 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
 
                     {disabled_but_active &&
                         <Alert variant="warning">
-                            {__("ethernet.content.disabled_but_active")}{" "}
+                            {__("ethernet.content.disabled_but_active")}
+                            {" "}
+                            {eth_state.disable_countdown > 0 && <>{__("ethernet.content.disabled_auto_revert")(eth_state.disable_countdown)}{" "}</>}
                             <a href="#" onClick={async (e) => {
                                 e.preventDefault();
                                 if (await util.async_modal_ref.current.show({
                                         title: () => __("main.reboot_title"),
                                         body: () => __("ethernet.content.reboot_body"),
                                         no_text: () => __("main.abort"),
-                                        yes_text: () => __("main.reboot"),
+                                        yes_text: () => __("ethernet.content.reboot_with_lan_disabled"),
                                         no_variant: "secondary",
                                         yes_variant: "danger",
                                     })) {
                                     util.reboot();
+                                } else {
+                                    API.save("ethernet/config", {...API.get("ethernet/config"), enable_ethernet: true}, () => __("ethernet.script.save_failed"));
                                 }
-                            }}>{__("ethernet.content.restart_now")}</a>
+                            }}>{__("ethernet.content.reboot_now")}</a>
                         </Alert>}
 
                     <FormRow label={__("ethernet.content.enable")}>

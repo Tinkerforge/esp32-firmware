@@ -107,20 +107,24 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
 
                     {disabled_but_active &&
                         <Alert variant="warning">
-                            {__("wifi.content.ap_disabled_but_active")}{" "}
+                            {__("wifi.content.ap_disabled_but_active")}
+                            {" "}
+                            {wifi_state.ap_disable_countdown > 0 && <>{__("wifi.content.ap_disabled_auto_revert")(wifi_state.ap_disable_countdown)}{" "}</>}
                             <a href="#" onClick={async (e) => {
                                 e.preventDefault();
                                 if (await util.async_modal_ref.current.show({
                                         title: () => __("main.reboot_title"),
                                         body: () => __("wifi.content.ap_reboot_body"),
                                         no_text: () => __("main.abort"),
-                                        yes_text: () => __("main.reboot"),
+                                        yes_text: () => __("wifi.content.ap_reboot_with_wifi_disabled"),
                                         no_variant: "secondary",
                                         yes_variant: "danger",
                                     })) {
                                     util.reboot();
+                                } else {
+                                    API.save("wifi/ap_config", {...API.get("wifi/ap_config"), enable_ap: true}, () => __("wifi.script.ap_save_failed"));
                                 }
-                            }}>{__("wifi.content.ap_restart_now")}</a>
+                            }}>{__("wifi.content.ap_reboot_now")}</a>
                         </Alert>}
 
                     <FormRow label={__("wifi.content.ap_enable")} help={__("wifi.content.ap_enable_help")}>

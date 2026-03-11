@@ -55,11 +55,15 @@ let x = {
             "ap_state": "Access point",
             "status_ap_ip": "IP address",
             "ap_disabled_but_active": "The WiFi access point has been disabled and will not be available after the next reboot. This is not recommended as it may cause the device to become unreachable.",
-            "ap_restart_now": "Restart now.",
+            "ap_disabled_auto_revert": /*SFN*/(seconds: number) => `The setting will be automatically reverted in ${seconds} seconds.`/*NF*/,
+            "ap_reboot_now": "Reboot now.",
             "ap_reboot_body": "The WiFi access point has been disabled. Reboot now to apply the change?",
+            "ap_reboot_with_wifi_disabled": "Reboot with WiFi AP disabled",
             "sta_disabled_but_active": "The WiFi connection has been disabled and will not be available after the next reboot.",
-            "sta_restart_now": "Restart now.",
+            "sta_disabled_auto_revert": /*SFN*/(seconds: number) => `The setting will be automatically reverted in ${seconds} seconds.`/*NF*/,
+            "sta_reboot_now": "Reboot now.",
             "sta_reboot_body": "The WiFi connection has been disabled. Reboot now to apply the change?",
+            "sta_reboot_with_wifi_disabled": "Reboot with WiFi disabled",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>

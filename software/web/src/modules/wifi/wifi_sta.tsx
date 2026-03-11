@@ -433,20 +433,24 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
                     {disabled_but_active &&
                         <Alert variant="warning">
-                            {__("wifi.content.sta_disabled_but_active")}{" "}
+                            {__("wifi.content.sta_disabled_but_active")}
+                            {" "}
+                            {wifi_state.sta_disable_countdown > 0 && <>{__("wifi.content.sta_disabled_auto_revert")(wifi_state.sta_disable_countdown)}{" "}</>}
                             <a href="#" onClick={async (e) => {
                                 e.preventDefault();
                                 if (await util.async_modal_ref.current.show({
                                         title: () => __("main.reboot_title"),
                                         body: () => __("wifi.content.sta_reboot_body"),
                                         no_text: () => __("main.abort"),
-                                        yes_text: () => __("main.reboot"),
+                                        yes_text: () => __("wifi.content.sta_reboot_with_wifi_disabled"),
                                         no_variant: "secondary",
                                         yes_variant: "danger",
                                     })) {
                                     util.reboot();
+                                } else {
+                                    API.save("wifi/sta_config", {...API.get("wifi/sta_config"), enable_sta: true}, () => __("wifi.script.sta_save_failed"));
                                 }
-                            }}>{__("wifi.content.sta_restart_now")}</a>
+                            }}>{__("wifi.content.sta_reboot_now")}</a>
                         </Alert>}
 
                     <FormRow label={__("wifi.content.sta_enable_sta")}>

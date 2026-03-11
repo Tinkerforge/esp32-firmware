@@ -61,16 +61,16 @@ void Ethernet::pre_setup()
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
     }),
-    [this](Config &cfg, ConfigSource source) -> String {
+    [this](Config &update, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
-        if (!ip_addr.fromString(cfg.get("ip")->asEphemeralCStr()))
+        if (!ip_addr.fromString(update.get("ip")->asEphemeralCStr()))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!gateway_addr.fromString(cfg.get("gateway")->asEphemeralCStr()))
+        if (!gateway_addr.fromString(update.get("gateway")->asEphemeralCStr()))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!subnet_mask.fromString(cfg.get("subnet")->asEphemeralCStr()))
+        if (!subnet_mask.fromString(update.get("subnet")->asEphemeralCStr()))
             return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
@@ -82,16 +82,40 @@ void Ethernet::pre_setup()
         if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
-        if (!unused.fromString(cfg.get("dns")->asEphemeralCStr()))
+        if (!unused.fromString(update.get("dns")->asEphemeralCStr()))
             return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("dns2")->asEphemeralCStr()))
+        if (!unused.fromString(update.get("dns2")->asEphemeralCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
+        if (!update.get("enable_ethernet")->asBool()) {
+#if MODULE_WIFI_AVAILABLE()
+            if (!wifi.is_sta_enabled_in_config() && !wifi.is_ap_enabled_in_config()) {
+                return "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi STA or WiFi AP first.";
+            }
+#else
+            return "Cannot disable Ethernet: No other network interface is available.";
+#endif
+        }
+
         if (source != ConfigSource::File) {
-            task_scheduler.scheduleOnce([this]() {
-                this->apply_config();
-            });
+            const bool is_reenabled = eth_started && update.get("enable_ethernet")->asBool() &&
+                (update.get("ip")->asString()      == config.get("ip")->asString())          &&
+                (update.get("gateway")->asString() == config.get("gateway")->asString())     &&
+                (update.get("subnet")->asString()  == config.get("subnet")->asString())      &&
+                (update.get("dns")->asString()     == config.get("dns")->asString())         &&
+                (update.get("dns2")->asString()    == config.get("dns2")->asString());
+
+            if (is_reenabled) {
+                task_scheduler.scheduleOnce([this]() {
+                    task_scheduler.cancel(revert_countdown_task_id);
+                    state.get("disable_countdown")->updateUint(0);
+                });
+            } else {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_config();
+                });
+            }
         }
 
         return "";
@@ -105,7 +129,8 @@ void Ethernet::pre_setup()
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
-        {"link_speed", Config::Uint8(0)}
+        {"link_speed", Config::Uint8(0)},
+        {"disable_countdown", Config::Uint8(0)}
     });
 }
 
@@ -372,11 +397,20 @@ bool Ethernet::is_enabled() const
     return eth_started;
 }
 
+bool Ethernet::is_enabled_in_config() const
+{
+    return config.get("enable_ethernet")->asBool();
+}
+
 void Ethernet::apply_config()
 {
     const bool want_enabled = config.get("enable_ethernet")->asBool();
 
     if (want_enabled) {
+        // Cancel any pending auto-revert since ethernet is being (re-)enabled.
+        task_scheduler.cancel(revert_countdown_task_id);
+        state.get("disable_countdown")->updateUint(0);
+
         // Parse new IP settings from config.
         ip4_addr_t subnet_tmp;
         ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
@@ -424,7 +458,22 @@ void Ethernet::apply_config()
         // Enabled -> Disabled: requires a reboot to take effect.
         // The config is already saved; setup() will skip ETH.begin() on next boot.
         // The frontend enforces the reboot via a modal dialog.
-        logger.printfln("Ethernet disabled in config. Reboot required to take effect.");
+        logger.printfln("Ethernet disabled in config. Reboot required to take effect. Auto-revert in 4 minutes.");
+        state.get("disable_countdown")->updateUint(4 * 60);
+        task_scheduler.cancel(revert_countdown_task_id);
+
+        revert_countdown_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            uint8_t remaining = state.get("disable_countdown")->asUint8();
+            if (remaining <= 1) {
+                logger.printfln("No reboot within 4 minutes. Auto-reverting ethernet config to enabled.");
+                state.get("disable_countdown")->updateUint(0);
+                task_scheduler.cancel(revert_countdown_task_id);
+                config.get("enable_ethernet")->updateBool(true);
+                API::writeConfig("ethernet/config", &config);
+                return;
+            }
+            state.get("disable_countdown")->updateUint(remaining - 1);
+        }, 1_s);
     } else {
         // Not enabled and not started (initial boot with ethernet disabled).
         runtime_data->connection_state = EthernetState::NotConfigured;

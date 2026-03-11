@@ -54,15 +54,15 @@ void Wifi::pre_setup()
         {"ip", Config::Str("10.0.0.1", 7, 15)},
         {"gateway", Config::Str("10.0.0.1", 7, 15)},
         {"subnet", Config::Str("255.255.255.0", 7, 15)}
-    }), [this](Config &cfg, ConfigSource source) -> String {
+    }), [this](Config &update, ConfigSource source) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr;
-        if (!ip_addr.fromString(cfg.get("ip")->asUnsafeCStr()))
+        if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!gateway_addr.fromString(cfg.get("gateway")->asUnsafeCStr()))
+        if (!gateway_addr.fromString(update.get("gateway")->asUnsafeCStr()))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!subnet_mask.fromString(cfg.get("subnet")->asUnsafeCStr()))
+        if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
             return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
@@ -78,10 +78,42 @@ void Wifi::pre_setup()
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
+        if (!update.get("enable_ap")->asBool()) {
+            bool other = sta_config.get("enable_sta")->asBool();
+#if MODULE_ETHERNET_AVAILABLE()
+            other = other || ethernet.is_enabled_in_config();
+            if (!other) {
+                return "Cannot disable WiFi AP: No other network interface is enabled. Enable WiFi STA or Ethernet first.";
+            }
+#else
+            if (!other) {
+                return "Cannot disable WiFi AP: No other network interface is enabled. Enable WiFi STA first.";
+            }
+#endif
+        }
+
         if (source != ConfigSource::File) {
-            task_scheduler.scheduleOnce([this]() {
-                this->apply_ap_config();
-            });
+            const bool is_reenabled = (runtime_ap != nullptr) && update.get("enable_ap")->asBool()        &&
+                (update.get("enable_ap")->asBool()        != ap_config.get("enable_ap")->asBool())        &&
+                (update.get("ap_fallback_only")->asBool() == ap_config.get("ap_fallback_only")->asBool()) &&
+                (update.get("ssid")->asString()           == ap_config.get("ssid")->asString())           &&
+                (update.get("hide_ssid")->asBool()        == ap_config.get("hide_ssid")->asBool())        &&
+                (update.get("passphrase")->asString()     == ap_config.get("passphrase")->asString())     &&
+                (update.get("channel")->asUint()          == ap_config.get("channel")->asUint())          &&
+                (update.get("ip")->asString()             == ap_config.get("ip")->asString())             &&
+                (update.get("gateway")->asString()        == ap_config.get("gateway")->asString())        &&
+                (update.get("subnet")->asString()         == ap_config.get("subnet")->asString());
+
+            if (is_reenabled) {
+                task_scheduler.scheduleOnce([this]() {
+                    task_scheduler.cancel(ap_revert_countdown_task_id);
+                    state.get("ap_disable_countdown")->updateUint(0);
+                });
+            } else {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_ap_config();
+                });
+            }
         }
 
         return "";
@@ -98,7 +130,9 @@ void Wifi::pre_setup()
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(-127)},
         {"sta_bssid", Config::Str("", 0, 17)},
-        {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)}
+        {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)},
+        {"ap_disable_countdown", Config::Uint8(0)},
+        {"sta_disable_countdown", Config::Uint8(0)}
     });
 
     eap_config_prototypes[0] = {EapConfigID::None, *Config::Null()};
@@ -138,21 +172,21 @@ void Wifi::pre_setup()
             eap_config_prototypes,
             ARRAY_SIZE(eap_config_prototypes)
         )},
-    }), [this](Config &cfg, ConfigSource source) -> String {
-        const String &phrase = cfg.get("passphrase")->asString();
+    }), [this](Config &update, ConfigSource source) -> String {
+        const String &phrase = update.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
             return "Passphrase too short. Must be at least 8 characters, or zero if open network.";
         // Fixme: Check if only hex if exactly 64 bytes long: then it's a PSK instead of a passphrase.
 
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
-        if (!ip_addr.fromString(cfg.get("ip")->asUnsafeCStr()))
+        if (!ip_addr.fromString(update.get("ip")->asUnsafeCStr()))
             return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!gateway_addr.fromString(cfg.get("gateway")->asUnsafeCStr()))
+        if (!gateway_addr.fromString(update.get("gateway")->asUnsafeCStr()))
             return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!subnet_mask.fromString(cfg.get("subnet")->asUnsafeCStr()))
+        if (!subnet_mask.fromString(update.get("subnet")->asUnsafeCStr()))
             return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
@@ -164,25 +198,58 @@ void Wifi::pre_setup()
         if (gateway_addr != IPAddress(0,0,0,0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
             return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
 
-        if (!unused.fromString(cfg.get("dns")->asUnsafeCStr()))
+        if (!unused.fromString(update.get("dns")->asUnsafeCStr()))
             return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("dns2")->asUnsafeCStr()))
+        if (!unused.fromString(update.get("dns2")->asUnsafeCStr()))
             return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (cfg.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::PEAP_TTLS) {
-            int client_cert_id = cfg.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
-            int client_key_id = cfg.get("wpa_eap_config")->get()->get("client_key_id")->asInt();
+        if (update.get("wpa_eap_config")->getTag<EapConfigID>() == EapConfigID::PEAP_TTLS) {
+            int client_cert_id = update.get("wpa_eap_config")->get()->get("client_cert_id")->asInt();
+            int client_key_id  = update.get("wpa_eap_config")->get()->get("client_key_id")->asInt();
 
             if ((client_cert_id != -1 && client_key_id == -1) || (client_cert_id == -1 && client_key_id != -1)) {
                 return "Must provide both, a client certificate and a client key";
             }
         }
 
+        if (!update.get("enable_sta")->asBool()) {
+            bool other = ap_config.get("enable_ap")->asBool();
+#if MODULE_ETHERNET_AVAILABLE()
+            other = other || ethernet.is_enabled_in_config();
+            if (!other) {
+                return "Cannot disable WiFi STA: No other network interface is enabled. Enable WiFi AP or Ethernet first.";
+            }
+#else
+            if (!other) {
+                return "Cannot disable WiFi STA: No other network interface is enabled. Enable WiFi AP first.";
+            }
+#endif
+        }
+
         if (source != ConfigSource::File) {
-            task_scheduler.scheduleOnce([this]() {
-                this->apply_sta_config();
-            });
+            const bool is_reenabled = (runtime_sta != nullptr) && update.get("enable_sta")->asBool() &&
+                (update.get("enable_sta")->asBool()   != sta_config.get("enable_sta")->asBool())     &&
+                (update.get("ssid")->asString()       == sta_config.get("ssid")->asString())         &&
+                (update.get("bssid_lock")->asBool()   == sta_config.get("bssid_lock")->asBool())     &&
+                (update.get("enable_11b")->asBool()   == sta_config.get("enable_11b")->asBool())     &&
+                (update.get("passphrase")->asString() == sta_config.get("passphrase")->asString())   &&
+                (update.get("ip")->asString()         == sta_config.get("ip")->asString())           &&
+                (update.get("gateway")->asString()    == sta_config.get("gateway")->asString())      &&
+                (update.get("subnet")->asString()     == sta_config.get("subnet")->asString())       &&
+                (update.get("dns")->asString()        == sta_config.get("dns")->asString())          &&
+                (update.get("dns2")->asString()       == sta_config.get("dns2")->asString());
+
+            if (is_reenabled) {
+                task_scheduler.scheduleOnce([this]() {
+                    task_scheduler.cancel(sta_revert_countdown_task_id);
+                    state.get("sta_disable_countdown")->updateUint(0);
+                });
+            } else {
+                task_scheduler.scheduleOnce([this]() {
+                    this->apply_sta_config();
+                });
+            }
         }
 
         return "";
@@ -371,6 +438,10 @@ void Wifi::apply_ap_config(bool defer_start)
             WiFi.softAPdisconnect(true);
         }
 
+        // Cancel any pending auto-revert since AP is being (re-)enabled.
+        task_scheduler.cancel(ap_revert_countdown_task_id);
+        state.get("ap_disable_countdown")->updateUint(0);
+
         free(runtime_ap);
         runtime_ap = new_runtime;
 
@@ -394,7 +465,22 @@ void Wifi::apply_ap_config(bool defer_start)
         }
     } else if (!defer_start && runtime_ap) {
         // Enabled -> Disabled: Requires reboot.
-        logger.printfln("WiFi AP disabled in config. Reboot required to take effect.");
+        logger.printfln("WiFi AP disabled in config. Reboot required to take effect. Auto-revert in 4 minutes.");
+        state.get("ap_disable_countdown")->updateUint(4 * 60);
+        task_scheduler.cancel(ap_revert_countdown_task_id);
+
+        ap_revert_countdown_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            uint8_t remaining = state.get("ap_disable_countdown")->asUint8();
+            if (remaining <= 1) {
+                logger.printfln("No reboot within 4 minutes. Auto-reverting WiFi AP config to enabled.");
+                state.get("ap_disable_countdown")->updateUint(0);
+                task_scheduler.cancel(ap_revert_countdown_task_id);
+                ap_config.get("enable_ap")->updateBool(true);
+                API::writeConfig("wifi/ap_config", &ap_config);
+                return;
+            }
+            state.get("ap_disable_countdown")->updateUint(remaining - 1);
+        }, 1_s);
     }
 }
 
@@ -519,6 +605,10 @@ void Wifi::apply_sta_config(bool defer_start)
 
         const bool was_disabled = (runtime_sta == nullptr);
 
+        // Cancel any pending auto-revert since STA is being (re-)enabled.
+        task_scheduler.cancel(sta_revert_countdown_task_id);
+        state.get("sta_disable_countdown")->updateUint(0);
+
         // Free old runtime
         if (runtime_sta) {
             if (runtime_sta->runtime_eap) {
@@ -550,7 +640,22 @@ void Wifi::apply_sta_config(bool defer_start)
         }
     } else if (!defer_start && runtime_sta) {
         // Enabled -> Disabled: Requires reboot.
-        logger.printfln("WiFi STA disabled in config. Reboot required to take effect.");
+        logger.printfln("WiFi STA disabled in config. Reboot required to take effect. Auto-revert in 4 minutes.");
+        state.get("sta_disable_countdown")->updateUint(4 * 60);
+        task_scheduler.cancel(sta_revert_countdown_task_id);
+
+        sta_revert_countdown_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            uint8_t remaining = state.get("sta_disable_countdown")->asUint8();
+            if (remaining <= 1) {
+                logger.printfln("No reboot within 4 minutes. Auto-reverting WiFi STA config to enabled.");
+                state.get("sta_disable_countdown")->updateUint(0);
+                task_scheduler.cancel(sta_revert_countdown_task_id);
+                sta_config.get("enable_sta")->updateBool(true);
+                API::writeConfig("wifi/sta_config", &sta_config);
+                return;
+            }
+            state.get("sta_disable_countdown")->updateUint(remaining - 1);
+        }, 1_s);
     }
 }
 
@@ -1294,6 +1399,16 @@ WifiState Wifi::get_connection_state() const
 bool Wifi::is_sta_enabled() const
 {
     return runtime_sta != nullptr;
+}
+
+bool Wifi::is_sta_enabled_in_config() const
+{
+    return sta_config.get("enable_sta")->asBool();
+}
+
+bool Wifi::is_ap_enabled_in_config() const
+{
+    return ap_config.get("enable_ap")->asBool();
 }
 
 uint8_t Wifi::get_ap_state()

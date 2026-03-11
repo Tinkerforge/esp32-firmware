@@ -35,6 +35,7 @@ public:
 
     EthernetState get_connection_state() const;
     bool is_enabled() const;
+    bool is_enabled_in_config() const;
 
     void print_con_duration();
 
@@ -60,4 +61,5 @@ private:
     bool eth_started = false;
 
     uint64_t reconnect_task_id = 0;
+    uint64_t revert_countdown_task_id = 0;
 };

@@ -55,11 +55,15 @@ let x = {
             "ap_state": "Access Point",
             "status_ap_ip": "IP-Adresse",
             "ap_disabled_but_active": "Der WLAN-Access-Point wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen. Dies wird nicht empfohlen, da es dazu führen kann, dass das Gerät nicht mehr erreichbar ist.",
-            "ap_restart_now": "Jetzt neustarten.",
+            "ap_disabled_auto_revert": /*SFN*/(seconds: number) => `Die Einstellung wird in ${seconds} Sekunden automatisch zurückgesetzt.`/*NF*/,
+            "ap_reboot_now": "Jetzt neustarten.",
             "ap_reboot_body": "Der WLAN-Access-Point wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
+            "ap_reboot_with_wifi_disabled": "Mit deaktiviertem WLAN-AP neustarten",
             "sta_disabled_but_active": "Die WLAN-Verbindung wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen.",
-            "sta_restart_now": "Jetzt neustarten.",
+            "sta_disabled_auto_revert": /*SFN*/(seconds: number) => `Die Einstellung wird in ${seconds} Sekunden automatisch zurückgesetzt.`/*NF*/,
+            "sta_reboot_now": "Jetzt neustarten.",
             "sta_reboot_body": "Die WLAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
+            "sta_reboot_with_wifi_disabled": "Mit deaktiviertem WLAN neustarten",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>

@@ -80,6 +80,8 @@ export interface state {
     sta_rssi: number;
     sta_bssid: string;
     sta_disconnect_reason: number;
+    ap_disable_countdown: number;
+    sta_disable_countdown: number;
 }
 
 export interface scan {

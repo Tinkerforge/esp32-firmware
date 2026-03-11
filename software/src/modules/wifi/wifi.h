@@ -42,6 +42,8 @@ public:
 
     WifiState get_connection_state() const;
     bool is_sta_enabled() const;
+    bool is_sta_enabled_in_config() const;
+    bool is_ap_enabled_in_config() const;
     int get_sta_rssi() const;
 
     const char* get_ap_ssid() const;
@@ -124,4 +126,7 @@ private:
 
     ap_runtime  *runtime_ap  = nullptr;
     sta_runtime *runtime_sta = nullptr;
+
+    uint64_t ap_revert_countdown_task_id  = 0;
+    uint64_t sta_revert_countdown_task_id = 0;
 };
