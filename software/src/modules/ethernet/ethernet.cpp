@@ -61,40 +61,60 @@ void Ethernet::pre_setup()
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
     }),
-    [this](Config &update, ConfigSource source) -> String {
+    [this](Config &update, ConfigSource source, Language language) -> String {
         IPAddress ip_addr, subnet_mask, gateway_addr, unused;
 
         if (!ip_addr.fromString(update.get("ip")->asEphemeralCStr()))
-            return "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"ip\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"ip\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!gateway_addr.fromString(update.get("gateway")->asEphemeralCStr()))
-            return "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"gateway\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"gateway\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!subnet_mask.fromString(update.get("subnet")->asEphemeralCStr()))
-            return "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0";
+            return language == Language::English
+                ? "Failed to parse \"subnet\": Expected format is dotted decimal, i.e. 255.255.255.0"
+                : "\"subnet\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 255.255.255.0";
 
         if (!is_valid_subnet_mask(subnet_mask))
-            return "Invalid subnet mask passed: Expected format is 255.255.255.0";
+            return language == Language::English
+                ? "Invalid subnet mask passed: Expected format is 255.255.255.0"
+                : "Ungültige Subnetzmaske: Erwartetes Format ist 255.255.255.0";
 
         if (ip_addr != IPAddress(0, 0, 0, 0) && is_in_subnet(ip_addr, subnet_mask, IPAddress(127, 0, 0, 1)))
-            return "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface.";
+            return language == Language::English
+                ? "Invalid IP or subnet mask passed: This configuration would route localhost (127.0.0.1) to the ethernet interface."
+                : "Ungültige IP oder Subnetzmaske: Diese Konfiguration würde localhost (127.0.0.1) über die Ethernet-Schnittstelle routen.";
 
         if (gateway_addr != IPAddress(0, 0, 0, 0) && !is_in_subnet(ip_addr, subnet_mask, gateway_addr))
-            return "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask.";
+            return language == Language::English
+                ? "Invalid IP, subnet mask, or gateway passed: IP and gateway are not in the same network according to the subnet mask."
+                : "Ungültige IP, Subnetzmaske oder Gateway: IP und Gateway befinden sich laut Subnetzmaske nicht im selben Netzwerk.";
 
         if (!unused.fromString(update.get("dns")->asEphemeralCStr()))
-            return "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"dns\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"dns\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!unused.fromString(update.get("dns2")->asEphemeralCStr()))
-            return "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1";
+            return language == Language::English
+                ? "Failed to parse \"dns2\": Expected format is dotted decimal, i.e. 10.0.0.1"
+                : "\"dns2\" konnte nicht verarbeitet werden: Erwartetes Format ist dezimal mit Punkten, z.B. 10.0.0.1";
 
         if (!update.get("enable_ethernet")->asBool()) {
 #if MODULE_WIFI_AVAILABLE()
             if (!wifi.is_sta_enabled_in_config() && !wifi.is_ap_enabled_in_config()) {
-                return "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi STA or WiFi AP first.";
+                return language == Language::English
+                    ? "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi or WiFi Access Point first."
+                    : "Ethernet kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WiFi oder WLAN Access Point aktivieren.";
             }
 #else
-            return "Cannot disable Ethernet: No other network interface is available.";
+            return language == Language::English
+                ? "Cannot disable Ethernet: No other network interface is available."
+                : "Ethernet kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist verfügbar.";
 #endif
         }
 
