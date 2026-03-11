@@ -569,9 +569,13 @@ util.write_generated_file('generated/battery_modbus_tcp_setup.inc', ''.join(setu
 
 util.write_generated_file('generated/batteries_modbus_tcp_test.inc', ''.join(test_inc))
 
-table_ids_rpl = ' || '.join([f'config[1].table[0] == BatteryModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+table_ids_items_rpl = ', '.join([f'[BatteryModbusTCPTableID.{table_id.camel}.toString(), __("batteries_modbus_tcp.content.table_{table_id.under}")]' for table_id in table_ids])
 
-util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generated/battery_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
+util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generated/battery_modbus_tcp_specific_table_ids_items.rpl', table_ids_items_rpl)
+
+table_ids_condition_rpl = ' || '.join([f'config[1].table[0] == BatteryModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+
+util.write_generated_file('../../../web/src/modules/batteries_modbus_tcp/generated/battery_modbus_tcp_specific_table_ids_condition.rpl', table_ids_condition_rpl)
 
 for lang in translation_tables:
     tfutil.specialize_template(f'../../../web/src/modules/batteries_modbus_tcp/translation_{lang}.tsx.template', f'../../../web/src/modules/batteries_modbus_tcp/translation_{lang}.tsx', {

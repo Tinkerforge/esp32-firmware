@@ -847,6 +847,13 @@ export function pre_init() {
                 });
             },
             get_edit_children: (battery_slot: number, config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
+                let table_items: [string, string][] = [
+//#replace "generated/battery_modbus_tcp_specific_table_ids_items.rpl"
+                ];
+
+                table_items.sort((a, b) => a[1].localeCompare(b[1]));
+                table_items.push([BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")]);
+
                 let edit_children = [
                     <FormRow label={__("batteries_modbus_tcp.content.display_name")}>
                         <InputText
@@ -881,18 +888,7 @@ export function pre_init() {
                     <FormRow label={__("batteries_modbus_tcp.content.table")}>
                         <InputSelect
                             required
-                            items={[
-                                // Keep alphabetically sorted
-                                [BatteryModbusTCPTableID.AlphaESSHybridInverter.toString(), __("batteries_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.DeyeHybridInverter.toString(), __("batteries_modbus_tcp.content.table_deye_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.HaileiHybridInverter.toString(), __("batteries_modbus_tcp.content.table_hailei_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("batteries_modbus_tcp.content.table_sax_power_home_basic_mode")],
-                                [BatteryModbusTCPTableID.SMAHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sma_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.SolisHybridInverter.toString(), __("batteries_modbus_tcp.content.table_solis_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.SungrowHybridInverter.toString(), __("batteries_modbus_tcp.content.table_sungrow_hybrid_inverter")],
-                                [BatteryModbusTCPTableID.VictronEnergyGX.toString(), __("batteries_modbus_tcp.content.table_victron_energy_gx")],
-                                [BatteryModbusTCPTableID.Custom.toString(), __("batteries_modbus_tcp.content.table_custom")],
-                            ]}
+                            items={table_items}
                             placeholder={__("select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
@@ -923,7 +919,7 @@ export function pre_init() {
 
                 if (util.hasValue(config[1].table)
                  && (
-//#replace "generated/battery_modbus_tcp_specific_table_ids.rpl"
+//#replace "generated/battery_modbus_tcp_specific_table_ids_condition.rpl"
                     )) {
                     if (config[1].table[0] == BatteryModbusTCPTableID.SMAHybridInverter) {
                         edit_children.push(

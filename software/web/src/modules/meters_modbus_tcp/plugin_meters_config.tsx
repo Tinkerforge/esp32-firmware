@@ -239,6 +239,13 @@ export function pre_init() {
             new_config: () => [MeterClassID.ModbusTCP, {display_name: "", location: MeterLocation.Unknown, host: "", port: 502, table: null}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: ModbusTCPMetersConfig, on_config: (config: ModbusTCPMetersConfig) => void): ComponentChildren => {
+                let table_items: [string, string][] = [
+//#replace "generated/meter_modbus_tcp_specific_table_ids_items.rpl"
+                ];
+
+                table_items.sort((a, b) => a[1].localeCompare(b[1]));
+                table_items.push([MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")]);
+
                 let edit_children = [
                     <FormRow label={__("meters_modbus_tcp.content.display_name")}>
                         <InputText
@@ -268,67 +275,7 @@ export function pre_init() {
                     <FormRow label={__("meters_modbus_tcp.content.table")}>
                         <InputSelect
                             required
-                            items={[
-                                // Keep alphabetically sorted
-                                [MeterModbusTCPTableID.AlphaESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_alpha_ess_hybrid_inverter")],
-                                [MeterModbusTCPTableID.CarloGavazziEM24DIN.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em24_din")],
-                                [MeterModbusTCPTableID.CarloGavazziEM24E1.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em24_e1")],
-                                [MeterModbusTCPTableID.CarloGavazziEM100.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em100")],
-                                [MeterModbusTCPTableID.CarloGavazziET100.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_et100")],
-                                [MeterModbusTCPTableID.CarloGavazziEM210.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em210")],
-                                [MeterModbusTCPTableID.CarloGavazziEM270.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em270")],
-                                [MeterModbusTCPTableID.CarloGavazziEM280.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em280")],
-                                [MeterModbusTCPTableID.CarloGavazziEM300.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em300")],
-                                [MeterModbusTCPTableID.CarloGavazziET300.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_et300")],
-                                [MeterModbusTCPTableID.CarloGavazziEM510.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em510")],
-                                [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
-                                [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
-                                [MeterModbusTCPTableID.CarloGavazziEM580.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em580")],
-                                [MeterModbusTCPTableID.ChisageESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_chisage_ess_hybrid_inverter")],
-                                [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
-                                [MeterModbusTCPTableID.E3DCHauskraftwerk.toString(), __("meters_modbus_tcp.content.table_e3dc_hauskraftwerk")],
-                                [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
-//#if OPTIONS_PRODUCT_ID_IS_ELTAKO
-                                [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
-//#endif
-                                [MeterModbusTCPTableID.FoxESSH3AC3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_ac3_hybrid_inverter")],
-                                [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_smart_hybrid_inverter")],
-                                [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
-                                [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
-                                [MeterModbusTCPTableID.GoodweInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_inverter")],
-                                [MeterModbusTCPTableID.GrowattHybridInverter.toString(), __("meters_modbus_tcp.content.table_growatt_hybrid_inverter")],
-                                [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
-                                [MeterModbusTCPTableID.HuaweiEMMA.toString(), __("meters_modbus_tcp.content.table_huawei_emma")],
-                                [MeterModbusTCPTableID.HuaweiSmartLogger3000.toString(), __("meters_modbus_tcp.content.table_huawei_smart_logger_3000")],
-                                [MeterModbusTCPTableID.HuaweiSUN2000.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000")],
-                                [MeterModbusTCPTableID.HuaweiSUN2000SmartDongle.toString(), __("meters_modbus_tcp.content.table_huawei_sun2000_smart_dongle")],
-                                [MeterModbusTCPTableID.Janitza.toString(), __("meters_modbus_tcp.content.table_janitza")],
-                                [MeterModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_basic_mode")],
-                                [MeterModbusTCPTableID.SAXPowerHomeExtendedMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_extended_mode")],
-                                [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
-                                [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
-                                [MeterModbusTCPTableID.SiemensPAC2200.toString(), __("meters_modbus_tcp.content.table_siemens_pac2200")],
-                                [MeterModbusTCPTableID.SiemensPAC3120.toString(), __("meters_modbus_tcp.content.table_siemens_pac3120")],
-                                [MeterModbusTCPTableID.SiemensPAC3200.toString(), __("meters_modbus_tcp.content.table_siemens_pac3200")],
-                                [MeterModbusTCPTableID.SiemensPAC3220.toString(), __("meters_modbus_tcp.content.table_siemens_pac3220")],
-                                [MeterModbusTCPTableID.SiemensPAC4200.toString(), __("meters_modbus_tcp.content.table_siemens_pac4200")],
-                                [MeterModbusTCPTableID.SiemensPAC4220.toString(), __("meters_modbus_tcp.content.table_siemens_pac4220")],
-                                [MeterModbusTCPTableID.SMAHybridInverter.toString(), __("meters_modbus_tcp.content.table_sma_hybrid_inverter")],
-                                [MeterModbusTCPTableID.SolaredgeInverter.toString(), __("meters_modbus_tcp.content.table_solaredge_inverter")],
-                                [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
-                                [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
-                                [MeterModbusTCPTableID.SolaxStringInverter.toString(), __("meters_modbus_tcp.content.table_solax_string_inverter")],
-                                [MeterModbusTCPTableID.SolisHybridInverter.toString(), __("meters_modbus_tcp.content.table_solis_hybrid_inverter")],
-                                [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
-                                [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
-//#ifn OPTIONS_PRODUCT_ID_IS_ELTAKO
-                                [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
-//#endif
-                                [MeterModbusTCPTableID.VARTAElement.toString(), __("meters_modbus_tcp.content.table_varta_element")],
-                                [MeterModbusTCPTableID.VARTAFlex.toString(), __("meters_modbus_tcp.content.table_varta_flex")],
-                                [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
-                                [MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")],
-                            ]}
+                            items={table_items}
                             placeholder={__("select")}
                             value={util.hasValue(config[1].table) ? config[1].table[0].toString() : undefined}
                             onValue={(v) => {
@@ -346,7 +293,7 @@ export function pre_init() {
 
                 if (util.hasValue(config[1].table)
                  && (
-//#replace "generated/meter_modbus_tcp_specific_table_ids.rpl"
+//#replace "generated/meter_modbus_tcp_specific_table_ids_condition.rpl"
                     )) {
                     let default_device_address = get_default_device_address(config[1].table[0]);
 

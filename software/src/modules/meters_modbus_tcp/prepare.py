@@ -450,9 +450,13 @@ for group, value in virtual_meters.items():
 util.write_generated_file('generated/meter_modbus_tcp_is.inc', is_inc)
 util.write_generated_file('generated/meter_modbus_tcp_is.cpp', is_cpp)
 
-table_ids_rpl = ' || '.join([f'config[1].table[0] == MeterModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+table_ids_items_rpl = ', '.join([f'[MeterModbusTCPTableID.{table_id.camel}.toString(), __("meters_modbus_tcp.content.table_{table_id.under}")]' for table_id in table_ids])
 
-util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specific_table_ids.rpl', table_ids_rpl)
+util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specific_table_ids_items.rpl', table_ids_items_rpl)
+
+table_ids_condition_rpl = ' || '.join([f'config[1].table[0] == MeterModbusTCPTableID.{table_id.camel}' for table_id in table_ids])
+
+util.write_generated_file('../../../web/src/modules/meters_modbus_tcp/generated/meter_modbus_tcp_specific_table_ids_condition.rpl', table_ids_condition_rpl)
 
 for lang in translation_tables:
     tfutil.specialize_template(f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_modbus_tcp/translation_{lang}.tsx', {
