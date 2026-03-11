@@ -211,6 +211,10 @@ for spec in specs:
                 print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has no values')
                 sys.exit(1)
 
+            if start_address < 0 or start_address + values_count > 65535 + 1:
+                print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid start address {start_address}')
+                sys.exit(1)
+
             function_code = register_block['function_code']
 
             specs_cpp.append(f'    register_blocks[{i}].function_code = ModbusFunctionCode::{function_code};\n'
