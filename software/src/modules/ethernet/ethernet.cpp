@@ -109,7 +109,7 @@ void Ethernet::pre_setup()
             if (!wifi.is_sta_enabled_in_config() && !wifi.is_ap_enabled_in_config()) {
                 return language == Language::English
                     ? "Cannot disable Ethernet: No other network interface is enabled. Enable WiFi or WiFi Access Point first."
-                    : "Ethernet kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WiFi oder WLAN Access Point aktivieren.";
+                    : "Ethernet kann nicht deaktiviert werden: Keine andere Netzwerkschnittstelle ist aktiviert. Zuerst WLAN oder WLAN Access Point aktivieren.";
             }
 #else
             return language == Language::English
