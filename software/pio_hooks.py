@@ -8,7 +8,7 @@ python_version_in_use = tuple(sys.version_info)[:2]
 python_version_in_use_str = '.'.join([str(x) for x in python_version_in_use])
 
 if python_version_in_use < python_version_required:
-    print(f'Error: Python >= {python_version_required_str} required')
+    print(f'Error: Python >= {python_version_required_str} required, but Python {python_version_in_use_str} in use from {sys.executable}')
     sys.exit(1)
 
 if python_version_in_use > python_version_required:
