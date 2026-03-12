@@ -1,0 +1,284 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# dependencies = [
+#   "tinkerforge_util",
+#   "junit-xml"
+# ]
+# ///
+
+
+from pathlib import Path
+import subprocess
+import os
+import signal
+import time
+import sys
+import argparse
+import tempfile
+import json
+import select
+import datetime
+import atexit
+import fcntl
+import errno
+
+from junit_xml import TestSuite as JTestSuite, TestCase as JTestCase, to_xml_report_string
+
+DEFAULT_TEST_TIMEOUT = 10
+
+colors = {"off": "\x1b[00m",
+          "blue": "\x1b[34m",
+          "cyan": "\x1b[36m",
+          "green": "\x1b[32m",
+          "red": "\x1b[31m",
+          "gray": "\x1b[90m"}
+
+def red(s):
+    return colors["red"]+s+colors["off"]
+
+def green(s):
+    return colors["green"]+s+colors["off"]
+
+def gray(s):
+    return colors['gray']+s+colors["off"]
+
+def blue(s):
+    return colors['blue']+s+colors["off"]
+
+def run_tests(quiet, module_filter='*', suite_filter='*', test_filter='*'):
+    result = []
+
+    def tprint(*args, **kwargs):
+        if not quiet:
+            print(*args, **kwargs)
+
+    for suite_path in Path(".").glob(f"../src/modules/{module_filter}/tests/{suite_filter}.py"):
+        path = suite_path.absolute()
+
+        module_name = Path(suite_path).parts[-3]
+        suite_name = Path(suite_path).stem
+
+        jsuite = JTestSuite(f"{module_name}/{suite_name}")
+
+        with tempfile.TemporaryDirectory() as d:
+            fifo_in_path = Path(d) / "fifo_in"
+            fifo_out_path = Path(d) / "fifo_out"
+            os.mkfifo(fifo_in_path)
+            os.mkfifo(fifo_out_path)
+
+            [stdout, stdout_w] = os.pipe()
+            [stderr, stderr_w] = os.pipe()
+
+            fcntl.fcntl(stdout, fcntl.F_SETFL, fcntl.fcntl(stdout, fcntl.F_GETFL) | os.O_NONBLOCK)
+            fcntl.fcntl(stderr, fcntl.F_SETFL, fcntl.fcntl(stderr, fcntl.F_GETFL) | os.O_NONBLOCK)
+
+            env = os.environ.copy()
+            env["PYTHONUNBUFFERED"] = "1"
+
+            proc = subprocess.Popen(["uv", "run", "--script", path, "--test-filter", test_filter, "--fifo-in-path", fifo_in_path, "--fifo-out-path", fifo_out_path],
+                                    stdout=stdout_w,
+                                    stderr=stderr_w,
+                                    start_new_session=True,
+                                    env=env)
+            atexit.register(os.killpg, proc.pid, signal.SIGKILL)
+
+            start = time.monotonic()
+            while True:
+                try:
+                    fifo_in = os.open(str(fifo_in_path), os.O_WRONLY | os.O_NONBLOCK)
+                    break
+                except OSError as e:
+                    if e.errno == errno.ENXIO:
+                        if time.monotonic() - start > 1:
+                            print(red("test script crashed"))
+                            try:
+                                print(os.read(stdout, 10000).decode('utf-8'))
+                            except:
+                                pass
+                            try:
+                                print(os.read(stderr, 10000).decode('utf-8'))
+                            except:
+                                pass
+                            atexit.unregister(os.killpg)
+                            sys.exit(1)
+                        time.sleep(0.1)
+                    else:
+                        raise
+
+            fifo_out = os.open(str(fifo_out_path), os.O_RDONLY)
+
+            test_timeout = DEFAULT_TEST_TIMEOUT
+
+            fifo_out_buf = bytes()
+            stdout_buf = bytes()
+            stderr_buf = bytes()
+
+            os.write(fifo_in, b"start\n")
+            start = time.monotonic()
+
+            while True:
+                timeout = test_timeout - (time.monotonic() - start)
+                if timeout < 0:
+                    print("test timed out")
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    break
+
+                to_read, to_write, to_error = select.select([
+                    stdout,
+                    stderr,
+                    fifo_out
+                ], [], [
+                    stdout,
+                    stderr,
+                    fifo_out
+                ], timeout)
+
+                if len(to_read) == 0 and len(to_write) == 0 and len(to_error) == 0:
+                    print("test timed out")
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    break
+
+                if len(to_error) != 0:
+                    print("fd {to_error} broken")
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    break
+
+                if stdout in to_read:
+                    stdout_buf += os.read(stdout, 1000)
+
+                if stderr in to_read:
+                    stderr_buf += os.read(stderr, 1000)
+
+                if fifo_out in to_read:
+                    new_str = os.read(fifo_out, 1000)
+                    if len(new_str) == 0:
+                        proc.wait()
+                        #proc.poll()
+                        if proc.returncode != 0:
+                            print(red(f"test script returned code {proc.returncode}"))
+                        break
+
+                    fifo_out_buf += new_str
+                    while b"\n" in fifo_out_buf:
+                        line, fifo_out_buf = fifo_out_buf.split(b"\n", maxsplit=1)
+                        line = line.decode("utf-8")
+
+                        cmd, payload = json.loads(line)
+
+                        now = datetime.datetime.now().isoformat()
+
+                        meta_test = payload["testname"] in ["setup", "teardown"]
+                        test_finished = False
+
+                        match cmd:
+                            case 'notify_test_start':
+                                test_timeout = DEFAULT_TEST_TIMEOUT
+                                start = time.monotonic()
+                                if not meta_test:
+                                    tprint(f"{now} Started {payload["testname"]}", end=" ")
+                                    jcase = JTestCase(payload["testname"], timestamp=now)
+                                    jsuite.test_cases.append(jcase)
+
+                            case 'notify_test_success':
+                                test_finished = True
+                                if not meta_test:
+                                    tprint(green("Success"), f"({time.monotonic() - start:.3f}s)")
+
+                            case 'notify_test_failure':
+                                test_finished = True
+                                if meta_test:
+                                    tprint(payload["testname"], end=" ")
+                                else:
+                                    x: list[JTestCase] = jsuite.test_cases
+                                    x[-1].add_failure_info(payload["error"], payload["tb"], "failure")
+                                tprint(red("Failure"), f"({time.monotonic() - start:.3f}s)")
+                                tprint("    " + "\n    ".join(x.removeprefix('  ') for x in payload["error"].split("\n")))
+
+                            case 'notify_test_error':
+                                test_finished = True
+                                if meta_test:
+                                    tprint(payload["testname"], end=" ")
+                                else:
+                                    x: list[JTestCase] = jsuite.test_cases
+                                    x[-1].add_error_info(payload["error"], payload["tb"], "error")
+                                tprint(blue("Error"), f"({time.monotonic() - start:.3f}s)")
+                                tprint("    " + "\n    ".join(payload["tb"].split("\n")))
+
+                            case 'notify_test_skipped':
+                                test_finished = True
+                                if not meta_test:
+                                    tprint(gray("Skipped"), payload["reason"])
+                                    x: list[JTestCase] = jsuite.test_cases
+                                    x[-1].add_skipped_info(payload["reason"])
+
+                            case 'set_test_timeout':
+                                test_timeout = payload["timeout"]
+                                if meta_test:
+                                    tprint(f"Set test timeout to {test_timeout}")
+
+                        if test_finished:
+                            if not meta_test:
+                                x: list[JTestCase] = jsuite.test_cases
+                                x[-1].elapsed_sec = time.monotonic() - start
+                                # TODO x[-1].log
+                                x[-1].stdout = stdout_buf.decode('utf-8')
+                                x[-1].stderr = stderr_buf.decode('utf-8')
+                                x[-1].url = int(time.monotonic() * 1000)
+                                stdout_buf = b""
+                                stderr_buf = b""
+                            elif payload["testname"] == "setup":
+                                if len(stdout_buf) > 0:
+                                    stdout_buf += b"\n---END SETUP---\n"
+                                if len(stderr_buf) > 0:
+                                    stderr_buf += b"\n---END SETUP---\n"
+                            elif payload["testname"] == "teardown":
+                                x: list[JTestCase] = jsuite.test_cases
+                                if len(stdout_buf) > 0:
+                                    x[-1].stdout += "\n---BEGIN TEARDOWN---\n" + stdout_buf.decode('utf-8')
+                                if len(stderr_buf) > 0:
+                                    x[-1].stderr += "\n---BEGIN TEARDOWN---\n" + stderr_buf.decode('utf-8')
+                                stdout_buf = b""
+                                stderr_buf = b""
+
+                            if payload["testname"] != "suite_teardown":
+                                os.write(fifo_in, b"start\n")
+
+            # Either the process group was killed or the leader exited.
+            atexit.unregister(os.killpg)
+
+        result.append(jsuite)
+
+        # print(f"Suite {path.stem} done.\n---stdout---")
+        # print(stdout_buf.decode("utf-8"))
+        # print("---stderr---")
+        # print(stderr_buf.decode("utf-8"))
+        # print("---")
+
+        # foo: list[JTestCase] = jsuite.test_cases
+        # for tc in foo:
+        #     print(tc.name)
+        #     print("---stdout---")
+        #     print(tc.stdout)
+        #     print("---stderr---")
+        #     print(tc.stderr)
+        #     print("\n\n\n")
+
+    return to_xml_report_string(result)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("test_filter", default='*/*/*')
+    parser.add_argument("--junit-xml", action='store_true')
+    parser.add_argument("--host")
+    parser.add_argument("--tty")
+    parser.add_argument("--brickd")
+
+    args = parser.parse_args()
+    module_filter, suite_filter, test_filter = args.test_filter.split('/')
+    xml = run_tests(args.junit_xml, module_filter, suite_filter, test_filter)
+    if args.junit_xml:
+        print(xml)
+
+if __name__ == '__main__':
+    main()
