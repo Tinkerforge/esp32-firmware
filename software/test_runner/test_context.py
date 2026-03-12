@@ -8,6 +8,16 @@ import fnmatch
 import json
 from urllib.request import Request, urlopen, HTTPError
 
+import esptool.cmds
+from esptool.targets import ESP32ROM
+
+if typing.TYPE_CHECKING:
+    from test_runner import parttool
+else:
+    import tinkerforge_util as tfutil
+    tfutil.create_parent_module(__file__, 'software')
+    from software.test_runner import parttool
+
 type TestFn = Callable[[TestContext], typing.Any]
 
 @dataclass
@@ -86,6 +96,26 @@ class TestContext:
         if self._fifo_in is not None:
             self._fifo_in.readline()
 
+    def _erase_littlefs_header(self):
+        if not self._serial_port:
+            return False
+
+        with ESP32ROM(self._serial_port) as esp:
+            esp.connect()
+            part_table = esptool.cmds.read_flash(esp, 0x8000, 0x1000)
+            target = parttool.ParttoolTarget(part_table)
+
+            for p in target.partition_table:
+                if p.type == parttool.DATA_TYPE and p.subtype == parttool.SUBTYPES[parttool.DATA_TYPE]['spiffs']:
+                    partition_offset = p.offset
+                    partition_size = p.size
+
+            if partition_offset is None or partition_size is None:
+                raise Exception("Failed to get spiffs partition offset or size from partition table!")
+
+            esptool.cmds.erase_region(esp, partition_offset, 8192)
+        return True
+
     def api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
         req = Request(f'http://{self._esp_host}/{api}', data=json.dumps(payload).encode("utf-8"), method=method, headers={"Content-Type": "application/json"})
         try:
@@ -107,6 +137,14 @@ class TestContext:
 
     def api_post(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
         return self.api('POST', api, payload, timeout, parse)
+
+    def factory_reset(self):
+        if self._serial_port:
+            self._erase_littlefs_header()
+        else:
+            self.api_put('factory_reset', None)
+
+
 def run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
     if fn is None:
         return True
