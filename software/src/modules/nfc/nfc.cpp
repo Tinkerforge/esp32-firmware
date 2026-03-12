@@ -93,17 +93,8 @@ static size_t string_to_id(uint8_t buf[NFC_TAG_ID_LENGTH], const char *str, size
     return bytes;
 }
 
-NFC::NFC() : DeviceModule(nfc_bricklet_firmware_bin_data,
-                          nfc_bricklet_firmware_bin_length,
-                          "nfc",
-                          "NFC",
-                          "NFC",
-                          [this](){this->setup_nfc();}) {}
-
 void NFC::pre_setup()
 {
-    this->DeviceModule::pre_setup();
-
     seen_tags = Config::Tuple({});
 
     config_authorized_tags_prototype = Config::Object({
@@ -245,31 +236,12 @@ void NFC::pre_setup()
     });
 }
 
-void NFC::setup_nfc()
+void NFC::register_backend(INfcBackend *_backend)
 {
-    if (!this->DeviceModule::setup_device()) {
+    if (_backend == nullptr)
         return;
-    }
 
-    int result = tf_nfc_set_mode(&device, TF_NFC_MODE_SIMPLE);
-    if (result != TF_E_OK) {
-        if (!is_in_bootloader(result)) {
-            logger.printfln("NFC set mode failed (rc %d). Disabling NFC support.", result);
-        }
-        return;
-    }
-
-    // Clear tag list
-    result = tf_nfc_simple_get_tag_id(&device, 255, nullptr, nullptr, nullptr, nullptr);
-    if (result != TF_E_OK) {
-        if (!is_in_bootloader(result)) {
-            logger.printfln("Clearing NFC tag list failed (rc %d). Disabling NFC support.", result);
-        }
-        return;
-    }
-
-    initialized = true;
-    api.addFeature("nfc");
+    backend = _backend;
 
     old_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*old_tags)));
     new_tags = static_cast<decltype(old_tags)>(calloc_dram(TAG_LIST_LENGTH, sizeof(*new_tags)));
@@ -278,22 +250,16 @@ void NFC::setup_nfc()
     automation.set_enabled(AutomationTriggerID::NFC, true);
     automation.set_enabled(AutomationActionID::NFCInjectTag, true);
 #endif
-}
 
-void NFC::check_nfc_state()
-{
-    uint8_t mode = 0;
-    int result = tf_nfc_get_mode(&device, &mode);
-    if (result != TF_E_OK) {
-        if (!is_in_bootloader(result)) {
-            logger.printfln("Failed to get NFC mode, rc: %d", result);
-        }
-        return;
-    }
-    if (mode != TF_NFC_MODE_SIMPLE) {
-        logger.printfln("NFC mode invalid. Did the Bricklet reset?");
-        setup_nfc();
-    }
+    task_scheduler.scheduleUncancelable([this]() {
+        this->backend->check_state();
+    }, 5_min, 5_min);
+
+    task_scheduler.scheduleUncancelable([this]() {
+        this->update_seen_tags();
+    }, 300_ms);
+
+    api.addFeature("nfc");
 }
 
 int16_t NFC::get_user_id(const tag_t &tag)
@@ -364,11 +330,7 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
 void NFC::update_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-        int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen);
-        if (result != TF_E_OK) {
-            if (!is_in_bootloader(result)) {
-                logger.printfln("Failed to get tag ID %d, rc: %d", i, result);
-            }
+        if (!backend->get_tag_id(i, &new_tags[i].tag.type, new_tags[i].tag.id_bytes, &new_tags[i].tag.id_length, &new_tags[i].last_seen)) {
             continue;
         }
     }
@@ -480,10 +442,6 @@ void NFC::setup_auth_tags()
 
 void NFC::setup()
 {
-    setup_nfc();
-    if (!device_found)
-        return;
-
     api.restorePersistentConfig("nfc/config", &config);
     setup_auth_tags();
 
@@ -493,13 +451,7 @@ void NFC::setup()
         {"last_seen", Config::Uint32(0)}
     }));
 
-    task_scheduler.scheduleUncancelable([this]() {
-        this->check_nfc_state();
-    }, 5_min, 5_min);
-
-    task_scheduler.scheduleUncancelable([this]() {
-        this->update_seen_tags();
-    }, 300_ms);
+    initialized = true;
 }
 
 void NFC::register_urls()
@@ -520,8 +472,6 @@ void NFC::register_urls()
         last_tag_injection = now_us();
         tag_injection_action = TRIGGER_CHARGE_STOP;
     }, true);
-
-    this->DeviceModule::register_urls();
 }
 
 bool NFC::get_last_tag_seen(tag_info_t *info, char id_with_separator[NFC_TAG_ID_STRING_LENGTH + 1], char id_without_separator[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1]) {
