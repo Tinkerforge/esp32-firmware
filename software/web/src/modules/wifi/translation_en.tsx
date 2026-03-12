@@ -59,11 +59,15 @@ let x = {
             "ap_reboot_now": "Reboot now.",
             "ap_reboot_body": "The WiFi access point has been disabled. Reboot now to apply the change?",
             "ap_reboot_with_wifi_disabled": "Reboot with WiFi AP disabled",
+            "ap_cannot_disable": "At least one network interface must remain enabled. Enable WiFi connection or LAN connection first.",
+            "ap_cannot_disable_no_ethernet": "At least one network interface must remain enabled. Enable WiFi connection first.",
             "sta_disabled_but_active": "The WiFi connection has been disabled and will not be available after the next reboot.",
             "sta_disabled_auto_revert": /*SFN*/(seconds: number) => `The setting will be automatically reverted in ${seconds} seconds.`/*NF*/,
             "sta_reboot_now": "Reboot now.",
             "sta_reboot_body": "The WiFi connection has been disabled. Reboot now to apply the change?",
             "sta_reboot_with_wifi_disabled": "Reboot with WiFi disabled",
+            "sta_cannot_disable": "At least one network interface must remain enabled. Enable WiFi access point or LAN connection first.",
+            "sta_cannot_disable_no_ethernet": "At least one network interface must remain enabled. Enable WiFi access point first.",
             "ap_enable": "Access point",
             "ap_enable_help": <>
                 <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>

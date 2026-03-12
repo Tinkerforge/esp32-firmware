@@ -39,13 +39,14 @@ type WifiAPState = {show_modal: boolean};
 
 export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
     ipconfig_valid: boolean = true;
+    last_interface: boolean = false;
 
     constructor() {
         super('wifi/ap_config',
               () => __("wifi.script.ap_save_failed"));
     }
 
-    override async isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid; }
+    override async isSaveAllowed(cfg: APConfig) { return this.ipconfig_valid && !this.last_interface; }
 
     dismissModal() {
         this.setState({show_modal: false,
@@ -64,6 +65,12 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
         // (will be turned off on next reboot).
         const disabled_but_active = !saved_config.enable_ap
             && wifi_state.ap_state != 0;
+
+        // Check if disabling AP would leave no network interface enabled.
+        this.last_interface = !state.enable_ap
+            && !API.get("wifi/sta_config").enable_sta
+            && (!API.hasModule("ethernet")
+                || !API.get_unchecked("ethernet/config").enable_ethernet);
 
         return (
             <SubPage name="wifi_ap" title={__("wifi.content.ap_settings")}>
@@ -143,6 +150,12 @@ export class WifiAP extends ConfigComponent<'wifi/ap_config', {}, WifiAPState> {
                                 ["1", __("wifi.content.ap_fallback_only")],
                                 ["2", __("wifi.content.ap_disabled")]
                             ]}
+                            className={this.last_interface ? "is-invalid" : undefined}
+                            invalidFeedback={this.last_interface
+                                ? (API.hasModule("ethernet")
+                                    ? __("wifi.content.ap_cannot_disable")
+                                    : __("wifi.content.ap_cannot_disable_no_ethernet"))
+                                : undefined}
                         />
                     </FormRow>
 

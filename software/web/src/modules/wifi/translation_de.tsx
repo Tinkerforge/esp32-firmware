@@ -59,11 +59,15 @@ let x = {
             "ap_reboot_now": "Jetzt neustarten.",
             "ap_reboot_body": "Der WLAN-Access-Point wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "ap_reboot_with_wifi_disabled": "Mit deaktiviertem WLAN-AP neustarten",
+            "ap_cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung oder die LAN-Verbindung.",
+            "ap_cannot_disable_no_ethernet": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung.",
             "sta_disabled_but_active": "Die WLAN-Verbindung wurde deaktiviert und wird nach dem nächsten Neustart nicht mehr zur Verfügung stehen.",
             "sta_disabled_auto_revert": /*SFN*/(seconds: number) => `Die Einstellung wird in ${seconds} Sekunden automatisch zurückgesetzt.`/*NF*/,
             "sta_reboot_now": "Jetzt neustarten.",
             "sta_reboot_body": "Die WLAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
             "sta_reboot_with_wifi_disabled": "Mit deaktiviertem WLAN neustarten",
+            "sta_cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst den WLAN-Access-Point oder die LAN-Verbindung.",
+            "sta_cannot_disable_no_ethernet": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst den WLAN-Access-Point.",
             "ap_enable": "Access Point",
             "ap_enable_help": <>
                 <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>

@@ -79,6 +79,7 @@ export function wifi_symbol(rssi: number, size: number = 24) {
 
 export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState> {
     ipconfig_valid: boolean = true;
+    last_interface: boolean = false;
     scan_timeout: number = null;
 
     constructor() {
@@ -112,7 +113,7 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
     }
 
     override async isSaveAllowed(cfg: STAConfig) {
-        return this.ipconfig_valid;
+        return this.ipconfig_valid && !this.last_interface;
     }
 
     override async transformSave(cfg: STAConfig) {
@@ -367,6 +368,12 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
 
         const disabled_but_active = !saved_config.enable_sta && (wifi_state.connection_state != WifiState.NotConfigured);
 
+        // Check if disabling STA would leave no network interface enabled.
+        this.last_interface = !state.enable_sta
+            && !API.get("wifi/ap_config").enable_ap
+            && (!API.hasModule("ethernet")
+                || !API.get_unchecked("ethernet/config").enable_ethernet);
+
         return (
             <SubPage name="wifi_sta" title={__("wifi.content.sta_settings")}>
                 <SubPage.Status>
@@ -457,6 +464,11 @@ export class WifiSTA extends ConfigComponent<'wifi/sta_config', {}, WifiSTAState
                         <Switch desc={__("wifi.content.sta_enable_sta_desc")}
                                 checked={state.enable_sta}
                                 onClick={this.toggle("enable_sta")}
+                                invalidFeedback={this.last_interface
+                                    ? (API.hasModule("ethernet")
+                                        ? __("wifi.content.sta_cannot_disable")
+                                        : __("wifi.content.sta_cannot_disable_no_ethernet"))
+                                    : undefined}
                         />
                     </FormRow>
 
