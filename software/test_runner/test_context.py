@@ -62,7 +62,7 @@ class TestContext:
         raise TestContext.SkipTestError(reason)
 
     def _to_runner(self, cmd, **kwargs):
-        payload = json.dumps([cmd, kwargs], separators=(',', ':')) + "\n"
+        payload = json.dumps([cmd, dict({"testname": self.testname}, **kwargs)], separators=(',', ':')) + "\n"
         if self._fifo_out is not None:
             self._fifo_out.write(payload)
         else:
@@ -74,23 +74,26 @@ class TestContext:
 
     def _notify_test_start(self, testname: str):
         self.testname = testname
-        self._to_runner("notify_test_start", testname=self.testname)
+        self._to_runner("notify_test_start")
 
     def _notify_test_success(self):
-        self._to_runner("notify_test_success", testname=self.testname)
+        self._to_runner("notify_test_success")
         self.testname = ""
 
     def _notify_test_failure(self, error: str, tb: str):
-        self._to_runner("notify_test_failure", testname=self.testname, error=error, tb=tb)
+        self._to_runner("notify_test_failure", error=error, tb=tb)
         self.testname = ""
 
     def _notify_test_error(self, error: str, tb: str):
-        self._to_runner("notify_test_error", testname=self.testname, error=error, tb=tb)
+        self._to_runner("notify_test_error", error=error, tb=tb)
         self.testname = ""
 
     def _notify_test_skipped(self, reason: str):
-        self._to_runner("notify_test_skipped", testname=self.testname, reason=reason)
+        self._to_runner("notify_test_skipped", reason=reason)
         self.testname = ""
+
+    def log(self, message: str):
+        self._to_runner("log", message=message + ("\n" if not message.endswith("\n") else ""))
 
     def _wait_for_start(self):
         if self._fifo_in is not None:

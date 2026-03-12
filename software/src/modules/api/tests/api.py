@@ -31,6 +31,7 @@ def teardown(tc: TestContext):
 
 def test_success(tc: TestContext):
     print("success")
+    tc.log("logtest")
     tc.assert_(True)
 
 def test_fail(tc: TestContext):
