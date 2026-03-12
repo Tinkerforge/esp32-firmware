@@ -28,7 +28,11 @@ class TestSuite:
 class TestContext:
     _fifo_in:  typing.TextIO | None
     _fifo_out: typing.TextIO | None
-    _testname: str = ""
+
+    _serial_port: str | None
+    _esp_host: str
+    _brickd_host: str | None
+
 
     def _get_callee(self):
         stack = traceback.extract_stack()
@@ -107,6 +111,9 @@ def run_testsuite(l: dict[str, typing.Any]):
     parser.add_argument("--test-filter", default='*')
     parser.add_argument("--fifo-in-path")
     parser.add_argument("--fifo-out-path")
+    parser.add_argument("--host")
+    parser.add_argument("--tty")
+    parser.add_argument("--brickd")
     args = parser.parse_args()
 
     # l is locals() of the calling test suite script, containing test, setup and teardown functions.
@@ -124,7 +131,10 @@ def run_testsuite(l: dict[str, typing.Any]):
 
     tc = TestContext(
             open(args.fifo_in_path, 'r', buffering=1) if args.fifo_in_path else None,
-            open(args.fifo_out_path, 'w', buffering=1) if args.fifo_in_path else None
+            open(args.fifo_out_path, 'w', buffering=1) if args.fifo_in_path else None,
+            args.tty,
+            args.host,
+            args.brickd
         )
 
     if not run_test(tc, "suite_setup", suite.suite_setup):

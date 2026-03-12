@@ -46,7 +46,18 @@ def gray(s):
 def blue(s):
     return colors['blue']+s+colors["off"]
 
-def run_tests(quiet, module_filter='*', suite_filter='*', test_filter='*'):
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("test_filter", default='*/*/*')
+    parser.add_argument("--junit-xml", action='store_true')
+    parser.add_argument("--host")
+    parser.add_argument("--tty")
+    parser.add_argument("--brickd")
+
+    args = parser.parse_args()
+    module_filter, suite_filter, test_filter = args.test_filter.split('/')
+    quiet = args.junit_xml
+
     result = []
 
     def tprint(*args, **kwargs):
@@ -76,11 +87,28 @@ def run_tests(quiet, module_filter='*', suite_filter='*', test_filter='*'):
             env = os.environ.copy()
             env["PYTHONUNBUFFERED"] = "1"
 
-            proc = subprocess.Popen(["uv", "run", "--script", path, "--test-filter", test_filter, "--fifo-in-path", fifo_in_path, "--fifo-out-path", fifo_out_path],
-                                    stdout=stdout_w,
-                                    stderr=stderr_w,
-                                    start_new_session=True,
-                                    env=env)
+            proc_args = [
+                "uv",
+                "run",
+                "--active", # "Prefer the active virtual environment over the project's virtual environment" ensures that test scripts can use transitive dependencies of test context (for example esptool)
+                "--script", path,
+                "--test-filter", test_filter,
+                "--fifo-in-path", fifo_in_path,
+                "--fifo-out-path", fifo_out_path
+            ]
+            if args.host is not None:
+                proc_args += ['--host', args.host]
+            if args.tty is not None:
+                proc_args += ['--tty', args.tty]
+            if args.brickd is not None:
+                proc_args += ['--brickd', args.brickd]
+
+            proc = subprocess.Popen(
+                proc_args,
+                stdout=stdout_w,
+                stderr=stderr_w,
+                start_new_session=True,
+                env=env)
             atexit.register(os.killpg, proc.pid, signal.SIGKILL)
 
             start = time.monotonic()
@@ -264,21 +292,8 @@ def run_tests(quiet, module_filter='*', suite_filter='*', test_filter='*'):
         #     print(tc.stderr)
         #     print("\n\n\n")
 
-    return to_xml_report_string(result)
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("test_filter", default='*/*/*')
-    parser.add_argument("--junit-xml", action='store_true')
-    parser.add_argument("--host")
-    parser.add_argument("--tty")
-    parser.add_argument("--brickd")
-
-    args = parser.parse_args()
-    module_filter, suite_filter, test_filter = args.test_filter.split('/')
-    xml = run_tests(args.junit_xml, module_filter, suite_filter, test_filter)
     if args.junit_xml:
-        print(xml)
+        print(to_xml_report_string(result))
 
 if __name__ == '__main__':
     main()
