@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "device_module.h"
+#include "module.h"
 #include "config.h"
 #include "options.h"
 #include "bindings/bricklet_nfc.h"
@@ -37,18 +37,27 @@
 
 #define TAG_LIST_LENGTH 9
 
-class NFC : public DeviceModule<TF_NFC,
-                                tf_nfc_create,
-                                tf_nfc_get_bootloader_mode,
-                                tf_nfc_reset,
-                                tf_nfc_destroy,
-                                OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()>
+class INfcBackend
+{
+public:
+    INfcBackend() {}
+    virtual ~INfcBackend() {}
+
+    // Get tag at given index. Returns true on success, false on error.
+    virtual bool get_tag_id(uint8_t index, uint8_t *tag_type, uint8_t *tag_id, uint8_t *tag_id_length, uint32_t *last_seen) = 0;
+    // Check and recover the backend state.
+    virtual void check_state() = 0;
+
+    virtual void reset() {}
+};
+
+class NFC final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
           , public IAutomationBackend
 #endif
 {
 public:
-    NFC();
+    NFC() {}
 
     void pre_setup() override;
     void setup() override;
@@ -70,10 +79,10 @@ public:
         tag_t tag;
     };
 
+    void register_backend(INfcBackend *backend);
+
     void update_seen_tags();
     void tag_seen(tag_info_t *info, bool injected);
-    void setup_nfc();
-    void check_nfc_state();
     int16_t get_user_id(const tag_t &tag);
 
     void remove_user(uint8_t user_id);
@@ -84,10 +93,18 @@ public:
     bool has_triggered(const Config *conf, void *data) override;
 #endif
 
+    void reset()
+    {
+        if (backend)
+            backend->reset();
+    }
+
 private:
     Config config_authorized_tags_prototype;
     ConfigRoot config;
     ConfigRoot auth_info;
+
+    INfcBackend *backend = nullptr;
 
     micros_t deadtime_post_start = 0_us;
     size_t auth_tag_count = 0;
