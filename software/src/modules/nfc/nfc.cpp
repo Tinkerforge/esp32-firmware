@@ -327,22 +327,21 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
 {
     int16_t user_id = get_user_id(info->tag);
 
+    bool blink_handled = false;
+#if MODULE_OCPP_AVAILABLE()
     char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
     id_to_string_without_separator(buf_ocpp, &info->tag);
+    blink_handled = ocpp.on_tag_seen(buf_ocpp);
+#endif
+#if MODULE_EVSE_LED_AVAILABLE()
+    if (!blink_handled)
+        evse_led.set_module(user_id >= 0 ? EvseLed::Blink::Ack : EvseLed::Blink::Nack, 2000);
+#else
+    (void) blink_handled;
+#endif
 
     if (user_id >= 0) {
         // Found a new authorized tag.
-        bool blink_handled = false;
-#if MODULE_OCPP_AVAILABLE()
-        blink_handled = ocpp.on_tag_seen(buf_ocpp);
-#endif
-#if MODULE_EVSE_LED_AVAILABLE()
-        if (!blink_handled)
-            evse_led.set_module(EvseLed::Blink::Ack, 2000);
-#else
-        (void) blink_handled;
-#endif
-
         auth_info.get("tag_type")->updateUint(info->tag.type);
 
         char buf[NFC_TAG_ID_STRING_LENGTH + 1];
@@ -352,17 +351,6 @@ void NFC::tag_seen(tag_info_t *info, bool injected)
         users.trigger_charge_action(user_id, injected ? USERS_AUTH_TYPE_NFC_INJECTION : USERS_AUTH_TYPE_NFC, auth_info.value,
                 injected ? tag_injection_action : TRIGGER_CHARGE_ANY, 3_s, deadtime_post_start);
 
-    } else {
-        bool blink_handled = false;
-#if MODULE_OCPP_AVAILABLE()
-        blink_handled = ocpp.on_tag_seen(buf_ocpp);
-#endif
-#if MODULE_EVSE_LED_AVAILABLE()
-        if (!blink_handled)
-            evse_led.set_module(EvseLed::Blink::Nack, 2000);
-#else
-        (void) blink_handled;
-#endif
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
