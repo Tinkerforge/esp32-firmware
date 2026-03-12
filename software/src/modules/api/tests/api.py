@@ -45,6 +45,9 @@ def test_skip(tc: TestContext):
     print("skip")
     tc.skip()
 
+def test_api(tc: TestContext):
+    t = tc.api_get('info/version')['config_type']
+    tc.assert_(t == 'warp')
 
 
 if __name__ == '__main__':

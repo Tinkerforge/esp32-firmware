@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import argparse
 import fnmatch
 import json
+from urllib.request import Request, urlopen, HTTPError
 
 type TestFn = Callable[[TestContext], typing.Any]
 
@@ -23,6 +24,8 @@ class TestSuite:
     suite_teardown: TestFn | None = None
     test_setup:     TestFn | None = None
     test_teardown:  TestFn | None = None
+
+JSON: typing.TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
 
 @dataclass
 class TestContext:
@@ -83,6 +86,27 @@ class TestContext:
         if self._fifo_in is not None:
             self._fifo_in.readline()
 
+    def api(self, method:str, api: str, payload: JSON = None, timeout: float = 1, parse: bool = True):
+        req = Request(f'http://{self._esp_host}/{api}', data=json.dumps(payload).encode("utf-8"), method=method, headers={"Content-Type": "application/json"})
+        try:
+            with urlopen(req, timeout=timeout) as resp:
+                result = resp.read()
+                if parse:
+                    return json.loads(result)
+                else:
+                    return result
+        except HTTPError as e:
+            e.msg += ":" + e.read().decode('utf-8')
+            raise
+
+    def api_get(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
+        return self.api('GET', api, payload, timeout, parse)
+
+    def api_put(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
+        return self.api('PUT', api, payload, timeout, parse)
+
+    def api_post(self, api: str, payload: JSON = None, *, timeout: float = 1, parse: bool = True):
+        return self.api('POST', api, payload, timeout, parse)
 def run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
     if fn is None:
         return True
