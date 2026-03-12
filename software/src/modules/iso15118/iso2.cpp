@@ -380,36 +380,9 @@ void ISO2::handle_charge_parameter_discovery_req()
         if (soc_read) {
             soc_shutdown_retries++;
 
-            // Some EVs (e.g. VW ID.Buzz) ignore EVSE_Shutdown in ChargeParameterDiscoveryRes
-            // and keep polling for ~90 seconds. After 10 retries (~1-2s), send FAILED to
-            // force the EV to terminate the session immediately.
-            if (soc_shutdown_retries > 10) {
-                logger.printfln("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
-                res->ResponseCode = iso2_responseCodeType_FAILED;
-                res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
-                res->DC_EVSEChargeParameter_isUsed = 0;
-                res->AC_EVSEChargeParameter_isUsed = 0;
-                res->SAScheduleList_isUsed = 0;
-
-                iso15118.common.send_exi(Common::ExiType::Iso2);
-
-                // Start 5s modem-off timer here. If the EV does still send a StopReq after FAILED response,
-                // this is enough time. We expect that the EV closes the socket, after which we
-                // will cancel this timer and disable the plc modem immediately.
-                if (iso15118.plc_modem_off_task != 0) {
-                    task_scheduler.cancel(iso15118.plc_modem_off_task);
-                }
-                iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
-                    logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
-                    iso15118.disable_plc_modem();
-                }, 5000_ms);
-                return;
-            }
-
             // SoC already read. Send OK + Ongoing + EVSE_Shutdown to end the session.
             // Ongoing keeps the EV in a ChargeParameterDiscoveryReq loop that times out
             // after a few tries for some EVs. They send SessionStopReq after timeout.
-            logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             res->ResponseCode = iso2_responseCodeType_OK;
             res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
 
@@ -465,6 +438,30 @@ void ISO2::handle_charge_parameter_discovery_req()
             res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
             res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
 
+            // Some EVs (e.g. VW ID.Buzz) ignore EVSE_Shutdown in ChargeParameterDiscoveryRes
+            // and keep polling for ~90 seconds. After 10 retries (~1-2s), send FAILED to
+            // force the EV to terminate the session immediately.
+            if (soc_shutdown_retries > 10) {
+                logger.printfln("ISO2: SoC shutdown ignored after %d retries, sending FAILED", soc_shutdown_retries);
+                res->ResponseCode = iso2_responseCodeType_FAILED;
+                res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
+
+                iso15118.common.send_exi(Common::ExiType::Iso2);
+
+                // Start 5s modem-off timer here. If the EV does still send a StopReq after FAILED response,
+                // this is enough time. We expect that the EV closes the socket, after which we
+                // will cancel this timer and disable the plc modem immediately.
+                if (iso15118.plc_modem_off_task != 0) {
+                    task_scheduler.cancel(iso15118.plc_modem_off_task);
+                }
+                iso15118.plc_modem_off_task = task_scheduler.scheduleOnce([this]() {
+                    logger.printfln("ISO2: 5s modem-off timer fired, EV did not close TCP in time");
+                    iso15118.disable_plc_modem();
+                }, 5000_ms);
+                return;
+            }
+
+            logger.printfln("ISO2: SoC already read, sending EVSE_Shutdown to end session");
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = ISO2State::ChargeParameterDiscovery;
             return;
