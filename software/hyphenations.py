@@ -1038,6 +1038,7 @@ de_hyph = [
     "Ent-la-de-leis-tung",
     "Emp-fangs-stär-ke",
     "De-ak-ti-vier-te",
+    "de-ak-ti-vier-tem",
     "Bat-te-rie-ka-pa-zi-tät",
     "Ener-gie-an-for-de-rung",
     "Farb-sche-ma",
@@ -1133,6 +1134,7 @@ de_hyph = [
     "Ver-wal-te-te",
     "ver-wal-te-te",
     "Hei-zungs-an-la-ge",
+    "Wech-sel-rich-ter-se-ri-en",
 ]
 
 en_hyph = [
