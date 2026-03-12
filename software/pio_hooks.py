@@ -23,6 +23,7 @@ import re
 import json
 import glob
 import pathlib
+import hashlib
 from base64 import b64encode
 from zlib import crc32
 from collections import namedtuple
@@ -863,14 +864,40 @@ def build_web(js_source_map, css_source_map, no_minify):
             'index.html'
         ], shell=sys.platform == 'win32')
 
-def remove_all_generated_files():
-    try:
-        with open('generated_files', 'r', encoding='utf-8') as f:
-            generated_files = set(f.read().strip().split('\n'))
-    except FileNotFoundError:
-        return
+def get_generated_files_index():
+    generated_files = {}
 
-    for generated_file in sorted(generated_files + glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
+    try:
+        with open('generated_files_v2', 'r', encoding='utf-8') as f:
+            for entry in f.read().replace('\\', '/').strip().split('\n'):
+                parts = entry.split(' ', 1)
+
+                generated_files[parts[1]] = parts[0]
+    except FileNotFoundError:
+        try:
+            with open('generated_files', 'r', encoding='utf-8') as f:
+                for generated_file in f.read().replace('\\', '/').strip().split('\n'):
+                    generated_files[generated_file] = None
+        except FileNotFoundError:
+            pass
+
+    return generated_files
+
+def clear_generated_files_index():
+    try:
+        os.remove('generated_files')
+    except FileNotFoundError:
+        pass
+
+    try:
+        os.remove('generated_files_v2')
+    except FileNotFoundError:
+        pass
+
+def remove_all_generated_files():
+    generated_files = get_generated_files_index()
+
+    for generated_file in sorted(list(generated_files.keys()) + glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
         if os.path.split(generated_file)[-1] == '__pycache__':
             continue
 
@@ -879,17 +906,10 @@ def remove_all_generated_files():
         except FileNotFoundError:
             pass
 
-    try:
-        os.remove('generated_files')
-    except FileNotFoundError:
-        pass
+    clear_generated_files_index()
 
 def remove_stale_generated_files():
-    try:
-        with open('generated_files', 'r', encoding='utf-8') as f:
-            generated_files = set(f.read().replace('\\', '/').strip().split('\n'))
-    except FileNotFoundError:
-        generated_files = set()
+    generated_files = get_generated_files_index()
 
     for generated_file in sorted(glob.glob('src/modules/*/generated/*') + glob.glob('web/src/modules/*/generated/*')):
         generated_file = generated_file.replace('\\', '/')
@@ -903,19 +923,33 @@ def remove_stale_generated_files():
             except FileNotFoundError:
                 pass
 
+def check_generated_files():
+    generated_files = get_generated_files_index()
+
+    for generated_file, expected_digest in generated_files.items():
+        if expected_digest == None:
+            continue
+
+        try:
+            with open(generated_file, 'rb') as f:
+                actual_digest = hashlib.sha256(f.read()).hexdigest()
+        except FileNotFoundError:
+            print(f'Warning: Previously generated file {generated_file} is missing', file=sys.stderr)
+            continue
+
+        if actual_digest != expected_digest:
+            print(f'Warning: Previously generated file {generated_file} was modified', file=sys.stderr)
+
 def main():
     if env.IsCleanTarget():
         remove_all_generated_files()
         return
 
-    try:
-        os.remove('generated_files')
-    except FileNotFoundError:
-        pass
-
     # Enable this for class_size script
     #env.Append(CXXFLAGS=["-fdump-lang-class"])
 
+    check_generated_files()
+    clear_generated_files_index()
     remove_old_generated_files()
     remove_orphaned_enum_files()
     remove_orphaned_union_files()

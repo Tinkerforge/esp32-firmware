@@ -1,7 +1,7 @@
 .pio
 .vscode
 pio_timed.log
-generated_files
+generated_files*
 default_wifi.json*
 build/
 build_latest/

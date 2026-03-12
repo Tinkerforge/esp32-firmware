@@ -12,9 +12,9 @@ from collections import namedtuple
 import functools
 import json
 import collections
+import hashlib
 from dataclasses import dataclass, InitVar, field
 from collections.abc import Callable
-from pathlib import Path
 import importlib.util
 import tinkerforge_util as tfutil
 
@@ -90,8 +90,9 @@ def get_digest_paths(dst_dir, var_name, env=None):
             print('$PLATFORMIO_BUILD_DIR not set')
             sys.exit(-1)
 
-    digest1_path = os.path.realpath(os.path.join(build_dir, os.path.relpath(os.path.join(os.getcwd(), dst_dir), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest'))
-    digest2_path = os.path.realpath(os.path.join(os.getcwd(), dst_dir, var_name + '.digest'))
+    root_dir = os.path.split(os.path.realpath(__file__))[0]
+    digest1_path = os.path.realpath(os.path.join(build_dir, os.path.relpath(os.path.join(root_dir, dst_dir), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest'))
+    digest2_path = os.path.realpath(os.path.join(root_dir, dst_dir, var_name + '.digest'))
 
     return digest1_path, digest2_path
 
@@ -152,7 +153,11 @@ def remove_digest(dst_dir, var_name, env=None):
 
 def store_digest(digest, dst_dir, var_name, env=None):
     for digest_path in get_digest_paths(dst_dir, var_name, env=env):
-        write_generated_file(digest_path, digest)
+        if digest_path.startswith('src') or digest_path.startswith('web'):
+            write_generated_file(digest_path, digest)
+        else:
+            os.makedirs(os.path.split(digest_path)[0], exist_ok=True)
+            tfutil.write_file_if_different(digest_path, digest)
 
 def embed_data_internal(data, cpp_path, h_path, var_name, var_type, var_size_type):
     try:
@@ -758,6 +763,11 @@ def write_generated_file(path, content):
             os.makedirs(path_dir, exist_ok=True)
 
         tfutil.write_file_if_different(path, content)
+    else:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
 
-    with open(os.path.join(root_dir, 'generated_files'), 'a', encoding='utf-8') as f:
-        f.write(os.path.relpath(os.path.abspath(path), root_dir) + '\n')
+    digest = hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+    with open(os.path.join(root_dir, 'generated_files_v2'), 'a', encoding='utf-8') as f:
+        f.write(f'{digest} {os.path.relpath(os.path.abspath(path), root_dir)}\n')
