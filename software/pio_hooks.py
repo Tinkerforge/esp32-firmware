@@ -8,11 +8,11 @@ python_version_in_use = tuple(sys.version_info)[:2]
 python_version_in_use_str = '.'.join([str(x) for x in python_version_in_use])
 
 if python_version_in_use < python_version_required:
-    print(f'Error: Python >= {python_version_required_str} required, but Python {python_version_in_use_str} in use from {sys.executable}')
+    print(f'Error: Python >= {python_version_required_str} required, but Python {python_version_in_use_str} in use from {sys.executable}', file=sys.stderr)
     sys.exit(1)
 
 if python_version_in_use > python_version_required:
-    print(f'Warning: Python {python_version_in_use_str} in use. Do not use Python features more recent than {python_version_required_str}')
+    print(f'Warning: Python {python_version_in_use_str} in use. Do not use Python features more recent than {python_version_required_str}', file=sys.stderr)
 
 import configparser
 import os
@@ -971,7 +971,7 @@ def main():
             old_style_options[key] = value
 
     if len(old_style_options) > 0:
-        print('Warning: Use of old-style custom_* options detected! Trying to auto-convert to new-style custom_options!')
+        print('Warning: Use of old-style custom_* options detected! Trying to auto-convert to new-style custom_options!', file=sys.stderr)
         print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_options.items()]))
 
         product_id = old_style_options['name']
@@ -1040,8 +1040,8 @@ def main():
         old_style_web_build_flags[key.strip().lower()] = value.strip()
 
     if len(old_style_web_build_flags) > 0:
-        print('Warning: Use of old-style web_build_flags detected! Trying to auto-convert to new-style custom_options!')
-        print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_web_build_flags.items()]))
+        print('Warning: Use of old-style web_build_flags detected! Trying to auto-convert to new-style custom_options!', file=sys.stderr)
+        print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_web_build_flags.items()]), file=sys.stderr)
 
         for key, value in old_style_web_build_flags.items():
             if key == 'meters_slots':
@@ -1465,7 +1465,7 @@ def main():
         backend_module_instance_names[backend_module.space] = backend_module.under
 
         if not os.path.exists(info_path):
-            print(f'Warning: {backend_module.under} has no module.ini file')
+            print(f'Warning: {backend_module.under} has no module.ini file', file=sys.stderr)
         else:
             config = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
             config.read(info_path)
