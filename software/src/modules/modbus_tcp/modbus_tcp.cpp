@@ -192,6 +192,18 @@ static inline uint16_t swapBytes(uint16_t x) {
 
 #define REQUIRE(x) if(!cache->has_feature_##x) break
 
+static uint8_t hex_digit_to_byte(char digit)
+{
+    if (digit >= '0' && digit <= '9')
+        return digit - '0';
+
+    digit |= 0x60;
+    if (digit >= 'a' && digit <= 'f')
+        return digit - 'a' + 10;
+
+    return 0xFF;
+}
+
 Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *ctx_ptr) {
     struct Ctx{
         Option<float> energy_abs = {};
@@ -335,6 +347,27 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
             memcpy(&val, ctx->tag.unwrap().tag_id + value_idx, 4);
             // the ID is already in network order, but this function should return values in host order.
             val.u = swapBytes(val.u);
+        }
+#endif
+    }
+    else if (reg >= 4020 && reg < 4026) {
+        report_illegal_data_address = false;
+
+#if MODULE_NFC_AVAILABLE()
+        if (cache->has_feature_nfc) {
+            fillTagCache(ctx->tag);
+            char buf[NFC_TAG_ID_LENGTH * 2]; // * 2: this is in hex without separator.
+            val.u = 0;
+            if (ctx->tag.unwrap().last_seen < 60000) { // Only show tag if it was seen in the last minute.
+                memcpy(buf, ctx->tag.unwrap().tag_id, NFC_TAG_ID_LENGTH * 2);
+                auto offset = (reg - 4020) * 4; // 4 hex digits per 16 bit register
+                for (int i = 0; i < 8; ++i) { // 8 hex digits per 32 bit tworegs value
+                    // buf is only null-terminated if a tag id has less than 10 bytes.
+                    if (i + offset >= NFC_TAG_ID_LENGTH * 2 || buf[i + offset] == '\0')
+                        break;
+                    val.u |= hex_digit_to_byte(buf[i + offset]) << (28 - i * 4);
+                }
+            }
         }
 #endif
     }

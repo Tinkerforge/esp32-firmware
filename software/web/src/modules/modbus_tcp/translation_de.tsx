@@ -281,6 +281,16 @@ let x = {
                             </ul>
                         </td>
                     </tr>
+                    <tr>
+                        <td>4020 bis 4025</td>
+                        <td>ID des letzten NFC-Tags (binär; mit Timeout)</td>
+                        <td>uint8 (10x)</td>
+                        <td>nfc</td>
+                        <td>Die ID des zuletzt erkannten NFC-Tags im Binärformat oder 0, falls in der letzten Minute kein NFC-Tag gesehen wurde.
+                            Kann zur Kompatibilität mit Systemen, die nur Zahltypen lesen können, beispielsweise Loxone genutzt werden.
+                            Aktuell verbreitete NFC-Tags benutzen IDs mit einer Länge von 4, 7 oder (bei Tag Typ 5) 8 Byte.
+                            Die Register 4020 bis einschließlich 4023 können also als uint64 interpretiert werden.</td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>

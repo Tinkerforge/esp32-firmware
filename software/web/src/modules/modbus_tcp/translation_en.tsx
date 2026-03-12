@@ -280,6 +280,16 @@ let x = {
                             </ul>
                         </td>
                     </tr>
+                    <tr>
+                        <td>4020 to 4025</td>
+                        <td>ID of the last NFC tag (binary; with timeout)</td>
+                        <td>uint8 (10x)</td>
+                        <td>nfc</td>
+                        <td>ID of the last seen NFC tag in binary or 0 if no tag was seen for one minute.
+                            Can be used to be compatible with systems that are only able to read integer types, for example Loxone.
+                            Currently used NFC tags use IDs of length 4, 7 or (Tag type 5) 8 bytes.
+                            Thus the registers 4020 up to and including 4023 can be interpreted as uint64.</td>
+                    </tr>
                 </tbody>
                 <thead>
                     <tr>
