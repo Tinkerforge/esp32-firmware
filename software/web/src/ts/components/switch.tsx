@@ -28,6 +28,7 @@ export interface SwitchProps {
     onClick: JSX.MouseEventHandler<HTMLInputElement>;
     disabled?: boolean;
     className?: string;
+    invalidFeedback?: string;
 }
 
 export function Switch(props: SwitchProps) {
@@ -35,8 +36,9 @@ export function Switch(props: SwitchProps) {
 
     // borderless-form-control sets background-color to white. unset the background-color to make the switch work on every background
     let inner = <div class="borderless-form-control form-check form-switch" style="background-color: unset;">
-            <input type="checkbox" class="form-check-input" id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
+            <input type="checkbox" class={"form-check-input" + (props.invalidFeedback ? " is-invalid" : "")} id={id} checked={props.checked} onClick={props.onClick} disabled={props.disabled}/>
             <label class="form-check-label" for={id}>{props.desc}</label>
+            {props.invalidFeedback && <div class="invalid-feedback">{props.invalidFeedback}</div>}
         </div>;
 
     if (props.className !== undefined && props.className != "")

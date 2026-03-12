@@ -92,6 +92,13 @@ $enable-negative-margins: true;
     @extend .form-control;
     border: none;
     height: auto;
+
+    // .form-control sets font-size: 1rem, but the body uses 0.875rem.
+    // .invalid-feedback uses font-size: 0.875em (relative to parent),
+    // use 0.875 * 0.875rem = 0.766rem to match other invalid-feedback.
+    > .invalid-feedback {
+        font-size: 0.766rem;
+    }
 }
 
 body {
