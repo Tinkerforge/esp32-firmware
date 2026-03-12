@@ -271,7 +271,11 @@ def main():
                                 stderr_buf = b""
 
                             if payload["testname"] != "suite_teardown":
-                                os.write(fifo_in, b"start\n")
+                                try:
+                                    os.write(fifo_in, b"start\n")
+                                except BrokenPipeError:
+                                    # If the fifo is already closed, this was the last test in the suite
+                                    break
 
             # Either the process group was killed or the leader exited.
             atexit.unregister(os.killpg)
