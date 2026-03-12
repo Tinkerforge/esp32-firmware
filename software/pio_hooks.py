@@ -1623,10 +1623,10 @@ def main():
     options_key_ljust = max([len(key) for key in options_value.keys()])
     options_value_ljust = max([len(key) for key in options_value.values()])
 
-    print('Options:')
+    util.log('Options:')
 
     for key, value in sorted(options_value.items()):
-        print(f'  {key.ljust(options_key_ljust)} = {str(value).ljust(options_value_ljust)} // from {options_origin[key]}')
+        util.log(f'  {key.ljust(options_key_ljust)} = {str(value).ljust(options_value_ljust)} // from {options_origin[key]}')
 
         options_h.append(f'// from {options_origin[key]}')
         options_h.append(f'#define OPTIONS_{key.upper()}() {value}\n')
