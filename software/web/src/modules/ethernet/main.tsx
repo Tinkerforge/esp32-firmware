@@ -45,13 +45,14 @@ type EthernetConfig = API.getType['ethernet/config'];
 
 export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: RefObject<EthernetStatus>}> {
     ipconfig_valid: boolean = true;
+    last_interface: boolean = false;
 
     constructor() {
         super('ethernet/config',
               () => __("ethernet.script.save_failed"));
     }
 
-    override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid; }
+    override async isSaveAllowed(cfg: EthernetConfig) { return this.ipconfig_valid && !this.last_interface; }
 
     override async transformSave(cfg: EthernetConfig) {
         cfg.dns = cfg.dns == "" ? "0.0.0.0" : cfg.dns;
@@ -70,6 +71,12 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
         // (will be turned off on next reboot).
         const disabled_but_active = !saved_config.enable_ethernet
             && eth_state.connection_state != EthernetState.NotConfigured;
+
+        // Check if disabling ethernet would leave no network interface enabled.
+        this.last_interface = !state.enable_ethernet
+            && (!API.hasModule("wifi")
+                || (!API.get_unchecked("wifi/sta_config").enable_sta
+                    && !API.get_unchecked("wifi/ap_config").enable_ap));
 
         return (
             <SubPage name="ethernet" title={__("ethernet.content.ethernet")}>
@@ -148,7 +155,13 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                     <FormRow label={__("ethernet.content.enable")}>
                         <Switch desc={__("ethernet.content.enable_desc")}
                                 checked={state.enable_ethernet}
-                                onClick={this.toggle('enable_ethernet')}/>
+                                onClick={this.toggle('enable_ethernet')}
+                                invalidFeedback={this.last_interface
+                                    ? (API.hasModule("wifi")
+                                        ? __("ethernet.content.cannot_disable")
+                                        : __("ethernet.content.cannot_disable_no_wifi"))
+                                    : undefined}
+                        />
                     </FormRow>
 
                     <IPConfiguration

@@ -29,7 +29,9 @@ let x = {
             "disabled_auto_revert": /*SFN*/(seconds: number) => `The setting will be automatically reverted in ${seconds} seconds.`/*NF*/,
             "reboot_now": "Reboot now.",
             "reboot_body": "The LAN connection has been disabled. Reboot now to apply the change?",
-            "reboot_with_lan_disabled": "Reboot with LAN disabled"
+            "reboot_with_lan_disabled": "Reboot with LAN disabled",
+            "cannot_disable": "At least one network interface must remain enabled. Enable WiFi connection or WiFi access point first.",
+            "cannot_disable_no_wifi": "LAN connection cannot be disabled because no other network interface is available."
         },
         "script": {
             "save_failed": "Failed to save connection settings."

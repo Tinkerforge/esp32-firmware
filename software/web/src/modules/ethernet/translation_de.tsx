@@ -29,7 +29,9 @@ let x = {
             "disabled_auto_revert": /*SFN*/(seconds: number) => `Die Einstellung wird automatisch in ${seconds} Sekunden zurückgesetzt.`/*NF*/,
             "reboot_now": "Jetzt neustarten.",
             "reboot_body": "Die LAN-Verbindung wurde deaktiviert. Jetzt neustarten um die Änderung anzuwenden?",
-            "reboot_with_lan_disabled": "Neustart mit deaktiviertem LAN"
+            "reboot_with_lan_disabled": "Neustart mit deaktiviertem LAN",
+            "cannot_disable": "Mindestens eine Netzwerkschnittstelle muss aktiviert bleiben. Aktiviere zuerst die WLAN-Verbindung oder den WLAN-Access-Point.",
+            "cannot_disable_no_wifi": "Die LAN-Verbindung kann nicht deaktiviert werden, da keine andere Netzwerkschnittstelle verfügbar ist."
         },
         "script": {
             "save_failed": "Speichern der Verbindungseinstellungen fehlgeschlagen."
