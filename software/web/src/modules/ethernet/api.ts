@@ -9,8 +9,8 @@ export interface config {
         ip: string;
         gateway: string;
         subnet: string;
-        dns?: string;
-        dns2?: string;
+        dns: string;
+        dns2: string;
     }
     enable_ipv6: boolean;
 }
