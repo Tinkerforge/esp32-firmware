@@ -26,6 +26,7 @@ import chisage_ess
 import janitza
 import solis
 import growatt
+import eltako
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -57,6 +58,7 @@ modules = [
     janitza,
     solis,
     growatt,
+    eltako,
 ]
 
 display_names = {}

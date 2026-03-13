@@ -678,6 +678,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = get_growatt_hybrid_inverter_table(slot, growatt_hybrid_inverter.virtual_meter);
         break;
 
+    case MeterModbusTCPTableID::EltakoDSZ16DZE:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
+        table = &eltako_dsz16dze_table;
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
