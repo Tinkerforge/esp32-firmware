@@ -287,29 +287,34 @@ void Ethernet::setup()
         ARDUINO_EVENT_ETH_GOT_IP);
 
     Network.onEvent(
-        [this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
-            esp_ip6_addr_t link_local_ip6{};
-            esp_err_t ret_local = esp_netif_get_ip6_linklocal(ETH.netif(), &link_local_ip6);
-            if (ret_local == ESP_OK) {
-                char link_local_str[INET6_ADDRSTRLEN];
-                tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&link_local_ip6), link_local_str, ARRAY_SIZE(link_local_str));
-                logger.printfln("Link-local IPv6 address: %s", link_local_str);
-                state.get("ip6_link_local")->updateString(link_local_str);
-            } else {
-                // TODO: Move this to tracelog. Or not? Because if we dont have link-local address this might be a problem?
-                logger.printfln("Failed to get link-local IPv6 address: %s (%04X)", esp_err_to_name(ret_local), static_cast<unsigned>(ret_local));
-            }
+        [this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
 
-            esp_ip6_addr_t global_ip6{};
-            esp_err_t ret_global = esp_netif_get_ip6_global(ETH.netif(), &global_ip6);
-            if (ret_global == ESP_OK) {
-                char global_str[INET6_ADDRSTRLEN];
-                tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&global_ip6), global_str, ARRAY_SIZE(global_str));
-                logger.printfln("Global IPv6 address: %s", global_str);
-                state.get("ip6_global")->updateString(global_str);
-            } else {
-                // TODO: Move this to tracelog
-                logger.printfln("Failed to get global IPv6 address: %s (%04X)", esp_err_to_name(ret_local), static_cast<unsigned>(ret_local));
+            esp_ip6_addr_t ip_addr = info.got_ip6.ip6_info.ip;
+            esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip_addr);
+            logger.printfln("Got IPv6 address of type %d", static_cast<int>(type));
+            switch (type) {
+                case ESP_IP6_ADDR_IS_LINK_LOCAL:
+                    task_scheduler.scheduleOnce([this]() {
+                        IPAddress local = ETH.linkLocalIPv6();
+                        logger.printfln("Link-local IPv6 address: %s", local.toString(true).c_str());
+                        state.get("ip6_link_local")->updateString(local.toString());
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_GLOBAL:
+                    task_scheduler.scheduleOnce([this]() {
+                        IPAddress global = ETH.globalIPv6();
+                        logger.printfln("Global IPv6 address: %s", global.toString(true).c_str());
+                        state.get("ip6_global")->updateString(global.toString());
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_SITE_LOCAL:
+                case ESP_IP6_ADDR_IS_UNIQUE_LOCAL:
+                case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
+                case ESP_IP6_ADDR_IS_UNKNOWN:
+                default:
+                    char ip_str[INET6_ADDRSTRLEN];
+                    tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
+                    logger.printfln("Got unknown ip addr: %s of type: %d",ip_str,  static_cast<int>(type));
             }
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
@@ -429,10 +434,7 @@ void Ethernet::apply_ip_to_interface()
     } else {
         ETH.config();
     }
-    if (ipv6_enable) {
-        ETH.enableIPv6(true);
 
-    }
     if (static_ipv6) {
 
         // Add the static IPv6 global address via ESP-IDF API.
@@ -460,6 +462,11 @@ void Ethernet::apply_ip_to_interface()
             memcpy(&dns_info.ip.u_addr.ip6, &runtime_data->dns26, sizeof(dns_info.ip.u_addr.ip6));
             esp_netif_set_dns_info(ETH.netif(), ESP_NETIF_DNS_BACKUP, &dns_info);
         }
+    }
+    // Enabling ipv6 after setting the static IP may seem counterintuitive but this way the link local address is added properly afterwards
+    if (ipv6_enable) {
+        ETH.enableIPv6(true);
+
     }
 }
 
