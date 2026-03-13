@@ -90,9 +90,8 @@ def get_digest_paths(dst_dir, var_name, env=None):
             print('$PLATFORMIO_BUILD_DIR not set')
             sys.exit(-1)
 
-    root_dir = os.path.split(os.path.realpath(__file__))[0]
-    digest1_path = os.path.realpath(os.path.join(build_dir, os.path.relpath(os.path.join(root_dir, dst_dir), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest'))
-    digest2_path = os.path.realpath(os.path.join(root_dir, dst_dir, var_name + '.digest'))
+    digest1_path = os.path.realpath(os.path.join(build_dir, os.path.relpath(os.path.join(os.getcwd(), dst_dir), project_dir).replace('\\', '/').replace('/', ',') + ',' + var_name + '.digest'))
+    digest2_path = os.path.realpath(os.path.join(os.getcwd(), dst_dir, var_name + '.digest'))
 
     return digest1_path, digest2_path
 
@@ -152,12 +151,15 @@ def remove_digest(dst_dir, var_name, env=None):
             pass
 
 def store_digest(digest, dst_dir, var_name, env=None):
-    for digest_path in get_digest_paths(dst_dir, var_name, env=env):
-        if digest_path.startswith('src') or digest_path.startswith('web'):
-            write_generated_file(digest_path, digest)
-        else:
-            os.makedirs(os.path.split(digest_path)[0], exist_ok=True)
-            tfutil.write_file_if_different(digest_path, digest)
+    digest1_path, digest2_path = get_digest_paths(dst_dir, var_name, env=env)
+
+    # The first digest file is stored in $BUILD_DIR. We don't want to track it as
+    # generated as PlatformIO sometimes clears $BUILD_DIR in unexpected situations
+    # resulting in unexpected generated-file-missing warnings
+    os.makedirs(os.path.split(digest1_path)[0], exist_ok=True)
+    tfutil.write_file_if_different(digest1_path, digest)
+
+    write_generated_file(digest2_path, digest)
 
 def embed_data_internal(data, cpp_path, h_path, var_name, var_type, var_size_type):
     try:
