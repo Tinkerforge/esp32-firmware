@@ -1,4 +1,5 @@
 # Fronius GEN24 Plus abuses MPPT 3 and 4 of SunSpec model 160 to report battery information
+# Fronius Verto Plus abuses MPPT 4 and 5 of SunSpec model 160 to report battery information
 
 from copy import deepcopy
 
@@ -7,17 +8,23 @@ display_names = [
         'en': 'Fronius GEN24 Plus',
         'de': 'Fronius GEN24 Plus',
     }),
+    ('Fronius Verto Plus', {
+        'en': 'Fronius Verto Plus',
+        'de': 'Fronius Verto Plus',
+    }),
 ]
 
 table_prototypes = [
     ('Fronius GEN24 Plus', ['device_address', 'virtual_meter']),
+    ('Fronius Verto Plus', ['device_address', 'virtual_meter']),
 ]
 
 default_device_addresses = [
     ('Fronius GEN24 Plus', 1),
+    ('Fronius Verto Plus', 1),
 ]
 
-battery_integer_values = [
+battery_integer_values_gen24 = [
     {
         'name': 'DCA_SF: Current Scale Factor | DCA_SF',
         'value_id': 'VALUE_ID_META',
@@ -134,7 +141,124 @@ battery_integer_values = [
     },
 ]
 
-def make_battery_values(start_number_offset):
+battery_integer_values_verto = [
+    {
+        'name': 'DCA_SF: Current Scale Factor | DCA_SF',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40256,
+        'value_type': 'S16',  # SunSpec: sunssf
+    },
+    {
+        'name': 'DCV_SF: Voltage Scale Factor | DCV_SF',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40257,
+        'value_type': 'S16',  # SunSpec: sunssf
+    },
+    {
+        'name': 'DCW_SF: Power Scale Factor | DCW_SF',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40258,
+        'value_type': 'S16',  # SunSpec: sunssf
+    },
+    {
+        'name': 'DCWH_SF: Energy Scale Factor | DCWH_SF',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40259,
+        'value_type': 'S16',  # SunSpec: sunssf
+    },
+    {
+        'name': 'module/4/DCA: DC Charge Current [A] | Charge DCA',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40333,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/4/DCV: DC Charge Voltage [V] | Charge DCV',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40334,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/4/DCW: DC Charge Power [W] | Charge DCW',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40335,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/4/DCWH: Lifetime Charge Energy [Wh] | Charge DCWH',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40336,
+        'value_type': 'U32BE',  # SunSpec: acc32
+    },
+    {
+        'name': 'module/5/DCA: DC Discharge Current [A] | Discharge DCA',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40353,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/5/DCV: DC Discharge Voltage [V] | Discharge DCV',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40354,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/5/DCW: DC Discharge Power [W] | Discharge DCW',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40355,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'module/5/DCWH: Lifetime Discharge Energy [Wh] | Discharge DCWH',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40356,
+        'value_type': 'U32BE',  # SunSpec: acc32
+    },
+    {
+        'name': 'ChaState: Currently available energy as a percent of the capacity rating [%] | ChaState',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40372,
+        'value_type': 'U16',  # SunSpec: uint16
+    },
+    {
+        'name': 'ChaState_SF: Scale factor for available energy percent | ChaState_SF',
+        'value_id': 'VALUE_ID_META',
+        'start_number': 40386,
+        'value_type': 'S16',  # SunSpec: sunssf
+    },
+    {
+        'name': 'Battery Current [A]',
+        'value_id': 'CurrentDCChaDisDiff',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+    {
+        'name': 'Battery Voltage [V]',
+        'value_id': 'VoltageDC',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+    {
+        'name': 'Battery Power [W]',
+        'value_id': 'PowerDCChaDisDiff',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+    {
+        'name': 'Battery State Of Charge [%]',
+        'value_id': 'StateOfCharge',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+    {
+        'name': 'Battery Charge Energy [kWh]',
+        'value_id': 'EnergyDCCharge',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+    {
+        'name': 'Battery Discharge Energy [kWh]',
+        'value_id': 'EnergyDCDischarge',
+        'start_number': 'START_NUMBER_VIRTUAL',
+    },
+]
+
+def make_battery_values(battery_integer_values, start_number_offset):
     battery_values = deepcopy(battery_integer_values)
 
     for battery_value in battery_values:
@@ -162,12 +286,38 @@ specs = [
         'name': 'Fronius GEN24 Plus Battery Integer',
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
-        'values': make_battery_values(0),
+        'values': make_battery_values(battery_integer_values_gen24, 0),
     },
     {
         'name': 'Fronius GEN24 Plus Battery Float',
         'default_location': 'Battery',
         'register_type': 'HoldingRegister',
-        'values': make_battery_values(10),
+        'values': make_battery_values(battery_integer_values_gen24, 10),
+    },
+    {
+        'name': 'Fronius Verto Plus Battery Type',
+        'virtual_meter': ('Fronius Verto Plus', 'Battery'),
+        'default_location': 'Battery',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'module/1/ID: Input ID or ID: SunSpec Model ID | Input ID or Model ID',
+                'value_id': 'VALUE_ID_META',
+                'start_number': 40264,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
+        'name': 'Fronius Verto Plus Battery Integer',
+        'default_location': 'Battery',
+        'register_type': 'HoldingRegister',
+        'values': make_battery_values(battery_integer_values_verto, 0),
+    },
+    {
+        'name': 'Fronius Verto Plus Battery Float',
+        'default_location': 'Battery',
+        'register_type': 'HoldingRegister',
+        'values': make_battery_values(battery_integer_values_verto, 10),
     },
 ]

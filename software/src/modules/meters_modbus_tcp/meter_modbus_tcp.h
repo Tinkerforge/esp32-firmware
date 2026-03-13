@@ -278,6 +278,27 @@ private:
             int16_t chastate_sf;
         } fronius_gen24_plus;
 
+        // Fronius Verto Plus
+        struct {
+            FroniusVertoPlusVirtualMeter virtual_meter;
+            int input_id_or_model_id;
+            size_t start_address_shift;
+            int16_t dca_sf;
+            int16_t dcv_sf;
+            int16_t dcw_sf;
+            int16_t dcwh_sf;
+            float charge_dca;
+            float charge_dcv;
+            float charge_dcw;
+            float charge_dcwh;
+            float discharge_dca;
+            float discharge_dcv;
+            float discharge_dcw;
+            float discharge_dcwh;
+            float chastate;
+            int16_t chastate_sf;
+        } fronius_verto_plus;
+
         // Hailei hybrid inverter
         struct {
             HaileiHybridInverterVirtualMeter virtual_meter;

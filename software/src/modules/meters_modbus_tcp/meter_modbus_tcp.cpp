@@ -683,6 +683,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &eltako_dsz16dze_table;
         break;
 
+    case MeterModbusTCPTableID::FroniusVertoPlus:
+        device_address = ephemeral_table_config->get("device_address")->asUint8();
+        fronius_verto_plus.virtual_meter = ephemeral_table_config->get("virtual_meter")->asEnum<FroniusVertoPlusVirtualMeter>();
+        fronius_verto_plus.input_id_or_model_id = -1;
+        table = get_fronius_verto_plus_table(slot, fronius_verto_plus.virtual_meter);
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1499,6 +1506,44 @@ void MeterModbusTCP::parse_next()
 
             if (success) {
                 huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
+    if (is_fronius_verto_plus_battery_meter()
+     && generic_read_request.start_address == FroniusVertoPlusBatteryTypeAddress::InputIDOrModelID) {
+        if (fronius_verto_plus.input_id_or_model_id < 0) {
+            bool success = true;
+
+            switch (c16.u) {
+            case 1: // module/1/ID: Input ID
+                table = &fronius_verto_plus_battery_integer_table;
+                fronius_verto_plus.start_address_shift = 0;
+                logger.printfln_meter("Fronius Verto Plus inverter with integer MPPT model detected");
+                break;
+
+            case 160: // ID: SunSpec Model ID
+                table = &fronius_verto_plus_battery_float_table;
+                fronius_verto_plus.start_address_shift = 10;
+                logger.printfln_meter("Fronius Verto Plus inverter with float MPPT model detected");
+                break;
+
+            default:
+                success = false;
+                logger.printfln_meter("Fronius Verto Plus inverter has malformed MPPT model: %u", c16.u);
+                break;
+            }
+
+            if (success) {
+                fronius_verto_plus.input_id_or_model_id = c16.u;
                 meters.declare_value_ids(slot, table->ids, table->ids_length);
             }
         }
@@ -3265,6 +3310,84 @@ void MeterModbusTCP::parse_next()
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
+        }
+    }
+    else if (is_fronius_verto_plus_battery_meter()) {
+        size_t start_address = register_start_address - fronius_verto_plus.start_address_shift;
+
+        if (start_address == FroniusVertoPlusBatteryIntegerAddress::DCA_SF) {
+            fronius_verto_plus.dca_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DCV_SF) {
+            fronius_verto_plus.dcv_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DCW_SF) {
+            fronius_verto_plus.dcw_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DCWH_SF) {
+            fronius_verto_plus.dcwh_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChargeDCA) {
+            fronius_verto_plus.charge_dca = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChargeDCV) {
+            fronius_verto_plus.charge_dcv = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChargeDCW) {
+            fronius_verto_plus.charge_dcw = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChargeDCWH) {
+            // Is 0 in firmware versions <= 1.30 while discharging. As this is an acc32 map 0 to NaN. This will make the
+            // meters framework ignore this value during discharging and keep the pervious value
+            fronius_verto_plus.charge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DischargeDCA) {
+            fronius_verto_plus.discharge_dca = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DischargeDCV) {
+            fronius_verto_plus.discharge_dcv = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DischargeDCW) {
+            fronius_verto_plus.discharge_dcw = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::DischargeDCWH) {
+            // Is 0 in firmware versions <= 1.30 while charging. As this is an acc32 map 0 to NaN. This will make the
+            // meters framework ignore this value during charging and keep the pervious value
+            fronius_verto_plus.discharge_dcwh = c32.u == 0 ? NAN : value; // SunSpec: acc32
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChaState) {
+            fronius_verto_plus.chastate = value; // SunSpec: uint16
+        }
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChaState_SF) {
+            fronius_verto_plus.chastate_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
+
+            float dca_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dca_sf);
+            float dcv_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dcv_sf);
+            float dcw_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dcw_sf);
+            float dcwh_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf);
+            float chastate_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.chastate_sf);
+
+            float charge_dca = fronius_verto_plus.charge_dca * dca_scale_factor;
+            float charge_dcv = fronius_verto_plus.charge_dcv * dcv_scale_factor;
+            float charge_dcw = fronius_verto_plus.charge_dcw * dcw_scale_factor;
+
+            float discharge_dca = fronius_verto_plus.discharge_dca * dca_scale_factor;
+            float discharge_dcv = fronius_verto_plus.discharge_dcv * dcv_scale_factor;
+            float discharge_dcw = fronius_verto_plus.discharge_dcw * dcw_scale_factor;
+
+            float current_charge_discharge_diff = charge_dca - discharge_dca; // One of the two value is always 0A
+            float voltage = std::max(charge_dcv, discharge_dcv); // In firmware versions <= 1.30 one of the two values is always 0V. In firmware versions >= 1.31 they are the same
+            float power_charge_discharge_diff = charge_dcw - discharge_dcw; // One of the two value is always 0W
+            float state_of_charge = fronius_verto_plus.chastate * chastate_scale_factor;
+            float energy_charge = fronius_verto_plus.charge_dcwh * dcwh_scale_factor * 0.001f;
+            float energy_discharge = fronius_verto_plus.discharge_dcwh * dcwh_scale_factor * 0.001f;
+
+            meters.update_value(slot, table->index[read_index + 1], current_charge_discharge_diff);
+            meters.update_value(slot, table->index[read_index + 2], voltage);
+            meters.update_value(slot, table->index[read_index + 3], power_charge_discharge_diff);
+            meters.update_value(slot, table->index[read_index + 4], state_of_charge);
+            meters.update_value(slot, table->index[read_index + 5], energy_charge);
+            meters.update_value(slot, table->index[read_index + 6], energy_discharge);
         }
     }
 
