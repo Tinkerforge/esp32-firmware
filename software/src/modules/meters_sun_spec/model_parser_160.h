@@ -24,7 +24,13 @@
 class MetersSunSpecParser160 : public IMetersSunSpecParser
 {
 public:
-    MetersSunSpecParser160(uint32_t slot_, uint16_t max_mppt_count_) : slot(slot_), max_mppt_count(max_mppt_count_) {}
+    enum class Mode {
+        Normal,
+        FroniusGEN24Plus,
+        FroniusVertoPlus,
+    };
+
+    MetersSunSpecParser160(uint32_t slot_, Mode mode_) : slot(slot_), mode(mode_) {}
 
     bool detect_values(const uint16_t *const register_data[2], uint32_t quirks, size_t *registers_to_read) override;
     bool parse_values(const uint16_t *const register_data[2], uint32_t quirks) override;
@@ -37,6 +43,6 @@ private:
     bool is_valid(const uint16_t *const register_data[2]);
 
     const uint32_t slot;
-    const uint16_t max_mppt_count;
-    uint16_t cached_mppt_count = 0;
+    const Mode mode;
+    uint16_t mppt_count = 0;
 };

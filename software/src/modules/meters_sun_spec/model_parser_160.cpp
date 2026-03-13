@@ -144,18 +144,52 @@ bool MetersSunSpecParser160::detect_values(const uint16_t *const register_data[2
 
     const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
 
-    cached_mppt_count = std::min(block1->N, max_mppt_count);
+    mppt_count = block1->N;
 
-    if (cached_mppt_count > MODEL_160_MAX_MPPT_COUNT) {
+    switch (mode) {
+    case Mode::Normal:
+        // Include all MPPT
+        break;
+
+    case Mode::FroniusGEN24Plus:
+        // Fronius GEN24 Plus maps its battery charing/discharging at MPPT 3 and 4 that need
+        // to be ignored. Fronius GEN24 and Fronius GEN24 Plus have the same manufacturer and
+        // model in the SunSpec Common model, so they cannot be distiguished by that. Instead
+        // we use the actual MPPT count to distiguish them. Fronius GEN24 has two actual MPPT.
+        // Fronius GEN24 Plus reports four in total, but only has two actual MPPT too.
+        if (block1->N == 4) {
+            mppt_count = 2;
+        }
+
+        break;
+
+    case Mode::FroniusVertoPlus:
+        // Fronius Verto Plus maps its battery charing/discharging at MPPT 4 and 5 that need
+        // to be ignored. Fronius Verto and Fronius Verto Plus have the same manufacturer and
+        // model in the SunSpec Common model, so they cannot be distiguished by that. Instead
+        // we use the actual MPPT count to distiguish them. Fronius Verto has three or four
+        // actual MPPT, depending on the exact model. Fronius Verto Plus reports five in total,
+        // but only has three actual MPPT.
+        if (block1->N == 5) {
+            mppt_count = 3;
+        }
+
+        break;
+    }
+
+    if (mppt_count > MODEL_160_MAX_MPPT_COUNT) {
         // FIXME: remove this limitation that is caused by the 125 register read limit
-        logger.printfln_meter("SunSpec model 160 has %u MPPT modules, only reading the first %i", cached_mppt_count, MODEL_160_MAX_MPPT_COUNT);
+        logger.printfln_meter("SunSpec model 160 has %u MPPT modules, only reading the first %i", mppt_count, MODEL_160_MAX_MPPT_COUNT);
 
-        cached_mppt_count = MODEL_160_MAX_MPPT_COUNT;
+        mppt_count = MODEL_160_MAX_MPPT_COUNT;
+    }
+    else if (mppt_count == 0) {
+        logger.printfln_meter("SunSpec model 160 has no MPPT modules");
     }
 
     *registers_to_read = get_interesting_registers_count();
 
-    meters.declare_value_ids(slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * cached_mppt_count);
+    meters.declare_value_ids(slot, model_160_ids, MODEL_160_ID_COUNT + MODEL_160_MPPT_ID_COUNT * mppt_count);
 
     return true;
 }
@@ -167,12 +201,6 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
     }
 
     const struct Model160_s *block1 = static_cast<const struct Model160_s *>(static_cast<const void *>(register_data[1]));
-    uint16_t mppt_count = std::min(block1->N, max_mppt_count);
-
-    if (mppt_count > cached_mppt_count) {
-        mppt_count = cached_mppt_count;
-    }
-
     float values[ARRAY_SIZE(model_160_ids)];
 
     values[0] = NAN;
@@ -231,7 +259,7 @@ bool MetersSunSpecParser160::is_model_length_supported(uint32_t model_length)
 [[gnu::const]]
 uint32_t MetersSunSpecParser160::get_interesting_registers_count()
 {
-    return MODEL_160_REGISTER_COUNT + cached_mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
+    return MODEL_160_REGISTER_COUNT + mppt_count * MODEL_160_MPPT_REGISTER_COUNT;
 }
 
 bool MetersSunSpecParser160::is_valid(const uint16_t *const register_data[2])

@@ -33,17 +33,26 @@
 IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, const char *model_name, uint16_t model_id, DCPortType dc_port_type)
 {
     if (model_id == 160) {
-        uint16_t max_mppt_count = UINT16_MAX;
+        MetersSunSpecParser160::Mode mode = MetersSunSpecParser160::Mode::Normal;
 
-        // Fronius GEN24 Plus maps its battery charing/discharging at MPPT 3 and 4 that need to be
-        // ignored. check for " GEN24 " to catch "Primo GEN24 5.0" as well as "Symo GEN24 10.0"
-        if (strcmp(manufacturer_name, "Fronius") == 0 && strstr(model_name, " GEN24 ") != nullptr) {
-            logger.printfln_meter("Restricting Fronius GEN24 Plus MPPT module count to 2");
+        if (strcmp(manufacturer_name, "Fronius") == 0) {
+            if (strstr(model_name, " GEN24 ") != nullptr) {
+                // Fronius GEN24 Plus maps its battery charing/discharging at MPPT 3 and 4 that need to be
+                // ignored. Check for " GEN24 " to catch "Primo GEN24 5.0" as well as "Symo GEN24 10.0"
+                logger.printfln_meter("Using Fronius GEN24 Plus mode");
 
-            max_mppt_count = 2;
+                mode = MetersSunSpecParser160::Mode::FroniusGEN24Plus;
+            }
+            else if (strncmp(model_name, "Verto ", 6) == 0) {
+                // Fronius Verto Plus maps its battery charing/discharging at MPPT 4 and 5 that need to be
+                // ignored. Check for "Verto " to catch "Verto 10.0" as well as "Verto 20.0"
+                logger.printfln_meter("Using Fronius Verto Plus mode");
+
+                mode = MetersSunSpecParser160::Mode::FroniusVertoPlus;
+            }
         }
 
-        return new MetersSunSpecParser160(slot, max_mppt_count);
+        return new MetersSunSpecParser160(slot, mode);
     }
 
     if (model_id == 714) {
