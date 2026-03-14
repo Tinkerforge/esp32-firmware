@@ -26,19 +26,9 @@
 #include "gcc_warnings.h"
 
 static const MeterValueID meter_iso15118_value_ids[METER_ISO15118_VALUE_COUNT] = {
-    MeterValueID::EVSOCPresent,
-    MeterValueID::EVSOCTarget,
-    MeterValueID::EVSOCMin,
-    MeterValueID::EVSOCMax,
-    MeterValueID::EVVoltageMax,
-    MeterValueID::EVCurrentMax,
-    MeterValueID::EVPowerMax,
-    MeterValueID::EVCapacity,
-    MeterValueID::EVPowerPresent,
-    MeterValueID::EVEnergyRequest,
-    MeterValueID::EVTimeToTargetSOC,
-    MeterValueID::EVPowerMin,
-    MeterValueID::EVCurrentMin,
+    MeterValueID::StateOfCharge,
+    MeterValueID::Capacity,
+    MeterValueID::PowerDCChaDisSum,
 };
 
 MeterISO15118::MeterISO15118(uint32_t slot_, Config *state_, Config *errors_)
@@ -59,26 +49,12 @@ void MeterISO15118::setup(Config * /*config*/)
     meters.declare_value_ids(slot, meter_iso15118_value_ids, METER_ISO15118_VALUE_COUNT);
 }
 
-void MeterISO15118::update_all_values(float soc, float target_soc, float min_soc, float max_soc,
-                                float ev_max_voltage, float ev_max_current, float ev_max_power,
-                                float ev_capacity, float ev_present_power,
-                                float ev_energy_request, float ev_time_to_target_soc,
-                                float ev_min_power, float ev_min_current)
+void MeterISO15118::update_all_values(float soc, float capacity, float power)
 {
     float values[METER_ISO15118_VALUE_COUNT] = {
         soc,
-        target_soc,
-        min_soc,
-        max_soc,
-        ev_max_voltage,
-        ev_max_current,
-        ev_max_power,
-        ev_capacity,
-        ev_present_power,
-        ev_energy_request,
-        ev_time_to_target_soc,
-        ev_min_power,
-        ev_min_current
+        capacity,
+        power
     };
 
     meters.update_all_values(slot, values);

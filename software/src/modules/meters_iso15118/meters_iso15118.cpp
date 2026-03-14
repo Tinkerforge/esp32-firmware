@@ -91,18 +91,8 @@ void MetersISO15118::update_from_ev_data(const EVData &data, EVDataProtocol prot
     } else {
         meter_instance->update_all_values(
             data.soc_present,
-            data.soc_target,
-            data.soc_min,
-            data.soc_max,
-            data.max_voltage,
-            data.max_current,
-            data.max_power,
             data.capacity_kwh,
-            data.present_power,
-            data.energy_request_kwh,
-            data.remaining_time_to_target_soc,
-            data.min_power,
-            data.min_current
+            data.present_power
         );
         meter_instance->set_protocol(protocol);
     }

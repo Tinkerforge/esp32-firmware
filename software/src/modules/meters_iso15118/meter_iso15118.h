@@ -26,7 +26,7 @@
 #include "modules/meters/generated/meter_value_id.h"
 #include "generated/ev_data_protocol.enum.h"
 
-#define METER_ISO15118_VALUE_COUNT 13
+#define METER_ISO15118_VALUE_COUNT 3
 
 class MeterISO15118 final : public IMeter
 {
@@ -37,11 +37,7 @@ public:
     void setup(Config *config) override;
 
     // Update all values at once (NAN values are handled by the meters module)
-    void update_all_values(float soc, float target_soc, float min_soc, float max_soc,
-                           float ev_max_voltage, float ev_max_current, float ev_max_power,
-                           float ev_capacity, float ev_present_power,
-                           float ev_energy_request, float ev_time_to_target_soc,
-                           float ev_min_power, float ev_min_current);
+    void update_all_values(float soc, float capacity, float power);
 
     // Clear all values (set to NAN)
     void clear_all_values();
