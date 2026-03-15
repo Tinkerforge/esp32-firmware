@@ -389,7 +389,7 @@ void EEBus::pre_setup()
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
-        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, 32, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
+        {"peers", Config::Array({state_peers_prototype}, &state_peers_prototype, 0, MAX_PEER_REMEMBERED + MAX_PEER_DISCOVERED, Config::type_id<Config::ConfObject>())}, // All peers (persistent + discovered)
     });
 
     // A list of all charges, ideally with their cost and which percentage of it was self produced energy

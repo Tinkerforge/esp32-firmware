@@ -76,7 +76,8 @@
 #include <TFJson.h>
 
 #define EEBUS_PEER_FILE "/eebus/peers"
-#define MAX_PEER_REMEMBERED 4           // How man ship peers configured to be remembered
+#define MAX_PEER_REMEMBERED 4           // How many ship peers configured to be remembered
+#define MAX_PEER_DISCOVERED 4           // How many ship peers can be discovered via mDNS
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
