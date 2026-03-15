@@ -24,7 +24,6 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "modules/meters/generated/meter_location.enum.h"
-#include "modules/iso15118/common.h"
 
 #include "gcc_warnings.h"
 
@@ -80,7 +79,7 @@ const Config *MetersISO15118::get_errors_prototype()
     return &errors_prototype;
 }
 
-void MetersISO15118::update_from_ev_data(const EVData &data, EVDataProtocol protocol)
+void MetersISO15118::update_values(float soc, float capacity, float power, EVDataProtocol protocol)
 {
     if (!meter_instance) {
         return;
@@ -88,13 +87,17 @@ void MetersISO15118::update_from_ev_data(const EVData &data, EVDataProtocol prot
 
     if (protocol == EVDataProtocol::None) {
         meter_instance->clear_all_values();
-    } else {
-        meter_instance->update_all_values(
-            data.soc_present,
-            data.capacity_kwh,
-            data.present_power
-        );
-        meter_instance->set_protocol(protocol);
+        return;
+    }
+
+    meter_instance->update_all_values(soc, capacity, power);
+    meter_instance->set_protocol(protocol);
+}
+
+void MetersISO15118::update_soc(float soc)
+{
+    if (meter_instance) {
+        meter_instance->update_soc(soc);
     }
 }
 

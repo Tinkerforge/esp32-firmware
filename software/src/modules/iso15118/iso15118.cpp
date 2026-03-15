@@ -399,6 +399,7 @@ void ISO15118::setup()
     } else {
         is_setup = false;
     }
+
 }
 
 void ISO15118::register_urls()
@@ -431,46 +432,46 @@ void ISO15118::register_urls()
 
 void ISO15118::register_events()
 {
-    // When the EV physically disconnects, clean up everything
+    // Monitor charger state for EV connect/disconnect
     event.registerEvent("evse/state", {"charger_state"}, [this](const Config *charger_state) {
-        if (iec_temporary_active && charger_state->asUint() == 0) {
-            logger.printfln("ISO15118: EV disconnected (State A), cleaning up");
-            // TODO: Maybe save the starting SoC (before) and ending SoC here.
-            //       We could show it in the UI for the last charging session or similar.
-            common.clear_ev_data();
-            common.reset_active_socket();
-            qca700x.link_down();
-            slac.state = SLACState::ModemReset;
-            slac.api_state.get("modem_initialization_tries")->updateUint(0);
-            iso2.reset_dc_soc_done();
-            iec_temporary_active = false;
+        if (charger_state->asUint() == 0) {
+            // EV disconnected (State A)
+            if (iec_temporary_active) {
+                logger.printfln("ISO15118: EV disconnected (State A), cleaning up");
+                common.reset_active_socket();
+                qca700x.link_down();
+                slac.state = SLACState::ModemReset;
+                slac.api_state.get("modem_initialization_tries")->updateUint(0);
+                iso2.reset_dc_soc_done();
+                iec_temporary_active = false;
 
-            // Cancel any pending delayed modem-off task.
-            if (plc_modem_off_task != 0) {
-                task_scheduler.cancel(plc_modem_off_task);
-                plc_modem_off_task = 0;
+                // Cancel any pending delayed modem-off task.
+                if (plc_modem_off_task != 0) {
+                    task_scheduler.cancel(plc_modem_off_task);
+                    plc_modem_off_task = 0;
+                }
+
+                // Cancel any pending IEC switch task.
+                if (iec_switch_task != 0) {
+                    task_scheduler.cancel(iec_switch_task);
+                    iec_switch_task = 0;
+                }
+
+                // Re-enable PLC modem for the next EV.
+                evse_v2.set_plc_modem(true);
+
+                // Reset CP back to 5% duty. This assumes that we are in some
+                // ISO15118 mode, since iec_temporary_active was set.
+                evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
+
+                // Cancel any pending E/F reset task.
+                if (ef_reset_task != 0) {
+                    task_scheduler.cancel(ef_reset_task);
+                    ef_reset_task = 0;
+                }
+                ef_retry_count = 0;
+                slac.reset_slac_init_retry_count();
             }
-
-            // Cancel any pending IEC switch task.
-            if (iec_switch_task != 0) {
-                task_scheduler.cancel(iec_switch_task);
-                iec_switch_task = 0;
-            }
-
-            // Re-enable PLC modem for the next EV.
-            evse_v2.set_plc_modem(true);
-
-            // Reset CP back to 5% duty. This assumes that we are in some
-            // ISO15118 mode, since iec_temporary_active was set.
-            evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-
-            // Cancel any pending E/F reset task.
-            if (ef_reset_task != 0) {
-                task_scheduler.cancel(ef_reset_task);
-                ef_reset_task = 0;
-            }
-            ef_retry_count = 0;
-            slac.reset_slac_init_retry_count();
         }
         return EventResult::OK;
     });

@@ -36,9 +36,9 @@ void ISO20::pre_setup()
         {"state", Config::Enum(ISO20State::Idle)},
         {"session_id", Config::Str("", 0, 16)},   // 8 bytes as hex string (16 chars)
         {"evcc_id", Config::Str("", 0, 20)},      // Up to 20 character string
-        {"soc", Config::Int8(-1)},                 // Present SOC in %, -1 = not available
-        {"active_power", Config::Int32(-1)},       // EV present active power in W, -1 = not available
-        {"energy_capacity", Config::Int32(-1)},    // Battery energy capacity in Wh, -1 = not available
+        {"soc", Config::Int8(-1)},                // Present SOC in %, -1 = not available
+        {"active_power", Config::Int32(-1)},      // EV present active power in W, -1 = not available
+        {"energy_capacity", Config::Int32(-1)},   // Battery energy capacity in Wh, -1 = not available
     });
 }
 
@@ -774,10 +774,6 @@ void ISO20::handle_ac_charge_parameter_discovery_req()
 
     // Extract EV minimum charge power if available
     if (req->AC_CPDReqEnergyTransferMode_isUsed) {
-        EVData ev_data;
-        ev_data.min_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMinimumChargePower);
-        ev_data.max_power = physical_value_to_float(&req->AC_CPDReqEnergyTransferMode.EVMaximumChargePower);
-        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
 
         // [V2G20-1821] If the EV is capable of asymmetric energy transfer, it communicates
         //              EVMaximumChargePower with phase-specific power values (_L2/_L3) in CPDReq.
@@ -880,7 +876,6 @@ void ISO20::handle_ac_charge_loop_req()
     iso20_ac_AC_ChargeLoopReqType *req = &iso20AcDocDec->AC_ChargeLoopReq;
     iso20_ac_AC_ChargeLoopResType *res = &iso20AcDocEnc->AC_ChargeLoopRes;
 
-    // Extract DisplayParameters if provided (this is unique to ISO 20 AC)
     if (req->DisplayParameters_isUsed) {
         if (req->DisplayParameters.PresentSOC_isUsed) {
             api_state.get("soc")->updateInt(req->DisplayParameters.PresentSOC);
@@ -890,48 +885,29 @@ void ISO20::handle_ac_charge_loop_req()
         }
     }
 
-    // Extract EV present power if using Dynamic mode
     if (req->Dynamic_AC_CLReqControlMode_isUsed) {
         api_state.get("active_power")->updateInt(static_cast<int32_t>(physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower)));
     }
 
-    // Update EV data for meters module
-    {
-        EVData ev_data;
-
-        if (req->DisplayParameters_isUsed) {
-            if (req->DisplayParameters.PresentSOC_isUsed) {
-                ev_data.soc_present = static_cast<float>(req->DisplayParameters.PresentSOC);
-            }
-            if (req->DisplayParameters.TargetSOC_isUsed) {
-                ev_data.soc_target = static_cast<float>(req->DisplayParameters.TargetSOC);
-            }
-            if (req->DisplayParameters.MinimumSOC_isUsed) {
-                ev_data.soc_min = static_cast<float>(req->DisplayParameters.MinimumSOC);
-            }
-            if (req->DisplayParameters.MaximumSOC_isUsed) {
-                ev_data.soc_max = static_cast<float>(req->DisplayParameters.MaximumSOC);
-            }
-            if (req->DisplayParameters.BatteryEnergyCapacity_isUsed) {
-                // Convert from rational number (value * 10^exponent) to kWh
-                // The original value is in Wh.
-                ev_data.capacity_kwh = physical_value_to_float(&req->DisplayParameters.BatteryEnergyCapacity) / 1000.0f;
-            }
-            if (req->DisplayParameters.RemainingTimeToTargetSOC_isUsed) {
-                ev_data.remaining_time_to_target_soc = static_cast<float>(req->DisplayParameters.RemainingTimeToTargetSOC);
-            }
-            if (req->DisplayParameters.ChargingComplete_isUsed) {
-                ev_data.charging_complete = req->DisplayParameters.ChargingComplete;
-            }
+    // Update EV data
+#if MODULE_EV_AVAILABLE()
+    if (req->DisplayParameters_isUsed) {
+        if (req->DisplayParameters.PresentSOC_isUsed) {
+            ev.set_soc(static_cast<float>(req->DisplayParameters.PresentSOC));
         }
-
-        // Extract present power from Dynamic mode if available
-        if (req->Dynamic_AC_CLReqControlMode_isUsed) {
-            ev_data.present_power = physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower);
+        if (req->DisplayParameters.BatteryEnergyCapacity_isUsed) {
+            // Convert from rational number (value * 10^exponent) to kWh
+            // The original value is in Wh.
+            ev.session.capacity = physical_value_to_float(&req->DisplayParameters.BatteryEnergyCapacity) / 1000.0f;
         }
-
-        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO20);
     }
+
+    if (req->Dynamic_AC_CLReqControlMode_isUsed) {
+        ev.session.power = physical_value_to_float(&req->Dynamic_AC_CLReqControlMode.EVPresentActivePower);
+    }
+
+    ev.session_updated(EVDataProtocol::ISO20);
+#endif
 
     iso20AcDocEnc->AC_ChargeLoopRes_isUsed = 1;
     prepare_ac_header(&res->Header);

@@ -584,7 +584,9 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     log_cm_slac_match_request(cm_slac_match_request);
 
-    iso15118.common.add_seen_mac_address(pev_mac);
+#if MODULE_EV_AVAILABLE()
+    ev.on_ev_connected(pev_mac);
+#endif
 
     // In autocharge-only mode, we have all the data we need (PEV MAC) from SLAC.
     // Do NOT send CM_SLAC_MATCH.CNF: if we confirm the match, the EV joins the PLC

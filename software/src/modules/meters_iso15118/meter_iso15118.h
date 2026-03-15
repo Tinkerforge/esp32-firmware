@@ -36,13 +36,10 @@ public:
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config *config) override;
 
-    // Update all values at once (NAN values are handled by the meters module)
     void update_all_values(float soc, float capacity, float power);
+    void update_soc(float soc);
 
-    // Clear all values (set to NAN)
     void clear_all_values();
-
-    // Set the active protocol
     void set_protocol(EVDataProtocol protocol);
 
 private:

@@ -96,6 +96,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
         const state_din70121 = API.get('iso15118/state_din70121');
         const state_iso2     = API.get('iso15118/state_iso2');
         const state_iso20    = API.get('iso15118/state_iso20');
+        const seen_macs      = API.get('ev/seen_macs');
 
         const sdp_state_names: {[key: number]: string} = {
             0: "Idle",
@@ -243,19 +244,21 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                         }/>
                     </FormRow>
 
-                    {state_common.seen_macs.length > 0 &&
+                    {seen_macs.length > 0 &&
                         <FormRow label="Seen MACs">
                             <div class="row gx-2 gy-1">
-                                {state_common.seen_macs
+                                {seen_macs
                                     .slice()
                                     .sort((a, b) => b.last_seen - a.last_seen)
                                     .map((entry, i) =>
-                                        <div key={i} class="col-12">
-                                            <InputText value={
-                                                array8_to_hexstring(entry.mac, ':') + " — " +
-                                                util.timestamp_sec_to_date(entry.last_seen, "Unknown")
-                                            }/>
-                                        </div>
+                                        <Fragment key={i}>
+                                            <div class="col-6">
+                                                <InputText value={entry.mac}/>
+                                            </div>
+                                            <div class="col-6">
+                                                <InputText value={util.timestamp_sec_to_date(entry.last_seen, "Unknown")}/>
+                                            </div>
+                                        </Fragment>
                                     )
                                 }
                             </div>

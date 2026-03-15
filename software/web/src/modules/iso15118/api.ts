@@ -37,10 +37,6 @@ export interface state_common {
     supported_protocols: string[];
     protocol: string;
     encryption: number;
-    seen_macs: {
-        mac: number[];
-        last_seen: number;
-    }[];
 }
 
 export interface state_din70121 {

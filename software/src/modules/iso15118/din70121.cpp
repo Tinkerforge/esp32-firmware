@@ -272,14 +272,11 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     logger.printfln("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
 
-    // Update EV data for meters module
-    {
-        EVData ev_data;
-        ev_data.soc_present = static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
-
-        // Only update the SoC, all other values would be for DC charging.
-        iso15118.common.update_ev_data(ev_data, EVDataProtocol::DIN);
-    }
+    // Update EV data: only SOC, all other values would be for DC charging.
+#if MODULE_EV_AVAILABLE()
+    ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
+    ev.session_updated(EVDataProtocol::DIN);
+#endif
 
     dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 

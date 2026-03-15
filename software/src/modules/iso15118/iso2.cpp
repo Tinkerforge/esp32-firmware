@@ -338,21 +338,13 @@ void ISO2::handle_charge_parameter_discovery_req()
         logger.printfln("ISO2: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
     }
 
-    // Update EV data for meters module
-    {
-        EVData ev_data;
-
-        if (req->DC_EVChargeParameter_isUsed) {
-            ev_data.soc_present = static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
-        } else if (req->AC_EVChargeParameter_isUsed) {
-            ev_data.max_voltage = physical_value_to_float(&req->AC_EVChargeParameter.EVMaxVoltage);
-            ev_data.max_current = physical_value_to_float(&req->AC_EVChargeParameter.EVMaxCurrent);
-            ev_data.min_current = physical_value_to_float(&req->AC_EVChargeParameter.EVMinCurrent);
-            ev_data.energy_request_kwh = physical_value_to_float(&req->AC_EVChargeParameter.EAmount) / 1000.0f;
-        }
-
-        iso15118.common.update_ev_data(ev_data, EVDataProtocol::ISO2);
+    // Update EV data
+#if MODULE_EV_AVAILABLE()
+    if (req->DC_EVChargeParameter_isUsed) {
+        ev.set_soc(static_cast<float>(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC));
     }
+    ev.session_updated(EVDataProtocol::ISO2);
+#endif
 
     iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 

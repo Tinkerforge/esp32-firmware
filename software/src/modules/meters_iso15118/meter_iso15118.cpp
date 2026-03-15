@@ -60,6 +60,12 @@ void MeterISO15118::update_all_values(float soc, float capacity, float power)
     meters.update_all_values(slot, values);
 }
 
+void MeterISO15118::update_soc(float soc)
+{
+    meters.update_value(slot, 0, soc);
+    meters.finish_update(slot);
+}
+
 void MeterISO15118::clear_all_values()
 {
     float values[METER_ISO15118_VALUE_COUNT];
