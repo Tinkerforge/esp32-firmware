@@ -252,7 +252,7 @@ void Ev::on_ev_connected(const uint8_t mac[EV_MAC_ADDRESS_LENGTH])
         uint8_t profile_mac[EV_MAC_ADDRESS_LENGTH];
         uint8_t profile_mask[EV_MAC_ADDRESS_LENGTH];
         if (!parse_mac(mac_str.c_str(), profile_mac, profile_mask)) {
-            logger.printfln("Invalid MAC pattern in config at index %d: '%s'", i, mac_str.c_str());
+            logger.printfln("Invalid MAC pattern in config at index %zu: '%s'", i, mac_str.c_str());
             continue;
         }
 
