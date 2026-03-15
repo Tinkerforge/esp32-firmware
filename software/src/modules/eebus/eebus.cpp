@@ -410,6 +410,7 @@ void EEBus::pre_setup()
              0,
              8,
              Config::type_id<Config::ConfObject>())},
+#ifdef EEBUS_ENABLE_LPC_USECASE
         {"power_consumption_limitation",
          Config::Object({
              // Usecase Limitation of power consumption
@@ -421,6 +422,8 @@ void EEBus::pre_setup()
              {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power consumption the device is capable of
              {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
+#endif
+#ifdef EEBUS_ENABLE_LPP_USECASE
         {"power_production_limitation",
          Config::Object({
              // Usecase Limitation of power production
@@ -432,6 +435,8 @@ void EEBus::pre_setup()
              {"constraints_power_maximum", Config::Uint16(0)}, // The maximum power production the device is capable of
              {"outstanding_duration_s", Config::Uint32(0)},    // If a limit due to limited state or failsafe is active, how long is left
          })},
+#endif
+#ifdef EEBUS_ENABLE_EVCC_USECASE
         {"ev_commissioning_and_configuration",
          Config::Object({{"ev_connected", Config::Bool(false)},
                          {"communication_standard", Config::Str("", 0, 16)}, // "iso15118-2ed1","iso15118-2ed1" or "iec61851"
@@ -441,11 +446,15 @@ void EEBus::pre_setup()
                          {"maximum_power", Config::Uint16(0)},
                          {"standby_power", Config::Uint16(0)},
                          {"standby_mode", Config::Bool(false)}})},
+#endif
+#ifdef EEBUS_ENABLE_EVSECC_USECASE
         {"evse_commissioning_and_configuration",
          Config::Object({
              {"evse_failure", Config::Bool(false)},
              {"evse_failure_description", Config::Str("", 0, 64)},
          })},
+#endif
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
         {"ev_charging_electricity_measurement",
          Config::Object({
              // This might have to be changed to ints if bi-directional charging will be supported
@@ -458,6 +467,8 @@ void EEBus::pre_setup()
              {"charged_wh", Config::Uint32(0)},
              {"charged_valuesource_measured", Config::Bool(false)},
          })},
+#endif
+#ifdef EEBUS_ENABLE_MPC_USECASE
         {"monitoring_of_power_consumption",
          Config::Object({
              // Usecase Monitoring of power consumption
@@ -478,6 +489,8 @@ void EEBus::pre_setup()
              {"voltage_phase_3_1_v", Config::Int32(0)},
              {"frequency_mhz", Config::Uint32(50000)}, // Default 50Hz in millihertz
          })},
+#endif
+#ifdef EEBUS_ENABLE_CEVC_USECASE
         {"coordinated_ev_charging",
          Config::Object({
              {"has_charging_plan", Config::Bool(false)},
@@ -487,6 +500,8 @@ void EEBus::pre_setup()
              {"energy_broker_connected", Config::Bool(false)},
              {"energy_broker_heartbeat_ok", Config::Bool(false)},
          })},
+#endif
+#ifdef EEBUS_ENABLE_MGCP_USECASE
         {"monitoring_of_grid_connection_point",
          Config::Object({
              // Scenario 1: PV curtailment limit factor
@@ -508,6 +523,8 @@ void EEBus::pre_setup()
              // Scenario 7: Frequency
              {"frequency_mhz", Config::Int32(50000)}, // Default 50Hz in millihertz
          })},
+#endif
+#ifdef EEBUS_ENABLE_OPEV_USECASE
         {"overload_protection_by_ev_charging_current_curtailment",
          Config::Object({
              // Usecase Overload Protection by EV Charging Current Curtailment
@@ -518,6 +535,7 @@ void EEBus::pre_setup()
              {"limit_milliamps_min", Config::Int32(0)},
              {"limit_milliamps_max", Config::Int32(32000)},
          })},
+#endif
     });
 
     ship.pre_setup();
