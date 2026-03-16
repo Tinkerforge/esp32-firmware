@@ -343,6 +343,7 @@ void ISO15118::pre_setup()
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
                 evse_v2.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
+                evse_v2.set_plc_modem(false);
             }
         }
         return "";
