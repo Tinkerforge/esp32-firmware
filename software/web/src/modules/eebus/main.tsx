@@ -851,7 +851,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 onClick={this.toggle('enable')}
                         />
                     </FormRow>
-                    <FormRow label={__("eebus.content.peer_info.peers")} help={__("eebus.content.peer_info.peers_desc")}>
+                    <FormRow label={__("eebus.content.peer_info.peers")}
+                             help={__("eebus.content.peer_info.peers_desc")}>
                         <Table
                             columnNames={[
                                 __("eebus.content.peer_info.model_model"),
@@ -1141,14 +1142,18 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     <FormRow label={__("eebus.content.ski")}>
                                         <InputText
                                             value={state.add.ski}
-                                            onValue={(v) => this.setState({add: {...state.add, ski: v}, addPeerSkiError: ""})}
+                                            onValue={(v) => this.setState({
+                                                add: {...state.add, ski: v},
+                                                addPeerSkiError: ""
+                                            })}
                                             required
                                             minlength={30}
                                             class={state.addPeerSkiError ? "is-invalid" : ""}
                                             invalidFeedback={state.addPeerSkiError}
                                         />
                                     </FormRow>
-                                     <IPConfiguration
+                                    {/* TODO: once ipv6 changes are merged, expand the IPConfig element to support multiple IPs separated by ;. Or use input_ip instead?
+                                    <IPConfiguration
                                         showAnyAddress={false}
                                         hideGateway={true}
                                         hideSubnet={true}
@@ -1156,17 +1161,17 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         onValue={(v) => this.setState({add: {...state.add, ip: v.ip}, addPeerIpError: ""})}
                                         setValid={(v) => this.ipconfig_valid = v}
 
-                                    />
-                                        {/*
-                                         <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                    />*/}
+                                    <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                         <InputText
                                             value={state.add.ip}
                                             minlength={7}
                                             maxLength={150}
                                             onValue={(v) => this.setState({add: {...state.add, ip: v}})}
                                             required
-                                            </FormRow>
-                                        />*/}
+
+                                        />
+                                    </FormRow>
                                     <FormRow label={__("eebus.content.peer_info.device_port")}>
                                         <InputText
                                             value={state.add.port}
