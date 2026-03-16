@@ -33,18 +33,16 @@
 #endif
 
 
-#ifdef DEBUG_FS_ENABLE
 //#define EEBUS_DEV_TEST_ENABLE // Enable to set the eebus system into test mode. This will update all enabled usecases with random data to see if the appropriate functions work properly and communication works.
-#endif
 
 
 // What usecases are enabled depends on if this is a WARP Charger or an Energy Manager
 #ifdef EEBUS_MODE_EVSE
 // To disabled a usecase simply comment the respective line
 //#define EEBUS_ENABLE_EVCS_USECASE
-//#define EEBUS_ENABLE_EVCEM_USECASE
-//#define EEBUS_ENABLE_EVCC_USECASE
-//#define EEBUS_ENABLE_EVSECC_USECASE
+#define EEBUS_ENABLE_EVCEM_USECASE
+#define EEBUS_ENABLE_EVCC_USECASE
+#define EEBUS_ENABLE_EVSECC_USECASE
 #define EEBUS_ENABLE_LPC_USECASE
 //#define EEBUS_ENABLE_CEVC_USECASE
 #define EEBUS_ENABLE_MPC_USECASE
