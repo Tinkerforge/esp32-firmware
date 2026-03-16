@@ -30,6 +30,7 @@
 #include "iso2.h"
 #include "iso20.h"
 #include "debug_mode.h"
+#include "pib_manager.h"
 
 // Poll file descriptor indices (fixed positions in fds array)
 static constexpr int FDS_TAP_INDEX    = 0;  // L2TAP for HomePlug/SLAC
@@ -123,6 +124,7 @@ public:
     ISO2 iso2;
     ISO20 iso20;
     DebugMode debug_mode;
+    PibManager pib_manager;
 
     char evseid_iso[14];
     uint16_t evseid_iso_len;

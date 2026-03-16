@@ -33,8 +33,8 @@
 
 #include "gcc_warnings.h"
 
-const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH]  = {0x00, 0xB0, 0x52, 0x00, 0x00, 0x01};
-const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+extern const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH]  = {0x00, 0xB0, 0x52, 0x00, 0x00, 0x01};
+extern const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 void SLAC::pre_setup()
 {
@@ -703,6 +703,11 @@ void SLAC::handle_cm_qualcomm_host_action_indication(const CM_QualcommHostAction
                    ind.header.source_mac[3], ind.header.source_mac[4], ind.header.source_mac[5]);
 }
 
+void SLAC::handle_vs_module_operation_confirmation(const uint8_t *data, size_t length)
+{
+    iso15118.pib_manager.handle_confirmation(data, length);
+}
+
 
 void SLAC::handle_tap(void)
 {
@@ -740,6 +745,7 @@ void SLAC::handle_tap(void)
         case SLAC_MMTYPE_QUALCOMM_LINK_STATUS | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_link_status_confirmation(*reinterpret_cast<const CM_QualcommLinkStatusConfirmation*>(buffer)); break;
         case SLAC_MMTYPE_QUALCOMM_OP_ATTR     | SLAC_MMTYPE_MODE_CONFIRMATION: handle_cm_qualcomm_op_attr_confirmation(*reinterpret_cast<const CM_QualcommOpAttrConfirmation*>(buffer));         break;
         case SLAC_MMTYPE_QUALCOMM_HOST_ACTION | SLAC_MMTYPE_MODE_INDICATION:   handle_cm_qualcomm_host_action_indication(*reinterpret_cast<const CM_QualcommHostActionIndication*>(buffer));     break;
+        case SLAC_MMTYPE_QUALCOMM_MODULE_OP   | SLAC_MMTYPE_MODE_CONFIRMATION: handle_vs_module_operation_confirmation(buffer, static_cast<size_t>(length)); break;
 
         default: logger.printfln("Unhandled mm_type: %04x", mm_type); break;
     }

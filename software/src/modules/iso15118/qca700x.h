@@ -148,4 +148,5 @@ public:
 
     void set_modem_detected(const bool detected) { modem_detected = detected; }
     bool is_modem_detected() const { return modem_detected; }
+    bool is_spi_ready() const { return spi_initialized; }
 };

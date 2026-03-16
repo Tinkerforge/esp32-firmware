@@ -417,6 +417,115 @@ void ISO15118::register_urls()
         debug_mode.handle_update(language, errmsg);
     }, true);
 
+    // PIB read endpoint: Blocking GET (only used during testing and provisioning)
+    server.on_HTTPThread("/iso15118/pib_read", HTTP_GET, [this](WebServerRequest request) {
+        if (pib_manager.is_busy()) {
+            return request.send_plain(409, "PIB operation already in progress");
+        }
+
+        if (!pib_manager.start_read()) {
+            return request.send_plain(500, "Failed to start PIB read (buffer allocation failed?)");
+        }
+
+        // The scheduled task drives the state machine. We poll the state here.
+        for (int i = 0; i < 500; i++) { // 500 * 20ms = 10s max
+            PibState pib_state = pib_manager.get_state();
+            if (pib_state == PibState::ReadComplete) {
+                const uint8_t *buf = pib_manager.get_buffer();
+                size_t len = pib_manager.get_buffer_length();
+                pib_manager.reset();
+                return request.send_bytes(200, reinterpret_cast<const char *>(buf), len);
+            }
+            if (pib_state == PibState::ReadError) {
+                const char *err = pib_manager.get_error();
+                pib_manager.reset();
+                return request.send_plain(500, err ? err : "PIB read failed");
+            }
+
+            delay(20);
+        }
+
+        // Timeout
+        pib_manager.reset();
+        return request.send_plain(504, "PIB read timed out");
+    });
+
+    // PIB write endpoint: POST with raw PIB binary body. Starts async write.
+    server.on_HTTPThread("/iso15118/pib_write", HTTP_POST, [this](WebServerRequest request) {
+        if (pib_manager.is_busy()) {
+            return request.send_plain(409, "PIB operation already in progress");
+        }
+
+        size_t content_len = request.contentLength();
+        if (content_len == 0 || content_len > PIB_BUFFER_SIZE) {
+            return request.send_plain(400, "Invalid PIB size");
+        }
+
+        // Read the full body into a temporary buffer
+        uint8_t *tmp = static_cast<uint8_t *>(malloc(content_len));
+        if (tmp == nullptr) {
+            return request.send_plain(500, "Failed to allocate receive buffer");
+        }
+
+        size_t received = 0;
+        while (received < content_len) {
+            int ret = request.receive(reinterpret_cast<char *>(tmp + received), content_len - received);
+            if (ret <= 0) {
+                free(tmp);
+                return request.send_plain(400, "Failed to receive PIB data");
+            }
+            received += static_cast<size_t>(ret);
+        }
+
+        // Validate pib file before setting data
+        const char *err = PibManager::validate_pib_size(content_len);
+        if (err != nullptr) {
+            free(tmp);
+            return request.send_plain(400, err);
+        }
+
+        if (!pib_manager.set_write_data(tmp, content_len)) {
+            free(tmp);
+            return request.send_plain(500, "Failed to set write data");
+        }
+        free(tmp);
+
+        if (!pib_manager.start_write()) {
+            const char *write_err = pib_manager.get_error();
+            pib_manager.reset();
+            return request.send_plain(500, write_err ? write_err : "Failed to start PIB write");
+        }
+
+        return request.send_plain(200, "PIB write started");
+    });
+
+    server.on_HTTPThread("/iso15118/pib_write_status", HTTP_GET, [this](WebServerRequest request) {
+        PibState pib_state = pib_manager.get_state();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+        switch (pib_state) {
+            case PibState::Idle:
+                return request.send_plain(200, "idle");
+            case PibState::WriteComplete:
+                pib_manager.reset();
+                return request.send_plain(200, "complete");
+            case PibState::WriteError: {
+                const char *err = pib_manager.get_error();
+                pib_manager.reset();
+                char buf[128];
+                snprintf(buf, sizeof(buf), "error: %s", err ? err : "unknown");
+                return request.send_plain(200, buf);
+            }
+            case PibState::ReadComplete:
+            case PibState::ReadError:
+                return request.send_plain(200, "idle");
+            default:
+                return request.send_plain(200, "in_progress");
+        }
+#pragma GCC diagnostic pop
+    });
+
     // Enable ISO15118 on the EVSE Bricklet
     if (is_enabled()) {
         // Ensure PLC modem is enabled. If only the ESP32 restarted while the

@@ -65,6 +65,22 @@
 #define SLAC_MMTYPE_QUALCOMM_NW_INFO         0xA038
 #define SLAC_MMTYPE_QUALCOMM_GET_SW          0xA000
 #define SLAC_MMTYPE_QUALCOMM_HOST_ACTION     0xA060
+#define SLAC_MMTYPE_QUALCOMM_MODULE_OP       0xA0B0
+
+// VS_MODULE_OPERATION constants
+#define PIB_MOD_OP_READ_MEMORY    0x0000
+#define PIB_MOD_OP_READ_FLASH     0x0001
+#define PIB_MOD_OP_START_SESSION  0x0010
+#define PIB_MOD_OP_WRITE_MODULE   0x0011
+#define PIB_MOD_OP_CLOSE_SESSION  0x0012
+
+#define PIB_MODULE_ID_PARAMETERS  0x7002
+#define PIB_MODULE_SIZE           1400
+
+// Commit code flags
+#define PIB_COMMIT_FORCE          (1 << 0)
+#define PIB_COMMIT_NORESET        (1 << 1)
+#define PIB_COMMIT_FACTPIB        (1u << 31)
 
 #define SLAC_ETHERNET_TYPE_HOMEPLUG 0x88E1
 #define SLAC_ETHERNET_TYPE_IPV6     0x86DD
@@ -367,11 +383,165 @@ struct [[gnu::packed]] CM_QualcommHostActionIndication {
     //   0x03 = Update Host (both firmware and parameters ready for upload)
     //   0x04 = Config Memory (bootloader waiting for SDRAM configuration)
     //   0x05 = Restore Defaults (factory defaults restored)
-    uint8_t maction;          // Action code (see above)
-    uint8_t major_version;    // Firmware major version
-    uint8_t minor_version;    // Firmware minor version
+    uint8_t maction;       // Action code (see above)
+    uint8_t major_version; // Firmware major version
+    uint8_t minor_version; // Firmware minor version
 };
 
+// VS_MODULE_OPERATION 0xA0B0: Read request
+struct [[gnu::packed]] VS_ModuleOperationReadRequest {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3]   = {0x00, 0xB0, 0x52};
+    uint32_t reserved        = 0;
+    uint8_t  num_op_data     = 1;
+    uint16_t mod_op;               // PIB_MOD_OP_READ_MEMORY or PIB_MOD_OP_READ_FLASH
+    uint16_t mod_op_data_len = 16;
+    uint32_t mod_op_rsvd     = 0;
+    uint16_t module_id;            // PIB_MODULE_ID_PARAMETERS (0x7002)
+    uint16_t module_sub_id   = 0;
+    uint16_t module_length;        // Requested length (up to PIB_MODULE_SIZE=1400)
+    uint32_t module_offset;        // Byte offset into the module
+    uint8_t  padding[17] = {0};    // Padding to 60 bytes
+};
+
+// VS_MODULE_OPERATION 0xA0B1: Read confirmation
+struct [[gnu::packed]] VS_ModuleOperationReadConfirmation {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3];
+    uint16_t mstatus;                      // 0 = success
+    uint16_t err_rec_code;
+    uint32_t reserved;
+    uint8_t  num_op_data;
+    uint16_t mod_op;
+    uint16_t mod_op_data_len;
+    uint32_t mod_op_rsvd;
+    uint16_t module_id;
+    uint16_t module_sub_id;
+    uint16_t module_length;                // Actual bytes returned
+    uint32_t module_offset;
+    uint8_t  module_data[PIB_MODULE_SIZE]; // Up to 1400 bytes
+};
+
+// VS_MODULE_OPERATION 0xA0B0: Start session request
+struct [[gnu::packed]] VS_ModuleSpec {
+    uint16_t module_id;
+    uint16_t module_sub_id;
+    uint32_t module_length; // Total length of module
+    uint32_t module_chksum; // Checksum of module data
+};
+
+struct [[gnu::packed]] VS_ModuleOperationSessionRequest {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3]   = {0x00, 0xB0, 0x52};
+    uint32_t reserved        = 0;
+    uint8_t  num_op_data     = 1;
+    uint16_t mod_op          = PIB_MOD_OP_START_SESSION;
+    uint16_t mod_op_data_len = 13 + 12; // 13 bytes fixed + 12 bytes per module spec
+    uint32_t mod_op_rsvd     = 0;
+    uint32_t session_id;                // Random session cookie
+    uint8_t  num_modules     = 1;
+    VS_ModuleSpec module_spec;          // Module descriptor
+    uint8_t  padding[10] = {0};         // Padding to 60 bytes
+};
+
+// VS_MODULE_OPERATION 0xA0B1: Session confirmation
+struct [[gnu::packed]] VS_ModuleStatusEntry {
+    uint16_t mod_status;
+    uint16_t err_rec_code;
+};
+
+struct [[gnu::packed]] VS_ModuleOperationSessionConfirmation {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3];
+    uint16_t mstatus;
+    uint16_t err_rec_code;
+    uint32_t reserved;
+    uint8_t  num_op_data;
+    uint16_t mod_op;
+    uint16_t mod_op_data_len;
+    uint32_t mod_op_rsvd;
+    uint32_t session_id;
+    uint8_t  num_modules;
+    VS_ModuleStatusEntry module_status; // Status for our single module
+};
+
+// VS_MODULE_OPERATION 0xA0B0: Write module request
+struct [[gnu::packed]] VS_ModuleOperationWriteRequest {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3]    = {0x00, 0xB0, 0x52};
+    uint32_t reserved         = 0;
+    uint8_t  num_op_data      = 1;
+    uint16_t mod_op           = PIB_MOD_OP_WRITE_MODULE;
+    uint16_t mod_op_data_len;      // 19 + data_length
+    uint32_t mod_op_rsvd      = 0;
+    uint32_t session_id;
+    uint8_t  module_idx       = 0; // First module
+    uint16_t module_id;
+    uint16_t module_sub_id    = 0;
+    uint16_t module_length;        // Bytes in this chunk (up to 1400)
+    uint32_t module_offset;        // Byte offset within the module
+    uint8_t  module_data[PIB_MODULE_SIZE];
+};
+
+// VS_MODULE_OPERATION 0xA0B1: Write confirmation
+struct [[gnu::packed]] VS_ModuleOperationWriteConfirmation {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3];
+    uint16_t mstatus;
+    uint16_t err_rec_code;
+    uint32_t reserved;
+    uint8_t  num_op_data;
+    uint16_t mod_op;
+    uint16_t mod_op_data_len;
+    uint32_t mod_op_rsvd;
+    uint32_t session_id;
+    uint8_t  module_idx;
+    uint16_t module_id;
+    uint16_t module_sub_id;
+    uint16_t module_length;
+    uint32_t module_offset;
+};
+
+// VS_MODULE_OPERATION 0xA0B0: Commit (close session) request
+struct [[gnu::packed]] VS_ModuleOperationCommitRequest {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3]   = {0x00, 0xB0, 0x52};
+    uint32_t reserved        = 0;
+    uint8_t  num_op_data     = 1;
+    uint16_t mod_op          = PIB_MOD_OP_CLOSE_SESSION;
+    uint16_t mod_op_data_len = 36;
+    uint32_t mod_op_rsvd     = 0;
+    uint32_t session_id;
+    uint32_t commit_code     = PIB_COMMIT_FORCE | PIB_COMMIT_NORESET | PIB_COMMIT_FACTPIB;
+    uint8_t  rsvd[20]        = {0};
+};
+
+// VS_MODULE_OPERATION 0xA0B1: Commit confirmation
+struct [[gnu::packed]] VS_ModuleOperationCommitConfirmation {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t  vendor_mme[3];
+    uint16_t mstatus;
+    uint16_t err_rec_code;
+    uint32_t reserved;
+    uint8_t  num_op_data;
+    uint16_t mod_op;
+    uint16_t mod_op_data_len;
+    uint32_t mod_op_rsvd;
+    uint32_t session_id;
+    uint32_t commit_code;
+    uint8_t  num_modules;
+    VS_ModuleStatusEntry module_status; // Status for our single module
+};
+
+// VS_MODULE_OPERATION 0xA0B0: Reset request (Qualcomm RS_DEV)
+struct [[gnu::packed]] CM_QualcommResetDeviceRequest {
+    SLAC_HomeplugMessageHeaderV0 header;
+    uint8_t vendor_mme[3] = {0x00, 0xB0, 0x52}; // Qualcomm OUI
+    uint8_t padding[40]   = {0};                // Padding to 60 bytes
+};
+
+extern const uint8_t slac_mac_plc_peer[SLAC_MAC_ADDRESS_LENGTH];
+extern const uint8_t slac_mac_broadcast[SLAC_MAC_ADDRESS_LENGTH];
 
 class SLAC final
 {
@@ -388,8 +558,9 @@ public:
 
     void reset_slac_init_retry_count() { slac_init_retry_count = 0; }
 
-private:
     void fill_header_v0(SLAC_HomeplugMessageHeaderV0 *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
+
+private:
     void fill_header(SLAC_HomeplugMessageHeader *header, const uint8_t *destination_mac, const uint8_t *source_mac, const uint16_t mm_type);
     void generate_nid_from_nmk(void);
     void generate_new_nmk_and_nid(void);
@@ -413,6 +584,7 @@ private:
     void handle_cm_qualcomm_link_status_confirmation(const CM_QualcommLinkStatusConfirmation &cm_qualcomm_link_status_confirmation);
     void handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation);
     void handle_cm_qualcomm_host_action_indication(const CM_QualcommHostActionIndication &cm_qualcomm_host_action_indication);
+    void handle_vs_module_operation_confirmation(const uint8_t *data, size_t length);
 
     Option<micros_t> next_timeout = {};
 

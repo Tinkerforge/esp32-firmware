@@ -34,6 +34,8 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotLoader } from "../../ts/components/uplot_loader";
+import { InputFile } from "../../ts/components/input_file";
+import { Button } from "react-bootstrap";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;
@@ -41,18 +43,71 @@ export function ISO15118Navbar() {
 
 type ISO15118Config = API.getType["iso15118/config"];
 
-export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
+export class ISO15118 extends ConfigComponent<'iso15118/config', {}, {pib_downloading: boolean}> {
     uplot_loader_ref        = createRef();
     uplot_wrapper_ref       = createRef();
 
     constructor() {
         super('iso15118/config',
-              () => __("iso15118.script.save_failed"));
+              () => __("iso15118.script.save_failed"),
+              undefined,
+              {pib_downloading: false} as any);
 
         util.addApiEventListener("iso15118/state_slac", () => {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
+    }
+
+    async pib_download() {
+        this.setState({pib_downloading: true});
+        try {
+            const blob = await util.download("/iso15118/pib_read", true, 15 * 1000);
+            const buffer = await blob.arrayBuffer();
+            util.downloadToFile(new Uint8Array(buffer), "qca7000.pib", "application/octet-stream");
+        } catch (e) {
+            util.add_alert("pib_download_failed", "danger",
+                () => __("iso15118.script.pib_download_failed"),
+                () => e.toString());
+        } finally {
+            this.setState({pib_downloading: false});
+        }
+    }
+
+    async pib_poll_write_status() {
+        // Poll write status until complete or error
+        for (let i = 0; i < 300; i++) { // 300 * 500ms = 150s max
+            await new Promise(resolve => setTimeout(resolve, 500));
+            try {
+                const blob = await util.download("/iso15118/pib_write_status", true, 5000);
+                const text = await blob.text();
+                if (text === "complete") {
+                    util.add_alert("pib_upload_success", "success",
+                        () => __("iso15118.script.pib_upload_success"),
+                        () => "");
+                    return;
+                }
+                if (text.startsWith("error")) {
+                    util.add_alert("pib_write_failed", "danger",
+                        () => __("iso15118.script.pib_write_failed"),
+                        () => text);
+                    return;
+                }
+                if (text === "idle") {
+                    // No operation in progress (unexpected), stop polling
+                    return;
+                }
+                // Still in_progress, continue polling
+            } catch (e) {
+                util.add_alert("pib_write_failed", "danger",
+                    () => __("iso15118.script.pib_write_failed"),
+                    () => e.toString());
+                return;
+            }
+        }
+        util.add_alert("pib_write_failed", "danger",
+            () => __("iso15118.script.pib_write_failed"),
+            () => "Timed out waiting for write to complete");
     }
 
     update_uplot() {
@@ -465,6 +520,31 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                             max={22000}
                         />
                     </FormRow>
+                    <CollapsedSection heading={__("iso15118.content.advanced_settings")}>
+                        <FormRow label={__("iso15118.content.pib_download")} label_muted={__("iso15118.content.pib_download_desc")}>
+                            <Button variant="primary" className="w-100"
+                                disabled={this.state.pib_downloading}
+                                onClick={() => this.pib_download()}>
+                                {this.state.pib_downloading ? "..." : __("iso15118.content.pib_download")}
+                            </Button>
+                        </FormRow>
+                        <FormRow label={__("iso15118.content.pib_upload")} label_muted={__("iso15118.content.pib_upload_desc")}>
+                            <InputFile
+                                url="/iso15118/pib_write"
+                                upload={__("iso15118.content.pib_upload_button")}
+                                uploading={__("iso15118.content.pib_uploading")}
+                                accept=".pib,.bin"
+                                timeout_ms={30 * 1000}
+                                contentType="application/octet-stream"
+                                onUploadSuccess={() => this.pib_poll_write_status()}
+                                onUploadError={(error) => {
+                                    util.add_alert("pib_upload_failed", "danger",
+                                        () => __("iso15118.script.pib_upload_failed"),
+                                        () => error.toString());
+                                }}
+                            />
+                        </FormRow>
+                    </CollapsedSection>
                 </SubPage.Config>
             </SubPage>
         );
