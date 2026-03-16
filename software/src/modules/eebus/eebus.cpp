@@ -81,7 +81,7 @@ static void update_usecases_from_phases(const Config *_phases_cfg)
 #ifdef EEBUS_ENABLE_EVCC_USECASE
     eebus.usecases->evcc->update_electrical_connection(min_power, max_power);
 #endif
-#ifdef EEBUS_ENABLE_EVSECC_USECASE
+#ifdef EEBUS_ENABLE_EVCEM_USECASE
     eebus.usecases->evcem->update_constraints(milliamps_min, std::min(incoming, outgoing), 100, min_power, max_power, 1000, 0, 1000000, 10);
 #endif
 #endif // EEBUS_ENABLE_EVCC_USECASE || EEBUS_ENABLE_EVSECC_USECASE
