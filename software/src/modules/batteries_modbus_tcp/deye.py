@@ -112,18 +112,16 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_current',
                 ],
-                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
-                    None,
+                    'max_normal_discharge_current',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Target SOC [%]',
@@ -176,9 +174,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_current',
                 ],
-                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
@@ -239,9 +236,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 108,  # U16
                 'values': [
-                    None,
+                    'force_charge_current',
                 ],
-                'mapping': 'values[0] = force_charge_current;',
             },
             {
                 'description': 'Max discharge current [A]',
@@ -310,9 +306,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
-                    None,
+                    'max_normal_discharge_current',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Target SOC [%]',
@@ -373,9 +368,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 109,  # U16
                 'values': [
-                    None,
+                    'force_discharge_current',
                 ],
-                'mapping': 'values[0] = force_discharge_current;',
             },
             {
                 'description': 'Target SOC [%]',

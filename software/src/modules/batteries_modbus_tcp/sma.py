@@ -1,3 +1,7 @@
+def u32be(name):
+    return f'static_cast<uint16_t>({name} >> 16)', f'static_cast<uint16_t>({name} & 0xFFFF)'
+
+
 display_names = [
     ('SMA Hybrid Inverter', {
         'en': 'SMA hybrid inverter',
@@ -58,11 +62,11 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,  # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    0, 0,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    0, 0,  # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
                     0, 0,  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
                     0, 0,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,  # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    0, 0,  # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
             },
         ],
@@ -85,16 +89,12 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    0, 0,                                  # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    *u32be('max_normal_charge_power'),     # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
+                    0, 0,                                  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    *u32be('max_normal_discharge_power'),  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,                                  # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
-                'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
-                           'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);\n'
-                           'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
-                           'values[7] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
             },
         ],
     },
@@ -116,14 +116,12 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    0, 0,                               # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    *u32be('max_normal_charge_power'),  # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
+                    0, 0,                               # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    0, 0,                               # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,                               # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
-                'mapping': 'values[2] = static_cast<uint16_t>(max_normal_charge_power >> 16);\n'
-                           'values[3] = static_cast<uint16_t>(max_normal_charge_power & 0xFFFF);',
             },
         ],
     },
@@ -145,16 +143,12 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    None, None,  # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    *u32be('force_charge_power'),  # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    *u32be('force_charge_power'),  # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
+                    0, 0,                          # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    0, 0,                          # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,                          # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(force_charge_power >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(force_charge_power & 0xFFFF);'
-                           'values[2] = static_cast<uint16_t>(force_charge_power >> 16);\n'
-                           'values[3] = static_cast<uint16_t>(force_charge_power & 0xFFFF);',
             },
         ],
     },
@@ -176,14 +170,12 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    0, 0,                                  # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    0, 0,                                  # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
+                    0, 0,                                  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    *u32be('max_normal_discharge_power'),  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,                                  # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
-                'mapping': 'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
-                           'values[7] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
             },
         ],
     },
@@ -205,16 +197,12 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 40793,
                 'values': [
-                    0, 0,        # CmpBMS.BatChaMinW - Minimum battery charging power [W], U32BE
-                    0, 0,        # CmpBMS.BatChaMaxW - Maximum battery charging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
-                    None, None,  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
-                    0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
+                    0, 0,                             # CmpBMS.BatChaMinW - Minimum battery charging power    [W], U32BE
+                    0, 0,                             # CmpBMS.BatChaMaxW - Maximum battery charging power    [W], U32BE
+                    *u32be('force_discharge_power'),  # CmpBMS.BatChaMinW - Minimum battery discharging power [W], U32BE
+                    *u32be('force_discharge_power'),  # CmpBMS.BatChaMaxW - Maximum battery discharging power [W], U32BE
+                    0, 0,                             # CmpBMS.GridWSpt   - Gird transfer power setpoint      [W], U32BE
                 ],
-                'mapping': 'values[4] = static_cast<uint16_t>(force_discharge_power >> 16);\n'
-                           'values[5] = static_cast<uint16_t>(force_discharge_power & 0xFFFF);'
-                           'values[6] = static_cast<uint16_t>(force_discharge_power >> 16);\n'
-                           'values[7] = static_cast<uint16_t>(force_discharge_power & 0xFFFF);',
             },
         ],
     },

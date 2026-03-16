@@ -92,18 +92,16 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    None,
+                    'max_normal_charge_power',
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    None,
+                    'max_normal_discharge_power',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -117,9 +115,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    None,
+                    'max_normal_charge_power',
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
@@ -141,9 +138,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 44,
                 'values': [
-                    None,
+                    'max_normal_charge_power',
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Leistungsgrenzwert für Entladung [W]',
@@ -173,9 +169,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    None,
+                    'max_normal_discharge_power',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -197,9 +192,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43,
                 'values': [
-                    None,
+                    'max_normal_discharge_power',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },

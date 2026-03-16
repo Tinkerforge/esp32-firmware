@@ -1,5 +1,9 @@
 # https://www.victronenergy.com/live/ess:ess_mode_2_and_3
 
+def s32be(name):
+    return f'static_cast<uint16_t>(static_cast<uint32_t>({name}) >> 16)', f'static_cast<uint16_t>(static_cast<uint32_t>({name}) & 0xFFFF)'
+
+
 display_names = [
     ('Victron Energy GX', {
         'en': 'Victron Energy GX',
@@ -78,10 +82,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None, None,
+                    *s32be('grid_draw_setpoint_normal'),
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',
@@ -111,10 +113,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None, None,
+                    *s32be('grid_draw_setpoint_normal'),
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',
@@ -144,10 +144,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None, None,
+                    *s32be('grid_draw_setpoint_force_charge'),
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_charge) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',
@@ -177,10 +175,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None, None,
+                    *s32be('grid_draw_setpoint_normal'),
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_normal) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',
@@ -210,10 +206,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None, None,
+                    *s32be('grid_draw_setpoint_force_discharge'),
                 ],
-                'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) >> 16);\n'
-                           'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) & 0xFFFF);',
             },
             {
                 'description': 'DVCC system max charge current [A]',

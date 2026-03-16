@@ -102,18 +102,16 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43117,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_current',
                 ],
-                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Battery max discharge current [0.1 A]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43118,  # U16
                 'values': [
-                    None,
+                    'max_normal_discharge_current',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Remote control force battery charge/discharge',
@@ -151,9 +149,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43117,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_current',
                 ],
-                'mapping': 'values[0] = max_normal_charge_current;',
             },
             {
                 'description': 'Battery max discharge current [0.1 A]',
@@ -223,9 +220,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43136,  # U16
                 'values': [
-                    None,
+                    'force_charge_power',
                 ],
-                'mapping': 'values[0] = force_charge_power;',
             },
             {
                 'description': 'Remote control force battery discharge power [0.01 kW]',
@@ -255,9 +251,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43118,  # U16
                 'values': [
-                    None,
+                    'max_normal_discharge_current',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_current;',
             },
             {
                 'description': 'Remote control force battery charge/discharge',
@@ -327,9 +322,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 43129,  # U16
                 'values': [
-                    None,
+                    'force_discharge_power',
                 ],
-                'mapping': 'values[0] = force_discharge_power;',
             },
         ],
     },

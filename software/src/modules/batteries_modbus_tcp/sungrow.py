@@ -121,18 +121,16 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_power',
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    None,
+                    'max_normal_discharge_power',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -170,9 +168,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    None,
+                    'max_normal_charge_power',
                 ],
-                'mapping': 'values[0] = max_normal_charge_power;',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -210,18 +207,16 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
-                    None,
+                    'force_charge_power',
                 ],
-                'mapping': 'values[0] = force_charge_power;',
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33047,  # U16
                 'values': [
-                    None,
+                    'std::max(max_normal_charge_power, static_cast<uint16_t>(force_charge_power / 10))',
                 ],
-                'mapping': 'values[0] = std::max(max_normal_charge_power, static_cast<uint16_t>(force_charge_power / 10));',
             },
             {
                 'description': 'Maximum discharge power [0.01 kW]',
@@ -275,9 +270,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    None,
+                    'max_normal_discharge_power',
                 ],
-                'mapping': 'values[0] = max_normal_discharge_power;',
             },
         ],
     },
@@ -307,9 +301,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 13052,  # U16
                 'values': [
-                    None,
+                    'force_discharge_power',
                 ],
-                'mapping': 'values[0] = force_discharge_power;',
             },
             {
                 'description': 'Maximum charge power [0.01 kW]',
@@ -324,9 +317,8 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_number': 33048,
                 'values': [
-                    None,
+                    'std::max(max_normal_discharge_power, static_cast<uint16_t>(force_discharge_power / 10))',
                 ],
-                'mapping': 'values[0] = std::max(max_normal_discharge_power, static_cast<uint16_t>(force_discharge_power / 10));',
             },
         ],
     },

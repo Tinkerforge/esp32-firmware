@@ -97,14 +97,13 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
-                    1,         # start dispatch, U16
-                    0, None,   # active power [W], U32BE
-                    0, 32000,  # reactive power [var], U32BE, unused
-                    2,         # state of charge control, U16
-                    250,       # state of charge [0.4 %], U16, 100 %
-                    0, 90,     # duration [s], U32BE
+                    1,                                # start dispatch, U16
+                    0, '32000 - force_charge_power',  # active power [W], U32BE
+                    0, 32000,                         # reactive power [var], U32BE, unused
+                    2,                                # state of charge control, U16
+                    250,                              # state of charge [0.4 %], U16, 100 %
+                    0, 90,                            # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 - force_charge_power;',
             },
         ],
     },
@@ -138,14 +137,13 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 0x0880,
                 'values': [
-                    1,         # start dispatch, U16
-                    0, None,   # active power [W], U32BE
-                    0, 32000,  # reactive power [var], U32BE, unused
-                    2,         # state of charge control, U16
-                    25,        # state of charge [0.4 %], U16, 10 %
-                    0, 90,     # duration [s], U32BE
+                    1,                                   # start dispatch, U16
+                    0, '32000 + force_discharge_power',  # active power [W], U32BE
+                    0, 32000,                            # reactive power [var], U32BE, unused
+                    2,                                   # state of charge control, U16
+                    25,                                  # state of charge [0.4 %], U16, 10 %
+                    0, 90,                               # duration [s], U32BE
                 ],
-                'mapping': 'values[2] = 32000 + force_discharge_power;',
             },
         ],
     },

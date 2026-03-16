@@ -184,8 +184,9 @@ for spec in specs:
         else:
             total_buffer_length += values_count * 2
 
-        if 'mapping' in register_block:
-            has_mapping = True
+        for value in register_block['values']:
+            if isinstance(value, str):
+                has_mapping = True
 
     all_modes.setdefault(group, []).append((mode, has_mapping))
 
@@ -223,6 +224,12 @@ for spec in specs:
                              f'    register_blocks[{i}].buffer = total_buffer + {total_buffer_offset};\n\n'
                               '    {\r')
 
+            for name_type in all_table_prototypes[spec['group']]:
+                for value in register_block['values']:
+                    if isinstance(value, str) and name_type[0] in value:
+                        specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1].replace('32', '')}();\r')
+                        break
+
             if function_code == 'WriteSingleCoil' or function_code == 'WriteMultipleCoils':
                 buffer_length = (values_count + 7) // 8
             else:
@@ -235,44 +242,33 @@ for spec in specs:
                     print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value count')
                     sys.exit(1)
 
-                if register_block['values'][0] not in [0, 1]:
+                if not isinstance(register_block['values'][0], str) and register_block['values'][0] not in [0, 1]:
                     print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid value')
                     sys.exit(1)
 
-                if register_block['values'][0] != None:
-                    specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
+                specs_cpp.append(f'        values[0] = {register_block["values"][0]};\r')
             elif function_code == 'WriteMultipleCoils':
                 specs_cpp.append(f'        uint8_t values[{values_count}];')
 
-                for k, bit in enumerate(register_block['values']):
-                    if register_block['values'][k] != None:
-                        specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+                for k, _ in enumerate(register_block['values']):
+                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
             elif function_code in ['WriteSingleRegister', 'WriteMultipleRegisters']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
-                for k, bit in enumerate(register_block['values']):
-                    if register_block['values'][k] != None:
-                        specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+                for k, _ in enumerate(register_block['values']):
+                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
             elif function_code in ['MaskWriteRegister', 'ReadMaskWriteSingleRegister']:
                 specs_cpp.append(f'        uint16_t *values = static_cast<uint16_t *>(register_blocks[{i}].buffer);')
 
-                for k, bit in enumerate(register_block['values']):
-                    if register_block['values'][k] != None:
-                        specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
+                for k, _ in enumerate(register_block['values']):
+                    specs_cpp.append(f'        values[{k}] = {register_block["values"][k]};\r')
             elif function_code == 'ReadMaskWriteMultipleRegisters':
                 assert False  # FIXME
             else:
                 print(f'Error: Register block {group.space} / {mode.space} / {register_block['description']} has invalid function code: {function_code}')
                 sys.exit(1)
 
-            specs_cpp[-1] = specs_cpp[-1].rstrip()
-
-            if 'mapping' in register_block:
-                for name_type in all_table_prototypes[spec['group']]:
-                    if name_type[0] in register_block["mapping"]:
-                        specs_cpp.append(f'        {name_type[1].lower()}_t {name_type[0]} = config->get("{name_type[0]}")->as{name_type[1].replace('32', '')}();')
-
-                specs_cpp.append(f'        {"\n        ".join([x.strip() for x in register_block["mapping"].strip().split("\n")])}')
+            #specs_cpp[-1] = specs_cpp[-1].rstrip()
 
             if function_code == 'WriteSingleCoil':
                 specs_cpp.append(f'        uint8_t *coils_buffer = static_cast<uint8_t *>(register_blocks[{i}].buffer);\n\n'
