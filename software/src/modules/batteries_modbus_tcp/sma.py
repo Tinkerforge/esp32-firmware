@@ -183,7 +183,7 @@ specs = [
                     0, 0,        # CmpBMS.GridWSpt - Gird transfer power setpoint [W], U32BE
                 ],
                 'mapping': 'values[6] = static_cast<uint16_t>(max_normal_discharge_power >> 16);\n'
-                           'values[6] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
+                           'values[7] = static_cast<uint16_t>(max_normal_discharge_power & 0xFFFF);',
             },
         ],
     },
