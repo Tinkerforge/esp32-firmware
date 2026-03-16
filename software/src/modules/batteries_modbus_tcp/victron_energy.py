@@ -210,8 +210,7 @@ specs = [
                 'function_code': 'WriteMultipleRegisters',
                 'start_address': 2716,  # S32BE
                 'values': [
-                    None,
-                    None,
+                    None, None,
                 ],
                 'mapping': 'values[0] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) >> 16);\n'
                            'values[1] = static_cast<uint16_t>(static_cast<uint32_t>(grid_draw_setpoint_force_discharge) & 0xFFFF);',
