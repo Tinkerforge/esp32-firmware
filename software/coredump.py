@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
     if args.latest_download:
         downloads_dir = os.path.expanduser("~/Downloads")
-        matches = glob.glob(os.path.join(downloads_dir, "*-Debug-Report*.txt"))
+        matches = glob.glob(os.path.join(downloads_dir, "*-Debug-[Rr]eport*.txt"))
         if not matches:
             print(f"No *-Debug-Report*.txt files found in {downloads_dir}")
             sys.exit(-1)
