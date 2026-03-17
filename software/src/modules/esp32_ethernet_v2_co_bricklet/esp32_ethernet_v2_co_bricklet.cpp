@@ -39,7 +39,7 @@
 ESP32EthernetV2CoBricklet::ESP32EthernetV2CoBricklet(): DeviceModule(warp_esp32_ethernet_v2_co_bricklet_firmware_bin_data,
                                                                      warp_esp32_ethernet_v2_co_bricklet_firmware_bin_length,
                                                                      "co",
-                                                                     "WARP ESP32 Ethernet V2 Co Bricklet",
+                                                                     "WARP ESP32 Ethernet V2 Co",
                                                                      "Co",
                                                                      [this](){this->setup_co();}) {}
 
