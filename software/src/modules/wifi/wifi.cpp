@@ -133,6 +133,7 @@ void Wifi::pre_setup()
         {"sta_subnet", Config::Str("0.0.0.0", 7, 45)},
         {"sta_ip6_link_local", Config::Str("", 0, 45)},
         {"sta_ip6_global", Config::Str("", 0, 45)},
+        {"sta_ip6_unique_local", Config::Str("", 0, 45)},
         {"sta_rssi", Config::Int8(-127)},
         {"sta_bssid", Config::Str("", 0, 17)},
         {"sta_disconnect_reason", Config::Enum(WifiDisconnectReason::None)},
@@ -166,11 +167,20 @@ void Wifi::pre_setup()
         {"bssid_lock", Config::Bool(false)},
         {"enable_11b", Config::Bool(false)},
         {"passphrase", Config::Str("", 0, 64)},
-        {"ip", Config::Str("0.0.0.0", 7, 45)},
-        {"gateway", Config::Str("0.0.0.0", 7, 45)},
-        {"subnet", Config::Str("0.0.0.0", 7, 45)},
-        {"dns", Config::Str("0.0.0.0", 7, 45)},
-        {"dns2", Config::Str("0.0.0.0", 7, 45)},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
+        {"gateway", Config::Str("0.0.0.0", 7, 15)},
+        {"subnet", Config::Str("0.0.0.0", 7, 15)},
+        {"dns", Config::Str("0.0.0.0", 7, 15)},
+        {"dns2", Config::Str("0.0.0.0", 7, 15)},
+        {"enable_ip6", Config::Bool(false)},
+        {"ipv6",
+         Config::Object({
+             {"ip", Config::Str("::", 2, 45)},
+             {"gateway", Config::Str("::", 2, 45)},
+             {"prefix", Config::Str("::", 2, 45)},
+             {"dns", Config::Str("::", 2, 45)},
+             {"dns2", Config::Str("::", 2, 45)},
+            })},
         {"wpa_eap_config", Config::Union<EapConfigID>(
             *Config::Null(),
             EapConfigID::None,
@@ -789,7 +799,7 @@ static WifiDisconnectReason reason_code_to_enum(uint8_t reason_code)
 
 void Wifi::register_sta_event_handlers()
 {
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             uint8_t reason_code = info.wifi_sta_disconnected.reason;
             const char *reason = reason2str(reason_code);
             if (!this->runtime_sta->was_connected) {
@@ -827,13 +837,14 @@ void Wifi::register_sta_event_handlers()
                 state.get("sta_ip6_global")->updateString("");
                 state.get("sta_bssid")->updateString("");
                 state.get("sta_disconnect_reason")->updateEnum(disconnect_reason);
+                // TODO: add ipv6 here
             });
 
             this->runtime_sta->was_connected = false;
         },
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             wifi_ap_record_t wifi_info;
             char bssid_str[18];
 
@@ -905,7 +916,7 @@ void Wifi::register_sta_event_handlers()
         },
         ARDUINO_EVENT_WIFI_STA_CONNECTED);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
             // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
             // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
             // Make sure that the state is set to connected here,
@@ -931,26 +942,45 @@ void Wifi::register_sta_event_handlers()
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            char ip6_str[INET6_ADDRSTRLEN];
-            tf_ip6addr_ntoa(&info.got_ip6.ip6_info.ip, ip6_str, ARRAY_SIZE(ip6_str));
-            logger.printfln("Got IPv6 address: %s", ip6_str);
-
-            // Distinguish link-local (fe80::/10) from global addresses
-            const uint8_t *addr_bytes = reinterpret_cast<const uint8_t *>(&info.got_ip6.ip6_info.ip.addr);
-            bool is_link_local = (addr_bytes[0] == 0xfe) && ((addr_bytes[1] & 0xc0) == 0x80);
-
-            task_scheduler.scheduleOnce([this, ip6_str = String(ip6_str), is_link_local]() {
-                if (is_link_local) {
-                    state.get("sta_ip6_link_local")->updateString(ip6_str);
-                } else {
-                    state.get("sta_ip6_global")->updateString(ip6_str);
-                }
-            });
+    WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
+            esp_ip6_addr_t ip6_addr = info.got_ip6.ip6_info.ip;
+            esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip6_addr);
+            logger.printfln("Got IPv6 address of type %d", static_cast<int>(type));
+            switch (type) {
+                case ESP_IP6_ADDR_IS_LINK_LOCAL:
+                    task_scheduler.scheduleOnce([this]() {
+                        IPAddress local = WiFi.linkLocalIPv6();
+                        logger.printfln("Link-local IPv6 address: %s", local.toString(true).c_str());
+                        state.get("sta_ip6_link_local")->updateString(local.toString());
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_GLOBAL:
+                    task_scheduler.scheduleOnce([this]() {
+                        IPAddress global = WiFi.globalIPv6();
+                        logger.printfln("Global IPv6 address: %s", global.toString(true).c_str());
+                        state.get("sta_ip6_global")->updateString(global.toString());
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_UNIQUE_LOCAL:
+                    task_scheduler.scheduleOnce([this,ip6_addr]() {
+                        char ip_str[INET6_ADDRSTRLEN];
+                        tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip6_addr), ip_str, ARRAY_SIZE(ip_str));
+                        logger.printfln("Unique Local IPv6 address: %s", ip_str);
+                        state.get("sta_ip6_unique_local")->updateString(ip_str);
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
+                case ESP_IP6_ADDR_IS_SITE_LOCAL:
+                case ESP_IP6_ADDR_IS_UNKNOWN:
+                default:
+                    char ip_str[INET6_ADDRSTRLEN];
+                    tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip6_addr), ip_str, ARRAY_SIZE(ip_str));
+                    logger.printfln("Got unknown ip addr: %s of type: %d",ip_str,  static_cast<int>(type));
+            }
         },
         ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    WiFi.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             if(!this->runtime_sta->was_connected)
                 return;
 
@@ -980,6 +1010,7 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    WiFi.enableIPv6(true);
 
     if (runtime_sta->ip.type == 0) {
         WiFi.STA.config(static_cast<uint32_t>(0), static_cast<uint32_t>(0), static_cast<uint32_t>(0));
