@@ -300,7 +300,6 @@ void MeterSunSpec::read_done_callback()
     if (!model_parser->parse_values(generic_read_request.data, quirks)) {
         auto inconsistency = errors->get("inconsistency");
         inconsistency->updateUint(inconsistency->asUint() + 1);
-        // TODO: Read again if parsing failed?
         return;
     }
     else {
@@ -339,7 +338,6 @@ void MeterSunSpec::read_done_callback()
             if (!model_parser->parse_values(generic_read_request.data, quirks)) {
                 auto inconsistency = errors->get("inconsistency");
                 inconsistency->updateUint(inconsistency->asUint() + 1);
-                // TODO: Read again if parsing failed?
             }
             else {
                 last_successful_parse = now_us();
