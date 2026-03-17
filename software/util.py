@@ -153,11 +153,12 @@ def remove_digest(dst_dir, var_name, env=None):
 def store_digest(digest, dst_dir, var_name, env=None):
     digest1_path, digest2_path = get_digest_paths(dst_dir, var_name, env=env)
 
-    # The first digest file is stored in $BUILD_DIR. We don't want to track it as
-    # generated as PlatformIO sometimes clears $BUILD_DIR in unexpected situations
-    # resulting in unexpected generated-file-missing warnings
-    os.makedirs(os.path.split(digest1_path)[0], exist_ok=True)
-    tfutil.write_file_if_different(digest1_path, digest)
+    if digest != None:
+        # The first digest file is stored in $BUILD_DIR. We don't want to track it as
+        # generated as PlatformIO sometimes clears $BUILD_DIR in unexpected situations
+        # resulting in unexpected generated-file-missing warnings
+        os.makedirs(os.path.split(digest1_path)[0], exist_ok=True)
+        tfutil.write_file_if_different(digest1_path, digest)
 
     write_generated_file(digest2_path, digest)
 
@@ -251,9 +252,7 @@ def embed_data_with_digest(data, dst_dir, var_name, var_type, var_size_type='siz
 
         write_generated_file(cpp_path, None)
         write_generated_file(h_path, None)
-
-        for digest_path in get_digest_paths(dst_dir, var_name, env=env):
-            write_generated_file(digest_path, None)
+        store_digest(None, dst_dir, var_name)
     else:
         if not os.path.exists(cpp_path) or not os.path.exists(h_path):
             reason = 'embedded file missing'
