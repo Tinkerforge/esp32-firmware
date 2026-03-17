@@ -682,14 +682,19 @@ bool platform_supports_phase_switch() {
     return api.hasFeature("phase_switch");
 }
 
+static uint8_t last_phases = 0;
 void platform_set_charging_phases(int32_t connectorId, uint8_t phases)
 {
     REQUIRE_FEATURE(phase_switch, );
 #if MODULE_POWER_MANAGER_AVAILABLE()
     String errmsg;
-    power_manager.switch_phases(phases, errmsg, false);
-    if (!errmsg.isEmpty())
-        logger.printfln("Failed to switch phases: %s", errmsg.c_str());
+    if (last_phases == 0 || last_phases != phases) {
+        power_manager.switch_phases(phases, errmsg, false);
+        if (!errmsg.isEmpty())
+            logger.printfln("Failed to switch phases: %s", errmsg.c_str());
+        else
+            last_phases = phases;
+    }
 #endif
 }
 
