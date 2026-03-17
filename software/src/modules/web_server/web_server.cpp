@@ -29,6 +29,7 @@
 #include "tools/malloc.h"
 #include "tools/memory.h"
 #include "tools/net.h"
+#include "tools/tristate_bool.h"
 #include "options.h"
 
 #include "sdkconfig.h"
@@ -84,22 +85,6 @@ static void custom_close_fn(httpd_handle_t hd, struct sock_db *session)
 #endif
 }
 
-#if HTTPS_AVAILABLE()
-static bool load_certs_with_fallback(httpd_ssl_config_t *ssl_config, const cert_load_info *load_info, Cert *cert)
-{
-    if (!cert->load_external_with_internal_fallback(load_info)) {
-        return false;
-    }
-
-    cert->get_data(&ssl_config->servercert, &ssl_config->servercert_len, &ssl_config->prvtkey_pem, &ssl_config->prvtkey_len);
-
-    ssl_config->servercert_len += 1;
-    ssl_config->prvtkey_len    += 1;
-
-    return true;
-}
-#endif
-
 void WebServer::post_setup()
 {
     if (this->httpd != nullptr) {
@@ -107,13 +92,10 @@ void WebServer::post_setup()
     }
 
     listen_port_handlers_t *default_handlers = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
-    *default_handlers = {
-        .port = 0,
-        .supports_user_authentication = true,
-        .supports_http_api = true,
-        .handlers = nullptr,
-        .wildcard_handlers = nullptr,
-    };
+    memset(default_handlers, 0, sizeof(*default_handlers));
+
+    default_handlers->supports_user_authentication = true;
+    default_handlers->supports_http_api = true;
 
     // Certificate buffers must live until httpd has started.
     Cert certificates[WEB_SERVER_MAX_PORTS] = {};
@@ -135,6 +117,23 @@ void WebServer::post_setup()
     const TransportMode transport_mode = TransportMode::InsecureAndSecure;
 #endif
 
+    // === Insecure or mixed mode or fallback when secure-only is not available; always enabled but might filter connections; must be first ===
+
+    {
+        httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
+
+        ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
+
+#if MODULE_NETWORK_AVAILABLE()
+        ssl_config->port_insecure = network.get_web_server_port();
+#else
+        ssl_config->port_insecure = 80;
+#endif
+
+        listen_port_handlers[ssl_configs_used] = default_handlers;
+        ssl_configs_used++;
+    }
+
     // === Secure or mixed mode ===
 
     if (transport_mode != TransportMode::Insecure) {
@@ -148,15 +147,9 @@ void WebServer::post_setup()
         key_id  = network.get_key_id();
 #endif
 
-        const cert_load_info load_info = {
-            .cert_id = cert_id,
-            .key_id = key_id,
-            .cert_path = "/web_server/cert",
-            .key_path  = "/web_server/key",
-            .generator_fn = Cert::default_certificate_generator_fn,
-        };
+        listen_port_handlers[ssl_configs_used] = default_handlers;
 
-        const bool cert_ok = load_certs_with_fallback(ssl_config, &load_info, certificates + ssl_configs_used);
+        const bool cert_ok = reload_web_server_cert(cert_id, key_id);
 
         if (cert_ok) {
             ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
@@ -167,32 +160,20 @@ void WebServer::post_setup()
             ssl_config->port_secure = 443;
 #endif
 
-            listen_port_handlers[ssl_configs_used] = default_handlers;
+            ssl_config->cert_select_cb = &custom_tls_handshake_callback;
+            ssl_config->ssl_userdata = default_handlers;
+
             ssl_configs_used++;
             https_multiport_needed = true;
         } else {
+            listen_port_handlers[ssl_configs_used] = nullptr;
             http_fallback_needed = true;
         }
     }
 
-    // === Insecure or mixed mode or fallback when secure-only is not available ===
-
-    if (transport_mode != TransportMode::Secure || http_fallback_needed) {
-        httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
-
-        ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
-
-#if MODULE_NETWORK_AVAILABLE()
-        ssl_config->port_insecure = network.get_web_server_port();
-#else
-        ssl_config->port_insecure = 80;
-#endif
-
-        listen_port_handlers[ssl_configs_used] = default_handlers;
-        ssl_configs_used++;
-    } else {
-        // No HTTP -> HTTPS only
-        https_only = true;
+    // HTTPS only
+    if (transport_mode == TransportMode::Secure && !http_fallback_needed) {
+        default_handlers->listen_index_0_ra_only = true;
     }
 
     while (extra_ports != nullptr) {
@@ -205,6 +186,14 @@ void WebServer::post_setup()
             do {
                 httpd_ssl_config_t *ssl_config = ssl_configs + ssl_configs_used;
 
+                listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
+                memset(port_handler, 0, sizeof(*port_handler));
+
+                port_handler->port = extra_port->port;
+                port_handler->supports_user_authentication = extra_port->supports_user_authentication;
+
+                listen_port_handlers[ssl_configs_used] = port_handler;
+
                 if (extra_port->transport_mode == TransportMode::Insecure) {
                     ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
                     ssl_config->port_insecure = extra_port->port;
@@ -212,22 +201,17 @@ void WebServer::post_setup()
                     ssl_config->transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
                     ssl_config->port_secure = extra_port->port;
 
-                    if (!load_certs_with_fallback(ssl_config, &extra_port->cert_info, certificates + ssl_configs_used)) {
+                    if (!Cert::load_and_export_external_with_internal_fallback(&extra_port->cert_info, &port_handler->own_cert, &port_handler->own_cert_key, nullptr)) {
                         logger.printfln("Cannot listen on extra port %hu: Failed to load certificate", extra_port->port);
+
+                        listen_port_handlers[ssl_configs_used] = nullptr;
+                        free(port_handler);
+                        port_handler = nullptr;
+
                         break;
                     }
                 }
 
-                listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(perm_aligned_alloc(alignof(listen_port_handlers_t), sizeof(listen_port_handlers_t), DRAM));
-                *port_handler = {
-                    .port = extra_port->port,
-                    .supports_user_authentication = extra_port->supports_user_authentication,
-                    .supports_http_api = false,
-                    .handlers = nullptr,
-                    .wildcard_handlers = nullptr,
-                };
-
-                listen_port_handlers[ssl_configs_used] = port_handler;
                 ssl_configs_used++;
 
                 https_multiport_needed = true;
@@ -296,11 +280,6 @@ void WebServer::post_setup()
     }
 #endif
 
-    // Free certificate buffers early to hopefully reduce fragmentation.
-    for (size_t i = 0; i < std::size(certificates); i++) {
-        certificates[i].free();
-    }
-
     const httpd_uri_t handler = {
         .uri = "", // URI can be zero-length because the custom URI matcher won't look at it anyway.
         .method = static_cast<httpd_method_t>(HTTP_ANY),
@@ -326,6 +305,22 @@ void WebServer::pre_reboot() {
         return;
 
     httpd_stop(this->httpd);
+}
+
+int WebServer::custom_tls_handshake_callback(mbedtls_ssl_context *ssl)
+{
+    const listen_port_handlers_t *port_handler = static_cast<listen_port_handlers_t *>(mbedtls_ssl_conf_get_user_data_p(const_cast<mbedtls_ssl_config *>(ssl->private_conf))); // The const_cast should be safe because this is a trivial getter.
+
+    //size_t name_len = 0;
+    //const unsigned char *servername = mbedtls_ssl_get_hs_sni(ssl, &name_len);
+    //logger.printfln("handler for '%.*s':%hu", static_cast<int>(name_len), servername, port_handler->port);
+
+    if (port_handler->own_cert == nullptr || port_handler->own_cert_key == nullptr) {
+        logger.printfln("No certificate or key for TLS connection on port %hu", port_handler->port);
+        return MBEDTLS_ERR_SSL_BAD_CONFIG;
+    }
+
+    return mbedtls_ssl_set_hs_own_cert(ssl, port_handler->own_cert, port_handler->own_cert_key);
 }
 
 void WebServer::runInHTTPThread(void (*fn)(void *arg), void *arg)
@@ -403,6 +398,29 @@ esp_err_t WebServer::low_level_receive_handler(WebServerRequest *request, httpd_
     return ESP_OK;
 }
 
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+[[gnu::noinline]]
+static bool check_remote_access_connection(WebServerRequest &request)
+{
+    struct {
+        const IPAddress local;
+        const IPAddress remote;
+        bool is_ra;
+    } closure = {
+        .local  = request.getLocalAddress(),
+        .remote = request.getPeerAddress(),
+        .is_ra = false,
+    };
+
+    const auto await_result = task_scheduler.await([&closure]() {
+        closure.is_ra = remote_access.is_connected_local_ip(closure.local, closure.remote);
+    });
+    assert(await_result == TaskScheduler::AwaitResult::Done);
+
+    return closure.is_ra;
+}
+#endif
+
 esp_err_t WebServer::low_level_handler(httpd_req_t *req)
 {
     auto *server = static_cast<WebServer *>(httpd_get_global_user_ctx(req->handle));
@@ -423,16 +441,30 @@ esp_err_t WebServer::low_level_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    TristateBool cached_is_remote_access_connection = TristateBool::Undefined;
+
+    if (listen_port_index == 0 && port_handlers->listen_index_0_ra_only) {
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+        const bool is_ra = check_remote_access_connection(request);
+
+        if (!is_ra) {
+            const WebServerRequestReturnProtect ret = request.send_plain(403, "HTTP disabled; use HTTPS instead");
+            return ret.error;
+        }
+
+        cached_is_remote_access_connection = static_cast<TristateBool>(is_ra);
+#endif
+    }
+
     if (port_handlers->supports_user_authentication && server->auth_fn && !server->auth_fn(request)) {
         bool auth_by_remote_access = false;
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-        const IPAddress local_address = request.getLocalAddress();
-
-        const auto await_result = task_scheduler.await([&local_address, &auth_by_remote_access]() {
-            auth_by_remote_access = remote_access.is_connected_local_ip(local_address);
-        });
-        assert(await_result == TaskScheduler::AwaitResult::Done);
+        if (cached_is_remote_access_connection == TristateBool::Undefined) {
+            auth_by_remote_access = check_remote_access_connection(request);
+        } else {
+            auth_by_remote_access = static_cast<bool>(cached_is_remote_access_connection);
+        }
 #endif
 
         if (!auth_by_remote_access) {
@@ -672,26 +704,11 @@ WebServerHandler *WebServer::addHandler(uint16_t port,
         esp_system_abort("Attempted to register URL handler before REGISTER_URLS stage");
     }
 
-    listen_port_handlers_t *port_handlers;
+    listen_port_handlers_t *port_handlers = find_handlers(port);
 
-    if (port == 0) {
-        port_handlers = listen_port_handlers[0]; // Web interface handlers are always first.
-    } else {
-        port_handlers = nullptr;
-
-        for (size_t i = 1; i < std::size(listen_port_handlers); i++) {
-            listen_port_handlers_t *handlers = listen_port_handlers[i];
-
-            if (handlers->port == port) {
-                port_handlers = handlers;
-                break;
-            }
-        }
-
-        if (port_handlers == nullptr) {
-            logger.printfln("Cannot add URI '%s' for unregistered port %hu", uri, port);
-            return nullptr;
-        }
+    if (port_handlers == nullptr) {
+        logger.printfln("Cannot add URI '%s' for unregistered port %hu", uri, port);
+        return nullptr;
     }
 
     size_t uri_len = strlen(uri);
@@ -748,13 +765,46 @@ void WebServer::register_extra_port(WebServerExtraPortData *port_data)
     extra_ports = port_data;
 }
 
-bool WebServer::is_https_only()
+#if HTTPS_AVAILABLE()
+bool WebServer::load_certs(const cert_load_info *load_info, uint16_t port, bool allow_fallback, String *cert_error)
 {
-    if (boot_stage < BootStage::REGISTER_URLS) {
-        esp_system_abort("HTTP(S) state unknown; web server not started yet");
-    }
+    listen_port_handlers_t *handlers = find_handlers(port);
 
-    return https_only;
+    if (allow_fallback) {
+        return Cert::load_and_export_external_with_internal_fallback(load_info, &handlers->own_cert, &handlers->own_cert_key, cert_error);
+    } else {
+        if (load_info->cert_id >= 0 && load_info->key_id >= 0) {
+            return Cert::load_and_export_external(load_info, &handlers->own_cert, &handlers->own_cert_key, cert_error);
+        } else {
+            return Cert::load_and_export_internal(load_info, &handlers->own_cert, &handlers->own_cert_key, cert_error);
+        }
+    }
+}
+#endif
+
+bool WebServer::reload_extra_port_cert(cert_load_info *load_info, uint16_t port, bool allow_fallback, String *cert_error)
+{
+#if HTTPS_AVAILABLE()
+    return load_certs(load_info, port, allow_fallback, cert_error);
+#else
+    return true; // TODO Or false for extra ports?
+#endif
+}
+
+bool WebServer::reload_web_server_cert(int16_t cert_id, int16_t key_id, bool allow_fallback, String *cert_error) {
+#if HTTPS_AVAILABLE()
+    const cert_load_info load_info = {
+        .cert_id = cert_id,
+        .key_id = key_id,
+        .cert_path = "/web_server/cert",
+        .key_path  = "/web_server/key",
+        .generator_fn = Cert::default_certificate_generator_fn,
+    };
+
+    return load_certs(&load_info, 0, allow_fallback, cert_error); // Port 0 for default handlers
+#else
+    return true; // Don't fail Networking config updates
+#endif
 }
 
 const WebServerHandler *WebServer::match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method)
@@ -793,6 +843,23 @@ const WebServerHandler *WebServer::match_wildcard_handlers(const listen_port_han
         }
 
         handler = handler->next;
+    }
+
+    return nullptr;
+}
+
+WebServer::listen_port_handlers_t *WebServer::find_handlers(uint16_t port)
+{
+    if (port == 0) {
+        return listen_port_handlers[0]; // Web interface handlers are always first.
+    }
+
+    for (size_t i = 1; i < std::size(listen_port_handlers); i++) {
+        listen_port_handlers_t *handlers = listen_port_handlers[i];
+
+        if (handlers->port == port) {
+            return handlers;
+        }
     }
 
     return nullptr;

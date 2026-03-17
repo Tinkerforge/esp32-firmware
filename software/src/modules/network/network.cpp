@@ -78,7 +78,27 @@ void Network::pre_setup()
             }
         }
 
-        return "";
+        String cert_error;
+
+        const TransportMode transport_mode_update = update.get("transport_mode")->asEnum<TransportMode>();
+
+        if (source != ConfigSource::File && transport_mode_update != TransportMode::Insecure) {
+            const int32_t cert_id_update = update.get("cert_id")->asInt();
+            const int32_t key_id_update  = update.get("key_id" )->asInt();
+
+            if (transport_mode_update != config.get("transport_mode")->asEnum<TransportMode>() ||
+                cert_id_update        != config.get("cert_id"       )->asInt() ||
+                key_id_update         != config.get("key_id"        )->asInt()) {
+
+                if (!server.reload_web_server_cert(cert_id_update, key_id_update, false, &cert_error)) {
+                    if (cert_error.isEmpty()) {
+                        cert_error = "Invalid certificate or key; see event log for details";
+                    }
+                }
+            }
+        }
+
+        return cert_error;
     }};
 
     state = Config::Object({

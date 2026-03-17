@@ -25,6 +25,7 @@
 #include <IPAddress.h>
 #include <WString.h>
 #include <esp_http_server.h>
+#include <esp_https_server.h>
 #include <TFJson.h>
 
 #include "cert.h"
@@ -50,6 +51,8 @@ static_assert(WEB_SERVER_MAX_PORTS <= ESP_HTTPD_LISTEN_PORTS);
         return WebServerRequestReturnProtect{.error = _send_err}; \
     } \
 } while (false)
+
+struct mbedtls_ssl_context;
 
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
@@ -195,7 +198,8 @@ public:
     void onAuthenticate_HTTPThread(std::function<bool(WebServerRequest)> &&auth_fn);
 
     void register_extra_port(WebServerExtraPortData *port_data);
-    bool is_https_only();
+    bool reload_extra_port_cert(cert_load_info *load_info, uint16_t port, bool allow_fallback = true, String *cert_error = nullptr);
+    bool reload_web_server_cert(int16_t cert_id, int16_t key_id, bool allow_fallback = true, String *cert_error = nullptr);
 
 #ifdef DEBUG_FS_ENABLE
     void get_handlers(WebServerHandler **handlers, WebServerHandler **wildcard_handlers);
@@ -204,24 +208,32 @@ public:
 private:
     struct listen_port_handlers_t {
         uint16_t port;
-        bool supports_user_authentication;
+        uint8_t supports_user_authentication : 1;
+        uint8_t listen_index_0_ra_only : 1;
         bool supports_http_api;
         WebServerHandler *handlers;
         WebServerHandler *wildcard_handlers;
+        mbedtls_x509_crt *own_cert;
+        mbedtls_pk_context *own_cert_key;
     };
+
+    static esp_err_t custom_open_fn(httpd_handle_t httpd, int sockfd, size_t listen_index);
+    static int custom_tls_handshake_callback(mbedtls_ssl_context *ssl);
 
     static esp_err_t low_level_receive_handler(WebServerRequest *request, httpd_req_t *req, const WebServerHandler *handler);
     static esp_err_t low_level_handler(httpd_req_t *req);
 
     WebServerHandler *addHandler(uint16_t port, const char *uri, httpd_method_t method, bool isWebsocket, bool callbackInMainThread, wshCallback &&callback, wshUploadCallback &&uploadCallback, wshUploadErrorCallback &&uploadErrorCallback);
 
+    bool load_certs(const cert_load_info *load_info, uint16_t port, bool allow_fallback, String *cert_error);
+
     const WebServerHandler *match_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
     const WebServerHandler *match_wildcard_handlers(const listen_port_handlers_t *port_handlers, const char *req_uri, size_t req_uri_len, httpd_method_t method);
+    listen_port_handlers_t *find_handlers(uint16_t port);
 
     httpd_handle_t httpd = nullptr;
     wshCallback on_not_authorized;
     std::function<bool(WebServerRequest)> auth_fn;
     listen_port_handlers_t *listen_port_handlers[WEB_SERVER_MAX_PORTS] = {};
     WebServerExtraPortData *extra_ports;
-    bool https_only = false;
 };

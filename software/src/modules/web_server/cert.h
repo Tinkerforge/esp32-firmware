@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <memory> // for std::unique_ptr
+#include <WString.h>
 
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/x509_crt.h"
@@ -44,6 +45,10 @@ public:
     bool load_internal(const cert_load_info *load_info);
     bool load_external_with_internal_fallback(const cert_load_info *load_info);
 
+    [[gnu::nonnull(1, 2, 3)]] static bool load_and_export_external(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+    [[gnu::nonnull(1, 2, 3)]] static bool load_and_export_internal(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+    [[gnu::nonnull(1, 2, 3)]] static bool load_and_export_external_with_internal_fallback(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+
     void get_data(const uint8_t **crt_out, size_t *crt_len_out, const uint8_t **key_out, size_t *key_len_out) const;
     bool is_loaded() const;
     void free();
@@ -53,8 +58,12 @@ public:
     static bool default_certificate_generator_fn(mbedtls_x509write_cert *mbed_cert, mbedtls_pk_context *mbed_key, mbedtls_ctr_drbg_context *ctr_drbg);
 
 private:
-    static bool load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, uint16_t *length);
-    bool load_internal_files(const cert_load_info *load_info);
+    static bool load_internal_file(const char *path, std::unique_ptr<uint8_t[]> *uniq_buf, size_t *length);
+    bool load_internal_files(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+
+    bool load_external_impl(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+    bool load_internal_impl(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
+    bool load_external_with_internal_fallback_impl(const cert_load_info *load_info, mbedtls_x509_crt **crt_out, mbedtls_pk_context **key_out, String *cert_error);
 
     bool generate_cert_and_key(const cert_load_info *load_info);
     bool write_cert_and_key(const cert_load_info *load_info);

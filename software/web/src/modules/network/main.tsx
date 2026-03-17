@@ -344,7 +344,7 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
                                 />
                             </FormRow>
 
-                            <FormRow label={__("network.content.cert")}>
+                            <FormRow label={__("network.content.cert")} help={__("network.content.cert_help")}>
                                 <InputSelect
                                     disabled={cert_state == null}
                                     required={state.transport_mode != TransportMode.Insecure}
@@ -358,7 +358,7 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
                                 />
                             </FormRow>
 
-                            <FormRow label={__("network.content.key")}>
+                            <FormRow label={__("network.content.key")} help={__("network.content.key_help")}>
                                 <InputSelect
                                     disabled={cert_state == null || state.cert_id == -1}
                                     required={state.transport_mode != TransportMode.Insecure && state.cert_id != -1}
