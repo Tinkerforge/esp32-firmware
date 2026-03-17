@@ -142,7 +142,7 @@ def main():
             fifo_out_buf = bytes()
             stdout_buf = bytes()
             stderr_buf = bytes()
-            log_buf = ""
+            dbg_buf = ""
 
             os.write(fifo_in, b"start\n")
             start = time.monotonic()
@@ -247,8 +247,8 @@ def main():
                                 if meta_test:
                                     tprint(f"Set test timeout to {test_timeout}")
 
-                            case 'log':
-                                log_buf += payload["message"]
+                            case 'dbg':
+                                dbg_buf += payload["message"]
 
                         if test_finished:
                             if not meta_test:
@@ -257,29 +257,29 @@ def main():
                                 # TODO x[-1].log
                                 x[-1].stdout = stdout_buf.decode('utf-8')
                                 x[-1].stderr = stderr_buf.decode('utf-8')
-                                x[-1].log = log_buf
+                                x[-1].log = dbg_buf
                                 x[-1].url = int(time.monotonic() * 1000)
                                 stdout_buf = b""
                                 stderr_buf = b""
-                                log_buf = ""
+                                dbg_buf = ""
                             elif payload["testname"] == "setup":
                                 if len(stdout_buf) > 0:
                                     stdout_buf += b"\n---END SETUP---\n"
                                 if len(stderr_buf) > 0:
                                     stderr_buf += b"\n---END SETUP---\n"
-                                if len(log_buf) > 0:
-                                    log_buf +="---END SETUP---\n"
+                                if len(dbg_buf) > 0:
+                                    dbg_buf +="---END SETUP---\n"
                             elif payload["testname"] == "teardown":
                                 x: list[JTestCase] = jsuite.test_cases
                                 if len(stdout_buf) > 0:
                                     x[-1].stdout += "\n---BEGIN TEARDOWN---\n" + stdout_buf.decode('utf-8')
                                 if len(stderr_buf) > 0:
                                     x[-1].stderr += "\n---BEGIN TEARDOWN---\n" + stderr_buf.decode('utf-8')
-                                if len(log_buf) > 0:
-                                    x[-1].log += "\n---BEGIN TEARDOWN---\n" + log_buf
+                                if len(dbg_buf) > 0:
+                                    x[-1].log += "\n---BEGIN TEARDOWN---\n" + dbg_buf
                                 stdout_buf = b""
                                 stderr_buf = b""
-                                log_buf = ""
+                                dbg_buf = ""
 
                             if payload["testname"] != "suite_teardown":
                                 try:

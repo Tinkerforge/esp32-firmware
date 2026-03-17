@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import argparse
 import fnmatch
 import json
+import io
 from urllib.request import Request, urlopen, HTTPError
 
 import esptool.cmds
@@ -92,8 +93,11 @@ class TestContext:
         self._to_runner("notify_test_skipped", reason=reason)
         self.testname = ""
 
-    def log(self, message: str):
-        self._to_runner("log", message=message + ("\n" if not message.endswith("\n") else ""))
+    def dbg(self, *args, **kwargs):
+        x = io.StringIO()
+        print(*args, file=x, **kwargs)
+        message = str(x)
+        self._to_runner("dbg", message=message + ("\n" if not message.endswith("\n") else ""))
 
     def _wait_for_start(self):
         if self._fifo_in is not None:
