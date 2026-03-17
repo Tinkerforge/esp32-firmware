@@ -27,6 +27,7 @@ let x = {
             "sta_connected_bssid": "Connected BSSID",
             "sta_connection": "WiFi connection",
             "status_sta_ip": "IP address",
+            "status_sta_ipv6": "IPv6 address",
             "status_sta_ip_none": "No IP address",
             "status_sta_rssi": "Signal strength",
             "status_sta_rssi_weak": "Weak signal strength! Consider using a repeater or Ethernet.",
