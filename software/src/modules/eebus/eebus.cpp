@@ -23,6 +23,7 @@
 #include "event_log_prefix.h"
 #include "generated/module_dependencies.h"
 #include "generated/node_state.enum.h"
+#include "modules/meters/generated/meter_location.enum.h"
 #include "ship.h"
 #include "generated/ship_connection_state.enum.h"
 #include "generated/ship_discovery_state.enum.h"
@@ -748,6 +749,7 @@ void EEBus::register_em_events()
  * In EVSE mode: Updates EVCEM (EV charging measurements) and MPC (power consumption monitoring)
  * In EM mode: Updates MGCP (grid connection point monitoring)
  */
+// TODO: This has to be dynamic when we add save-meter-w/o-reboot feature.
 void EEBus::register_meter_events()
 {
     // Determine which meter slot to use based on mode
@@ -755,8 +757,19 @@ void EEBus::register_meter_events()
 #ifdef EEBUS_MODE_EVSE
     meter_slot = evse_common.get_charger_meter();
 #else
-    // TODO: Replace with actual EM meter slot
-    meter_slot = 0; // Placeholder for EM mode
+    // Find the first meter with location=Grid
+    bool found = false;
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
+        if (meters.get_meter_location(slot) == MeterLocation::Grid) {
+            meter_slot = static_cast<uint8_t>(slot);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        logger.printfln("No grid meter found for MGCP usecase.");
+        return;
+    }
 #endif
 
     // First, wait for value IDs to be published
