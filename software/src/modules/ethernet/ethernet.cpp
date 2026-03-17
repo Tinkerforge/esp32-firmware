@@ -144,6 +144,8 @@ void Ethernet::pre_setup()
         {"subnet", Config::Str("0.0.0.0", 7, 45)},
         {"ip6_link_local", Config::Str("::", 0, 45)},
         {"ip6_global", Config::Str("::", 0, 45)},
+        {"ip6_unique_local", Config::Str("::", 0, 45)},
+        {"ip6_site_local", Config::Str("::", 0, 45)},
         {"full_duplex", Config::Bool(false)},
         {"link_speed", Config::Uint8(0)},
         {"disable_countdown", Config::Uint8(0)}
@@ -315,7 +317,6 @@ void Ethernet::setup()
 
     Network.onEvent(
         [this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
-
             esp_ip6_addr_t ip_addr = info.got_ip6.ip6_info.ip;
             esp_ip6_addr_type_t type = esp_netif_ip6_get_addr_type(&ip_addr);
             logger.printfln("Got IPv6 address of type %d", static_cast<int>(type));
@@ -334,8 +335,22 @@ void Ethernet::setup()
                         state.get("ip6_global")->updateString(global.toString());
                     });
                     break;
-                case ESP_IP6_ADDR_IS_SITE_LOCAL:
                 case ESP_IP6_ADDR_IS_UNIQUE_LOCAL:
+                    task_scheduler.scheduleOnce([this, ip_addr]() {
+                        char ip_str[INET6_ADDRSTRLEN];
+                        tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
+                        logger.printfln("Unique Local IPv6 address: %s", ip_str);
+                        state.get("ip6_unique_local")->updateString(ip_str);
+                    });
+                    break;
+                case ESP_IP6_ADDR_IS_SITE_LOCAL:
+                    task_scheduler.scheduleOnce([this, ip_addr]() {
+                        char ip_str[INET6_ADDRSTRLEN];
+                        tf_ip6addr_ntoa(reinterpret_cast<const ip6_addr_t *>(&ip_addr), ip_str, ARRAY_SIZE(ip_str));
+                        logger.printfln("Site Local IPv6 address: %s", ip_str);
+                        state.get("ip6_site_local")->updateString(ip_str);
+                    });
+                    break;
                 case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
                 case ESP_IP6_ADDR_IS_UNKNOWN:
                 default:
@@ -374,6 +389,8 @@ void Ethernet::setup()
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("ip6_link_local")->updateString("::");
                 state.get("ip6_global")->updateString("::");
+                state.get("ip6_unique_local")->updateString("::");
+                state.get("ip6_site_local")->updateString("::");
                 state.get("connection_end")->updateUptime(now);
             });
         },
@@ -395,6 +412,8 @@ void Ethernet::setup()
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("ip6_link_local")->updateString("");
                 state.get("ip6_global")->updateString("");
+                state.get("ip6_unique_local")->updateString("");
+                state.get("ip6_site_local")->updateString("");
                 state.get("connection_end")->updateUptime(now);
             });
         },
@@ -532,6 +551,8 @@ void Ethernet::apply_config()
         if (!ipv6_enable) {
             state.get("ip6_link_local")->updateString("::");
             state.get("ip6_global")->updateString("::");
+            state.get("ip6_unique_local")->updateString("::");
+            state.get("ip6_site_local")->updateString("::");
         }
 
         if (!eth_started) {
