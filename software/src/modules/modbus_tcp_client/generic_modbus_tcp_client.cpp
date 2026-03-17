@@ -65,6 +65,8 @@ void GenericModbusTCPClient::start_generic_read()
                                  host.c_str(), port);
 
         read_pending = false;
+        generic_read_request.result = TFModbusTCPClientTransactionResult::Aborted;
+        generic_read_request.done_callback();
         force_reconnect();
         return;
     }
