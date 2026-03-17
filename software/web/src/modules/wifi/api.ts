@@ -54,6 +54,14 @@ export interface sta_config {
     dns: string;
     dns2: string;
     wpa_eap_config: EapConfigNone | EapConfigTLS | EapConfigPEAPTTLS;
+    enable_ip6: boolean;
+    ipv6: {
+        ip: string;
+        gateway: string;
+        subnet: string;
+        dns: string;
+        dns2: string;
+    }
 }
 
 export interface ap_config {
@@ -80,6 +88,8 @@ export interface state {
     sta_rssi: number;
     sta_bssid: string;
     sta_disconnect_reason: number;
+    sta_ip6_link_local: string;
+    sta_ip6_global: string;
 }
 
 export interface scan {
