@@ -2,6 +2,7 @@
 #
 # /// script
 # dependencies = [
+#   "tinkerforge",
 #   "tinkerforge_util",
 #   "junit-xml",
 #   "esptool",

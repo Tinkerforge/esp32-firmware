@@ -17,10 +17,12 @@ from esptool.targets import ESP32ROM
 
 if typing.TYPE_CHECKING:
     from test_runner import parttool
+    from test_runner.testbox.warp3 import WARP3TestBox
 else:
     import tinkerforge_util as tfutil
     tfutil.create_parent_module(__file__, 'software')
     from software.test_runner import parttool
+    from software.test_runner.testbox.warp3 import WARP3TestBox
 
 type TestFn = Callable[[TestContext], typing.Any]
 
@@ -49,6 +51,25 @@ class TestContext:
     _serial_port: str | None
     _esp_host: str
     _brickd_host: str | None
+
+    _testbox: WARP3TestBox | None = None
+
+    def init_testbox(self):
+        if self._brickd_host is None:
+            return False
+
+        if self._esp_host.startswith('warp3'):
+            self._testbox = WARP3TestBox()
+            self._testbox.start(self._brickd_host, 4223)
+            return True
+        return False
+
+    def get_testbox(self) -> WARP3TestBox:
+        if self._testbox is None:
+            if not self.init_testbox():
+                raise Exception("No testbox connected")
+
+        return self._testbox
 
     def _get_callee(self):
         stack = traceback.extract_stack()
