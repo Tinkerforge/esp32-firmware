@@ -27,6 +27,7 @@ import { FormRow         } from "../../ts/components/form_row";
 import { IndicatorGroup  } from "../../ts/components/indicator_group";
 import { InputText       } from "../../ts/components/input_text";
 import { IPConfiguration } from "../../ts/components/ip_configuration";
+import { OutputTextarea  } from "../../ts/components/output_textarea";
 import { Switch          } from "../../ts/components/switch";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -100,15 +101,27 @@ export class Ethernet extends ConfigComponent<'ethernet/config', {status_ref?: R
                         </FormRow>
                         {state.enable_ipv6 &&
                             <FormRow label={__("ethernet.content.status_ipv6")}>
-                                <InputText
+                                <OutputTextarea
+                                    rows={(() => {
+                                        let count = 0;
+                                        if (eth_state?.ip6_global && eth_state.ip6_global !== "::") count++;
+                                        if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::") count++;
+                                        if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::") count++;
+                                        if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::") count++;
+                                        return count > 0 ? count : 1;
+                                    })()}
+                                    resize="none"
                                     value={(() => {
-                                        const gl = eth_state?.ip6_global && eth_state.ip6_global !== "::" ? eth_state.ip6_global : null;
-                                        const ll = eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::" ? eth_state.ip6_link_local : null;
-
-                                        if (gl && ll) return `${gl} (global), ${ll} (link-local)`;
-                                        if (gl) return `${gl} (global)`;
-                                        if (ll) return `${ll} (link-local)`;
-                                        return __("ethernet.content.status_ip_none");
+                                        const addrs: string[] = [];
+                                        if (eth_state?.ip6_global && eth_state.ip6_global !== "::") 
+                                            addrs.push(`${eth_state.ip6_global} (global)`);
+                                        if (eth_state?.ip6_unique_local && eth_state.ip6_unique_local !== "::") 
+                                            addrs.push(`${eth_state.ip6_unique_local} (unique-local)`);
+                                        if (eth_state?.ip6_site_local && eth_state.ip6_site_local !== "::") 
+                                            addrs.push(`${eth_state.ip6_site_local} (site-local)`);
+                                        if (eth_state?.ip6_link_local && eth_state.ip6_link_local !== "::") 
+                                            addrs.push(`${eth_state.ip6_link_local} (link-local)`);
+                                        return addrs.length > 0 ? addrs.join('\n') : __("ethernet.content.status_ip_none");
                                     })()}
                                 />
                             </FormRow>

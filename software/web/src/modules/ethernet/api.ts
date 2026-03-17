@@ -26,4 +26,6 @@ export interface state {
     link_speed: number;
     ip6_link_local: string;
     ip6_global: string;
+    ip6_unique_local: string;
+    ip6_site_local: string;
 }
