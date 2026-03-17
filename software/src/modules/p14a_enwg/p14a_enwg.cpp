@@ -191,6 +191,10 @@ void P14aEnwg::check_inputs()
         return;
     }
 
+    if (config.get("source")->getTag<P14aEnwgSource>() != P14aEnwgSource::Input) {
+        return;
+    }
+
     bool input_value = false;
     uint32_t phases = 0;
 
