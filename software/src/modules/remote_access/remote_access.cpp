@@ -2276,16 +2276,22 @@ int RemoteAccess::stop_ping() {
     return 0;
 }
 
-bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip) {
+bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip, const IPAddress &remote_ip) {
     const uint32_t ip = static_cast<uint32_t>(local_ip);
-    const uint32_t masked_ip = ip & 0xFF00FFFFul;
+    const uint32_t masked_ip = ip & 0xFF00FFFFul; // Mask connection ID in third octet
     constexpr uint32_t expected_masked_ip = ntohl((10u << 24) + (123u << 16) + (0u << 8) + (2u << 0)); // 10.123.x.2
 
     if (masked_ip != expected_masked_ip) {
         return false;
     }
 
-    const uint8_t conn_id = (ip >> 16) & 0xFF;
+    const uint32_t remote = static_cast<uint32_t>(remote_ip);
+
+    if (remote != ip + ntohl(1)) { // Remote must be local address + 1
+        return false;
+    }
+
+    const uint8_t conn_id = (ip >> 16) & 0xFF; // Third octet
     size_t conn_idx;
 
     for (size_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
@@ -2299,11 +2305,12 @@ bool RemoteAccess::is_connected_local_ip(const IPAddress &local_ip) {
     return false;
 
 conn_idx_found:
-    const uint8_t conn_state = connection_state.get(conn_idx + 1)->get("state")->asUint8();
-
-    if (conn_state != 2) {
-        return false;
-    }
+    // The connection state is currently updated up to 400ms after the WireGuard tunnel is established,
+    // which is too late for checking the immediately established HTTP connection.
+    // Use only the IP address checks for now.
+    //const uint8_t conn_state = connection_state.get(conn_idx + 1)->get("state")->asUint8();
+    //return conn_state == 2;
+    (void)conn_idx;
 
     return true;
 }

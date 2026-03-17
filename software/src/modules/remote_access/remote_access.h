@@ -60,7 +60,7 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    bool is_connected_local_ip(const IPAddress &address);
+    bool is_connected_local_ip(const IPAddress &local_address, const IPAddress &remote_address);
 
     Config &get_ping_state();
     micros_t get_ping_start();
