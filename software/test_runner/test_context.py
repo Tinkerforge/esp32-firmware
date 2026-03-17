@@ -21,15 +21,15 @@ else:
 type TestFn = Callable[[TestContext], typing.Any]
 
 @dataclass
-class TestCase:
+class TestCaseInfo:
     name: str
     fn: TestFn
 
 @dataclass
-class TestSuite:
+class TestSuiteInfo:
     module: str
     suite: str
-    tests: list[TestCase]
+    tests: list[TestCaseInfo]
     suite_setup:    TestFn | None = None
     suite_teardown: TestFn | None = None
     test_setup:     TestFn | None = None
@@ -170,7 +170,7 @@ def run_test(tc: TestContext, name: str, fn: TestFn | None) -> bool:
     return False
 
 def run_testsuite(l: dict[str, typing.Any]):
-    suite = TestSuite(Path(l['__file__']).parts[-3], Path(l['__file__']).stem, [])
+    suite = TestSuiteInfo(Path(l['__file__']).parts[-3], Path(l['__file__']).stem, [])
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--test-filter", default='*')
@@ -187,7 +187,7 @@ def run_testsuite(l: dict[str, typing.Any]):
             continue
 
         if k.startswith("test_") and fnmatch.fnmatch(k, args.test_filter):
-            suite.tests.append(TestCase(f"{suite.module}/{suite.suite}/{k}", v))
+            suite.tests.append(TestCaseInfo(f"{suite.module}/{suite.suite}/{k}", v))
 
         if k == "suite_setup": suite.suite_setup = v
         if k == "suite_teardown": suite.suite_teardown = v
