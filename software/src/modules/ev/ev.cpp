@@ -383,7 +383,12 @@ float Ev::get_session_energy_kwh()
     if (evse_common.get_charger_meter_energy(&energy_now) == MeterValueAvailability::Unavailable) {
         return 0.0f;
     }
+
     float meter_start = charge_tracker.current_charge.get("meter_start")->asFloat();
+    if (isnan(meter_start)) {
+        return 0.0f;
+    }
+
     float session_energy = energy_now - meter_start;
     return std::max(0.0f, session_energy);
 #else
